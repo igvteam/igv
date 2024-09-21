@@ -44,6 +44,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
@@ -89,17 +90,12 @@ public class LoadFilesMenuAction extends MenuAction {
         if (files != null && files.length > 0) {
 
             final List<File> validFiles = new ArrayList<>();
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("File(s) not found: ");
-            boolean allFilesExist = true;
+            final List<File> missingFiles = new ArrayList<>();
+
             for (File file : files) {
-
                 if (!file.exists()) {
-                    allFilesExist = false;
-                    buffer.append("\n\t");
-                    buffer.append(file.getAbsolutePath());
+                    missingFiles.add(file);
                 } else {
-
                     String path = file.getAbsolutePath();
                     if (SessionReader.isSessionFile(path)) {
                         final String msg = "File " + path +
@@ -115,8 +111,10 @@ public class LoadFilesMenuAction extends MenuAction {
 
             }
 
-            if (!allFilesExist) {
-                final String msg = buffer.toString();
+            if (!missingFiles.isEmpty()) {
+                String msg = missingFiles.stream()
+                        .map(File::getAbsolutePath)
+                        .collect(Collectors.joining("\n\t", "File(s) not found: \n\t", ""));
                 log.error(msg);
                 MessageUtils.showMessage(msg);
             }

@@ -134,9 +134,9 @@ public class IGV implements IGVEventObserver {
     private Timer sessionAutosaveTimer = new Timer();
 
     // Misc state
-    private Map<String, List<Track>> overlayTracksMap = new HashMap();
-    private Set<Track> overlaidTracks = new HashSet();
-    private LinkedList<String> recentSessionList = new LinkedList<String>();
+    private Map<String, List<Track>> overlayTracksMap = new HashMap<>();
+    private Set<Track> overlaidTracks = new HashSet<>();
+    private RecentFileSet recentSessionList;
 
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
@@ -514,25 +514,9 @@ public class IGV implements IGVEventObserver {
     final public void saveStateForExit() {
 
         // Store recent sessions
-        if (!getRecentSessionList().isEmpty()) {
-
-            int size = getRecentSessionList().size();
-            if (size > UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST) {
-                size = UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST;
-            }
-
-            String recentSessions = "";
-            for (int i = 0; i <
-                    size; i++) {
-                recentSessions += getRecentSessionList().get(i);
-
-                if (i < (size - 1)) {
-                    recentSessions += ";";
-                }
-
-            }
-            PreferencesManager.getPreferences().remove(RECENT_SESSIONS);
-            PreferencesManager.getPreferences().setRecentSessions(recentSessions);
+        RecentFileSet recentSessions = getRecentSessionList();
+        if (!recentSessions.isEmpty()) {
+            PreferencesManager.getPreferences().setRecentSessions(recentSessions.asString());
         }
 
         // Stop the timer that is triggering the timed autosave
@@ -991,9 +975,8 @@ public class IGV implements IGVEventObserver {
                 }
 
                 mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-                if (!recentSessionList.contains(sessionPath)) {
-                    recentSessionList.addFirst(sessionPath);
-                }
+
+                getRecentSessionList().add(sessionPath);
                 this.menuBar.enableReloadSession();
 
                 //If there's a RegionNavigatorDialog, kill it.
@@ -1006,7 +989,7 @@ public class IGV implements IGVEventObserver {
         } catch (Exception e) {
             String message = "Error loading session session: " + e.getMessage();
             MessageUtils.showMessage(message);
-            recentSessionList.remove(sessionPath);
+            getRecentSessionList().remove(sessionPath);
             log.error(e);
             return false;
         } finally {
@@ -1068,9 +1051,8 @@ public class IGV implements IGVEventObserver {
         String sessionPath = targetFile.getAbsolutePath();
         session.setPath(sessionPath);
         mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-        if (!recentSessionList.contains(sessionPath)) {
-            recentSessionList.addFirst(sessionPath);
-        }
+
+        getRecentSessionList().add(sessionPath);
         this.menuBar.enableReloadSession();
 
         // No errors so save last location
@@ -1130,7 +1112,12 @@ public class IGV implements IGVEventObserver {
         return contentPane.getMainPanel();
     }
 
-    public LinkedList<String> getRecentSessionList() {
+    public RecentFileSet getRecentSessionList() {
+        if(recentSessionList == null){
+            recentSessionList = PreferencesManager.getPreferences().getRecentSessions();
+            //remove sessions that no longer exist
+            recentSessionList.removeIf(file -> !(new File(file)).exists());
+        }
         return recentSessionList;
     }
 
@@ -1182,9 +1169,11 @@ public class IGV implements IGVEventObserver {
                 }
             }
 
+
             try {
                 List<Track> tracks = load(locator);
                 addTracks(tracks);
+
             } catch (Exception e) {
                 log.error("Error loading track", e);
                 messages.append("Error loading " + locator + ": " + e.getMessage());

@@ -42,6 +42,7 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import java.awt.*;
 import java.io.*;

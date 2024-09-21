@@ -77,9 +77,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.ui.UIConstants.*;
@@ -407,38 +407,18 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         menuAction.setToolTipText(EXIT_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Empty the recent sessions list before we start to do
-        // anything with it
-        igv.getRecentSessionList().clear();
-
-        // Retrieve the stored session paths
-        String recentSessions = PreferencesManager.getPreferences().getRecentSessions();
-        if (recentSessions != null) {
-            String[] sessions = recentSessions.split(";");
-            for (String sessionPath : sessions) {
-                if (!sessionPath.equals("null") &&
-                        !igv.getRecentSessionList().contains(sessionPath) &&
-                        (new File(sessionPath)).exists()) {
-                    igv.getRecentSessionList().add(sessionPath);
-                }
-
-            }
-        }
-
-        if (!igv.getRecentSessionList().isEmpty()) {
-            menuItems.add(new JSeparator());
-            // Now add menu items
-            for (final String session : igv.getRecentSessionList()) {
-                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, IGV.getInstance());
-                menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
-            }
-
-        }
-
+        JSeparator recentSessionsSep = new JSeparator();
+        recentSessionsSep.setVisible(false);
+        menuItems.add(recentSessionsSep);
+        //menuItems.addAll(addRecentSessionMenuItems());
+        menuItems.add(new JSeparator());;
         MenuAction fileMenuAction = new MenuAction("File", null, KeyEvent.VK_F);
         JMenu fileMenu = MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
+
+
+        //Add dynamic list of recent sessions
+        fileMenu.addMenuListener(new DynamicItemsDisplay<>(fileMenu, recentSessionsSep, IGV.getInstance().getRecentSessionList(),
+                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance()))));
 
         return fileMenu;
     }
@@ -1331,4 +1311,47 @@ class Foo extends BasicMenuItemUI {
     }
 
 
+    private static class DynamicItemsDisplay<T> implements MenuListener {
+        private final Collection<T> values;
+        private final Function<T, JMenuItem> itemConstructor;
+        private final List<JComponent> activeComponents;
+        private final JMenu menu;
+        private final JSeparator recentSessionsSep;
+
+        public DynamicItemsDisplay(JMenu menu, JSeparator insertionPoint, Collection<T> values, Function<T, JMenuItem> itemConstructor) {
+            this.menu = menu;
+            this.recentSessionsSep = insertionPoint;
+            this.values = values;
+            this.itemConstructor = itemConstructor;
+            this.activeComponents = new ArrayList<>();
+        }
+
+        private List<JMenuItem> getCurrentItems() {
+            return values.stream().map(itemConstructor).toList();
+        }
+
+        @Override
+        public void menuSelected(MenuEvent e) {
+            List<JMenuItem> newComponents = getCurrentItems();
+            activeComponents.forEach(menu::remove);
+            if (newComponents.isEmpty()) {
+                recentSessionsSep.setVisible(false);
+            } else {
+                recentSessionsSep.setVisible(true);
+                final int componentIndex = Arrays.asList(menu.getMenuComponents()).indexOf(recentSessionsSep);
+                for(int i = 0; i < newComponents.size(); i++ ){
+                    menu.insert(newComponents.get(i), componentIndex+i+1);
+                }
+                activeComponents.addAll(newComponents);
+            }
+            menu.revalidate();
+            menu.repaint();
+        }
+
+        @Override
+        public void menuDeselected(MenuEvent e) {}
+
+        @Override
+        public void menuCanceled(MenuEvent e) {}
+    }
 }
