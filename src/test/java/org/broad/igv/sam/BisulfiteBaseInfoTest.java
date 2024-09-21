@@ -29,9 +29,11 @@ import htsjdk.samtools.SAMRecord;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.awt.*;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**

@@ -64,9 +64,9 @@ public class AutosaveMenu extends JMenu {
             }
         }
         // Create a menu item for each of the timed autosave files and add it to the menu
-        for(int i = 0; i < timedAutosaves.length; i++) {
+        for (File timedAutosave : timedAutosaves) {
             add(MenuAndToolbarUtils.createMenuItem(
-                    new OpenSessionMenuAction(timedAutosaves[i].getAbsolutePath(), IGV.getInstance())
+                    new OpenSessionMenuAction(timedAutosave.getAbsolutePath(), IGV.getInstance())
             ));
         }
     }

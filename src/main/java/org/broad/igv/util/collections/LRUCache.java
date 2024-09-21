@@ -46,10 +46,6 @@ public class LRUCache<K, V> {
         this.maxEntries = new AtomicInteger(max);
     }
 
-    public void setMaxEntries(int max) {
-        this.maxEntries.set(max);
-    }
-
     private void createMap() {
         map = Collections.synchronizedMap(
                 new LinkedHashMap<K, V>(16, 0.75f, true) {
