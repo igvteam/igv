@@ -36,7 +36,6 @@ import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
@@ -70,7 +69,6 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
-import javax.swing.plaf.basic.BasicMenuItemUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -114,10 +112,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenuItem loadGenomeFromServerMenuItem;
     private JMenuItem loadTracksFromServerMenuItem;
     private JMenuItem selectGenomeAnnotationsItem;
-    private JMenuItem encodeUCSCMenuItem;
 
+    private JMenuItem encodeUCSCMenuItem;
     private List<JComponent> encodeMenuItems = new ArrayList<>();
+
     private JMenuItem reloadSessionItem;
+    private JMenuItem recentFilesMenu;
 
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -298,6 +298,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         menuItems.add(loadTracksFromServerMenuItem);
+
+        recentFilesMenu = new RecentUrlsMenu();
+        menuItems.add(recentFilesMenu);
 
         if (PreferencesManager.getPreferences().getAsBoolean(DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, igv);
@@ -1233,6 +1236,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         this.reloadSessionItem.setEnabled(true);
     }
 
+    public void showRecentFilesMenu(){
+        this.recentFilesMenu.setVisible(true);
+    }
+
     public void disableReloadSession() {
         this.reloadSessionItem.setEnabled(false);
     }
@@ -1269,9 +1276,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             return;
         }
 
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)))) {
 
             List<String> attributes = AttributeManager.getInstance().getVisibleAttributes();
 
@@ -1291,25 +1296,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 }
                 pw.println();
             }
-
-
         } catch (IOException e) {
             MessageUtils.showErrorMessage("Error writing to file", e);
             log.error(e);
-        } finally {
-            if (pw != null) pw.close();
         }
-
     }
-}
-
-class Foo extends BasicMenuItemUI {
-
-
-    public Foo() {
-        this.disabledForeground = Color.black;
-    }
-
 
     private static class DynamicItemsDisplay<T> implements MenuListener {
         private final Collection<T> values;
@@ -1355,3 +1346,4 @@ class Foo extends BasicMenuItemUI {
         public void menuCanceled(MenuEvent e) {}
     }
 }
+

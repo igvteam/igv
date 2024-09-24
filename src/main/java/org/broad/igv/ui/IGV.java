@@ -137,6 +137,7 @@ public class IGV implements IGVEventObserver {
     private Map<String, List<Track>> overlayTracksMap = new HashMap<>();
     private Set<Track> overlaidTracks = new HashSet<>();
     private RecentFileSet recentSessionList;
+    private RecentUrlsSet recentUrlsList;
 
     // Vertical line that follows the mouse
     private boolean rulerEnabled;
@@ -517,6 +518,12 @@ public class IGV implements IGVEventObserver {
         RecentFileSet recentSessions = getRecentSessionList();
         if (!recentSessions.isEmpty()) {
             PreferencesManager.getPreferences().setRecentSessions(recentSessions.asString());
+        }
+
+        // Store recent files
+        RecentUrlsSet recentUrls = getRecentUrls();
+        if (!recentUrls.isEmpty()) {
+            PreferencesManager.getPreferences().setRecentUrls(recentUrls.asString());
         }
 
         // Stop the timer that is triggering the timed autosave
@@ -1120,6 +1127,22 @@ public class IGV implements IGVEventObserver {
         }
         return recentSessionList;
     }
+
+    public RecentUrlsSet getRecentUrls() {
+        if(recentUrlsList == null){
+            recentUrlsList = PreferencesManager.getPreferences().getRecentUrls();
+        }
+        return recentUrlsList;
+    }
+
+    public void addToRecentUrls(Collection<ResourceLocator> toAdd){
+        RecentUrlsSet recentFiles = getRecentUrls();
+        recentFiles.addAll(toAdd);
+        if(!recentFiles.isEmpty()){
+            menuBar.showRecentFilesMenu();
+        }
+    }
+
 
     public IGVContentPane getContentPane() {
         return contentPane;

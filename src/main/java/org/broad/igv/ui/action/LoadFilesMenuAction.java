@@ -30,7 +30,6 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
@@ -42,7 +41,6 @@ import org.broad.igv.util.ResourceLocator;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -122,6 +120,7 @@ public class LoadFilesMenuAction extends MenuAction {
             if (!validFiles.isEmpty()) {
                 // Create DataResourceLocators for the selected files
                 final List<ResourceLocator> locators = ResourceLocator.getLocators(validFiles);
+                igv.addToRecentUrls(locators);
                 igv.loadTracks(locators);
             }
         }

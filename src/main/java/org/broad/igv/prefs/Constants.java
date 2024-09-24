@@ -42,6 +42,7 @@ final public class Constants {
 
     //
     public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";
+    public static final String RECENT_URLS = "IGV.Session.recent.urls";
     public static final String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
     public static final String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
     public static final String LAST_SNAPSHOT_DIRECTORY = "LAST_SNAPSHOT_DIRECTORY";

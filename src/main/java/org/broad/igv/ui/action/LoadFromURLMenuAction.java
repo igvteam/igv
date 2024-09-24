@@ -123,6 +123,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
             checkURLs(indexes);
             List<ResourceLocator> locators = getResourceLocators(inputs, indexes, isHtsGet);
+            igv.addToRecentUrls(locators);
             igv.loadTracks(locators);
         }
     }
