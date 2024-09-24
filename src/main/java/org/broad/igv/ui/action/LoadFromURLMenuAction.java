@@ -29,7 +29,6 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -122,6 +121,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
             checkURLs(indexes);
             List<ResourceLocator> locators = getResourceLocators(inputs, indexes, isHtsGet);
+            igv.addToRecentUrls(locators);
             igv.loadTracks(locators);
         }
     }

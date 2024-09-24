@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class RecentFileSet extends LimitedLinkedSet<String> {
+public class RecentFileSet extends StackSet<String> {
+
+    private   static final String DELIMITER = ";";
 
     public RecentFileSet(int maxSize) {
         super(maxSize);
@@ -15,14 +17,14 @@ public class RecentFileSet extends LimitedLinkedSet<String> {
     }
 
     public String asString() {
-        return String.join(";", this);
+        return String.join(DELIMITER, this);
     }
 
     public static RecentFileSet fromString(String string, int maxSize) {
         if(string == null || string.isBlank()){
             return new RecentFileSet(maxSize);
         }
-        String[] files = string.split(";");
+        String[] files = string.split(DELIMITER);
         List<String> fileList = Arrays.stream(files)
                 .filter(s -> !s.isBlank())
                 // "null" was previously accounted for in older code so it's handled here
@@ -32,4 +34,6 @@ public class RecentFileSet extends LimitedLinkedSet<String> {
                 .toList();
         return new RecentFileSet(fileList, maxSize);
     }
+
+
 }

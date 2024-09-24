@@ -114,6 +114,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenuItem selectGenomeAnnotationsItem;
     private JMenuItem encodeMenuItem;
     private JMenuItem reloadSessionItem;
+    private JMenuItem recentFilesMenu;
 
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -297,6 +298,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
         menuItems.add(loadTracksFromServerMenuItem);
 
+        recentFilesMenu = new RecentUrlsMenu();
+        menuItems.add(recentFilesMenu);
         // Track hubs -- moved to Genomes menu
 //        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKHUB, KeyEvent.VK_S, igv);
 //        menuAction.setToolTipText(UIConstants.LOAD_TRACKHUB_TOOLTIP);
@@ -1190,6 +1193,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     public void enableReloadSession() {
         this.reloadSessionItem.setEnabled(true);
+    }
+
+    public void showRecentFilesMenu(){
+        this.recentFilesMenu.setVisible(true);
     }
 
     public void disableReloadSession() {
