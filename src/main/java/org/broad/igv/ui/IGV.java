@@ -1135,6 +1135,11 @@ public class IGV implements IGVEventObserver {
         return recentUrlsList;
     }
 
+    /**
+     * Add new values to the recent URLS set.  Calling this method rather than adding them directly
+     * allows showing the menu when the first URL is added to the collection.
+     * @param toAdd
+     */
     public void addToRecentUrls(Collection<ResourceLocator> toAdd){
         RecentUrlsSet recentFiles = getRecentUrls();
         recentFiles.addAll(toAdd);

@@ -2,6 +2,7 @@ package org.broad.igv.ui.util;
 
 import org.broad.igv.session.autosave.SessionAutosaveManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.MenuSelectedListener;
 import org.broad.igv.ui.action.OpenSessionMenuAction;
 
 import javax.swing.*;
@@ -24,22 +25,7 @@ public class AutosaveMenu extends JMenu {
     private AutosaveMenu(String name) {
         super(name);
 
-        this.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                fillAutosaveList();
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-
-            }
-        });
+        this.addMenuListener((MenuSelectedListener) e -> fillAutosaveList());
     }
 
     /**

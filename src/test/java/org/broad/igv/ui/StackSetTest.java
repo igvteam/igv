@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class StackSetTest {
@@ -45,7 +46,7 @@ public class StackSetTest {
         set.add(1);
         set.add(2);
         set.add(3);
-        set.addAll(List.of(3,3,4,5));
+        set.addAll(List.of(3,3,4,5,3));
         assertEquals(set, List.of(3,4,5,2,1));
     }
 
@@ -61,6 +62,12 @@ public class StackSetTest {
         assertEquals(set, List.of(1));
         set.add(2);
         assertEquals(set, List.of(2));
+    }
+
+    @Test
+    public void testDuplicateValuesPosition(){
+        StackSet<Integer> set = new StackSet<>(List.of(1, 2, 1, 3, 1, 4, 1, 5, 1), 5);
+        assertEquals(set, List.of(1,2,3,4,5));
     }
 
     @Test
@@ -83,4 +90,6 @@ public class StackSetTest {
         Assert.assertEquals(expected.size(), actual.size());
         Assert.assertArrayEquals(expected.toArray(), actual.toArray());
     }
+
+
 }

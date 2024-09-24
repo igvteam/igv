@@ -1,5 +1,7 @@
 package org.broad.igv.ui;
 
+import org.broad.igv.ui.action.LoadFilesMenuAction;
+import org.broad.igv.ui.action.LoadFromURLMenuAction;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.Arrays;
@@ -9,9 +11,16 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * An implementation of StackSet which supports {@link ResourceLocator}s which include a path and an index
+ * This matches the form used by the {@link LoadFilesMenuAction} and {@link LoadFromURLMenuAction}
+ *
+ *
+ */
 public class RecentUrlsSet extends StackSet<ResourceLocator> {
-    public static final String INDEX_DELIM = "index:";
+    private static final String INDEX_DELIM = "index:";
     private static final Pattern INDEX_SPLITTER = Pattern.compile("\\s" + INDEX_DELIM);
+
     public RecentUrlsSet(int maxSize) {
         super(maxSize);
     }
@@ -35,8 +44,6 @@ public class RecentUrlsSet extends StackSet<ResourceLocator> {
         }
         return builder.toString();
     }
-
-
 
     private static ResourceLocator stringToLocator(String locationString) {
         String[] split = INDEX_SPLITTER.split(locationString);

@@ -77,7 +77,6 @@ import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.ui.UIConstants.*;
@@ -418,10 +417,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         MenuAction fileMenuAction = new MenuAction("File", null, KeyEvent.VK_F);
         JMenu fileMenu = MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
 
-
         //Add dynamic list of recent sessions
-        fileMenu.addMenuListener(new DynamicItemsDisplay<>(fileMenu, recentSessionsSep, IGV.getInstance().getRecentSessionList(),
-                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance()))));
+        fileMenu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
+                fileMenu,
+                recentSessionsSep,
+                IGV.getInstance().getRecentSessionList(),
+                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
+        );
 
         return fileMenu;
     }
@@ -522,22 +524,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-
-            }
+        menu.addMenuListener((MenuSelectedListener) e -> {
+            Genome genome1 = GenomeManager.getInstance().getCurrentGenome();
+            selectGenomeAnnotationsItem.setEnabled(genome1 != null && genome1.getHub() != null);
         });
 
         return menu;
@@ -1043,7 +1032,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         loadS3.setEnabled(!usingCognito);  // If using Cognito, disalbe initially
         menu.add(loadS3);
 
-        menu.addMenuListener(new MenuListener() {
+        menu.addMenuListener(new MenuSelectedListener() {
             @Override
             public void menuSelected(MenuEvent e) {
                 if (AmazonUtils.GetCognitoConfig() != null) {
@@ -1065,14 +1054,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     };
                     LongRunningTask.submit(runnable);
                 }
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
             }
         });
 
@@ -1115,7 +1096,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         projectID.addActionListener(e -> GoogleUtils.enterGoogleProjectID());
         googleMenu.add(projectID);
 
-        googleMenu.addMenuListener(new MenuListener() {
+        googleMenu.addMenuListener(new MenuSelectedListener() {
             @Override
             public void menuSelected(MenuEvent e) {
                 boolean loggedIn = googleProvider.isLoggedIn();
@@ -1127,17 +1108,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 login.setEnabled(!loggedIn);
                 logout.setEnabled(loggedIn);
             }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-
-            }
-
         });
 
         return googleMenu;
@@ -1302,48 +1272,5 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
     }
 
-    private static class DynamicItemsDisplay<T> implements MenuListener {
-        private final Collection<T> values;
-        private final Function<T, JMenuItem> itemConstructor;
-        private final List<JComponent> activeComponents;
-        private final JMenu menu;
-        private final JSeparator recentSessionsSep;
-
-        public DynamicItemsDisplay(JMenu menu, JSeparator insertionPoint, Collection<T> values, Function<T, JMenuItem> itemConstructor) {
-            this.menu = menu;
-            this.recentSessionsSep = insertionPoint;
-            this.values = values;
-            this.itemConstructor = itemConstructor;
-            this.activeComponents = new ArrayList<>();
-        }
-
-        private List<JMenuItem> getCurrentItems() {
-            return values.stream().map(itemConstructor).toList();
-        }
-
-        @Override
-        public void menuSelected(MenuEvent e) {
-            List<JMenuItem> newComponents = getCurrentItems();
-            activeComponents.forEach(menu::remove);
-            if (newComponents.isEmpty()) {
-                recentSessionsSep.setVisible(false);
-            } else {
-                recentSessionsSep.setVisible(true);
-                final int componentIndex = Arrays.asList(menu.getMenuComponents()).indexOf(recentSessionsSep);
-                for(int i = 0; i < newComponents.size(); i++ ){
-                    menu.insert(newComponents.get(i), componentIndex+i+1);
-                }
-                activeComponents.addAll(newComponents);
-            }
-            menu.revalidate();
-            menu.repaint();
-        }
-
-        @Override
-        public void menuDeselected(MenuEvent e) {}
-
-        @Override
-        public void menuCanceled(MenuEvent e) {}
-    }
 }
 
