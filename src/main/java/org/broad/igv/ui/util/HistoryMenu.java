@@ -27,6 +27,7 @@ package org.broad.igv.ui.util;
 
 import org.broad.igv.ui.IGV;
 import org.broad.igv.session.History;
+import org.broad.igv.ui.MenuSelectedListener;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -77,14 +78,14 @@ public class HistoryMenu extends JMenu {
         });
 
 
-        this.addMenuListener(new MenuListener() {
+        this.addMenuListener(new MenuSelectedListener() {
             public void menuSelected(MenuEvent menuEvent) {
 
                 final History history = IGV.getInstance().getSession().getHistory();
 
 
                 List<History.Entry> allLoci = IGV.getInstance().getSession().getAllHistory();
-                
+
                 boolean hasBack = history.peekBack() != null;
                 boolean hasForward = history.peekForward() != null;
                 backItem.setEnabled(hasBack);
@@ -120,14 +121,6 @@ public class HistoryMenu extends JMenu {
                 add(clearAllItem);
 
 
-            }
-
-            public void menuDeselected(MenuEvent menuEvent) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            public void menuCanceled(MenuEvent menuEvent) {
-                //To change body of implemented methods use File | Settings | File Templates.
             }
         });
     }

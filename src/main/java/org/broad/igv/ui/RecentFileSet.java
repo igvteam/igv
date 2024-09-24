@@ -4,9 +4,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * An implement of StackSet for local file paths which supports serializing/deserializing itself to a string.
+ *
+ * The serialized form matches the format which already existed to store recent session files.
+ * This is used by the by the
+ */
 public class RecentFileSet extends StackSet<String> {
 
-    private   static final String DELIMITER = ";";
+    private static final String DELIMITER = ";";
 
     public RecentFileSet(int maxSize) {
         super(maxSize);
