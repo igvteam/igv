@@ -12,12 +12,12 @@ fi
 
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java -showversion -Djava.awt.headless=true -Dsamjdk.snappy.disable=true --module-path="${prefix}/lib" -Xmx1500m \
+    java -showversion -Djava.awt.headless=true --module-path="${prefix}/lib" -Xmx1500m \
         @"${prefix}/igv.args" \
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.broad.igv.tools.IgvTools  "$@"
 else
-    java -showversion -Djava.awt.headless=true -Dsamjdk.snappy.disable=true --module-path="${prefix}/lib" -Xmx1500m \
+    java -showversion -Djava.awt.headless=true --module-path="${prefix}/lib" -Xmx1500m \
         @"${prefix}/igv.args" \
         --module=org.igv/org.broad.igv.tools.IgvTools  "$@"
 fi

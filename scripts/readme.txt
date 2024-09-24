@@ -17,8 +17,6 @@ Instructions:
 igv-launcher.bat  (for Windows)
 igv.bat           (for Windows batch jobs)
 igv.sh            (for Linux and macOS)
-igv_hidpi.sh      (for Linux with HiDPI displays)
-igv.command       (for macOS, double-click to start)
 
 Some of these may not be present depending on the distribution you downloaded.  You might have to
 make the script executable (e.g. chmod a+x igv.sh) depending on the way the bundle was unpacked.

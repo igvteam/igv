@@ -14,7 +14,7 @@ if exist jdk-21 (
 ::file.  For more info, see the README at 
 ::https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt 
 if exist "%USERPROFILE%\.igv\java_arguments" (
-  start %JAVA_CMD% -showversion --module-path=lib -Xmx8g -Dproduction=true @igv.args -Djava.net.preferIPv4Stack=true -Dsun.java2d.noddraw=true -Djava.net.useSystemProxies=true @"%USERPROFILE%\.igv\java_arguments" --module=org.igv/org.broad.igv.ui.Main
+  start %JAVA_CMD% -showversion --module-path=lib -Xmx8g @igv.args @"%USERPROFILE%\.igv\java_arguments" --module=org.igv/org.broad.igv.ui.Main
 ) else (
-  start %JAVA_CMD% -showversion --module-path=lib -Xmx8g -Dproduction=true @igv.args -Djava.net.preferIPv4Stack=true -Dsun.java2d.noddraw=true -Djava.net.useSystemProxies=true --module=org.igv/org.broad.igv.ui.Main
+  start %JAVA_CMD% -showversion --module-path=lib -Xmx8g @igv.args --module=org.igv/org.broad.igv.ui.Main
 )
