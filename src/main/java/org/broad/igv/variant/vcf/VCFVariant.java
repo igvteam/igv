@@ -392,7 +392,7 @@ public class VCFVariant implements Variant {
          * https://github.com/samtools/hts-specs/blob/4cde0e235b4e4cfbd67a0c3a38abea611d56d256/VCFv4.1.tex#L165
          *
          */
-        if (variantContext.getType() == VariantContext.Type.SYMBOLIC) {
+        if (variantContext.getType(true) == VariantContext.Type.SYMBOLIC) {
             prefixLength = 1;
         }
 
