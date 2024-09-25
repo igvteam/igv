@@ -133,6 +133,9 @@ public class TwoBitSequence implements Sequence {
                 throw new RuntimeException("regionStart cannot be less than 0");
             }
 
+            //don't run off the end of the genome
+            regionEnd = Math.min(record.getDnaSize(), regionEnd);
+
             Queue<Block> nBlocks = _getOverlappingBlocks(regionStart, regionEnd, record.nBlocks);
             Queue<Block> maskBlocks = _getOverlappingBlocks(regionStart, regionEnd, record.maskBlocks);
 
