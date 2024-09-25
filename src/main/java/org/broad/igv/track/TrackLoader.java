@@ -956,7 +956,7 @@ public class TrackLoader {
         StringBuffer message = new StringBuffer();
         message.append("<html>File: " + filename +
                 "<br>does not contain any sequence names which match the current genome.");
-        message.append("<br><br>File: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        message.append("<br><br>Sequence names in 'filename': &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
         int n = 0;
         for (String sn : seqNames) {
             message.append(sn + ", ");
@@ -967,7 +967,7 @@ public class TrackLoader {
             }
         }
         if (genome != null && genome.getChromosomeNames() != null && genome.getChromosomeNames().size() > 0) {
-            message.append("<br>Genome: ");
+            message.append("<br>Sequence names in genome reference sequence: ");
             n = 0;
             for (String cn : genome.getChromosomeNames()) {
                 message.append(cn + ", ");
