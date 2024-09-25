@@ -387,9 +387,7 @@ public class VCFVariant implements Variant {
         }
 
         /**
-         * Since v4.1, the VCF spec has defined POS as the base preceding the polymorphism for any symbolic allele.
-         *
-         * https://github.com/samtools/hts-specs/blob/4cde0e235b4e4cfbd67a0c3a38abea611d56d256/VCFv4.1.tex#L165
+         * The VCF spec defines POS as the base preceding the polymorphism for non-ref symbolic alleles.
          *
          */
         if (variantContext.getType(true) == VariantContext.Type.SYMBOLIC) {
