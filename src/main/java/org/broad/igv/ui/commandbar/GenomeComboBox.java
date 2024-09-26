@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -102,16 +103,10 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                         loadGenomeFromServer();
                     } else {
 
-                        boolean success = false;
-                        Exception error = null;
                         try {
-                            success = GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
+                             GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (Exception e) {
                             log.error(e);
-                            error = e;
-                        }
-
-                        if (!success) {
                             int choice = JOptionPane.showConfirmDialog(
                                     IGV.getInstance().getMainFrame(), "The genome [" + genomeListItem.getId() +
                                             "] could not be read. Would you like to remove the selected entry?",
@@ -120,7 +115,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                             if (choice == JOptionPane.OK_OPTION) {
                                 GenomeListManager.getInstance().removeGenomeListItem(genomeListItem);
                                 refreshGenomeListComboBox();
-                                log.error("Error initializing genome", error);
+                                log.error("Error initializing genome", e);
                             }
                         }
                     }
@@ -220,27 +215,36 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             if (dialog.isCanceled()) {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             } else {
-                GenomeListItem selectedValue = dialog.getSelectedValue();
-                if (selectedValue != null) {
-
+                List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
+                GenomeListItem firstItem = null;
+                for (GenomeListItem selectedValue : selectedValueList) {
+                    if (selectedValue != null) {
+                        boolean downloadSequence = false;
+                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, downloadSequence);
+                        if (success) {
+                            GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
+                            firstItem = selectedValue;
+                        }
+                    }
+                }
+                if (firstItem != null && selectedValueList.size() == 1) {
                     try {
-                        GenomeManager.getInstance().loadGenome(selectedValue.getPath());
 
-                        GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
-
-                        GenomeListManager.getInstance().removeUserDefinedGenome(selectedValue.getId());
+                        GenomeManager.getInstance().loadGenome(firstItem.getPath());
+                        // If the user has previously defined this genome, remove it.
+                        GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
 
                         // If this is a .json genome, attempt to remove existing .genome files
-                        if (selectedValue.getPath().endsWith(".json")) {
-                            removeDotGenomeFile(selectedValue.getId());
+                        if (firstItem.getPath().endsWith(".json")) {
+                            removeDotGenomeFile(firstItem.getId());
                         }
 
-                    } catch (IOException e) {
-                        GenomeListManager.getInstance().removeGenomeListItem(selectedValue);
-                        MessageUtils.showErrorMessage("Error loading genome " + selectedValue.getDisplayableName(), e);
-                        log.error("Error loading genome " + selectedValue.getDisplayableName(), e);
-                    }
 
+                    } catch (IOException e) {
+                        GenomeListManager.getInstance().removeGenomeListItem(firstItem);
+                        MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
+                        log.error("Error loading genome " + firstItem.getDisplayableName(), e);
+                    }
                 }
             }
         };
