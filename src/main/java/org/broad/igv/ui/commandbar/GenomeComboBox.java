@@ -6,11 +6,9 @@ import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 
@@ -97,27 +95,16 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 return;
             }
 
-            final Runnable runnable = new Runnable() {
+            final Runnable runnable = () -> {
 
-                public void run() {
+                if (genomeListItem != null && genomeListItem.getPath() != null) {
 
-                    if (genomeListItem != null && genomeListItem.getPath() != null) {
-
-                        //log.warn("Loading " + genomeListItem.getId());
-
-                        //User selected "more", pull up dialog and revert combo box
-                        if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                            loadGenomeFromServer();
-                            return;
-                        }
+                    if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
+                        loadGenomeFromServer();
+                    } else {
 
                         try {
-                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
-                        } catch (GenomeServerException e) {
-                            log.error("Error loading genome: " + genomeListItem.getId() + "  " + genomeListItem.getPath(), e);
-                            JOptionPane.showMessageDialog(
-                                    IGV.getInstance().getMainFrame(),
-                                    "Error loading genome: " + genomeListItem.getDisplayableName());
+                             GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (Exception e) {
                             log.error(e);
                             int choice = JOptionPane.showConfirmDialog(
@@ -130,10 +117,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                                 refreshGenomeListComboBox();
                                 log.error("Error initializing genome", e);
                             }
-                        } finally {
-
                         }
-
                     }
                 }
             };
@@ -223,21 +207,20 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
             Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getServerGenomeList();
             if (inputListItems == null) {
-                //Could not reach genome server.  Not necessary to display a message, getServerGenomeArchiveList does it already
                 return;
             }
             GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
             UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
 
             if (dialog.isCanceled()) {
-                // Clear the "More..."  selection in pulldown
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             } else {
                 List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
                 GenomeListItem firstItem = null;
                 for (GenomeListItem selectedValue : selectedValueList) {
                     if (selectedValue != null) {
-                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, dialog.downloadSequence());
+                        boolean downloadSequence = false;
+                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, downloadSequence);
                         if (success) {
                             GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
                             firstItem = selectedValue;
@@ -252,7 +235,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                         GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
 
                         // If this is a .json genome, attempt to remove existing .genome files
-                        if(firstItem.getPath().endsWith(".json")) {
+                        if (firstItem.getPath().endsWith(".json")) {
                             removeDotGenomeFile(firstItem.getId());
                         }
 
@@ -276,7 +259,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
     public static void removeDotGenomeFile(String id) {
         try {
             File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
-            if(dotGenomeFile.exists()) {
+            if (dotGenomeFile.exists()) {
                 dotGenomeFile.delete();
             }
         } catch (Exception e) {

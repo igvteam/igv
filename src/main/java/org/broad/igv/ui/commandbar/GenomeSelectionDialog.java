@@ -47,7 +47,7 @@ import java.util.List;
  * Dialog box for selecting genomes. User can choose from a list,
  * which is filtered according to text box input
  */
-public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
+public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private JPanel dialogPane;
     private JPanel contentPanel;
@@ -57,7 +57,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
     private JTextField genomeFilter;
     private JScrollPane scrollPane1;
     private JList<GenomeListItem> genomeList;
-    private JCheckBox downloadSequenceCB;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -74,7 +73,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
         super(parent);
         initComponents();
         initData(inputListItems);
-        downloadSequenceCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -84,18 +82,12 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
     }
 
     /**
-     * Filter the list of displayed genomes so we only show this
-     * with the text the user entered.
+     * Filter the list of displayed genomes with the text the user entered.
      */
     private void rebuildGenomeList(String filterText) {
         if (genomeListModel == null) {
             genomeListModel = new DefaultListModel();
-            UIUtilities.invokeOnEventThread(new Runnable() {
-                @Override
-                public void run() {
-                    genomeList.setModel(genomeListModel);
-                }
-            });
+            UIUtilities.invokeOnEventThread(() -> genomeList.setModel(genomeListModel));
         }
         genomeListModel.clear();
         filterText = filterText.toLowerCase().trim();
@@ -117,11 +109,9 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
         switch (e.getClickCount()) {
             case 1:
                 List<GenomeListItem> selValues = genomeList.getSelectedValuesList();
-                downloadSequenceCB.setEnabled(selValues != null && selValues.size() == 1);
                 break;
             case 2:
-                okButtonActionPerformed(null);
-                break;
+            okButtonActionPerformed(null);
         }
     }
 
@@ -131,10 +121,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
 
     public List<GenomeListItem> getSelectedValues() {
         return selectedValues;
-    }
-
-    public boolean downloadSequence(){
-        return !isCanceled() && downloadSequenceCB.isEnabled() && downloadSequenceCB.isSelected();
     }
 
     public boolean isCanceled() {
@@ -165,7 +151,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
         genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
         genomeList = new JList();
-        downloadSequenceCB = new JCheckBox();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -201,10 +186,10 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
                 {
                     filterPanel.setMaximumSize(new Dimension(2147483647, 28));
                     filterPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout)filterPanel.getLayout()).columnWidths = new int[] {0, 0, 0};
-                    ((GridBagLayout)filterPanel.getLayout()).rowHeights = new int[] {0, 0};
-                    ((GridBagLayout)filterPanel.getLayout()).columnWeights = new double[] {1.0, 1.0, 1.0E-4};
-                    ((GridBagLayout)filterPanel.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
+                    ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
+                    ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
+                    ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
+                    ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
 
                     //---- label1 ----
                     label1.setText("Filter:");
@@ -246,14 +231,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
                 }
                 contentPanel.add(scrollPane1);
 
-                //---- downloadSequenceCB ----
-                downloadSequenceCB.setText("Download Sequence");
-                downloadSequenceCB.setAlignmentX(1.0F);
-                downloadSequenceCB.setToolTipText("Download the full sequence for this organism. Note that these files can be very large (human is about 3 gigabytes)");
-                downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
-                downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
-                downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
-                contentPanel.add(downloadSequenceCB);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -261,29 +238,19 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog  {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
-                okButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        okButtonActionPerformed(e);
-                    }
-                });
+                okButton.addActionListener(e -> okButtonActionPerformed(e));
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
-                cancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        cancelButtonActionPerformed(e);
-                    }
-                });
+                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 5, 0), 0, 0));
