@@ -385,6 +385,15 @@ public class VCFVariant implements Variant {
         if (variantContext.getType() == VariantContext.Type.INDEL || variantContext.getType() == VariantContext.Type.MIXED) {
             prefixLength = findCommonPrefixLength();
         }
+
+        /**
+         * The VCF spec defines POS as the base preceding the polymorphism for non-ref symbolic alleles.
+         *
+         */
+        if (variantContext.getType(true) == VariantContext.Type.SYMBOLIC) {
+            prefixLength = 1;
+        }
+
         this.start = (variantContext.getStart() - 1) + prefixLength;
     }
 
