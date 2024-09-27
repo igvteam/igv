@@ -31,14 +31,25 @@
 
 package org.broad.igv.ui.commandbar;
 
+import org.broad.igv.DirectoryManager;
+import org.broad.igv.event.GenomeResetEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +60,8 @@ import java.util.List;
  */
 public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
+    private static Logger log = LogManager.getLogger(GenomeSelectionDialog.class);
+
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JTextArea textArea1;
@@ -57,6 +70,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private JTextField genomeFilter;
     private JScrollPane scrollPane1;
     private JList<GenomeListItem> genomeList;
+    private JCheckBox downloadDataCB;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
@@ -66,13 +80,88 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
+
+    /**
+     * Open a selection list to load a genome from the server.   This method is static because its used by multiple
+     * UI elements  (menu bar and genome selection pulldown).
+     */
+    public static void selectGenomesFromServer() {
+
+        Runnable showDialog = () -> {
+
+            Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getServerGenomeList();
+            if (inputListItems == null) {
+                return;
+            }
+            GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
+            UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
+
+            if (dialog.isCanceled()) {
+                IGVEventBus.getInstance().post(new GenomeResetEvent());
+            } else {
+                List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
+
+                for (GenomeListItem selectedValue : selectedValueList) {
+                    if (selectedValue != null) {
+
+                        boolean downloadData = dialog.isDownloadData();
+                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, downloadData);
+
+                        if (success) {
+
+                            // If this is a single selection load it
+                            if(selectedValueList.size() == 1) {
+
+                                try {
+                                    GenomeManager.getInstance().loadGenome(selectedValue.getPath());
+                                    // If the user has previously defined this genome, remove it.
+                                    GenomeListManager.getInstance().removeUserDefinedGenome(selectedValue.getId());
+
+                                    // If this is a .json genome, attempt to remove existing .genome files
+                                    if (selectedValue.getPath().endsWith(".json")) {
+                                        removeDotGenomeFile(selectedValue.getId());
+                                    }
+
+
+                                } catch (IOException e) {
+                                    GenomeListManager.getInstance().removeGenomeListItem(selectedValue);
+                                    MessageUtils.showErrorMessage("Error loading genome " + selectedValue.getDisplayableName(), e);
+                                    log.error("Error loading genome " + selectedValue.getDisplayableName(), e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            LongRunningTask.submit(showDialog);
+        } else {
+            showDialog.run();
+        }
+    }
+
+    private static void removeDotGenomeFile(String id) {
+        try {
+            File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
+            if (dotGenomeFile.exists()) {
+                dotGenomeFile.delete();
+            }
+        } catch (Exception e) {
+            // If anything goes wrong, just log it, this cleanup is not essential
+            log.error("Error deleting .genome file", e);
+        }
+    }
+
     /**
      * @param parent
      */
-    public GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
+    private GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
         super(parent);
         initComponents();
         initData(inputListItems);
+        downloadDataCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -99,18 +188,12 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     }
 
     /**
-     * If a genome is single clicked, we just store the selection.
-     * When a genome is double clicked, we treat that as the user
-     * wanting to load the genome.
+     * Double-clicking will trigger the OK action.
      *
      * @param e
      */
     private void genomeListMouseClicked(MouseEvent e) {
-        switch (e.getClickCount()) {
-            case 1:
-                List<GenomeListItem> selValues = genomeList.getSelectedValuesList();
-                break;
-            case 2:
+        if (e.getClickCount() == 2) {
             okButtonActionPerformed(null);
         }
     }
@@ -123,18 +206,22 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         return selectedValues;
     }
 
+    public boolean isDownloadData(){
+        return downloadDataCB.isSelected();
+    }
+
     public boolean isCanceled() {
         return isCanceled;
     }
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
         isCanceled = true;
         selectedValues = null;
         setVisible(false);
         dispose();
     }
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
         isCanceled = false;
         selectedValues = genomeList.getSelectedValuesList();
         setVisible(false);
@@ -151,6 +238,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         genomeFilter = new JTextField();
         scrollPane1 = new JScrollPane();
         genomeList = new JList();
+        downloadDataCB = new JCheckBox();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -231,6 +319,14 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                 }
                 contentPanel.add(scrollPane1);
 
+                //---- downloadSequenceCB ----
+                downloadDataCB.setText("Download data files");
+                downloadDataCB.setAlignmentX(1.0F);
+                downloadDataCB.setToolTipText("Download all files referenced by the genome definition, including the full sequence for this organism. Note that these files can be very large (human is about 3 gigabytes)");
+                downloadDataCB.setMaximumSize(new Dimension(1000, 23));
+                downloadDataCB.setPreferredSize(new Dimension(300, 23));
+                downloadDataCB.setMinimumSize(new Dimension(300, 23));
+                contentPanel.add(downloadDataCB);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -261,6 +357,5 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         pack();
         setLocationRelativeTo(getOwner());
     }// </editor-fold>//GEN-END:initComponents
-
 
 }

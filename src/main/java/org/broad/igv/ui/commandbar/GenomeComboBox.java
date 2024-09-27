@@ -1,15 +1,11 @@
 package org.broad.igv.ui.commandbar;
 
 import org.broad.igv.logging.*;
-import org.broad.igv.DirectoryManager;
-import org.broad.igv.event.GenomeResetEvent;
-import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
@@ -17,10 +13,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -100,7 +94,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 if (genomeListItem != null && genomeListItem.getPath() != null) {
 
                     if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                        loadGenomeFromServer();
+                        GenomeSelectionDialog.selectGenomesFromServer();
                     } else {
 
                         try {
@@ -193,78 +187,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
 
             return renderer;
-        }
-    }
-
-
-    /**
-     * Open a selection list to load a genome from the server.   This method is static because its used by multiple
-     * UI elements  (menu bar and genome selection pulldown).
-     */
-    public static void loadGenomeFromServer() {
-
-        Runnable showDialog = () -> {
-
-            Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getServerGenomeList();
-            if (inputListItems == null) {
-                return;
-            }
-            GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
-            UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
-
-            if (dialog.isCanceled()) {
-                IGVEventBus.getInstance().post(new GenomeResetEvent());
-            } else {
-                List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
-                GenomeListItem firstItem = null;
-                for (GenomeListItem selectedValue : selectedValueList) {
-                    if (selectedValue != null) {
-                        boolean downloadSequence = false;
-                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, downloadSequence);
-                        if (success) {
-                            GenomeListManager.getInstance().addServerGenomeItem(selectedValue);
-                            firstItem = selectedValue;
-                        }
-                    }
-                }
-                if (firstItem != null && selectedValueList.size() == 1) {
-                    try {
-
-                        GenomeManager.getInstance().loadGenome(firstItem.getPath());
-                        // If the user has previously defined this genome, remove it.
-                        GenomeListManager.getInstance().removeUserDefinedGenome(firstItem.getId());
-
-                        // If this is a .json genome, attempt to remove existing .genome files
-                        if (firstItem.getPath().endsWith(".json")) {
-                            removeDotGenomeFile(firstItem.getId());
-                        }
-
-
-                    } catch (IOException e) {
-                        GenomeListManager.getInstance().removeGenomeListItem(firstItem);
-                        MessageUtils.showErrorMessage("Error loading genome " + firstItem.getDisplayableName(), e);
-                        log.error("Error loading genome " + firstItem.getDisplayableName(), e);
-                    }
-                }
-            }
-        };
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            LongRunningTask.submit(showDialog);
-        } else {
-            showDialog.run();
-        }
-    }
-
-    public static void removeDotGenomeFile(String id) {
-        try {
-            File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
-            if (dotGenomeFile.exists()) {
-                dotGenomeFile.delete();
-            }
-        } catch (Exception e) {
-            // If anything goes wrong, just log it, this cleanup is not essential
-            log.error("Error deleting .genome file", e);
         }
     }
 

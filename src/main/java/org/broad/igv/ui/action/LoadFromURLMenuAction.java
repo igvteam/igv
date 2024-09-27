@@ -30,6 +30,7 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -81,6 +82,7 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             if (!dlg.isCanceled()) {
 
+
                 String inputURLs = dlg.getFileURL();
                 if (inputURLs != null && inputURLs.trim().length() > 0) {
 
@@ -89,7 +91,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     if (inputs.length == 1 && HubGenomeLoader.isHubURL(inputs[0])) {
                         LongRunningTask.submit(() -> {
                             try {
-                               GenomeManager.getInstance().loadGenome(inputs[0]);
+                               Genome newGenome = GenomeManager.getInstance().loadGenome(inputs[0]);
                             } catch (IOException ex) {
                                 log.error("Error loading tack hub", ex);
                                 MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
