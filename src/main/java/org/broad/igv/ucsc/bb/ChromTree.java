@@ -25,7 +25,7 @@ public class ChromTree {
 
     public long sumLengths = 0;
 
-    public static ChromTree parseTree(UnsignedByteBuffer buffer, int startOffset, Genome genome) {
+    public static ChromTree parseTree(UnsignedByteBuffer buffer, long startOffset, Genome genome) {
 
         return (new ChromTree().parse(buffer, startOffset, genome));
     }
@@ -50,7 +50,7 @@ public class ChromTree {
         return idToName;
     }
 
-    public ChromTree parse(UnsignedByteBuffer buffer, int startOffset, Genome genome) {
+    public ChromTree parse(UnsignedByteBuffer buffer, long startOffset, Genome genome) {
         {
             Header header = new Header();
             header.magic = buffer.getInt();
@@ -75,7 +75,7 @@ public class ChromTree {
         }
     }
 
-    void readTreeNode(long offset, final int startOffset, UnsignedByteBuffer buffer, Genome genome) {
+    void readTreeNode(long offset, final long startOffset, UnsignedByteBuffer buffer, Genome genome) {
         if (offset >= 0) buffer.position((int) offset);
         byte type = buffer.get();
         byte reserved = buffer.get();
