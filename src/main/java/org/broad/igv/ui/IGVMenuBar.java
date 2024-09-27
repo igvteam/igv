@@ -36,10 +36,13 @@ import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -51,7 +54,6 @@ import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
-import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.commandbar.RemoveGenomesDialog;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
@@ -294,7 +296,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new LoadFromServerAction("Load From Server...", KeyEvent.VK_S, igv);
         menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
         loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
+       // loadTracksFromServerMenuItem.setVisible(genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null);
         menuItems.add(loadTracksFromServerMenuItem);
 
         // Track hubs -- moved to Genomes menu
@@ -432,7 +434,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu = new JMenu("Genomes");
 
         loadGenomeFromServerMenuItem = new JMenuItem("Download Hosted Genome...");
-        loadGenomeFromServerMenuItem.addActionListener(e -> GenomeComboBox.loadGenomeFromServer());
+        loadGenomeFromServerMenuItem.addActionListener(e -> GenomeSelectionDialog.selectGenomesFromServer());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
 
@@ -450,7 +452,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 // If a file selection was made
                 if (file != null) {
-                    GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
+                    Genome newGenome = GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
                 }
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage(ex.getMessage(), ex);
@@ -473,11 +475,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         MenuAction menuAction = new SelectGenomeAnnotationTracksAction("Select GenArk Tracks...", igv);
         selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        selectGenomeAnnotationsItem.setEnabled(genome != null && genome.getHub() != null);
+        Genome newGenome = GenomeManager.getInstance().getCurrentGenome();
+        selectGenomeAnnotationsItem.setEnabled(newGenome != null && newGenome.getHub() != null);
         menu.add(selectGenomeAnnotationsItem);
-
-
         menu.add(new JSeparator());
 
         // Add genome to combo box from server
@@ -1202,8 +1202,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             UIUtilities.invokeOnEventThread(() -> {
                 final Genome genome = ((GenomeChangeEvent) event).genome();
                 encodeMenuItem.setVisible(EncodeFileBrowser.genomeSupported(genome.getId()));
-                loadTracksFromServerMenuItem.setVisible(LoadFromServerAction.getNodeURLs(genome.getId()) != null);
-                //selectGenomeAnnotationsItem .setEnabled(genome != null && genome.getHub() != null);
             });
         }
     }

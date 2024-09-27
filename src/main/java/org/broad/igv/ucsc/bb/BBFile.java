@@ -227,11 +227,13 @@ public class BBFile {
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
-        // Chromosome tree -- this normally preceeds fullDataOffset so will be within the buffer.  However, this
-        // isn't guaranteed, we have to check
-        int chromtreeBufferSize = (int) Math.min(1000000, Math.max(10000, header.fullDataOffset - header.chromTreeOffset));
+        // Chromosome tree -- we know the start offset but not the size.  But we can try to estimate it.
+        int chromtreeBufferSize =  header.fullDataOffset > header.chromTreeOffset ?
+                (int) Math.min(10000, header.fullDataOffset - header.chromTreeOffset) :
+                10000;
+
         buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, chromtreeBufferSize);
-        this.chromTree = ChromTree.parseTree(buffer, startOffset, this.genome);
+        this.chromTree = ChromTree.parseTree(buffer, header.chromTreeOffset, this.genome);
         this.chrNames = this.chromTree.names();
 
 
