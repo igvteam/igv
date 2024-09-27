@@ -41,7 +41,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.commandbar.GenomeComboBox;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
@@ -435,7 +434,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu = new JMenu("Genomes");
 
         loadGenomeFromServerMenuItem = new JMenuItem("Download Hosted Genome...");
-        loadGenomeFromServerMenuItem.addActionListener(e -> GenomeComboBox.loadGenomeFromServer());
+        loadGenomeFromServerMenuItem.addActionListener(e -> GenomeSelectionDialog.selectGenomesFromServer());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
 

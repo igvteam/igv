@@ -1943,7 +1943,7 @@ public class IGV implements IGVEventObserver {
 
                     if (!genomeLoaded) {
                         Genome genome = Genome.nullGenome();
-                        GenomeManager.getInstance().setCurrentGenome("", genome);
+                        GenomeManager.getInstance().setCurrentGenome(genome);
 
 
                         //GenomeManager.getInstance().setCurrentGenome(Genome.NoneGenome());

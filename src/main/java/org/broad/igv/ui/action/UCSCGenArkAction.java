@@ -27,12 +27,14 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.table.SearchableTableDialog;
 import org.broad.igv.ui.table.SearchableTableModel;
 import org.broad.igv.ui.table.SearchableTableRecord;

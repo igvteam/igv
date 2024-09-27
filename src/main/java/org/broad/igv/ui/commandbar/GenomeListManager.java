@@ -31,7 +31,6 @@ import java.util.zip.ZipInputStream;
  */
 public class GenomeListManager {
 
-    public static final String BACKUP_GENOME_SERVER_URL = "https://s3.amazonaws.com/igv.org.genomes/genomes.tsv";
     private static Logger log = LogManager.getLogger(GenomeListManager.class);
 
     private static GenomeListManager theInstance;
@@ -40,7 +39,7 @@ public class GenomeListManager {
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
-            "https://igv-genepattern-org.s3.amazonaws.com/genomes/hg38/hg38.json",
+            "https://igv.org/genomes/hg38/hg38.json",
             "hg38");
 
     private Map<String, GenomeListItem> genomeItemMap;
@@ -112,13 +111,6 @@ public class GenomeListManager {
             userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
             exportUserDefinedGenomeList();
         }
-    }
-
-    /**
-     * Add a server-hosted genome list to the selectables map
-     */
-    public void addServerGenomeItem(GenomeListItem genomeListItem) {
-        addGenomeItem(genomeListItem, false);
     }
 
     /**
@@ -258,15 +250,28 @@ public class GenomeListManager {
                         JsonObject json = rootElement.getAsJsonObject();
                         JsonElement id = json.get("id");
                         JsonElement name = json.get("name");
-                        JsonElement fastaURL = json.get("fastaURL");
-                        if (id != null && name != null && fastaURL != null) {
-                            if (cachedGenomes.containsKey(id.getAsString())) {
-                                File prevFile = new File(cachedGenomes.get(id.getAsString()).getPath());
-                                prevFile.delete();
-                            }
-                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                            cachedGenomes.put(item.getId(), item);
+                        JsonElement fasta = json.get("fastaURL");
+                        JsonElement twobit = json.get("twoBitURL");
+                        if (id == null) {
+                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                            continue;
                         }
+                        if (name == null) {
+                            log.error("Error parsing " + file.getName() + ". \"name\" is required");
+                            continue;
+                        }
+                        if (id == null) {
+                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                            continue;
+                        }
+                        if (fasta == null && twobit == null) {
+                            log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
+                            continue;
+                        }
+
+                        GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                        cachedGenomes.put(item.getId(), item);
+
                     }
                 } catch (Exception e) {
                     log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
@@ -316,7 +321,7 @@ public class GenomeListManager {
 
         // If this is a cached genome remove it from cache
         Map<String, GenomeListItem> cachedItems = getCachedGenomeList();
-        if(cachedItems.containsKey(id)){
+        if (cachedItems.containsKey(id)) {
             try {
                 (new File(genomeListItem.getPath())).delete();
             } catch (Exception e) {
@@ -364,14 +369,7 @@ public class GenomeListManager {
                 genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
                 if (HttpUtils.isRemoteURL(genomeListURLString)) {
                     URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
-                    try {
-                        inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
-                    } catch (IOException e) {
-                        log.error(e);
-                        MessageUtils.showMessage("Error: Could not connect to genome server " + genomeListURLString + "<br>Trying " + BACKUP_GENOME_SERVER_URL);
-                        serverGenomeURL = HttpUtils.createURL(BACKUP_GENOME_SERVER_URL);
-                        inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
-                    }
+                    inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
                 } else {
                     File file = new File(genomeListURLString.startsWith("file:") ? (new URL(genomeListURLString)).getFile() : genomeListURLString);
                     inputStream = new FileInputStream(file);
