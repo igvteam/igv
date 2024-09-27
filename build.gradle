@@ -95,6 +95,8 @@ configurations {
         exclude group: 'xalan', module: 'serializer'
         exclude group: 'xalan', module: 'xalan'
 
+        exclude group: 'org.xerial.snappy', module: 'snappy-java'
+
         // Amazon deps exclusions
         //exclude group: 'software.amazon', module: 'flow'
         //exclude group: 'software.amazon.awssdk', module: 'annotations'
@@ -113,7 +115,7 @@ dependencies {
             [group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'],
             [group: 'org.apache.commons', name: 'commons-jexl', version: '2.1.1'],
             [group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'],
-            [group: 'com.github.samtools', name: 'htsjdk', version: '4.1.1'],
+            [group: 'com.github.samtools', name: 'htsjdk', version: '4.1.2'],
             [group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'],
             [group: 'com.formdev', name: 'jide-oss', version: '3.7.12'],
             [group: 'com.google.guava', name: 'guava', version: '32.1.3-jre'],
@@ -346,7 +348,8 @@ task createMacAppWithJavaDistZip(type: Zip, dependsOn: createMacAppDist) {
     }
 }
 
-task createWinDist(type: Copy, dependsOn: createDist) {
+tasks.register('createWinDist', Copy) {
+    dependsOn createDist
     with copySpec {
         from("${buildDir}/IGV-dist") {
             exclude "*.sh"
@@ -423,7 +426,8 @@ task signWinExeDist(type: Exec, dependsOn: createWinExeDist) {
     }
 }
 
-task signWinExeWithJavaDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
+tasks.register('signWinExeWithJavaDist', Exec) {
+    dependsOn createWinWithJavaExeDist
     standardInput = new ByteArrayInputStream(keyPassword.getBytes());
     commandLine(signcodeCommand, "-spc", spcFile, "-v", pvkFile, "-a", "sha512",
             "-\$", "commercial", "-n", "IGV ${version}", "-i", "http://www.igv.org/",
@@ -435,7 +439,8 @@ task signWinExeWithJavaDist(type: Exec, dependsOn: createWinWithJavaExeDist) {
     }
 }
 
-task fullJar(type: Jar, dependsOn: jar) {
+tasks.register('fullJar', Jar) {
+    dependsOn jar
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     from {
         ((configurations.compile - configurations.default) + "${buildDir}/libs/igv.jar").collect {
