@@ -99,6 +99,19 @@ public class JsonGenomeLoader extends GenomeLoader {
      * @return
      */
     private GenomeConfig fixPaths(GenomeConfig config) {
+
+        if (config.chromAliasBbURL != null) {
+            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
+        }
+        if (config.twoBitURL != null) {
+            config.twoBitURL = FileUtils.getAbsolutePath(config.twoBitURL, genomePath);
+        }
+        if (config.cytobandBbURL != null) {
+            config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
+        }
+        if (config.chromSizesURL != null) {
+            config.chromSizesURL = FileUtils.getAbsolutePath(config.chromSizesURL, genomePath);
+        }
         if (config.fastaURL != null) {
             config.fastaURL = FileUtils.getAbsolutePath(config.fastaURL, genomePath);
         }
@@ -107,6 +120,9 @@ public class JsonGenomeLoader extends GenomeLoader {
         }
         if (config.gziIndexURL != null) {
             config.gziIndexURL = FileUtils.getAbsolutePath(config.gziIndexURL, genomePath);
+        }
+        if (config.compressedIndexURL != null) {
+            config.compressedIndexURL = FileUtils.getAbsolutePath(config.compressedIndexURL, genomePath);
         }
         if (config.cytobandURL != null) {
             config.cytobandURL = FileUtils.getAbsolutePath(config.cytobandURL, genomePath);

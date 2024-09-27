@@ -258,15 +258,28 @@ public class GenomeListManager {
                         JsonObject json = rootElement.getAsJsonObject();
                         JsonElement id = json.get("id");
                         JsonElement name = json.get("name");
-                        JsonElement fastaURL = json.get("fastaURL");
-                        if (id != null && name != null && fastaURL != null) {
-                            if (cachedGenomes.containsKey(id.getAsString())) {
-                                File prevFile = new File(cachedGenomes.get(id.getAsString()).getPath());
-                                prevFile.delete();
-                            }
-                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                            cachedGenomes.put(item.getId(), item);
+                        JsonElement fasta = json.get("fastaURL");
+                        JsonElement twobit = json.get("twoBitURL");
+                        if (id == null) {
+                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                            continue;
                         }
+                        if (name == null) {
+                            log.error("Error parsing " + file.getName() + ". \"name\" is required");
+                            continue;
+                        }
+                        if (id == null) {
+                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                            continue;
+                        }
+                        if (fasta == null && twobit == null) {
+                            log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
+                            continue;
+                        }
+
+                        GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                        cachedGenomes.put(item.getId(), item);
+
                     }
                 } catch (Exception e) {
                     log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
@@ -316,7 +329,7 @@ public class GenomeListManager {
 
         // If this is a cached genome remove it from cache
         Map<String, GenomeListItem> cachedItems = getCachedGenomeList();
-        if(cachedItems.containsKey(id)){
+        if (cachedItems.containsKey(id)) {
             try {
                 (new File(genomeListItem.getPath())).delete();
             } catch (Exception e) {

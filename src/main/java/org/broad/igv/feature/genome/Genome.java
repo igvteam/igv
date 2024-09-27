@@ -124,7 +124,7 @@ public class Genome {
         } else if (config.fastaURL != null) {
             String fastaPath = config.fastaURL;
             String indexPath = config.indexURL;
-            String gziIndexPath = config.gziIndexURL;
+            String gziIndexPath = config.gziIndexURL != null ? config.gziIndexURL : config.compressedIndexURL;   // Synonyms
             uncachedSequence = fastaPath.endsWith(".gz") ?
                     new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
                     new FastaIndexedSequence(fastaPath, indexPath);
