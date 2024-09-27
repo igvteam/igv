@@ -247,7 +247,9 @@ public class IGV implements IGVEventObserver {
         Rectangle applicationBounds = preferences.getApplicationFrameBounds();
 
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
+                applicationBounds.getMaxX() < 300 ||
                 applicationBounds.getMaxY() > screenBounds.getHeight() ||
+                applicationBounds.getMaxY() < 300 ||
                 applicationBounds.width == 0 || applicationBounds.height == 0) {
             int width = Math.min(1150, (int) screenBounds.getWidth());
             int height = Math.min(800, (int) screenBounds.getHeight());
