@@ -24,14 +24,14 @@ public class ChromAliasBB extends ChromAliasSource {
      */
     public String getChromosomeName(String alias) {
         if(aliasCache.containsKey(alias)) {
-            return aliasCache.get(alias).get("chr");
+            return aliasCache.get(alias).getChr();
         } else {
             try {
                 ChromAlias aliasRecord = search(alias);
                 if(aliasRecord == null) {
                     aliasRecord.put(alias, null);   // Prevents future attempts
                 } else {
-                    return aliasRecord.get("chr");
+                    return aliasRecord.getChr();
                 }
             } catch (IOException e) {
                 // TODO -- log
