@@ -26,5 +26,8 @@ abstract public class ChromAliasSource {
      */
     public void add(ChromAlias chromAlias) {
         aliasCache.put(chromAlias.getChr(), chromAlias);
+        for(String alias : chromAlias.values()) {
+            aliasCache.put(alias, chromAlias);
+        }
     }
 }

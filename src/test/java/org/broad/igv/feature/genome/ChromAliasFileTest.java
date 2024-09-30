@@ -37,7 +37,6 @@ public class ChromAliasFileTest {
         ChromAliasFile chromAliasSource = new ChromAliasFile(path, mockGenome.getChromosomeNames());
         ChromAlias chromAlias =  chromAliasSource.search("1");
         assertEquals(chromAlias.getChr(), "NC_007194.1");
-        assertEquals(chromAlias.get("chr"), "NC_007194.1");
         assertEquals(chromAlias.get("genbank"), "CM000169.1") ;
         assertEquals(chromAlias.get("ncbi"), "1");
         assertEquals(chromAlias.get("ucsc"), "chr1");

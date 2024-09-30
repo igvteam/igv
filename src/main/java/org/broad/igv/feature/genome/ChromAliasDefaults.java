@@ -125,7 +125,7 @@ public class ChromAliasDefaults extends ChromAliasSource {
      */
     @Override
     public String getChromosomeName(String alias) {
-        return this.aliasCache.containsKey(alias) ? this.aliasCache.get(alias).get("chr") : alias;
+        return this.aliasCache.containsKey(alias) ? this.aliasCache.get(alias).getChr() : alias;
     }
 
     /**

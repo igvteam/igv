@@ -34,7 +34,6 @@ public class ChromAliasBBTest {
         String path = "test/data/genomes/GCF_000002655.1.chromAlias.bb";
         ChromAliasSource chromAliasSource = new ChromAliasBB(path, mockGenome);
         ChromAlias chromAlias =  chromAliasSource.search("1");
-        assertEquals(chromAlias.get("chr"), "NC_007194.1");
         assertEquals(chromAlias.get("genbank"), "CM000169.1") ;
         assertEquals(chromAlias.get("ncbi"), "1");
         assertEquals(chromAlias.get("ucsc"), "chr1");
