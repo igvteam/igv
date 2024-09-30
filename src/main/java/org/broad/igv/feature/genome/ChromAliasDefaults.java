@@ -23,6 +23,7 @@ public class ChromAliasDefaults extends ChromAliasSource {
 
             boolean skipRest = false;
             ChromAlias record = new ChromAlias(name);
+            record.put("__CANONICAL__", name);
             aliasRecords.add(record);
 
             //
