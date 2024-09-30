@@ -378,29 +378,36 @@ public class AlignmentDataManager implements IGVEventObserver {
     }
 
     public AlignmentTrack.ExperimentType inferType() {
-        if (this.inferredType != null) {
-            return this.inferredType;
-        }
 
-        ReadStats readStats = new ReadStats();
-        List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
-        for (Alignment a : sample) {
-            readStats.addAlignment(a);
-        }
-        inferredType = readStats.inferType();
+        if (this.inferredType == null) {
+            try {
+                ReadStats readStats = new ReadStats();
+                List<Alignment> sample = AlignmentUtils.firstAlignments(reader, 100);
+                for (Alignment a : sample) {
+                    readStats.addAlignment(a);
+                }
+                inferredType = readStats.inferType();
 
-        if (inferredType == AlignmentTrack.ExperimentType.THIRD_GEN) {
-            return inferredType;
-        } else {
-            // Get a larger sample to distinguish RNA-Seq
-            readStats = new ReadStats();
-            sample = AlignmentUtils.firstAlignments(reader, 2000);
-            for (Alignment a : sample) {
-                readStats.addAlignment(a);
+                if (inferredType == AlignmentTrack.ExperimentType.THIRD_GEN) {
+                    return inferredType;
+                } else {
+                    // Get a larger sample to distinguish RNA-Seq
+                    readStats = new ReadStats();
+                    sample = AlignmentUtils.firstAlignments(reader, 2000);
+                    for (Alignment a : sample) {
+                        readStats.addAlignment(a);
+                    }
+                    inferredType = readStats.inferType();
+                    return inferredType;
+                }
+            } catch (Exception e) {
+                // Ignore errors, inferring alignment type is not essential.
+                log.error("Error inferring alignment type", e);
+                inferredType = AlignmentTrack.ExperimentType.UNKOWN;
             }
-            inferredType = readStats.inferType();
-            return inferredType;
         }
+
+        return inferredType;
     }
 
     private AlignmentTrack.ExperimentType getExperimentType() {

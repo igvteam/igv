@@ -433,7 +433,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         JMenu menu = new JMenu("Genomes");
 
-        loadGenomeFromServerMenuItem = new JMenuItem("Download Hosted Genome...");
+        loadGenomeFromServerMenuItem = new JMenuItem("Select Hosted Genome...");
         loadGenomeFromServerMenuItem.addActionListener(e -> GenomeSelectionDialog.selectGenomesFromServer());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
