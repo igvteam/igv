@@ -39,6 +39,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ObjectCache;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -52,7 +53,7 @@ public class IGVReferenceSource implements CRAMReferenceSource {
 
     @Override
     public byte[] getReferenceBases(SAMSequenceRecord record, boolean tryNameVariants) {
-        return getReferenceBasesByRegion(record, 0,  record.getSequenceLength());
+        return getReferenceBasesByRegion(record, 0, record.getSequenceLength());
     }
 
     @Override
@@ -62,9 +63,11 @@ public class IGVReferenceSource implements CRAMReferenceSource {
         String chrName = currentGenome.getCanonicalChrName(name);
         byte[] bases = currentGenome.getSequence(chrName, zeroBasedStart, zeroBasedStart + requestedRegionLength, true);
 
-        // CRAM spec requires upper case
-        for (int i = 0; i < bases.length; i++) {
-            if (bases[i] >= 97) bases[i] -= 32;
+        if (bases != null) {
+            // CRAM spec requires upper case
+            for (int i = 0; i < bases.length; i++) {
+                if (bases[i] >= 97) bases[i] -= 32;
+            }
         }
         return bases;
     }

@@ -233,7 +233,7 @@ public class AlignmentUtils {
     }
 
 
-    public static List<Alignment> firstAlignments(AlignmentReader reader, int count) {
+    public static List<Alignment> firstAlignments(AlignmentReader reader, int count) throws IOException {
         
         List<Alignment> alignments = new ArrayList<>();
         CloseableIterator<Alignment> iter = null;
@@ -244,12 +244,9 @@ public class AlignmentUtils {
                 alignments.add(iter.next());
             }
             return alignments;
-        } catch (IOException e) {
-
         } finally {
             iter.close();
         }
-        return alignments;
     }
 
 
