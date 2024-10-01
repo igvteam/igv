@@ -569,12 +569,12 @@ public class IGVPreferences {
 
         if (bounds.width > 0 && bounds.height > 0) {
             // check the values of MaxX(x+width) and MaxY(y+width)
-            if(bounds.getMaxY()<300) {
-                bounds.setLocation(bounds.x,0);
-            }
-            if(bounds.getMaxX()<300) {
-                bounds.setLocation(0,bounds.y);
-            }
+//            if(bounds.getMaxY()<300) {
+//                bounds.setLocation(bounds.x,0);
+//            }
+//            if(bounds.getMaxX()<300) {
+//                bounds.setLocation(0,bounds.y);
+//            }
             StringBuffer buffer = new StringBuffer();
             buffer.append(bounds.x);
             buffer.append(",");
