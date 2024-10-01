@@ -286,8 +286,10 @@ public class IGV implements IGVEventObserver {
 
         subscribeToEvents();
 
+
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
-        if (PreferencesManager.getPreferences().getAsInt(AUTOSAVES_TO_KEEP) > 0) {
+
+        if (PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
             int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
             sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
         }
