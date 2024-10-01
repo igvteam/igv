@@ -262,7 +262,7 @@ public class IGV implements IGVEventObserver {
         boolean isNullOrNotContained = true;
 
         if(applicationBounds != null){
-            //iterate the screens and check it whether be in the coordinate
+            //Iterate over each screen value to find if there is currently a screen that can contain these values.
             int userX = applicationBounds.x;
             int userY = applicationBounds.y;
             double userMaxX = applicationBounds.getMaxX();
