@@ -14,20 +14,24 @@ public class BBUtils {
         String table = "";
         String[] lines = str.trim().split("\\R");
         for (String line : lines) {
+            if (line.startsWith("#")) {
+                continue;
+            }
             line = line.trim();
-            if (line.startsWith("table")) {
-                table = line.split("\\s+")[1].trim();
-            } else if (line.startsWith("(")) {
-                startDecoding = true;
-            } else if (line.startsWith(")")) {
-                break;
-            } else if (startDecoding) {
-                if (line.length() > 0) {
-                    //                "    string chrom;       \"Reference sequence chromosome or scaffold\"\n" +
+            if (line.length() > 0) {
+                if (line.startsWith("table")) {
+                    table = line.split("\\s+")[1].trim();
+                } else if (line.startsWith("(")) {
+                    startDecoding = true;
+                } else if (line.startsWith(")")) {
+                    break;
+                } else if (startDecoding) {
                     int idx = line.indexOf(";");
-                    String[] tokens = Globals.whitespacePattern.split(line.substring(0, idx));
-                    String description = line.substring(idx + 1).replace("\"", "").trim();
-                    fields.add(new ASField(tokens[0], tokens[1], description));
+                    if (idx > 0) {
+                        String[] tokens = Globals.whitespacePattern.split(line.substring(0, idx));
+                        String description = line.substring(idx + 1).replace("\"", "").trim();
+                        fields.add(new ASField(tokens[0], tokens[1], description));
+                    }
                 }
             }
         }
