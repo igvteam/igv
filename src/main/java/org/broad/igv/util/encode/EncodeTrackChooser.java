@@ -50,17 +50,19 @@ import com.jidesoft.swing.JideBoxLayout;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.action.BrowseEncodeAction;
 import org.broad.igv.util.Pair;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 /**
  * @author Jim Robinson
  */
-public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
+public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
 
-    private static Logger log = LogManager.getLogger(EncodeFileBrowser.class);
+    private static Logger log = LogManager.getLogger(EncodeTrackChooser.class);
 
-    private static Map<String, EncodeFileBrowser> instanceMap = Collections.synchronizedMap(new HashMap<String, EncodeFileBrowser>());
+    private static Map<String, EncodeTrackChooser> instanceMap = Collections.synchronizedMap(new HashMap<>());
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
     private JButton cancelButton;
@@ -79,76 +81,127 @@ public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
     private boolean canceled;
 
 
-    public synchronized static EncodeFileBrowser getInstance(String genomeId) throws IOException {
+    public synchronized static EncodeTrackChooser getInstance(String genomeId, BrowseEncodeAction.Type type) throws IOException {
 
-        String encodeGenomeId = getEncodeGenomeId(genomeId);
-        EncodeFileBrowser instance = instanceMap.get(encodeGenomeId);
+        String encodeGenomeId = getEncodeGenomeID(genomeId);
+        String key = encodeGenomeId + type.toString();
+        EncodeTrackChooser instance = instanceMap.get(key);
         if (instance == null) {
-            Pair<String [], List<EncodeFileRecord>> records = getEncodeFileRecords(encodeGenomeId);
+            Pair<String[], List<EncodeFileRecord>> records = getEncodeFileRecords(encodeGenomeId, type);
             if (records == null) {
                 return null;
             }
             Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-            instance = new EncodeFileBrowser(parent, new EncodeTableModel(records.getFirst(), records.getSecond()));
-            instanceMap.put(encodeGenomeId, instance);
+            final String[] headings = records.getFirst();
+            final List<EncodeFileRecord> rows = records.getSecond();
+            instance = new EncodeTrackChooser(parent, new EncodeTableModel(headings, rows));
+            instanceMap.put(key, instance);
         }
 
         return instance;
     }
 
-    static HashSet<String> supportedGenomes = new HashSet<String>(Arrays.asList("hg19", "mm9"));
+    static HashSet<String> ucscSupportedGenomes = new HashSet<>(Arrays.asList("hg19", "mm9"));
+
+    public static boolean genomeSupportedUCSC(String genomeId) {
+        return genomeId != null && ucscSupportedGenomes.contains(getEncodeGenomeID(genomeId));
+    }
+
+    static HashSet<String> supportedGenomes = new HashSet<>(
+            Arrays.asList("ce10", "ce11", "dm3", "dm6", "GRCh38", "hg19", "mm10", "mm9"));
+
     public static boolean genomeSupported(String genomeId) {
-          return genomeId != null && supportedGenomes.contains(getEncodeGenomeId(genomeId));
+        return genomeId != null && supportedGenomes.contains(getEncodeGenomeID(genomeId));
     }
 
-    private static String getEncodeGenomeId(String genomeId) {
-        if (genomeId.equals("b37") || genomeId.equals("1kg_v37")) return "hg19";
-        else return genomeId;
+    private static String getEncodeGenomeID(String genomeId) {
+        switch (genomeId) {
+            case "hg38":
+            case "hg38_1kg":
+                return "GRCh38";
+            case "b37":
+            case "1kg_v37":
+                return "hg19";
+            default:
+                return genomeId;
+        }
+
     }
 
-    private static Pair<String [], List<EncodeFileRecord>> getEncodeFileRecords(String genomeId) throws IOException {
+    private static Pair<String[], List<EncodeFileRecord>> getEncodeFileRecords(String genomeId, BrowseEncodeAction.Type type) throws IOException {
 
-        InputStream is = null;
-
-        try {
-
-            is = EncodeFileBrowser.class.getResourceAsStream("encode." + genomeId + ".txt");
+        try (InputStream is = getStreamFor(genomeId, type)) {
             if (is == null) {
                 return null;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-            String[] headers = Globals.tabPattern.split(reader.readLine());
-
-            List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                if (!nextLine.startsWith("#")) {
-
-                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                    String path = tokens[0];
-
-                    Map<String, String> attributes = new HashMap<String, String>();
-                    for (int i = 0; i < headers.length; i++) {
-                        String value = i < tokens.length ? tokens[i] : "";
-                        if (value.length() > 0) {
-                            attributes.put(headers[i], value);
-                        }
-                    }
-                    final EncodeFileRecord record = new EncodeFileRecord(path, attributes);
-                    if(record.hasMetaData()) records.add(record);
-
-                }
-
-            }
-            return new Pair(headers, records);
-        } finally {
-            if (is != null) is.close();
+            return parseRecords(is);
         }
     }
 
+    private static InputStream getStreamFor(String genomeId, BrowseEncodeAction.Type type) throws IOException {
+        if (type == BrowseEncodeAction.Type.UCSC) {
+            return EncodeTrackChooser.class.getResourceAsStream("encode." + genomeId + ".txt");
+        } else {
+            String root = "https://s3.amazonaws.com/igv.org.app/encode/" + genomeId + ".";
+            String url = null;
+            switch (type) {
+                case SIGNALS_CHIP:
+                    url = root + "signals.chip.txt";
+                    break;
+                case SIGNALS_OTHER:
+                    url = root + "signals.other.txt";
+                    break;
+                case OTHER:
+                    url = root + "other.txt";
+                    break;
+            }
+            if(url == null) {
+                throw new RuntimeException("Unknown encode data collection type: " + type.toString());
+            }
+            return ParsingUtils.openInputStream(url);
+        }
+    }
 
-    private EncodeFileBrowser(Frame owner, EncodeTableModel model) {
+    /*
+     * rowHandler: row => {
+     * const name = constructName(row)
+     * const url = `https://www.encodeproject.org${row['HREF']}`
+     * const color = colorForTarget(row['Target'])
+     * return {name, url, color}
+     * }
+     */
+
+    private static Pair parseRecords(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+        String[] headers = Globals.tabPattern.split(reader.readLine());
+
+        List<EncodeFileRecord> records = new ArrayList<>(20000);
+        String nextLine;
+        while ((nextLine = reader.readLine()) != null) {
+            if (!nextLine.startsWith("#")) {
+
+                String[] tokens = Globals.tabPattern.split(nextLine, -1);
+                String path = tokens[0];
+
+                Map<String, String> attributes = new HashMap<>();
+                for (int i = 0; i < headers.length; i++) {
+                    String value = i < tokens.length ? tokens[i] : "";
+                    if (value.length() > 0) {
+                        attributes.put(headers[i], value);
+                    }
+                }
+                final EncodeFileRecord record = new EncodeFileRecord(path, attributes);
+                if (record.hasMetaData()) records.add(record);
+
+            }
+
+        }
+        return new Pair(headers, records);
+    }
+
+
+    private EncodeTrackChooser(Frame owner, EncodeTableModel model) {
         super(owner);
         this.model = model;
         setModal(true);
@@ -263,14 +316,14 @@ public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
 
     private class RegexFilter extends RowFilter {
 
-        List<Pair <String, Matcher>> matchers;
+        List<Pair<String, Matcher>> matchers;
 
         RegexFilter(String text) {
 
             if (text == null) {
                 throw new IllegalArgumentException("Pattern must be non-null");
             }
-            matchers = new ArrayList<Pair <String, Matcher>>();
+            matchers = new ArrayList<Pair<String, Matcher>>();
             String[] tokens = Globals.whitespacePattern.split(text);
             for (String t : tokens) {
                 // If token contains an = sign apply to specified column only
@@ -438,7 +491,7 @@ public class EncodeFileBrowser extends org.broad.igv.ui.IGVDialog  {
 
 
     public static void main(String[] args) throws IOException {
-        getInstance("hg19").setVisible(true);
+        getInstance("hg19", BrowseEncodeAction.Type.UCSC).setVisible(true);
     }
 
 }

@@ -32,7 +32,7 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.encode.EncodeFileBrowser;
+import org.broad.igv.util.encode.EncodeTrackChooser;
 import org.broad.igv.util.encode.EncodeFileRecord;
 
 import java.awt.*;
@@ -50,6 +50,13 @@ import java.util.Map;
  */
 public class BrowseEncodeAction extends MenuAction {
 
+
+    public enum Type {
+        UCSC,
+        SIGNALS_CHIP,
+        SIGNALS_OTHER,
+        OTHER
+    }
     private static Logger log = LogManager.getLogger(BrowseEncodeAction.class);
 
     private static Map<String, Color> colors;
@@ -66,11 +73,13 @@ public class BrowseEncodeAction extends MenuAction {
         colors.put("H3K9ME1", new Color(100, 0, 0));
     }
 
+    private final Type type;
 
     IGV igv;
 
-    public BrowseEncodeAction(String label, int mnemonic, IGV igv) {
+    public BrowseEncodeAction(String label, int mnemonic, Type type, IGV igv) {
         super(label, null, mnemonic);
+        this.type = type;
         this.igv = igv;
     }
 
@@ -81,17 +90,17 @@ public class BrowseEncodeAction extends MenuAction {
         String[] visibleAttributes = {"dataType", "cell", "antibody", "lab"};
         try {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            EncodeFileBrowser browser = EncodeFileBrowser.getInstance(genome.getId());
+            EncodeTrackChooser chooser = EncodeTrackChooser.getInstance(genome.getId(), this.type);
 
-            if (browser == null) {
+            if (chooser == null) {
                 MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
                 return;
             }
 
-            browser.setVisible(true);
-            if (browser.isCanceled()) return;
+            chooser.setVisible(true);
+            if (chooser.isCanceled()) return;
 
-            java.util.List<EncodeFileRecord> records = browser.getSelectedRecords();
+            java.util.List<EncodeFileRecord> records = chooser.getSelectedRecords();
             if (records.size() > 0) {
                 List<ResourceLocator> locators = new ArrayList<ResourceLocator>(records.size());
                 for (EncodeFileRecord record : records) {

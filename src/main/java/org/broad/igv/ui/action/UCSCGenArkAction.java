@@ -26,26 +26,17 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.table.SearchableTableDialog;
 import org.broad.igv.ui.table.SearchableTableModel;
 import org.broad.igv.ui.table.SearchableTableRecord;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.encode.EncodeFileBrowser;
-import org.broad.igv.util.encode.EncodeFileRecord;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
