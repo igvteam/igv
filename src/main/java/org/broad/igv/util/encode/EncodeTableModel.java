@@ -68,7 +68,7 @@ public class EncodeTableModel extends AbstractTableModel {
     private List<EncodeFileRecord> records;
     private final TableRowSorter<EncodeTableModel> sorter;
 
-    public EncodeTableModel(String [] headings, List<EncodeFileRecord> records) {
+    public EncodeTableModel(List<String> headings, List<EncodeFileRecord> records) {
 
         this.records = records;
 

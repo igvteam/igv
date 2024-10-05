@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
@@ -87,12 +88,12 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         String key = encodeGenomeId + type.toString();
         EncodeTrackChooser instance = instanceMap.get(key);
         if (instance == null) {
-            Pair<String[], List<EncodeFileRecord>> records = getEncodeFileRecords(encodeGenomeId, type);
+            Pair<List<String>, List<EncodeFileRecord>> records = getEncodeFileRecords(encodeGenomeId, type);
             if (records == null) {
                 return null;
             }
             Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-            final String[] headings = records.getFirst();
+            final List<String> headings = records.getFirst();
             final List<EncodeFileRecord> rows = records.getSecond();
             instance = new EncodeTrackChooser(parent, new EncodeTableModel(headings, rows));
             instanceMap.put(key, instance);
@@ -128,13 +129,13 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
 
     }
 
-    private static Pair<String[], List<EncodeFileRecord>> getEncodeFileRecords(String genomeId, BrowseEncodeAction.Type type) throws IOException {
+    private static Pair<List<String>, List<EncodeFileRecord>> getEncodeFileRecords(String genomeId, BrowseEncodeAction.Type type) throws IOException {
 
         try (InputStream is = getStreamFor(genomeId, type)) {
             if (is == null) {
                 return null;
             }
-            return parseRecords(is);
+            return parseRecords(is, type);
         }
     }
 
@@ -171,10 +172,14 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
      * }
      */
 
-    private static Pair parseRecords(InputStream is) throws IOException {
+    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", 	"HREF", "path"));
+
+    private static Pair parseRecords(InputStream is, BrowseEncodeAction.Type type) throws IOException {
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
         String[] headers = Globals.tabPattern.split(reader.readLine());
+        int pathColumn = type == BrowseEncodeAction.Type.UCSC ? 0 : Arrays.asList(headers).indexOf("HREF");
 
         List<EncodeFileRecord> records = new ArrayList<>(20000);
         String nextLine;
@@ -182,7 +187,7 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
             if (!nextLine.startsWith("#")) {
 
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                String path = tokens[0];
+                String path = tokens[pathColumn];
 
                 Map<String, String> attributes = new HashMap<>();
                 for (int i = 0; i < headers.length; i++) {
@@ -192,12 +197,14 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
                     }
                 }
                 final EncodeFileRecord record = new EncodeFileRecord(path, attributes);
-                if (record.hasMetaData()) records.add(record);
+                records.add(record);
 
             }
-
         }
-        return new Pair(headers, records);
+
+        List<String> filteredHeaders = Arrays.stream(headers).filter(h -> !filteredColumns.contains(h)).collect(Collectors.toList());
+
+        return new Pair(filteredHeaders, records);
     }
 
 

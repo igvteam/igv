@@ -415,10 +415,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private void addEncodeItems(List<JComponent> menuItems, String genomeId) {
 
         JSeparator separator = new JSeparator();
-        encodeMenuItems.add(separator);
+        menuItems.add(separator);
 
-        JMenuItem encodeLabel = new JMenuItem("ENCODE");
-        encodeLabel.setEnabled(false);
+        JLabel encodeLabel = new JLabel("   ENCODE");
+        encodeLabel.setForeground(Color.BLUE);
         menuItems.add(encodeLabel);
 
         // Post 2012 ENCODE menu
