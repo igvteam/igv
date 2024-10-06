@@ -63,7 +63,7 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.util.encode.EncodeTrackChooser;
+import org.broad.igv.encode.EncodeTrackChooser;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;

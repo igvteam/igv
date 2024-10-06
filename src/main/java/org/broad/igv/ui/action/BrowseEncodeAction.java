@@ -32,8 +32,8 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.encode.EncodeTrackChooser;
-import org.broad.igv.util.encode.EncodeFileRecord;
+import org.broad.igv.encode.EncodeTrackChooser;
+import org.broad.igv.encode.EncodeFileRecord;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -57,6 +57,7 @@ public class BrowseEncodeAction extends MenuAction {
         SIGNALS_OTHER,
         OTHER
     }
+
     private static Logger log = LogManager.getLogger(BrowseEncodeAction.class);
 
     private static Map<String, Color> colors;
@@ -87,7 +88,6 @@ public class BrowseEncodeAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent event) {
 
-        String[] visibleAttributes = {"dataType", "cell", "antibody", "lab"};
         try {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
             EncodeTrackChooser chooser = EncodeTrackChooser.getInstance(genome.getId(), this.type);
@@ -102,22 +102,27 @@ public class BrowseEncodeAction extends MenuAction {
 
             java.util.List<EncodeFileRecord> records = chooser.getSelectedRecords();
             if (records.size() > 0) {
-                List<ResourceLocator> locators = new ArrayList<ResourceLocator>(records.size());
+                List<ResourceLocator> locators = new ArrayList<>(records.size());
                 for (EncodeFileRecord record : records) {
+
                     ResourceLocator rl = new ResourceLocator(record.getPath());
                     rl.setName(record.getTrackName());
 
-                    final String antibody = record.getAttributeValue("antibody");
+                    Map<String, String> attributes = record.getAttributes();
+
+                    String antibody = attributes.containsKey("antibody") ? attributes.get("antibody"):  attributes.get("Target");
                     if (antibody != null) {
                         rl.setColor(colors.get(antibody.toUpperCase()));
                     }
 
-                    for (String name : visibleAttributes) {
-                        String value = record.getAttributeValue(name);
-                        if (value != null) {
-                            AttributeManager.getInstance().addAttribute(rl.getName(), name, value);
+                    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                        String value = entry.getValue();
+                        if(value != null && value.length() > 0) {
+                            AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
                         }
                     }
+
+                    rl.setMetadata(attributes);
 
                     locators.add(rl);
                 }

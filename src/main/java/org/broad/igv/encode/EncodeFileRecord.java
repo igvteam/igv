@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.util.encode;
+package org.broad.igv.encode;
 
 import java.io.File;
 import java.util.Collection;
@@ -70,11 +70,8 @@ public class EncodeFileRecord {
         return attributes.keySet();
     }
 
-    public boolean containsText(String filter) {
-        for (String value : attributes.values()) {
-            if (value.contains(filter)) return true;
-        }
-        return false;
+    public Map<String, String> getAttributes() {
+        return attributes;
     }
 
     boolean isSelected() {
@@ -108,14 +105,4 @@ public class EncodeFileRecord {
 
     }
 
-    /**
-     * Test if record has a eough of meta-data to be interpretable
-     *
-     * @return
-     */
-    public boolean hasMetaData() {
-
-        return  (attributes.containsKey("cell")) || (attributes.containsKey("antibody"));
-
-    }
 }

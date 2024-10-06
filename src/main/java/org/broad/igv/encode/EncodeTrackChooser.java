@@ -27,7 +27,7 @@
  * Created by JFormDesigner on Thu Oct 31 22:31:02 EDT 2013
  */
 
-package org.broad.igv.util.encode;
+package org.broad.igv.encode;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -50,6 +50,8 @@ import javax.swing.text.NumberFormatter;
 import com.jidesoft.swing.JideBoxLayout;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.BrowseEncodeAction;
 import org.broad.igv.util.Pair;
@@ -82,6 +84,14 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
     private boolean canceled;
 
 
+    /**
+     * Return a new or cached instance of a track chooser for the given genome and type.
+     *
+     * @param genomeId
+     * @param type
+     * @return
+     * @throws IOException
+     */
     public synchronized static EncodeTrackChooser getInstance(String genomeId, BrowseEncodeAction.Type type) throws IOException {
 
         String encodeGenomeId = getEncodeGenomeID(genomeId);
@@ -115,6 +125,18 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         return genomeId != null && supportedGenomes.contains(getEncodeGenomeID(genomeId));
     }
 
+    private static Map<String, String> speciesNames = Map.of(
+            "ce10", "Caenorhabditis elegans",
+            "ce11", "Caenorhabditis elegans",
+            "dm3", "Drosophila melanogaster",
+            "dm6", "Drosophila melanogaster",
+            "GRCh38", "Homo sapiens",
+            "hg19", "Homo sapiens",
+            "mm10", "Mus musculus",
+            "mm9", "Mus musculus"
+    );
+
+
     private static String getEncodeGenomeID(String genomeId) {
         switch (genomeId) {
             case "hg38":
@@ -135,7 +157,7 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
             if (is == null) {
                 return null;
             }
-            return parseRecords(is, type);
+            return parseRecords(is, type, genomeId);
         }
     }
 
@@ -143,7 +165,7 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         if (type == BrowseEncodeAction.Type.UCSC) {
             return EncodeTrackChooser.class.getResourceAsStream("encode." + genomeId + ".txt");
         } else {
-            String root = "https://s3.amazonaws.com/igv.org.app/encode/" + genomeId + ".";
+            String root = PreferencesManager.getPreferences().get(Constants.ENCODE_FILELIST_URL) + genomeId + ".";
             String url = null;
             switch (type) {
                 case SIGNALS_CHIP:
@@ -156,8 +178,8 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
                     url = root + "other.txt";
                     break;
             }
-            if(url == null) {
-                throw new RuntimeException("Unknown encode data collection type: " + type.toString());
+            if (url == null) {
+                throw new RuntimeException("Unknown encode data collection type: " + type);
             }
             return ParsingUtils.openInputStream(url);
         }
@@ -172,13 +194,15 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
      * }
      */
 
-    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", 	"HREF", "path"));
+    private static String ENCODE_HOST = "https://www.encodeproject.org";
+    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", "HREF", "path"));
 
-    private static Pair parseRecords(InputStream is, BrowseEncodeAction.Type type) throws IOException {
+    private static Pair parseRecords(InputStream is, BrowseEncodeAction.Type type, String genomeId) throws IOException {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
         String[] headers = Globals.tabPattern.split(reader.readLine());
+
         int pathColumn = type == BrowseEncodeAction.Type.UCSC ? 0 : Arrays.asList(headers).indexOf("HREF");
 
         List<EncodeFileRecord> records = new ArrayList<>(20000);
@@ -187,13 +211,13 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
             if (!nextLine.startsWith("#")) {
 
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                String path = tokens[pathColumn];
+                String path = type == BrowseEncodeAction.Type.UCSC ? tokens[pathColumn] : ENCODE_HOST + tokens[pathColumn];
 
-                Map<String, String> attributes = new HashMap<>();
+                Map<String, String> attributes = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
                     String value = i < tokens.length ? tokens[i] : "";
                     if (value.length() > 0) {
-                        attributes.put(headers[i], value);
+                        attributes.put(headers[i], shortenField(value, genomeId));
                     }
                 }
                 final EncodeFileRecord record = new EncodeFileRecord(path, attributes);
@@ -205,6 +229,13 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         List<String> filteredHeaders = Arrays.stream(headers).filter(h -> !filteredColumns.contains(h)).collect(Collectors.toList());
 
         return new Pair(filteredHeaders, records);
+    }
+
+    private static String shortenField(String value, String genomeId) {
+        String species = speciesNames.get(genomeId);
+        return species == null ?
+                value :
+                value.replace("(" + species + ")", "").replace(species, "").trim();
     }
 
 
@@ -495,7 +526,6 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         setSize(700, 620);
         setLocationRelativeTo(getOwner());
     }
-
 
     public static void main(String[] args) throws IOException {
         getInstance("hg19", BrowseEncodeAction.Type.UCSC).setVisible(true);

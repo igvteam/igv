@@ -166,7 +166,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         // Use local graphics -- this method corrupts graphics context when exporting to "png" files
         Graphics2D graphics = (Graphics2D) g.create();
 
-        Font font = FontManager.getFont(fontSize);
+        Font font = FontManager.getFont(getFontSize());
 
         boolean visible = isVisible();
 
@@ -421,10 +421,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public String getNameValueString(int y) {
+    public String getTooltipText(int y) {
         CodonTable explicitlySelectedTable = CodonTableManager.getInstance().getCurrentCodonTable();
         if (explicitlySelectedTable != null) {
-            String nvs = "<html>" + super.getNameValueString(y);
+            String nvs = "<html>" + super.getTooltipText(y);
             nvs += "<br>Translation Table: ";
             nvs += explicitlySelectedTable.getDisplayName();
             return nvs;

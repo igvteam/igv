@@ -304,6 +304,9 @@ final public class Constants {
     public static final String CIRC_VIEW_PORT = "CIRC_VIEW_PORT";
     public static final String CIRC_VIEW_HOST = "CIRC_VIEW_HOST";
 
+    // Misc URLS
+    public static final String ENCODE_FILELIST_URL = "ENCODE_FILELIST_URL";
+
 
     /**
      * List of keys that affect the alignments loaded.  This list is used to trigger a reload, if required.

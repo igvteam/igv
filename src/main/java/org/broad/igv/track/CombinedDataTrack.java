@@ -24,8 +24,8 @@ public class CombinedDataTrack extends DataSourceTrack {
 
         super.marshalXML(document, element);
 
-        element.setAttribute("track1", ((CombinedDataSource) dataSource).getTrackl().id);
-        element.setAttribute("track2", ((CombinedDataSource) dataSource).getTrack2().id);
+        element.setAttribute("track1", ((CombinedDataSource) dataSource).getTrackl().getId());
+        element.setAttribute("track2", ((CombinedDataSource) dataSource).getTrack2().getId());
         element.setAttribute("op", ((CombinedDataSource) dataSource).getOperation().toString());
 
 

@@ -294,6 +294,8 @@ CIRC_VIEW_PORT	CircView port	integer	60152
 
 #Hidden
 
+ENCODE_FILELIST_URL	https://s3.amazonaws.com/igv.org.app/encode/
+
 PROVISIONING_URL_DEFAULT	https://igv.org/services/desktop_google
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE
 SAM.JUNCTION_MIN_FLANKING_WIDTH	0

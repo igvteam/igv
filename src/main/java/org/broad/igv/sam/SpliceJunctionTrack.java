@@ -31,9 +31,6 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SpliceJunctionFeature;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -108,8 +105,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     @Override
     public String getSample() {
-        if (sampleId != null) {
-            return sampleId;    // Explicitly set sample ID (e.g. from server load XML)
+        if (getSampleId() != null) {
+            return getSampleId();    // Explicitly set sample ID (e.g. from server load XML)
         }
         return alignmentTrack.getSample();
     }

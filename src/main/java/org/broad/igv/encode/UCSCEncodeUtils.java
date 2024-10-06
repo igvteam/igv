@@ -23,15 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.util.encode;
+package org.broad.igv.encode;
 
 import org.broad.igv.Globals;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 
-import java.awt.*;
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -42,88 +40,30 @@ import java.util.List;
  */
 public class UCSCEncodeUtils {
 
-    static HashSet<String> labs = new HashSet<String>();
-    static HashSet<String> dataTypes = new HashSet<String>();
-    static HashSet<String> cells = new HashSet<String>();
-    static HashSet<String> antibodies = new HashSet<String>();
-    static HashSet<String> fileTypes = new HashSet<String>();
-    static HashSet<String> allHeaders = new LinkedHashSet<String>();
+    private static Set<String> labs = new HashSet<>();
+    private static Set<String> dataTypes = new HashSet<>();
+    private static Set<String> cells = new HashSet<>();
+    private static Set<String> antibodies = new HashSet<>();
+    private static Set<String> fileTypes = new HashSet<>();
+    private static Set<String> allHeaders = new LinkedHashSet<>();
 
     private static List<String> rnaChipQualifiers = Arrays.asList("CellTotal", "Longnonpolya", "Longpolya",
             "NucleolusTotal", "ChromatinTotal", "ChromatinTotal", "NucleoplasmTotal");
 
     public static void main(String[] args) throws IOException {
 
-
-//        List<EncodeFileRecord> records = new ArrayList();
-//        parseFilesDotTxt(args[0], records);
-//        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(args[1])));
-//
-//        pw.print("path");
-//        for (String h : EncodeTableModel.columnHeadings) {
-//            pw.print("\t");
-//            pw.print(h);
-//        }
-//        pw.println();
-//
-//        for (EncodeFileRecord rec : records) {
-//            pw.print(rec.getPath());
-//            for (String h : EncodeTableModel.columnHeadings) {
-//                pw.print("\t");
-//                String value = rec.getAttributeValue(h);
-//                pw.print(value == null ? "" : value);
-//            }
-//            pw.println();
-//        }
-//        pw.close();
-
         updateEncodeTableFile(args[0], args[1]);
 
     }
 
-    private static List<EncodeFileRecord> parseTableFile(String url) throws IOException {
-
-        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>(20000);
-
-        BufferedReader reader = null;
-
-        try {
-            reader = ParsingUtils.openBufferedReader(url);
-
-            String[] headers = Globals.tabPattern.split(reader.readLine());
-
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                if (!nextLine.startsWith("#")) {
-                    String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                    String path = tokens[0];
-                    Map<String, String> attributes = new HashMap<String, String>();
-                    for (int i = 0; i < headers.length; i++) {
-                        String value = tokens[i];
-                        if (value.length() > 0) {
-                            attributes.put(headers[i], value);
-                        }
-                    }
-                    records.add(new EncodeFileRecord(path, attributes));
-                }
-
-            }
-            return records;
-        } finally {
-            reader.close();
-        }
-    }
 
     static String[] columnHeadings = {"cell", "dataType", "antibody", "view", "replicate", "type", "lab"};
 
     private static void updateEncodeTableFile(String inputFile, String outputFile) throws IOException {
 
-        List<EncodeFileRecord> records = new ArrayList<EncodeFileRecord>();
+        List<EncodeFileRecord> records = new ArrayList<>();
 
-        BufferedReader reader = null;
-        try {
-            reader = ParsingUtils.openBufferedReader(inputFile);
-
+        try (BufferedReader reader = ParsingUtils.openBufferedReader(inputFile)) {
             String rootPath = reader.readLine();
 
             String hub = null;
@@ -131,56 +71,48 @@ public class UCSCEncodeUtils {
             while ((nextLine = reader.readLine()) != null) {
 
                 if (nextLine.startsWith("#")) {
-                    if (nextLine.startsWith("#hub=")) {
-                        hub = nextLine.substring(5);
-                    }
+                    hub = nextLine.startsWith("#hub=") ? nextLine.substring(5) : hub;
                 } else {
                     String dir = nextLine.equals(".") ? rootPath : rootPath + nextLine;
                     String filesDotTxt = dir + "/files.txt";
-                    try {
-                        if (HttpUtils.getInstance().resourceAvailable(filesDotTxt)) {
+                    if (HttpUtils.getInstance().resourceAvailable(filesDotTxt)) {
+                        try {
                             parseFilesDotTxt(filesDotTxt, records);
+                        } catch (IOException e) {
+                            // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
-                    } catch (IOException e) {
-                        // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
 
             }
-            for (String dt : fileTypes) System.out.println(dt);
-
+            fileTypes.forEach(System.out::println);
 
             outputRecords(outputFile, records, hub);
-        } finally {
-            reader.close();
         }
     }
 
     private static void outputRecords(String outputFile, List<EncodeFileRecord> records, String hub) throws IOException {
-        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
-        pw.print("path");
-        for (String h : columnHeadings) {
-            pw.print("\t");
-            pw.print(h);
-        }
-        if (hub != null) {
-            pw.print("\thub");
-        }
-        pw.println();
-
-        for (EncodeFileRecord rec : records) {
-            pw.print(rec.getPath());
+        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)))) {
+            StringBuilder sb = new StringBuilder("path");
             for (String h : columnHeadings) {
-                pw.print("\t");
-                String value = rec.getAttributeValue(h);
-                pw.print(value == null ? "" : value);
+                sb.append("\t").append(h);
             }
             if (hub != null) {
-                pw.print("\t" + hub);
+                sb.append("\thub");
             }
-            pw.println();
+            pw.println(sb.toString());
+
+            for (EncodeFileRecord rec : records) {
+                sb = new StringBuilder(rec.getPath());
+                for (String h : columnHeadings) {
+                    sb.append("\t").append(Optional.ofNullable(rec.getAttributeValue(h)).orElse(""));
+                }
+                if (hub != null) {
+                    sb.append("\t").append(hub);
+                }
+                pw.println(sb.toString());
+            }
         }
-        pw.close();
     }
 
     static HashSet knownFileTypes = new HashSet(Arrays.asList(

@@ -123,7 +123,11 @@ public class ResourceLocator {
 
     String sampleId;
 
-    private HashMap attributes = new HashMap();
+
+    /**
+     * Track metadata.  Primarily for generating description and popup text.
+     */
+    private Map<String, String> metadata;
     private boolean indexed;
     private boolean dataURL;
 
@@ -622,6 +626,13 @@ public class ResourceLocator {
         return trixURL;
     }
 
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }
 
     public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
         String trackPath = trackConfig.url;
