@@ -243,21 +243,52 @@ public class IGV implements IGVEventObserver {
         mainFrame.setMinimumSize(new Dimension(300, 300));
 
         // Set the application's previous location and size
+        // get the current main screen bounds
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle applicationBounds = preferences.getApplicationFrameBounds();
 
-        if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
-                applicationBounds.getMaxY() > screenBounds.getHeight() ||
-                applicationBounds.width == 0 || applicationBounds.height == 0) {
-            int width = Math.min(1150, (int) screenBounds.getWidth());
-            int height = Math.min(800, (int) screenBounds.getHeight());
-            applicationBounds = new Rectangle(0, 0, width, height);
+        // get info of all screens and store them into the array
+        GraphicsEnvironment graphEnv = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] graphDev = graphEnv.getScreenDevices();
+        Rectangle[] boundsArr = new Rectangle[graphDev.length];
+
+        for (int i=0;i<graphDev.length;++i) {
+            GraphicsConfiguration curCon = graphDev[i].getDefaultConfiguration();
+            boundsArr[i] = curCon.getBounds();
+        }
+
+        //set a flag which indicates if the user preference is empty, or if the (x,y) in the user preference is not contained in any screen
+        //default is empty or not contained
+        boolean isNullOrNotContained = true;
+
+        if(applicationBounds != null){
+            //Iterate over each screen value to find if there is currently a screen that can contain these values.
+            int userX = applicationBounds.x;
+            int userY = applicationBounds.y;
+            double userMaxX = applicationBounds.getMaxX();
+            double userMaxY = applicationBounds.getMaxY();
+            for(Rectangle curScreen : boundsArr){
+                if(curScreen.contains(userX,userY)){
+                    isNullOrNotContained = false;
+                    if( userMaxX >= curScreen.getMaxX() || userMaxY >= curScreen.getMaxY()){
+                        applicationBounds = new Rectangle(curScreen.x,curScreen.y,Math.min(1150,curScreen.width),Math.min(800,curScreen.height));
+                    }
+                    break;
+                }
+            }
+        }
+        if(isNullOrNotContained){
+            // user's preference is null or the (x,y) in user's preference is not contained in any screen
+            // set the application to the main screen
+            applicationBounds = new Rectangle(0, 0, Math.min(1150,screenBounds.width), Math.min(800,screenBounds.height));
         }
         mainFrame.setBounds(applicationBounds);
 
         subscribeToEvents();
 
+
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
+
         if (PreferencesManager.getPreferences().getAsInt(Constants.AUTOSAVES_TO_KEEP) > 0) {
             int timerDelay = PreferencesManager.getPreferences().getAsInt(AUTOSAVE_FREQUENCY) * 60000; // Convert timer delay to ms
             sessionAutosaveTimer.scheduleAtFixedRate(new AutosaveTimerTask(this), timerDelay, timerDelay);
