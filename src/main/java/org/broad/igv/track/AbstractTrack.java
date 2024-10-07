@@ -856,7 +856,7 @@ public abstract class AbstractTrack implements Track {
         buffer.append("<html>" + getName());
 
         Map<String, String> metadata = resourceLocator.getMetadata();
-        if(metadata.size() > 0) {
+        if(metadata != null && metadata.size() > 0) {
             for(Map.Entry<String, String> entry : metadata.entrySet()) {
                 String value = entry.getValue();
                 if(value != null && value.length() > 0) {
