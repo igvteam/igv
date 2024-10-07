@@ -39,7 +39,7 @@ public class GenomeListManager {
 
     public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
-            "https://igv.org/genomes/hg38/hg38.json",
+            "https://igv.org/genomes/json/hg38.json",
             "hg38");
 
     private Map<String, GenomeListItem> genomeItemMap;
