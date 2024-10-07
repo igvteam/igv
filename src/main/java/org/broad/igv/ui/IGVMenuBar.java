@@ -418,7 +418,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(separator);
 
         JLabel encodeLabel = new JLabel("   ENCODE");
-        encodeLabel.setForeground(Color.BLUE);
+        encodeLabel.setFont(encodeLabel.getFont().deriveFont(Font.BOLD));
         menuItems.add(encodeLabel);
 
         // Post 2012 ENCODE menu
@@ -431,7 +431,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
          encodeMenuItems.add(otherSignalsItem);
 
         JMenuItem otherItem = new JMenuItem();
-        otherItem.setAction(new BrowseEncodeAction("Peaks and Other", 0, BrowseEncodeAction.Type.OTHER, igv));
+        otherItem.setAction(new BrowseEncodeAction("Other (peaks, calls, ...)", 0, BrowseEncodeAction.Type.OTHER, igv));
         encodeMenuItems.add(otherItem);
 
         for(JComponent item : encodeMenuItems) {

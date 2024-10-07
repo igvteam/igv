@@ -30,18 +30,19 @@ import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.encode.EncodeTrackChooser;
 import org.broad.igv.encode.EncodeFileRecord;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author jrobinso
@@ -74,6 +75,9 @@ public class BrowseEncodeAction extends MenuAction {
         colors.put("H3K9ME1", new Color(100, 0, 0));
     }
 
+    static Set<String> sampleInfoAttributes = new HashSet<>(Arrays.asList(
+            "dataType", "cell", "antibody", "lab", "Biosample", "AssayType", "Target"));
+
     private final Type type;
 
     IGV igv;
@@ -88,50 +92,66 @@ public class BrowseEncodeAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent event) {
 
-        try {
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            EncodeTrackChooser chooser = EncodeTrackChooser.getInstance(genome.getId(), this.type);
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
-            if (chooser == null) {
-                MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
-                return;
+        final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+        SwingWorker worker = new SwingWorker<EncodeTrackChooser, Void>() {
+            @Override
+            protected EncodeTrackChooser doInBackground() throws Exception {
+                return EncodeTrackChooser.getInstance(genome.getId(), BrowseEncodeAction.this.type);
             }
 
-            chooser.setVisible(true);
-            if (chooser.isCanceled()) return;
-
-            java.util.List<EncodeFileRecord> records = chooser.getSelectedRecords();
-            if (records.size() > 0) {
-                List<ResourceLocator> locators = new ArrayList<>(records.size());
-                for (EncodeFileRecord record : records) {
-
-                    ResourceLocator rl = new ResourceLocator(record.getPath());
-                    rl.setName(record.getTrackName());
-
-                    Map<String, String> attributes = record.getAttributes();
-
-                    String antibody = attributes.containsKey("antibody") ? attributes.get("antibody"):  attributes.get("Target");
-                    if (antibody != null) {
-                        rl.setColor(colors.get(antibody.toUpperCase()));
+            @Override
+            protected void done() {
+                WaitCursorManager.removeWaitCursor(token);
+                try {
+                    EncodeTrackChooser chooser = get();
+                    if (chooser == null) {
+                        MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
+                        return;
                     }
 
-                    for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                        String value = entry.getValue();
-                        if(value != null && value.length() > 0) {
-                            AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
+                    chooser.setVisible(true);
+                    if (chooser.isCanceled()) return;
+
+                    java.util.List<EncodeFileRecord> records = chooser.getSelectedRecords();
+                    if (records.size() > 0) {
+                        List<ResourceLocator> locators = new ArrayList<>(records.size());
+                        for (EncodeFileRecord record : records) {
+
+                            ResourceLocator rl = new ResourceLocator(record.getPath());
+                            rl.setName(record.getTrackName());
+
+                            Map<String, String> attributes = record.getAttributes();
+
+                            String antibody = attributes.containsKey("antibody") ? attributes.get("antibody") : attributes.get("Target");
+                            if (antibody != null) {
+                                rl.setColor(colors.get(antibody.toUpperCase()));
+                            }
+
+                            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                                String value = entry.getValue();
+                                if (value != null && value.length() > 0 && sampleInfoAttributes.contains(entry.getKey())) {
+                                    AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
+                                }
+                            }
+
+                            rl.setMetadata(attributes);
+
+                            locators.add(rl);
                         }
+                        igv.loadTracks(locators);
                     }
 
-                    rl.setMetadata(attributes);
-
-                    locators.add(rl);
+                } catch (Exception e) {
+                    log.error("Error opening Encode browser", e);
+                    throw new RuntimeException(e);
                 }
-                igv.loadTracks(locators);
             }
+        };
+
+        worker.execute();
 
 
-        } catch (IOException e) {
-            log.error("Error opening Encode browser", e);
-        }
     }
 }

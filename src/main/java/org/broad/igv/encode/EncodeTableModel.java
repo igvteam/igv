@@ -123,6 +123,8 @@ public class EncodeTableModel extends AbstractTableModel {
         fireTableCellUpdated(row, col);
     }
 
+
+
     public List<EncodeFileRecord> getRecords() {
         return records;
     }

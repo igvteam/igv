@@ -54,6 +54,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.BrowseEncodeAction;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.Pair;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -68,18 +69,31 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
     private static Map<String, EncodeTrackChooser> instanceMap = Collections.synchronizedMap(new HashMap<>());
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
-    private JButton cancelButton;
-    private JPanel dialogPane;
-    private JPanel contentPanel;
-    private JScrollPane scrollPane1;
-    private JTable table;
-    private JPanel filterPanel;
-    private JLabel filterLabel;
-    private JTextField filterTextField;
-    private JLabel rowCountLabel;
-    private JPanel buttonBar;
-    private JButton okButton;
+    private static String ENCODE_HOST = "https://www.encodeproject.org";
+    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", "HREF", "path"));
 
+    private static List<String> filteredExtensions = Arrays.asList("tsv", "tsv.gz");
+
+    private static Map<String, String> speciesNames = Map.of(
+            "ce10", "Caenorhabditis elegans",
+            "ce11", "Caenorhabditis elegans",
+            "dm3", "Drosophila melanogaster",
+            "dm6", "Drosophila melanogaster",
+            "GRCh38", "Homo sapiens",
+            "hg19", "Homo sapiens",
+            "mm10", "Mus musculus",
+            "mm9", "Mus musculus"
+    );
+
+    static HashSet<String> ucscSupportedGenomes = new HashSet<>(Arrays.asList("hg19", "mm9"));
+    static HashSet<String> supportedGenomes = new HashSet<>(
+            Arrays.asList("ce10", "ce11", "dm3", "dm6", "GRCh38", "hg19", "mm10", "mm9"));
+
+
+
+    JTable table;
+    JTextField filterTextField;
+    JLabel rowCountLabel;
     EncodeTableModel model;
     private boolean canceled;
 
@@ -105,36 +119,37 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
             Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             final List<String> headings = records.getFirst();
             final List<EncodeFileRecord> rows = records.getSecond();
-            instance = new EncodeTrackChooser(parent, new EncodeTableModel(headings, rows));
+            final String title = getDialogTitle(genomeId, type);
+            instance = new EncodeTrackChooser(parent, new EncodeTableModel(headings, rows), title);
             instanceMap.put(key, instance);
         }
 
         return instance;
     }
 
-    static HashSet<String> ucscSupportedGenomes = new HashSet<>(Arrays.asList("hg19", "mm9"));
+    private static String getDialogTitle(String genomeId, BrowseEncodeAction.Type type) {
+
+        if (type == BrowseEncodeAction.Type.UCSC) {
+            return "ENCODE data hosted at UCSC (2012)";
+        } else {
+            switch (type) {
+                case SIGNALS_CHIP:
+                    return "ENCODE CHiP Seq - Signals";
+                case SIGNALS_OTHER:
+                    return "ENCODE Non CHiP Data - Signals";
+                default:
+                    return "ENCODE";
+            }
+        }
+    }
 
     public static boolean genomeSupportedUCSC(String genomeId) {
         return genomeId != null && ucscSupportedGenomes.contains(getEncodeGenomeID(genomeId));
     }
 
-    static HashSet<String> supportedGenomes = new HashSet<>(
-            Arrays.asList("ce10", "ce11", "dm3", "dm6", "GRCh38", "hg19", "mm10", "mm9"));
-
     public static boolean genomeSupported(String genomeId) {
         return genomeId != null && supportedGenomes.contains(getEncodeGenomeID(genomeId));
     }
-
-    private static Map<String, String> speciesNames = Map.of(
-            "ce10", "Caenorhabditis elegans",
-            "ce11", "Caenorhabditis elegans",
-            "dm3", "Drosophila melanogaster",
-            "dm6", "Drosophila melanogaster",
-            "GRCh38", "Homo sapiens",
-            "hg19", "Homo sapiens",
-            "mm10", "Mus musculus",
-            "mm9", "Mus musculus"
-    );
 
 
     private static String getEncodeGenomeID(String genomeId) {
@@ -185,18 +200,6 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         }
     }
 
-    /*
-     * rowHandler: row => {
-     * const name = constructName(row)
-     * const url = `https://www.encodeproject.org${row['HREF']}`
-     * const color = colorForTarget(row['Target'])
-     * return {name, url, color}
-     * }
-     */
-
-    private static String ENCODE_HOST = "https://www.encodeproject.org";
-    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", "HREF", "path"));
-
     private static Pair parseRecords(InputStream is, BrowseEncodeAction.Type type, String genomeId) throws IOException {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -212,6 +215,10 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
 
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
                 String path = type == BrowseEncodeAction.Type.UCSC ? tokens[pathColumn] : ENCODE_HOST + tokens[pathColumn];
+
+                if(filteredExtensions.stream().anyMatch(e -> path.endsWith(e))) {
+                    continue;
+                }
 
                 Map<String, String> attributes = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
@@ -239,17 +246,17 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
     }
 
 
-    private EncodeTrackChooser(Frame owner, EncodeTableModel model) {
+    private EncodeTrackChooser(Frame owner, EncodeTableModel model, String title) {
         super(owner);
+        setTitle(title);
         this.model = model;
         setModal(true);
-        initComponents();
+        initComponents(owner);
         init(model);
     }
 
     private void init(final EncodeTableModel model) {
         setModal(true);
-        setTitle("Encode Production Data");
 
         table.setAutoCreateRowSorter(true);
         table.setModel(model);
@@ -427,95 +434,83 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
     }
 
 
-    private void initComponents() {
+    private void initComponents(Frame owner) {
 
-        dialogPane = new JPanel();
-        contentPanel = new JPanel();
-        scrollPane1 = new JScrollPane();
-        table = new JTable();
-        filterPanel = new JPanel();
-        filterLabel = new JLabel();
-        filterTextField = new JTextField();
-        rowCountLabel = new JLabel();
-        buttonBar = new JPanel();
-        okButton = new JButton();
-        cancelButton = new JButton();
+        // All this to have tool tip text!
+        table = new JTable() {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                java.awt.Point p = e.getPoint();
+                int rowIndex = rowAtPoint(p);
+                int colIndex = columnAtPoint(p);
+                int realColumnIndex = convertColumnIndexToModel(colIndex);
+                if (realColumnIndex > 0) {
+                    return getModel().getValueAt(rowIndex, realColumnIndex).toString();
+                }
+                return null;
+            }
+        };
 
-        getRootPane().setDefaultButton(okButton);
-
-        final String filterToolTip = "Enter multiple filter strings separated by commas.  e.g.  GM12878, ChipSeq";
-        filterLabel.setToolTipText(filterToolTip);
-        filterTextField.setToolTipText(filterToolTip);
-
-        //======== this ========
+        //======== outer content pane ========
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
         //======== dialogPane ========
-
+        JPanel dialogPane = new JPanel();
         dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
         dialogPane.setLayout(new BorderLayout());
 
-        //======== contentPanel ========
-
+        //======== main content panel ========
+        JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout(0, 10));
 
         //======== scrollPane1 ========
-
+        JScrollPane scrollPane1 = new JScrollPane();
         scrollPane1.setViewportView(table);
-
         contentPanel.add(scrollPane1, BorderLayout.CENTER);
 
-        //======== panel1 ========
-
+        //---- Filter  panel ----
+        JPanel filterPanel = new JPanel();
         filterPanel.setLayout(new JideBoxLayout(filterPanel, JideBoxLayout.X_AXIS, 5));
-
-        //---- label1 ----
-        filterLabel.setText("Filter:");
+        JLabel filterLabel = new JLabel("Filter:");
+        final String filterToolTip = "Enter multiple filter strings separated by commas.  e.g.  GM12878, ChipSeq";
+        filterLabel.setToolTipText(filterToolTip);
         filterPanel.add(filterLabel, JideBoxLayout.FIX);
-
-        //---- filterTextField ----
+        filterTextField = new JTextField();
+        filterTextField.setToolTipText(filterToolTip);
         filterPanel.add(filterTextField, JideBoxLayout.VARY);
 
+        rowCountLabel = new JLabel();
         rowCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-        JPanel sillyPanel = new JPanel();
-        sillyPanel.setLayout(new JideBoxLayout(sillyPanel, JideBoxLayout.X_AXIS, 0));
-        sillyPanel.setPreferredSize(new Dimension(100, 28));
-        sillyPanel.add(rowCountLabel, JideBoxLayout.VARY);
-
-        filterPanel.add(sillyPanel, JideBoxLayout.FIX);
+        JPanel rowCountPanel = new JPanel();
+        rowCountPanel.setLayout(new JideBoxLayout(rowCountPanel, JideBoxLayout.X_AXIS, 0));
+        rowCountPanel.setPreferredSize(new Dimension(100, 28));
+        rowCountPanel.add(rowCountLabel, JideBoxLayout.VARY);
+        filterPanel.add(rowCountPanel, JideBoxLayout.FIX);
 
         contentPanel.add(filterPanel, BorderLayout.NORTH);
 
         dialogPane.add(contentPanel, BorderLayout.CENTER);
 
         //======== buttonBar ========
-
+        JPanel buttonBar = new JPanel();
         buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
         buttonBar.setLayout(new GridBagLayout());
         ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
         ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
         //---- okButton ----
-        okButton.setText("Load");
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loadButtonActionPerformed(e);
-            }
-        });
+        JButton okButton = new JButton("Load");
+        getRootPane().setDefaultButton(okButton);
+        okButton.addActionListener(e -> loadButtonActionPerformed(e));
         buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                 new Insets(0, 0, 0, 5), 0, 0));
 
         //---- cancelButton ----
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancelButtonActionPerformed(e);
-            }
-        });
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
+
         buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                 new Insets(0, 0, 0, 0), 0, 0));
@@ -523,10 +518,19 @@ public class EncodeTrackChooser extends org.broad.igv.ui.IGVDialog {
         dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(700, 620);
+
+        Rectangle ownerBounds = owner.getBounds();
+        setSize(ownerBounds.width, 620);
         setLocationRelativeTo(getOwner());
     }
 
+
+    /**
+     * Main function for testing only
+     *
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         getInstance("hg19", BrowseEncodeAction.Type.UCSC).setVisible(true);
     }
