@@ -63,50 +63,43 @@ import static org.broad.igv.prefs.Constants.*;
  */
 
 public abstract class AbstractTrack implements Track {
-
+    private static Logger log = LogManager.getLogger(AbstractTrack.class);
     public static final Color DEFAULT_COLOR = Color.blue.darker();
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
     public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
-    private static Logger log = LogManager.getLogger(AbstractTrack.class);
 
-    protected String id;
-
+    private ResourceLocator resourceLocator;
+    private String id;
+    private String sampleId;
     private String attributeKey;
     private String name;
     private String featureInfoURL;
     private boolean itemRGB = true;
 
     private boolean useScore;
+    protected boolean autoScale;
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
-
-    protected int fontSize;
+    private int fontSize;
     private boolean showDataRange = true;
-    protected String sampleId;
-
-    private ResourceLocator resourceLocator;
 
     private int top;
     protected int minimumHeight = -1;
     private TrackType trackType = TrackType.OTHER;
-
     private boolean selected = false;
     private boolean visible = true;
-
     private boolean sortable = true;
 
     boolean overlaid;
-
     boolean drawYLine = false;
     float yLine = 0;
+
 
     private Map<String, String> attributes = new HashMap();
 
     private ContinuousColorScale colorScale;
-
-    protected boolean autoScale;
 
     String autoscaleGroup;
 
@@ -857,10 +850,20 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public String getNameValueString(int y) {
+    public String getTooltipText(int y) {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html>" + getName());
+
+        Map<String, String> metadata = resourceLocator.getMetadata();
+        if(metadata.size() > 0) {
+            for(Map.Entry<String, String> entry : metadata.entrySet()) {
+                String value = entry.getValue();
+                if(value != null && value.length() > 0) {
+                    buffer.append("<br>" + entry.getKey() + ": " + entry.getValue());
+                }
+            }
+        }
 
         if (resourceLocator != null && resourceLocator.getPath() != null) {
             buffer.append("<br>" + this.resourceLocator.getPath());
@@ -1178,6 +1181,10 @@ public abstract class AbstractTrack implements Track {
                 log.error("Unrecognized DataRange");
             }
         }
+    }
+
+    public String getSampleId() {
+        return sampleId;
     }
 
 }

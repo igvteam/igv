@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.util.encode;
+package org.broad.igv.encode;
 
 /**
  * Created by jrobinso on 6/4/15.

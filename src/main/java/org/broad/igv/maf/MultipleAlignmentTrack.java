@@ -153,7 +153,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
 
-        Font font = FontManager.getFont(fontSize);
+        Font font = FontManager.getFont(getFontSize());
         g2D.setFont(font);
 
         int y = trackRectangle.y;

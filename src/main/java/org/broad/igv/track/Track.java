@@ -127,7 +127,7 @@ public interface Track extends Persistable {
 
     String getDisplayName();
 
-    String getNameValueString(int y);
+    String getTooltipText(int y);
 
     String getSample();
 

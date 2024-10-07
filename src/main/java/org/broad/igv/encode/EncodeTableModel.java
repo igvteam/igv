@@ -23,41 +23,16 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.util.encode;
+package org.broad.igv.encode;
 
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * //wgEncodeBroadHistoneGm12878H3k4me1StdSig.bigWig
- * // size=346M;
- * // dateSubmitted=2009-01-05;
- * // dataType=ChipSeq;
- * // cell=GM12878;
- * // antibody=H3K4me1;
- * // control=std;
- * // expId=33;
- * // setType=exp;
- * // controlId=GM12878/Input/std;
- * // subId=2804;
- * // dataVersion=ENCODE Jan 2011 Freeze;
- * // dateResubmitted=2010-11-05;
- * // grant=Bernstein;
- * // lab=Broad;
- * // view=Signal;
- * // type=bigWig;
- * // dccAccession=wgEncodeEH000033;
- * // origAssembly=hg18
- *
  * @author jrobinso
  *         Date: 10/31/13
  *         Time: 10:09 PM
@@ -68,7 +43,7 @@ public class EncodeTableModel extends AbstractTableModel {
     private List<EncodeFileRecord> records;
     private final TableRowSorter<EncodeTableModel> sorter;
 
-    public EncodeTableModel(String [] headings, List<EncodeFileRecord> records) {
+    public EncodeTableModel(List<String> headings, List<EncodeFileRecord> records) {
 
         this.records = records;
 
@@ -80,11 +55,10 @@ public class EncodeTableModel extends AbstractTableModel {
                 tmp.add(heading);
             }
         }
-        //tmp.add("path");
+
         columnHeadings = tmp.toArray(new String[tmp.size()]);
 
-
-        sorter = new TableRowSorter<EncodeTableModel>(this);
+        sorter = new TableRowSorter<>(this);
 
         sorter.setStringConverter(new TableStringConverter() {
             @Override
@@ -148,6 +122,8 @@ public class EncodeTableModel extends AbstractTableModel {
         }
         fireTableCellUpdated(row, col);
     }
+
+
 
     public List<EncodeFileRecord> getRecords() {
         return records;

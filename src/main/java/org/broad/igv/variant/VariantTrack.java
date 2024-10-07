@@ -672,7 +672,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         top = trackRectangle.y;
 
         Rectangle rect = new Rectangle(trackRectangle);
-        g2D.setFont(FontManager.getFont(fontSize));
+        g2D.setFont(FontManager.getFont(getFontSize()));
         g2D.setColor(BAND2_COLOR);
 
 
@@ -806,7 +806,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         Rectangle textRectangle = new Rectangle(bandRectangle);
         textRectangle.height--;
 
-        int bandFontSize = Math.min(fontSize, (int) bandRectangle.getHeight() - 1);
+        int bandFontSize = Math.min(getFontSize(), (int) bandRectangle.getHeight() - 1);
         Font font = FontManager.getFont(bandFontSize);
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
@@ -915,9 +915,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         super.setColor(color);
     }
 
-    public String getNameValueString(int y) {
+    public String getTooltipText(int y) {
         if (y < top + getVariantsHeight()) {
-            return super.getNameValueString(y);
+            return super.getTooltipText(y);
         } else {
             String sample = getSampleAtPosition(y);
             return sample;

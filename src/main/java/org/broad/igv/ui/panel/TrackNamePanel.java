@@ -312,7 +312,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 Collection<Track> tracks = mouseableRegion.getTracks();
                 if (tracks != null && tracks.size() == 1) {
                     Track track = tracks.iterator().next();
-                    text = track.getNameValueString(y);
+                    text = track.getTooltipText(y);
                 } else {
                     text = mouseableRegion.getText();
                 }
