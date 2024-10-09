@@ -42,5 +42,9 @@ public class FileFormatUtilsTest extends TestCase {
         String sampleInfoFile = "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz";
         format = FileFormatUtils.determineFormat(sampleInfoFile);
         assertEquals("sampleinfo", format);
+
+        String wigFile = TestUtils.DATA_DIR + "wig/dm3_var_sample.wig";
+        format = FileFormatUtils.determineFormat(wigFile);
+        assertEquals("wig", format);
     }
 }

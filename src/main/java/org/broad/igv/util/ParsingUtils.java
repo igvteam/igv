@@ -386,7 +386,10 @@ public class ParsingUtils {
                     String key = kv.get(0).toLowerCase().trim();
                     String value = kv.get(1).replaceAll("\"", "");
 
-                    if (key.equals("coords")) {
+                    if(key.equals("format")) {
+                        trackProperties.setFormat(value);
+                    }
+                    else if (key.equals("coords")) {
                         if (value.equals("0")) {
                             trackProperties.setBaseCoord(TrackProperties.BaseCoord.ZERO);
                         } else if (value.equals("1")) {
@@ -394,7 +397,7 @@ public class ParsingUtils {
                         }
 
                     }
-                    if (key.equals("name")) {
+                    else if (key.equals("name")) {
                         trackProperties.setName(value);
                         //dhmay adding name check for TopHat junctions files. graphType is also checked.
                         if (value.equals("junctions")) {

@@ -144,6 +144,11 @@ public class TrackProperties {
     private String coverageURL;
 
     /**
+     * Non-standard track field to indicate file format
+     */
+    private String format;
+
+    /**
      * Track attributes (meta data)
      */
     private Map<String, String> attributes;
@@ -153,6 +158,13 @@ public class TrackProperties {
 
     }
 
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
 
     public void setTrackLine(String trackLine) {
         this.trackLine = trackLine;

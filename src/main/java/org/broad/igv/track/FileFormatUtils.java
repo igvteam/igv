@@ -4,6 +4,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
@@ -89,6 +90,27 @@ public class FileFormatUtils {
             if (firstLine.startsWith("##gff-version")) {
                 return "gff";
             }
+            if(firstLine.startsWith("##fileformat=")) {
+                return firstLine.substring(13);   // Non standard extension of VCF convention
+            }
+
+            // Read maximum of first 100 lines searching for format indication.
+            int n = 0;
+            String nextLine;
+            while((nextLine = reader.readLine()) != null && n++ < 100) {
+                if(nextLine.startsWith("#")) continue;
+                if(nextLine.startsWith("track")) {
+                    TrackProperties properties = new TrackProperties();
+                    ParsingUtils.parseTrackLine(nextLine, properties);
+                    if(properties.getFormat() != null) {
+                        return properties.getFormat();
+                    }
+                }
+                if(nextLine.startsWith("fixedStep") || nextLine.startsWith("variableStep")) {
+                    return "wig";
+                }
+            }
+
             if (maybeSampleInfo(bytes)) {
                 return "sampleinfo";
             }
