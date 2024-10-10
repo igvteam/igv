@@ -31,11 +31,17 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
 
     public void refreshGenomeListComboBox() {
+
         setModel(getModelForGenomeListComboBox());
         String curId = GenomeManager.getInstance().getGenomeId();
-        Object item = GenomeListManager.getInstance().getLoadedGenomeListItemById(curId);
-        if (item != null) {
-            setSelectedItem(item);
+
+        int c = this.getItemCount();
+        for (int i = 0; i < c; i++) {
+            final GenomeListItem item = this.getItemAt(i);
+            if (curId.equals(item.getId())) {
+                setSelectedItem(item);
+                break;
+            }
         }
     }
 
@@ -98,7 +104,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                     } else {
 
                         try {
-                             GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
+                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (Exception e) {
                             log.error(e);
                             int choice = JOptionPane.showConfirmDialog(

@@ -37,7 +37,7 @@ import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.GenomeUtils;
+import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
@@ -971,7 +971,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenuItem updateCS = new JMenuItem("Update chrom sizes");
         updateCS.addActionListener(e -> {
             try {
-                GenomeUtils.main(new String[]{});
+                ChromSizesUtils.main(new String[]{});
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }

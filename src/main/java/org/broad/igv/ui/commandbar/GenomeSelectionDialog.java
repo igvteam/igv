@@ -34,12 +34,12 @@ package org.broad.igv.ui.commandbar;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
@@ -62,21 +62,11 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(GenomeSelectionDialog.class);
 
-    private JPanel dialogPane;
-    private JPanel contentPanel;
-    private JTextArea textArea1;
-    private JPanel filterPanel;
-    private JLabel label1;
     private JTextField genomeFilter;
-    private JScrollPane scrollPane1;
     private JList<GenomeListItem> genomeList;
-    private JCheckBox downloadDataCB;
-    private JPanel buttonBar;
-    private JButton okButton;
-    private JButton cancelButton;
-    private boolean isCanceled = true;
-
-    private List<GenomeListItem> selectedValues = null;
+    private JCheckBox downloadSequenceCB;
+    private JCheckBox downloadAnnotationsCB;
+    private boolean isCanceled;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
@@ -99,39 +89,32 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
             if (dialog.isCanceled()) {
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             } else {
-                List<GenomeListItem> selectedValueList = dialog.getSelectedValues();
 
-                for (GenomeListItem selectedValue : selectedValueList) {
-                    if (selectedValue != null) {
+                GenomeListItem selectedItem = dialog.getSelectedValue();
+                if (selectedItem == null) return;
 
-                        boolean downloadData = dialog.isDownloadData();
-                        boolean success = GenomeManager.getInstance().downloadGenome(selectedValue, downloadData);
+                boolean downloadSequence = dialog.isDownloadSequence();
+                boolean downloadAnnotations = dialog.isDownloadAnnotations();
 
-                        if (success) {
+                if (downloadSequence || downloadAnnotations || selectedItem.getPath().endsWith(".genome")) {
+                    selectedItem = GenomeManager.getInstance().downloadGenome(selectedItem, downloadSequence, downloadAnnotations);
+                }
 
-                            // If this is a single selection load it
-                            if(selectedValueList.size() == 1) {
-
-                                try {
-                                    GenomeManager.getInstance().loadGenome(selectedValue.getPath());
-                                    // If the user has previously defined this genome, remove it.
-                                    GenomeListManager.getInstance().removeUserDefinedGenome(selectedValue.getId());
-
-                                    // If this is a .json genome, attempt to remove existing .genome files
-                                    if (selectedValue.getPath().endsWith(".json")) {
-                                        removeDotGenomeFile(selectedValue.getId());
-                                    }
-
-
-                                } catch (IOException e) {
-                                    GenomeListManager.getInstance().removeGenomeListItem(selectedValue);
-                                    MessageUtils.showErrorMessage("Error loading genome " + selectedValue.getDisplayableName(), e);
-                                    log.error("Error loading genome " + selectedValue.getDisplayableName(), e);
-                                }
-                            }
+                if (selectedItem != null) {
+                    try {
+                        GenomeManager.getInstance().loadGenome(selectedItem.getPath());
+                        if (selectedItem.getPath().endsWith(".json")) {
+                            removeDotGenomeFile(selectedItem.getId());
                         }
+
+
+                    } catch (IOException e) {
+                        GenomeListManager.getInstance().removeGenomeListItem(selectedItem);
+                        MessageUtils.showErrorMessage("Error loading genome " + selectedItem.getDisplayableName(), e);
+                        log.error("Error loading genome " + selectedItem.getDisplayableName(), e);
                     }
                 }
+
             }
         };
 
@@ -161,7 +144,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         super(parent);
         initComponents();
         initData(inputListItems);
-        downloadDataCB.setVisible(true);
+        downloadSequenceCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -187,27 +170,21 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         }
     }
 
-    /**
-     * Double-clicking will trigger the OK action.
-     *
-     * @param e
-     */
-    private void genomeListMouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
-            okButtonActionPerformed(null);
-        }
-    }
 
     private void genomeEntryKeyReleased(KeyEvent e) {
         rebuildGenomeList(genomeFilter.getText());
     }
 
-    public List<GenomeListItem> getSelectedValues() {
-        return selectedValues;
+    public GenomeListItem getSelectedValue() {
+        return isCanceled ? null : genomeList.getSelectedValue();
     }
 
-    public boolean isDownloadData(){
-        return downloadDataCB.isSelected();
+    public boolean isDownloadSequence() {
+        return downloadSequenceCB.isSelected();
+    }
+
+    public boolean isDownloadAnnotations() {
+        return downloadAnnotationsCB.isSelected();
     }
 
     public boolean isCanceled() {
@@ -216,32 +193,18 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
         isCanceled = true;
-        selectedValues = null;
         setVisible(false);
         dispose();
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
         isCanceled = false;
-        selectedValues = genomeList.getSelectedValuesList();
         setVisible(false);
         dispose();
     }
 
 
     private void initComponents() {
-        dialogPane = new JPanel();
-        contentPanel = new JPanel();
-        textArea1 = new JTextArea();
-        filterPanel = new JPanel();
-        label1 = new JLabel();
-        genomeFilter = new JTextField();
-        scrollPane1 = new JScrollPane();
-        genomeList = new JList();
-        downloadDataCB = new JCheckBox();
-        buttonBar = new JPanel();
-        okButton = new JButton();
-        cancelButton = new JButton();
 
         //======== this ========
         setModal(true);
@@ -250,112 +213,127 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         contentPane.setLayout(new BorderLayout());
 
         //======== dialogPane ========
-        {
-            dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-            dialogPane.setPreferredSize(new Dimension(350, 500));
-            dialogPane.setLayout(new BorderLayout());
 
-            //======== contentPanel ========
-            {
-                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        JPanel dialogPane = new JPanel();
+        dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+        dialogPane.setPreferredSize(new Dimension(350, 500));
+        dialogPane.setLayout(new BorderLayout());
 
-                //---- textArea1 ----
-                textArea1.setText("Selected genomes will be downloaded and added to the genome dropdown list.");
-                textArea1.setLineWrap(true);
-                textArea1.setWrapStyleWord(true);
-                textArea1.setBackground(UIManager.getColor("Button.background"));
-                textArea1.setRows(2);
-                textArea1.setMaximumSize(new Dimension(2147483647, 60));
-                textArea1.setRequestFocusEnabled(false);
-                textArea1.setEditable(false);
-                contentPanel.add(textArea1);
+        //======== contentPanel ========
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-                //======== filterPanel ========
-                {
-                    filterPanel.setMaximumSize(new Dimension(2147483647, 28));
-                    filterPanel.setLayout(new GridBagLayout());
-                    ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-                    ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
-                    ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
-                    ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
+        //---- textArea1 ----
+        JTextArea textArea1 = new JTextArea();
+        textArea1.setText("Selected genomes will be downloaded and added to the genome dropdown list.");
+        textArea1.setLineWrap(true);
+        textArea1.setWrapStyleWord(true);
+        textArea1.setBackground(UIManager.getColor("Button.background"));
+        textArea1.setRows(2);
+        textArea1.setMaximumSize(new Dimension(2147483647, 60));
+        textArea1.setRequestFocusEnabled(false);
+        textArea1.setEditable(false);
+        contentPanel.add(textArea1);
 
-                    //---- label1 ----
-                    label1.setText("Filter:");
-                    label1.setLabelFor(genomeFilter);
-                    label1.setRequestFocusEnabled(false);
-                    filterPanel.add(label1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
-                            new Insets(0, 0, 0, 0), 0, 0));
+        //======== filterPanel ========
+        JPanel filterPanel = new JPanel();
+        filterPanel.setMaximumSize(new Dimension(2147483647, 28));
+        filterPanel.setLayout(new GridBagLayout());
+        ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
+        ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
+        ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
+        ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
 
-                    //---- genomeFilter ----
-                    genomeFilter.setToolTipText("Filter genome list");
-                    genomeFilter.setPreferredSize(new Dimension(220, 28));
-                    genomeFilter.setMinimumSize(new Dimension(180, 28));
-                    genomeFilter.setAlignmentX(0.0F);
-                    genomeFilter.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyReleased(KeyEvent e) {
-                            genomeEntryKeyReleased(e);
-                        }
-                    });
-                    filterPanel.add(genomeFilter, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-                }
-                contentPanel.add(filterPanel);
+        //---- label1 ----
+        JLabel filterLabel = new JLabel();
+        filterLabel.setText("Filter:");
+        filterLabel.setLabelFor(genomeFilter);
+        filterLabel.setRequestFocusEnabled(false);
+        filterPanel.add(filterLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
+                new Insets(0, 0, 0, 0), 0, 0));
 
-                //======== scrollPane1 ========
-                {
-
-                    //---- genomeList ----
-                    //genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                    genomeList.addMouseListener(new IGVMouseInputAdapter() {
-                        @Override
-                        public void igvMouseClicked(MouseEvent e) {
-                            genomeListMouseClicked(e);
-                        }
-                    });
-                    scrollPane1.setViewportView(genomeList);
-                }
-                contentPanel.add(scrollPane1);
-
-                //---- downloadSequenceCB ----
-                downloadDataCB.setText("Download data files");
-                downloadDataCB.setAlignmentX(1.0F);
-                downloadDataCB.setToolTipText("Download all files referenced by the genome definition, including the full sequence for this organism. Note that these files can be very large (human is about 3 gigabytes)");
-                downloadDataCB.setMaximumSize(new Dimension(1000, 23));
-                downloadDataCB.setPreferredSize(new Dimension(300, 23));
-                downloadDataCB.setMinimumSize(new Dimension(300, 23));
-                contentPanel.add(downloadDataCB);
+        //---- genomeFilter ----
+        genomeFilter = new JTextField();
+        genomeFilter.setToolTipText("Filter genome list");
+        genomeFilter.setPreferredSize(new Dimension(220, 28));
+        genomeFilter.setMinimumSize(new Dimension(180, 28));
+        genomeFilter.setAlignmentX(0.0F);
+        genomeFilter.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                genomeEntryKeyReleased(e);
             }
-            dialogPane.add(contentPanel, BorderLayout.CENTER);
+        });
+        filterPanel.add(genomeFilter, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
 
-            //======== buttonBar ========
-            {
-                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+        contentPanel.add(filterPanel);
 
-                //---- okButton ----
-                okButton.setText("OK");
-                okButton.addActionListener(e -> okButtonActionPerformed(e));
-                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 5), 0, 0));
+        //---- genomeList ----
+        genomeList = new JList();
+        genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        genomeList.addListSelectionListener(e -> {
+            List<GenomeListItem> items = genomeList.getSelectedValuesList();
+            downloadSequenceCB.setEnabled(items != null && items.stream().allMatch(item -> GenomeDownloadUtils.isSequenceDownloadable(item)));
+            downloadAnnotationsCB.setEnabled(items != null && items.stream().allMatch(item -> GenomeDownloadUtils.isAnnotationsDownloadable(item)));
+        });
 
-                //---- cancelButton ----
-                cancelButton.setText("Cancel");
-                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
-                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 5, 0), 0, 0));
-            }
-            dialogPane.add(buttonBar, BorderLayout.SOUTH);
-        }
+        JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setViewportView(genomeList);
+
+        contentPanel.add(scrollPane1);
+
+        //---- downloadSequenceCB ----
+        downloadSequenceCB = new JCheckBox("Download sequence");
+        downloadSequenceCB.setAlignmentX(1.0F);
+        downloadSequenceCB.setToolTipText("Download the full sequence data for the genome.  Note that these files can be  large (human is about 1 gigabyte).");
+        downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
+        downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
+        downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
+        downloadSequenceCB.setEnabled(false);   // Disabled until a genome is selected.
+        contentPanel.add(downloadSequenceCB);
+
+        //---- downloadAnnotationsCB ----
+        downloadAnnotationsCB = new JCheckBox("Download annotations");
+        downloadAnnotationsCB.setAlignmentX(1.0F);
+        downloadAnnotationsCB.setToolTipText("Download all annotation files referenced by the genome definition.");
+        downloadAnnotationsCB.setMaximumSize(new Dimension(1000, 23));
+        downloadAnnotationsCB.setPreferredSize(new Dimension(300, 23));
+        downloadAnnotationsCB.setMinimumSize(new Dimension(300, 23));
+        downloadAnnotationsCB.setEnabled(false);  // Disabled until a genome is selected
+        contentPanel.add(downloadAnnotationsCB);
+
+
+        dialogPane.add(contentPanel, BorderLayout.CENTER);
+
+        //======== buttonBar ========
+        JPanel buttonBar = new JPanel();
+        buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+        buttonBar.setLayout(new GridBagLayout());
+        ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+        ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+
+        //---- okButton ----
+        JButton okButton = new JButton("OK");
+        okButton.addActionListener(e -> okButtonActionPerformed(e));
+        buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
+
+        //---- cancelButton ---
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
+        buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 0), 0, 0));
+
+        dialogPane.add(buttonBar, BorderLayout.SOUTH);
+
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
 }

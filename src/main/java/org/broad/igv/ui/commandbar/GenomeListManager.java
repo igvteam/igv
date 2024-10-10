@@ -3,13 +3,13 @@ package org.broad.igv.ui.commandbar;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.broad.igv.event.GenomeResetEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
-import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
@@ -27,7 +27,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Singleton class for the list of genomes presented in the command bar dropdown.
+ * Singleton class for the list of genomes presented in the command bar combo box.  Also has methods for searching
+ * the hosted genome list.
  */
 public class GenomeListManager {
 
@@ -84,8 +85,8 @@ public class GenomeListManager {
         serverGenomeMap = null;
         userDefinedGenomeMap = null;
         genomeItemMap.clear();
-        genomeItemMap.putAll(getUserDefinedGenomeMap());
-        genomeItemMap.putAll(getCachedGenomeList());
+        genomeItemMap.putAll(getUserSelectedGenomeMap());
+        genomeItemMap.putAll(getDownloadedGenomeList());
         if (genomeItemMap.isEmpty()) {
             genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
         }
@@ -99,30 +100,27 @@ public class GenomeListManager {
 
 
     /**
-     * Add an item to the selectable genomes map.  If not from server update the user defined file.
+     * Add an item to the selectable genomes map and record in preferences.
      *
      * @param genomeListItem
-     * @param userDefined
      */
-    public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
-        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-        if (userDefined) {
-            if (userDefinedGenomeMap == null) userDefinedGenomeMap = new HashMap<>();
-            userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
-            exportUserDefinedGenomeList();
+    public void addGenomeItem(GenomeListItem genomeListItem) {
+
+        if(genomeItemMap.values().stream().anyMatch(item -> genomeListItem.equals(item))) {
+            return;
         }
+
+        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
+
+        if (userDefinedGenomeMap == null) {
+            userDefinedGenomeMap = new HashMap<>();
+        }
+        userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
+        exportUserDefinedGenomeList();
+
+        IGVEventBus.getInstance().post(new GenomeResetEvent());
     }
 
-    /**
-     * Return genome list item from currently selectable set. To search through
-     * all server and user defined genomes, use {@link #getGenomeListItem(String)}
-     *
-     * @param genomeId
-     * @return
-     */
-    public GenomeListItem getLoadedGenomeListItemById(String genomeId) {
-        return genomeItemMap.get(genomeId);
-    }
 
     /**
      * Searches through currently loaded GenomeListItems and returns
@@ -138,12 +136,12 @@ public class GenomeListManager {
         if (matchingItem == null) {
 
             // If genome archive was not found, check server list
-            matchingItem = getServerGenomeMap().get(genomeId);
-            if (matchingItem != null) {
-                return matchingItem;
-            }
+//            matchingItem =  getServerGenomeMap().get(genomeId);
+//            if (matchingItem != null) {
+//                return matchingItem;
+//            }
 
-            // If still not found rebuild the item map
+            // If not found rebuild the item map
             try {
                 rebuildGenomeItemMap();
             } catch (IOException e) {
@@ -155,7 +153,7 @@ public class GenomeListManager {
     }
 
     /**
-     * Build and return a genome list item map from all  locally cached genome archive files (.genome and .json files).
+     * Build and return a genome list item map from all local (downloaded) genome files (.genome and .json files).
      * <p>
      * If both .genome and .json files are found for the same genome ID the .json file is preferred, and the .genome
      * file deleted.   This complicates loading but is neccessary for a transition period.
@@ -164,7 +162,7 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    private static Map<String, GenomeListItem> getCachedGenomeList() {
+    private static Map<String, GenomeListItem> getDownloadedGenomeList() {
 
         Map<String, GenomeListItem> cachedGenomes = new HashMap<>();
         if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
@@ -260,10 +258,6 @@ public class GenomeListManager {
                             log.error("Error parsing " + file.getName() + ". \"name\" is required");
                             continue;
                         }
-                        if (id == null) {
-                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
-                            continue;
-                        }
                         if (fasta == null && twobit == null) {
                             log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
                             continue;
@@ -281,22 +275,6 @@ public class GenomeListManager {
 
         return cachedGenomes;
     }
-
-
-    public Set<String> getServerGenomeIDs() {
-        return getServerGenomeMap().keySet();
-    }
-
-
-    /**
-     * Gets the collection of genome list items ids currently in use.
-     *
-     * @return Set of ids.
-     */
-    public Collection<String> getSelectableGenomeIDs() {
-        return genomeItemMap.keySet();
-    }
-
 
     public void removeAllItems(List<GenomeListItem> removedValuesList) {
 
@@ -320,7 +298,7 @@ public class GenomeListManager {
         genomeItemMap.remove(id);
 
         // If this is a cached genome remove it from cache
-        Map<String, GenomeListItem> cachedItems = getCachedGenomeList();
+        Map<String, GenomeListItem> cachedItems = getDownloadedGenomeList();
         if (cachedItems.containsKey(id)) {
             try {
                 (new File(genomeListItem.getPath())).delete();
@@ -434,7 +412,7 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getUserDefinedGenomeMap() {
+    public Map<String, GenomeListItem> getUserSelectedGenomeMap() {
 
         if (userDefinedGenomeMap == null) {
 
@@ -442,7 +420,7 @@ public class GenomeListManager {
 
             userDefinedGenomeMap = new HashMap<>();
 
-            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getSelectedGenomeListFile());
 
             if (listFile.exists()) {
 
@@ -518,7 +496,7 @@ public class GenomeListManager {
             return;
         }
 
-        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getSelectedGenomeListFile());
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");
@@ -558,7 +536,7 @@ public class GenomeListManager {
     }
 
 
-    private String getUserDefinedGenomeListFile() {
+    private String getSelectedGenomeListFile() {
         if (Globals.isTesting()) {
             return TEST_USER_DEFINED_GENOME_LIST_FILE;
         } else {

@@ -38,22 +38,14 @@ public class JsonGenomeLoader extends GenomeLoader {
     public Genome loadGenome() throws IOException {
 
 
-        try (InputStream is = ParsingUtils.openInputStream(genomePath)){
+        GenomeConfig genomeConfig = loadGenomeConfig();
 
-            String jsonString = ParsingUtils.readContentsFromStream(is);
+        fixPaths(genomeConfig);
 
-            if (jsonString.contains("chromosomeOrder")) {
-                jsonString = fixChromosomeOrder(jsonString);
-            }
+        Genome genome = new Genome(genomeConfig);
 
-            GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
-
-            fixPaths(genomeConfig);
-
-            Genome genome = new Genome(genomeConfig);
-
-            // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
-            // Not a common option.
+        // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
+        // Not a common option.
 
 //            JsonElement chains = config.chains;
 //            if (chains != null) {
@@ -67,7 +59,26 @@ public class JsonGenomeLoader extends GenomeLoader {
 //                newGenome.setLiftoverMap(liftoverMap);
 //            }
 
-            return genome;
+        return genome;
+
+
+    }
+
+    public GenomeConfig loadGenomeConfig() throws IOException {
+
+        try (InputStream is = ParsingUtils.openInputStream(genomePath)) {
+
+            String jsonString = ParsingUtils.readContentsFromStream(is);
+
+            if (jsonString.contains("chromosomeOrder")) {
+                jsonString = fixChromosomeOrder(jsonString);
+            }
+
+            GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
+
+            fixPaths(genomeConfig);
+
+            return genomeConfig;
 
         }
     }

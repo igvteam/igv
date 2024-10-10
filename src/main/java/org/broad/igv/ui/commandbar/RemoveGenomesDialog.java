@@ -29,8 +29,8 @@
 
 package org.broad.igv.ui.commandbar;
 
+import org.broad.igv.feature.genome.DotGenomeUtils;
 import org.broad.igv.logging.*;
-import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeListItem;
@@ -46,7 +46,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,12 +54,12 @@ import java.util.stream.Collectors;
 
 public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
+    public static final String LOCAL_SEQUENCE_CHAR = "\u002A";
     private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 
     private List<GenomeListItem> allListItems;
 
     private boolean haveLocalSequence = false;
-    private static final String LOCAL_SEQUENCE_CHAR = "\u002A";
 
     public RemoveGenomesDialog(Frame owner) {
         super(owner);
@@ -76,7 +75,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
         allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeListItems());
 
         for (GenomeListItem item : allListItems) {
-            if (GenomeManager.getInstance().getLocalFasta(item.getId()) != null) {
+            if (DotGenomeUtils.getLocalFasta(item.getId()) != null) {
                 haveLocalSequence = true;
                 break;
             }
@@ -105,7 +104,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
             List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
             if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
                 try {
-                    deleteDownloadedGenomes(selectedValuesList);
+                    GenomeManager.getInstance().deleteDownloadedGenomes(selectedValuesList);
                 } catch (IOException e) {
                     log.error("Error deleting genome files", e);
                     MessageUtils.showErrorMessage("Error deleting genome files", e);
@@ -129,38 +128,6 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
         setVisible(false);
     }
 
-
-    /**
-     * Delete the specified .genome files.
-     *
-     * @param removedValuesList
-     */
-    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
-
-        for (GenomeListItem item : removedValuesList) {
-            String loc = item.getPath();
-            File genFile = new File(loc);
-            if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genFile)) {
-                genFile.delete();
-            }
-
-            File localFasta = GenomeManager.getInstance().getLocalFasta(item.getId());
-            if (localFasta != null) {
-                // If fasta file is in the "igv/genomes" directory delete it
-                GenomeManager.getInstance().removeLocalFasta(item.getId());
-                if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
-                    if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
-                        localFasta.delete();
-                        File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
-                        if (indexFile.exists()) {
-                            indexFile.delete();
-                        }
-                    }
-                }
-            }
-        }
-        GenomeListManager.getInstance().removeAllItems(removedValuesList);
-    }
 
     private void removeSelected() {
         List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
@@ -195,7 +162,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
                 comp.setOpaque(isSelected);
             }
 
-            if (GenomeManager.getInstance().getLocalFasta(item.getId()) != null) {
+            if (DotGenomeUtils.getLocalFasta(item.getId()) != null) {
                 displayableName += LOCAL_SEQUENCE_CHAR;
             }
 
