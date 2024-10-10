@@ -33,7 +33,9 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
     public void refreshGenomeListComboBox() {
 
         setModel(getModelForGenomeListComboBox());
+
         String curId = GenomeManager.getInstance().getGenomeId();
+        if(curId == null) return;
 
         int c = this.getItemCount();
         for (int i = 0; i < c; i++) {
