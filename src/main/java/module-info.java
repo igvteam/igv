@@ -43,5 +43,9 @@ module org.igv {
     requires software.amazon.awssdk.http;
     requires software.amazon.awssdk.utils;
 
+    // Transitive dependency of amazon modules that is required to be specified
+    // because amazon resolves the unmodularized 1.2.0 version while htjsdk brings in the modular 1.3.0
+    requires org.apache.commons.logging;
+
     requires jide.oss;
 }
