@@ -91,7 +91,7 @@ public class FileFormatUtils {
                 return "gff";
             }
             if(firstLine.startsWith("##fileformat=")) {
-                return firstLine.substring(13);   // Non standard extension of VCF convention
+                return firstLine.substring(13).toLowerCase();   // Non standard extension of VCF convention
             }
 
             // Read maximum of first 100 lines searching for format indication.
