@@ -252,7 +252,7 @@ public class IGV implements IGVEventObserver {
         GraphicsDevice[] graphDev = graphEnv.getScreenDevices();
         Rectangle[] boundsArr = new Rectangle[graphDev.length];
 
-        for (int i=0;i<graphDev.length;++i) {
+        for (int i = 0; i < graphDev.length; ++i) {
             GraphicsConfiguration curCon = graphDev[i].getDefaultConfiguration();
             boundsArr[i] = curCon.getBounds();
         }
@@ -261,26 +261,26 @@ public class IGV implements IGVEventObserver {
         //default is empty or not contained
         boolean isNullOrNotContained = true;
 
-        if(applicationBounds != null){
+        if (applicationBounds != null) {
             //Iterate over each screen value to find if there is currently a screen that can contain these values.
             int userX = applicationBounds.x;
             int userY = applicationBounds.y;
             double userMaxX = applicationBounds.getMaxX();
             double userMaxY = applicationBounds.getMaxY();
-            for(Rectangle curScreen : boundsArr){
-                if(curScreen.contains(userX,userY)){
+            for (Rectangle curScreen : boundsArr) {
+                if (curScreen.contains(userX, userY)) {
                     isNullOrNotContained = false;
-                    if( userMaxX >= curScreen.getMaxX() || userMaxY >= curScreen.getMaxY()){
-                        applicationBounds = new Rectangle(curScreen.x,curScreen.y,Math.min(1150,curScreen.width),Math.min(800,curScreen.height));
+                    if (userMaxX >= curScreen.getMaxX() || userMaxY >= curScreen.getMaxY()) {
+                        applicationBounds = new Rectangle(curScreen.x, curScreen.y, Math.min(1150, curScreen.width), Math.min(800, curScreen.height));
                     }
                     break;
                 }
             }
         }
-        if(isNullOrNotContained){
+        if (isNullOrNotContained) {
             // user's preference is null or the (x,y) in user's preference is not contained in any screen
             // set the application to the main screen
-            applicationBounds = new Rectangle(0, 0, Math.min(1150,screenBounds.width), Math.min(800,screenBounds.height));
+            applicationBounds = new Rectangle(0, 0, Math.min(1150, screenBounds.width), Math.min(800, screenBounds.height));
         }
         mainFrame.setBounds(applicationBounds);
 
@@ -354,11 +354,6 @@ public class IGV implements IGVEventObserver {
     // Set the focus on the command bar search box
     public void focusSearchBox() {
         contentPane.getCommandBar().focusSearchBox();
-    }
-
-
-    public void selectGenomeFromList(String genomeId) {
-        contentPane.getCommandBar().selectGenome(genomeId);
     }
 
     public void enableExtrasMenu() {
@@ -1975,21 +1970,6 @@ public class IGV implements IGVEventObserver {
                     if (!genomeLoaded) {
                         Genome genome = Genome.nullGenome();
                         GenomeManager.getInstance().setCurrentGenome(genome);
-
-
-                        //GenomeManager.getInstance().setCurrentGenome(Genome.NoneGenome());
-                        // If the error is with the default genome try refreshing it.
-//                        if(genomeId.equals(GenomeListManager.DEFAULT_GENOME.getId())) {
-//                            GenomeManager.getInstance().refreshHostedGenome(genomeId);
-//                        }
-//
-//                        genomeId = GenomeListManager.DEFAULT_GENOME.getId();
-//                        try {
-//                            GenomeManager.getInstance().loadGenomeById(genomeId);
-//                        } catch (IOException e) {
-//                            MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-//                            log.error("Error loading genome: " + genomeId, e);
-//                        }
                     }
                 }
 
@@ -2023,7 +2003,12 @@ public class IGV implements IGVEventObserver {
                         }
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
-                            contentPane.getCommandBar().selectGenome(genomeId);
+                            //contentPane.getCommandBar().selectGenome(genomeId);
+                            try {
+                                GenomeManager.getInstance().loadGenomeById(genomeId);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     } else if (igvArgs.getDataFileStrings() != null) {
 
@@ -2103,7 +2088,12 @@ public class IGV implements IGVEventObserver {
                         // Load the default genome if unsuccessful
                         if (!success) {
                             String genomeId = preferences.getDefaultGenome();
-                            contentPane.getCommandBar().selectGenome(genomeId);
+                            //contentPane.getCommandBar().selectGenome(genomeId);
+                            try {
+                                GenomeManager.getInstance().loadGenomeById(genomeId);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 }

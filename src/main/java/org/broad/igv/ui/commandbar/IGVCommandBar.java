@@ -150,33 +150,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         zoomControl.setEnabled(!geneListMode);
     }
 
-
-    /**
-     * Selects the first genome from the list which matches this genomeId.
-     * If not found, checks genomes from the server/user-defined list
-     *
-     * @param genomeId
-     */
-    public void selectGenome(String genomeId) {
-
-        //log.warn("Selecting genome " + genomeId);
-
-        GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
-
-        if (selectedItem == null || !genomeComboBox.hasItem(selectedItem)) {
-            try {
-                GenomeManager.getInstance().loadGenomeById(genomeId);
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                log.error("Error loading genome: " + genomeId, e);
-            }
-        }
-
-        if (selectedItem != null) {
-            UIUtilities.invokeAndWaitOnEventThread(() -> genomeComboBox.setSelectedItem(selectedItem));
-        }
-    }
-
     public void updateCurrentCoordinates() {
 
         if (IGV.hasInstance()) {

@@ -59,8 +59,11 @@ import org.broad.igv.util.ResourceLocator;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
 
@@ -95,41 +98,20 @@ public class GenomeManager {
         GenomeLoader.loadSequenceMap();
     }
 
-    /**
-     * Delete the specified .genome files.
-     *
-     * @param removedValuesList
-     */
-    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
 
-        for (GenomeListItem item : removedValuesList) {
-            String loc = item.getPath();
-            File genFile = new File(loc);
-            if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genFile)) {
-                genFile.delete();
-            }
-
-            File localFasta = DotGenomeUtils.getLocalFasta(item.getId());
-            if (localFasta != null) {
-                // If fasta file is in the "igv/genomes" directory delete it
-                DotGenomeUtils.removeLocalFasta(item.getId());
-                if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
-                    if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
-                        localFasta.delete();
-                        File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
-                        if (indexFile.exists()) {
-                            indexFile.delete();
-                        }
-                    }
-                }
-            }
-        }
-        GenomeListManager.getInstance().removeAllItems(removedValuesList);
+    public String getGenomeId() {
+        return currentGenome == null ? null : currentGenome.getId();
     }
 
-    // Setter provided for unit tests
-    public void setCurrentGenomeForTest(Genome genome) {
-        this.currentGenome = genome;
+    /**
+     * IGV always has exactly 1 genome loaded at a time.
+     * This returns the currently loaded genome
+     *
+     * @return
+     * @api
+     */
+    public Genome getCurrentGenome() {
+        return currentGenome;
     }
 
     /**
@@ -232,7 +214,9 @@ public class GenomeManager {
         if (IGV.hasInstance()) {
             IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
             FrameManager.getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), true);
-            loadGenomeAnnotations(newGenome);
+
+            restoreGenomeTracks(newGenome);
+
             IGV.getInstance().resetFrames();
             IGV.getInstance().getSession().clearHistory();
 
@@ -250,19 +234,6 @@ public class GenomeManager {
     }
 
     /**
-     * Load and initialize the track objects from the genome's track resource locators.  Does not add the tracks
-     * to the IGV instance.
-     *
-     * @param genome
-     */
-    public void loadGenomeAnnotations(Genome genome) {
-        restoreGenomeTracks(genome);
-        IGV.getInstance().repaint();
-    }
-
-    /**
-     * Add a genomes tracks to the IGV instance.
-     *
      * @param genome
      */
     public void restoreGenomeTracks(Genome genome) {
@@ -318,34 +289,6 @@ public class GenomeManager {
     }
 
 
-    /**
-     * Delete .genome files from the cache directory
-     */
-    public void clearGenomeCache() {
-        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
-        for (File file : files) {
-            if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                file.delete();
-            }
-        }
-    }
-
-    public String getGenomeId() {
-        return currentGenome == null ? null : currentGenome.getId();
-    }
-
-    /**
-     * IGV always has exactly 1 genome loaded at a time.
-     * This returns the currently loaded genome
-     *
-     * @return
-     * @api
-     */
-    public Genome getCurrentGenome() {
-        return currentGenome;
-    }
-
-
     public GenomeListItem downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
 
         try {
@@ -353,7 +296,7 @@ public class GenomeManager {
             if (item.getPath().endsWith(".genome")) {
                 File genomeFile = DotGenomeUtils.getDotGenomeFile(item.getPath());  // Will be downloaded if remote -- neccessary to unzip
                 item.setPath(genomeFile.getAbsolutePath());
-            } else if (downloadSequence || downloadAnnotations) {
+            } else {
                 JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
                 GenomeConfig config = loader.loadGenomeConfig();
                 File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
@@ -366,6 +309,63 @@ public class GenomeManager {
         }
 
         return item;
+    }
+
+
+    /**
+     * Delete the specified genome files
+     *
+     * @param removedValuesList
+     */
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
+
+
+        for (GenomeListItem item : removedValuesList) {
+
+            String loc = item.getPath();
+            File genomeFile = new File(loc);
+
+            if (genomeFile.exists() && DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genomeFile)) {
+
+                // Delete associated data files
+                File dataFileDirectory = new File(DirectoryManager.getGenomeCacheDirectory(), item.getId());
+                if (dataFileDirectory.isDirectory()) {
+                    try (Stream<Path> paths = Files.walk(dataFileDirectory.toPath())) {
+                        paths.sorted(Comparator.reverseOrder())
+                                .map(Path::toFile)
+                                .forEach(File::delete);
+                    }
+                    dataFileDirectory.delete();
+                }
+
+
+                // Delete local fasta file (Legacy .genome convention)
+                File localFasta = DotGenomeUtils.getLocalFasta(item.getId());
+                if (localFasta != null) {
+                    // If fasta file is in the "igv/genomes" directory delete it
+                    DotGenomeUtils.removeLocalFasta(item.getId());
+                    if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
+                        if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
+                            localFasta.delete();
+                            File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
+                            if (indexFile.exists()) {
+                                indexFile.delete();
+                            }
+                        }
+                    }
+                }
+
+                genomeFile.delete();
+            }
+
+
+        }
+        GenomeListManager.getInstance().removeAllItems(removedValuesList);
+    }
+
+    // Setter provided for unit tests
+    public void setCurrentGenomeForTest(Genome genome) {
+        this.currentGenome = genome;
     }
 
 

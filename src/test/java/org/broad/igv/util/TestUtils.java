@@ -570,11 +570,10 @@ public class TestUtils {
     }
 
     public static void resetTestUserDefinedGenomes() throws IOException {
-        File userDefinedGenomeListFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeListManager.TEST_USER_DEFINED_GENOME_LIST_FILE);
+        File userDefinedGenomeListFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeListManager.TEST_REMOTE_GENOMES_FILE);
         userDefinedGenomeListFile.delete();
         userDefinedGenomeListFile.deleteOnExit();
 
-        GenomeListManager.getInstance().clearUserDefinedGenomes();
-        GenomeListManager.getInstance().rebuildGenomeItemMap();
+        GenomeListManager.getInstance().resetForTests();
     }
 }

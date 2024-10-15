@@ -75,11 +75,11 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
      * Open a selection list to load a genome from the server.   This method is static because its used by multiple
      * UI elements  (menu bar and genome selection pulldown).
      */
-    public static void selectGenomesFromServer() {
+    public static void selectHostedGenome() {
 
         Runnable showDialog = () -> {
 
-            Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getServerGenomeList();
+            Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getHostedGenomeList();
             if (inputListItems == null) {
                 return;
             }
@@ -104,17 +104,15 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                     try {
                         GenomeManager.getInstance().loadGenome(selectedItem.getPath());
                         if (selectedItem.getPath().endsWith(".json")) {
+                            // json takes precedence over ".genome"
                             removeDotGenomeFile(selectedItem.getId());
                         }
-
-
                     } catch (IOException e) {
                         GenomeListManager.getInstance().removeGenomeListItem(selectedItem);
                         MessageUtils.showErrorMessage("Error loading genome " + selectedItem.getDisplayableName(), e);
                         log.error("Error loading genome " + selectedItem.getDisplayableName(), e);
                     }
                 }
-
             }
         };
 

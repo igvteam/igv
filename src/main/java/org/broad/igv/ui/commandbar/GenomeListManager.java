@@ -27,8 +27,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Singleton class for the list of genomes presented in the command bar combo box.  Also has methods for searching
- * the hosted genome list.
+ * Singleton class for managing the list of genomes presented in the command bar combo box.  Also has methods for
+ * searching the hosted genome list.
  */
 public class GenomeListManager {
 
@@ -36,20 +36,21 @@ public class GenomeListManager {
 
     private static GenomeListManager theInstance;
 
-    private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
+    private static final String REMOTE_GENOMES_FILE = "remote-genomes.txt";
 
-    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
+    private static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
             "https://igv.org/genomes/json/hg38.json",
             "hg38");
 
+
     private Map<String, GenomeListItem> genomeItemMap;
 
-    private Map<String, GenomeListItem> userDefinedGenomeMap;
+    private Map<String, GenomeListItem> remoteGenomesMap;
 
-    private Map<String, GenomeListItem> serverGenomeMap;
+    private Map<String, GenomeListItem> hostedGenomesMap;
 
-    private boolean serverGenomeListUnreachable = false;
+    private boolean hostedGenomeListUnreachable = false;
 
     private static GenomeListSorter sorter = new GenomeListSorter();
 
@@ -73,19 +74,25 @@ public class GenomeListManager {
      */
     public Map<String, GenomeListItem> getGenomeItemMap() throws IOException {
         if (genomeItemMap.isEmpty()) {
-            rebuildGenomeItemMap();
+            rebuildGenomeItemMaps();
         }
         return genomeItemMap;
     }
 
+    public void resetForTests() throws IOException {
+        remoteGenomesMap = null;
+        new File(TEST_REMOTE_GENOMES_FILE).delete();
+        rebuildGenomeItemMaps();
+    }
     /**
      * Completely rebuild the genome drop down info.
      */
-    public void rebuildGenomeItemMap() throws IOException {
-        serverGenomeMap = null;
-        userDefinedGenomeMap = null;
+    private void rebuildGenomeItemMaps() throws IOException {
+        // Rebuild the selectable genomes map.  The order is imporant as downloaded genomes take precedence.
+        hostedGenomesMap = null;
+        remoteGenomesMap = null;
         genomeItemMap.clear();
-        genomeItemMap.putAll(getUserSelectedGenomeMap());
+        genomeItemMap.putAll(getRemoteGenomesMap());
         genomeItemMap.putAll(getDownloadedGenomeList());
         if (genomeItemMap.isEmpty()) {
             genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
@@ -112,11 +119,15 @@ public class GenomeListManager {
 
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
 
-        if (userDefinedGenomeMap == null) {
-            userDefinedGenomeMap = new HashMap<>();
+        if(FileUtils.isRemote(genomeListItem.getPath()) ||
+                !DirectoryManager.getGenomeCacheDirectory().getAbsoluteFile().
+                        equals(new File(genomeListItem.getPath()).getParentFile().getAbsolutePath())) {
+            if (remoteGenomesMap == null) {
+                remoteGenomesMap = new HashMap<>();
+            }
+            remoteGenomesMap.put(genomeListItem.getId(), genomeListItem);
+            exportRemoteGenomesList();
         }
-        userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
-        exportUserDefinedGenomeList();
 
         IGVEventBus.getInstance().post(new GenomeResetEvent());
     }
@@ -135,15 +146,15 @@ public class GenomeListManager {
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
         if (matchingItem == null) {
 
-            // If genome archive was not found, check server list
-//            matchingItem =  getServerGenomeMap().get(genomeId);
-//            if (matchingItem != null) {
-//                return matchingItem;
-//            }
+            // If genome archive was not found, search hosted genomes
+            matchingItem =  getHostedGenomesMap().get(genomeId);
+            if (matchingItem != null) {
+                return matchingItem;
+            }
 
             // If not found rebuild the item map
             try {
-                rebuildGenomeItemMap();
+                rebuildGenomeItemMaps();
             } catch (IOException e) {
                 log.error("Error rebuilding genome item map", e);
             }
@@ -153,7 +164,8 @@ public class GenomeListManager {
     }
 
     /**
-     * Build and return a genome list item map from all local (downloaded) genome files (.genome and .json files).
+     * Build and return a genome list item map from all local (downloaded) genome files (.genome and .json files) in
+     * the igv/genomes directory.
      * <p>
      * If both .genome and .json files are found for the same genome ID the .json file is preferred, and the .genome
      * file deleted.   This complicates loading but is neccessary for a transition period.
@@ -282,13 +294,13 @@ public class GenomeListManager {
         for (GenomeListItem genomeListItem : removedValuesList) {
             final String id = genomeListItem.getId();
             genomeItemMap.remove(id);
-            if (userDefinedGenomeMap != null && userDefinedGenomeMap.containsKey(id)) {
-                userDefinedGenomeMap.remove(id);
+            if (remoteGenomesMap != null && remoteGenomesMap.containsKey(id)) {
+                remoteGenomesMap.remove(id);
                 updateImportFile = true;
             }
         }
         if (updateImportFile) {
-            exportUserDefinedGenomeList();
+            exportRemoteGenomesList();
         }
     }
 
@@ -305,41 +317,42 @@ public class GenomeListManager {
             } catch (Exception e) {
                 log.error("Error deleting genome file: " + genomeListItem.getPath() + ": " + e.getMessage());
             }
+
+            // TODO -- download sequence and annotation files, if any
         }
 
         removeUserDefinedGenome(id);
     }
 
     public void removeUserDefinedGenome(String id) {
-        if (userDefinedGenomeMap != null && userDefinedGenomeMap.containsKey(id)) {
-            userDefinedGenomeMap.remove(id);
-            exportUserDefinedGenomeList();
+        if (remoteGenomesMap != null && remoteGenomesMap.containsKey(id)) {
+            remoteGenomesMap.remove(id);
+            exportRemoteGenomesList();
         }
     }
 
 
-    public List<GenomeListItem> getServerGenomeList() {
-        List<GenomeListItem> items = new ArrayList<>(getServerGenomeMap().values());
+     List<GenomeListItem> getHostedGenomeList() {
+        List<GenomeListItem> items = new ArrayList<>(getHostedGenomesMap().values());
         items.sort(sorter);
         return items;
     }
 
     /**
-     * Gets a list of all the server genome archive files that
-     * IGV knows about.
+     * Gets a list of all hosted genomes
      *
      * @return List<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getServerGenomeMap() {
+    public Map<String, GenomeListItem> getHostedGenomesMap() {
 
-        if (serverGenomeListUnreachable) {
+        if (hostedGenomeListUnreachable) {
             return Collections.emptyMap();
         }
 
-        if (serverGenomeMap == null) {
-            serverGenomeMap = new HashMap<>();
+        if (hostedGenomesMap == null) {
+            hostedGenomesMap = new HashMap<>();
             BufferedReader dataReader = null;
             InputStream inputStream = null;
             String genomeListURLString = "";
@@ -366,15 +379,15 @@ public class GenomeListManager {
                             String url = fields[1];
                             String id = fields[2];
                             GenomeListItem item = new GenomeListItem(name, url, id);
-                            serverGenomeMap.put(item.getId(), item);
+                            hostedGenomesMap.put(item.getId(), item);
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
                         }
                     }
                 }
             } catch (Exception e) {
-                serverGenomeListUnreachable = true;
-                serverGenomeMap = Collections.emptyMap();
+                hostedGenomeListUnreachable = true;
+                hostedGenomesMap = Collections.emptyMap();
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                                 genomeListURLString + ").    Only locally defined genomes will be available.",
@@ -399,9 +412,9 @@ public class GenomeListManager {
         }
 
         if (IGVMenuBar.getInstance() != null) {
-            IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+            IGVMenuBar.getInstance().notifyGenomeServerReachable(!hostedGenomeListUnreachable);
         }
-        return serverGenomeMap;
+        return hostedGenomesMap;
     }
 
     /**
@@ -412,15 +425,20 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getUserSelectedGenomeMap() {
+    public Map<String, GenomeListItem> getRemoteGenomesMap() {
 
-        if (userDefinedGenomeMap == null) {
+        if (remoteGenomesMap == null) {
 
             boolean updateClientGenomeListFile = false;
 
-            userDefinedGenomeMap = new HashMap<>();
+            remoteGenomesMap = new HashMap<>();
 
-            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getSelectedGenomeListFile());
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
+
+            if(!listFile.exists()) {
+                // Try old filename
+                listFile = new File(DirectoryManager.getGenomeCacheDirectory(), "user-defined-genomes.txt");
+            }
 
             if (listFile.exists()) {
 
@@ -458,7 +476,7 @@ public class GenomeListManager {
 
                         try {
                             GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
-                            userDefinedGenomeMap.put(item.getId(), item);
+                            remoteGenomesMap.put(item.getId(), item);
                         } catch (Exception e) {
                             log.error("Error updating user genome list line '" + nextLine + "'", e);
                         }
@@ -477,11 +495,11 @@ public class GenomeListManager {
                     }
                 }
                 if (updateClientGenomeListFile) {
-                    exportUserDefinedGenomeList();
+                    exportRemoteGenomesList();
                 }
             }
         }
-        return userDefinedGenomeMap;
+        return remoteGenomesMap;
     }
 
 
@@ -490,13 +508,13 @@ public class GenomeListManager {
      *
      * @throws IOException
      */
-    public void exportUserDefinedGenomeList() {
+    public void exportRemoteGenomesList() {
 
-        if (userDefinedGenomeMap == null) {
+        if (remoteGenomesMap == null) {
             return;
         }
 
-        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getSelectedGenomeListFile());
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");
@@ -511,7 +529,7 @@ public class GenomeListManager {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(listFile)));
-            for (GenomeListItem genomeListItem : userDefinedGenomeMap.values()) {
+            for (GenomeListItem genomeListItem : remoteGenomesMap.values()) {
                 writer.print(genomeListItem.getDisplayableName());
                 writer.print("\t");
                 writer.print(genomeListItem.getPath());
@@ -536,21 +554,13 @@ public class GenomeListManager {
     }
 
 
-    private String getSelectedGenomeListFile() {
+    private String getRemoteGenomesFilename() {
         if (Globals.isTesting()) {
-            return TEST_USER_DEFINED_GENOME_LIST_FILE;
+            return TEST_REMOTE_GENOMES_FILE;
         } else {
-            return ACT_USER_DEFINED_GENOME_LIST_FILE;
+            return REMOTE_GENOMES_FILE;
         }
 
-    }
-
-    /**
-     * Added for unit tests
-     */
-    public void clearUserDefinedGenomes() {
-        userDefinedGenomeMap = null;
-        new File(TEST_USER_DEFINED_GENOME_LIST_FILE).delete();
     }
 
     private static class GenomeListSorter implements Comparator<GenomeListItem> {
@@ -564,7 +574,7 @@ public class GenomeListManager {
 
     // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
     // but highly unlikely to be repeated.
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" +
+    public static final String TEST_REMOTE_GENOMES_FILE = "test-remote-genomes_" +
             System.currentTimeMillis() + "_" + Math.random() + ".txt";
 
 

@@ -61,36 +61,4 @@ public class GenomeConfig {
     public GenomeConfig() {
     }
 
-    public GenomeConfig(GenomeConfig genomeConfig) {
-        this.id = genomeConfig.id;
-        this.name = genomeConfig.name;
-        this.fastaURL = genomeConfig.fastaURL;
-        this.indexURL = genomeConfig.indexURL;
-        this.gziIndexURL = genomeConfig.gziIndexURL;
-        this.compressedIndexURL = genomeConfig.compressedIndexURL;
-        this.twoBitURL = genomeConfig.twoBitURL;
-        this.twoBitBptURL = genomeConfig.twoBitBptURL;
-        this.chromAliasBbURL = genomeConfig.chromAliasBbURL;
-        this.chromAliases = genomeConfig.chromAliases;
-        this.cytobandURL = genomeConfig.cytobandURL;
-        this.cytobandBbURL = genomeConfig.cytobandBbURL;
-        this.chromSizesURL = genomeConfig.chromSizesURL;
-        this.aliasURL = genomeConfig.aliasURL;
-        this.nameSet = genomeConfig.nameSet;
-        this.wholeGenomeView = genomeConfig.wholeGenomeView;
-        this.defaultPos = genomeConfig.defaultPos;
-        this.description = genomeConfig.description;
-        this.blat = genomeConfig.blat;
-        this.infoURL = genomeConfig.infoURL;
-        this.ordered = genomeConfig.ordered;
-        this.blatDB = genomeConfig.blatDB;
-        this.ucsdID = genomeConfig.ucsdID;
-        this.chromosomeOrder = genomeConfig.chromosomeOrder;
-        this.chains = genomeConfig.chains;
-        this.sequence = genomeConfig.sequence;
-        this.cytobands = genomeConfig.cytobands;
-        this.tracks = genomeConfig.tracks;
-        this.annotations = genomeConfig.annotations;
-
-    }
 }

@@ -66,17 +66,30 @@ public class GenomeDownloadUtils {
                 localFile = download(new URL(config.twoBitURL), dataDirectory);
                 config.twoBitURL = relativeDataDirectory + localFile.getName();
 
-
+                // Null out urls not needed for .2bit seequences.
                 config.fastaURL = null;
                 config.indexURL = null;
                 config.gziIndexURL = null;
 
                 // The optional btree index.  This is probably not needed for local file configurations.
                 if (config.twoBitBptURL != null) {
-                    localFile = download(new URL(config.twoBitURL), dataDirectory);
-                    config.twoBitURL = relativeDataDirectory + localFile.getName();
+                    localFile = download(new URL(config.twoBitBptURL), dataDirectory);
+                    config.twoBitBptURL = relativeDataDirectory + localFile.getName();
                 }
             } else if (config.fastaURL != null) {
+
+                localFile = download(new URL(config.fastaURL), dataDirectory);
+                config.fastaURL = relativeDataDirectory + localFile.getName();
+                if (config.indexURL != null) {
+                    localFile = download(new URL(config.indexURL), dataDirectory);
+                    config.indexURL = relativeDataDirectory + localFile.getName();
+                }
+                if (config.gziIndexURL != null) {
+                    localFile = download(new URL(config.gziIndexURL), dataDirectory);
+                    config.gziIndexURL = relativeDataDirectory + localFile.getName();
+                }
+
+            } else {
                 throw new RuntimeException("Sequence for genome " + config.name + " is not downloadable.");
             }
         }

@@ -40,8 +40,6 @@ public class JsonGenomeLoader extends GenomeLoader {
 
         GenomeConfig genomeConfig = loadGenomeConfig();
 
-        fixPaths(genomeConfig);
-
         Genome genome = new Genome(genomeConfig);
 
         // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
@@ -115,6 +113,9 @@ public class JsonGenomeLoader extends GenomeLoader {
         }
         if (config.twoBitURL != null) {
             config.twoBitURL = FileUtils.getAbsolutePath(config.twoBitURL, genomePath);
+        }
+        if (config.twoBitBptURL != null) {
+            config.twoBitBptURL = FileUtils.getAbsolutePath(config.twoBitBptURL, genomePath);
         }
         if (config.cytobandBbURL != null) {
             config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
