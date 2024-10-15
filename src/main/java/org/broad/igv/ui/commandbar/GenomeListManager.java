@@ -84,20 +84,6 @@ public class GenomeListManager {
         new File(TEST_REMOTE_GENOMES_FILE).delete();
         rebuildGenomeItemMaps();
     }
-    /**
-     * Completely rebuild the genome drop down info.
-     */
-    private void rebuildGenomeItemMaps() throws IOException {
-        // Rebuild the selectable genomes map.  The order is imporant as downloaded genomes take precedence.
-        hostedGenomesMap = null;
-        remoteGenomesMap = null;
-        genomeItemMap.clear();
-        genomeItemMap.putAll(getRemoteGenomesMap());
-        genomeItemMap.putAll(getDownloadedGenomeList());
-        if (genomeItemMap.isEmpty()) {
-            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
-        }
-    }
 
     public List<GenomeListItem> getGenomeListItems() {
         List<GenomeListItem> items = new ArrayList<>(genomeItemMap.values());
@@ -164,6 +150,21 @@ public class GenomeListManager {
     }
 
     /**
+     * Rebuild the genome drop down info.
+     */
+    private void rebuildGenomeItemMaps() throws IOException {
+        // Rebuild the selectable genomes map.  The order is imporant as downloaded genomes take precedence.
+        hostedGenomesMap = null;
+        remoteGenomesMap = null;
+        genomeItemMap.clear();
+        genomeItemMap.putAll(getRemoteGenomesMap());
+        genomeItemMap.putAll(getDownloadedGenomeMap());
+        if (genomeItemMap.isEmpty()) {
+            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
+        }
+    }
+
+    /**
      * Build and return a genome list item map from all local (downloaded) genome files (.genome and .json files) in
      * the igv/genomes directory.
      * <p>
@@ -174,7 +175,7 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    private static Map<String, GenomeListItem> getDownloadedGenomeList() {
+    private static Map<String, GenomeListItem> getDownloadedGenomeMap() {
 
         Map<String, GenomeListItem> cachedGenomes = new HashMap<>();
         if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
@@ -288,7 +289,7 @@ public class GenomeListManager {
         return cachedGenomes;
     }
 
-    public void removeAllItems(List<GenomeListItem> removedValuesList) {
+    public void removeItems(List<GenomeListItem> removedValuesList) {
 
         boolean updateImportFile = false;
         for (GenomeListItem genomeListItem : removedValuesList) {
@@ -303,34 +304,6 @@ public class GenomeListManager {
             exportRemoteGenomesList();
         }
     }
-
-
-    public void removeGenomeListItem(GenomeListItem genomeListItem) {
-        final String id = genomeListItem.getId();
-        genomeItemMap.remove(id);
-
-        // If this is a cached genome remove it from cache
-        Map<String, GenomeListItem> cachedItems = getDownloadedGenomeList();
-        if (cachedItems.containsKey(id)) {
-            try {
-                (new File(genomeListItem.getPath())).delete();
-            } catch (Exception e) {
-                log.error("Error deleting genome file: " + genomeListItem.getPath() + ": " + e.getMessage());
-            }
-
-            // TODO -- download sequence and annotation files, if any
-        }
-
-        removeUserDefinedGenome(id);
-    }
-
-    public void removeUserDefinedGenome(String id) {
-        if (remoteGenomesMap != null && remoteGenomesMap.containsKey(id)) {
-            remoteGenomesMap.remove(id);
-            exportRemoteGenomesList();
-        }
-    }
-
 
      List<GenomeListItem> getHostedGenomeList() {
         List<GenomeListItem> items = new ArrayList<>(getHostedGenomesMap().values());
@@ -418,8 +391,7 @@ public class GenomeListManager {
     }
 
     /**
-     * Gets a list of all the user-defined genome archive files that
-     * IGV knows about.
+     * Return the list of remote genomes for the dropdown
      *
      * @return LinkedHashSet<GenomeListItem>
      * @throws IOException
@@ -504,7 +476,7 @@ public class GenomeListManager {
 
 
     /**
-     * Export the user-define genome property file.
+     * Export the list of selected remote genomes (genomes not in local cache)
      *
      * @throws IOException
      */

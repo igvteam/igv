@@ -108,7 +108,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                             removeDotGenomeFile(selectedItem.getId());
                         }
                     } catch (IOException e) {
-                        GenomeListManager.getInstance().removeGenomeListItem(selectedItem);
                         MessageUtils.showErrorMessage("Error loading genome " + selectedItem.getDisplayableName(), e);
                         log.error("Error loading genome " + selectedItem.getDisplayableName(), e);
                     }

@@ -103,6 +103,11 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
         Runnable runnable = () -> {
             List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
             if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
+
+                // Remove from the dropdown list
+                GenomeListManager.getInstance().removeItems(selectedValuesList);
+
+                // Remove downloaded genomes, if any, and associated files
                 try {
                     GenomeManager.getInstance().deleteDownloadedGenomes(selectedValuesList);
                 } catch (IOException e) {
@@ -110,6 +115,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
                     MessageUtils.showErrorMessage("Error deleting genome files", e);
                 }
 
+                // If the last genome selected (DEFAULT_GENOME) was removed reset the key
                 String lastGenomeKey = PreferencesManager.getPreferences().get(Constants.DEFAULT_GENOME);
                 for (GenomeListItem item : selectedValuesList) {
                     if (lastGenomeKey.equals(item.getId())) {
