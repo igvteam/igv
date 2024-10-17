@@ -131,6 +131,10 @@ public class GenomeDownloadUtils {
                         localFile = download(new URL(trackConfig.indexURL), dataDirectory);
                         trackConfig.indexURL = relativeDataDirectory + localFile.getName();
                     }
+                    if(trackConfig.trixURL != null) {
+                        localFile = download(new URL(trackConfig.trixURL), dataDirectory);
+                        trackConfig.trixURL = relativeDataDirectory + localFile.getName();
+                    }
                 }
 
             }

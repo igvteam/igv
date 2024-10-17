@@ -383,7 +383,7 @@ public class Hub {
             config.searchIndex = t.getProperty("searchIndex");
         }
         if (t.hasProperty("searchTrix")) {
-            config.searchTrix = this.baseURL + t.getProperty("searchTrix");
+            config.trixURL = this.baseURL + t.getProperty("searchTrix");
         }
 
         if (t.hasProperty("group")) {

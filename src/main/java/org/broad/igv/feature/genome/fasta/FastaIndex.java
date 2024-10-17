@@ -108,6 +108,9 @@ public class FastaIndex {
                 // Build sequence structure
                 add(new FastaSequenceIndexEntry(contig, location, size, basesPerLine, bytesPerLine));
             }
+            if(sequenceEntries.size() == 0) {
+                throw new RuntimeException("No sequences found in " + indexFile);
+            }
         } finally {
             if (reader != null) {
                 reader.close();

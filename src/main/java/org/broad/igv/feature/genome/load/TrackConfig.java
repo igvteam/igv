@@ -25,7 +25,7 @@ public class TrackConfig {
     public Boolean visible;
     public String infoURL;
     public String searchIndex;
-    public String searchTrix;
+    public String trixURL;
     public String group;
     public Integer order;
     public Integer visibilityWindow;

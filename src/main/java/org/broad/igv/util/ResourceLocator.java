@@ -647,8 +647,8 @@ public class ResourceLocator {
         if(trackConfig.panelName != null) {
             res.setPanelName(trackConfig.panelName);
         }
-        if (trackConfig.searchTrix != null) {
-            res.setTrixURL(trackConfig.searchTrix);
+        if (trackConfig.trixURL != null) {
+            res.setTrixURL(trackConfig.trixURL);
         }
 
         res.setFeatureInfoURL(trackConfig.infoURL);
