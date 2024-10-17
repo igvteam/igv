@@ -86,7 +86,12 @@ public class TwoBitSequence implements Sequence {
 
     @Override
     public List<String> getChromosomeNames() {
-        return null;
+        if(this.index instanceof TwoBitIndex) {
+            return ((TwoBitIndex) this.index).getSequenceNames();
+        } else {
+            // Index is an externally loaded BP+ tree.  We can't know the sequence (key) names without walking the whole tree.
+            return null;
+        }
     }
 
     @Override

@@ -9,6 +9,9 @@ import org.broad.igv.util.Utilities;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Loader for a minimal genome of only reference sequence, which can be defined by a fasta or 2bit file.
+ */
 public class FastaGenomeLoader extends GenomeLoader {
 
     private String genomePath;
@@ -21,42 +24,44 @@ public class FastaGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        String fastaPath = null;
-        String fastaIndexPath = null;
-        if (genomePath.endsWith(".fai")) {
-            fastaPath = genomePath.substring(0, genomePath.length() - 4);
-            fastaIndexPath = genomePath;
-        } else {
-            fastaPath = genomePath;
-            fastaIndexPath = genomePath + ".fai";
-        }
-
-        if (!FileUtils.resourceExists(fastaIndexPath)) {
-            //Have to make sure we have a local copy of the fasta file
-            //to index it
-            if (!FileUtils.isRemote(fastaPath)) {
-                fastaIndexPath = fastaPath + ".fai";
-                FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
-            }
-        }
-
-        String id = fastaPath;
+        GenomeConfig config = new GenomeConfig();
+        String id = genomePath;
         String name;
-        if (HttpUtils.isRemoteURL(fastaPath)) {
-            name = Utilities.getFileNameFromURL(fastaPath);
+        if (HttpUtils.isRemoteURL(genomePath)) {
+            name = Utilities.getFileNameFromURL(genomePath);
         } else {
-            File file = new File(fastaPath);
+            File file = new File(genomePath);
             if (!file.exists()) {
-                throw new IOException(fastaPath + " does not exist, could not load genome");
+                throw new IOException(genomePath + " does not exist, could not load genome");
             }
             name = file.getName();
         }
 
-        GenomeConfig config = new GenomeConfig();
+
         config.setId(id);
         config.setName(name);
-        config.setFastaURL(fastaPath);
-        config.setIndexURL(fastaIndexPath);
+
+        if (genomePath.endsWith(".2bit")) {
+            config.setTwoBitURL(genomePath);
+
+        } else {
+            String fastaPath = null;
+            String fastaIndexPath;
+            if (genomePath.endsWith(".fai")) {
+                fastaPath = genomePath.substring(0, genomePath.length() - 4);
+                fastaIndexPath = genomePath;
+            } else {
+                fastaIndexPath = genomePath + ".fai";
+            }
+
+            // If fasta is a local file create index, if needed
+            if (!FileUtils.isRemote(fastaPath) && !FileUtils.resourceExists(fastaIndexPath)) {
+                FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
+            }
+
+            config.setFastaURL(fastaPath);
+            config.setIndexURL(fastaIndexPath);
+        }
 
         return new Genome(config);
     }

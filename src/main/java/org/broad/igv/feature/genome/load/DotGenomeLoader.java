@@ -77,8 +77,8 @@ public class DotGenomeLoader extends GenomeLoader {
     }
 
     /**
-     * Create a genome from a ".genome" file.  In addition to the reference sequence .genome files can optionally
-     * specify cytobands and annotations.
+     * Create a genome from a ".genome" file.   A ".genome" file is simply a zip archive.  In addition to a URL to the
+     * reference fasta .genome files can optionally contain cytobands and annotations.
      */
 
     @Override
@@ -89,6 +89,8 @@ public class DotGenomeLoader extends GenomeLoader {
         GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(archiveFile);
         final String id = genomeDescriptor.getId();
         final String displayName = genomeDescriptor.getName();
+
+        // Legacy (versions < 2.19) means to override a remote fasta URL with a local file
         String sequencePath = localSequenceMap.containsKey(genomeDescriptor.getId()) ?
                 loadSequenceMap().get(genomeDescriptor.getId()).getAbsolutePath() :
                 genomeDescriptor.getSequencePath();

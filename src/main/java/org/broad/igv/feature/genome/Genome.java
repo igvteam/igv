@@ -175,11 +175,17 @@ public class Genome {
             if (this.longChromosomeNames == null && config.isWholeGenomeView() != false) {
                 this.longChromosomeNames = computeLongChromosomeNames();
             }
+        } else {
+            // No chromosome list.  Try to fetch chromosome names from the sequence
+            if(this.chromosomeNames.isEmpty()) {
+                this.chromosomeNames = sequence.getChromosomeNames();
+            }
         }
 
         // Whole genome view is enabled by default if we have the chromosome information amd the
         // number of chromosomes is not too large
         showWholeGenomeView = config.isWholeGenomeView() &&
+                chromosomeList != null &&
                 chromosomeList.size() > 1 &&
                 longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
 
