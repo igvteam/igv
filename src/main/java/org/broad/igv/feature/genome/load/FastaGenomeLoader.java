@@ -53,10 +53,10 @@ public class FastaGenomeLoader extends GenomeLoader {
         }
 
         GenomeConfig config = new GenomeConfig();
-        config.id = id;
-        config.name = name;
-        config.fastaURL = fastaPath;
-        config.indexURL = fastaIndexPath;
+        config.setId(id);
+        config.setName(name);
+        config.setFastaURL(fastaPath);
+        config.setIndexURL(fastaIndexPath);
 
         return new Genome(config);
     }

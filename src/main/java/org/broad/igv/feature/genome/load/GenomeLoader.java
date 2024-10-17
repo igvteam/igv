@@ -51,11 +51,11 @@ abstract public class GenomeLoader {
             return new JsonGenomeLoader(genomePath);
         } else if (genomePath.endsWith(".2bit")) {
             GenomeConfig config = new GenomeConfig();
-            config.twoBitURL = genomePath;
-            config.id = genomePath;
-            config.name = (HttpUtils.isRemoteURL(genomePath)) ?
+            config.setTwoBitURL(genomePath);
+            config.setId(genomePath);
+            config.setName((HttpUtils.isRemoteURL(genomePath)) ?
                     Utilities.getFileNameFromURL(genomePath) :
-                    (new File(genomePath)).getName();
+                    (new File(genomePath)).getName());
             return new GenomeObjectLoader(config);
         } else if (genomePath.endsWith("hub.txt")) {
             return new HubGenomeLoader(genomePath);

@@ -13,7 +13,6 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -108,53 +107,53 @@ public class JsonGenomeLoader extends GenomeLoader {
      */
     private GenomeConfig fixPaths(GenomeConfig config) {
 
-        if (config.chromAliasBbURL != null) {
-            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
+        if (config.getChromAliasBbURL() != null) {
+            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
         }
-        if (config.twoBitURL != null) {
-            config.twoBitURL = FileUtils.getAbsolutePath(config.twoBitURL, genomePath);
+        if (config.getTwoBitURL() != null) {
+            config.setTwoBitURL(FileUtils.getAbsolutePath(config.getTwoBitURL(), genomePath));
         }
-        if (config.twoBitBptURL != null) {
-            config.twoBitBptURL = FileUtils.getAbsolutePath(config.twoBitBptURL, genomePath);
+        if (config.getTwoBitBptURL() != null) {
+            config.setTwoBitBptURL(FileUtils.getAbsolutePath(config.getTwoBitBptURL(), genomePath));
         }
-        if (config.cytobandBbURL != null) {
-            config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
+        if (config.getCytobandBbURL() != null) {
+            config.setCytobandBbURL(FileUtils.getAbsolutePath(config.getCytobandBbURL(), genomePath));
         }
-        if (config.chromSizesURL != null) {
-            config.chromSizesURL = FileUtils.getAbsolutePath(config.chromSizesURL, genomePath);
+        if (config.getChromSizesURL() != null) {
+            config.setChromSizesURL(FileUtils.getAbsolutePath(config.getChromSizesURL(), genomePath));
         }
-        if (config.fastaURL != null) {
-            config.fastaURL = FileUtils.getAbsolutePath(config.fastaURL, genomePath);
+        if (config.getFastaURL() != null) {
+            config.setFastaURL(FileUtils.getAbsolutePath(config.getFastaURL(), genomePath));
         }
-        if (config.indexURL != null) {
-            config.indexURL = FileUtils.getAbsolutePath(config.indexURL, genomePath);
+        if (config.getIndexURL() != null) {
+            config.setIndexURL(FileUtils.getAbsolutePath(config.getIndexURL(), genomePath));
         }
-        if (config.gziIndexURL != null) {
-            config.gziIndexURL = FileUtils.getAbsolutePath(config.gziIndexURL, genomePath);
+        if (config.getGziIndexURL() != null) {
+            config.setGziIndexURL(FileUtils.getAbsolutePath(config.getGziIndexURL(), genomePath));
         }
-        if (config.compressedIndexURL != null) {
-            config.compressedIndexURL = FileUtils.getAbsolutePath(config.compressedIndexURL, genomePath);
+        if (config.getCompressedIndexURL() != null) {
+            config.setCompressedIndexURL(FileUtils.getAbsolutePath(config.getCompressedIndexURL(), genomePath));
         }
-        if (config.cytobandURL != null) {
-            config.cytobandURL = FileUtils.getAbsolutePath(config.cytobandURL, genomePath);
+        if (config.getCytobandURL() != null) {
+            config.setCytobandURL(FileUtils.getAbsolutePath(config.getCytobandURL(), genomePath));
         }
-        if (config.aliasURL != null) {
-            config.aliasURL = FileUtils.getAbsolutePath(config.aliasURL, genomePath);
+        if (config.getAliasURL() != null) {
+            config.setAliasURL(FileUtils.getAbsolutePath(config.getAliasURL(), genomePath));
         }
-        if (config.chromAliasBbURL != null) {
-            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
+        if (config.getChromAliasBbURL() != null) {
+            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
         }
-        List<TrackConfig> trackConfigs = config.tracks;
+        List<TrackConfig> trackConfigs = config.getTracks();
         if (trackConfigs == null) {
-            trackConfigs = config.annotations;
+            trackConfigs = config.getAnnotations();
         }
         if (trackConfigs != null) {
             trackConfigs.forEach((TrackConfig trackConfig) -> {
-                if (trackConfig.url != null) {
-                    trackConfig.url = FileUtils.getAbsolutePath(trackConfig.url, genomePath);
+                if (trackConfig.getUrl() != null) {
+                    trackConfig.setUrl(FileUtils.getAbsolutePath(trackConfig.getUrl(), genomePath));
                 }
-                if (trackConfig.indexURL != null) {
-                    trackConfig.indexURL = FileUtils.getAbsolutePath(trackConfig.indexURL, genomePath);
+                if (trackConfig.getIndexURL() != null) {
+                    trackConfig.setIndexURL(FileUtils.getAbsolutePath(trackConfig.getIndexURL(), genomePath));
                 }
             });
         }

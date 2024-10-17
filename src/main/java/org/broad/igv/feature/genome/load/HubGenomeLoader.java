@@ -10,7 +10,6 @@ import org.broad.igv.ucsc.HubTrackSelectionDialog;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class HubGenomeLoader extends GenomeLoader {
 
@@ -56,13 +55,13 @@ public class HubGenomeLoader extends GenomeLoader {
             List<TrackConfigGroup> trackConfigGroups = hub.getGroupedTrackConfigurations();
             for (TrackConfigGroup group : trackConfigGroups) {
                 for (TrackConfig trackConfig : group.tracks) {
-                    if (selectedTrackNames.contains(trackConfig.name)) {
+                    if (selectedTrackNames.contains(trackConfig.getName())) {
                         selectedTracks.add(trackConfig);
                     }
                 }
             }
-            selectedTracks.sort((o1, o2) -> o1.order - o2.order);
-            config.tracks = selectedTracks;
+            selectedTracks.sort((o1, o2) -> o1.getOrder() - o2.getOrder());
+            config.setTracks(selectedTracks);
         }
 
         // If running in interactive mode opend dialog to set tracks.
@@ -71,10 +70,10 @@ public class HubGenomeLoader extends GenomeLoader {
             dlg.setVisible(true);
 
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
-            config.tracks = selectedTracks;
+            config.setTracks(selectedTracks);
 
             // Remember selections in user preferences
-            List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.name).toList();
+            List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
             PreferencesManager.getPreferences().put(key, String.join(",", names));
         }
 

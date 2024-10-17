@@ -37,9 +37,9 @@ public class GenbankLoader extends GenomeLoader {
         Sequence sequence = new InMemorySequence(chr, seq);
 
         GenomeConfig config = new GenomeConfig();
-        config.id = chr;
-        config.name = name;
-        config.sequence = sequence;
+        config.setId(chr);
+        config.setName(name);
+        config.setSequence(sequence);
 
         String[] aliases = genbankParser.getAliases();
         if (aliases != null) {
@@ -48,7 +48,7 @@ public class GenbankLoader extends GenomeLoader {
             for (String a : aliases) {
                 aliasList.add(a);
             }
-            config.chromAliases = (Arrays.asList(aliasList));
+            config.setChromAliases((Arrays.asList(aliasList)));
         }
 
 

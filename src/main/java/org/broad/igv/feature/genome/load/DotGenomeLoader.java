@@ -3,9 +3,6 @@ package org.broad.igv.feature.genome.load;
 import htsjdk.tribble.Feature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.Sequence;
-import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
-import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
 import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -99,15 +96,15 @@ public class DotGenomeLoader extends GenomeLoader {
         if (sequencePath == null) {
             // TODO -- is this an error?
         } else {
-            config.fastaURL = sequencePath;
-            config.indexURL =  sequencePath + ".fai";
+            config.setFastaURL(sequencePath);
+            config.setIndexURL(sequencePath + ".fai");
             if (sequencePath.endsWith(".gz")) {
-                config.gziIndexURL = sequencePath + ".gzi";
+                config.setGziIndexURL(sequencePath + ".gzi");
             }
         }
 
-        config.id = id;
-        config.name = displayName;
+        config.setId(id);
+        config.setName(displayName);
 
 
         if (genomeDescriptor.hasCytobands()) {
@@ -115,7 +112,7 @@ public class DotGenomeLoader extends GenomeLoader {
             try {
                 cytobandStream = genomeDescriptor.getCytoBandStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(cytobandStream));
-                config.cytobands = CytoBandFileParser.loadData(reader);
+                config.setCytobands(CytoBandFileParser.loadData(reader));
 
             } catch (IOException ex) {
                 log.error("Error loading cytoband file", ex);
@@ -130,7 +127,7 @@ public class DotGenomeLoader extends GenomeLoader {
             aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(aliasStream));
-                config.chromAliases =  ChromAliasParser.loadChrAliases  (reader);
+                config.setChromAliases(ChromAliasParser.loadChrAliases  (reader));
             }
         } catch (IOException e) {
             // We don't want to bomb if the alias load fails.  Just log it and proceed.

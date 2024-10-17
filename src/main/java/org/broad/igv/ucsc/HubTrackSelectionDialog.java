@@ -2,16 +2,11 @@ package org.broad.igv.ucsc;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.HyperlinkFactory;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -112,9 +107,9 @@ public class HubTrackSelectionDialog extends JDialog {
         for (Map.Entry<JCheckBox, TrackConfig> entry : configMap.entrySet()) {
             final TrackConfig trackConfig = entry.getValue();
             if (entry.getKey().isSelected()) {
-                trackConfig.visible = true;
+                trackConfig.setVisible(true);
             } else {
-                trackConfig.visible = false;
+                trackConfig.setVisible(false);
             }
         }
         setVisible(false);
@@ -144,11 +139,11 @@ public class HubTrackSelectionDialog extends JDialog {
             JPanel p = new JPanel();
             final JCheckBox checkBox = new JCheckBox();
             configMap.put(checkBox, trackConfig);
-            checkBox.setSelected(trackConfig.visible);
+            checkBox.setSelected(trackConfig.getVisible());
 
-            JLabel label = trackConfig.html == null ?
-                    new JLabel(trackConfig.name) :
-                    HyperlinkFactory.createLink(trackConfig.name, trackConfig.html);
+            JLabel label = trackConfig.getHtml() == null ?
+                    new JLabel(trackConfig.getName()) :
+                    HyperlinkFactory.createLink(trackConfig.getName(), trackConfig.getHtml());
             label.setLabelFor(checkBox);
 
             p.add(checkBox);
@@ -166,8 +161,8 @@ public class HubTrackSelectionDialog extends JDialog {
      * @return
      */
     public List<TrackConfig> getSelectedConfigs() {
-        List<TrackConfig> selected = configMap.values().stream().filter(trackConfig -> trackConfig.visible).collect(Collectors.toList());
-        selected.sort((o1, o2) -> o1.order - o2.order);
+        List<TrackConfig> selected = configMap.values().stream().filter(trackConfig -> trackConfig.getVisible()).collect(Collectors.toList());
+        selected.sort((o1, o2) -> o1.getOrder() - o2.getOrder());
         return selected;
     }
 
@@ -391,7 +386,7 @@ public class HubTrackSelectionDialog extends JDialog {
         dlf.setVisible(true);
 
         for (TrackConfig config : dlf.getSelectedConfigs()) {
-            System.out.println(config.name);
+            System.out.println(config.getName());
         }
     }
 

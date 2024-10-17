@@ -46,7 +46,7 @@ public class GenomeDownloadUtils {
 
         // Create a directory for the data files (sequence and annotations)
         final File genomeDirectory = DirectoryManager.getGenomeCacheDirectory();
-        File dataDirectory = new File(genomeDirectory, config.id);
+        File dataDirectory = new File(genomeDirectory, config.getId());
         if (dataDirectory.exists()) {
             if (!dataDirectory.isDirectory()) {
                 throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
@@ -57,89 +57,89 @@ public class GenomeDownloadUtils {
             }
         }
 
-        String relativeDataDirectory = config.id + "/";
+        String relativeDataDirectory = config.getId() + "/";
         File localFile;
         if (downloadSequence) {
 
-            if (config.twoBitURL != null) {
+            if (config.getTwoBitURL() != null) {
 
-                localFile = download(new URL(config.twoBitURL), dataDirectory);
-                config.twoBitURL = relativeDataDirectory + localFile.getName();
+                localFile = download(new URL(config.getTwoBitURL()), dataDirectory);
+                config.setTwoBitURL(relativeDataDirectory + localFile.getName());
 
                 // Null out urls not needed for .2bit seequences.
-                config.fastaURL = null;
-                config.indexURL = null;
-                config.gziIndexURL = null;
+                config.setFastaURL(null);
+                config.setIndexURL(null);
+                config.setGziIndexURL(null);
 
                 // The optional btree index.  This is probably not needed for local file configurations.
-                if (config.twoBitBptURL != null) {
-                    localFile = download(new URL(config.twoBitBptURL), dataDirectory);
-                    config.twoBitBptURL = relativeDataDirectory + localFile.getName();
+                if (config.getTwoBitBptURL() != null) {
+                    localFile = download(new URL(config.getTwoBitBptURL()), dataDirectory);
+                    config.setTwoBitBptURL(relativeDataDirectory + localFile.getName());
                 }
-            } else if (config.fastaURL != null) {
+            } else if (config.getFastaURL() != null) {
 
-                localFile = download(new URL(config.fastaURL), dataDirectory);
-                config.fastaURL = relativeDataDirectory + localFile.getName();
-                if (config.indexURL != null) {
-                    localFile = download(new URL(config.indexURL), dataDirectory);
-                    config.indexURL = relativeDataDirectory + localFile.getName();
+                localFile = download(new URL(config.getFastaURL()), dataDirectory);
+                config.setFastaURL(relativeDataDirectory + localFile.getName());
+                if (config.getIndexURL() != null) {
+                    localFile = download(new URL(config.getIndexURL()), dataDirectory);
+                    config.setIndexURL(relativeDataDirectory + localFile.getName());
                 }
-                if (config.gziIndexURL != null) {
-                    localFile = download(new URL(config.gziIndexURL), dataDirectory);
-                    config.gziIndexURL = relativeDataDirectory + localFile.getName();
+                if (config.getGziIndexURL() != null) {
+                    localFile = download(new URL(config.getGziIndexURL()), dataDirectory);
+                    config.setGziIndexURL(relativeDataDirectory + localFile.getName());
                 }
 
             } else {
-                throw new RuntimeException("Sequence for genome " + config.name + " is not downloadable.");
+                throw new RuntimeException("Sequence for genome " + config.getName() + " is not downloadable.");
             }
         }
         if (downloadAnnotations) {
 
-            if (config.chromSizesURL != null) {
-                localFile = download(new URL(config.chromSizesURL), dataDirectory);
-                config.chromSizesURL = relativeDataDirectory + localFile.getName();
+            if (config.getChromSizesURL() != null) {
+                localFile = download(new URL(config.getChromSizesURL()), dataDirectory);
+                config.setChromSizesURL(relativeDataDirectory + localFile.getName());
             }
 
-            if (config.cytobandBbURL != null) {
-                localFile = download(new URL(config.cytobandBbURL), dataDirectory);
-                config.cytobandBbURL = relativeDataDirectory + localFile.getName();
+            if (config.getCytobandBbURL() != null) {
+                localFile = download(new URL(config.getCytobandBbURL()), dataDirectory);
+                config.setCytobandBbURL(relativeDataDirectory + localFile.getName());
 
-            } else if (config.cytobandURL != null) {
-                localFile = download(new URL(config.cytobandURL), dataDirectory);
-                config.cytobandURL = relativeDataDirectory + localFile.getName();
+            } else if (config.getCytobandURL() != null) {
+                localFile = download(new URL(config.getCytobandURL()), dataDirectory);
+                config.setCytobandURL(relativeDataDirectory + localFile.getName());
             }
 
-            if (config.chromAliasBbURL != null) {
-                localFile = download(new URL(config.chromAliasBbURL), dataDirectory);
-                config.chromAliasBbURL = relativeDataDirectory + localFile.getName();
+            if (config.getChromAliasBbURL() != null) {
+                localFile = download(new URL(config.getChromAliasBbURL()), dataDirectory);
+                config.setChromAliasBbURL(relativeDataDirectory + localFile.getName());
 
-            } else if (config.aliasURL != null) {
-                localFile = download(new URL(config.aliasURL), dataDirectory);
-                config.aliasURL = relativeDataDirectory + localFile.getName();
+            } else if (config.getAliasURL() != null) {
+                localFile = download(new URL(config.getAliasURL()), dataDirectory);
+                config.setAliasURL(relativeDataDirectory + localFile.getName());
             }
 
-            List<TrackConfig> trackConfigs = config.tracks;
-            if (trackConfigs == null) trackConfigs = config.annotations;   // alias
+            List<TrackConfig> trackConfigs = config.getTracks();
+            if (trackConfigs == null) trackConfigs = config.getAnnotations();   // alias
 
             if (trackConfigs != null) {
                 for (TrackConfig trackConfig : trackConfigs) {
-                    if (trackConfig.url != null) {
-                        localFile = download(new URL(trackConfig.url), dataDirectory);
-                        trackConfig.url = relativeDataDirectory + localFile.getName();
+                    if (trackConfig.getUrl() != null) {
+                        localFile = download(new URL(trackConfig.getUrl()), dataDirectory);
+                        trackConfig.setUrl(relativeDataDirectory + localFile.getName());
                     }
-                    if (trackConfig.indexURL != null) {
-                        localFile = download(new URL(trackConfig.indexURL), dataDirectory);
-                        trackConfig.indexURL = relativeDataDirectory + localFile.getName();
+                    if (trackConfig.getIndexURL() != null) {
+                        localFile = download(new URL(trackConfig.getIndexURL()), dataDirectory);
+                        trackConfig.setIndexURL(relativeDataDirectory + localFile.getName());
                     }
-                    if(trackConfig.trixURL != null) {
-                        localFile = download(new URL(trackConfig.trixURL), dataDirectory);
-                        trackConfig.trixURL = relativeDataDirectory + localFile.getName();
+                    if(trackConfig.getTrixURL() != null) {
+                        localFile = download(new URL(trackConfig.getTrixURL()), dataDirectory);
+                        trackConfig.setTrixURL(relativeDataDirectory + localFile.getName());
                     }
                 }
 
             }
         }
-        File localGenomeFile = new File(genomeDirectory, config.id + ".json");
+        File localGenomeFile = new File(genomeDirectory, config.getId() + ".json");
         saveLocalGenome(config, localGenomeFile);
         return localGenomeFile;
 

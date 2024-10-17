@@ -635,31 +635,31 @@ public class ResourceLocator {
     }
 
     public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
-        String trackPath = trackConfig.url;
+        String trackPath = trackConfig.getUrl();
         ResourceLocator res = new ResourceLocator(trackPath);
-        res.setName(trackConfig.name);
-        res.setIndexPath(trackConfig.indexURL);
-        res.setFormat(trackConfig.format);
-        Integer vw = trackConfig.visibilityWindow;
+        res.setName(trackConfig.getName());
+        res.setIndexPath(trackConfig.getIndexURL());
+        res.setFormat(trackConfig.getFormat());
+        Integer vw = trackConfig.getVisibilityWindow();
         if (vw != null) {
             res.setVisibilityWindow(vw);
         }
-        if(trackConfig.panelName != null) {
-            res.setPanelName(trackConfig.panelName);
+        if(trackConfig.getPanelName() != null) {
+            res.setPanelName(trackConfig.getPanelName());
         }
-        if (trackConfig.trixURL != null) {
-            res.setTrixURL(trackConfig.trixURL);
+        if (trackConfig.getTrixURL() != null) {
+            res.setTrixURL(trackConfig.getTrixURL());
         }
 
-        res.setFeatureInfoURL(trackConfig.infoURL);
-        Boolean indexed = trackConfig.indexed;
+        res.setFeatureInfoURL(trackConfig.getInfoURL());
+        Boolean indexed = trackConfig.getIndexed();
         if (indexed != null) {
             res.setIndexed(indexed);
         }
 
         // Track properties
         TrackProperties properties = new TrackProperties();
-        String color = trackConfig.color;
+        String color = trackConfig.getColor();
         if (color != null) {
             try {
                 properties.setColor(ColorUtilities.stringToColor(color.toString()));
@@ -667,7 +667,7 @@ public class ResourceLocator {
                 log.error("Error parsing color string: " + color, e);
             }
         }
-        String altColor = trackConfig.altColor;
+        String altColor = trackConfig.getAltColor();
         if (altColor != null) {
             try {
                 properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
@@ -675,7 +675,7 @@ public class ResourceLocator {
                 log.error("Error parsing color string: " + altColor, e);
             }
         }
-        String displayMode = trackConfig.displayMode;
+        String displayMode = trackConfig.getDisplayMode();
         if (displayMode != null) {
             try {
                 Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
@@ -684,7 +684,7 @@ public class ResourceLocator {
                 log.error("Error parsing displayMode " + displayMode, e);
             }
         }
-        Integer vizwindow = trackConfig.visibilityWindow;
+        Integer vizwindow = trackConfig.getVisibilityWindow();
         if (vizwindow != null) {
             properties.setFeatureVisibilityWindow(vizwindow);
         } else {
@@ -692,11 +692,11 @@ public class ResourceLocator {
             properties.setFeatureVisibilityWindow(-1);
         }
 
-        if (trackConfig.min != null) {
-            properties.setMinValue(trackConfig.min);
+        if (trackConfig.getMin() != null) {
+            properties.setMinValue(trackConfig.getMin());
         }
-        if (trackConfig.max != null) {
-            properties.setMaxValue(trackConfig.max);
+        if (trackConfig.getMax() != null) {
+            properties.setMaxValue(trackConfig.getMax());
         }
         res.setTrackProperties(properties);
 
