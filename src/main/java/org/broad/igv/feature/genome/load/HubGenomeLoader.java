@@ -11,6 +11,9 @@ import org.broad.igv.ucsc.HubTrackSelectionDialog;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Loads a "genome" from a UCSC track hub
+ */
 public class HubGenomeLoader extends GenomeLoader {
 
     String hubURL;

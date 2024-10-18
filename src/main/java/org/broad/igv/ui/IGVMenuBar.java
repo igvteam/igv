@@ -36,11 +36,12 @@ import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.commandbar.GenomeSelectionDialog;
+import org.broad.igv.ui.commandbar.HostedGenomeSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -428,13 +429,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         JMenuItem otherSignalsItem = new JMenuItem();
         otherSignalsItem.setAction(new BrowseEncodeAction("Other - Signals", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
-         encodeMenuItems.add(otherSignalsItem);
+        encodeMenuItems.add(otherSignalsItem);
 
         JMenuItem otherItem = new JMenuItem();
         otherItem.setAction(new BrowseEncodeAction("Other (peaks, calls, ...)", 0, BrowseEncodeAction.Type.OTHER, igv));
         encodeMenuItems.add(otherItem);
 
-        for(JComponent item : encodeMenuItems) {
+        for (JComponent item : encodeMenuItems) {
             menuItems.add(item);
             item.setVisible(EncodeTrackChooser.genomeSupported(genomeId));
         }
@@ -451,7 +452,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu = new JMenu("Genomes");
 
         loadGenomeFromServerMenuItem = new JMenuItem("Select Hosted Genome...");
-        loadGenomeFromServerMenuItem.addActionListener(e -> GenomeSelectionDialog.selectHostedGenome());
+        loadGenomeFromServerMenuItem.addActionListener(e -> HostedGenomeSelectionDialog.selectHostedGenome());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
 
@@ -469,7 +470,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
                 // If a file selection was made
                 if (file != null) {
-                    Genome newGenome = GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
+                    GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
                 }
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage(ex.getMessage(), ex);
@@ -1210,7 +1211,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 final Genome genome = ((GenomeChangeEvent) event).genome();
                 final String genomeId = genome.getId();
                 encodeUCSCMenuItem.setVisible(EncodeTrackChooser.genomeSupportedUCSC(genomeId));
-                for(JComponent item : encodeMenuItems) {
+                for (JComponent item : encodeMenuItems) {
                     item.setVisible(EncodeTrackChooser.genomeSupported(genomeId));
                 }
 
@@ -1298,7 +1299,6 @@ class Foo extends BasicMenuItemUI {
     public Foo() {
         this.disabledForeground = Color.black;
     }
-
 
 
 }

@@ -118,8 +118,7 @@ public class GenomeDownloadUtils {
                 config.setAliasURL(relativeDataDirectory + localFile.getName());
             }
 
-            List<TrackConfig> trackConfigs = config.getTracks();
-            if (trackConfigs == null) trackConfigs = config.getAnnotations();   // alias
+            List<TrackConfig> trackConfigs = config.getTrackConfigs();
 
             if (trackConfigs != null) {
                 for (TrackConfig trackConfig : trackConfigs) {

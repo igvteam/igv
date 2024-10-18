@@ -49,14 +49,6 @@ abstract public class GenomeLoader {
             return new ChromsizesLoader(genomePath);
         } else if (genomePath.endsWith(".json")) {
             return new JsonGenomeLoader(genomePath);
-        } else if (genomePath.endsWith(".2bit")) {
-            GenomeConfig config = new GenomeConfig();
-            config.setTwoBitURL(genomePath);
-            config.setId(genomePath);
-            config.setName((HttpUtils.isRemoteURL(genomePath)) ?
-                    Utilities.getFileNameFromURL(genomePath) :
-                    (new File(genomePath)).getName());
-            return new GenomeObjectLoader(config);
         } else if (genomePath.endsWith("hub.txt")) {
             return new HubGenomeLoader(genomePath);
         } else {
@@ -65,7 +57,7 @@ abstract public class GenomeLoader {
                 String gziPath = genomePath + ".gzi";
                 String faiPath = genomePath + ".fai";
                 if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
-                    throw new GenomeException("IGV cannot readed gzipped fasta files.");
+                    throw new GenomeException("IGV cannot read gzipped fasta files.");
                 }
             }
             return new FastaGenomeLoader(genomePath);

@@ -43,7 +43,6 @@ public class JsonGenomeLoader extends GenomeLoader {
 
         // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
         // Not a common option.
-
 //            JsonElement chains = config.chains;
 //            if (chains != null) {
 //                Map<String, Liftover> liftoverMap = new HashMap<>();
@@ -143,10 +142,7 @@ public class JsonGenomeLoader extends GenomeLoader {
         if (config.getChromAliasBbURL() != null) {
             config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
         }
-        List<TrackConfig> trackConfigs = config.getTracks();
-        if (trackConfigs == null) {
-            trackConfigs = config.getAnnotations();
-        }
+        List<TrackConfig> trackConfigs = config.getTrackConfigs();
         if (trackConfigs != null) {
             trackConfigs.forEach((TrackConfig trackConfig) -> {
                 if (trackConfig.getUrl() != null) {

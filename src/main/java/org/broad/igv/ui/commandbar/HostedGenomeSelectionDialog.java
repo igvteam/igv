@@ -58,9 +58,9 @@ import java.util.List;
  * Dialog box for selecting genomes. User can choose from a list,
  * which is filtered according to text box input
  */
-public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
+public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
-    private static Logger log = LogManager.getLogger(GenomeSelectionDialog.class);
+    private static Logger log = LogManager.getLogger(HostedGenomeSelectionDialog.class);
 
     private JTextField genomeFilter;
     private JList<GenomeListItem> genomeList;
@@ -83,7 +83,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
             if (inputListItems == null) {
                 return;
             }
-            GenomeSelectionDialog dialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
+            HostedGenomeSelectionDialog dialog = new HostedGenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
             UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
 
             if (dialog.isCanceled()) {
@@ -137,11 +137,10 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     /**
      * @param parent
      */
-    private GenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
+    private HostedGenomeSelectionDialog(java.awt.Frame parent, Collection<GenomeListItem> inputListItems) {
         super(parent);
         initComponents();
         initData(inputListItems);
-        downloadSequenceCB.setVisible(true);
     }
 
     private void initData(Collection<GenomeListItem> inputListItems) {
@@ -272,9 +271,9 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         genomeList = new JList();
         genomeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         genomeList.addListSelectionListener(e -> {
-            List<GenomeListItem> items = genomeList.getSelectedValuesList();
-            downloadSequenceCB.setEnabled(items != null && items.stream().allMatch(item -> GenomeDownloadUtils.isSequenceDownloadable(item)));
-            downloadAnnotationsCB.setEnabled(items != null && items.stream().allMatch(item -> GenomeDownloadUtils.isAnnotationsDownloadable(item)));
+            GenomeListItem item = genomeList.getSelectedValue();
+            downloadSequenceCB.setEnabled(item != null && GenomeDownloadUtils.isSequenceDownloadable(item));
+            downloadAnnotationsCB.setEnabled(item != null && GenomeDownloadUtils.isAnnotationsDownloadable(item));
         });
 
         JScrollPane scrollPane1 = new JScrollPane();

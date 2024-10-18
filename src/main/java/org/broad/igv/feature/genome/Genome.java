@@ -72,6 +72,8 @@ public class Genome {
 
     private static final int MAX_WHOLE_GENOME_LONG = 100;
     private static Logger log = LogManager.getLogger(Genome.class);
+
+    GenomeConfig config;
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
@@ -94,7 +96,6 @@ public class Genome {
     private String homeChromosome;
     private String defaultPos;
     private String nameSet;
-
     private Hub hub;
 
     public Genome(GenomeConfig config) throws IOException {
@@ -152,8 +153,8 @@ public class Genome {
             }
         }
 
-        // If list of chromosomes is specified use it for the whole genome view, and to prepopulate the
-        // ordered list of chromosomes.
+        // If ordered list of chromosome names is specified, use it for the whole genome view, and to prepopulate the
+        // ordered list of chromosome names.
         this.chromosomeNames = new ArrayList<>();
         Set<String> ordered = new HashSet<>();
         if (config.getChromosomeOrder() != null) {
@@ -162,7 +163,7 @@ public class Genome {
             ordered.addAll(this.longChromosomeNames);
         }
 
-        // If we have chromosome information pre-populate the chromosome cache.
+        // If we have chromosome length information pre-populate the chromosome cache.
         this.chromosomeMap = new HashMap<>();
         if (chromosomeList != null) {
             for (Chromosome c : chromosomeList) {
@@ -189,7 +190,6 @@ public class Genome {
                 chromosomeList.size() > 1 &&
                 longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
 
-
         // Cytobands
         if (config.getCytobands() != null) {
             cytobandSource = new CytobandMap(config.getCytobands());    // Directly supplied, from .genome file
@@ -198,7 +198,6 @@ public class Genome {
         } else if (config.getCytobandURL() != null) {
             cytobandSource = new CytobandMap(config.getCytobandURL());
         }
-
 
         // Chromosome aliases
         if (config.getAliasURL() != null) {
@@ -214,7 +213,6 @@ public class Genome {
         if (config.getChromAliases() != null) {
             addChrAliases(config.getChromAliases());
         }
-
 
         // Set the default position.
         if (showWholeGenomeView) {
@@ -263,10 +261,7 @@ public class Genome {
         ArrayList<ResourceLocator> tracks = new ArrayList<>();
         ArrayList<ResourceLocator> hiddenTracks = new ArrayList<>();
 
-        List<TrackConfig> trackConfigs = config.getTracks();
-        if (trackConfigs == null) {
-            trackConfigs = config.getAnnotations();
-        }
+        List<TrackConfig> trackConfigs = config.getTrackConfigs();
 
         if (trackConfigs != null) {
 
@@ -414,7 +409,6 @@ public class Genome {
     public String getDefaultPos() {
         return defaultPos == null ? homeChromosome : defaultPos;
     }
-
 
     public Chromosome getChromosome(String name) {
         String chrName = getCanonicalChrName(name);
