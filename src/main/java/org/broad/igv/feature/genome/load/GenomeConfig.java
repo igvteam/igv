@@ -254,20 +254,12 @@ public class GenomeConfig {
         this.chromSizesURL = chromSizesURL;
     }
 
-    public List<TrackConfig> getTracks() {
-        return tracks;
+    public List<TrackConfig> getTrackConfigs() {
+        return tracks != null ? tracks : annotations;
     }
 
     public void setTracks(List<TrackConfig> tracks) {
         this.tracks = tracks;
-    }
-
-    public List<TrackConfig> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(List<TrackConfig> annotations) {
-        this.annotations = annotations;
     }
 
     public Sequence getSequence() {

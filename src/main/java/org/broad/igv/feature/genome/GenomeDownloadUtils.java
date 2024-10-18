@@ -8,6 +8,7 @@ import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.HttpUtils;
 
@@ -63,32 +64,45 @@ public class GenomeDownloadUtils {
 
             if (config.getTwoBitURL() != null) {
 
-                localFile = download(new URL(config.getTwoBitURL()), dataDirectory);
-                config.setTwoBitURL(relativeDataDirectory + localFile.getName());
+                localFile = constructLocalFile(new URL(config.getTwoBitURL()), dataDirectory);
 
-                // Null out urls not needed for .2bit seequences.
-                config.setFastaURL(null);
-                config.setIndexURL(null);
-                config.setGziIndexURL(null);
+                // .2bit files can be large, if it already exists confirm before replacing.
+                if(!localFile.exists() || MessageUtils.confirm("Replace existing file: " + localFile.getName() + "?")) {
 
-                // The optional btree index.  This is probably not needed for local file configurations.
-                if (config.getTwoBitBptURL() != null) {
-                    localFile = download(new URL(config.getTwoBitBptURL()), dataDirectory);
-                    config.setTwoBitBptURL(relativeDataDirectory + localFile.getName());
+                    download(new URL(config.getTwoBitURL()), localFile);
+
+                    config.setTwoBitURL(relativeDataDirectory + localFile.getName());
+
+                    // Null out urls not needed for .2bit seequences.
+                    config.setFastaURL(null);
+                    config.setIndexURL(null);
+                    config.setGziIndexURL(null);
+
+                    // The optional btree index.  This is probably not needed for local file configurations.
+                    if (config.getTwoBitBptURL() != null) {
+                        localFile = download(new URL(config.getTwoBitBptURL()), dataDirectory);
+                        config.setTwoBitBptURL(relativeDataDirectory + localFile.getName());
+                    }
                 }
             } else if (config.getFastaURL() != null) {
 
-                localFile = download(new URL(config.getFastaURL()), dataDirectory);
-                config.setFastaURL(relativeDataDirectory + localFile.getName());
-                if (config.getIndexURL() != null) {
-                    localFile = download(new URL(config.getIndexURL()), dataDirectory);
-                    config.setIndexURL(relativeDataDirectory + localFile.getName());
-                }
-                if (config.getGziIndexURL() != null) {
-                    localFile = download(new URL(config.getGziIndexURL()), dataDirectory);
-                    config.setGziIndexURL(relativeDataDirectory + localFile.getName());
-                }
+                localFile = constructLocalFile(new URL(config.getFastaURL()), dataDirectory);
 
+                if(!localFile.exists() || MessageUtils.confirm("Replace existing file: " + localFile.getName() + "?")) {
+
+                    localFile = download(new URL(config.getFastaURL()), localFile);
+
+                    // Fasta files can be large, if it already exists confirm before replacing.
+                    config.setFastaURL(relativeDataDirectory + localFile.getName());
+                    if (config.getIndexURL() != null) {
+                        localFile = download(new URL(config.getIndexURL()), dataDirectory);
+                        config.setIndexURL(relativeDataDirectory + localFile.getName());
+                    }
+                    if (config.getGziIndexURL() != null) {
+                        localFile = download(new URL(config.getGziIndexURL()), dataDirectory);
+                        config.setGziIndexURL(relativeDataDirectory + localFile.getName());
+                    }
+                }
             } else {
                 throw new RuntimeException("Sequence for genome " + config.getName() + " is not downloadable.");
             }
@@ -152,11 +166,23 @@ public class GenomeDownloadUtils {
         }
     }
 
+
+    private static File constructLocalFile(URL url, File directory) throws MalformedURLException {
+        String path = url.getPath();
+        int idx = path.lastIndexOf('/');
+        String filename = idx < 0 ? path : path.substring(idx + 1);
+        return new File(directory, filename);
+    }
+
     private static File download(URL url, File directory) throws MalformedURLException {
         String path = url.getPath();
         int idx = path.lastIndexOf('/');
         String filename = idx < 0 ? path : path.substring(idx + 1);
         File localFile = new File(directory, filename);
+        return getFile(url, localFile);
+    }
+
+    private static File getFile(URL url, File localFile) throws MalformedURLException {
         boolean success = Downloader.download(url, localFile, IGV.getInstance().getMainFrame());
         if (!success) {
             throw new RuntimeException("Download canceled");
