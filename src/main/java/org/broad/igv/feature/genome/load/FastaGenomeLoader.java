@@ -45,12 +45,13 @@ public class FastaGenomeLoader extends GenomeLoader {
             config.setTwoBitURL(genomePath);
 
         } else {
-            String fastaPath = null;
+            String fastaPath;
             String fastaIndexPath;
             if (genomePath.endsWith(".fai")) {
                 fastaPath = genomePath.substring(0, genomePath.length() - 4);
                 fastaIndexPath = genomePath;
             } else {
+                fastaPath = genomePath;
                 fastaIndexPath = genomePath + ".fai";
             }
 
