@@ -177,7 +177,7 @@ public class Downloader implements Runnable {
         int max = 100;
 
         final javax.swing.ProgressMonitor monitor;
-        if(IGV.hasInstance()) {
+        if(IGV.hasInstance() && frame != null) {
             monitor = new javax.swing.ProgressMonitor(frame, message, "", min, max);
             monitor.setMillisToDecideToPopup(100);
         } else {

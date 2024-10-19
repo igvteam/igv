@@ -1,7 +1,5 @@
 package org.broad.igv.ucsc;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -24,12 +22,12 @@ public class HubTest {
 
         GenomeConfig genomeConfig = hub.getGenomeConfig(true);
         assertNotNull(genomeConfig);
-        assertEquals("GCF_000186305.1", genomeConfig.id);
-        assertEquals("Python bivittatus (GCF_000186305.1)", genomeConfig.name);
-        assertNotNull(genomeConfig.twoBitBptURL);
-        assertNotNull(genomeConfig.twoBitURL);
-        assertNotNull(genomeConfig.chromAliasBbURL);
-        assertNotNull(genomeConfig.cytobandBbURL);
+        assertEquals("GCF_000186305.1", genomeConfig.getId());
+        assertEquals("Python bivittatus (GCF_000186305.1)", genomeConfig.getName());
+        assertNotNull(genomeConfig.getTwoBitBptURL());
+        assertNotNull(genomeConfig.getTwoBitURL());
+        assertNotNull(genomeConfig.getChromAliasBbURL());
+        assertNotNull(genomeConfig.getCytobandBbURL());
     }
 
     @Test

@@ -3,13 +3,13 @@ package org.broad.igv.ui.commandbar;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.broad.igv.event.GenomeResetEvent;
+import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.GenomeDescriptor;
-import org.broad.igv.feature.genome.load.GenomeLoader;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
@@ -27,7 +27,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
- * Singleton class for the list of genomes presented in the command bar dropdown.
+ * Singleton class for managing the list of genomes presented in the command bar combo box.  Also has methods for
+ * searching the hosted genome list.
  */
 public class GenomeListManager {
 
@@ -35,20 +36,23 @@ public class GenomeListManager {
 
     private static GenomeListManager theInstance;
 
-    private static final String ACT_USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
+    private static final String REMOTE_GENOMES_FILE = "remote-genomes.txt";
 
-    public static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
+    private static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
-            "https://igv.org/genomes/hg38/hg38.json",
+            "https://igv.org/genomes/json/hg38.json",
             "hg38");
+
 
     private Map<String, GenomeListItem> genomeItemMap;
 
-    private Map<String, GenomeListItem> userDefinedGenomeMap;
+    private Map<String, GenomeListItem> remoteGenomesMap;
 
-    private Map<String, GenomeListItem> serverGenomeMap;
+    private Map<String, GenomeListItem> hostedGenomesMap;
 
-    private boolean serverGenomeListUnreachable = false;
+    private Map<String, GenomeListItem> downloadedGenomesMap;
+
+    private boolean hostedGenomeListUnreachable = false;
 
     private static GenomeListSorter sorter = new GenomeListSorter();
 
@@ -72,23 +76,15 @@ public class GenomeListManager {
      */
     public Map<String, GenomeListItem> getGenomeItemMap() throws IOException {
         if (genomeItemMap.isEmpty()) {
-            rebuildGenomeItemMap();
+            rebuildGenomeItemMaps();
         }
         return genomeItemMap;
     }
 
-    /**
-     * Completely rebuild the genome drop down info.
-     */
-    public void rebuildGenomeItemMap() throws IOException {
-        serverGenomeMap = null;
-        userDefinedGenomeMap = null;
-        genomeItemMap.clear();
-        genomeItemMap.putAll(getUserDefinedGenomeMap());
-        genomeItemMap.putAll(getCachedGenomeList());
-        if (genomeItemMap.isEmpty()) {
-            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
-        }
+    public void resetForTests() throws IOException {
+        remoteGenomesMap = null;
+        new File(TEST_REMOTE_GENOMES_FILE).delete();
+        rebuildGenomeItemMaps();
     }
 
     public List<GenomeListItem> getGenomeListItems() {
@@ -99,30 +95,31 @@ public class GenomeListManager {
 
 
     /**
-     * Add an item to the selectable genomes map.  If not from server update the user defined file.
+     * Add an item to the selectable genomes map and record in preferences.
      *
      * @param genomeListItem
-     * @param userDefined
      */
-    public void addGenomeItem(GenomeListItem genomeListItem, boolean userDefined) {
-        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
-        if (userDefined) {
-            if (userDefinedGenomeMap == null) userDefinedGenomeMap = new HashMap<>();
-            userDefinedGenomeMap.put(genomeListItem.getId(), genomeListItem);
-            exportUserDefinedGenomeList();
+    public void addGenomeItem(GenomeListItem genomeListItem) {
+
+        if(genomeItemMap.values().stream().anyMatch(item -> genomeListItem.equals(item))) {
+            return;
         }
+
+        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
+
+        if(FileUtils.isRemote(genomeListItem.getPath()) ||
+                !DirectoryManager.getGenomeCacheDirectory().getAbsoluteFile().
+                        equals(new File(genomeListItem.getPath()).getParentFile().getAbsolutePath())) {
+            if (remoteGenomesMap == null) {
+                remoteGenomesMap = new HashMap<>();
+            }
+            remoteGenomesMap.put(genomeListItem.getId(), genomeListItem);
+            exportRemoteGenomesList();
+        }
+
+        IGVEventBus.getInstance().post(new GenomeResetEvent());
     }
 
-    /**
-     * Return genome list item from currently selectable set. To search through
-     * all server and user defined genomes, use {@link #getGenomeListItem(String)}
-     *
-     * @param genomeId
-     * @return
-     */
-    public GenomeListItem getLoadedGenomeListItemById(String genomeId) {
-        return genomeItemMap.get(genomeId);
-    }
 
     /**
      * Searches through currently loaded GenomeListItems and returns
@@ -137,15 +134,15 @@ public class GenomeListManager {
         GenomeListItem matchingItem = genomeItemMap.get(genomeId);
         if (matchingItem == null) {
 
-            // If genome archive was not found, check server list
-            matchingItem = getServerGenomeMap().get(genomeId);
+            // If genome archive was not found, search hosted genomes
+            matchingItem =  getHostedGenomesMap().get(genomeId);
             if (matchingItem != null) {
                 return matchingItem;
             }
 
-            // If still not found rebuild the item map
+            // If not found rebuild the item map
             try {
-                rebuildGenomeItemMap();
+                rebuildGenomeItemMaps();
             } catch (IOException e) {
                 log.error("Error rebuilding genome item map", e);
             }
@@ -155,7 +152,24 @@ public class GenomeListManager {
     }
 
     /**
-     * Build and return a genome list item map from all  locally cached genome archive files (.genome and .json files).
+     * Rebuild the genome drop down info.
+     */
+    private void rebuildGenomeItemMaps() throws IOException {
+        // Rebuild the selectable genomes map.  The order is imporant as downloaded genomes take precedence.
+        hostedGenomesMap = null;
+        remoteGenomesMap = null;
+        downloadedGenomesMap = null;
+        genomeItemMap.clear();
+        genomeItemMap.putAll(getRemoteGenomesMap());
+        genomeItemMap.putAll(getDownloadedGenomeMap());
+        if (genomeItemMap.isEmpty()) {
+            genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
+        }
+    }
+
+    /**
+     * Build and return a genome list item map from all local (downloaded) genome files (.genome and .json files) in
+     * the igv/genomes directory.
      * <p>
      * If both .genome and .json files are found for the same genome ID the .json file is preferred, and the .genome
      * file deleted.   This complicates loading but is neccessary for a transition period.
@@ -164,204 +178,160 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    private static Map<String, GenomeListItem> getCachedGenomeList() {
+    public  Map<String, GenomeListItem> getDownloadedGenomeMap() {
 
-        Map<String, GenomeListItem> cachedGenomes = new HashMap<>();
-        if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
-            return cachedGenomes;
-        }
+        if(downloadedGenomesMap == null) {
 
-        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
-
-        // First loop - .genome files
-        for (File file : files) {
-            if (file.isDirectory()) {
-                continue;
+            downloadedGenomesMap = new HashMap<>();
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                return downloadedGenomesMap;
             }
-            if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                ZipFile zipFile = null;
-                FileInputStream fis = null;
-                ZipInputStream zipInputStream = null;
-                try {
-                    zipFile = new ZipFile(file);
-                    fis = new FileInputStream(file);
-                    zipInputStream = new ZipInputStream(new BufferedInputStream(fis));
 
-                    ZipEntry zipEntry = zipFile.getEntry(GenomeDescriptor.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
-                    if (zipEntry == null) {
-                        continue;    // Should never happen
-                    }
+            File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
 
-                    InputStream inputStream = zipFile.getInputStream(zipEntry);
-                    Properties properties = new Properties();
-                    properties.load(inputStream);
-
-                    GenomeListItem item =
-                            new GenomeListItem(properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
-                                    file.getAbsolutePath(),
-                                    properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
-
-                    cachedGenomes.put(item.getId(), item);
-
-                } catch (ZipException ex) {
-                    log.error("\nZip error unzipping cached genome.", ex);
+            // First loop - .genome files
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    continue;
+                }
+                if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
+                    ZipFile zipFile = null;
+                    FileInputStream fis = null;
+                    ZipInputStream zipInputStream = null;
                     try {
-                        file.delete();
-                        zipInputStream.close();
-                    } catch (Exception e) {
-                        //ignore exception when trying to delete file
-                    }
-                } catch (IOException ex) {
-                    log.warn("\nIO error unzipping cached genome.", ex);
-                    try {
-                        file.delete();
-                    } catch (Exception e) {
-                        //ignore exception when trying to delete file
-                    }
-                } finally {
-                    try {
-                        if (zipInputStream != null) {
+                        zipFile = new ZipFile(file);
+                        fis = new FileInputStream(file);
+                        zipInputStream = new ZipInputStream(new BufferedInputStream(fis));
+
+                        ZipEntry zipEntry = zipFile.getEntry(GenomeDescriptor.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                        if (zipEntry == null) {
+                            continue;    // Should never happen
+                        }
+
+                        InputStream inputStream = zipFile.getInputStream(zipEntry);
+                        Properties properties = new Properties();
+                        properties.load(inputStream);
+
+                        GenomeListItem item =
+                                new GenomeListItem(properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
+                                        file.getAbsolutePath(),
+                                        properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
+
+                        downloadedGenomesMap.put(item.getId(), item);
+
+                    } catch (ZipException ex) {
+                        log.error("\nZip error unzipping cached genome.", ex);
+                        try {
+                            file.delete();
                             zipInputStream.close();
-                        }
-                        if (zipFile != null) {
-                            zipFile.close();
-                        }
-                        if (fis != null) {
-                            fis.close();
+                        } catch (Exception e) {
+                            //ignore exception when trying to delete file
                         }
                     } catch (IOException ex) {
-                        log.warn("Error closing genome zip stream", ex);
+                        log.warn("\nIO error unzipping cached genome.", ex);
+                        try {
+                            file.delete();
+                        } catch (Exception e) {
+                            //ignore exception when trying to delete file
+                        }
+                    } finally {
+                        try {
+                            if (zipInputStream != null) {
+                                zipInputStream.close();
+                            }
+                            if (zipFile != null) {
+                                zipFile.close();
+                            }
+                            if (fis != null) {
+                                fis.close();
+                            }
+                        } catch (IOException ex) {
+                            log.warn("Error closing genome zip stream", ex);
+                        }
+                    }
+                }
+            }
+
+            // Second loop - .json files
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    continue;
+                }
+                if (file.getName().toLowerCase().endsWith(".json")) {
+                    try {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        JsonParser parser = new JsonParser();
+                        JsonElement rootElement = parser.parse(reader);
+                        if (rootElement.isJsonObject()) {
+                            JsonObject json = rootElement.getAsJsonObject();
+                            JsonElement id = json.get("id");
+                            JsonElement name = json.get("name");
+                            JsonElement fasta = json.get("fastaURL");
+                            JsonElement twobit = json.get("twoBitURL");
+                            if (id == null) {
+                                log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                                continue;
+                            }
+                            if (name == null) {
+                                log.error("Error parsing " + file.getName() + ". \"name\" is required");
+                                continue;
+                            }
+                            if (fasta == null && twobit == null) {
+                                log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
+                                continue;
+                            }
+
+                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                            downloadedGenomesMap.put(item.getId(), item);
+
+                        }
+                    } catch (Exception e) {
+                        log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
                     }
                 }
             }
         }
 
-        // Second loop - .json files
-        for (File file : files) {
-            if (file.isDirectory()) {
-                continue;
-            }
-            if (file.getName().toLowerCase().endsWith(".json")) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(file));
-                    JsonParser parser = new JsonParser();
-                    JsonElement rootElement = parser.parse(reader);
-                    if (rootElement.isJsonObject()) {
-                        JsonObject json = rootElement.getAsJsonObject();
-                        JsonElement id = json.get("id");
-                        JsonElement name = json.get("name");
-                        JsonElement fasta = json.get("fastaURL");
-                        JsonElement twobit = json.get("twoBitURL");
-                        if (id == null) {
-                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
-                            continue;
-                        }
-                        if (name == null) {
-                            log.error("Error parsing " + file.getName() + ". \"name\" is required");
-                            continue;
-                        }
-                        if (id == null) {
-                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
-                            continue;
-                        }
-                        if (fasta == null && twobit == null) {
-                            log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
-                            continue;
-                        }
-
-                        GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                        cachedGenomes.put(item.getId(), item);
-
-                    }
-                } catch (Exception e) {
-                    log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
-                }
-            }
-        }
-
-        return cachedGenomes;
+        return downloadedGenomesMap;
     }
 
-
-    public Set<String> getServerGenomeIDs() {
-        return getServerGenomeMap().keySet();
-    }
-
-
-    /**
-     * Gets the collection of genome list items ids currently in use.
-     *
-     * @return Set of ids.
-     */
-    public Collection<String> getSelectableGenomeIDs() {
-        return genomeItemMap.keySet();
-    }
-
-
-    public void removeAllItems(List<GenomeListItem> removedValuesList) {
+    public void removeItems(List<GenomeListItem> removedValuesList) {
 
         boolean updateImportFile = false;
         for (GenomeListItem genomeListItem : removedValuesList) {
             final String id = genomeListItem.getId();
             genomeItemMap.remove(id);
-            if (userDefinedGenomeMap != null && userDefinedGenomeMap.containsKey(id)) {
-                userDefinedGenomeMap.remove(id);
+            if (remoteGenomesMap != null && remoteGenomesMap.containsKey(id)) {
+                remoteGenomesMap.remove(id);
                 updateImportFile = true;
             }
         }
         if (updateImportFile) {
-            exportUserDefinedGenomeList();
+            exportRemoteGenomesList();
         }
     }
 
-
-    public void removeGenomeListItem(GenomeListItem genomeListItem) {
-        final String id = genomeListItem.getId();
-        genomeItemMap.remove(id);
-
-        // If this is a cached genome remove it from cache
-        Map<String, GenomeListItem> cachedItems = getCachedGenomeList();
-        if (cachedItems.containsKey(id)) {
-            try {
-                (new File(genomeListItem.getPath())).delete();
-            } catch (Exception e) {
-                log.error("Error deleting genome file: " + genomeListItem.getPath() + ": " + e.getMessage());
-            }
-        }
-
-        removeUserDefinedGenome(id);
-    }
-
-    public void removeUserDefinedGenome(String id) {
-        if (userDefinedGenomeMap != null && userDefinedGenomeMap.containsKey(id)) {
-            userDefinedGenomeMap.remove(id);
-            exportUserDefinedGenomeList();
-        }
-    }
-
-
-    public List<GenomeListItem> getServerGenomeList() {
-        List<GenomeListItem> items = new ArrayList<>(getServerGenomeMap().values());
+     List<GenomeListItem> getHostedGenomeList() {
+        List<GenomeListItem> items = new ArrayList<>(getHostedGenomesMap().values());
         items.sort(sorter);
         return items;
     }
 
     /**
-     * Gets a list of all the server genome archive files that
-     * IGV knows about.
+     * Gets a list of all hosted genomes
      *
      * @return List<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getServerGenomeMap() {
+    public Map<String, GenomeListItem> getHostedGenomesMap() {
 
-        if (serverGenomeListUnreachable) {
+        if (hostedGenomeListUnreachable) {
             return Collections.emptyMap();
         }
 
-        if (serverGenomeMap == null) {
-            serverGenomeMap = new HashMap<>();
+        if (hostedGenomesMap == null) {
+            hostedGenomesMap = new HashMap<>();
             BufferedReader dataReader = null;
             InputStream inputStream = null;
             String genomeListURLString = "";
@@ -388,15 +358,15 @@ public class GenomeListManager {
                             String url = fields[1];
                             String id = fields[2];
                             GenomeListItem item = new GenomeListItem(name, url, id);
-                            serverGenomeMap.put(item.getId(), item);
+                            hostedGenomesMap.put(item.getId(), item);
                         } else {
                             log.error("Found invalid server genome list record: " + genomeRecord);
                         }
                     }
                 }
             } catch (Exception e) {
-                serverGenomeListUnreachable = true;
-                serverGenomeMap = Collections.emptyMap();
+                hostedGenomeListUnreachable = true;
+                hostedGenomesMap = Collections.emptyMap();
                 log.error("Error fetching genome list: ", e);
                 ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
                                 genomeListURLString + ").    Only locally defined genomes will be available.",
@@ -421,28 +391,32 @@ public class GenomeListManager {
         }
 
         if (IGVMenuBar.getInstance() != null) {
-            IGVMenuBar.getInstance().notifyGenomeServerReachable(!serverGenomeListUnreachable);
+            IGVMenuBar.getInstance().notifyGenomeServerReachable(!hostedGenomeListUnreachable);
         }
-        return serverGenomeMap;
+        return hostedGenomesMap;
     }
 
     /**
-     * Gets a list of all the user-defined genome archive files that
-     * IGV knows about.
+     * Return the list of remote genomes for the dropdown
      *
      * @return LinkedHashSet<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getUserDefinedGenomeMap() {
+    public Map<String, GenomeListItem> getRemoteGenomesMap() {
 
-        if (userDefinedGenomeMap == null) {
+        if (remoteGenomesMap == null) {
 
             boolean updateClientGenomeListFile = false;
 
-            userDefinedGenomeMap = new HashMap<>();
+            remoteGenomesMap = new HashMap<>();
 
-            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
+            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
+
+            if(!listFile.exists()) {
+                // Try old filename
+                listFile = new File(DirectoryManager.getGenomeCacheDirectory(), "user-defined-genomes.txt");
+            }
 
             if (listFile.exists()) {
 
@@ -480,7 +454,7 @@ public class GenomeListManager {
 
                         try {
                             GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
-                            userDefinedGenomeMap.put(item.getId(), item);
+                            remoteGenomesMap.put(item.getId(), item);
                         } catch (Exception e) {
                             log.error("Error updating user genome list line '" + nextLine + "'", e);
                         }
@@ -499,26 +473,26 @@ public class GenomeListManager {
                     }
                 }
                 if (updateClientGenomeListFile) {
-                    exportUserDefinedGenomeList();
+                    exportRemoteGenomesList();
                 }
             }
         }
-        return userDefinedGenomeMap;
+        return remoteGenomesMap;
     }
 
 
     /**
-     * Export the user-define genome property file.
+     * Export the list of selected remote genomes (genomes not in local cache)
      *
      * @throws IOException
      */
-    public void exportUserDefinedGenomeList() {
+    public void exportRemoteGenomesList() {
 
-        if (userDefinedGenomeMap == null) {
+        if (remoteGenomesMap == null) {
             return;
         }
 
-        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getUserDefinedGenomeListFile());
+        File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
         File backup = null;
         if (listFile.exists()) {
             backup = new File(listFile.getAbsolutePath() + ".bak");
@@ -533,7 +507,7 @@ public class GenomeListManager {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(listFile)));
-            for (GenomeListItem genomeListItem : userDefinedGenomeMap.values()) {
+            for (GenomeListItem genomeListItem : remoteGenomesMap.values()) {
                 writer.print(genomeListItem.getDisplayableName());
                 writer.print("\t");
                 writer.print(genomeListItem.getPath());
@@ -558,21 +532,13 @@ public class GenomeListManager {
     }
 
 
-    private String getUserDefinedGenomeListFile() {
+    private String getRemoteGenomesFilename() {
         if (Globals.isTesting()) {
-            return TEST_USER_DEFINED_GENOME_LIST_FILE;
+            return TEST_REMOTE_GENOMES_FILE;
         } else {
-            return ACT_USER_DEFINED_GENOME_LIST_FILE;
+            return REMOTE_GENOMES_FILE;
         }
 
-    }
-
-    /**
-     * Added for unit tests
-     */
-    public void clearUserDefinedGenomes() {
-        userDefinedGenomeMap = null;
-        new File(TEST_USER_DEFINED_GENOME_LIST_FILE).delete();
     }
 
     private static class GenomeListSorter implements Comparator<GenomeListItem> {
@@ -586,7 +552,7 @@ public class GenomeListManager {
 
     // Tacking on a timestamp & random number to avoid file collisions with parallel testing JVMs.  Not guaranteed unique
     // but highly unlikely to be repeated.
-    public static final String TEST_USER_DEFINED_GENOME_LIST_FILE = "test-user-defined-genomes_" +
+    public static final String TEST_REMOTE_GENOMES_FILE = "test-remote-genomes_" +
             System.currentTimeMillis() + "_" + Math.random() + ".txt";
 
 

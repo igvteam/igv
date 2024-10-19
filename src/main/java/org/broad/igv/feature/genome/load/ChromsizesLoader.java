@@ -15,15 +15,14 @@ public class ChromsizesLoader extends GenomeLoader {
     }
 
     /**
-     * Define a minimal genome from a chrom.sizes file.  It is assumed (required) that the file follow the
-     * UCSC naming convention  =>  [id].chrom.sizes
+     * Define a minimal genome from a chrom.sizes file.
+     *
      * @return
      * @throws IOException
      */
     @Override
     public Genome loadGenome() throws IOException {
-        int firstPeriodIdx = genomePath.indexOf('.');
-        String genomeId = genomePath.substring(0, firstPeriodIdx);
+        String genomeId = genomePath;
         List<Chromosome> chromosomes = ChromSizesParser.parse(genomePath);
         Genome newGenome = new Genome(genomeId, chromosomes);
         return newGenome;

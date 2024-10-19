@@ -3,7 +3,6 @@ package org.broad.igv.ui.commandbar;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -31,22 +30,20 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
 
     public void refreshGenomeListComboBox() {
-        setModel(getModelForGenomeListComboBox());
-        String curId = GenomeManager.getInstance().getGenomeId();
-        Object item = GenomeListManager.getInstance().getLoadedGenomeListItemById(curId);
-        if (item != null) {
-            setSelectedItem(item);
-        }
-    }
 
-    public boolean hasItem(Object item) {
+        setModel(buildModel());
+
+        String curId = GenomeManager.getInstance().getGenomeId();
+        if (curId == null) return;
+
         int c = this.getItemCount();
         for (int i = 0; i < c; i++) {
-            if (item.equals(this.getItemAt(i))) {
-                return true;
+            final GenomeListItem item = this.getItemAt(i);
+            if (curId.equals(item.getId())) {
+                setSelectedItem(item);
+                break;
             }
         }
-        return false;
     }
 
     /**
@@ -54,7 +51,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
      *
      * @return
      */
-    private DefaultComboBoxModel getModelForGenomeListComboBox() {
+    private DefaultComboBoxModel buildModel() {
         Collection<GenomeListItem> genomes;
         try {
             genomes = GenomeListManager.getInstance().getGenomeItemMap().values();
@@ -70,6 +67,15 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
         return new DefaultComboBoxModel(vector);
     }
 
+    public boolean hasItem(Object item) {
+        int c = this.getItemCount();
+        for (int i = 0; i < c; i++) {
+            if (item.equals(this.getItemAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     class GenomeBoxActionListener implements ActionListener {
 
@@ -79,10 +85,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 return;
             }
             GenomeListItem genomeListItem = (GenomeListItem) selItem;
-            loadGenomeListItem(genomeListItem);
-        }
-
-        private void loadGenomeListItem(final GenomeListItem genomeListItem) {
 
             // If we haven't changed genomes do nothing
             if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
@@ -94,23 +96,15 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 if (genomeListItem != null && genomeListItem.getPath() != null) {
 
                     if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                        GenomeSelectionDialog.selectGenomesFromServer();
+                        HostedGenomeSelectionDialog.selectHostedGenome();
                     } else {
 
                         try {
-                             GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
+                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
                         } catch (Exception e) {
                             log.error(e);
-                            int choice = JOptionPane.showConfirmDialog(
-                                    IGV.getInstance().getMainFrame(), "The genome [" + genomeListItem.getId() +
-                                            "] could not be read. Would you like to remove the selected entry?",
-                                    "", JOptionPane.OK_CANCEL_OPTION);
-
-                            if (choice == JOptionPane.OK_OPTION) {
-                                GenomeListManager.getInstance().removeGenomeListItem(genomeListItem);
-                                refreshGenomeListComboBox();
-                                log.error("Error initializing genome", e);
-                            }
+                            MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
+                                    "' could not be read.", e);
                         }
                     }
                 }

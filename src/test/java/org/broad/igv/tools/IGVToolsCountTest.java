@@ -30,7 +30,6 @@ import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeUtils;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFDataset;

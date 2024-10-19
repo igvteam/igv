@@ -387,8 +387,7 @@ public class DirectoryManager {
         }
     }
 
-    public static boolean isChildOf(File base, File child)
-            throws IOException {
+    public static boolean isChildOf(File base, File child) {
 
         File parent = child.getParentFile();
         while (parent != null) {

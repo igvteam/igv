@@ -123,7 +123,7 @@ public class CommandExecutor {
             } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
                 boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
                 result = res ? "OK" : String.format("Error: Track %s not found", param1);
-            } else if (cmd.equalsIgnoreCase("scrolltotop") ) {
+            } else if (cmd.equalsIgnoreCase("scrolltotop")) {
                 this.igv.scrollToTop();
                 result = "OK";
             } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
@@ -143,8 +143,7 @@ public class CommandExecutor {
                     return result;
                 }
                 String id = GenomeManager.getInstance().getCurrentGenome().getId();
-                if (id != null)
-                {
+                if (id != null) {
                     GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(id);
                     if (item != null) {
                         result = item.getPath();
@@ -633,24 +632,20 @@ public class CommandExecutor {
         if (param1 == null) {
             return "ERROR missing genome parameter";
         }
-        String result = "OK";
-        String genomeID = param1;
+        String result;
+        String genomeIDorPath = param1;
 
-        igv.selectGenomeFromList(genomeID);
-        if (GenomeManager.getInstance().getCurrentGenome().getId().equals(genomeID)) {
-            return result;
-        }
-
-        String genomePath = resolveFileReference(genomeID);
         try {
-            GenomeManager.getInstance().loadGenome(genomePath);
+            GenomeManager.getInstance().loadGenomeById(genomeIDorPath);
+            result = "OK";
         } catch (IOException e) {
-            result = "ERROR: Could not load genome: " + genomeID;
+            result = "ERROR: Could not load genome: " + genomeIDorPath;
             MessageUtils.showMessage(result);
         }
 
         return result;
     }
+
 
     /**
      * Load function for port and batch script
@@ -1263,9 +1258,9 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.READ_GROUP;
         } else if (str.equalsIgnoreCase("base")) {
             return AlignmentTrack.GroupOption.BASE_AT_POS;
-        }else if (str.equalsIgnoreCase("insertion")) {
+        } else if (str.equalsIgnoreCase("insertion")) {
             return AlignmentTrack.GroupOption.INSERTION_AT_POS;
-        }else {
+        } else {
             try {
                 return AlignmentTrack.GroupOption.valueOf(str.toUpperCase());
             } catch (IllegalArgumentException e) {

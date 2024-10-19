@@ -37,14 +37,10 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.genome.load.ChromAliasParser;
-import org.broad.igv.feature.genome.load.GenomeDescriptor;
-import org.broad.igv.feature.genome.load.GenomeLoader;
-import org.broad.igv.feature.genome.load.JsonGenomeLoader;
+import org.broad.igv.feature.genome.load.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -58,20 +54,15 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.ui.util.download.Downloader;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
 
-import java.awt.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.SocketException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
 
@@ -103,42 +94,23 @@ public class GenomeManager {
 
     private GenomeManager() {
         genomeListManager = GenomeListManager.getInstance();
-        GenomeLoader.localSequenceMap = GenomeLoader.loadSequenceMap();
+        GenomeLoader.loadSequenceMap();
+    }
+
+
+    public String getGenomeId() {
+        return currentGenome == null ? null : currentGenome.getId();
     }
 
     /**
-     * Returns a File of the provided genomePath. If the genomePath is a URL, it will be downloaded
-     * and saved in the genome cache directory.
+     * IGV always has exactly 1 genome loaded at a time.
+     * This returns the currently loaded genome
      *
-     * @param genomePath
      * @return
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
+     * @api
      */
-    public static File getGenomeFile(String genomePath) throws MalformedURLException, UnsupportedEncodingException {
-
-        File archiveFile;
-
-        if (HttpUtils.isRemoteURL(genomePath.toLowerCase())) {
-            // We need a local copy, as there is no http zip file reader
-            URL genomeArchiveURL = HttpUtils.createURL(genomePath);
-            final String tmp = URLDecoder.decode(genomeArchiveURL.getFile(), "UTF-8");
-            String cachedFilename = Utilities.getFileNameFromURL(tmp);
-            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
-                DirectoryManager.getGenomeCacheDirectory().mkdir();
-            }
-            archiveFile = new File(DirectoryManager.getGenomeCacheDirectory(), cachedFilename);
-            Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-            Downloader.download(genomeArchiveURL, archiveFile, parent);
-        } else {
-            archiveFile = new File(genomePath);
-        }
-        return archiveFile;
-    }
-
-    // Setter provided for unit tests
-    public void setCurrentGenomeForTest(Genome genome) {
-        this.currentGenome = genome;
+    public Genome getCurrentGenome() {
+        return currentGenome;
     }
 
     /**
@@ -215,11 +187,9 @@ public class GenomeManager {
                 IGV.getInstance().resetSession(null);
             }
 
-            // If the genome is loaded from anywhere other than the cache directory add an entry to the pulldown
-            if(newGenome != null && !(new File(genomePath).getParentFile().equals(genomeCacheDirectory))) {
-                GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
-                GenomeListManager.getInstance().addGenomeItem(genomeListItem, true);
-            }
+            // Add an entry to the pulldown
+            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
+            GenomeListManager.getInstance().addGenomeItem(genomeListItem);
 
             setCurrentGenome(newGenome);
 
@@ -243,11 +213,13 @@ public class GenomeManager {
         if (IGV.hasInstance()) {
             IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
             FrameManager.getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), true);
-            loadGenomeAnnotations(newGenome);
+
+            restoreGenomeTracks(newGenome);
+
             IGV.getInstance().resetFrames();
             IGV.getInstance().getSession().clearHistory();
 
-            if(newGenome != Genome.nullGenome()) {
+            if (newGenome != Genome.nullGenome()) {
                 // This should only occur on startup failure
                 PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
             }
@@ -261,19 +233,6 @@ public class GenomeManager {
     }
 
     /**
-     * Load and initialize the track objects from the genome's track resource locators.  Does not add the tracks
-     * to the IGV instance.
-     *
-     * @param genome
-     */
-    public void loadGenomeAnnotations(Genome genome) {
-        restoreGenomeTracks(genome);
-        IGV.getInstance().repaint();
-    }
-
-    /**
-     * Add a genomes tracks to the IGV instance.
-     *
      * @param genome
      */
     public void restoreGenomeTracks(Genome genome) {
@@ -329,149 +288,82 @@ public class GenomeManager {
     }
 
 
-    /**
-     * Delete .genome files from the cache directory
-     */
-    public void clearGenomeCache() {
-        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
-        for (File file : files) {
-            if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                file.delete();
-            }
-        }
-    }
+    public File downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
 
-    public String getGenomeId() {
-        return currentGenome == null ? null : currentGenome.getId();
-    }
-
-    /**
-     * IGV always has exactly 1 genome loaded at a time.
-     * This returns the currently loaded genome
-     *
-     * @return
-     * @api
-     */
-    public Genome getCurrentGenome() {
-        return currentGenome;
-    }
-
-
-    public boolean downloadGenome(GenomeListItem item, boolean downloadDataFiles) {
-
-        boolean success;
         try {
-            File genomeFile = getGenomeFile(item.getPath()); // Has side affect of downloading .genome file
 
-            if (downloadDataFiles) {
-
-
-                if (item.getPath().endsWith(".genome")) {
-                    GenomeDescriptor genomeDescriptor = GenomeDescriptor.parseGenomeArchiveFile(genomeFile);
-                    String fastaPath = genomeDescriptor.getSequencePath();
-                    if (fastaPath != null && FileUtils.isRemote(fastaPath)) {
-                        File localFile = downloadFasta(fastaPath);
-                        if (localFile != null) {
-                            addLocalFasta(item.getId(), localFile);
-                        }
-                    }
-
-                } else if (item.getPath().endsWith(".json")) {
-
-                    JsonGenomeLoader.GenomeDescriptor desc = (new JsonGenomeLoader(item.getPath())).loadDescriptor();
-
-
-                }
-
+            if (item.getPath().endsWith(".genome")) {
+                File genomeFile = DotGenomeUtils.getDotGenomeFile(item.getPath());  // Will be downloaded if remote -- neccessary to unzip
+                return genomeFile;
+            } else {
+                JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
+                GenomeConfig config = loader.loadGenomeConfig();
+                File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
+                return downloadedGenome;
             }
-
-            success = true;
 
         } catch (Exception e) {
-            success = false;
-            MessageUtils.showErrorMessage("Error downloading genome", e);
+            MessageUtils.showMessage("Error downloading genome: " + e.getMessage());
             log.error("Error downloading genome " + item.getDisplayableName());
+            return null;
         }
-
-
-        if (success) {
-            genomeListManager.addGenomeItem(item, false);
-            IGVEventBus.getInstance().post(new GenomeResetEvent());
-        }
-
-        return success;
     }
 
 
     /**
-     * Download a fasta file and associated index files.
+     * Delete the specified genome files
      *
-     * @throws IOException
+     * @param removedValuesList
      */
-    File downloadFasta(String fastaPath) throws IOException {
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
 
-        File defaultDir = DirectoryManager.getFastaCacheDirectory();
-        File targetDir = defaultDir;
-        //File targetDir = FileDialogUtils.chooseDirectory("Select directory for sequence", defaultDir);
-        if (targetDir == null) {
-            targetDir = defaultDir;
-        }
+        for (GenomeListItem item : removedValuesList) {
 
-        String filename = Utilities.getFileNameFromURL(fastaPath);
+            String loc = item.getPath();
+            File genomeFile = new File(loc);
 
-        File localFile = new File(targetDir, filename);
-        boolean downloaded = Downloader.download(HttpUtils.createURL(fastaPath), localFile, IGV.getInstance().getMainFrame());
+            if (genomeFile.exists() && DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), genomeFile)) {
 
-        if (downloaded) {
-            URL indexUrl = HttpUtils.createURL(fastaPath + ".fai");
-            File localIndexFile = new File(targetDir, filename + ".fai");
-            downloaded = Downloader.download(indexUrl, localIndexFile, IGV.getInstance().getMainFrame());
-        }
+                genomeFile.delete();
 
-        if (downloaded) {
+                // Delete associated data files
+                File dataFileDirectory = new File(DirectoryManager.getGenomeCacheDirectory(), item.getId());
+                File localFasta = DotGenomeUtils.getLocalFasta(item.getId());  //  (Legacy .genome convention)
 
-            if (fastaPath.endsWith(".gz")) {
-                URL gziUrl = HttpUtils.createURL(fastaPath + ".gzi");
-                File localGziPath = new File(targetDir, filename + ".gzi");
-                downloaded = Downloader.download(gziUrl, localGziPath, IGV.getInstance().getMainFrame());
+                if ((dataFileDirectory.isDirectory() || localFasta != null) &&
+                        MessageUtils.confirm("Delete downloaded data files?")) {
+
+                    if (dataFileDirectory.isDirectory()) {
+                        try (Stream<Path> paths = Files.walk(dataFileDirectory.toPath())) {
+                            paths.sorted(Comparator.reverseOrder())
+                                    .map(Path::toFile)
+                                    .forEach(File::delete);
+                        }
+                        dataFileDirectory.delete();
+                    }
+
+                    if (localFasta != null) {
+                        // If fasta file is in the "igv/genomes" directory delete it
+                        DotGenomeUtils.removeLocalFasta(item.getId());
+                        if (DirectoryManager.isChildOf(DirectoryManager.getGenomeCacheDirectory(), localFasta)) {
+                            if (MessageUtils.confirm("Delete fasta file: " + localFasta.getAbsolutePath() + "?")) {
+                                localFasta.delete();
+                                File indexFile = new File(localFasta.getAbsolutePath() + ".fai");
+                                if (indexFile.exists()) {
+                                    indexFile.delete();
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        return downloaded ? localFile : null;
     }
 
-
-    public static File getLocalFasta(String id) {
-        return GenomeLoader.localSequenceMap.get(id);
+    // Setter provided for unit tests
+    public void setCurrentGenomeForTest(Genome genome) {
+        this.currentGenome = genome;
     }
 
-    public static void removeLocalFasta(String id) {
-        GenomeLoader.localSequenceMap.remove(id);
-        updateSequenceMapFile();
-    }
-
-    private static void addLocalFasta(String id, File localFile) {
-        GenomeLoader.localSequenceMap.put(id, localFile);
-        updateSequenceMapFile();
-    }
-
-
-    private static void updateSequenceMapFile() {
-
-        PrintWriter pw = null;
-
-        try {
-            File sequenceFile = new File(DirectoryManager.getGenomeCacheDirectory(), GenomeDescriptor.SEQUENCE_MAP_FILE);
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(sequenceFile)));
-
-            for (Map.Entry<String, File> entry : GenomeLoader.localSequenceMap.entrySet()) {
-                pw.println(entry.getKey() + "\t" + entry.getValue());
-            }
-        } catch (IOException e) {
-            log.error("Error writing sequence map", e);
-        } finally {
-            if (pw != null) pw.close();
-        }
-    }
 
 }

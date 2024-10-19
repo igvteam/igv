@@ -7,9 +7,7 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TwoBitIndex implements BPIndex {
 
@@ -64,10 +62,14 @@ public class TwoBitIndex implements BPIndex {
 
     public long[] search(String term) {
         if(sequenceDataOffsets.containsKey(term)) {
-            return new long[]{(long) sequenceDataOffsets.get(term)};
+            return new long[]{sequenceDataOffsets.get(term)};
         } else {
             return null;
         }
+    }
+
+    public List<String> getSequenceNames() {
+        return new ArrayList<>(sequenceDataOffsets.keySet());
     }
 
     ByteBuffer loadBinaryBuffer(long start, int size) throws IOException {

@@ -177,42 +177,42 @@ public class Hub {
         // TODO -- add blat?  htmlPath?
 
         GenomeConfig config = new GenomeConfig();
-        config.id = this.genomeStanza.getProperty("genome");
+        config.setId(this.genomeStanza.getProperty("genome"));
         if (this.genomeStanza.hasProperty("scientificName")) {
-            config.name = this.genomeStanza.getProperty("scientificName");
+            config.setName(this.genomeStanza.getProperty("scientificName"));
         } else if (this.genomeStanza.hasProperty("organism")) {
-            config.name = this.genomeStanza.getProperty("organism");
+            config.setName(this.genomeStanza.getProperty("organism"));
         } else if (this.genomeStanza.hasProperty("description")) {
-            config.name = this.genomeStanza.getProperty("description");
+            config.setName(this.genomeStanza.getProperty("description"));
         }
-        if(config.name == null) {
-            config.name = config.id;
+        if(config.getName() == null) {
+            config.setName(config.getId());
         } else {
-            config.name += " (" + config.id + ")";
+            config.setName(config.getName() + " (" + config.getId() + ")");
         }
 
-        config.twoBitURL = this.baseURL + this.genomeStanza.getProperty("twoBitPath");
-        config.nameSet = "ucsc";
-        config.wholeGenomeView = false;
+        config.setTwoBitURL(this.baseURL + this.genomeStanza.getProperty("twoBitPath"));
+        config.setNameSet("ucsc");
+        config.setWholeGenomeView(false);
 
         if (this.genomeStanza.hasProperty("defaultPos")) {
-            config.defaultPos = this.genomeStanza.getProperty("defaultPos");
+            config.setDefaultPos(this.genomeStanza.getProperty("defaultPos"));
         }
 
-        config.description = config.id;
+        config.setDescription(config.getId());
 
         if (this.genomeStanza.hasProperty("blat")) {
-            config.blat = this.baseURL + this.genomeStanza.getProperty("blat");
+            config.setBlat(this.baseURL + this.genomeStanza.getProperty("blat"));
         }
         if (this.genomeStanza.hasProperty("chromAliasBb")) {
-            config.chromAliasBbURL = this.baseURL + this.genomeStanza.getProperty("chromAliasBb");
+            config.setChromAliasBbURL(this.baseURL + this.genomeStanza.getProperty("chromAliasBb"));
         }
         if (this.genomeStanza.hasProperty("twoBitBptURL")) {
-            config.twoBitBptURL = this.baseURL + this.genomeStanza.getProperty("twoBitBptURL");
+            config.setTwoBitBptURL(this.baseURL + this.genomeStanza.getProperty("twoBitBptURL"));
         }
 
         if (this.genomeStanza.hasProperty("twoBitBptUrl")) {
-            config.twoBitBptURL = this.baseURL + this.genomeStanza.getProperty("twoBitBptUrl");
+            config.setTwoBitBptURL(this.baseURL + this.genomeStanza.getProperty("twoBitBptUrl"));
         }
 
         // chromSizes can take a very long time to load, and is not useful with the default WGV = off
@@ -221,17 +221,17 @@ public class Hub {
         // }
 
         if (this.genomeStanza.hasProperty("description")) {
-            config.description += "\n" + this.genomeStanza.getProperty("description");
+            config.setDescription(config.getDescription() + "\n" + this.genomeStanza.getProperty("description"));
         }
         if (this.genomeStanza.hasProperty("organism")) {
-            config.description += "\n" + this.genomeStanza.getProperty("organism");
+            config.setDescription(config.getDescription() + "\n" + this.genomeStanza.getProperty("organism"));
         }
         if (this.genomeStanza.hasProperty("scientificName")) {
-            config.description += "\n" + this.genomeStanza.getProperty("scientificName");
+            config.setDescription(config.getDescription() + "\n" + this.genomeStanza.getProperty("scientificName"));
         }
 
         if (this.genomeStanza.hasProperty("htmlPath")) {
-            config.infoURL = this.baseURL + this.genomeStanza.getProperty("htmlPath");
+            config.setInfoURL(this.baseURL + this.genomeStanza.getProperty("htmlPath"));
         }
 
         // Search for cytoband
@@ -246,7 +246,7 @@ public class Hub {
          */
         for (Stanza t : this.trackStanzas) {
             if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
-                config.cytobandBbURL = this.baseURL + t.getProperty("bigDataUrl");
+                config.setCytobandBbURL(this.baseURL + t.getProperty("bigDataUrl"));
                 break;
             }
         }
@@ -257,7 +257,7 @@ public class Hub {
                 return !Hub.filterTracks.contains(t.name) &&
                         (!"hide".equals(t.getProperty("visibility")));
             };
-            config.tracks = this.getTracksConfigs(filter);
+            config.setTracks(this.getTracksConfigs(filter));
         }
 
         // config.trackConfigurations = this.#getGroupedTrackConfigurations()
@@ -271,7 +271,7 @@ public class Hub {
         LinkedHashMap<String, List<TrackConfig>> trackConfigMap = new LinkedHashMap<>();
         java.util.function.Function<Stanza, Boolean> filter = (stanza -> !stanza.name.equals("cytoBandIdeo"));
         for (TrackConfig c : this.getTracksConfigs(filter)) {
-            String groupName = c.group != null ? c.group : "other";
+            String groupName = c.getGroup() != null ? c.getGroup() : "other";
             if (!trackConfigMap.containsKey(groupName)) {
                 trackConfigMap.put(groupName, new ArrayList<>());
             }
@@ -314,84 +314,83 @@ public class Hub {
         String url = this.baseURL + t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
 
-        config.panelName = IGV.DATA_PANEL_NAME;
+        config.setPanelName(IGV.DATA_PANEL_NAME);
 
-        config.id = t.getProperty("track");
-        config.name = t.getProperty("shortLabel");
+        config.setId(t.getProperty("track"));
+        config.setName(t.getProperty("shortLabel"));
 
         // TODO -- work on recognizing big* formats
         // config.format = t.format();
 
-        config.url = this.baseURL + t.getProperty("bigDataUrl");
+        config.setUrl(this.baseURL + t.getProperty("bigDataUrl"));
 
         // Expanded display mode does not work well in IGV desktop for some tracks
         //config.displayMode = t.displayMode();
 
         if ("vcfTabix".equals(format)) {
-            config.indexURL = config.url + ".tbi";
+            config.setIndexURL(config.getUrl() + ".tbi");
         }
 
         if (t.hasProperty("longLabel") && t.hasProperty("html")) {
-            config.description =
-                    "<a target=\"_blank\" href=\"" + (this.baseURL + t.getProperty("html")) + "\">" + t.getProperty("longLabel") + "</a>";
+            config.setDescription("<a target=\"_blank\" href=\"" + (this.baseURL + t.getProperty("html")) + "\">" + t.getProperty("longLabel") + "</a>");
         } else if (t.hasProperty("longLabel")) {
-            config.description = t.getProperty("longLabel");
+            config.setDescription(t.getProperty("longLabel"));
         }
 
         if(t.hasProperty("html")) {
-            config.html = this.baseURL + t.getProperty("html");
+            config.setHtml(this.baseURL + t.getProperty("html"));
         }
 
-        config.visible = !("hide".equals(t.getProperty("visibility")));
+        config.setVisible(!("hide".equals(t.getProperty("visibility"))));
 
         if (t.hasProperty("autoScale")) {
-            config.autoscale = t.getProperty("autoScale").toLowerCase().equals("on");
+            config.setAutoscale(t.getProperty("autoScale").toLowerCase().equals("on"));
         }
         if (t.hasProperty("maxHeightPixels")) {
             String[] tokens = t.getProperty("maxHeightPixels").split(":");
-            config.maxHeight = Integer.parseInt(tokens[0]);
-            config.height = Integer.parseInt(tokens[1]);
-            config.minHeight = Integer.parseInt(tokens[2]);
+            config.setMaxHeight(Integer.parseInt(tokens[0]));
+            config.setHeight(Integer.parseInt(tokens[1]));
+            config.setMinHeight(Integer.parseInt(tokens[2]));
         }
         // TODO -- graphTypeDefault
         // TODO -- windowingFunction
         if (t.hasProperty("color")) {
             String c = t.getProperty("color");
-            config.color = c.indexOf(",") > 0 ? "rgb(" + c + ")" : c;
+            config.setColor(c.indexOf(",") > 0 ? "rgb(" + c + ")" : c);
         }
         if (t.hasProperty("altColor")) {
             String c = t.getProperty("altColor");
-            config.altColor = c.indexOf(",") > 0 ? "rgb(" + c + ")" : c;
+            config.setAltColor(c.indexOf(",") > 0 ? "rgb(" + c + ")" : c);
         }
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
-            config.min = Float.parseFloat(tokens[0]);
+            config.setMin(Float.parseFloat(tokens[0]));
             if (tokens.length > 1) {
-                config.max = Float.parseFloat(tokens[1]);
+                config.setMax(Float.parseFloat(tokens[1]));
             }
         }
         if (t.hasProperty("itemRgb")) {
             // TODO -- this not supported yet
         }
         if ("hide".equals(t.getProperty("visibility"))) {
-            config.visible = false;
+            config.setVisible(false);
         }
         if (t.hasProperty("url")) {
-            config.infoURL = t.getProperty("url");
+            config.setInfoURL(t.getProperty("url"));
         }
         if (t.hasProperty("searchIndex")) {
-            config.searchIndex = t.getProperty("searchIndex");
+            config.setSearchIndex(t.getProperty("searchIndex"));
         }
         if (t.hasProperty("searchTrix")) {
-            config.searchTrix = this.baseURL + t.getProperty("searchTrix");
+            config.setTrixURL(this.baseURL + t.getProperty("searchTrix"));
         }
 
         if (t.hasProperty("group")) {
-            config.group = t.getProperty("group");
-            if (this.groupPriorityMap != null && this.groupPriorityMap.containsKey(config.group)) {
-                int nextPriority = this.groupPriorityMap.get(config.group) + 1;
-                config.order = nextPriority;
-                this.groupPriorityMap.put(config.group, nextPriority);
+            config.setGroup(t.getProperty("group"));
+            if (this.groupPriorityMap != null && this.groupPriorityMap.containsKey(config.getGroup())) {
+                int nextPriority = this.groupPriorityMap.get(config.getGroup()) + 1;
+                config.setOrder(nextPriority);
+                this.groupPriorityMap.put(config.getGroup(), nextPriority);
             }
         }
 

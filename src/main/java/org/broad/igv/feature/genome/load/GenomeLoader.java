@@ -3,9 +3,9 @@ package org.broad.igv.feature.genome.load;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.genome.DotGenomeUtils;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeException;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -31,14 +31,13 @@ import java.util.Map;
  */
 abstract public class GenomeLoader {
 
-    public static final long ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
     private static Logger log = LogManager.getLogger(GenomeLoader.class);
 
     public static Map<String, File> localSequenceMap;
 
     public static GenomeLoader getLoader(String genomePath) throws IOException {
         if (genomePath.endsWith(".genome")) {
-            File archiveFile = GenomeManager.getGenomeFile(genomePath);
+            File archiveFile = DotGenomeUtils.getDotGenomeFile(genomePath);
             if (!archiveFile.exists()) {
                 MessageUtils.showMessage("File not found: " + archiveFile.getAbsolutePath());
                 return null;    // Happens if genome download was canceled.
@@ -50,14 +49,6 @@ abstract public class GenomeLoader {
             return new ChromsizesLoader(genomePath);
         } else if (genomePath.endsWith(".json")) {
             return new JsonGenomeLoader(genomePath);
-        } else if (genomePath.endsWith(".2bit")) {
-            GenomeConfig config = new GenomeConfig();
-            config.twoBitURL = genomePath;
-            config.id = genomePath;
-            config.name = (HttpUtils.isRemoteURL(genomePath)) ?
-                    Utilities.getFileNameFromURL(genomePath) :
-                    (new File(genomePath)).getName();
-            return new GenomeObjectLoader(config);
         } else if (genomePath.endsWith("hub.txt")) {
             return new HubGenomeLoader(genomePath);
         } else {
@@ -66,7 +57,7 @@ abstract public class GenomeLoader {
                 String gziPath = genomePath + ".gzi";
                 String faiPath = genomePath + ".fai";
                 if (!(FileUtils.resourceExists(gziPath) && FileUtils.resourceExists(faiPath))) {
-                    throw new GenomeException("IGV cannot readed gzipped fasta files.");
+                    throw new GenomeException("IGV cannot read gzipped fasta files.");
                 }
             }
             return new FastaGenomeLoader(genomePath);

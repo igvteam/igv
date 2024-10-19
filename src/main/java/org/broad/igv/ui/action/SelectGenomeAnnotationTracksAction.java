@@ -80,7 +80,7 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
         List<TrackConfigGroup> groups = hub.getGroupedTrackConfigurations();
         for (TrackConfigGroup g : groups) {
             for (TrackConfig config : g.tracks) {
-                config.visible = loadedTrackPaths.contains(config.url);
+                config.setVisible(loadedTrackPaths.contains(config.getUrl()));
             }
         }
 
@@ -93,13 +93,13 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
         List<TrackConfig> selected = new ArrayList<>();
         for (TrackConfigGroup g : groups) {
             for (TrackConfig config : g.tracks) {
-                if (config.visible) {
+                if (config.getVisible()) {
                     selected.add(config);
-                    if (!loadedTrackPaths.contains(config.url)) {
+                    if (!loadedTrackPaths.contains(config.getUrl())) {
                         tracksToLoad.add(config);
                     }
                 } else {
-                    trackPathsToRemove.add(config.url);
+                    trackPathsToRemove.add(config.getUrl());
                 }
             }
         }
@@ -115,7 +115,7 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
 
         // Update preferences
         String key = "hub:" + hub.getUrl();
-        PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.name).toList()));
+        PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
 
     }
 

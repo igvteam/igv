@@ -150,33 +150,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         zoomControl.setEnabled(!geneListMode);
     }
 
-
-    /**
-     * Selects the first genome from the list which matches this genomeId.
-     * If not found, checks genomes from the server/user-defined list
-     *
-     * @param genomeId
-     */
-    public void selectGenome(String genomeId) {
-
-        //log.warn("Selecting genome " + genomeId);
-
-        GenomeListItem selectedItem = GenomeListManager.getInstance().getGenomeListItem(genomeId);
-
-        if (selectedItem == null || !genomeComboBox.hasItem(selectedItem)) {
-            try {
-                GenomeManager.getInstance().loadGenomeById(genomeId);
-            } catch (IOException e) {
-                MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                log.error("Error loading genome: " + genomeId, e);
-            }
-        }
-
-        if (selectedItem != null) {
-            UIUtilities.invokeAndWaitOnEventThread(() -> genomeComboBox.setSelectedItem(selectedItem));
-        }
-    }
-
     public void updateCurrentCoordinates() {
 
         if (IGV.hasInstance()) {
@@ -236,13 +209,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
         if (scrollPane == null) return;
 
-        //Loop through and set width to widest component, plus some padding
-        int rendererWidth = box.getWidth();
-        for (int index = 0; index < box.getItemCount(); index++) {
-            Object value = box.getItemAt(index);
-            Component rendererComp = box.getRenderer().getListCellRendererComponent(null, value, index, false, false);
-        }
 
+        int rendererWidth = box.getWidth();
         Dimension size = scrollPane.getPreferredSize();
         size.width = Math.max(size.width, rendererWidth);
         scrollPane.setPreferredSize(size);
@@ -250,7 +218,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         scrollPane.revalidate();
     }
 
-    //<editor-fold desc="Action methods">
+
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
@@ -284,7 +252,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
     }
 
-    //</editor-fold>
 
     public void receiveEvent(IGVEvent e) {
 
@@ -315,8 +282,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         }
     }
 
-
-    //<editor-fold desc="Search box">
     // Set the focus in the search box
 
     public void focusSearchBox() {

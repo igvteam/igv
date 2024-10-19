@@ -13,7 +13,6 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -38,23 +37,12 @@ public class JsonGenomeLoader extends GenomeLoader {
     public Genome loadGenome() throws IOException {
 
 
-        try (InputStream is = ParsingUtils.openInputStream(genomePath)){
+        GenomeConfig genomeConfig = loadGenomeConfig();
 
-            String jsonString = ParsingUtils.readContentsFromStream(is);
+        Genome genome = new Genome(genomeConfig);
 
-            if (jsonString.contains("chromosomeOrder")) {
-                jsonString = fixChromosomeOrder(jsonString);
-            }
-
-            GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
-
-            fixPaths(genomeConfig);
-
-            Genome genome = new Genome(genomeConfig);
-
-            // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
-            // Not a common option.
-
+        // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
+        // Not a common option.
 //            JsonElement chains = config.chains;
 //            if (chains != null) {
 //                Map<String, Liftover> liftoverMap = new HashMap<>();
@@ -67,7 +55,26 @@ public class JsonGenomeLoader extends GenomeLoader {
 //                newGenome.setLiftoverMap(liftoverMap);
 //            }
 
-            return genome;
+        return genome;
+
+
+    }
+
+    public GenomeConfig loadGenomeConfig() throws IOException {
+
+        try (InputStream is = ParsingUtils.openInputStream(genomePath)) {
+
+            String jsonString = ParsingUtils.readContentsFromStream(is);
+
+            if (jsonString.contains("chromosomeOrder")) {
+                jsonString = fixChromosomeOrder(jsonString);
+            }
+
+            GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
+
+            fixPaths(genomeConfig);
+
+            return genomeConfig;
 
         }
     }
@@ -99,50 +106,47 @@ public class JsonGenomeLoader extends GenomeLoader {
      */
     private GenomeConfig fixPaths(GenomeConfig config) {
 
-        if (config.chromAliasBbURL != null) {
-            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
+        if (config.getChromAliasBbURL() != null) {
+            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
         }
-        if (config.twoBitURL != null) {
-            config.twoBitURL = FileUtils.getAbsolutePath(config.twoBitURL, genomePath);
+        if (config.getTwoBitURL() != null) {
+            config.setTwoBitURL(FileUtils.getAbsolutePath(config.getTwoBitURL(), genomePath));
         }
-        if (config.cytobandBbURL != null) {
-            config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
+        if (config.getTwoBitBptURL() != null) {
+            config.setTwoBitBptURL(FileUtils.getAbsolutePath(config.getTwoBitBptURL(), genomePath));
         }
-        if (config.chromSizesURL != null) {
-            config.chromSizesURL = FileUtils.getAbsolutePath(config.chromSizesURL, genomePath);
+        if (config.getCytobandBbURL() != null) {
+            config.setCytobandBbURL(FileUtils.getAbsolutePath(config.getCytobandBbURL(), genomePath));
         }
-        if (config.fastaURL != null) {
-            config.fastaURL = FileUtils.getAbsolutePath(config.fastaURL, genomePath);
+        if (config.getChromSizesURL() != null) {
+            config.setChromSizesURL(FileUtils.getAbsolutePath(config.getChromSizesURL(), genomePath));
         }
-        if (config.indexURL != null) {
-            config.indexURL = FileUtils.getAbsolutePath(config.indexURL, genomePath);
+        if (config.getFastaURL() != null) {
+            config.setFastaURL(FileUtils.getAbsolutePath(config.getFastaURL(), genomePath));
         }
-        if (config.gziIndexURL != null) {
-            config.gziIndexURL = FileUtils.getAbsolutePath(config.gziIndexURL, genomePath);
+        if (config.getIndexURL() != null) {
+            config.setIndexURL(FileUtils.getAbsolutePath(config.getIndexURL(), genomePath));
         }
-        if (config.compressedIndexURL != null) {
-            config.compressedIndexURL = FileUtils.getAbsolutePath(config.compressedIndexURL, genomePath);
+        if (config.getGziIndexURL() != null) {
+            config.setGziIndexURL(FileUtils.getAbsolutePath(config.getGziIndexURL(), genomePath));
         }
-        if (config.cytobandURL != null) {
-            config.cytobandURL = FileUtils.getAbsolutePath(config.cytobandURL, genomePath);
+        if (config.getCytobandURL() != null) {
+            config.setCytobandURL(FileUtils.getAbsolutePath(config.getCytobandURL(), genomePath));
         }
-        if (config.aliasURL != null) {
-            config.aliasURL = FileUtils.getAbsolutePath(config.aliasURL, genomePath);
+        if (config.getAliasURL() != null) {
+            config.setAliasURL(FileUtils.getAbsolutePath(config.getAliasURL(), genomePath));
         }
-        if (config.chromAliasBbURL != null) {
-            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
+        if (config.getChromAliasBbURL() != null) {
+            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
         }
-        List<TrackConfig> trackConfigs = config.tracks;
-        if (trackConfigs == null) {
-            trackConfigs = config.annotations;
-        }
+        List<TrackConfig> trackConfigs = config.getTrackConfigs();
         if (trackConfigs != null) {
             trackConfigs.forEach((TrackConfig trackConfig) -> {
-                if (trackConfig.url != null) {
-                    trackConfig.url = FileUtils.getAbsolutePath(trackConfig.url, genomePath);
+                if (trackConfig.getUrl() != null) {
+                    trackConfig.setUrl(FileUtils.getAbsolutePath(trackConfig.getUrl(), genomePath));
                 }
-                if (trackConfig.indexURL != null) {
-                    trackConfig.indexURL = FileUtils.getAbsolutePath(trackConfig.indexURL, genomePath);
+                if (trackConfig.getIndexURL() != null) {
+                    trackConfig.setIndexURL(FileUtils.getAbsolutePath(trackConfig.getIndexURL(), genomePath));
                 }
             });
         }

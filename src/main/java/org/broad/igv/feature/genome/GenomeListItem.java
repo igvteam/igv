@@ -86,18 +86,12 @@ public class GenomeListItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        GenomeListItem that = (GenomeListItem) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (path != null ? !path.equals(that.path) : that.path != null) return false;
-
-        return true;
+        GenomeListItem item = (GenomeListItem) o;
+        return Objects.equals(displayableName, item.displayableName) && Objects.equals(path, item.path) && Objects.equals(id, item.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, id);
+        return Objects.hash(displayableName, path, id);
     }
-
 }
