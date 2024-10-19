@@ -50,6 +50,8 @@ public class GenomeListManager {
 
     private Map<String, GenomeListItem> hostedGenomesMap;
 
+    private Map<String, GenomeListItem> downloadedGenomesMap;
+
     private boolean hostedGenomeListUnreachable = false;
 
     private static GenomeListSorter sorter = new GenomeListSorter();
@@ -156,6 +158,7 @@ public class GenomeListManager {
         // Rebuild the selectable genomes map.  The order is imporant as downloaded genomes take precedence.
         hostedGenomesMap = null;
         remoteGenomesMap = null;
+        downloadedGenomesMap = null;
         genomeItemMap.clear();
         genomeItemMap.putAll(getRemoteGenomesMap());
         genomeItemMap.putAll(getDownloadedGenomeMap());
@@ -175,118 +178,121 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    private static Map<String, GenomeListItem> getDownloadedGenomeMap() {
+    public  Map<String, GenomeListItem> getDownloadedGenomeMap() {
 
-        Map<String, GenomeListItem> cachedGenomes = new HashMap<>();
-        if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
-            return cachedGenomes;
-        }
+        if(downloadedGenomesMap == null) {
 
-        File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
-
-        // First loop - .genome files
-        for (File file : files) {
-            if (file.isDirectory()) {
-                continue;
+            downloadedGenomesMap = new HashMap<>();
+            if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
+                return downloadedGenomesMap;
             }
-            if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                ZipFile zipFile = null;
-                FileInputStream fis = null;
-                ZipInputStream zipInputStream = null;
-                try {
-                    zipFile = new ZipFile(file);
-                    fis = new FileInputStream(file);
-                    zipInputStream = new ZipInputStream(new BufferedInputStream(fis));
 
-                    ZipEntry zipEntry = zipFile.getEntry(GenomeDescriptor.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
-                    if (zipEntry == null) {
-                        continue;    // Should never happen
-                    }
+            File[] files = DirectoryManager.getGenomeCacheDirectory().listFiles();
 
-                    InputStream inputStream = zipFile.getInputStream(zipEntry);
-                    Properties properties = new Properties();
-                    properties.load(inputStream);
-
-                    GenomeListItem item =
-                            new GenomeListItem(properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
-                                    file.getAbsolutePath(),
-                                    properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
-
-                    cachedGenomes.put(item.getId(), item);
-
-                } catch (ZipException ex) {
-                    log.error("\nZip error unzipping cached genome.", ex);
+            // First loop - .genome files
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    continue;
+                }
+                if (file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
+                    ZipFile zipFile = null;
+                    FileInputStream fis = null;
+                    ZipInputStream zipInputStream = null;
                     try {
-                        file.delete();
-                        zipInputStream.close();
-                    } catch (Exception e) {
-                        //ignore exception when trying to delete file
-                    }
-                } catch (IOException ex) {
-                    log.warn("\nIO error unzipping cached genome.", ex);
-                    try {
-                        file.delete();
-                    } catch (Exception e) {
-                        //ignore exception when trying to delete file
-                    }
-                } finally {
-                    try {
-                        if (zipInputStream != null) {
+                        zipFile = new ZipFile(file);
+                        fis = new FileInputStream(file);
+                        zipInputStream = new ZipInputStream(new BufferedInputStream(fis));
+
+                        ZipEntry zipEntry = zipFile.getEntry(GenomeDescriptor.GENOME_ARCHIVE_PROPERTY_FILE_NAME);
+                        if (zipEntry == null) {
+                            continue;    // Should never happen
+                        }
+
+                        InputStream inputStream = zipFile.getInputStream(zipEntry);
+                        Properties properties = new Properties();
+                        properties.load(inputStream);
+
+                        GenomeListItem item =
+                                new GenomeListItem(properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
+                                        file.getAbsolutePath(),
+                                        properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
+
+                        downloadedGenomesMap.put(item.getId(), item);
+
+                    } catch (ZipException ex) {
+                        log.error("\nZip error unzipping cached genome.", ex);
+                        try {
+                            file.delete();
                             zipInputStream.close();
-                        }
-                        if (zipFile != null) {
-                            zipFile.close();
-                        }
-                        if (fis != null) {
-                            fis.close();
+                        } catch (Exception e) {
+                            //ignore exception when trying to delete file
                         }
                     } catch (IOException ex) {
-                        log.warn("Error closing genome zip stream", ex);
+                        log.warn("\nIO error unzipping cached genome.", ex);
+                        try {
+                            file.delete();
+                        } catch (Exception e) {
+                            //ignore exception when trying to delete file
+                        }
+                    } finally {
+                        try {
+                            if (zipInputStream != null) {
+                                zipInputStream.close();
+                            }
+                            if (zipFile != null) {
+                                zipFile.close();
+                            }
+                            if (fis != null) {
+                                fis.close();
+                            }
+                        } catch (IOException ex) {
+                            log.warn("Error closing genome zip stream", ex);
+                        }
+                    }
+                }
+            }
+
+            // Second loop - .json files
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    continue;
+                }
+                if (file.getName().toLowerCase().endsWith(".json")) {
+                    try {
+                        BufferedReader reader = new BufferedReader(new FileReader(file));
+                        JsonParser parser = new JsonParser();
+                        JsonElement rootElement = parser.parse(reader);
+                        if (rootElement.isJsonObject()) {
+                            JsonObject json = rootElement.getAsJsonObject();
+                            JsonElement id = json.get("id");
+                            JsonElement name = json.get("name");
+                            JsonElement fasta = json.get("fastaURL");
+                            JsonElement twobit = json.get("twoBitURL");
+                            if (id == null) {
+                                log.error("Error parsing " + file.getName() + ". \"id\" is required");
+                                continue;
+                            }
+                            if (name == null) {
+                                log.error("Error parsing " + file.getName() + ". \"name\" is required");
+                                continue;
+                            }
+                            if (fasta == null && twobit == null) {
+                                log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
+                                continue;
+                            }
+
+                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                            downloadedGenomesMap.put(item.getId(), item);
+
+                        }
+                    } catch (Exception e) {
+                        log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
                     }
                 }
             }
         }
 
-        // Second loop - .json files
-        for (File file : files) {
-            if (file.isDirectory()) {
-                continue;
-            }
-            if (file.getName().toLowerCase().endsWith(".json")) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(file));
-                    JsonParser parser = new JsonParser();
-                    JsonElement rootElement = parser.parse(reader);
-                    if (rootElement.isJsonObject()) {
-                        JsonObject json = rootElement.getAsJsonObject();
-                        JsonElement id = json.get("id");
-                        JsonElement name = json.get("name");
-                        JsonElement fasta = json.get("fastaURL");
-                        JsonElement twobit = json.get("twoBitURL");
-                        if (id == null) {
-                            log.error("Error parsing " + file.getName() + ". \"id\" is required");
-                            continue;
-                        }
-                        if (name == null) {
-                            log.error("Error parsing " + file.getName() + ". \"name\" is required");
-                            continue;
-                        }
-                        if (fasta == null && twobit == null) {
-                            log.error("Error parsing " + file.getName() + ". One of either \"fastaURL\" or \"twoBitURL\" is required");
-                            continue;
-                        }
-
-                        GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
-                        cachedGenomes.put(item.getId(), item);
-
-                    }
-                } catch (Exception e) {
-                    log.error("Error parsing genome json: " + file.getAbsolutePath(), e);
-                }
-            }
-        }
-
-        return cachedGenomes;
+        return downloadedGenomesMap;
     }
 
     public void removeItems(List<GenomeListItem> removedValuesList) {

@@ -130,9 +130,6 @@ public class JsonGenomeLoader extends GenomeLoader {
         if (config.getGziIndexURL() != null) {
             config.setGziIndexURL(FileUtils.getAbsolutePath(config.getGziIndexURL(), genomePath));
         }
-        if (config.getCompressedIndexURL() != null) {
-            config.setCompressedIndexURL(FileUtils.getAbsolutePath(config.getCompressedIndexURL(), genomePath));
-        }
         if (config.getCytobandURL() != null) {
             config.setCytobandURL(FileUtils.getAbsolutePath(config.getCytobandURL(), genomePath));
         }

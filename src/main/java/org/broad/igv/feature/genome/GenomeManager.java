@@ -288,26 +288,25 @@ public class GenomeManager {
     }
 
 
-    public GenomeListItem downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
+    public File downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
 
         try {
 
             if (item.getPath().endsWith(".genome")) {
                 File genomeFile = DotGenomeUtils.getDotGenomeFile(item.getPath());  // Will be downloaded if remote -- neccessary to unzip
-                item.setPath(genomeFile.getAbsolutePath());
+                return genomeFile;
             } else {
                 JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
                 GenomeConfig config = loader.loadGenomeConfig();
                 File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
-                item.setPath(downloadedGenome.getAbsolutePath());
+                return downloadedGenome;
             }
 
         } catch (Exception e) {
             MessageUtils.showMessage("Error downloading genome: " + e.getMessage());
             log.error("Error downloading genome " + item.getDisplayableName());
+            return null;
         }
-
-        return item;
     }
 
 
@@ -331,10 +330,10 @@ public class GenomeManager {
                 File dataFileDirectory = new File(DirectoryManager.getGenomeCacheDirectory(), item.getId());
                 File localFasta = DotGenomeUtils.getLocalFasta(item.getId());  //  (Legacy .genome convention)
 
-                if((dataFileDirectory.isDirectory() || localFasta != null) &&
-                        MessageUtils.confirm("Delete downloaded data files?")){
+                if ((dataFileDirectory.isDirectory() || localFasta != null) &&
+                        MessageUtils.confirm("Delete downloaded data files?")) {
 
-                  if (dataFileDirectory.isDirectory()) {
+                    if (dataFileDirectory.isDirectory()) {
                         try (Stream<Path> paths = Files.walk(dataFileDirectory.toPath())) {
                             paths.sorted(Comparator.reverseOrder())
                                     .map(Path::toFile)

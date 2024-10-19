@@ -3,35 +3,42 @@ package org.broad.igv.feature.genome.load;
 import com.google.gson.Gson;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.genome.Sequence;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A static json-like object representing a genome configuration. Emulates the javascript equivalent.
  * This class was created to ease port of code from javascript.
+ *
+ * NOTE: The property names match names in the corresponding genome json files.  They cannot be renamed.
  * <p>
  * Objects of this class are created by two paths:
- *   (1) GSON deserializtion of a genome json file, and
- *   (2) parsing track hub files.
+ * (1) GSON deserializtion of a genome json file, and
+ * (2) parsing track hub files.
  */
 
-public class GenomeConfig {
+public class GenomeConfig implements Cloneable {
+
+    private static Logger log = LogManager.getLogger(GenomeConfig.class);
 
     private String id;
     private String name;
     private String fastaURL;
     private String indexURL;
     private String gziIndexURL;
-    private String compressedIndexURL;
+    private String compressedIndexURL;   // Used by reflection from GSON.  Do not remove
     private String twoBitURL;
+    private String twoBitBptURL;
     private String nameSet;
     private boolean wholeGenomeView = true;
     private String defaultPos;
     private String description;
     private String blat;
     private String chromAliasBbURL;
-    private String twoBitBptURL;
+
     private String infoURL;
     private String cytobandURL;
     private String cytobandBbURL;
@@ -95,19 +102,11 @@ public class GenomeConfig {
     }
 
     public String getGziIndexURL() {
-        return gziIndexURL;
+        return this.gziIndexURL != null ? gziIndexURL : compressedIndexURL;
     }
 
     public void setGziIndexURL(String gziIndexURL) {
         this.gziIndexURL = gziIndexURL;
-    }
-
-    public String getCompressedIndexURL() {
-        return compressedIndexURL;
-    }
-
-    public void setCompressedIndexURL(String compressedIndexURL) {
-        this.compressedIndexURL = compressedIndexURL;
     }
 
     public String getTwoBitURL() {
@@ -285,4 +284,27 @@ public class GenomeConfig {
     public void setChromAliases(List<List<String>> chromAliases) {
         this.chromAliases = chromAliases;
     }
+
+    public GenomeConfig copy() {
+        return this.clone();
+    }
+
+    protected GenomeConfig clone() {
+        try {
+            GenomeConfig clone = (GenomeConfig) super.clone();
+
+            if (this.tracks != null) {
+                clone.tracks = new ArrayList<>();
+                for (TrackConfig trackConfig : this.tracks) {
+                    clone.tracks.add(trackConfig.clone());
+                }
+            }
+
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            log.error("Cloning not supported", e);
+            return this;
+        }
+    }
+
 }

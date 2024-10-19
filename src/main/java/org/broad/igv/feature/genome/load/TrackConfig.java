@@ -5,12 +5,13 @@ package org.broad.igv.feature.genome.load;
  *
  */
 
-public class TrackConfig {
+public class TrackConfig implements Cloneable {
 
     private String id;
     private String name;
     private String url;
     private String indexURL;
+    private String trixURL;
     private String format;
     private String displayMode;
     private String description;
@@ -25,7 +26,7 @@ public class TrackConfig {
     private Boolean visible;
     private String infoURL;
     private String searchIndex;
-    private String trixURL;
+
     private String group;
     private Integer order;
     private Integer visibilityWindow;
@@ -251,5 +252,10 @@ public class TrackConfig {
 
     public void setPanelName(String panelName) {
         this.panelName = panelName;
+    }
+
+    @Override
+    protected TrackConfig clone() throws CloneNotSupportedException {
+        return (TrackConfig) super.clone();
     }
 }
