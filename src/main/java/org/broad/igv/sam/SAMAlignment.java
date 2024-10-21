@@ -692,8 +692,8 @@ public class SAMAlignment implements Alignment {
             buf.append("Dist: " + getClusterDistance() + "<br>");
         }
 
-        boolean hideSmallIndels = renderOptions.isHideSmallIndels();
-        int smallIndelThreshold = renderOptions.getSmallIndelThreshold();
+        boolean hideSmallIndels = renderOptions == null ? false : renderOptions.isHideSmallIndels();
+        int smallIndelThreshold = renderOptions == null ? 0 : renderOptions.getSmallIndelThreshold();
 
         boolean atInsertion = false;
         boolean atBaseMod = false;
