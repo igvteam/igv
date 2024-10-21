@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Class for experimenting with 10X linked reads.
+ * Represents a collection of alignments linked by a tag or read name
  */
 
 public class LinkedAlignment implements Alignment {
@@ -361,11 +361,6 @@ public class LinkedAlignment implements Alignment {
     @Override
     public String getSample() {
         return sample;
-    }
-
-    @Override
-    public String getClipboardString(double location, int mouseX) {
-        return null;
     }
 
     @Override

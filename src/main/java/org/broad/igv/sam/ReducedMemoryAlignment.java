@@ -206,10 +206,6 @@ public class ReducedMemoryAlignment implements Alignment {
         return this;
     }
 
-    public String getClipboardString(double location, int mouseX) {
-        return getValueString(location, mouseX, (WindowFunction) null);
-    }
-
     public String getValueString(double position, int mouseX, WindowFunction ignored) {
 
         StringBuffer buf = new StringBuffer();

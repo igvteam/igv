@@ -139,7 +139,9 @@ public interface Alignment extends LocusScore {
 
     default String getLibrary(){ return null;}
 
-    String getClipboardString(double location, int mouseX);
+    default String getClipboardString(double location, int mouseX) {
+        return getValueString(location, mouseX, null);
+    }
 
     default void finish(){};
 

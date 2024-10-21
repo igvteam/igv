@@ -34,6 +34,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMTag;
+import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
@@ -658,7 +659,6 @@ public class SAMAlignment implements Alignment {
                     prevOp = new CigarOperator(nBases, op);
                     operators.add(prevOp);
                 }
-
             }
         }
         return operators;
@@ -668,7 +668,22 @@ public class SAMAlignment implements Alignment {
 
     @Override
     public String getClipboardString(double location, int mouseX) {
-        return getAlignmentValueString(location, mouseX, null);
+
+        StringBuilder buf = new StringBuilder();
+
+        String popupTextString = getAlignmentValueString(location, mouseX, null);
+        buf.append(popupTextString);
+
+        buf.append("----------------------");
+        final String readSequence = getReadSequence();
+        final String origSequence = isNegativeStrand() ? SequenceUtil.reverseComplement(readSequence) : readSequence;
+        buf.append("\n\nRead sequence = ");
+        buf.append(readSequence);
+        buf.append("\n\nOrig sequence = ");
+        buf.append(origSequence);
+        buf.append("\n");
+
+        return buf.toString();
     }
 
     private Integer positionToReadIndex(double position) {
@@ -697,6 +712,7 @@ public class SAMAlignment implements Alignment {
 
         boolean atInsertion = false;
         boolean atBaseMod = false;
+
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {

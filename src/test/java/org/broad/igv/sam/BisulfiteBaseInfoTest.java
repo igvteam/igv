@@ -315,9 +315,5 @@ public class BisulfiteBaseInfoTest {
             return library;
         }
 
-        @Override
-        public String getClipboardString(double location, int mouseX) {
-            return null;
-        }
     }
 }

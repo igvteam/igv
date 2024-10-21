@@ -211,8 +211,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mi.setSelected(previous == option);
             mi.addActionListener(aEvt -> {
                 renderOptions.setDuplicatesOption(option);
-                if(previous != option) {
-                    if (previous.filtered != option.filtered){
+                if (previous != option) {
+                    if (previous.filtered != option.filtered) {
                         // duplicates are filtered out when loading the read data so a reload has to be performed in this case
                         IGVEventBus.getInstance().post(new AlignmentTrackEvent(AlignmentTrackEvent.Type.RELOAD));
                     } else {
@@ -1220,19 +1220,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     private void copyToClipboard(final TrackClickEvent e, Alignment alignment, double location, int mouseX) {
 
         if (alignment != null) {
-            StringBuilder buf = new StringBuilder();
-            buf.append(alignment.getClipboardString(location, mouseX)
+            final String clipboardString = alignment.getClipboardString(location, mouseX)
                     .replace("<b>", "")
                     .replace("</b>", "")
                     .replace("<br>", "\n")
                     .replace("<br/>", "\n")
                     .replace("<hr>", "\n------------------\n")
-                    .replace("<hr/>", "\n------------------\n"));
-            buf.append("\n");
-            buf.append("Alignment start position = ").append(alignment.getChr()).append(":").append(alignment.getAlignmentStart() + 1);
-            buf.append("\n");
-            buf.append(alignment.getReadSequence());
-            StringSelection stringSelection = new StringSelection(buf.toString());
+                    .replace("<hr/>", "\n------------------\n");
+            StringSelection stringSelection = new StringSelection(clipboardString);
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(stringSelection, null);
         }

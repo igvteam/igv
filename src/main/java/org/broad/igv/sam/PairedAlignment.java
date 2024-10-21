@@ -195,19 +195,6 @@ public class PairedAlignment implements Alignment {
         return buf.toString();
     }
 
-
-    public String getClipboardString(double position, int mouseX) {
-        StringBuffer buf = new StringBuffer();
-        buf.append("<b>Left alignment</b><br/>");
-        buf.append(firstAlignment.getClipboardString(position, mouseX));
-        if (secondAlignment != null) {
-            buf.append("<br/><b>Right alignment</b><br/>");
-            buf.append(secondAlignment.getClipboardString(position, mouseX));
-        }
-        return buf.toString();
-    }
-    ////////////////////////////////////////////////////////////
-
     public boolean contains(double location) {
         return location >= start && location <= end;
     }
