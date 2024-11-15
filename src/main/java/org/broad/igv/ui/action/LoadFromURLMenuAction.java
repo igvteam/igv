@@ -118,7 +118,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 MessageUtils.showMessage("Error loading url: " + url + " (" + ex + ")");
             }
         } else {
-            if (indexes.size() != inputs.size()) {
+            if (!indexes.isEmpty() && indexes.size() != inputs.size()) {
                 throw new RuntimeException("The number of Index URLs must equal the number of File URLs");
             }
             checkURLs(indexes);
@@ -164,7 +164,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         for (int i = 0; i < inputs.size(); i++) {
             final String url = inputs.get(i);
             final ResourceLocator rl = new ResourceLocator(url.trim());
-            if (indexes != null) {
+            if (!indexes.isEmpty()) {
                 final String indexUrl = indexes.get(i);
                 rl.setIndexPath(indexUrl);
             }
