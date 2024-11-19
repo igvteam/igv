@@ -53,7 +53,7 @@ import static org.broad.igv.util.StringUtils.stripQuotes;
  */
 public class ResourceLocator {
 
-    private static Logger log = LogManager.getLogger(ResourceLocator.class);
+    private static final Logger log = LogManager.getLogger(ResourceLocator.class);
 
     /**
      * Display name
@@ -736,7 +736,7 @@ public class ResourceLocator {
         INDEX("index"),
         HTSGET("htsget");
 
-        private String name;
+        private final String name;
 
         AttributeType(String name) {
             this.name = name;

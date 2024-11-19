@@ -44,9 +44,7 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.SequenceRenderer;
 import org.broad.igv.sam.mods.BaseModificationColors;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMenuBar;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.*;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.MessageUtils;
@@ -280,7 +278,7 @@ public class IGVPreferences {
             // Explicitly setting removes override
             overrideKeys.remove(key);
 
-            if (value == null || value.trim().length() == 0) {
+            if (value == null || value.isBlank()) {
                 userPreferences.remove(key);
             } else {
                 userPreferences.put(key, value);
@@ -297,7 +295,7 @@ public class IGVPreferences {
 
     public void putAll(Map<String, String> updatedPrefs) {
         for (Map.Entry<String, String> entry : updatedPrefs.entrySet()) {
-            if (entry.getValue() == null || entry.getValue().trim().length() == 0) {
+            if (entry.getValue() == null || entry.getValue().isBlank()) {
                 remove(entry.getKey());
             } else {
                 put(entry.getKey(), entry.getValue());
@@ -610,13 +608,27 @@ public class IGVPreferences {
      * @param recentSessions
      */
     public void setRecentSessions(String recentSessions) {
+        remove(RECENT_SESSIONS);
         put(RECENT_SESSIONS, recentSessions);
     }
 
 
-    public String getRecentSessions() {
-        return get(RECENT_SESSIONS, null);
+    public RecentFileSet getRecentSessions() {
+        String sessionsString = get(RECENT_SESSIONS, null);
+        return RecentFileSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
     }
+
+    public void setRecentUrls(String recentUrls) {
+        remove(RECENT_URLS);
+        put(RECENT_URLS, recentUrls);
+    }
+
+
+    public RecentUrlsSet getRecentUrls() {
+        String sessionsString = get(RECENT_URLS, null);
+        return RecentUrlsSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
+    }
+
 
     public String getDataServerURL() {
         String masterResourceFile = get(DATA_SERVER_URL_KEY);

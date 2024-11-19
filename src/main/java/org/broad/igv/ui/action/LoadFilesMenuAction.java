@@ -30,9 +30,9 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -41,16 +41,16 @@ import org.broad.igv.util.ResourceLocator;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
  */
 public class LoadFilesMenuAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
-    IGV igv;
+    private static final Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
+    private final IGV igv;
 
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
@@ -59,9 +59,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
                 loadFiles(chooseTrackFiles());
-
     }
 
     private File[] chooseTrackFiles() {
@@ -85,25 +83,19 @@ public class LoadFilesMenuAction extends MenuAction {
         return trackFiles;
     }
 
-    private void loadFiles(File[] files) {
+    private void loadFiles(final File[] files) {
 
         if (files != null && files.length > 0) {
 
-            List<File> validFileList = new ArrayList();
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("File(s) not found: ");
-            boolean allFilesExist = true;
+            final List<File> validFiles = new ArrayList<>();
+            final List<File> missingFiles = new ArrayList<>();
+
             for (File file : files) {
-
                 if (!file.exists()) {
-                    allFilesExist = false;
-                    buffer.append("\n\t");
-                    buffer.append(file.getAbsolutePath());
+                    missingFiles.add(file);
                 } else {
-
                     String path = file.getAbsolutePath();
-                    if (path.endsWith(Globals.SESSION_FILE_EXTENSION)) {
-                        // TODO -- a better test for session file than just the extension!
+                    if (SessionReader.isSessionFile(path)) {
                         final String msg = "File " + path +
                                 " appears to be an IGV Session file - " +
                                 "please use the Open Session menu item " +
@@ -111,23 +103,25 @@ public class LoadFilesMenuAction extends MenuAction {
                         log.error(msg);
                         MessageUtils.showMessage(msg);
                     } else {
-                        validFileList.add(file);
+                        validFiles.add(file);
                     }
                 }
 
             }
-            files = validFileList.toArray(new File[validFileList.size()]);
 
-            if (!allFilesExist) {
-                final String msg = buffer.toString();
+            if (!missingFiles.isEmpty()) {
+                String msg = missingFiles.stream()
+                        .map(File::getAbsolutePath)
+                        .collect(Collectors.joining("\n\t", "File(s) not found: \n\t", ""));
                 log.error(msg);
                 MessageUtils.showMessage(msg);
             }
 
-            if (files.length > 0) {
-                // Create DataResouceLocators for the selected files
-                final List<ResourceLocator> locators = ResourceLocator.getLocators(Arrays.asList(files));
-               igv.loadTracks(locators);
+            if (!validFiles.isEmpty()) {
+                // Create DataResourceLocators for the selected files
+                final List<ResourceLocator> locators = ResourceLocator.getLocators(validFiles);
+                igv.addToRecentUrls(locators);
+                igv.loadTracks(locators);
             }
         }
     }

@@ -2,6 +2,7 @@ package org.broad.igv.ui.util;
 
 import org.broad.igv.session.autosave.SessionAutosaveManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.MenuSelectedListener;
 import org.broad.igv.ui.action.OpenSessionMenuAction;
 
 import javax.swing.*;
@@ -24,22 +25,7 @@ public class AutosaveMenu extends JMenu {
     private AutosaveMenu(String name) {
         super(name);
 
-        this.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                fillAutosaveList();
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-
-            }
-        });
+        this.addMenuListener((MenuSelectedListener) e -> fillAutosaveList());
     }
 
     /**
@@ -64,9 +50,9 @@ public class AutosaveMenu extends JMenu {
             }
         }
         // Create a menu item for each of the timed autosave files and add it to the menu
-        for(int i = 0; i < timedAutosaves.length; i++) {
+        for (File timedAutosave : timedAutosaves) {
             add(MenuAndToolbarUtils.createMenuItem(
-                    new OpenSessionMenuAction(timedAutosaves[i].getAbsolutePath(), IGV.getInstance())
+                    new OpenSessionMenuAction(timedAutosave.getAbsolutePath(), IGV.getInstance())
             ));
         }
     }

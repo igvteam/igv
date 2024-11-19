@@ -64,7 +64,7 @@ public class OpenSessionMenuAction extends MenuAction {
         super(sessionFile);
         this.sessionFile = sessionFile;
         this.igv = igv;
-        autoload = true;
+        this.autoload = true;
     }
 
     public OpenSessionMenuAction(String label, int mnemonic, IGV igv) {
@@ -76,18 +76,25 @@ public class OpenSessionMenuAction extends MenuAction {
     public void actionPerformed(ActionEvent e) {
 
         if (sessionFile == null || autoload == false) {
-            File lastSessionDirectory = PreferencesManager.getPreferences().getLastTrackDirectory();
-            File tmpFile = FileDialogUtils.chooseFile("Open Session", lastSessionDirectory, JFileChooser.FILES_ONLY);
-
-            if (tmpFile == null) {
-                return;
-            }
-            sessionFile = tmpFile.getAbsolutePath();
-            PreferencesManager.getPreferences().setLastTrackDirectory(tmpFile.getParentFile());
+            sessionFile = pickSessionFile();
         }
         if (sessionFile != null) {
             LongRunningTask.submit(() -> this.igv.loadSession(sessionFile, null));
         }
+    }
+
+    private static String pickSessionFile() {
+        File lastSessionDirectory = PreferencesManager.getPreferences().getLastTrackDirectory();
+        File tmpFile = FileDialogUtils.chooseFile("Open Session", lastSessionDirectory, JFileChooser.FILES_ONLY);
+
+        final String result;
+        if (tmpFile == null) {
+            result = null;
+        } else {
+            result = tmpFile.getAbsolutePath();
+            PreferencesManager.getPreferences().setLastTrackDirectory(tmpFile.getParentFile());
+        }
+        return result;
     }
 }
 
