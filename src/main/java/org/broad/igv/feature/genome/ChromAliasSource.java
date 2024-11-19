@@ -12,8 +12,6 @@ abstract public class ChromAliasSource {
         aliasCache = new HashMap<>();
     }
 
-    public abstract String getChromosomeName(String alias);
-
     public abstract String getChromosomeAlias(String chr, String nameSet);
 
     public abstract ChromAlias search(String alias) throws IOException;

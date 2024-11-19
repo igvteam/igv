@@ -293,16 +293,24 @@ public class Genome {
     public String getCanonicalChrName(String str) {
         if (str == null) {
             return str;
-        } else if (chrAliasCache.containsKey(str)) {
+        }
+
+        if (chrAliasCache.containsKey(str)) {
             return chrAliasCache.get(str);
         } else if (chromAliasSource != null) {
             try {
                 ChromAlias aliasRecord = chromAliasSource.search(str);
+
+                if(aliasRecord == null && !str.equals(str.toLowerCase())) {
+                    aliasRecord = chromAliasSource.search(str.toLowerCase());
+                }
+
                 if (aliasRecord != null) {
                     String chr = aliasRecord.getChr();
                     for (String a : aliasRecord.values()) {
                         chrAliasCache.put(a, chr);
                     }
+                    chrAliasCache.put(str, chr);  // Usually redundant, but will catch lowercase search case
                     return chr;
                 }
             } catch (IOException e) {
