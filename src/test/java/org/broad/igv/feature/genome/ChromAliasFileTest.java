@@ -25,9 +25,9 @@ public class ChromAliasFileTest {
     public void getChromosomeName() throws IOException {
         String path = TestUtils.DATA_DIR +  "genomes/GCF_000002655.1.chromAlias.txt";
         ChromAliasFile chromAlias = new ChromAliasFile(path, mockGenome.getChromosomeNames());
-        assertEquals("NC_007194.1", chromAlias.getChromosomeName("CM000169.1")) ;
-        assertEquals("NC_007194.1", chromAlias.getChromosomeName( "1"));
-        assertEquals("NC_007194.1", chromAlias.getChromosomeName( "chr1"));
+        assertEquals("NC_007194.1", chromAlias.search("CM000169.1").getChr()) ;
+        assertEquals("NC_007194.1", chromAlias.search( "1").getChr());
+        assertEquals("NC_007194.1", chromAlias.search( "chr1").getChr());
     }
 
     @Test

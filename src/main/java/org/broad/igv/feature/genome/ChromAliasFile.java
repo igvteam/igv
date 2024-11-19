@@ -100,16 +100,6 @@ public class ChromAliasFile extends ChromAliasSource {
 
 
     /**
-     * Return the canonical chromosome name for the alias.  If none found return the alias
-     *
-     * @param alias
-     * @returns {*}
-     */
-    public String getChromosomeName(String alias) {
-        return this.aliasCache.containsKey(alias) ? this.aliasCache.get(alias).getChr() : alias;
-    }
-
-    /**
      * Return an alternate chromosome name (alias).
      *
      * @param chr

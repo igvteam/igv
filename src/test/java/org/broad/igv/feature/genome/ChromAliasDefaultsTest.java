@@ -48,11 +48,13 @@ public class ChromAliasDefaultsTest {
     @Test
     public void getCanonicalChromosomeName() {
 
-        assertEquals(ncibMockGenome.getCanonicalChrName("chrX"), "23");
-        assertEquals(ncibMockGenome.getCanonicalChrName("chrM"), "MT");
+        assertEquals("23", ncibMockGenome.getCanonicalChrName("chrX"));
+        assertEquals("MT", ncibMockGenome.getCanonicalChrName("chrM"));
 
-        assertEquals(ucscMockGenome.getCanonicalChrName("23"), "chrX");
-        assertEquals(ucscMockGenome.getCanonicalChrName("MT"), "chrM");
+        assertEquals("chrX", ucscMockGenome.getCanonicalChrName("23"));
+        assertEquals("chrM", ucscMockGenome.getCanonicalChrName("MT"));
+
+        assertEquals("chr1", ucscMockGenome.getCanonicalChrName("Chr1"));
 
     }
 
