@@ -269,7 +269,7 @@ PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
 IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.tsv
-MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://data.broadinstitute.org/igvdata/$$_dataServerRegistry.txt
+MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://igv.org/genomes/registry/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
