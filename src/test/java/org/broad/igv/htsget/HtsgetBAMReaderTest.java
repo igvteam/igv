@@ -31,7 +31,7 @@ public class HtsgetBAMReaderTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test @Ignore
     public void testQueryAlignments() throws Exception {
 
         String url = "https://htsget.demo.umccr.org/reads/org.umccr.demo.htsget-rs-data/bam/htsnexus_test_NA12878";
