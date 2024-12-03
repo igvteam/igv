@@ -310,21 +310,17 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JSeparator separator = new JSeparator();
         menuItems.add(separator);
 
-        JLabel encodeLabel = new JLabel("   ENCODE");
-        encodeLabel.setFont(encodeLabel.getFont().deriveFont(Font.BOLD));
-        menuItems.add(encodeLabel);
-
         // Post 2012 ENCODE menu
         JMenuItem chipItem = new JMenuItem();
-        chipItem.setAction(new BrowseEncodeAction("Signals ChIP ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
+        chipItem.setAction(new BrowseEncodeAction("ENCODE: ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
         encodeMenuItems.add(chipItem);
 
         JMenuItem otherSignalsItem = new JMenuItem();
-        otherSignalsItem.setAction(new BrowseEncodeAction("Signals Other ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
+        otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE: Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
         encodeMenuItems.add(otherSignalsItem);
 
         JMenuItem otherItem = new JMenuItem();
-        otherItem.setAction(new BrowseEncodeAction("Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
+        otherItem.setAction(new BrowseEncodeAction("ENCODE: Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
         encodeMenuItems.add(otherItem);
 
         for(JComponent item : encodeMenuItems) {
@@ -334,7 +330,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         // UCSC hosted ENCODE menu.
         encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
-                new BrowseEncodeAction("UCSC Repository (2012) ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
+                new BrowseEncodeAction("ENCODE: UCSC Repository (2012) ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
         encodeUCSCMenuItem.setVisible(EncodeTrackChooser.genomeSupportedUCSC(genomeId));
         menuItems.add(encodeUCSCMenuItem);
 
