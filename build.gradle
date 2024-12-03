@@ -375,6 +375,20 @@ tasks.register('createMacAppWithJavaDistZip', Zip) {
     }
 }
 
+tasks.register('createMacAppIntelWithJavaDistZip', Zip) {
+    dependsOn createMacAppDist
+    archiveFileName = "IGV_MacAppIntel_${version}_WithJava.zip"
+    with copySpec { from jdkBundleMacIntel into "IGV_${version}.app/Contents/jdk-21" }
+    from("${buildDir}/IGV-MacApp-dist")
+
+    doLast {
+        if (jdkBundleMacIntel == "") {
+            throw new GradleException("Required property not set: jdkBundleMacIntel");
+        }
+        //project.exec { commandLine('chmod', '775', createMacAppWithJavaDistZip.archiveFileName) }
+    }
+}
+
 tasks.register('createWinDist', Copy) {
     dependsOn createDist
     with copySpec {
