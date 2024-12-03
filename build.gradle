@@ -316,6 +316,7 @@ tasks.register('createMacAppDist', Copy) {
         from("scripts/mac.app") {
             exclude "Contents/Info.plist.template"
             exclude "Contents/MacOS/IGV.sh"
+            exclude "Contents/MacOS/main.c"
         }
         into "IGV_${version}.app"
     }
@@ -339,8 +340,14 @@ tasks.register('createMacAppDist', Copy) {
     }
     into "${buildDir}/IGV-MacApp-dist"
 
+
     doLast {
         project.exec { commandLine('chmod', '775', "${buildDir}/IGV-MacApp-dist/IGV_${version}.app") }
+
+        // A hack -- mac apps cannot be notarized with the "snappy" module
+        project.delete(
+                files("${buildDir}/IGV-MacApp-dist/IGV_${version}.app/Contents/Java/lib/snappy-java-1.1.10.5-module.jar")
+        )
     }
 }
 
