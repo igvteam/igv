@@ -66,6 +66,17 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private JList<GenomeListItem> genomeList;
     private JCheckBox downloadSequenceCB;
     private JCheckBox downloadAnnotationsCB;
+
+
+    JPanel downloadSequencePanel;
+    ButtonGroup downloadSequenceGroup;
+    private JRadioButton downloadSequenceRB;
+    private JRadioButton remoteSequenceRB;
+
+    JPanel downloadAnnotationsPanel;
+    ButtonGroup downloadAnnotationsGroup;
+    private JRadioButton downloadAnnotationsRB;
+    private JRadioButton remoteAnnotationsRB;
     private boolean isCanceled;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
@@ -181,11 +192,11 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     }
 
     public boolean isDownloadSequence() {
-        return downloadSequenceCB.isSelected();
+        return downloadSequenceRB.isSelected();
     }
 
     public boolean isDownloadAnnotations() {
-        return downloadAnnotationsCB.isSelected();
+        return downloadAnnotationsRB.isSelected();
     }
 
     public boolean isCanceled() {
@@ -209,8 +220,13 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         if (item != null) {
             final boolean sequenceDownloadable = GenomeDownloadUtils.isSequenceDownloadable(item.getPath());
             final boolean annotationsDownloadable = GenomeDownloadUtils.isAnnotationsDownloadable(item.getPath());
-            downloadSequenceCB.setEnabled(sequenceDownloadable);
-            downloadAnnotationsCB.setEnabled(annotationsDownloadable);
+            // downloadSequenceCB.setEnabled(sequenceDownloadable);
+            downloadSequenceRB.setVisible(sequenceDownloadable);
+            remoteSequenceRB.setVisible(sequenceDownloadable);
+
+            //  downloadAnnotationsCB.setEnabled(annotationsDownloadable);
+            downloadAnnotationsRB.setVisible(annotationsDownloadable);
+            remoteAnnotationsRB.setVisible(annotationsDownloadable);
         }
     }
 
@@ -227,7 +243,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
         JPanel dialogPane = new JPanel();
         dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-        dialogPane.setPreferredSize(new Dimension(350, 500));
+        dialogPane.setPreferredSize(new Dimension(500, 500));
         dialogPane.setLayout(new BorderLayout());
 
         //======== contentPanel ========
@@ -297,25 +313,63 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
         contentPanel.add(scrollPane1);
 
-        //---- downloadSequenceCB ----
-        downloadSequenceCB = new JCheckBox("Download sequence");
-        downloadSequenceCB.setAlignmentX(1.0F);
-        downloadSequenceCB.setToolTipText("Download the full sequence data for the genome.  Note that these files can be  large (human is about 1 gigabyte).");
-        downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
-        downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
-        downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
-        downloadSequenceCB.setEnabled(false);   // Disabled until a genome is selected.
-        contentPanel.add(downloadSequenceCB);
+        JPanel p1 = new JPanel();
+        p1.setLayout(new GridLayout(2, 0));
+        p1.setPreferredSize(new Dimension(500, 50));
+        p1.setMinimumSize(new Dimension(500, 50));
+        p1.setMaximumSize(new Dimension(1000, 50));
 
-        //---- downloadAnnotationsCB ----
-        downloadAnnotationsCB = new JCheckBox("Download annotations");
-        downloadAnnotationsCB.setAlignmentX(1.0F);
-        downloadAnnotationsCB.setToolTipText("Download all annotation files referenced by the genome definition.");
-        downloadAnnotationsCB.setMaximumSize(new Dimension(1000, 23));
-        downloadAnnotationsCB.setPreferredSize(new Dimension(300, 23));
-        downloadAnnotationsCB.setMinimumSize(new Dimension(300, 23));
-        downloadAnnotationsCB.setEnabled(false);  // Disabled until a genome is selected
-        contentPanel.add(downloadAnnotationsCB);
+        downloadSequenceRB = new JRadioButton("Download sequence");
+        remoteSequenceRB = new JRadioButton("Remote sequence");
+        remoteSequenceRB.setSelected(true);
+        downloadSequenceRB.setVisible(false);
+        remoteSequenceRB.setVisible(false);
+        downloadSequenceGroup = new ButtonGroup();
+        downloadSequenceGroup.add(downloadSequenceRB);
+        downloadSequenceGroup.add(remoteSequenceRB);
+        downloadSequencePanel = new JPanel();
+        FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
+        downloadSequencePanel.setLayout(layout);
+        downloadSequencePanel.add(downloadSequenceRB);
+        downloadSequencePanel.add(remoteSequenceRB);
+        p1.add(downloadSequencePanel);
+
+        downloadAnnotationsRB = new JRadioButton("Download annotations");
+        remoteAnnotationsRB = new JRadioButton("Remote annotations");
+        remoteAnnotationsRB.setSelected(true);
+        downloadAnnotationsRB.setVisible(false);
+        remoteAnnotationsRB.setVisible(false);
+        downloadAnnotationsGroup = new ButtonGroup();
+        downloadAnnotationsGroup.add(downloadAnnotationsRB);
+        downloadAnnotationsGroup.add(remoteAnnotationsRB);
+        downloadAnnotationsPanel = new JPanel();
+        FlowLayout layout1 = new FlowLayout(FlowLayout.LEFT);
+        downloadAnnotationsPanel.setLayout(layout1);
+        downloadAnnotationsPanel.add(downloadAnnotationsRB);
+        downloadAnnotationsPanel.add(remoteAnnotationsRB);
+        p1.add(downloadAnnotationsPanel);
+
+        contentPanel.add(p1);
+
+//        //---- downloadSequenceCB ----
+//        downloadSequenceCB = new JCheckBox("Download sequence");
+//        downloadSequenceCB.setAlignmentX(1.0F);
+//        downloadSequenceCB.setToolTipText("Download the full sequence data for the genome.  Note that these files can be  large (human is about 1 gigabyte).");
+//        downloadSequenceCB.setMaximumSize(new Dimension(1000, 23));
+//        downloadSequenceCB.setPreferredSize(new Dimension(300, 23));
+//        downloadSequenceCB.setMinimumSize(new Dimension(300, 23));
+//        downloadSequenceCB.setEnabled(false);   // Disabled until a genome is selected.
+//        contentPanel.add(downloadSequenceCB);
+//
+//        //---- downloadAnnotationsCB ----
+//        downloadAnnotationsCB = new JCheckBox("Download annotations");
+//        downloadAnnotationsCB.setAlignmentX(1.0F);
+//        downloadAnnotationsCB.setToolTipText("Download all annotation files referenced by the genome definition.");
+//        downloadAnnotationsCB.setMaximumSize(new Dimension(1000, 23));
+//        downloadAnnotationsCB.setPreferredSize(new Dimension(300, 23));
+//        downloadAnnotationsCB.setMinimumSize(new Dimension(300, 23));
+//        downloadAnnotationsCB.setEnabled(false);  // Disabled until a genome is selected
+//        contentPanel.add(downloadAnnotationsCB);
 
 
         dialogPane.add(contentPanel, BorderLayout.CENTER);
