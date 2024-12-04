@@ -20,8 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class of static functions for managing genome downloads
@@ -30,20 +29,27 @@ public class GenomeDownloadUtils {
 
     private static Logger log = LogManager.getLogger(GenomeDownloadUtils.class);
 
-    public static boolean isAnnotationsDownloadable(GenomeListItem item) {
-        return item.getPath().endsWith(".json");
+    public static boolean isAnnotationsDownloadable(String path) {
+        return path.endsWith(".json");
     }
 
-    public static boolean isSequenceDownloadable(GenomeListItem item) {
-        if (item.getPath().endsWith(".json")) {
+    public static boolean isSequenceDownloadable(String path) {
+        if (path != null && path.endsWith(".json")) {
             try {
-                String jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(item.getPath()));
-                return jsonString.contains("twoBitURL");
+                String jsonString = FileUtils.getContents(path);
+                GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
+                String sequenceURL = genomeConfig.getTwoBitURL();
+                if (sequenceURL == null) {
+                    sequenceURL = genomeConfig.getFastaURL();
+                }
+                return isRemoteURL(sequenceURL) && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
+
             } catch (IOException e) {
-                log.error("Error fetching genome json " + item.getPath());
+                log.error("Error fetching genome json " + path);
             }
         }
         return false;
+
     }
 
     public static File downloadGenome(GenomeConfig c, boolean downloadSequence, boolean downloadAnnotations) throws IOException {
@@ -160,5 +166,14 @@ public class GenomeDownloadUtils {
         }
         return localFile;
     }
+
+    private static boolean isRemoteURL(String url) {
+        return url.startsWith("http://") || url.startsWith("https://");
+    }
+
+    static Set<String> disallowedBuckets = new HashSet<>(Arrays.asList(
+            "igv.org.genomes",
+            "igv-genepattern-org",
+            "igv.broadinstitute.org"));
 
 }

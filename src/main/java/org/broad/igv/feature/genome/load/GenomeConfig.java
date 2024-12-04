@@ -63,6 +63,9 @@ public class GenomeConfig implements Cloneable {
     private List<List<String>> chromAliases;
 
     public static GenomeConfig fromJson(String json) {
+        if (json.contains("chromosomeOrder")) {
+            json = fixChromosomeOrder(json);
+        }
         return (new Gson()).fromJson(json, GenomeConfig.class);
     }
 
@@ -305,6 +308,23 @@ public class GenomeConfig implements Cloneable {
             log.error("Cloning not supported", e);
             return this;
         }
+    }
+
+    /**
+     * Fix deprecated form of chromosome order (comma delimited list of strings)
+     *
+     * @param jsonString
+     * @return
+     */
+    private static String fixChromosomeOrder(String jsonString) {
+        Map obj = (new Gson()).fromJson(jsonString, Map.class);
+        Object chromosomeOrder = obj.get("chromosomeOrder");
+        if (chromosomeOrder != null) {
+            if (chromosomeOrder instanceof String) {
+                obj.put("chromosomeOrder", Arrays.stream(((String) chromosomeOrder).split(",")).map(c -> c.trim()).toArray());
+            }
+        }
+        return (new Gson()).toJson(obj);
     }
 
 }

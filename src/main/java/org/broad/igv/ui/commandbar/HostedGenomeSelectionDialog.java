@@ -207,8 +207,8 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private void configureDownloadButtons(GenomeListItem item) {
         if (item != null) {
-            final boolean sequenceDownloadable = GenomeDownloadUtils.isSequenceDownloadable(item);
-            final boolean annotationsDownloadable = GenomeDownloadUtils.isAnnotationsDownloadable(item);
+            final boolean sequenceDownloadable = GenomeDownloadUtils.isSequenceDownloadable(item.getPath());
+            final boolean annotationsDownloadable = GenomeDownloadUtils.isAnnotationsDownloadable(item.getPath());
             downloadSequenceCB.setEnabled(sequenceDownloadable);
             downloadAnnotationsCB.setEnabled(annotationsDownloadable);
         }

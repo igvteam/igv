@@ -66,10 +66,6 @@ public class JsonGenomeLoader extends GenomeLoader {
 
             String jsonString = ParsingUtils.readContentsFromStream(is);
 
-            if (jsonString.contains("chromosomeOrder")) {
-                jsonString = fixChromosomeOrder(jsonString);
-            }
-
             GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
 
             fixPaths(genomeConfig);
@@ -77,24 +73,6 @@ public class JsonGenomeLoader extends GenomeLoader {
             return genomeConfig;
 
         }
-    }
-
-    /**
-     * Fix deprecated form of chromosome order (comma delimited list of strings)
-     *
-     * @param jsonString
-     * @return
-     */
-    private String fixChromosomeOrder(String jsonString) {
-        Map obj = (new Gson()).fromJson(jsonString, Map.class);
-        Object chromosomeOrder = obj.get("chromosomeOrder");
-        if (chromosomeOrder != null) {
-            if (chromosomeOrder instanceof String) {
-                obj.put("chromosomeOrder", Arrays.stream(((String) chromosomeOrder).split(",")).map(c -> c.trim()).toArray());
-            }
-        }
-        return (new Gson()).toJson(obj);
-
     }
 
     /**
