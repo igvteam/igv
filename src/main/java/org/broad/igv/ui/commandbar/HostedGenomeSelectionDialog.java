@@ -223,12 +223,12 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
             final boolean sequenceDownloadable = GenomeDownloadUtils.isSequenceDownloadable(item.getPath());
             final boolean annotationsDownloadable = GenomeDownloadUtils.isAnnotationsDownloadable(item.getPath());
             // downloadSequenceCB.setEnabled(sequenceDownloadable);
-            downloadSequenceRB.setEnabled(sequenceDownloadable);
-            remoteSequenceRB.setEnabled(sequenceDownloadable);
+            downloadSequenceRB.setVisible(sequenceDownloadable);
+            remoteSequenceRB.setVisible(sequenceDownloadable);
 
             //  downloadAnnotationsCB.setEnabled(annotationsDownloadable);
-            downloadAnnotationsRB.setEnabled(annotationsDownloadable);
-            remoteAnnotationsRB.setEnabled(annotationsDownloadable);
+            downloadAnnotationsRB.setVisible(annotationsDownloadable);
+            remoteAnnotationsRB.setVisible(annotationsDownloadable);
         }
     }
 
@@ -310,8 +310,8 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         downloadSequenceRB = new JRadioButton("Download sequence");
         remoteSequenceRB = new JRadioButton("Use remote sequence");
         remoteSequenceRB.setSelected(true);
-        downloadSequenceRB.setEnabled(false);
-        remoteSequenceRB.setEnabled(false);
+        downloadSequenceRB.setVisible(false);
+        remoteSequenceRB.setVisible(false);
         downloadSequenceGroup = new ButtonGroup();
         downloadSequenceGroup.add(downloadSequenceRB);
         downloadSequenceGroup.add(remoteSequenceRB);
@@ -325,8 +325,8 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         downloadAnnotationsRB = new JRadioButton("Download annotations");
         remoteAnnotationsRB = new JRadioButton("Use remote annotations");
         remoteAnnotationsRB.setSelected(true);
-        downloadAnnotationsRB.setEnabled(false);
-        remoteAnnotationsRB.setEnabled(false);
+        downloadAnnotationsRB.setVisible(false);
+        remoteAnnotationsRB.setVisible(false);
         downloadAnnotationsGroup = new ButtonGroup();
         downloadAnnotationsGroup.add(downloadAnnotationsRB);
         downloadAnnotationsGroup.add(remoteAnnotationsRB);
