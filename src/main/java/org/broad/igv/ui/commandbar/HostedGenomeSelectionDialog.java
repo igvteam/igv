@@ -61,6 +61,8 @@ import java.util.List;
 public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(HostedGenomeSelectionDialog.class);
+    private static final int PREF_WIDTH = 600;
+    private static final int PREF_HEIGHT = 500;
 
     private JTextField genomeFilter;
     private JList<GenomeListItem> genomeList;
@@ -243,7 +245,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
         JPanel dialogPane = new JPanel();
         dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-        dialogPane.setPreferredSize(new Dimension(500, 500));
+        dialogPane.setPreferredSize(new Dimension(PREF_WIDTH, PREF_HEIGHT));
         dialogPane.setLayout(new BorderLayout());
 
         //======== contentPanel ========
@@ -265,36 +267,22 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         //======== filterPanel ========
         JPanel filterPanel = new JPanel();
         filterPanel.setMaximumSize(new Dimension(2147483647, 28));
-        filterPanel.setLayout(new GridBagLayout());
-        ((GridBagLayout) filterPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-        ((GridBagLayout) filterPanel.getLayout()).rowHeights = new int[]{0, 0};
-        ((GridBagLayout) filterPanel.getLayout()).columnWeights = new double[]{1.0, 1.0, 1.0E-4};
-        ((GridBagLayout) filterPanel.getLayout()).rowWeights = new double[]{1.0, 1.0E-4};
+        filterPanel.setLayout(new BorderLayout());
 
-        //---- label1 ----
-        JLabel filterLabel = new JLabel();
-        filterLabel.setText("Filter:");
+        JLabel filterLabel = new JLabel("Filter:  ");
         filterLabel.setLabelFor(genomeFilter);
         filterLabel.setRequestFocusEnabled(false);
-        filterPanel.add(filterLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.WEST, GridBagConstraints.VERTICAL,
-                new Insets(0, 0, 0, 0), 0, 0));
+        filterPanel.add(filterLabel, BorderLayout.WEST);
 
-        //---- genomeFilter ----
         genomeFilter = new JTextField();
         genomeFilter.setToolTipText("Filter genome list");
-        genomeFilter.setPreferredSize(new Dimension(220, 28));
-        genomeFilter.setMinimumSize(new Dimension(180, 28));
-        genomeFilter.setAlignmentX(0.0F);
         genomeFilter.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 genomeEntryKeyReleased(e);
             }
         });
-        filterPanel.add(genomeFilter, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
+        filterPanel.add(genomeFilter, BorderLayout.CENTER);
 
         contentPanel.add(filterPanel);
 
@@ -320,7 +308,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         p1.setMaximumSize(new Dimension(1000, 50));
 
         downloadSequenceRB = new JRadioButton("Download sequence");
-        remoteSequenceRB = new JRadioButton("Remote sequence");
+        remoteSequenceRB = new JRadioButton("Use remote sequence");
         remoteSequenceRB.setSelected(true);
         downloadSequenceRB.setVisible(false);
         remoteSequenceRB.setVisible(false);
@@ -335,7 +323,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         p1.add(downloadSequencePanel);
 
         downloadAnnotationsRB = new JRadioButton("Download annotations");
-        remoteAnnotationsRB = new JRadioButton("Remote annotations");
+        remoteAnnotationsRB = new JRadioButton("Use remote annotations");
         remoteAnnotationsRB.setSelected(true);
         downloadAnnotationsRB.setVisible(false);
         remoteAnnotationsRB.setVisible(false);
