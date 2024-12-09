@@ -69,7 +69,7 @@ public class SAMReader implements AlignmentReader<SAMAlignment> {
         this(samFile, true);
     }
 
-    public SAMReader(String samFile, boolean requireIndex) throws IOException {
+    public SAMReader(String samFile, boolean requireIndex) {
         this.samFile = samFile;
         if (requireIndex) {
             featureIndex = SamUtils.getIndexFor(samFile);
@@ -78,7 +78,9 @@ public class SAMReader implements AlignmentReader<SAMAlignment> {
             }
         }
         factory = SamReaderFactory.makeDefault().
-                validationStringency(ValidationStringency.SILENT);
+                validationStringency(ValidationStringency.SILENT).
+                referenceSource(new IGVReferenceSource()).
+                enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
         loadHeader();
     }
 
