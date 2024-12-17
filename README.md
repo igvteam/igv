@@ -17,7 +17,7 @@ Builds are executed from the IGV project directory. Files will be created in the
 
 IGV requires **Java 21** to build and run. Later versions of Java should work but we build and test on **Java 21**.
 
-NOTE: If on a Windows platform use ```./gradlew.bat'``` in the instructions below
+NOTE: If on a Windows platform use ```./gradlew.bat``` in the instructions below
 
 #### Folder structure and build targets
 
