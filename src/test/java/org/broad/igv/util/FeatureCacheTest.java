@@ -1,0 +1,36 @@
+package org.broad.igv.util;
+
+import org.broad.igv.bedpe.BedPEFeature;
+import org.broad.igv.bedpe.BedPEParser;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
+
+public class FeatureCacheTest {
+
+    @Test
+    public void testGetFeatures() throws Exception {
+
+        String p = TestUtils.DATA_DIR + "bedpe/interleaved_chrs.bedpe";
+
+        List<BedPEFeature> features = BedPEParser.parse(new ResourceLocator(p), null).features;
+
+        //chr5:135,300,000-135,399,999
+        String chr = "chr5";
+        int start = 135300000 - 1;
+        int end = 135399999;
+
+        // Manually count overlaps
+        int count = 0;
+        for (BedPEFeature f : features) {
+            if (chr.equals(f.getChr()) && f.getEnd() >= start && f.getStart() <= end) count++;
+        }
+
+        FeatureCache<BedPEFeature> cache = new FeatureCache<>(features);
+        List<BedPEFeature> subset = cache.getFeatures(chr, start, end);
+        assertEquals(count, subset.size());
+    }
+
+}

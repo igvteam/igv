@@ -31,6 +31,7 @@
 package org.broad.igv.feature;
 
 import com.google.common.base.Predicate;
+import htsjdk.samtools.util.Locatable;
 import htsjdk.tribble.Feature;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public class FeatureUtils {
     /**
      * Sort the feature list by ascending start value
      */
-    public static void sortFeatureList(List<? extends Feature> features) {
+    public static void sortFeatureList(List<? extends Locatable> features) {
         Collections.sort(features, FEATURE_START_COMPARATOR);
     }
 
@@ -375,7 +376,7 @@ public class FeatureUtils {
         return returnList;
     }
 
-    public static final Comparator<Feature> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
+    public static final Comparator<Locatable> FEATURE_START_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart();
     public static final Comparator<Feature> FEATURE_END_COMPARATOR = (o1, o2) -> o1.getEnd() - o2.getEnd();
     public static final Comparator<Feature> FEATURE_CENTER_COMPARATOR = (o1, o2) -> o1.getStart() - o2.getStart() + o1.getEnd() - o2.getEnd();
 
