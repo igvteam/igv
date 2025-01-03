@@ -23,7 +23,7 @@ public class FeatureCache<T extends Locatable> {
     public List<T> getFeatures(String chr, int start, int end) {
         List<T> features = new ArrayList<>();
         IntervalTree<List<T>> tree = featureMap.get(chr);
-        if(tree != null) {
+        if (tree != null) {
             List<Interval<List<T>>> intervals = tree.findOverlapping(start, end);
             for (Interval<List<T>> interval : intervals) {
                 List<T> intervalFeatures = interval.getValue();
@@ -38,6 +38,10 @@ public class FeatureCache<T extends Locatable> {
     }
 
     private void init(List<T> features, int batchSize) {
+
+        // The feature list must be grouped by chromosome
+        Collections.sort(features, Comparator.comparing(Locatable::getContig));
+
         String lastChr = null;
 
         List<T> currentFeatureList = new ArrayList<>();
