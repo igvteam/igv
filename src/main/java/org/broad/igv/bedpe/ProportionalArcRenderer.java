@@ -13,6 +13,7 @@ import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 public class ProportionalArcRenderer implements BedPERenderer {
 
 
+    public static final float PROP_ALPHA = 0.02f;
     private Map<Color, Color> alphaColors = new HashMap<>();
 
     InteractionTrack track;
@@ -21,7 +22,7 @@ public class ProportionalArcRenderer implements BedPERenderer {
         this.track = track;
     }
 
-    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle) {
+    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
 
@@ -46,8 +47,6 @@ public class ProportionalArcRenderer implements BedPERenderer {
                     int gap = track.gap;
                     int h = trackRectangle.height - gap;
 
-
-
                     if (track.maxScore > 0 && bedPE.getScore() > 0) {
                         double logMax = Math.log10(track.maxScore + 1);
                         h = (int) ((Math.log10(bedPE.getScore() + 1) / logMax) * h);
@@ -56,6 +55,7 @@ public class ProportionalArcRenderer implements BedPERenderer {
                     if (bedPE.isSameChr()) {
 
                         BedPEFeature feature = bedPE.get();
+
                         Color fcolor = feature.color == null ? trackColor : feature.color;
                         if (fcolor != null) {
                             g.setColor(fcolor);
@@ -63,13 +63,19 @@ public class ProportionalArcRenderer implements BedPERenderer {
 
                         double pixelStart = (feature.getMidStart() - origin) / locScale;
                         double pixelEnd = (feature.getMidEnd() - origin) / locScale;
+
+                        // Optionally filter arcs with one or both ends out of view
+                        if(arcOption == InteractionTrack.ArcOption.ONE_END) {
+                            if(pixelStart < trackRectangle.x && pixelEnd > trackRectangle.x + trackRectangle.width) continue;
+                        } else if(arcOption == InteractionTrack.ArcOption.BOTH_ENDS) {
+                            if(pixelStart < trackRectangle.x || pixelEnd > trackRectangle.x + trackRectangle.width) continue;
+                        }
+
                         int w = (int) (pixelEnd - pixelStart);
                         if (w < 3) {
                             w = 3;
                             pixelStart--;
                         }
-
-
 
                         double y = direction == UP ? gap + trackRectangle.y + trackRectangle.height - h : gap + trackRectangle.y - h;
                         int angleSt = direction == UP ? 0 : 180;
@@ -84,7 +90,7 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         );
 
                         g.draw(arcPath);
-                        Color shadedColor = getAlphaColor(fcolor, 0.05f);
+                        Color shadedColor = getAlphaColor(fcolor, PROP_ALPHA);
                         g.setColor(shadedColor);
                         g.fill(arcPath);
 

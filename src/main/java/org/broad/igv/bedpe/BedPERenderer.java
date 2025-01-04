@@ -6,5 +6,5 @@ import java.awt.*;
 import java.util.List;
 
 public interface BedPERenderer {
-     void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle);
+     void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption);
 }

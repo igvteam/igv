@@ -25,7 +25,7 @@ public class NestedArcRenderer implements BedPERenderer{
         this.track = track;
     }
 
-    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle) {
+    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
 
@@ -75,6 +75,13 @@ public class NestedArcRenderer implements BedPERenderer{
 
                         double pixelStart = (feature.getMidStart() - origin) / locScale;
                         double pixelEnd = (feature.getMidEnd() - origin) / locScale;
+
+                        // Optionally filter arcs with one or both ends out of view
+                        if(arcOption == InteractionTrack.ArcOption.ONE_END) {
+                            if(pixelStart < trackRectangle.x && pixelEnd > trackRectangle.x + trackRectangle.width) continue;
+                        } else if(arcOption == InteractionTrack.ArcOption.BOTH_ENDS) {
+                            if(pixelStart < trackRectangle.x || pixelEnd > trackRectangle.x + trackRectangle.width) continue;
+                        }
 
                         int w = (int) (pixelEnd - pixelStart);
                         if (w < 3) {

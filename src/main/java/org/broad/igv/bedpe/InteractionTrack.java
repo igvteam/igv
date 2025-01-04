@@ -54,9 +54,12 @@ public class InteractionTrack extends AbstractTrack {
 
     enum GraphType {BLOCK, NESTED_ARC, PROPORTIONAL_ARC}
 
+    enum ArcOption {ALL, ONE_END, BOTH_ENDS}
+
     private Genome genome;
     InteractionTrack.Direction direction = UP; //DOWN;
     GraphType graphType;  // GraphType.block; //
+    private ArcOption arcOption = ArcOption.ALL;
     int thickness = 1;
     boolean autoscale = true;
     double maxScore = -1;
@@ -183,10 +186,10 @@ public class InteractionTrack extends AbstractTrack {
                     drawScale(context, trackRectangle);
                 }
 
-                renderers.get(graphType).render(features, context, trackRectangle);
+                renderers.get(graphType).render(features, context, trackRectangle, this.arcOption);
             }
             if (showBlocks) {
-                renderers.get(GraphType.BLOCK).render(features, context, trackRectangle);
+                renderers.get(GraphType.BLOCK).render(features, context, trackRectangle, this.arcOption);
             }
 
         } finally {
@@ -288,6 +291,26 @@ public class InteractionTrack extends AbstractTrack {
                 repaint();
             });
             group.add(mm);
+            menu.add(mm);
+        }
+
+        menu.addSeparator();
+        menu.add(new JLabel("<html><b>Arcs</b>"));
+        ButtonGroup group2 = new ButtonGroup();
+        Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
+        modes2.put("All", ArcOption.ALL);
+        modes2.put("One End In View", ArcOption.ONE_END);
+        modes2.put("Both Ends In View", ArcOption.BOTH_ENDS);
+        //modes.put("Blocks", GraphType.BLOCK);
+
+        for (final Map.Entry<String, ArcOption> entry : modes2.entrySet()) {
+            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+            mm.setSelected(InteractionTrack.this.arcOption == entry.getValue());
+            mm.addActionListener(evt -> {
+                InteractionTrack.this.arcOption = (entry.getValue());
+                repaint();
+            });
+            group2.add(mm);
             menu.add(mm);
         }
 
@@ -420,6 +443,7 @@ public class InteractionTrack extends AbstractTrack {
         element.setAttribute("direction", String.valueOf(direction));
         element.setAttribute("thickness", String.valueOf(thickness));
         element.setAttribute("graphType", String.valueOf(graphType));
+        element.setAttribute("arcOption", String.valueOf(arcOption));
         element.setAttribute("showBlocks", String.valueOf(showBlocks));
         element.setAttribute("autoscale", String.valueOf(autoscale));
         if (!autoscale) {
@@ -433,6 +457,10 @@ public class InteractionTrack extends AbstractTrack {
 
         super.unmarshalXML(element, version);
 
+        if (element.hasAttribute("arcOption")) {
+            String typeString = element.getAttribute("arcOption").toUpperCase();
+            this.arcOption = ArcOption.valueOf(typeString);
+        }
         if (element.hasAttribute("direction"))
             this.direction = Direction.valueOf(element.getAttribute("direction"));
         if (element.hasAttribute("thickness"))
@@ -555,4 +583,5 @@ public class InteractionTrack extends AbstractTrack {
 
         return sampledFeatures;
     }
+
 }

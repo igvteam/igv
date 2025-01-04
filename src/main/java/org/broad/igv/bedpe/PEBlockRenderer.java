@@ -15,7 +15,7 @@ public class PEBlockRenderer implements BedPERenderer {
     }
 
     @Override
-    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle) {
+    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
 
