@@ -9,6 +9,8 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 public class FileFormatUtils {
@@ -17,6 +19,8 @@ public class FileFormatUtils {
     static final byte[] CRAM_MAGIC = "CRAM".getBytes();
     static final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
     static final long BIGBED_MAGIC = 2273964779l; // BigBed Magic
+
+    private static Set<String> knownBedFormats = Set.of("interact", "broadpeak", "narrowpeak", "gappedpeak", "regionpeak", "bedgraph");
 
     public static boolean isBAM(String path) throws IOException {
         SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
@@ -104,6 +108,8 @@ public class FileFormatUtils {
                     ParsingUtils.parseTrackLine(nextLine, properties);
                     if(properties.getFormat() != null) {
                         return properties.getFormat();
+                    } else if(properties.getType() != null && knownBedFormats.contains(properties.getType())) {
+                        return properties.getType();
                     }
                 }
                 if(nextLine.startsWith("fixedStep") || nextLine.startsWith("variableStep")) {
@@ -211,5 +217,7 @@ public class FileFormatUtils {
 
         return -1;
     }
+
+
 }
 
