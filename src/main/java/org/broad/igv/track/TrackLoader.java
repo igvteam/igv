@@ -134,7 +134,7 @@ public class TrackLoader {
             if ("bed".equals(format)) {
                 try {
                     String tmp = FileFormatUtils.determineFormat(locator.getPath());
-                    if(tmp != null) {
+                    if(tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
                     }
