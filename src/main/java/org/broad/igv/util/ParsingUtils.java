@@ -387,7 +387,9 @@ public class ParsingUtils {
                     String value = kv.get(1).replaceAll("\"", "");
 
                     if(key.equals("format")) {
-                        trackProperties.setFormat(value);
+                        trackProperties.setFormat(value.toLowerCase());
+                    } else if(key.equals("type")) {
+                        trackProperties.setType(value.toLowerCase());
                     }
                     else if (key.equals("coords")) {
                         if (value.equals("0")) {

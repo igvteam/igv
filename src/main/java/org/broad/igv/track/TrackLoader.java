@@ -130,6 +130,20 @@ public class TrackLoader {
 
             String format = locator.getFormat();
 
+            // Bed format has some specific subtypes, which are determined by examining the file contents
+            if ("bed".equals(format)) {
+                try {
+                    String tmp = FileFormatUtils.determineFormat(locator.getPath());
+                    if(tmp != null) {
+                        format = tmp;
+                        locator.setFormat(format);
+                    }
+                } catch (IOException ex) {
+                    log.error("Error determining file format ", ex);
+                    // Do nothing, format remains generic "bed"
+                }
+            }
+
             if (format.equals("tbi")) {
                 MessageUtils.showMessage("<html><b>Error:</b>File type '.tbi' is not recognized.  If this is a 'tabix' index <br>" +
                         " load the associated gzipped file, which should have an extension of '.gz'");
@@ -228,11 +242,11 @@ public class TrackLoader {
             } else {
 
                 // Try overriding format
-                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
-                 if(determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
-                     locator.setFormat(determinedFormat);
-                     return load(locator, genome);
-                 }
+                String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
+                if (determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
+                    locator.setFormat(determinedFormat);
+                    return load(locator, genome);
+                }
 
 
                 // If the file is too large, give up
@@ -481,11 +495,11 @@ public class TrackLoader {
                     t.setHeight(15);
                 }
             }
-            String path = locator.getPath().toLowerCase();
-            if (path.contains(".narrowpeak") ||
-                    locator.getPath().contains(".broadpeak") ||
-                    locator.getPath().contains(".gappedpeak") ||
-                    locator.getPath().contains(".regionpeak")) {
+
+            if (format.equals(".narrowpeak") ||
+                    locator.getPath().equals(".broadpeak") ||
+                    locator.getPath().equals(".gappedpeak") ||
+                    locator.getPath().equals(".regionpeak")) {
                 t.setUseScore(true);
             }
             newTracks.add(t);

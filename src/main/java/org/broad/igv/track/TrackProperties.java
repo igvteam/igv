@@ -45,7 +45,7 @@ import java.util.Map;
 public class TrackProperties {
 
     private static Logger log = LogManager.getLogger(TrackProperties.class);
-    private String trackLine;
+
 
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
@@ -58,6 +58,9 @@ public class TrackProperties {
      * Base coordinate system,  either 0 or 1
      */
     private BaseCoord baseCoord = BaseCoord.UNSPECIFIED;
+
+    private String trackLine;
+    private String type;
 
     /**
      * The track name.  Will be displayed to the left of the track.
@@ -158,6 +161,13 @@ public class TrackProperties {
 
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
     public String getFormat() {
         return format;
     }
