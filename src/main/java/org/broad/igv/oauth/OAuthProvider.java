@@ -230,16 +230,6 @@ public class OAuthProvider {
                 fetchUserProfile(payload);
             }
 
-            if (authProvider != null && "Amazon".equals(authProvider)) {
-                // Get AWS credentials after getting relevant tokens
-                Credentials aws_credentials;
-                aws_credentials = AmazonUtils.GetCognitoAWSCredentials();
-
-                // Update S3 client with newly acquired token
-                AmazonUtils.updateS3Client(aws_credentials);
-            }
-
-
             // Notify UI that we are authz'd/authn'd
             if (isLoggedIn()) {
                 IGVEventBus.getInstance().post(new AuthStateEvent(true, this.authProvider, this.getCurrentUserName()));
@@ -247,7 +237,6 @@ public class OAuthProvider {
 
         } catch (Exception e) {
             log.error(e);
-            e.printStackTrace();
         }
     }
 
@@ -256,7 +245,7 @@ public class OAuthProvider {
     }
 
     /**
-     * Fetch a new access token from a refresh token.
+     * Fetch a new access token from a refresh token.  Unlike authorization, this is a synchronous operation
      *
      * @throws IOException
      */
@@ -293,18 +282,15 @@ public class OAuthProvider {
             expirationTime = System.currentTimeMillis() + response.getAsJsonPrimitive("expires_in").getAsInt() * 1000;
         } else {
             // Refresh token has failed, reauthorize from scratch
-            reauthorize();
+            logout();
+            try {
+                openAuthorizationPage();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void reauthorize() throws IOException {
-        logout();
-        try {
-            openAuthorizationPage();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Extract user information from the claim information
@@ -374,6 +360,15 @@ public class OAuthProvider {
         IGVEventBus.getInstance().post(new AuthStateEvent(false, this.authProvider, null));
     }
 
+    public JsonObject getAuthorizationResponse() {
+
+        if (response == null) {
+            // Go back to auth flow, not auth'd yet
+            checkLogin();
+            response = getResponse();
+        }
+        return response;
+    }
 
     /**
      * If not logged in, attempt to login
@@ -390,10 +385,10 @@ public class OAuthProvider {
             }
 
         }
-        // wait until authentication successful or 1 minute -
+        // wait until authentication successful or 2 minutes -
         // dwm08
         int i = 0;
-        while (!isLoggedIn() && i < 600) {
+        while (!isLoggedIn() && i < 1200) {
             ++i;
             try {
                 Thread.sleep(100);

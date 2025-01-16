@@ -1,17 +1,15 @@
 package org.broad.igv.util;
 
 import com.google.gson.JsonObject;
-import org.broad.igv.Globals;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
-import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.regions.Region;
@@ -23,19 +21,24 @@ import software.amazon.awssdk.services.cognitoidentity.model.GetIdResponse;
 import software.amazon.awssdk.services.cognitoidentity.model.GetOpenIdTokenRequest;
 import software.amazon.awssdk.services.cognitoidentity.model.GetOpenIdTokenResponse;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.AssumeRoleWithWebIdentityRequest;
 import software.amazon.awssdk.services.sts.model.AssumeRoleWithWebIdentityResponse;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -50,24 +53,15 @@ public class AmazonUtils {
     private static CognitoIdentityClient cognitoIdentityClient;
     private static Region AWSREGION;
     private static Boolean awsCredentialsPresent = null;
-
     private static Credentials cognitoAWSCredentials = null;
-
     private static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
-
-
-
-    /**
-     * Maps s3:// URLs to presigned URLs
-     */
     private static Map<String, String> s3ToPresignedMap = new HashMap<>();
 
-    /**
-     * Maps aws presigned URLs to s3://.  This is needed in some cases (e.g. Tribble) to regenerate an expired URL
-     */
     private static Map<String, String> presignedToS3Map = new HashMap<>();
 
     private static JsonObject CognitoConfig;
+    private static S3Presigner s3Presigner;
+    private static String endpointURL = "UNKNOWN";
 
     public static void setCognitoConfig(JsonObject json) {
         CognitoConfig = json;
@@ -97,7 +91,7 @@ public class AmazonUtils {
                         log.info("AWS configuration found. AWS support enabled.");
                         awsCredentialsPresent = true;
                     } else {
-                        log.info("AWS configuration not found.");
+                        log.info("Cognito configuration found but Amazon auth_provider not defined.  Only Amazon provider is supported at this time.");
                         awsCredentialsPresent = false;
                     }
                 } catch (NullPointerException np) {
@@ -117,6 +111,11 @@ public class AmazonUtils {
         return awsCredentialsPresent;
     }
 
+    /**
+     * Return the region for AWS credentials
+     *
+     * @return
+     */
     private static Region getAWSREGION() {
 
         if (AWSREGION == null) {
@@ -126,7 +125,12 @@ public class AmazonUtils {
                 // TODO -- find region in default place
                 try {
                     AWSREGION = (new DefaultAwsRegionProviderChain()).getRegion();
+                    if (AWSREGION == null) {
+                        AWSREGION = Region.US_EAST_1;
+                        log.info("Could not find AWS region setting. Assuming us-east-1");
+                    }
                 } catch (Exception e) {
+                    log.info("Unable to load region from any of the providers in the chain software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain.  Assuming us-east-1");
                     AWSREGION = Region.US_EAST_1;
                 }
             }
@@ -135,7 +139,7 @@ public class AmazonUtils {
     }
 
     /**
-     * Returns the AWS credentials
+     * Retrieve AWS credentials, which may trigger a login.
      *
      * @return returns the credentials based on the AWS STS access token returned from the AWS Cognito user pool.
      */
@@ -145,83 +149,71 @@ public class AmazonUtils {
             log.debug("fetch credentials");
             OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
 
-            JsonObject igv_oauth_conf = GetCognitoConfig();
-            JsonObject response = provider.getResponse();
+            JsonObject response = provider.getAuthorizationResponse();
 
-            // Handle non-user initiated S3 auth (IGV early startup), i.e user-specified GenomesLoader
-            if (response == null) {
-                // Go back to auth flow, not auth'd yet
-                checkLogin();
-                response = provider.getResponse();
-            }
-
-            JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
-
-            log.debug("JWT payload id token: " + payload);
-
-            // Collect necessary information from federated IdP for Authentication purposes
-            String idTokenStr = response.get("id_token").getAsString();
-            String idProvider = payload.get("iss").toString().replace("https://", "")
-                    .replace("\"", "");
-            String email = payload.get("email").getAsString();
-            String federatedPoolId = igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString();
-            String cognitoRoleARN = igv_oauth_conf.get("aws_cognito_role_arn").getAsString();
-
-            HashMap<String, String> logins = new HashMap<>();
-            logins.put(idProvider, idTokenStr);
-
-            // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
-            // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
-            // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
-            AnonymousCredentialsProvider anoCredProv = AnonymousCredentialsProvider.create();
-
-            // https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/cognitoidentity/CognitoIdentityClient.html
-            // Build the Cognito client
-            CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
-
-            cognitoIdentityBuilder.region(getAWSREGION()).credentialsProvider(anoCredProv);
-            cognitoIdentityClient = cognitoIdentityBuilder.build();
-
-
-            // https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
-            // Basic (Classic) Authflow
-            // Uses AssumeRoleWithWebIdentity and facilitates CloudTrail org.broad.igv.logging. Uses one more request but provides user traceability.
-            GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
-                    .logins(logins);
-            GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
-
-            GetOpenIdTokenRequest.Builder openidrequest = GetOpenIdTokenRequest.builder().logins(logins).identityId(idResult.identityId());
-            GetOpenIdTokenResponse openId = cognitoIdentityClient.getOpenIdToken(openidrequest.build());
-
-
-            AssumeRoleWithWebIdentityRequest.Builder webidrequest = AssumeRoleWithWebIdentityRequest.builder().webIdentityToken(openId.token())
-                    .roleSessionName(email)
-                    .roleArn(cognitoRoleARN);
-
-            AssumeRoleWithWebIdentityResponse stsClientResponse = StsClient.builder().credentialsProvider(anoCredProv)
-                    .region(getAWSREGION())
-                    .build()
-                    .assumeRoleWithWebIdentity(webidrequest.build());
-
-//      // Enhanced (Simplified) Authflow
-//      // Major drawback: Does not store federated user information on CloudTrail only authenticated role name appears in logs.
-//
-//        // "To provide end-user credentials, first make an unsigned call to GetId."
-//        GetIdRequest.Builder idrequest = GetIdRequest.builder().identityPoolId(federatedPoolId)
-//                                                               .logins(logins);
-//        GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
-//
-//        // "Next, make an unsigned call to GetCredentialsForIdentity."
-//        GetCredentialsForIdentityRequest.Builder authedIds = GetCredentialsForIdentityRequest.builder();
-//        authedIds.identityId(idResult.identityId()).logins(logins);
-//
-//        GetCredentialsForIdentityResponse authedRes = cognitoIdentityClient.getCredentialsForIdentity(authedIds.build());
-//
-//        return authedRes.credentials()
-
-            cognitoAWSCredentials = stsClientResponse.credentials();
+            setCredentialsFromOauthResponse(response);
         }
         return cognitoAWSCredentials;
+    }
+
+    private static void setCredentialsFromOauthResponse(JsonObject response) {
+
+        JsonObject igv_oauth_conf = GetCognitoConfig();
+
+        JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+
+        log.debug("JWT payload id token: " + payload);
+
+        // Collect necessary information from federated IdP for Authentication purposes
+        String idTokenStr = response.get("id_token").getAsString();
+        String idProvider = payload.get("iss").toString().replace("https://", "")
+                .replace("\"", "");
+        String email = payload.get("email").getAsString();
+        String federatedPoolId = igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString();
+        String cognitoRoleARN = igv_oauth_conf.get("aws_cognito_role_arn").getAsString();
+
+        HashMap<String, String> logins = new HashMap<>();
+        logins.put(idProvider, idTokenStr);
+
+        // Avoid "software.amazon.awssdk.core.exception.SdkClientException: Unable to load credentials from any of the providers in the chain AwsCredentialsProviderChain("
+        // The use of the AnonymousCredentialsProvider essentially bypasses the provider chain's requirement to access ~/.aws/credentials.
+        // https://stackoverflow.com/questions/36604024/sts-saml-and-java-sdk-unable-to-load-aws-credentials-from-any-provider-in-the-c
+        AnonymousCredentialsProvider anoCredProv = AnonymousCredentialsProvider.create();
+
+        // https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/cognitoidentity/CognitoIdentityClient.html
+        // Build the Cognito client
+        CognitoIdentityClientBuilder cognitoIdentityBuilder = CognitoIdentityClient.builder();
+
+        cognitoIdentityBuilder.region(getAWSREGION()).credentialsProvider(anoCredProv);
+        cognitoIdentityClient = cognitoIdentityBuilder.build();
+
+
+        // https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html
+        // Basic (Classic) Authflow
+        // Uses AssumeRoleWithWebIdentity and facilitates CloudTrail org.broad.igv.logging. Uses one more request but provides user traceability.
+        GetIdRequest.Builder idrequest = GetIdRequest.builder()
+                .identityPoolId(federatedPoolId)
+                .logins(logins);
+        GetIdResponse idResult = cognitoIdentityClient.getId(idrequest.build());
+
+        GetOpenIdTokenRequest.Builder openidrequest = GetOpenIdTokenRequest.builder().logins(logins).identityId(idResult.identityId());
+        GetOpenIdTokenResponse openId = cognitoIdentityClient.getOpenIdToken(openidrequest.build());
+
+
+        AssumeRoleWithWebIdentityRequest.Builder webidrequest = AssumeRoleWithWebIdentityRequest.builder()
+                .webIdentityToken(openId.token())
+                .roleSessionName(email)
+                .roleArn(cognitoRoleARN);
+
+        AssumeRoleWithWebIdentityResponse stsClientResponse = StsClient.builder()
+                .credentialsProvider(anoCredProv)
+                .region(getAWSREGION())
+                .build()
+                .assumeRoleWithWebIdentity(webidrequest.build());
+
+        cognitoAWSCredentials = stsClientResponse.credentials();
+
+        updateS3Client(cognitoAWSCredentials);
     }
 
     /**
@@ -238,11 +230,35 @@ public class AmazonUtils {
      *
      * @param credentials AWS credentials
      */
-    public static void updateS3Client(Credentials credentials) {
+    private static void updateS3Client(Credentials credentials) {
+
         final Region region = getAWSREGION();
         if (credentials == null) {
-            s3Client = S3Client.builder().region(region).build();
+            // .aws/credentials, environment variable, or other AWS supported credential store
+            String endpointURL = null;
+            try {
+                endpointURL = getEndpointURL();
+            } catch (IOException e) {
+                log.error("Error searching for endpoint url", e);
+            }
+
+            if (endpointURL == null) {
+                s3Client = S3Client.builder().region(region).build();
+            } else {
+                // Custom endpoint
+                try {
+                    s3Client = S3Client.builder()
+                            .endpointOverride(new URI(endpointURL))
+                            .serviceConfiguration(srvcConf -> srvcConf.pathStyleAccessEnabled())
+                            .region(getAWSREGION()) // this is not used, but the AWS SDK requires it
+                            .build();
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
         } else {
+            // Cognito
             AwsSessionCredentials creds = AwsSessionCredentials.create(
                     credentials.accessKeyId(),
                     credentials.secretAccessKey(),
@@ -261,19 +277,16 @@ public class AmazonUtils {
      * @return bucket list
      */
     public static List<String> ListBucketsForUser() {
+
         if (bucketsFinalList.isEmpty()) {
 
             if (GetCognitoConfig() != null) {
-                OAuthUtils.getInstance().getAWSProvider().getAccessToken();
                 updateS3Client(GetCognitoAWSCredentials());
             } else {
                 updateS3Client(null);
             }
-            List<String> bucketsList = new ArrayList<>();
 
-            ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-            ListBucketsResponse listBucketsResponse = s3Client.listBuckets(listBucketsRequest);
-            listBucketsResponse.buckets().stream().forEach(x -> bucketsList.add(x.name()));
+            List<String> bucketsList = s3Client.listBuckets().buckets().stream().map(b -> b.name()).collect(Collectors.toList());
 
             // Filter out buckets that the user does not have permissions for
             bucketsFinalList = getReadableBuckets(bucketsList);
@@ -484,39 +497,156 @@ public class AmazonUtils {
         return s3URI.getKey();
     }
 
-    // Amazon S3 Presign URLs
-    // Also keeps an internal mapping between ResourceLocator and active/valid signed URLs.
+    /**
+     * Create a presigned URL for the s3://
+     *
+     * @param s3Path
+     * @return
+     * @throws IOException
+     */
+
     private static String createPresignedURL(String s3Path) throws IOException {
-        // TODO: Ideally the presigned URL should be generated without any of the Cognito being involved first?
-        // Make sure access token are valid (refreshes token internally)
 
-        S3Presigner s3Presigner;
+        s3Presigner = getPresigner();
 
-        if (GetCognitoConfig() != null) {
-            OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
-            provider.getAccessToken();
+        AmazonS3URI s3URI = new AmazonS3URI(s3Path);
+        String bucket = s3URI.getBucket();
+        String key = s3URI.getKey();
 
-            Credentials credentials = GetCognitoAWSCredentials();
-            AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
-                    credentials.secretAccessKey(),
-                    credentials.sessionToken());
-            StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
+        // URI presigned = s3Presigner.presignS3DownloadLink(bucket, key);
+        GetObjectRequest s3GetRequest = GetObjectRequest.builder().bucket(bucket).key(key).build();
+        GetObjectPresignRequest getObjectPresignRequest =
+                GetObjectPresignRequest.builder()
+                        .signatureDuration(Duration.ofMinutes(60))
+                        .getObjectRequest(s3GetRequest)
+                        .build();
 
-            s3Presigner = S3Presigner.builder()
-                    .expiration(provider.getExpirationTime())       // Duration.ofSeconds(30)  // <= for testing
-                    .awsCredentials(awsCredsProvider)
-                    .region(getAWSREGION())
-                    .build();
-        } else {
-            s3Presigner = S3Presigner.builder().build();
-        }
+        PresignedGetObjectRequest presignedGetObjectRequest =
+                s3Presigner.presignGetObject(getObjectPresignRequest);
 
-        String bucket = getBucketFromS3URL(s3Path);
-        String key = getKeyFromS3URL(s3Path);
+        URL presigned = presignedGetObjectRequest.url();
 
-        URI presigned = s3Presigner.presignS3DownloadLink(bucket, key);
         log.debug("AWS presigned URL from translateAmazonCloudURL is: " + presigned);
         return presigned.toString();
+    }
+
+    private static S3Presigner getPresigner() throws IOException {
+
+        if (s3Presigner == null) {
+
+            if (GetCognitoConfig() != null) {
+                OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
+                provider.getAccessToken();
+
+                Credentials credentials = GetCognitoAWSCredentials();
+                AwsSessionCredentials creds = AwsSessionCredentials.create(credentials.accessKeyId(),
+                        credentials.secretAccessKey(),
+                        credentials.sessionToken());
+                StaticCredentialsProvider awsCredsProvider = StaticCredentialsProvider.create(creds);
+
+                s3Presigner = S3Presigner.builder()
+                        .credentialsProvider(awsCredsProvider)
+                        .region(getAWSREGION())
+                        .build();
+            } else {
+                final String endpointURL = getEndpointURL();
+
+                if (endpointURL == null) {
+                    s3Presigner = S3Presigner.builder().build();
+                } else {
+                    // Override presigned url style -- some (all?) 3rd party S3 providers do not support virtual host style
+                    S3Configuration configuration = S3Configuration.builder()
+                            .pathStyleAccessEnabled(true).build();
+                    try {
+                        s3Presigner = S3Presigner.builder()
+                                .serviceConfiguration(configuration)
+                                .endpointOverride(new URI(endpointURL))
+                                .region(getAWSREGION())
+                                .build();
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return s3Presigner;
+    }
+
+    /**
+     * Return a custom endpoint URL, if defined.  The endpointURL is searched for once per session and not updated.
+     * Search in the follow locations.
+     * <p>
+     * (1) oauth config file
+     * (2) igv preference
+     * (3) environment variable AWS_ENDPOINT_URL
+     * (4) aws credentials file
+     * (5) aws config file
+     *
+     * @return Custom AWS endpoint url or null
+     * @throws IOException
+     */
+    private static String getEndpointURL() throws IOException {
+
+        if ("UNKNOWN".equals(endpointURL)) {
+
+            // IGV preference
+            endpointURL = PreferencesManager.getPreferences().get("endpoint_url");
+            if (endpointURL != null) {
+                return endpointURL;
+            }
+
+            // environment variable
+            endpointURL = System.getenv("AWS_ENDPOINT_URL");
+            if (endpointURL != null) {
+                return endpointURL;
+            }
+
+            // oauth config
+            if (GetCognitoConfig() != null && GetCognitoConfig().has("endpoint_url")) {
+                endpointURL = GetCognitoConfig().get("endpoint_url").getAsString();
+                if (endpointURL != null) {
+                    return endpointURL;
+                }
+            }
+
+            // Search aws directory
+            File awsDirectory = new File(DirectoryManager.getUserHome(), ".aws");
+            if (awsDirectory.exists()) {
+                File credfile = new File(awsDirectory, "credentials");
+                if (credfile.exists()) {
+                    BufferedReader br = new BufferedReader(new FileReader(credfile));
+                    String nextLine;
+                    while ((nextLine = br.readLine()) != null) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length == 2) {
+                            String key = tokens[0].trim();
+                            if (key.equals("endpoint_url")) {
+                                endpointURL = tokens[1].trim();
+                                return endpointURL;
+                            }
+                        }
+                    }
+                }
+                credfile = new File(awsDirectory, "config");
+                if (credfile.exists()) {
+                    BufferedReader br = new BufferedReader(new FileReader(credfile));
+                    String nextLine;
+                    while ((nextLine = br.readLine()) != null) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length == 2) {
+                            String key = tokens[0].trim();
+                            if (key.equals("endpoint_url")) {
+                                endpointURL = tokens[1].trim();
+                                return endpointURL;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return endpointURL;
     }
 
     /**
@@ -540,26 +670,18 @@ public class AmazonUtils {
         return (path.startsWith("s3://"));
     }
 
-    public static boolean isPresignedURL(String urlString) {
+    public static boolean isKnownPresignedURL(String urlString) {
         return presignedToS3Map.containsKey(urlString);
     }
 
     public static String updatePresignedURL(String urlString) throws IOException {
         String s3UrlString = presignedToS3Map.get(urlString);
         if (s3UrlString == null) {
-            throw new RuntimeException("Unrecognized presigned url: " + urlString);
+            // We haven't seen this url before.  This shouldn't happen, but if it does we have to assume its valid
+            log.info("Unrecognized presigned url: " + urlString);
+            return urlString;
         } else {
             return translateAmazonCloudURL(s3UrlString);
-        }
-    }
-
-    /**
-     * If using Cognito, check that the use is logged in, and prompt for login if not.
-     */
-    public static void checkLogin() {
-        if (GetCognitoConfig() != null &&
-                !OAuthUtils.getInstance().getAWSProvider().isLoggedIn()) {
-            OAuthUtils.getInstance().getAWSProvider().checkLogin();
         }
     }
 
@@ -575,34 +697,30 @@ public class AmazonUtils {
      **/
 
     private static boolean isPresignedURLValid(URL url) {
-        boolean isValidSignedUrl;
 
+        boolean isValidSignedUrl;
         try {
-            long presignedTime = signedURLValidity(url);
+            Map<String, String> params = StringUtils.splitQuery(url);
+            String amzDateStr = params.get("X-Amz-Date");
+            long amzExpires = Long.parseLong(params.get("X-Amz-Expires"));
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC")); // Z(ulu) -> UTC
+            Date amzDate = formatter.parse(amzDateStr);
+
+            long presignedTime = amzDate.getTime() + amzExpires * 1000;
+            log.debug("The date of expiration is " + amzDate + ", expires after " + amzExpires + " seconds for url: " + url);
+
             isValidSignedUrl = presignedTime - System.currentTimeMillis() - TOKEN_EXPIRE_GRACE_TIME > 0; // Duration in milliseconds
         } catch (ParseException e) {
             log.error("The AWS signed URL date parameter X-Amz-Date has incorrect formatting");
             isValidSignedUrl = false;
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error("Error decoding signed url", e);
             isValidSignedUrl = false;
         }
 
         return isValidSignedUrl;
     }
 
-    private static long signedURLValidity(URL url) throws ParseException, UnsupportedEncodingException {
-        Map<String, String> params = StringUtils.splitQuery(url);
-        String amzDateStr = params.get("X-Amz-Date");
-        long amzExpires = Long.parseLong(params.get("X-Amz-Expires"));
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC")); // Z(ulu) -> UTC
-        Date amzDate = formatter.parse(amzDateStr);
-
-        long timeOfExpirationMillis = amzDate.getTime() + amzExpires * 1000;
-
-        log.debug("The date of expiration is " + amzDate + ", expires after " + amzExpires + " seconds for url: " + url);
-        return timeOfExpirationMillis;
-    }
 }
