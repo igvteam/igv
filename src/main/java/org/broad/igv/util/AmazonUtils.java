@@ -7,6 +7,7 @@ import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import software.amazon.awssdk.auth.credentials.*;
@@ -590,7 +591,7 @@ public class AmazonUtils {
         if ("UNKNOWN".equals(endpointURL)) {
 
             // IGV preference
-            endpointURL = PreferencesManager.getPreferences().get("endpoint_url");
+            endpointURL = PreferencesManager.getPreferences().get(Constants.AWS_ENDPOINT_URL);
             if (endpointURL != null) {
                 return endpointURL;
             }
