@@ -33,7 +33,6 @@ import org.broad.igv.ui.IGV;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 
@@ -54,7 +53,7 @@ public class FileDialogUtils {
     }
 
     public static File chooseFile(String title) {
-        return chooseFile(title, DirectoryManager.getUserDirectory(), null, FileDialog.LOAD);
+        return chooseFile(title, DirectoryManager.getUserDefaultDirectory(), null, FileDialog.LOAD);
     }
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {

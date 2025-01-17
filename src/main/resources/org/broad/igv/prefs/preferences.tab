@@ -273,9 +273,9 @@ MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://igv.org/genomes/regist
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
-
-BLAT_URL	BLAT URL	String	https://genome.ucsc.edu/cgi-bin/hgBlat
+BLAT_URL	BLAT URL	string	https://genome.ucsc.edu/cgi-bin/hgBlat
 ---
+AWS_ENDPOINT_URL	AWS endpoint URL	string	null
 
 ## Tooltip
 TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50

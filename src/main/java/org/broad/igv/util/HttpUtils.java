@@ -715,10 +715,9 @@ public class HttpUtils {
         }
 
         // If a presigned URL, check its validity and update if needed
-        if (AmazonUtils.isPresignedURL(url.toExternalForm())) {
+        if (AmazonUtils.isKnownPresignedURL(url.toExternalForm())) {
             url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
         }
-
 
         // If an S3 url, obtain a signed https url
         if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {

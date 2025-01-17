@@ -296,9 +296,11 @@ final public class Constants {
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
 
-    // OAuth provisioning
+    // OAuth and AWS
     public static final String PROVISIONING_URL = "PROVISIONING.URL";
     public static final String PROVISIONING_URL_DEFAULT = "PROVISIONING_URL_DEFAULT";
+
+    public static final String AWS_ENDPOINT_URL = "AWS_ENDPOINT_URL";
 
     // JBrowse circular view integration
     public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";

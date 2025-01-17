@@ -289,7 +289,7 @@ public class PreferencesEditor {
                 moveButton.addActionListener(event -> {
                     UIUtilities.invokeOnEventThread(() -> {
                         final File directory = DirectoryManager.getFastaCacheDirectory();
-                        final File newDirectory = FileDialogUtils.chooseDirectory("Select cache directory", DirectoryManager.getUserDirectory());
+                        final File newDirectory = FileDialogUtils.chooseDirectory("Select cache directory", DirectoryManager.getUserDefaultDirectory());
                         if (newDirectory != null && !newDirectory.equals(directory)) {
                             DirectoryManager.moveDirectoryContents(directory, newDirectory);
                             SwingUtilities.invokeLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
@@ -320,7 +320,7 @@ public class PreferencesEditor {
                 moveButton.addActionListener(event -> {
                     UIUtilities.invokeOnEventThread(() -> {
                         final File igvDirectory = DirectoryManager.getIgvDirectory();
-                        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDirectory());
+                        final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDefaultDirectory());
                         if (newDirectory != null && !newDirectory.equals(igvDirectory)) {
                             DirectoryManager.moveIGVDirectory(newDirectory);
                             SwingUtilities.invokeLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));

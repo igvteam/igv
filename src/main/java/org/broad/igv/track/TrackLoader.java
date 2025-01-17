@@ -120,11 +120,6 @@ public class TrackLoader {
 
         final String path = locator.getPath().trim();
 
-        // Check if the AWS credentials are still valid. If not, re-login and renew pre-signed urls
-        if (AmazonUtils.isAwsS3Path(path)) {
-            AmazonUtils.checkLogin();
-        }
-
         log.info("Loading resource:  " + (locator.isDataURL() ? "<data url>" : path));
         try {
 

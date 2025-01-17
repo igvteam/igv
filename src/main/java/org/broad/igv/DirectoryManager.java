@@ -61,7 +61,7 @@ public class DirectoryManager {
     final public static String IGV_DIR_USERPREF = "igvDir";
 
 
-    private static File getUserHome() {
+    public static File getUserHome() {
         if (USER_HOME == null) {
             String userHomeString = System.getProperty("user.home");
             USER_HOME = new File(userHomeString);
@@ -73,7 +73,7 @@ public class DirectoryManager {
      * The user directory.  On Mac and Linux this should be the user home directory.  On Windows platforms this
      * is the "My Documents" directory.
      */
-    public static synchronized File getUserDirectory() {
+    public static synchronized File getUserDefaultDirectory() {
         if (USER_DIRECTORY == null) {
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
@@ -96,7 +96,7 @@ public class DirectoryManager {
             // Hack for known Java / Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
             if (System.getProperty("os.name").startsWith("Windows")) {
                 try {
-                    Runtime.getRuntime().exec("attrib -r \"" + getUserDirectory().getAbsolutePath() + "\"");
+                    Runtime.getRuntime().exec("attrib -r \"" + getUserDefaultDirectory().getAbsolutePath() + "\"");
                 } catch (Exception e) {
                     // We tried
                 }

@@ -44,8 +44,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -56,6 +55,8 @@ import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 public class S3LoadDialog extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(S3LoadDialog.class);
+
+    final static Set<String> indexExtensions = Set.of("bai", "csi", "crai", "idx", "tbi");
 
     private final DefaultTreeModel treeModel;
     String selectedId;
@@ -102,7 +103,6 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog {
         LongRunningTask.submit(() -> {
 
             ArrayList<Triple<String, String, String>> preLocatorPaths = new ArrayList<>();
-            ArrayList<ResourceLocator> finalLocators = new ArrayList<>();
 
             for (TreePath path : paths) {
                 if (isFilePath(path)) {
@@ -118,15 +118,12 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog {
                 }
             }
 
-            for (Triple<String, String, String> preLocator : preLocatorPaths) {
-                ResourceLocator locator = getResourceLocatorFromBucketKey(preLocator);
-                finalLocators.add(locator);
-            }
+            List<ResourceLocator> locators = getResourceLocatorsFromBucketKeys(preLocatorPaths);
 
-            if (finalLocators.size() == 1 && "xml".equals(ResourceLocator.deriveFormat(finalLocators.get(0).getPath()))) {
-                IGV.getInstance().loadSession(finalLocators.get(0).getPath(), null);
+            if (locators.size() == 1 && "xml".equals(ResourceLocator.deriveFormat(locators.get(0).getPath()))) {
+                IGV.getInstance().loadSession(locators.get(0).getPath(), null);
             } else {
-                IGV.getInstance().loadTracks(finalLocators);
+                IGV.getInstance().loadTracks(locators);
             }
         });
     }
@@ -135,11 +132,48 @@ public class S3LoadDialog extends org.broad.igv.ui.IGVDialog {
         return ((S3TreeNode) path.getLastPathComponent()).isLeaf();
     }
 
-    private ResourceLocator getResourceLocatorFromBucketKey(Triple<String, String, String> preLocator) {
-        String bucketName = preLocator.getLeft();
-        String s3objPath = preLocator.getMiddle();
-        String s3Path = "s3://" + bucketName + "/" + s3objPath;
-        return new ResourceLocator(s3Path);
+    private List<ResourceLocator> getResourceLocatorsFromBucketKeys(List<Triple<String, String, String>> bucketKeys) {
+
+        Map<String, String> indexMap = new HashMap<>();
+        List<ResourceLocator> locators = new ArrayList<>();
+        for (Triple<String, String, String> bucketKey : bucketKeys) {
+
+            String s3Path = "s3://" + bucketKey.getLeft() + "/" + bucketKey.getMiddle();
+
+            int idx = s3Path.lastIndexOf('.');
+            String ext = idx > 0 && idx < s3Path.length() - 1 ? s3Path.substring(idx + 1) : "";
+
+            if (indexExtensions.contains(ext)) {
+                String key = s3Path.substring(0, idx);
+                indexMap.put(key, s3Path);
+            } else {
+                locators.add(new ResourceLocator(s3Path));
+            }
+
+            if (indexMap.size() > 0) {
+                for (ResourceLocator locator : locators) {
+                    String key = locator.getPath();
+                    if (indexMap.containsKey(key)) {
+                        locator.setIndexPath(indexMap.get(key));
+                    } else if (key.endsWith(".bam")) {
+
+                        // Special case for "Picard" which uses a non standard index naming convention
+                        key = key.substring(0, key.length() - 4);
+                        if (indexMap.containsKey(key)) {
+                            locator.setIndexPath(indexMap.get(key));
+                        }
+                    } else if (key.endsWith(".cram")) {
+
+                        // Special case for "Picard" which uses a non standard index naming convention
+                        key = key.substring(0, key.length() - 5);
+                        if (indexMap.containsKey(key)) {
+                            locator.setIndexPath(indexMap.get(key));
+                        }
+                    }
+                }
+            }
+        }
+        return locators;
     }
 
     private Triple<String, String, String> getBucketKeyTierFromTreePath(TreePath path) {
