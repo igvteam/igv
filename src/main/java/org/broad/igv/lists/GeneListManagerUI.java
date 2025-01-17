@@ -338,7 +338,7 @@ public class GeneListManagerUI extends org.broad.igv.ui.IGVDialog  {
      */
     private void exportButtonActionPerformed(ActionEvent e) {
         if (selectedGroup != null) {
-            File userDir = DirectoryManager.getUserDirectory();
+            File userDir = DirectoryManager.getUserDefaultDirectory();
             File initFile = new File(selectedGroup + ".gmt");
             File glFile = FileDialogUtils.chooseFile("Save gene lists", userDir, initFile, FileDialogUtils.SAVE);
             if (glFile != null) {

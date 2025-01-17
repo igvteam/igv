@@ -67,7 +67,6 @@ import org.broad.igv.encode.EncodeTrackChooser;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -474,7 +473,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             try {
                 File importDirectory = PreferencesManager.getPreferences().getLastGenomeImportDirectory();
                 if (importDirectory == null) {
-                    PreferencesManager.getPreferences().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
+                    PreferencesManager.getPreferences().setLastGenomeImportDirectory(DirectoryManager.getUserDefaultDirectory());
                 }
                 // Display the dialog
                 File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);

@@ -109,9 +109,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         } else if (inputs.size() == 1 && SessionReader.isSessionFile(inputs.getFirst())) {
             // Session URL
             String url = inputs.getFirst();
-            if (url.startsWith("s3://")) {
-                checkAWSAccessbility(url);
-            }
+
             try {
                 LongRunningTask.submit(() -> this.igv.loadSession(url, null));
             } catch (Exception ex) {
@@ -186,29 +184,12 @@ public class LoadFromURLMenuAction extends MenuAction {
 
     private static void checkURLs(List<String> urls) {
         for (String url : urls) {
-            if (url.startsWith("s3://")) {
-                checkAWSAccessbility(url);
-            } else if (url.startsWith("ftp://")) {
+             if (url.startsWith("ftp://")) {
                 MessageUtils.showMessage("FTP protocol is not supported");
             }
         }
     }
 
-    private static void checkAWSAccessbility(String url) {
-        try {
-            // If AWS support is active, check if objects are in accessible tiers via Load URL menu...
-            if (AmazonUtils.isAwsS3Path(url)) {
-                String bucket = AmazonUtils.getBucketFromS3URL(url);
-                String key = AmazonUtils.getKeyFromS3URL(url);
-                AmazonUtils.s3ObjectAccessResult res = isObjectAccessible(bucket, key);
-                if (!res.isObjectAvailable()) {
-                    MessageUtils.showErrorMessage(res.getErrorReason(), null);
-                }
-            }
-        } catch (NullPointerException npe) {
-            // User has not yet done Amazon->Login sequence
-            AmazonUtils.checkLogin();
-        }
-    }
+
 }
 
