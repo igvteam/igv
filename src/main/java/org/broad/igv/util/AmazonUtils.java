@@ -248,9 +248,12 @@ public class AmazonUtils {
             } else {
                 // Custom endpoint
                 try {
+                    S3Configuration configuration = S3Configuration.builder()
+                            .pathStyleAccessEnabled(true).build();
+
                     s3Client = S3Client.builder()
                             .endpointOverride(new URI(endpointURL))
-                            .serviceConfiguration(srvcConf -> srvcConf.pathStyleAccessEnabled())
+                            .serviceConfiguration(configuration)
                             .region(getAWSREGION()) // this is not used, but the AWS SDK requires it
                             .build();
                 } catch (URISyntaxException e) {
@@ -271,6 +274,19 @@ public class AmazonUtils {
         }
     }
 
+    private static S3Client getS3Client() {
+        if(s3Client == null) {
+            if (GetCognitoConfig() != null) {
+             //   OAuthUtils.getInstance().getAWSProvider().getAccessToken();
+                updateS3Client(GetCognitoAWSCredentials());
+            } else {
+                updateS3Client(null);
+            }
+        }
+
+        return s3Client;
+    }
+
 
     /**
      * This method returns the details of the user and bucket lists.
@@ -281,16 +297,12 @@ public class AmazonUtils {
 
         if (bucketsFinalList.isEmpty()) {
 
-            if (GetCognitoConfig() != null) {
-                updateS3Client(GetCognitoAWSCredentials());
-            } else {
-                updateS3Client(null);
-            }
+            S3Client s3Client = getS3Client();
 
             List<String> bucketsList = s3Client.listBuckets().buckets().stream().map(b -> b.name()).collect(Collectors.toList());
 
             // Filter out buckets that the user does not have permissions for
-            bucketsFinalList = getReadableBuckets(bucketsList);
+            bucketsFinalList = bucketsList; //getReadableBuckets(bucketsList);
 
         }
         return bucketsFinalList;
@@ -435,13 +447,10 @@ public class AmazonUtils {
      */
 
     public static ArrayList<IGVS3Object> ListBucketObjects(String bucketName, String prefix) {
+
         ArrayList<IGVS3Object> objects = new ArrayList<>();
-        if (GetCognitoConfig() != null) {
-            OAuthUtils.getInstance().getAWSProvider().getAccessToken();
-            updateS3Client(GetCognitoAWSCredentials());
-        } else {
-            updateS3Client(null);
-        }
+
+        S3Client s3Client = getS3Client();
 
         try {
             // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
@@ -451,7 +460,9 @@ public class AmazonUtils {
             // hierarchy using key name prefixes and delimiters as the Amazon S3 console does. The Amazon
             // S3 console supports a concept of folders.
             // """
-            ListObjectsV2Request listReq = ListObjectsV2Request.builder().bucket(bucketName)
+
+            ListObjectsV2Request listReq = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
                     .prefix(prefix)
                     .delimiter("/")
                     .build();
