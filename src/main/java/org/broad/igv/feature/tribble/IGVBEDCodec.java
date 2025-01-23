@@ -73,7 +73,9 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
     @Override
     public BasicFeature decode(String nextLine) {
         BasicFeature feature = super.decode(nextLine);
-        feature.setRepresentation(nextLine);
+        if(feature != null) {
+            feature.setRepresentation(nextLine);
+        }
         return feature;
     }
 
