@@ -1018,6 +1018,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
+    @Override
     public void setTrackLine(String trackLine) {
         this.trackLine = trackLine;
     }

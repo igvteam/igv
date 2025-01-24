@@ -100,8 +100,8 @@ public class FileFormatUtils {
 
             // Read maximum of first 100 lines searching for format indication.
             int n = 0;
-            String nextLine;
-            while((nextLine = reader.readLine()) != null && n++ < 100) {
+            String nextLine = firstLine;
+            while(nextLine != null && n++ < 100) {
                 if(nextLine.startsWith("#")) continue;
                 if(nextLine.startsWith("track")) {
                     TrackProperties properties = new TrackProperties();
@@ -115,6 +115,7 @@ public class FileFormatUtils {
                 if(nextLine.startsWith("fixedStep") || nextLine.startsWith("variableStep")) {
                     return "wig";
                 }
+                nextLine = reader.readLine();
             }
 
             if (maybeSampleInfo(bytes)) {

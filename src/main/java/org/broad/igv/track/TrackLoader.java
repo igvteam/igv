@@ -28,7 +28,9 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
+import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.bedpe.BedPEParser;
+import org.broad.igv.bedpe.BedPESource;
 import org.broad.igv.bedpe.InteractionTrack;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
@@ -129,7 +131,7 @@ public class TrackLoader {
             if ("bed".equals(format)) {
                 try {
                     String tmp = FileFormatUtils.determineFormat(locator.getPath());
-                    if(tmp != null && !tmp.equals("sampleinfo")) {
+                    if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
                     }
@@ -420,8 +422,9 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        BedPEParser.Dataset features = BedPEParser.parse(locator, genome);
-        newTracks.add(new InteractionTrack(locator, features, genome));
+        List<BedPE> features = BedPEParser.parse(locator, genome);
+        BedPESource featureSource = new BedPESource(features, genome);
+        newTracks.add(new InteractionTrack(locator, featureSource));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -470,9 +473,14 @@ public class TrackLoader {
             }
 
             // Create feature source and track
-            FeatureTrack t = new FeatureTrack(locator, src);
-
-            //t.setRendererClass(BasicTribbleRenderer.class);
+            Track t;
+            switch (format) {
+                case "interact":
+                    t = new InteractionTrack(locator, src);
+                    break;
+                default:
+                    t = new FeatureTrack(locator, src);
+            }
 
             // Set track properties from header
             Object header = src.getHeader();
@@ -495,7 +503,7 @@ public class TrackLoader {
                     locator.getPath().equals(".broadpeak") ||
                     locator.getPath().equals(".gappedpeak") ||
                     locator.getPath().equals(".regionpeak")) {
-                t.setUseScore(true);
+                ((FeatureTrack) t).setUseScore(true);
             }
             newTracks.add(t);
         }

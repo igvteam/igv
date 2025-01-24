@@ -66,11 +66,6 @@ public class MutationFeatureSource implements FeatureSource<Mutation> {
         return dataManager.getFeatures(sample, chr, start, end);
     }
 
-    @Override
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null;  //Not supported for mutation tracks
-    }
-
     static public class MutationDataManager {
 
         Range currentRange;

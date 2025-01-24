@@ -23,32 +23,18 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.tribble.reader;
+package org.broad.igv.bedpe;
 
-import htsjdk.tribble.Feature;
-import org.broad.igv.Globals;
-import org.broad.igv.bedpe.BedPEFeature;
 import org.broad.igv.bedpe.InteractFeature;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.UCSCCodec;
-import org.broad.igv.logging.LogManager;
-import org.broad.igv.logging.Logger;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.StringUtils;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Dec 20, 2009
- * Time: 10:15:49 PM
+ * Decode an UCSC interact file
+ *
+ * Reference: https://genome.ucsc.edu/goldenpath/help/interact.html
+ *
  */
 public class InteractCodec extends UCSCCodec<InteractFeature> {
 

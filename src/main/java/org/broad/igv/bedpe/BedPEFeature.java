@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by jrobinso on 6/29/18.
  */
-public class BedPEFeature implements BedPE  {
+public class BedPEFeature implements BedPE {
 
     protected String chr1;
     protected int start1;
@@ -41,23 +41,16 @@ public class BedPEFeature implements BedPE  {
     }
 
     public BedPEFeature getComplement() {
-        BedPEFeature complement = new BedPEFeature(chr2, start2, end2, chr1, start1, end1);
-        complement.name = name;
-        complement.scoreString = scoreString;
-        complement.score = score;
-        complement.color = color;
-        complement.thickness = thickness;
-        complement.type = type;
-        complement.attributes = attributes;
+        BedPEFeature complement = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
         complement.isComplement = true;
         return complement;
     }
 
     public String getChr() {
-        if(isSameChr()) {
+        if (isSameChr()) {
             return chr1;
         } else {
-            return chr1 + " " + chr2;
+            return isComplement ? chr2 : chr1;
         }
     }
 
@@ -70,11 +63,11 @@ public class BedPEFeature implements BedPE  {
     }
 
     public double getMidStart() {
-        return Math.min ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
+        return Math.min((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
     public double getMidEnd() {
-        return Math.max ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
+        return Math.max((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
     @Override
@@ -90,6 +83,7 @@ public class BedPEFeature implements BedPE  {
     public boolean isSameChr() {
         return chr1.equals(chr2);
     }
+
     @Override
     public Color getColor() {
         return color;
@@ -120,13 +114,13 @@ public class BedPEFeature implements BedPE  {
 
         String locus1 = chr1 + ":" + start1 + "-" + end1;
         String locus2 = chr2 + ":" + start2 + "-" + end2;
-        if(name != null && name.length() > 0 && !name.equals(".")) {
+        if (name != null && name.length() > 0 && !name.equals(".")) {
             buf.append(name + "<br>");
         }
         buf.append(locus1);
         buf.append("<br>" + locus2);
         buf.append("<br>Score: " + score);
-        if(attributes != null) {
+        if (attributes != null) {
             buf.append("<br><hr>");
             for (Map.Entry<String, String> entry : attributes.entrySet()) {
                 buf.append("<br>" + entry.getKey() + ": " + entry.getValue());

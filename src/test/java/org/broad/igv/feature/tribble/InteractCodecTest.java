@@ -28,9 +28,7 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.bedpe.InteractFeature;
 import org.broad.igv.feature.FeatureType;
-import org.broad.igv.feature.Mutation;
-import org.broad.igv.feature.tribble.reader.InteractCodec;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.bedpe.InteractCodec;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 

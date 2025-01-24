@@ -1,7 +1,10 @@
 package org.broad.igv.bedpe;
 
 import org.broad.igv.Globals;
+import org.broad.igv.event.IGVEvent;
+import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
@@ -10,10 +13,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.TrackClickEvent;
-import org.broad.igv.track.TrackMenuUtils;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -27,6 +27,7 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
@@ -36,16 +37,10 @@ import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 /**
  * Created by jrobinso on 6/29/18.
  */
-public class InteractionTrack extends AbstractTrack {
+public class InteractionTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(InteractionTrack.class);
-    public static final int MAX_WG_COUNT = 10000;
-    private JCheckBoxMenuItem autoscaleCB;
-    private JMenuItem maxScoreItem;
-    private List<BedPE> wgFeatures;
 
-    // TODO -- for jbrowse experiment
-    private List<BedPE> allFeatures;
 
     enum Direction {UP, DOWN}
 
@@ -53,7 +48,10 @@ public class InteractionTrack extends AbstractTrack {
 
     enum ArcOption {ALL, ONE_END, BOTH_ENDS}
 
-    private Genome genome;
+    private FeatureSource<BedPE> featureSource;
+    private JCheckBoxMenuItem autoscaleCB;
+    private JMenuItem maxScoreItem;
+
     InteractionTrack.Direction direction = UP; //DOWN;
     GraphType graphType;  // GraphType.block; //
     private ArcOption arcOption = ArcOption.ALL;
@@ -62,20 +60,17 @@ public class InteractionTrack extends AbstractTrack {
     double maxScore = -1;
     int gap = 5;
     boolean showBlocks = false;
-
-
-    //private Map<String, List<BedPE>> featureMap;
     private Map<GraphType, BedPERenderer> renderers;
-    private FeatureCache<BedPE> featureCache;
+
+    transient Map<ReferenceFrame, List<BedPE>> lastRenderedFeatures = new HashMap<>();
 
     public InteractionTrack() {
     }
 
-    public InteractionTrack(ResourceLocator locator, BedPEParser.Dataset dataset, Genome genome) {
+    public InteractionTrack(ResourceLocator locator, FeatureSource<BedPE> src) {
 
         super(locator);
-        init(dataset, genome);
-        this.genome = genome;
+        this.featureSource = src;
         setHeight(250, true);
         setColor(new Color(180, 25, 137));
 
@@ -93,7 +88,7 @@ public class InteractionTrack extends AbstractTrack {
                 graphType = GraphType.NESTED_ARC; // default
             }
         } else {
-            graphType = dataset.type == BedPEParser.DatasetType.TENX ? GraphType.PROPORTIONAL_ARC : GraphType.NESTED_ARC;
+            graphType = GraphType.PROPORTIONAL_ARC;
         }
 
 
@@ -119,29 +114,6 @@ public class InteractionTrack extends AbstractTrack {
         }
     }
 
-    private void init(BedPEParser.Dataset dataset, Genome genome) {
-
-        List<BedPE> featureList = dataset.features;
-
-        featureCache = new FeatureCache<>(featureList, 50);
-
-        wgFeatures = createWGFeatures(featureList, genome);
-
-        allFeatures = featureList;
-
-        // Compute viz window based on feature density
-        int vw = Integer.MAX_VALUE;
-        for (Map.Entry<String, Integer> entry : dataset.featureCounts.entrySet()) {
-            String chr = entry.getKey();
-            Chromosome chromosome = genome.getChromosome(chr);
-            if (chromosome != null) {
-                double f = 100000.0 / entry.getValue();
-                vw = Math.min(vw, (int) (f * chromosome.getLength()));
-            }
-        }
-
-        this.visibilityWindow = vw;
-    }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
 
@@ -165,14 +137,6 @@ public class InteractionTrack extends AbstractTrack {
         // Nothing to do, this track is pre-loaded
     }
 
-    private List<BedPE> getFeaturesOverlapping(String chr, double start, double end) {
-
-        if (chr.equals(Globals.CHR_ALL)) {
-            return wgFeatures;
-        } else {
-            return featureCache.getFeatures(chr, (int) start, (int) end);
-        }
-    }
 
     @Override
     public void render(RenderContext context, Rectangle trackRectangle) {
@@ -190,7 +154,15 @@ public class InteractionTrack extends AbstractTrack {
 
         try {
             String chr = context.getReferenceFrame().getChrName();
-            List<BedPE> features = getFeaturesOverlapping(chr, context.getOrigin(), context.getEndLocation());
+
+
+            // TODO Convert iterator to list.  This is very wasteful, but neccessary due to the feature source interface.
+            List<BedPE> features = new ArrayList<>();
+            Iterator<BedPE> iter = featureSource.getFeatures(chr, (int) context.getOrigin(), (int) context.getEndLocation());
+            while (iter.hasNext()) {
+                features.add(iter.next());
+            }
+
             if (features != null && features.size() > 0) {
 
                 if (graphType == GraphType.PROPORTIONAL_ARC) {
@@ -206,6 +178,10 @@ public class InteractionTrack extends AbstractTrack {
                 renderers.get(GraphType.BLOCK).render(features, context, trackRectangle, this.arcOption);
             }
 
+            lastRenderedFeatures.put(context.getReferenceFrame(), features);
+
+        } catch (IOException e) {
+            log.error("Error fetching features. ", e);
         } finally {
             context.clearGraphicsCache();
             g2d.setClip(clip);
@@ -421,7 +397,16 @@ public class InteractionTrack extends AbstractTrack {
 
         // Expand range a little bit -- this should be done in pixels
         double tolerance = frame.getScale() * 3;
-        List<BedPE> candidates = getFeaturesOverlapping(frame.getChrName(), (int) position - tolerance, (int) position + 1 + tolerance);
+
+        List<BedPE> features = lastRenderedFeatures.get(frame);
+        if (features == null) return "";
+
+        List<BedPE> candidates = new ArrayList<>();
+        for (BedPE bedPE : features) {
+            if (bedPE.getEnd() < position - tolerance) continue;
+            if (bedPE.getStart() > position + tolerance) break;
+            candidates.add(bedPE);
+        }
 
         // Sort candidate features smallest to largest
         Comparator<BedPE> sorter = graphType == GraphType.PROPORTIONAL_ARC ?
@@ -504,13 +489,7 @@ public class InteractionTrack extends AbstractTrack {
     public List<? extends BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
 
         Function<ReferenceFrame, List<? extends BedPE>> frameFeatures = (f) -> {
-            String chr = f.getChrName();
-            if (chr.equals(Globals.CHR_ALL)) {
-                return wgFeatures;
-            } else {
-                Range r = f.getCurrentRange();
-                return getFeaturesOverlapping(chr, r.getStart(), r.getEnd());
-            }
+            return lastRenderedFeatures.get(f);
         };
 
         if (frames.size() == 0) {
@@ -526,69 +505,13 @@ public class InteractionTrack extends AbstractTrack {
         }
     }
 
-
-    private List<BedPE> createWGFeatures(List<BedPE> features, Genome genome) {
-
-        int size = Math.min(features.size(), MAX_WG_COUNT);
-        List<BedPE> wgFeatures = new ArrayList<>(size);
-
-        List<BedPE> sampledFeatures;
-        if (features.size() < MAX_WG_COUNT) {
-            sampledFeatures = features;
-        } else {
-            sampledFeatures = downsampleFeatures(features);
+    @Override
+    public void receiveEvent(IGVEvent event) {
+        if (event instanceof FrameManager.ChangeEvent) {
+            lastRenderedFeatures.clear();
         }
-
-        for (BedPE f : sampledFeatures) {
-
-            BedPE wgFeature = new WGFeature(f, genome);
-
-            wgFeatures.add(wgFeature);
-
-        }
-        return wgFeatures;
     }
 
-    public static List<BedPE> downsampleFeatures(List<BedPE> features) {
 
-        if (features.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        BedPE maxScoreFeature = features.stream()
-                .max(Comparator.comparing(BedPE::getScore)).get();
-
-        int nBins = maxScoreFeature.getScore() > 0 ? 5 : 1;  // TODO make a function of total # of features & maxCount?
-        double binSize = nBins > 1 ? Math.log10(maxScoreFeature.getScore()) / nBins : Integer.MAX_VALUE;
-
-        // Divide features into bins
-        List<BedPE>[] binnedFeatures = new List[nBins];
-        int counts[] = new int[nBins];
-        for (int i = 0; i < nBins; i++) {
-            binnedFeatures[i] = new ArrayList<>();
-            counts[i] = 0;
-        }
-        for (BedPE f : features) {
-            if (f.isComplement()) continue;
-            int bin = f.getScore() <= 0 ? 0 : (int) Math.min(nBins - 1, Math.floor(Math.log10(f.getScore()) / binSize));
-            binnedFeatures[bin].add(f);
-            counts[bin]++;
-        }
-
-        // Add sampled features from each bin
-        int featuresPerBin = MAX_WG_COUNT / nBins;
-        List<BedPE> sampledFeatures = new ArrayList<>(MAX_WG_COUNT);
-        for (int i = 0; i < nBins; i++) {
-            List<BedPE> bfs = binnedFeatures[i];
-            sampledFeatures.addAll(Arrays.asList(new Downsampler<BedPEFeature>().sample(bfs.toArray(BedPEFeature[]::new), featuresPerBin)));
-        }
-
-        // Be sure we keep the maximum feature
-        if (maxScoreFeature != null) {
-            sampledFeatures.add(maxScoreFeature);
-        }
-
-        return sampledFeatures;
-    }
 }
 

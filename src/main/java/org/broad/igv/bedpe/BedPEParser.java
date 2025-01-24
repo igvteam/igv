@@ -21,14 +21,10 @@ public class BedPEParser {
 
     private static Logger log = LogManager.getLogger(BedPEParser.class);
 
-    enum DatasetType {TENX, CLUSTER, UNKNOWN}
-
-    public static Dataset parse(ResourceLocator locator, Genome genome) throws IOException {
+    public static List<BedPE> parse(ResourceLocator locator, Genome genome) throws IOException {
 
         int colorColumn = -1;
         int thicknessColumn = -1;
-        DatasetType type = DatasetType.UNKNOWN;
-        boolean parsedHeader = true;
 
         // Default column headers from BedPE spec.  Can be overriden
         String[] columns = {"chrom1", "start1", "stop1", "chrom2", "start2", "stop2", "name", "score", "strand1", "strand2"};
@@ -65,8 +61,6 @@ public class BedPEParser {
                     } catch (NumberFormatException e) {
                         log.error("Error parsing #column line.", e);
                     }
-                } else if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
-                    type = DatasetType.TENX;
                 }
 
                 if (nextLine.startsWith("#") || nextLine.startsWith("chr1\tx1\tx2")) {
@@ -198,15 +192,9 @@ public class BedPEParser {
                         f.name = null;
                     }
                 }
-                if (type == DatasetType.UNKNOWN) {
-                    type = DatasetType.CLUSTER;   // A guess
-                }
             }
 
-
-
-
-            return new Dataset(type, features, featureCounts);
+            return  features;
         } finally {
             br.close();
         }
@@ -219,17 +207,5 @@ public class BedPEParser {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
-    public static class Dataset {
-
-        public DatasetType type;
-        public List<BedPE> features;
-        public Map<String, Integer> featureCounts;
-
-        public Dataset(DatasetType type, List<BedPE> features, Map<String, Integer> featureCounts) {
-            this.type = type;
-            this.features = features;
-            this.featureCounts = featureCounts;
-        }
-    }
 
 }

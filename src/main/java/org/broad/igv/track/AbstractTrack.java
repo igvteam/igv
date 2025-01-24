@@ -424,6 +424,7 @@ public abstract class AbstractTrack implements Track {
         return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
     }
 
+    @Override
     public void setTrackType(TrackType type) {
         this.trackType = type;
     }

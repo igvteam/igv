@@ -114,10 +114,6 @@ public class FeatureDirSource implements FeatureSource {
         return featureCache.get(chr);
     }
 
-    public List<LocusScore> getCoverageScores(String chr, int i, int i1, int zoom) {
-        return null;
-    }
-
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
         List<Feature> features = getFeatures(chr);
         return features == null ? Collections.<Feature>emptyList().iterator() : features.iterator();
