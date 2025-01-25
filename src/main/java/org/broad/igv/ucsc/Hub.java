@@ -110,10 +110,27 @@ public class Hub {
             this.groupPriorityMap = new HashMap<>();
             for (Stanza g : groupStanzas) {
                 if (g.hasProperty("priority")) {
-                    this.groupPriorityMap.put(g.getProperty("name"), Integer.parseInt(g.getProperty("priority")) * 10);
+                    this.groupPriorityMap.put(g.getProperty("name"), getPriority(g));
                 }
             }
         }
+    }
+
+    /**
+     * Retun the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
+     * Ignore levels > 2
+     *
+     * @param g the group stanza
+     * @return A priority as an integer
+     */
+    private static int getPriority(Stanza g) {
+        String priorityString = g.getProperty("priority");
+        String [] tokens = priorityString.split("\\.");
+        int p = Integer.parseInt(tokens[0]) * 10;
+        if(tokens.length > 1) {
+            p += Integer.parseInt(tokens[1]);
+        }
+        return p;
     }
 
     private static List<Hub.Stanza> loadStanzas(String url) throws IOException {
@@ -185,7 +202,7 @@ public class Hub {
         } else if (this.genomeStanza.hasProperty("description")) {
             config.setName(this.genomeStanza.getProperty("description"));
         }
-        if(config.getName() == null) {
+        if (config.getName() == null) {
             config.setName(config.getId());
         } else {
             config.setName(config.getName() + " (" + config.getId() + ")");
@@ -337,7 +354,7 @@ public class Hub {
             config.setDescription(t.getProperty("longLabel"));
         }
 
-        if(t.hasProperty("html")) {
+        if (t.hasProperty("html")) {
             config.setHtml(this.baseURL + t.getProperty("html"));
         }
 
