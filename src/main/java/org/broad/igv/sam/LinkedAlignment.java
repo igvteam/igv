@@ -1,5 +1,7 @@
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMTag;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
@@ -299,7 +301,7 @@ public class LinkedAlignment implements Alignment {
 
     @Override
     public boolean isSupplementary() {
-        return false;
+        return true;
     }
 
     @Override
