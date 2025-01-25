@@ -281,10 +281,7 @@ public class Hub {
         java.util.function.Function<Stanza, Boolean> filter = (stanza -> !stanza.name.equals("cytoBandIdeo"));
         for (TrackConfig c : this.getTracksConfigs(filter)) {
             String groupName = c.getGroup() != null ? c.getGroup() : "other";
-            if (!trackConfigMap.containsKey(groupName)) {
-                trackConfigMap.put(groupName, new ArrayList<>());
-            }
-            trackConfigMap.get(groupName).add(c);
+            trackConfigMap.computeIfAbsent(groupName, k -> new ArrayList<>()).add(c);
         }
 
         // Extract map of group names
