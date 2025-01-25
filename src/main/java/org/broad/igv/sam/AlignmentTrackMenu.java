@@ -1162,16 +1162,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         add(linkByTagItem);
     }
 
-    private JCheckBoxMenuItem linkedReadViewItem(String tag) {
-        final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Linked read view (" + tag + ")");
-        item.setSelected(alignmentTrack.isLinkedReadView() && tag != null && tag.equals(renderOptions.getLinkByTag()));
-        item.addActionListener(aEvt -> {
-            boolean linkedReads = item.isSelected();
-            alignmentTrack.setLinkedReadView(linkedReads, tag);
-        });
-        return item;
-    }
-
     private JCheckBoxMenuItem linkedReadItem(String tag) {
         final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Link by " + tag);
         item.setSelected(!alignmentTrack.isLinkedReadView() && alignmentTrack.isLinkedReads() && tag.equals(renderOptions.getLinkByTag()));

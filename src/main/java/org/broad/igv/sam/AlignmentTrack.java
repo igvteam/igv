@@ -1061,7 +1061,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     /**
-     * Detect if we are in linked-read view
+     * Detect if we are in linked-read view (10X Loupe style view)
      */
     boolean isLinkedReadView() {
         return renderOptions != null &&
@@ -1548,7 +1548,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public String getLinkByTag() {
-            return linkByTag;
+            return linkByTag == null ? getPreferences().get(SAM_LINK_TAG) : linkByTag;
         }
 
         public GroupOption getGroupByOption() {
@@ -1564,7 +1564,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         public boolean isLinkedReads() {
-            return linkedReads != null && linkedReads;
+            return linkedReads == null ? getPreferences().getAsBoolean(SAM_LINKED_READS) : linkedReads;
         }
 
         public boolean isQuickConsensusMode() {

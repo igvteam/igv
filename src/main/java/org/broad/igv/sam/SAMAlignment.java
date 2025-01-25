@@ -56,8 +56,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.broad.igv.prefs.Constants.SAM_HIDE_SMALL_INDEL;
-
 /**
  * @author jrobinso
  */
@@ -224,6 +222,12 @@ public class SAMAlignment implements Alignment {
                     (key.equals("TEMPLATE_ORIENTATION") ? pairOrientation : null);
         }
     }
+
+    public List<SAMRecord.SAMTagAndValue> getAttributes() {
+        return record.getAttributes();
+    }
+
+
 
     private Object getAttribute(SAMTag key) {
         return key == null ? null : record.getAttribute(key);
