@@ -3,17 +3,23 @@ package org.broad.igv.ucsc;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.feature.genome.load.TrackConfig;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 
 public class Hub {
 
+    private static Logger log = LogManager.getLogger(Hub.class);
     private final String url;
+    private final String host;
     String baseURL;
     Stanza hub;
     Stanza genomeStanza;
@@ -27,10 +33,25 @@ public class Hub {
 
     public static Hub loadHub(String url) throws IOException {
 
+        return new Hub(url);
+    }
+
+    private Hub(String url) throws IOException {
+
+        this.url = url;
+
         int idx = url.lastIndexOf("/");
         String baseURL = url.substring(0, idx + 1);
+        this.baseURL = baseURL;
 
-        // Load stanzas
+        try {
+            this.host = "https://" + (new URL(url)).getHost();
+        } catch (MalformedURLException e) {
+            // This should never happen
+            log.error("Error parsing base URL host", e);
+            throw new RuntimeException(e);
+        }
+
         List<Stanza> stanzas = loadStanzas(url);
 
         // Validation checks
@@ -48,55 +69,25 @@ public class Hub {
         }
 
         // Load groups
-        List<Stanza> groups = null;
-        Stanza genomeStanza = stanzas.get(1);
+        this. genomeStanza = stanzas.get(1);
         if (genomeStanza.hasProperty("groups")) {
-            String groupsTxtURL = baseURL + genomeStanza.getProperty("groups");
-            groups = loadStanzas(groupsTxtURL);
+            String groupsTxtURL = getDataURL(genomeStanza.getProperty("groups"));
+            this.groupStanzas = loadStanzas(groupsTxtURL);
         }
 
-        // load includes.  Nested includes are not supported
+        // load includes.  Nested includes (includes within includes) are not supported
         List<Stanza> includes = stanzas.stream().filter(s -> "include".equals(s.type)).toList();
         for (Stanza s : includes) {
-            List<Stanza> includeStanzas = loadStanzas(baseURL + s.getProperty("include"));
+            List<Stanza> includeStanzas = loadStanzas(getDataURL(s.getProperty("include")));
             for (Stanza inc : includeStanzas) {
-                s.setProperty("visibility", "hide");
-                stanzas.add(s);
+                inc.setProperty("visibility", "hide");
+                stanzas.add(inc);
             }
         }
 
-        return new Hub(url, stanzas, groups);
-    }
 
-    private Hub(String url, List<Stanza> stanzas, List<Stanza> groupStanzas) {
-
-        this.url = url;
-
-        int idx = url.lastIndexOf("/");
-        String baseURL = url.substring(0, idx + 1);
-        this.baseURL = baseURL;
-
-        if (stanzas.size() < 2) {
-            throw new RuntimeException("Expected at least 2 stanzas, hub and genome");
-        }
         // The first stanza must be type = hub
-        if ("hub".equals(stanzas.get(0).type)) {
-            this.hub = stanzas.get(0);
-        } else {
-            throw new RuntimeException("Unexpected hub.txt file -- does the first line start with 'hub'?");
-        }
-        if (!"on".equals(this.hub.getProperty("useOneFile"))) {
-            throw new RuntimeException("Only 'useOneFile' hubs are currently supported");
-        }
-
-
         // The second stanza should be a genome
-        if ("genome".equals(stanzas.get(1).type)) {
-            this.genomeStanza = stanzas.get(1);
-        } else {
-            throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
-        }
-
         // Remaining stanzas should be tracks
         this.trackStanzas = new ArrayList<>();
         for (int i = 2; i < stanzas.size(); i++) {
@@ -106,7 +97,6 @@ public class Hub {
         }
 
         if (groupStanzas != null) {
-            this.groupStanzas = groupStanzas;
             this.groupPriorityMap = new HashMap<>();
             for (Stanza g : groupStanzas) {
                 if (g.hasProperty("priority")) {
@@ -117,7 +107,7 @@ public class Hub {
     }
 
     /**
-     * Retun the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
+     * Return the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
      * Ignore levels > 2
      *
      * @param g the group stanza
@@ -125,9 +115,9 @@ public class Hub {
      */
     private static int getPriority(Stanza g) {
         String priorityString = g.getProperty("priority");
-        String [] tokens = priorityString.split("\\.");
+        String[] tokens = priorityString.split("\\.");
         int p = Integer.parseInt(tokens[0]) * 10;
-        if(tokens.length > 1) {
+        if (tokens.length > 1) {
             p += Integer.parseInt(tokens[1]);
         }
         return p;
@@ -208,7 +198,7 @@ public class Hub {
             config.setName(config.getName() + " (" + config.getId() + ")");
         }
 
-        config.setTwoBitURL(this.baseURL + this.genomeStanza.getProperty("twoBitPath"));
+        config.setTwoBitURL(getDataURL(this.genomeStanza.getProperty("twoBitPath")));
         config.setNameSet("ucsc");
         config.setWholeGenomeView(false);
 
@@ -219,17 +209,17 @@ public class Hub {
         config.setDescription(config.getId());
 
         if (this.genomeStanza.hasProperty("blat")) {
-            config.setBlat(this.baseURL + this.genomeStanza.getProperty("blat"));
+            config.setBlat(getDataURL(this.genomeStanza.getProperty("blat")));
         }
         if (this.genomeStanza.hasProperty("chromAliasBb")) {
-            config.setChromAliasBbURL(this.baseURL + this.genomeStanza.getProperty("chromAliasBb"));
+            config.setChromAliasBbURL(getDataURL(this.genomeStanza.getProperty("chromAliasBb")));
         }
         if (this.genomeStanza.hasProperty("twoBitBptURL")) {
-            config.setTwoBitBptURL(this.baseURL + this.genomeStanza.getProperty("twoBitBptURL"));
+            config.setTwoBitBptURL(getDataURL(this.genomeStanza.getProperty("twoBitBptURL")));
         }
 
         if (this.genomeStanza.hasProperty("twoBitBptUrl")) {
-            config.setTwoBitBptURL(this.baseURL + this.genomeStanza.getProperty("twoBitBptUrl"));
+            config.setTwoBitBptURL(getDataURL(this.genomeStanza.getProperty("twoBitBptUrl")));
         }
 
         // chromSizes can take a very long time to load, and is not useful with the default WGV = off
@@ -248,7 +238,7 @@ public class Hub {
         }
 
         if (this.genomeStanza.hasProperty("htmlPath")) {
-            config.setInfoURL(this.baseURL + this.genomeStanza.getProperty("htmlPath"));
+            config.setInfoURL(getDataURL(this.genomeStanza.getProperty("htmlPath")));
         }
 
         // Search for cytoband
@@ -263,23 +253,25 @@ public class Hub {
          */
         for (Stanza t : this.trackStanzas) {
             if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
-                config.setCytobandBbURL(this.baseURL + t.getProperty("bigDataUrl"));
+                config.setCytobandBbURL(getDataURL(t.getProperty("bigDataUrl")));
                 break;
             }
         }
 
         // Tracks.  To prevent loading tracks set `includeTrackGroups`to false or "none"
         if (includeTracks) {
-            Function<Stanza, Boolean> filter = (t) -> {
-                return !Hub.filterTracks.contains(t.name) &&
-                        (!"hide".equals(t.getProperty("visibility")));
-            };
+            Function<Stanza, Boolean> filter = (t) -> !Hub.filterTracks.contains(t.name) &&
+                    (!"hide".equals(t.getProperty("visibility")));
             config.setTracks(this.getTracksConfigs(filter));
         }
 
         // config.trackConfigurations = this.#getGroupedTrackConfigurations()
 
         return config;
+    }
+
+    private String getDataURL(String relativeURL) {
+        return relativeURL.startsWith("/") ? this.host + relativeURL : this.baseURL + relativeURL;
     }
 
     public List<TrackConfigGroup> getGroupedTrackConfigurations() {
@@ -328,7 +320,7 @@ public class Hub {
     TrackConfig getTrackConfig(Stanza t) {
 
         String format = t.format();
-        String url = this.baseURL + t.getProperty("bigDataUrl");
+        String url = getDataURL(t.getProperty("bigDataUrl"));
         TrackConfig config = new TrackConfig(url);
 
         config.setPanelName(IGV.DATA_PANEL_NAME);
@@ -339,7 +331,7 @@ public class Hub {
         // TODO -- work on recognizing big* formats
         // config.format = t.format();
 
-        config.setUrl(this.baseURL + t.getProperty("bigDataUrl"));
+        config.setUrl(getDataURL(t.getProperty("bigDataUrl")));
 
         // Expanded display mode does not work well in IGV desktop for some tracks
         //config.displayMode = t.displayMode();
@@ -349,13 +341,13 @@ public class Hub {
         }
 
         if (t.hasProperty("longLabel") && t.hasProperty("html")) {
-            config.setDescription("<a target=\"_blank\" href=\"" + (this.baseURL + t.getProperty("html")) + "\">" + t.getProperty("longLabel") + "</a>");
+            config.setDescription("<a target=\"_blank\" href=\"" + (getDataURL(t.getProperty("html")) + "\">" + t.getProperty("longLabel") + "</a>"));
         } else if (t.hasProperty("longLabel")) {
             config.setDescription(t.getProperty("longLabel"));
         }
 
         if (t.hasProperty("html")) {
-            config.setHtml(this.baseURL + t.getProperty("html"));
+            config.setHtml(getDataURL(t.getProperty("html")));
         }
 
         config.setVisible(!("hide".equals(t.getProperty("visibility"))));
@@ -399,7 +391,7 @@ public class Hub {
             config.setSearchIndex(t.getProperty("searchIndex"));
         }
         if (t.hasProperty("searchTrix")) {
-            config.setTrixURL(this.baseURL + t.getProperty("searchTrix"));
+            config.setTrixURL(getDataURL(t.getProperty("searchTrix")));
         }
 
         if (t.hasProperty("group")) {
