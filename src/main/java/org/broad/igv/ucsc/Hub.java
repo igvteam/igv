@@ -44,12 +44,19 @@ public class Hub {
         String baseURL = url.substring(0, idx + 1);
         this.baseURL = baseURL;
 
-        try {
-            this.host = "https://" + (new URL(url)).getHost();
-        } catch (MalformedURLException e) {
-            // This should never happen
-            log.error("Error parsing base URL host", e);
-            throw new RuntimeException(e);
+        if(url.startsWith("https://") || url.startsWith("http://")) {
+            try {
+                URL tmp = new URL(url);
+                this.host = tmp.getProtocol() + "://" + tmp.getHost();
+            } catch (MalformedURLException e) {
+                // This should never happen
+                log.error("Error parsing base URL host", e);
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            // Local file, no host
+            this.host = "";
         }
 
         List<Stanza> stanzas = loadStanzas(url);
@@ -67,6 +74,8 @@ public class Hub {
         if (!"genome".equals(stanzas.get(1).type)) {
             throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
         }
+
+        this.hub = stanzas.get(0);
 
         // Load groups
         this. genomeStanza = stanzas.get(1);
