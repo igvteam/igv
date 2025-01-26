@@ -10,6 +10,7 @@ import org.broad.igv.ucsc.HubTrackSelectionDialog;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Loads a "genome" from a UCSC track hub
@@ -52,24 +53,33 @@ public class HubGenomeLoader extends GenomeLoader {
         // Check previous selections for this hub first
         // TODO -- Maintain track order?
         String key = "hub:" + this.hubURL;
+        final List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+
         if (PreferencesManager.getPreferences().hasExplicitValue(key)) {
-            List<TrackConfig> selectedTracks = new ArrayList<>();
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
-            List<TrackConfigGroup> trackConfigGroups = hub.getGroupedTrackConfigurations();
-            for (TrackConfigGroup group : trackConfigGroups) {
-                for (TrackConfig trackConfig : group.tracks) {
-                    if (selectedTrackNames.contains(trackConfig.getName())) {
-                        selectedTracks.add(trackConfig);
-                    }
-                }
-            }
-            selectedTracks.sort((o1, o2) -> o1.getOrder() - o2.getOrder());
+            List<TrackConfig> selectedTracks = groupedTrackConfigurations.stream()
+                    .flatMap(group -> group.tracks.stream())
+                    .filter(trackConfig -> selectedTrackNames.contains(trackConfig.getName()))
+                    .sorted(Comparator.comparingInt(TrackConfig::getOrder))
+                    .collect(Collectors.toList());
             config.setTracks(selectedTracks);
         }
 
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
-            HubTrackSelectionDialog dlg = new HubTrackSelectionDialog(hub.getGroupedTrackConfigurations(), IGV.getInstance().getMainFrame());
+
+            int count = 0;
+            for(TrackConfigGroup g : groupedTrackConfigurations) {
+                count += g.tracks.size();
+            }
+
+            // If the total # of tracks is >= 20 filter to "Gene" groups, usually a single group
+            List<TrackConfigGroup> filteredGroups = count < 20 ?
+                    groupedTrackConfigurations :
+                    groupedTrackConfigurations.stream().filter(g -> g.label.startsWith("Gene")).collect(Collectors.toList());
+
+
+            HubTrackSelectionDialog dlg = new HubTrackSelectionDialog(filteredGroups, IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
 
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
