@@ -356,7 +356,8 @@ public class Hub {
             config.setHtml(getDataURL(t.getProperty("html")));
         }
 
-        config.setVisible(!("hide".equals(t.getProperty("visibility"))));
+        String visibility = t.getProperty("visibility");
+        config.setVisible(visibility != null && !("hide".equals(visibility)));
 
         if (t.hasProperty("autoScale")) {
             config.setAutoscale(t.getProperty("autoScale").toLowerCase().equals("on"));

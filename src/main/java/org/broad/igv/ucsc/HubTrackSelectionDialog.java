@@ -2,16 +2,17 @@ package org.broad.igv.ucsc;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
+import org.broad.igv.ui.panel.CollapsiblePanel;
 import org.broad.igv.ui.util.HyperlinkFactory;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 /**
  * Dialog to enable selection of tracks defined by track hubs.  Modifies the "visible" property of
@@ -32,23 +33,21 @@ public class HubTrackSelectionDialog extends JDialog {
 
     void init(List<TrackConfigGroup> trackConfigurations) {
 
-        configMap = new HashMap<>();
-
         setTitle("Select tracks to load");
-//        JLabel headerMessage = new JLabel("Select tracks to load");
-//        headerMessage.setFont(FontManager.getFont(Font.BOLD, 14));
-//        headerMessage.setHorizontalAlignment(SwingConstants.CENTER);
-//        headerMessage.setPreferredSize(new Dimension(300, 50));
-//        add(headerMessage, BorderLayout.NORTH);
+
+        configMap = new HashMap<>();
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        add(scrollPane, BorderLayout.CENTER);
+        //  JScrollPane scrollPane = new JScrollPane(mainPanel);
+        //  add(scrollPane, BorderLayout.CENTER);
+
+        add(mainPanel);
 
         JPanel categoryContainer = new JPanel();
         categoryContainer.setLayout(new BoxLayout(categoryContainer, BoxLayout.PAGE_AXIS));
-        mainPanel.add(categoryContainer);
+        JScrollPane scrollPane = new JScrollPane(categoryContainer);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Panel for select all/none
         JPanel checkAllPanel = new JPanel();
@@ -64,10 +63,11 @@ public class HubTrackSelectionDialog extends JDialog {
         //mainPanel.add(checkAllPanel, BorderLayout.NORTH);
 
 
+        // Loop through track groups
         List<JPanel> cpl = new ArrayList<>();
         for (TrackConfigGroup configGroup : trackConfigurations) {
             categoryContainer.add(Box.createVerticalStrut(10));
-            JPanel categoryPanel = categoryPanel(configGroup);
+            JPanel categoryPanel = createCategoryPanel(configGroup);
             categoryContainer.add(categoryPanel);
             cpl.add(categoryPanel);
         }
@@ -121,25 +121,27 @@ public class HubTrackSelectionDialog extends JDialog {
      * @param configGroup
      * @return
      */
-    private JPanel categoryPanel(TrackConfigGroup configGroup) {
+    private JPanel createCategoryPanel(TrackConfigGroup configGroup) {
 
-        JPanel container = new JPanel();
-        container.setLayout(new BorderLayout());
-        Border border = BorderFactory.createLineBorder(Color.lightGray);//   BorderFactory.createLoweredBevelBorder();
-        container.setBorder(BorderFactory.createTitledBorder(border, configGroup.label));
+//        JPanel container = new JPanel();
+//        container.setLayout(new BorderLayout());
+//        Border border = BorderFactory.createLineBorder(Color.lightGray);//   BorderFactory.createLoweredBevelBorder();
+//        container.setBorder(BorderFactory.createTitledBorder(border, configGroup.label));
 
         JPanel trackContainer = new JPanel();
         final WrapLayout wrapLayout = new WrapLayout();
         wrapLayout.setAlignment(FlowLayout.LEFT);
         trackContainer.setLayout(wrapLayout);
 
-        container.add(trackContainer);
+        //container.add(trackContainer);
+        boolean isSelected = false;
         for (TrackConfig trackConfig : configGroup.tracks) {
 
             JPanel p = new JPanel();
             final JCheckBox checkBox = new JCheckBox();
             configMap.put(checkBox, trackConfig);
             checkBox.setSelected(trackConfig.getVisible());
+            isSelected = isSelected || trackConfig.getVisible();
 
             JLabel label = trackConfig.getHtml() == null ?
                     new JLabel(trackConfig.getName()) :
@@ -152,7 +154,8 @@ public class HubTrackSelectionDialog extends JDialog {
             trackContainer.add(p);
         }
 
-        return container;
+        return new CollapsiblePanel(configGroup.label, trackContainer, isSelected);
+        // return container;
     }
 
     /**
@@ -377,12 +380,12 @@ public class HubTrackSelectionDialog extends JDialog {
      */
     public static void main(String[] args) throws InterruptedException, InvocationTargetException, IOException {
 
-        String hubFile = "test/data/hubs/hub.txt";
+        String hubFile = "https://hgdownload.soe.ucsc.edu/gbdb/hs1/hubs/public/hub.txt";
         Hub hub = Hub.loadHub(hubFile);
         List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
         final HubTrackSelectionDialog dlf = new HubTrackSelectionDialog(groupedTrackConfigurations, null);
-
+        dlf.setSize(800, 500);
         dlf.setVisible(true);
 
         for (TrackConfig config : dlf.getSelectedConfigs()) {

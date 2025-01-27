@@ -51,7 +51,9 @@ public class IconFactory {
         REFRESH,
         HOME,
         FIST,
-        CLOSE
+        CLOSE,
+        PLUS,
+        MINUS
     }
 
     private Map<IconID, ImageIcon> icons;
@@ -104,6 +106,10 @@ public class IconFactory {
                 createImageIcon("/images/tooltip.png", "tooltip"));
         icons.put(IconID.CLOSE,
                 createImageIcon("/images/crystal/fileclose.png", "close"));
+        icons.put(IconID.PLUS,
+                createImageIcon("/images/plus_sm.gif" , "plus"));
+        icons.put(IconID.MINUS,
+                createImageIcon("/images/minus_sm.gif", "minus"));
     }
 
     public ImageIcon getIcon(IconID id) {
