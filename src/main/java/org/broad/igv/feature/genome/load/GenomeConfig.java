@@ -54,7 +54,7 @@ public class GenomeConfig implements Cloneable {
 
     private List<TrackConfig> tracks;
 
-    private List<TrackConfig> annotations;  // Backward compatibility, synonym for tracks
+    private List<String> hubs;
 
     // The properties below support the legacy ".genome" file, which directly loads resources from a zip archive.
 
@@ -70,6 +70,14 @@ public class GenomeConfig implements Cloneable {
     }
 
     public GenomeConfig() {
+    }
+
+    public List<String> getHubs() {
+        return hubs;
+    }
+
+    public void setHubs(List<String> hubs) {
+        this.hubs = hubs;
     }
 
     public String getId() {
@@ -257,7 +265,7 @@ public class GenomeConfig implements Cloneable {
     }
 
     public List<TrackConfig> getTrackConfigs() {
-        return tracks != null ? tracks : annotations;
+        return tracks;
     }
 
     public void setTracks(List<TrackConfig> tracks) {

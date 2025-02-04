@@ -1,4 +1,4 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.util.TestUtils;
@@ -16,7 +16,7 @@ public class HubTest {
 
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
         Hub hub =  Hub.loadHub(hubFile);
-        assertNotNull(hub.hub);
+        assertNotNull(hub.hubStanza);
         assertNotNull(hub.genomeStanza);
         assertEquals(22, hub.trackStanzas.size());
 
@@ -37,5 +37,4 @@ public class HubTest {
         List<TrackConfigGroup> groupedTrackConfigurations  = hub.getGroupedTrackConfigurations();
         assertEquals(5, groupedTrackConfigurations.size());
     }
-
-}
+ }

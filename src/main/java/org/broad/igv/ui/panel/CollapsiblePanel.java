@@ -9,10 +9,12 @@ import java.awt.*;
 
 public class CollapsiblePanel extends JPanel {
 
-    public static final Color HEADER_BG = new Color(210, 210, 210);
+    public static final Color HEADER_BG = new Color(180,204,226);
 
 
     private final JButton collapseButton;
+    private final JComponent content;
+    private final JPanel header;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
@@ -23,8 +25,9 @@ public class CollapsiblePanel extends JPanel {
     public CollapsiblePanel(String label, JComponent content, boolean isOpen) {
 
         setLayout(new BorderLayout());
+        this.content = content;
 
-        setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        //setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         this.openIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.MINUS);
         this.closeIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.PLUS);
@@ -32,7 +35,7 @@ public class CollapsiblePanel extends JPanel {
         content.setVisible(isOpen);
         this.add(content, BorderLayout.CENTER);
 
-        JPanel header = new JPanel();
+        header = new JPanel();
         header.setLayout(new BorderLayout());
         header.setBackground(HEADER_BG);
 
@@ -44,6 +47,7 @@ public class CollapsiblePanel extends JPanel {
         collapseButton.addActionListener(e -> {
             collapseButton.setIcon(content.isVisible() ? closeIcon : openIcon);
             content.setVisible(!content.isVisible());
+            this.getParent().revalidate();
         });
         header.add(collapseButton, BorderLayout.WEST);
 
@@ -56,6 +60,35 @@ public class CollapsiblePanel extends JPanel {
 
     }
 
+    public void collapse() {
+        collapseButton.setIcon(closeIcon);
+        content.setVisible(false);
+    }
+
+    public void expand() {
+        collapseButton.setIcon(openIcon);
+        content.setVisible(true);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        if(!content.isVisible()) {
+            return new Dimension(d.width, header.getHeight());
+        } else {
+            return d;
+        }
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if(!content.isVisible()) {
+            return new Dimension(d.width, header.getHeight());
+        } else {
+            return d;
+        }
+    }
 
     public static void main(String[] args) {
 

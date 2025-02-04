@@ -29,8 +29,6 @@
  */
 package org.broad.igv.ui.action;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.TrackConfig;
@@ -38,9 +36,9 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ucsc.Hub;
-import org.broad.igv.ucsc.TrackConfigGroup;
-import org.broad.igv.ucsc.HubTrackSelectionDialog;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.TrackConfigGroup;
+import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -49,30 +47,40 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 
 /**
+ * Select tracks from a track hub.  This action is used in 2 modes, (1) load tracks from a specific hub, and (2) select
+ * default annotation tracks for the currently loaded genome.  Tracks are loaded in both modes, but in the
+ * second selected tracks are also added to the genome definition.
+ *
  * @author jrobinso
  */
-public class SelectGenomeAnnotationTracksAction extends MenuAction {
+public class SelectHubTracksAction extends MenuAction {
 
-    static Logger log = LogManager.getLogger(SelectGenomeAnnotationTracksAction.class);
+    static Logger log = LogManager.getLogger(SelectHubTracksAction.class);
+    private  Hub hub;
     IGV mainFrame;
 
     // Keep track of authorization failures so user isn't constantly harranged
     static HashSet<String> failedURLs = new HashSet();
 
+    boolean updateGenome;
 
-    public SelectGenomeAnnotationTracksAction(String label, IGV mainFrame) {
+    public SelectHubTracksAction(String label, IGV mainFrame, Hub hub) {
         super(label, null);
         this.mainFrame = mainFrame;
+        this.updateGenome = hub == null;
+        this.hub = hub;
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        Hub hub = genome.getHub();
-        if (hub == null) {
-            // This should not happen
-            MessageUtils.showMessage("No annotation tracks available for current genome.");
+        if(hub == null) {
+            hub = genome.getGenomeHub();
+            if (hub == null) {
+                // This should not happen
+                MessageUtils.showMessage("No tracks available for current genome.");
+            }
         }
 
         final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
@@ -84,7 +92,7 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
             }
         }
 
-        HubTrackSelectionDialog dlg = new HubTrackSelectionDialog(groups, IGV.getInstance().getMainFrame());
+        TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, groups, IGV.getInstance().getMainFrame());
         dlg.setVisible(true);
 
         // The dialog action will modify the visible state for each track config
@@ -111,7 +119,9 @@ public class SelectGenomeAnnotationTracksAction extends MenuAction {
         IGV.getInstance().loadTracks(locators);
 
         // Update genome
-        genome.setAnnotationResources(locators);
+        if(updateGenome) {
+            genome.setAnnotationResources(locators);
+        }
 
         // Update preferences
         String key = "hub:" + hub.getUrl();
