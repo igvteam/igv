@@ -2,13 +2,13 @@ package org.broad.igv.feature.genome.load;
 
 /**
  * A static json-like object, emulates javascript equivalent.   Created to ease port of session code from javascript.
- *
  */
 
 public class TrackConfig implements Cloneable {
 
     private String id;
     private String name;
+    private String longLabel;
     private String url;
     private String indexURL;
     private String trixURL;
@@ -26,20 +26,21 @@ public class TrackConfig implements Cloneable {
     private Boolean visible;
     private String infoURL;
     private String searchIndex;
-
     private String group;
-    private Integer order;
     private Integer visibilityWindow;
     private Boolean indexed;
     private Boolean hidden;
     private String html;
     private String panelName;
 
+    private String stanzaParent;   // For supporting track hubs
+
     public TrackConfig() {
     }
 
     /**
      * The only required property of a track configuration is a URL (which can be an actual URL or a static file path)
+     *
      * @param url
      */
     public TrackConfig(String url) {
@@ -60,6 +61,14 @@ public class TrackConfig implements Cloneable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLongLabel() {
+        return longLabel;
+    }
+
+    public void setLongLabel(String longLabel) {
+        this.longLabel = longLabel;
     }
 
     public String getUrl() {
@@ -206,14 +215,6 @@ public class TrackConfig implements Cloneable {
         this.group = group;
     }
 
-    public Integer getOrder() {
-        return order;
-    }
-
-    public void setOrder(Integer order) {
-        this.order = order;
-    }
-
     public Integer getVisibilityWindow() {
         return visibilityWindow;
     }
@@ -252,6 +253,14 @@ public class TrackConfig implements Cloneable {
 
     public void setPanelName(String panelName) {
         this.panelName = panelName;
+    }
+
+    public String getStanzaParent() {
+        return stanzaParent;
+    }
+
+    public void setStanzaParent(String stanzaParent) {
+        this.stanzaParent = stanzaParent;
     }
 
     @Override

@@ -3,10 +3,11 @@ package org.broad.igv.feature.genome.load;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ucsc.Hub;
-import org.broad.igv.ucsc.TrackConfigGroup;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
+import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ucsc.HubTrackSelectionDialog;
+import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 
 import java.io.IOException;
 import java.util.*;
@@ -44,9 +45,9 @@ public class HubGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        Hub hub = Hub.loadHub(this.hubURL);
+        Hub hub = HubParser.loadAssemblyHub(this.hubURL);
 
-        GenomeConfig config = hub.getGenomeConfig(false);
+        GenomeConfig config = hub.getGenomeConfig();
 
         // Potentially override default tracks from hub with user selections
 
@@ -60,7 +61,6 @@ public class HubGenomeLoader extends GenomeLoader {
             List<TrackConfig> selectedTracks = groupedTrackConfigurations.stream()
                     .flatMap(group -> group.tracks.stream())
                     .filter(trackConfig -> selectedTrackNames.contains(trackConfig.getName()))
-                    .sorted(Comparator.comparingInt(TrackConfig::getOrder))
                     .collect(Collectors.toList());
             config.setTracks(selectedTracks);
         }
@@ -69,7 +69,7 @@ public class HubGenomeLoader extends GenomeLoader {
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
             int count = 0;
-            for(TrackConfigGroup g : groupedTrackConfigurations) {
+            for (TrackConfigGroup g : groupedTrackConfigurations) {
                 count += g.tracks.size();
             }
 
@@ -79,7 +79,7 @@ public class HubGenomeLoader extends GenomeLoader {
                     groupedTrackConfigurations.stream().filter(g -> g.label.startsWith("Gene")).collect(Collectors.toList());
 
 
-            HubTrackSelectionDialog dlg = new HubTrackSelectionDialog(filteredGroups, IGV.getInstance().getMainFrame());
+            TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, filteredGroups, IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
 
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
@@ -91,7 +91,7 @@ public class HubGenomeLoader extends GenomeLoader {
         }
 
         Genome genome = new Genome(config);
-        genome.setHub(hub);
+        genome.setGenomeHub(hub);
 
         return genome;
 

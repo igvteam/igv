@@ -53,7 +53,8 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
-import org.broad.igv.ucsc.Hub;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
@@ -96,7 +97,8 @@ public class Genome {
     private String homeChromosome;
     private String defaultPos;
     private String nameSet;
-    private Hub hub;
+    private Hub genomeHub;
+    private List<Hub> trackHubs;
 
     public Genome(GenomeConfig config) throws IOException {
 
@@ -104,6 +106,7 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.getNameSet();
         blatDB = config.getBlatDB();
+        trackHubs = new ArrayList<>();
         if (config.getUcsdID() == null) {
             ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         } else {
@@ -226,6 +229,16 @@ public class Genome {
             // TODO -- no place to go
         }
 
+        if(config.getHubs() != null) {
+            for(String hubUrl : config.getHubs()) {
+                try {
+                    trackHubs.add(HubParser.loadHub(hubUrl, getId()));
+                } catch (IOException e) {
+                    log.error("Error loading hub", e);
+                }
+            }
+        }
+
 
         addTracks(config);
 
@@ -254,6 +267,8 @@ public class Genome {
         this.longChromosomeNames = computeLongChromosomeNames();
         this.homeChromosome = this.longChromosomeNames.size() > 1 ? Globals.CHR_ALL : chromosomeNames.get(0);
         this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
+
+        this.trackHubs = new ArrayList<>();
     }
 
     private void addTracks(GenomeConfig config) {
@@ -794,12 +809,18 @@ public class Genome {
 
     }
 
-    public Hub getHub() {
-        return hub;
+    public Hub getGenomeHub() {
+        return genomeHub;
     }
 
-    public void setHub(Hub hub) {
-        this.hub = hub;
+    public void setGenomeHub(Hub genomeHub) {
+        this.genomeHub = genomeHub;
+        // A genome hub is by definition also a track hub
+        this.trackHubs.add(genomeHub);
+    }
+
+    public List<Hub> getTrackHubs() {
+        return trackHubs;
     }
 
     public synchronized static Genome nullGenome() {

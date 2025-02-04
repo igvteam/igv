@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class HubGenomeLoaderTest {
+public class GenomeHubLoaderTest {
 
     @Test
     public void convert() {
