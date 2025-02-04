@@ -12,6 +12,7 @@ module org.igv {
     opens org.broad.igv.feature.genome.load to com.google.gson;
     opens org.broad.igv.feature to com.google.gson;
     exports org.broad.igv.ucsc;
+    exports org.broad.igv.ucsc.hub;
 
     requires com.google.common;
     requires commons.math3;

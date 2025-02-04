@@ -1,4 +1,4 @@
-package org.broad.igv.ucsc;
+package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.GenomeConfig;
@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Hub {
 
@@ -21,7 +22,7 @@ public class Hub {
     private final String url;
     private final String host;
     String baseURL;
-    Stanza hub;
+    Stanza hubStanza;
     Stanza genomeStanza;
     List<Stanza> trackStanzas;
     List<Stanza> groupStanzas;
@@ -30,13 +31,17 @@ public class Hub {
     static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix"));
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
+    static Map<String, String> vizModeMap = Map.of(
+            "pack", "EXPANDED",
+            "full", "EXPANDED",
+            "squish", "SQUISHED",
+            "dense", "COLLAPSED");
 
     public static Hub loadHub(String url) throws IOException {
-
         return new Hub(url);
     }
 
-    private Hub(String url) throws IOException {
+    Hub(String url) throws IOException {
 
         this.url = url;
 
@@ -44,7 +49,7 @@ public class Hub {
         String baseURL = url.substring(0, idx + 1);
         this.baseURL = baseURL;
 
-        if(url.startsWith("https://") || url.startsWith("http://")) {
+        if (url.startsWith("https://") || url.startsWith("http://")) {
             try {
                 URL tmp = new URL(url);
                 this.host = tmp.getProtocol() + "://" + tmp.getHost();
@@ -53,8 +58,7 @@ public class Hub {
                 log.error("Error parsing base URL host", e);
                 throw new RuntimeException(e);
             }
-        }
-        else {
+        } else {
             // Local file, no host
             this.host = "";
         }
@@ -75,10 +79,10 @@ public class Hub {
             throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
         }
 
-        this.hub = stanzas.get(0);
+        this.hubStanza = stanzas.get(0);
 
         // Load groups
-        this. genomeStanza = stanzas.get(1);
+        this.genomeStanza = stanzas.get(1);
         if (genomeStanza.hasProperty("groups")) {
             String groupsTxtURL = getDataURL(genomeStanza.getProperty("groups"));
             this.groupStanzas = loadStanzas(groupsTxtURL);
@@ -109,30 +113,49 @@ public class Hub {
             this.groupPriorityMap = new HashMap<>();
             for (Stanza g : groupStanzas) {
                 if (g.hasProperty("priority")) {
-                    this.groupPriorityMap.put(g.getProperty("name"), getPriority(g));
+                    this.groupPriorityMap.put(g.getProperty("name"), getPriority(g.getProperty("priority")));
                 }
             }
         }
     }
 
+
+    public String getShortLabel() {
+        return this.hubStanza.hasProperty("shortLabel") ? this.hubStanza.getProperty("shortLabel") : this.url;
+    }
+
+    public String getLongLabel() {
+        return this.hubStanza.hasProperty("longLabel") ? this.hubStanza.getProperty("longLabel") : this.url;
+    }
+
+    public String getDescriptionURL() {
+        return this.hubStanza.hasProperty("descriptionUrl") ?
+                this.getDataURL(this.hubStanza.getProperty("descriptionUrl")) :
+                this.hubStanza.hasProperty("desriptionUrl") ?
+                        this.getDataURL(this.hubStanza.getProperty("desriptionUrl")) : null;
+    }
+
+
     /**
      * Return the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
-     * Ignore levels > 2
+     * Ignore levels > 3
      *
-     * @param g the group stanza
+     * @param priorityString Priority as a string (e.g. 3.4)
      * @return A priority as an integer
      */
-    private static int getPriority(Stanza g) {
-        String priorityString = g.getProperty("priority");
+    private static int getPriority(String priorityString) {
         String[] tokens = priorityString.split("\\.");
-        int p = Integer.parseInt(tokens[0]) * 10;
+        int p = Integer.parseInt(tokens[0]) * 100;
         if (tokens.length > 1) {
-            p += Integer.parseInt(tokens[1]);
+            p += Integer.parseInt(tokens[1]) * 10;
+        }
+        if (tokens.length > 2) {
+            p += Integer.parseInt(tokens[2]);
         }
         return p;
     }
 
-    private static List<Hub.Stanza> loadStanzas(String url) throws IOException {
+    static List<Hub.Stanza> loadStanzas(String url) throws IOException {
         List<Stanza> nodes = new ArrayList<>();
         Stanza currentNode = null;
         boolean startNewNode = true;
@@ -153,7 +176,7 @@ public class Hub {
                     if (startNewNode) {
                         // Start a new node -- indent is currently ignored as igv.js does not support sub-tracks,
                         // so track stanzas are flattened
-                        Stanza newNode = new Stanza(++order, key, value);
+                        Stanza newNode = new Stanza(key, value);
                         nodes.add(newNode);
                         currentNode = newNode;
                         startNewNode = false;
@@ -163,7 +186,6 @@ public class Hub {
             }
         }
         return resolveParents(nodes);
-
     }
 
     private static int indentLevel(String str) {
@@ -271,7 +293,7 @@ public class Hub {
         if (includeTracks) {
             Function<Stanza, Boolean> filter = (t) -> !Hub.filterTracks.contains(t.name) &&
                     (!"hide".equals(t.getProperty("visibility")));
-            config.setTracks(this.getTracksConfigs(filter));
+            config.setTracks(this.getTrackConfigs(filter));
         }
 
         // config.trackConfigurations = this.#getGroupedTrackConfigurations()
@@ -285,43 +307,84 @@ public class Hub {
 
     public List<TrackConfigGroup> getGroupedTrackConfigurations() {
 
-        // Organize track configs by group
-        LinkedHashMap<String, List<TrackConfig>> trackConfigMap = new LinkedHashMap<>();
-        java.util.function.Function<Stanza, Boolean> filter = (stanza -> !stanza.name.equals("cytoBandIdeo"));
-        for (TrackConfig c : this.getTracksConfigs(filter)) {
-            String groupName = c.getGroup() != null ? c.getGroup() : "other";
-            trackConfigMap.computeIfAbsent(groupName, k -> new ArrayList<>()).add(c);
-        }
-
-        // Extract map of group names
-        Map<String, String> groupNamesMap = new HashMap<>();
+        // Build map of group objects
+        Map<String, TrackConfigGroup> groupMap = new HashMap<>();
+        groupMap.put("other", new TrackConfigGroup("other", "Other", Integer.MAX_VALUE, false));
         if (this.groupStanzas != null) {
             for (Stanza groupStanza : this.groupStanzas) {
-                groupNamesMap.put(groupStanza.getProperty("name"), groupStanza.getProperty("label"));
+                String name = groupStanza.getProperty("name");
+                boolean defaultOpen = "0".equals(groupStanza.getProperty("defaultIsClosed"));
+                int priority = groupStanza.hasProperty("priority") ? getPriority(groupStanza.getProperty("priority")) : Integer.MAX_VALUE - 1;
+                groupMap.put(name, new TrackConfigGroup(name, groupStanza.getProperty("label"), priority, defaultOpen));
             }
         }
 
-        // Use linked has map to maintain order
-        List<TrackConfigGroup> groupedTrackConfigurations = new ArrayList<>();
-        for (Map.Entry<String, List<TrackConfig>> entry : trackConfigMap.entrySet()) {
-            String group = entry.getKey();
-            String label = groupNamesMap.containsKey(group) ? groupNamesMap.get(group) : group;
-            groupedTrackConfigurations.add(new TrackConfigGroup(label, entry.getValue()));
-
+        // Build map of stanzas to resolve parents
+        Map<String, Stanza> trackStanzaMap = new HashMap<>();
+        for (Stanza s : this.trackStanzas) {
+            trackStanzaMap.put(s.getProperty("track"), s);
         }
+
+        // Initialized cache of track containers.  Use linked hashmap to maintain insertion order
+        LinkedHashMap<String, TrackConfigGroup> parentCache = new LinkedHashMap<>();
+
+        final List<TrackConfig> trackConfigs = this.getTrackConfigs(stanza -> !stanza.name.equals("cytoBandIdeo"));
+        for (TrackConfig c : trackConfigs) {
+            String groupName = c.getGroup() != null ? c.getGroup() : "other";
+            final TrackConfigGroup trackConfigGroup = groupMap.get(groupName);
+            int priority = trackConfigGroup.priority;
+            trackConfigGroup.tracks.add(c);
+
+            String parentName = c.getStanzaParent();
+            if (parentName != null && trackStanzaMap.containsKey(parentName)) {
+                // Create a contingent container, will be used if a sufficient # of tracks belong to this container
+                TrackConfigGroup container = parentCache.get(parentName);
+                if (container == null) {
+                    Stanza s = trackStanzaMap.get(parentName);
+                    String label = trackConfigGroup.label + " - " + s.getProperty("shortLabel");
+                    container = new TrackConfigGroup(parentName, label, priority + 1, false);
+                    parentCache.put(parentName, container);
+                }
+                container.tracks.add(c);
+            }
+        }
+
+        // Flatten the track groups into a list.  Remove empty groups.
+        List<TrackConfigGroup> groupedTrackConfigurations = groupMap.values().stream()
+                .filter(g -> !g.isEmpty()).collect(Collectors.toList());
+
+        // Promote contingent embedded track groups (e.g. composite tracks) to top level group if # of tracks > threshold
+        // Member tracks must also be removed from existing top level categories
+        List<TrackConfigGroup> tmp = new ArrayList<>();
+        Set<TrackConfig> toRemove = new HashSet<>();
+        for (TrackConfigGroup parent : parentCache.values()) {
+            if (parent.tracks.size() > 5) {
+                tmp.add(parent);
+                toRemove.addAll(parent.tracks);
+            }
+        }
+        if (toRemove.size() > 0) {
+            for (TrackConfigGroup g : groupedTrackConfigurations) {
+                g.tracks = g.tracks.stream().filter(t -> !toRemove.contains(t)).collect(Collectors.toList());
+            }
+        }
+        groupedTrackConfigurations.addAll(tmp);
+
+        Collections.sort(groupedTrackConfigurations, Comparator.comparingInt(o -> o.priority));
         return groupedTrackConfigurations;
     }
 
     /**
      * Return an array of igv track config objects that satisfy the filter
      */
-    List<TrackConfig> getTracksConfigs(java.util.function.Function<Stanza, Boolean> filter) {
+    List<TrackConfig> getTrackConfigs(java.util.function.Function<Stanza, Boolean> filter) {
         return this.trackStanzas.stream().filter(t -> {
                     return supportedTypes.contains(t.format()) && t.hasProperty("bigDataUrl") && (filter == null || filter.apply(t));
                 })
                 .map(t -> this.getTrackConfig(t))
                 .toList();
     }
+
 
     TrackConfig getTrackConfig(Stanza t) {
 
@@ -356,8 +419,17 @@ public class Hub {
             config.setHtml(getDataURL(t.getProperty("html")));
         }
 
-        String visibility = t.getProperty("visibility");
-        config.setVisible(visibility != null && !("hide".equals(visibility)));
+        String vizProperty = t.getProperty("visibility");
+
+        if (vizProperty != null && vizModeMap.containsKey(vizProperty)) {
+            config.setDisplayMode(vizModeMap.get(vizProperty));
+        }
+
+        boolean visibility = t.hasProperty("compositeTrack") ?
+                "on".equals(t.getProperty("compositeTrack")) :
+                !("hide".equals(vizProperty));
+
+        config.setVisible(visibility);
 
         if (t.hasProperty("autoScale")) {
             config.setAutoscale(t.getProperty("autoScale").toLowerCase().equals("on"));
@@ -403,11 +475,10 @@ public class Hub {
 
         if (t.hasProperty("group")) {
             config.setGroup(t.getProperty("group"));
-            if (this.groupPriorityMap != null && this.groupPriorityMap.containsKey(config.getGroup())) {
-                int nextPriority = this.groupPriorityMap.get(config.getGroup()) + 1;
-                config.setOrder(nextPriority);
-                this.groupPriorityMap.put(config.getGroup(), nextPriority);
-            }
+        }
+
+        if (t.parent != null) {
+            config.setStanzaParent(t.parent.name);
         }
 
         return config;
@@ -420,19 +491,26 @@ public class Hub {
 
     static class Stanza {
 
+        private static Set<String> parentOverrideProperties = new HashSet<>(Arrays.asList("visibility", "priority", "group"));
         private final String type;
         private final String name;
-        private final int order;
-
+        private Stanza parent;
         private Map<String, String> properties;
 
-        Stanza parent;
 
-        Stanza(int order, String type, String name) {
-            this.order = order;
+        Stanza(String type, String name) {
+
             this.type = type;
             this.name = name;
             this.properties = new HashMap<>();
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getName() {
+            return name;
         }
 
         void setProperty(String key, String value) {
@@ -440,7 +518,10 @@ public class Hub {
         }
 
         String getProperty(String key) {
-            if (this.properties.containsKey(key)) {
+
+            if (parentOverrideProperties.contains(key) && this.parent != null && this.parent.hasProperty(key)) {
+                return this.parent.getProperty(key);
+            } else if (this.properties.containsKey(key)) {
                 return this.properties.get(key);
             } else if (this.parent != null) {
                 return this.parent.getProperty(key);
@@ -468,26 +549,12 @@ public class Hub {
             return null;  // unknown type
         }
 
-        /**
-         * IGV display mode
-         */
-        String displayMode() {
-            String viz = this.getProperty("visibility");
-            if (viz == null) {
-                return "COLLAPSED";
-            } else {
-                viz = viz.toLowerCase();
-                switch (viz) {
-                    case "dense":
-                        return "COLLAPSED";
-                    case "pack":
-                        return "EXPANDED";
-                    case "squish":
-                        return "SQUISHED";
-                    default:
-                        return "COLLAPSED";
-                }
-            }
+        public Stanza getParent() {
+            return parent;
+        }
+
+        public void setParent(Stanza parent) {
+            this.parent = parent;
         }
     }
 
