@@ -2,15 +2,21 @@ package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
-import org.broad.igv.ui.panel.CollapsiblePanel;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.util.HyperlinkFactory;
+import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 
@@ -19,7 +25,9 @@ import java.util.stream.Collectors;
  * supplied track configurations in place.
  */
 public class TrackHubSelectionDialog extends JDialog {
-
+    
+    private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
+    
     Hub hub;
     private Map<JCheckBox, TrackConfig> configMap;
     private ArrayList<CollapsiblePanel> categoryPanels;
@@ -50,7 +58,8 @@ public class TrackHubSelectionDialog extends JDialog {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.add(getLabeledHyperlink("Hub URL: ", hub.getUrl()));
         String descriptionURL = hub.getDescriptionURL();
-        if(descriptionURL != null) {
+
+        if (descriptionURL != null) {
             topPanel.add(getLabeledHyperlink("Description: ", descriptionURL));
         }
 
@@ -76,9 +85,9 @@ public class TrackHubSelectionDialog extends JDialog {
 
         // Panel for category boxes
         JPanel categoryContainer = new JPanel();
-        categoryContainer.setLayout(new BoxLayout(categoryContainer, BoxLayout.PAGE_AXIS));
+        categoryContainer.setLayout(new BoxLayout(categoryContainer, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(categoryContainer);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.gray));
+        //scrollPane.setBorder(BorderFactory.createLineBorder(Color.gray));
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Loop through track groups
@@ -89,6 +98,11 @@ public class TrackHubSelectionDialog extends JDialog {
             categoryPanels.add(categoryPanel);
         }
 
+        // If only a single category expand it
+        if (categoryPanels.size() == 1) {
+            categoryPanels.get(0).expand();
+        }
+        
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
 
@@ -109,6 +123,8 @@ public class TrackHubSelectionDialog extends JDialog {
         getRootPane().setDefaultButton(okButton);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        mainPanel.validate();
 
     }
 
@@ -154,13 +170,15 @@ public class TrackHubSelectionDialog extends JDialog {
             checkBox.setSelected(trackConfig.getVisible());
             isSelected = isSelected || trackConfig.getVisible();
 
-//            JLabel label = trackConfig.getHtml() == null ?
-//                    new JLabel(trackConfig.getName()) :
-//                    HyperlinkFactory.createLink(trackConfig.getName(), trackConfig.getHtml());
+            String infoLink = trackConfig.getHtml();
             JLabel label = new JLabel(trackConfig.getName());
+            SelectionBox p = new SelectionBox(checkBox, label, infoLink);
 
+            String longLabel = trackConfig.getLongLabel();
+            if (longLabel != null) {
+                p.setToolTipText(longLabel);
+            }
 
-            SelectionBox p = new SelectionBox(checkBox, label);
             trackContainer.add(p);
         }
 
@@ -179,17 +197,52 @@ public class TrackHubSelectionDialog extends JDialog {
 
     static class SelectionBox extends JPanel {
 
-        public SelectionBox(JCheckBox checkBox, JLabel label) {
+        public SelectionBox(JCheckBox checkBox, JLabel label, String infoLink) {
             this.setLayout(new BorderLayout());
             label.setLabelFor(checkBox);
             add(checkBox, BorderLayout.WEST);
-            add(label, BorderLayout.CENTER);
+
+            if (infoLink == null || "".equals(infoLink.trim())) {
+                add(label, BorderLayout.CENTER);
+            } else {
+                ImageIcon icon = IconFactory.getInstance().getIcon(IconFactory.IconID.INFO);
+                JLabel iconLabel = new JLabel(icon);
+                iconLabel.setToolTipText(infoLink);
+                iconLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                add(iconLabel, BorderLayout.CENTER);
+                iconLabel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        try {
+                            Desktop.getDesktop().browse(new URI(infoLink));
+                        } catch (Exception ex) {
+                            log.error("Error following hyperlink: " + infoLink, ex);
+                        }
+                    }
+                });
+
+                JPanel panel = new JPanel();
+                panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+                panel.add(label);
+                panel.add(iconLabel);
+                add(panel, BorderLayout.CENTER);
+            }
 
         }
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(200, 20);
+            return new Dimension(250, 20);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            return getPreferredSize();
         }
     }
 
@@ -205,7 +258,9 @@ public class TrackHubSelectionDialog extends JDialog {
     public static void main(String[] args) throws InterruptedException, InvocationTargetException, IOException {
 
         String hubFile = "https://hgdownload.soe.ucsc.edu/gbdb/hs1/hubs/public/hub.txt";
-        Hub hub = Hub.loadHub(hubFile);
+
+        Hub hub = HubParser.loadHub(hubFile, "hs1");
+
         List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
         final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, null);

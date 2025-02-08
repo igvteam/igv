@@ -54,6 +54,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
@@ -231,7 +232,7 @@ public class Genome {
         if(config.getHubs() != null) {
             for(String hubUrl : config.getHubs()) {
                 try {
-                    trackHubs.add(Hub.loadHub(hubUrl));
+                    trackHubs.add(HubParser.loadHub(hubUrl, getId()));
                 } catch (IOException e) {
                     log.error("Error loading hub", e);
                 }

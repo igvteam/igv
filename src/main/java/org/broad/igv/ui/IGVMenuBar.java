@@ -285,7 +285,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(new JSeparator());
 
         // Load menu items
-        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, igv);
+        menuAction = new LoadFilesMenuAction("Load Tracks from File...", KeyEvent.VK_L, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -294,7 +294,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         if (genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null) {
-            menuAction = new LoadFromServerAction("Load From IGV Server...", KeyEvent.VK_S, igv);
+            menuAction = new LoadFromServerAction("Load Tracks From IGV Server...", KeyEvent.VK_S, igv);
             menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
             JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
             menuItems.add(loadTracksFromServerMenuItem);
@@ -307,9 +307,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Track hubs
         if (genome.getTrackHubs().size() > 0) {
             menuItems.add(new JSeparator());
+            menuItems.add(new JLabel("Track Hubs"));
             for (Hub trackHub : genome.getTrackHubs()) {
-                String label = "Hub: " + trackHub.getShortLabel();
-                menuAction = new SelectHubTracksAction(label, igv, trackHub);
+                menuAction = new SelectHubTracksAction(trackHub.getShortLabel(), igv, trackHub);
+                menuAction.setToolTipText(trackHub.getLongLabel());
                 JMenuItem selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
                 selectGenomeAnnotationsItem.setToolTipText(trackHub.getLongLabel());
                 menuItems.add(selectGenomeAnnotationsItem);

@@ -8,6 +8,7 @@ public class TrackConfig implements Cloneable {
 
     private String id;
     private String name;
+    private String longLabel;
     private String url;
     private String indexURL;
     private String trixURL;
@@ -60,6 +61,14 @@ public class TrackConfig implements Cloneable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLongLabel() {
+        return longLabel;
+    }
+
+    public void setLongLabel(String longLabel) {
+        this.longLabel = longLabel;
     }
 
     public String getUrl() {

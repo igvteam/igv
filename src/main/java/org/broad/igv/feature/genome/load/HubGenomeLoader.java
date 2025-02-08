@@ -4,6 +4,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
@@ -44,9 +45,9 @@ public class HubGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        Hub hub = Hub.loadHub(this.hubURL);
+        Hub hub = HubParser.loadAssemblyHub(this.hubURL);
 
-        GenomeConfig config = hub.getGenomeConfig(false);
+        GenomeConfig config = hub.getGenomeConfig();
 
         // Potentially override default tracks from hub with user selections
 
@@ -68,7 +69,7 @@ public class HubGenomeLoader extends GenomeLoader {
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
             int count = 0;
-            for(TrackConfigGroup g : groupedTrackConfigurations) {
+            for (TrackConfigGroup g : groupedTrackConfigurations) {
                 count += g.tracks.size();
             }
 

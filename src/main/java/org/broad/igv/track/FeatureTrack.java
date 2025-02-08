@@ -389,7 +389,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
             StringBuffer buf = new StringBuffer();
             boolean firstFeature = true;
-            int maxNumber = IGV.getInstance().isShowDetailsOnClick() ? 100 : 10;
+            int maxNumber =  10;
             int n = 1;
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
@@ -409,7 +409,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
                     firstFeature = false;
                     if (n > maxNumber) {
-                        buf.append("<hr><br<b>>+ " + (allFeatures.size() - maxNumber) +  " more ...</b>");
+                        buf.append("<hr><br<b>+ " + (allFeatures.size() - maxNumber) +  " more</b>");
                         break;
                     }
                 }

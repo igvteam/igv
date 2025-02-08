@@ -53,7 +53,8 @@ public class IconFactory {
         FIST,
         CLOSE,
         PLUS,
-        MINUS
+        MINUS,
+        INFO
     }
 
     private Map<IconID, ImageIcon> icons;
@@ -110,6 +111,8 @@ public class IconFactory {
                 createImageIcon("/images/plus_sm.gif" , "plus"));
         icons.put(IconID.MINUS,
                 createImageIcon("/images/minus_sm.gif", "minus"));
+        icons.put(IconID.INFO,
+                createImageIcon("/images/info.gif", "info"));
     }
 
     public ImageIcon getIcon(IconID id) {

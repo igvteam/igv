@@ -15,12 +15,12 @@ public class HubTest {
     public void testGetGenomeConfig() throws IOException {
 
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
-        Hub hub =  Hub.loadHub(hubFile);
+        Hub hub = HubParser.loadAssemblyHub(hubFile);
         assertNotNull(hub.hubStanza);
         assertNotNull(hub.genomeStanza);
         assertEquals(22, hub.trackStanzas.size());
 
-        GenomeConfig genomeConfig = hub.getGenomeConfig(true);
+        GenomeConfig genomeConfig = hub.getGenomeConfig();
         assertNotNull(genomeConfig);
         assertEquals("GCF_000186305.1", genomeConfig.getId());
         assertEquals("Python bivittatus (GCF_000186305.1)", genomeConfig.getName());
@@ -33,8 +33,19 @@ public class HubTest {
     @Test
     public void testGetGroupedTrackConfigurations() throws IOException {
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
-        Hub hub =  Hub.loadHub(hubFile);
-        List<TrackConfigGroup> groupedTrackConfigurations  = hub.getGroupedTrackConfigurations();
+        Hub hub = HubParser.loadAssemblyHub(hubFile);
+        List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
         assertEquals(5, groupedTrackConfigurations.size());
     }
- }
+
+    @Test
+    public void testNCBIHostedHub() throws IOException {
+
+        String hubFile = "https://ftp.ncbi.nlm.nih.gov/snp/population_frequency/TrackHub/latest/hub.txt";
+        Hub hub = HubParser.loadHub(hubFile, "hg38");
+        List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        assertEquals(1, groupedTrackConfigurations.size());
+        assertEquals(12, groupedTrackConfigurations.get(0).tracks.size());
+
+    }
+}

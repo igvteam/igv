@@ -1,4 +1,4 @@
-package org.broad.igv.ui.panel;
+package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
@@ -26,9 +26,6 @@ public class CollapsiblePanel extends JPanel {
 
         setLayout(new BorderLayout());
         this.content = content;
-
-        //setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
         this.openIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.MINUS);
         this.closeIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.PLUS);
 
@@ -70,23 +67,22 @@ public class CollapsiblePanel extends JPanel {
         content.setVisible(true);
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        if(!content.isVisible()) {
-            return new Dimension(d.width, header.getHeight());
-        } else {
-            return d;
-        }
-    }
+
+    /**
+     * Constrain the maximum height to prevent BoxLayout from needlessly resizing the panel to fill space.  This is
+     * rather hardcoded for the TrackHubSelectionDialog.
+     *
+     * @return
+     */
 
     @Override
     public Dimension getMaximumSize() {
-        Dimension d = super.getMaximumSize();
+        Dimension d4 = header.getMinimumSize();
         if(!content.isVisible()) {
-            return new Dimension(d.width, header.getHeight());
+            return new Dimension(Integer.MAX_VALUE, d4.height);
         } else {
-            return d;
+            Dimension d5 = content.getMinimumSize();
+            return new Dimension(Integer.MAX_VALUE, d4.height + (int) (1.2 * d5.height));
         }
     }
 
@@ -101,3 +97,5 @@ public class CollapsiblePanel extends JPanel {
         f.setVisible(true);
     }
 }
+
+

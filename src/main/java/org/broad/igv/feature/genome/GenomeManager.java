@@ -142,7 +142,6 @@ public class GenomeManager {
         return loadGenome(genomePath) != null; // monitor[0]);
     }
 
-
     /**
      * The main load method -- loads a genome from a file or url path.  Note this is a long running operation and
      * should not be done on the Swing event thread as it will block the UI.
