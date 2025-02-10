@@ -125,6 +125,9 @@ public class Hub {
         if (genomeStanza.hasProperty("chromAliasBb")) {
             config.setChromAliasBbURL(genomeStanza.getProperty("chromAliasBb"));
         }
+        if (genomeStanza.hasProperty("twoBitBptURL")) {
+            config.setTwoBitBptURL(genomeStanza.getProperty("twoBitBptURL"));
+        }
         if (genomeStanza.hasProperty("twoBitBptUrl")) {
             config.setTwoBitBptURL(genomeStanza.getProperty("twoBitBptUrl"));
         }
