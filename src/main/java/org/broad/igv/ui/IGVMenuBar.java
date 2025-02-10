@@ -307,7 +307,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Track hubs
         if (genome.getTrackHubs().size() > 0) {
             menuItems.add(new JSeparator());
-            menuItems.add(new JLabel("Track Hubs"));
             for (Hub trackHub : genome.getTrackHubs()) {
                 menuAction = new SelectHubTracksAction(trackHub.getShortLabel(), igv, trackHub);
                 menuAction.setToolTipText(trackHub.getLongLabel());
@@ -441,8 +440,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         JMenu menu = new JMenu("Genomes");
 
-        loadGenomeFromServerMenuItem = new JMenuItem("Select Hosted Genome...");
-        loadGenomeFromServerMenuItem.addActionListener(e -> HostedGenomeSelectionDialog.selectHostedGenome());
+        loadGenomeFromServerMenuItem = new JMenuItem("Download Hosted Genome...");
+        loadGenomeFromServerMenuItem.addActionListener(e -> HostedGenomeSelectionDialog.downloadHostedGenome());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
 

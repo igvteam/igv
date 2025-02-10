@@ -88,7 +88,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
      * Open a selection list to load a genome from the server.   This method is static because its used by multiple
      * UI elements  (menu bar and genome selection pulldown).
      */
-    public static void selectHostedGenome() {
+    public static void downloadHostedGenome() {
 
         Runnable showDialog = () -> {
 
@@ -109,11 +109,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                 boolean downloadSequence = dialog.isDownloadSequence();
                 boolean downloadAnnotations = dialog.isDownloadAnnotations();
 
-                File downloadPath = null;
-                if (downloadSequence || downloadAnnotations || selectedItem.getPath().endsWith(".genome")) {
-                    downloadPath = GenomeManager.getInstance().downloadGenome(selectedItem, downloadSequence, downloadAnnotations);
-                }
-
+                File downloadPath = GenomeManager.getInstance().downloadGenome(selectedItem, downloadSequence, downloadAnnotations);
 
                 try {
                     if (downloadPath != null) {
