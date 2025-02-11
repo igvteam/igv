@@ -71,7 +71,7 @@ public class LongRunningTask implements Callable<Void> {
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
             runnable.run();
-        } catch (Exception e) {
+        } catch (Error e) {
             MessageUtils.showMessage("<html>Unexpected error: " + e.getMessage() + ".<br>See igv.log for more details");
             log.error("Exception running task", e);
         } finally {
