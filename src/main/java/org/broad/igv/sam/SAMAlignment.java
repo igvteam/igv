@@ -29,11 +29,7 @@
  */
 package org.broad.igv.sam;
 
-import htsjdk.samtools.Cigar;
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMReadGroupRecord;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SAMTag;
+import htsjdk.samtools.*;
 import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
@@ -228,7 +224,6 @@ public class SAMAlignment implements Alignment {
     }
 
 
-
     private Object getAttribute(SAMTag key) {
         return key == null ? null : record.getAttribute(key);
     }
@@ -317,12 +312,24 @@ public class SAMAlignment implements Alignment {
     }
 
     public String getReadLengthString() {
-        String rs = record.getReadString();
-        if (rs.equals("*") || rs.equals("")) {
-            return "undefined";
-        } else {
-            return Globals.DECIMAL_FORMAT.format(rs.length()) + "bp";
+
+        Cigar cigar = getCigar();
+        int readSequenceLength = cigar.getReadLength();
+        int clippedLength = 0;
+        CigarElement first = cigar.getFirstCigarElement();
+        if (first.getOperator() == htsjdk.samtools.CigarOperator.H) {
+            clippedLength += first.getLength();
         }
+        CigarElement last = cigar.getLastCigarElement();
+        if(last.getOperator() == htsjdk.samtools.CigarOperator.H) {
+            clippedLength += last.getLength();
+        }
+        String readLengthString = Globals.DECIMAL_FORMAT.format(readSequenceLength + clippedLength) + " bp";
+        if(clippedLength > 0) {
+            readLengthString += " (" +  Globals.DECIMAL_FORMAT.format(readSequenceLength) + " sequence + " + Globals.DECIMAL_FORMAT.format(clippedLength) + " hard clipped)";
+        }
+
+        return readLengthString;
     }
 
     public String getSample() {
@@ -721,7 +728,7 @@ public class SAMAlignment implements Alignment {
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
                 if (block.containsPixel(mouseX)) {
-                    if(hideSmallIndels && block.getBasesLength() < smallIndelThreshold) {
+                    if (hideSmallIndels && block.getBasesLength() < smallIndelThreshold) {
                         continue;
                     }
                     ByteSubarray bases = block.getBases();
@@ -1238,7 +1245,7 @@ public class SAMAlignment implements Alignment {
     }
 
 
-    ///// EXPERIMENTAL
+    /// // EXPERIMENTAL
 
     String haplotypeName;
 
