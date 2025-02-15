@@ -1,5 +1,7 @@
 package org.broad.igv.feature.genome.load;
 
+import org.apache.commons.io.FileUtils;
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.PreferencesManager;
@@ -9,6 +11,7 @@ import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -92,6 +95,12 @@ public class HubGenomeLoader extends GenomeLoader {
 
         Genome genome = new Genome(config);
         genome.setGenomeHub(hub);
+
+
+
+        String genomeJson = config.toJson();
+        File dir = DirectoryManager.getGenomeCacheDirectory();
+        FileUtils.write(new File(dir, config.getId() + ".json"), genomeJson);
 
         return genome;
 

@@ -28,8 +28,6 @@ public class HubParser {
         boolean assemblyHub = genomeId == null;
 
         int idx = url.lastIndexOf("/");
-        String baseURL = url.substring(0, idx + 1);
-        String host = getHost(url);
 
         // Load stanzas from the hub.txt file, which might be all stanzas if 'useOneFile' is on
         List<Stanza> stanzas = HubParser.loadStanzas(url);
@@ -135,6 +133,10 @@ public class HubParser {
         try (BufferedReader br = ParsingUtils.openBufferedReader(url)) {
             String line;
             while ((line = br.readLine()) != null) {
+
+                if(line.startsWith("#")) {
+                    continue;
+                }
 
                 int indent = indentLevel(line);
                 int i = line.indexOf(" ", indent);

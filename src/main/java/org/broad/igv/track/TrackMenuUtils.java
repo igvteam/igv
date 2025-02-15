@@ -1326,7 +1326,10 @@ public class TrackMenuUtils {
         boolean currentValue = selectedTracks.stream().allMatch(t -> t.isShowFeatureNames());
         String label = currentValue ? "Hide Feature Names" : "Show Feature Names";
         JMenuItem item = new JMenuItem(label);
-        item.addActionListener(evt -> selectedTracks.stream().forEach(t -> t.setShowFeatureNames(!currentValue)));
+        item.addActionListener(evt -> selectedTracks.stream().forEach(t -> {
+            t.setShowFeatureNames(!currentValue);
+            IGV.getInstance().repaint(selectedTracks);
+        }));
         return item;
     }
 

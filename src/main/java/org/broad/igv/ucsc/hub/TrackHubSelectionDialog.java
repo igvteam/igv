@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
  * supplied track configurations in place.
  */
 public class TrackHubSelectionDialog extends JDialog {
-    
+
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
-    
+
     Hub hub;
     private Map<JCheckBox, TrackConfig> configMap;
     private ArrayList<CollapsiblePanel> categoryPanels;
@@ -102,7 +102,7 @@ public class TrackHubSelectionDialog extends JDialog {
         if (categoryPanels.size() == 1) {
             categoryPanels.get(0).expand();
         }
-        
+
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
 
@@ -162,6 +162,8 @@ public class TrackHubSelectionDialog extends JDialog {
         wrapLayout.setAlignment(FlowLayout.LEFT);
         trackContainer.setLayout(wrapLayout);
 
+        int maxWidth = 0;
+        List<SelectionBox> selectionBoxes = new ArrayList<>();
         boolean isSelected = false;
         for (TrackConfig trackConfig : configGroup.tracks) {
 
@@ -173,6 +175,8 @@ public class TrackHubSelectionDialog extends JDialog {
             String infoLink = trackConfig.getHtml();
             JLabel label = new JLabel(trackConfig.getName());
             SelectionBox p = new SelectionBox(checkBox, label, infoLink);
+            selectionBoxes.add(p);
+            maxWidth = Math.max(maxWidth, p.getPreferredSize().width);
 
             String longLabel = trackConfig.getLongLabel();
             if (longLabel != null) {
@@ -180,6 +184,10 @@ public class TrackHubSelectionDialog extends JDialog {
             }
 
             trackContainer.add(p);
+        }
+
+        for(SelectionBox selectionBox : selectionBoxes) {
+            selectionBox.setPreferredWidth(maxWidth);
         }
 
         return new CollapsiblePanel(configGroup.label, trackContainer, isSelected || configGroup.defaultOpen);
@@ -196,6 +204,9 @@ public class TrackHubSelectionDialog extends JDialog {
     }
 
     static class SelectionBox extends JPanel {
+
+        int preferredWidth = -1;
+        private int minWidth;
 
         public SelectionBox(JCheckBox checkBox, JLabel label, String infoLink) {
             this.setLayout(new BorderLayout());
@@ -227,12 +238,16 @@ public class TrackHubSelectionDialog extends JDialog {
                 panel.add(iconLabel);
                 add(panel, BorderLayout.CENTER);
             }
+        }
 
+        public void setPreferredWidth(int width) {
+            minWidth = 200;
+            this.preferredWidth = Math.max(minWidth, width);
         }
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(250, 20);
+            return preferredWidth > 0 ? new Dimension(preferredWidth, 20) : super.getPreferredSize();
         }
 
         @Override

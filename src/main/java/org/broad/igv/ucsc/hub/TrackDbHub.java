@@ -13,7 +13,7 @@ public class TrackDbHub {
     List<Stanza> trackStanzas;
     List<Stanza> groupStanzas;
 
-    static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix"));
+    static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix", "refgene"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
@@ -153,8 +153,8 @@ public class TrackDbHub {
         // Expanded display mode does not work well in IGV desktop for some tracks
         //config.displayMode = t.displayMode();
 
-        if ("vcfTabix".equals(format)) {
-            config.setIndexURL(config.getUrl() + ".tbi");
+        if(t.hasProperty("bigDataIndex")) {
+            config.setIndexURL(t.getProperty("bigDataIndex"));
         }
 
         if (t.hasProperty("longLabel") && t.hasProperty("html")) {
@@ -171,6 +171,10 @@ public class TrackDbHub {
 
         if (vizProperty != null && vizModeMap.containsKey(vizProperty)) {
             config.setDisplayMode(vizModeMap.get(vizProperty));
+        }
+
+        if(t.hasProperty("maxWindowToDraw")) {
+            config.setVisibilityWindow(Integer.parseInt(t.getProperty("maxWindowToDraw")));
         }
 
         boolean visibility = t.hasProperty("compositeTrack") ?

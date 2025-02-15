@@ -72,6 +72,10 @@ public class GenomeConfig implements Cloneable {
     public GenomeConfig() {
     }
 
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
+
     public List<String> getHubs() {
         return hubs;
     }

@@ -293,13 +293,14 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if (genomeId != null && LoadFromServerAction.getNodeURLs(genomeId) != null) {
+        if (genomeId != null &&
+                genome.getTrackHubs().isEmpty() &&
+                LoadFromServerAction.getNodeURLs(genomeId) != null) {
             menuAction = new LoadFromServerAction("Load Tracks From IGV Server...", KeyEvent.VK_S, igv);
             menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
             JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
             menuItems.add(loadTracksFromServerMenuItem);
         }
-
 
         recentFilesMenu = new RecentUrlsMenu();
         menuItems.add(recentFilesMenu);
