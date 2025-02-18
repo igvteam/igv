@@ -32,6 +32,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -128,7 +129,7 @@ public class TrackChooserModel extends AbstractTableModel {
 
     public void updateSelections() {
 
-        Set<String> loadedPaths = IGV.getInstance().getLoadedPaths();
+        Set<String> loadedPaths = IGV.hasInstance() ? IGV.getInstance().getLoadedPaths() : Collections.emptySet();
 
         for (int row = 0; row < records.size(); row++) {
             FileRecord record = records.get(row);

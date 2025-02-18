@@ -12,19 +12,11 @@ public class CollapsiblePanel extends JPanel {
     public static final Color HEADER_BG = new Color(180, 204, 226);
 
 
-    private final JButton collapseButton;
-    private final JComponent content;
-    private final JPanel header;
+    private  JButton collapseButton;
+    private  JComponent content;
+    private  JPanel header;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
-
-
-
-
-    public void addSearchButton(JComponent searchButton) {
-        header.add(searchButton, BorderLayout.EAST);
-        revalidate();
-    }
 
     public CollapsiblePanel(String label, JComponent content, boolean isOpen) {
 
@@ -57,10 +49,13 @@ public class CollapsiblePanel extends JPanel {
         jLabel.setHorizontalAlignment(SwingConstants.CENTER);
         header.add(jLabel, BorderLayout.CENTER);
 
-
-
         this.add(header, BorderLayout.NORTH);
 
+    }
+
+    public void addSearchButton(JComponent searchButton) {
+        header.add(searchButton, BorderLayout.EAST);
+        revalidate();
     }
 
     public void collapse() {

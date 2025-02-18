@@ -328,8 +328,8 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
 
         contentPane.add(dialogPane, BorderLayout.CENTER);
 
-        Rectangle ownerBounds = owner.getBounds();
-        setSize(ownerBounds.width, 620);
+        int width = owner != null ? owner.getWidth() : 600;
+        setSize(width, 620);
         setLocationRelativeTo(getOwner());
     }
 

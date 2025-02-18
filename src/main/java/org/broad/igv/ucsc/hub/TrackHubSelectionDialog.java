@@ -34,6 +34,7 @@ public class TrackHubSelectionDialog extends JDialog {
     private final List<TrackConfigGroup> trackConfigGroups;
     Hub hub;
     private ArrayList<CollapsiblePanel> categoryPanels;
+    List<SelectionBox> allSelectionBoxes;
     boolean canceled = false;
 
 
@@ -51,9 +52,11 @@ public class TrackHubSelectionDialog extends JDialog {
 
         setTitle(this.hub.getLongLabel());
 
-        setSize(new Dimension(1000, 800));
+        Rectangle ownerBounds = getOwner().getBounds();
+        setSize(new Dimension(Math.min(ownerBounds.width, 1200), Math.min(ownerBounds.height, 1000)));
 
         categoryPanels = new ArrayList<>();
+        allSelectionBoxes = new ArrayList<>();
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -70,20 +73,24 @@ public class TrackHubSelectionDialog extends JDialog {
 
         // Panel for select all/none
         JPanel topButtonPanel = new JPanel();
-        ((FlowLayout) topButtonPanel.getLayout()).setAlignment(FlowLayout.LEFT);
+        topButtonPanel.setLayout(new BorderLayout());
+
+        JPanel expandButtonPanel = new JPanel();
+        expandButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton expandAllButton = new JButton("Expand All");
         expandAllButton.addActionListener(e -> {
             categoryPanels.forEach(cp -> cp.expand());
             this.revalidate();
         });
-        topButtonPanel.add(expandAllButton);
+        expandButtonPanel.add(expandAllButton);
 
         JButton collapseAllButton = new JButton("Collapse All");
         collapseAllButton.addActionListener(e -> {
             categoryPanels.forEach(cp -> cp.collapse());
             this.revalidate();
         });
-        topButtonPanel.add(collapseAllButton);
+        expandButtonPanel.add(collapseAllButton);
+        topButtonPanel.add(expandButtonPanel, BorderLayout.WEST);
 
         topPanel.add(topButtonPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -104,9 +111,22 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         // If only a single category expand it
-        if (categoryPanels.size() == 1) {
-            categoryPanels.get(0).expand();
+
+
+        // If total # of tracks is small expand all
+        if (allSelectionBoxes.size() < 50) {
+            for (CollapsiblePanel panel : categoryPanels) {
+                panel.expand();
+            }
+        } else {
+            if (categoryPanels.size() == 1) {
+                categoryPanels.get(0).expand();
+            }
         }
+
+        // Search button.
+        JButton searchButton = createSearchButton("Search " + hub.getShortLabel() , allSelectionBoxes);
+        topButtonPanel.add(searchButton, BorderLayout.EAST);
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -123,13 +143,13 @@ public class TrackHubSelectionDialog extends JDialog {
             setVisible(false);
         });
 
-        if (Globals.IS_MAC) {
-            buttonPanel.add(cancelButton);
+//        if (Globals.IS_MAC) {
+//            buttonPanel.add(cancelButton);
+//            buttonPanel.add(okButton);
+//        } else {
             buttonPanel.add(okButton);
-        } else {
-            buttonPanel.add(okButton);
             buttonPanel.add(cancelButton);
-        }
+        //}
 
         getRootPane().setDefaultButton(okButton);
 
@@ -175,6 +195,8 @@ public class TrackHubSelectionDialog extends JDialog {
 
             SelectionBox p = new SelectionBox(trackConfig);
             selectionBoxes.add(p);
+            allSelectionBoxes.add(p);
+
             maxWidth = Math.max(maxWidth, p.getPreferredSize().width);
 
             String longLabel = trackConfig.getLongLabel();
@@ -193,69 +215,74 @@ public class TrackHubSelectionDialog extends JDialog {
 
         // Add a search button for categories with large numbers of records
 
-        if (configGroup.tracks.size() > 20) {
-
-            JButton searchButton = new JButton("Search");
-
-            searchButton.addActionListener(e -> {
-
-                collapsiblePanel.expand();
-
-                Set<String> attributeNames = new LinkedHashSet<>();
-                attributeNames.add("Name");
-                attributeNames.add("Description");
-                attributeNames.add("Format");
-
-                Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
-
-                List<FileRecord> records = new ArrayList<>();
-
-                for (SelectionBox selectionBox : selectionBoxes) {
-                    TrackConfig trackConfig = selectionBox.getTrackConfig();
-                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
-                    Map<String, String> attributes = trackConfigAttributes;
-                    if (attributes == null) {
-                        attributes = new LinkedHashMap<>();
-                    }
-                    attributes.put("Name", trackConfig.getName());
-                    attributes.put("Description", trackConfig.getDescription());
-                    attributes.put("Format", trackConfig.getFormat());
-
-                    if(trackConfigAttributes != null) {
-                        attributes.putAll(trackConfigAttributes);
-                        attributeNames.addAll(trackConfigAttributes.keySet());
-                    }
-
-                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                    record.setSelected(trackConfig.getVisible());
-                    records.add(record);
-                    recordSelectionBoxMap.put(record, selectionBox);
-                }
-
-                List<String> headings = new ArrayList<>(attributeNames);
-
-                TrackChooser chooser = new TrackChooser(
-                        IGV.getInstance().getMainFrame(),
-                        headings,
-                        records,
-                        "Search " + configGroup.label);
-                chooser.setSize(this.getSize());
-                chooser.setLocationRelativeTo(getOwner());
-                chooser.setVisible(true);
-
-                if (!chooser.isCanceled()) {
-                    Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
-                    for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
-                        entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
-                    }
-                }
-            });
-
+        if (configGroup.tracks.size() > 2) {
+            final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes);
+            searchButton.addActionListener(e -> collapsiblePanel.expand());
             collapsiblePanel.addSearchButton(searchButton);
         }
 
 
         return collapsiblePanel;
+    }
+
+    private JButton createSearchButton(String label, List<SelectionBox> selectionBoxes) {
+
+        JButton searchButton = new JButton("Search");
+
+        searchButton.addActionListener(e -> {
+
+            Set<String> attributeNames = new LinkedHashSet<>();
+            attributeNames.add("Name");
+            attributeNames.add("Description");
+            attributeNames.add("Format");
+
+            Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
+
+            List<FileRecord> records = new ArrayList<>();
+
+            for (SelectionBox selectionBox : selectionBoxes) {
+                TrackConfig trackConfig = selectionBox.getTrackConfig();
+                final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                Map<String, String> attributes = trackConfigAttributes;
+                if (attributes == null) {
+                    attributes = new LinkedHashMap<>();
+                }
+                attributes.put("Name", trackConfig.getName());
+                attributes.put("Description", trackConfig.getDescription());
+                attributes.put("Format", trackConfig.getFormat());
+
+                if (trackConfigAttributes != null) {
+                    attributes.putAll(trackConfigAttributes);
+                    attributeNames.addAll(trackConfigAttributes.keySet());
+                }
+
+                final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
+                record.setSelected(trackConfig.getVisible());
+                records.add(record);
+                recordSelectionBoxMap.put(record, selectionBox);
+            }
+
+            List<String> headings = new ArrayList<>(attributeNames);
+
+            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+
+            TrackChooser chooser = new TrackChooser(
+                    owner,
+                    headings,
+                    records,
+                    label);
+            chooser.setSize(this.getSize());
+            chooser.setLocationRelativeTo(getOwner());
+            chooser.setVisible(true);
+
+            if (!chooser.isCanceled()) {
+                Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
+                for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
+                    entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
+                }
+            }
+        });
+        return searchButton;
     }
 
     /**
