@@ -34,7 +34,7 @@ public class TrackHubSelectionDialog extends JDialog {
     private final List<TrackConfigGroup> trackConfigGroups;
     Hub hub;
     private ArrayList<CollapsiblePanel> categoryPanels;
-    List<SelectionBox> allSelectionBoxes;
+    Map<String, List<SelectionBox>> allSelectionBoxes;
     boolean canceled = false;
 
 
@@ -56,7 +56,7 @@ public class TrackHubSelectionDialog extends JDialog {
         setSize(new Dimension(Math.min(ownerBounds.width, 1200), Math.min(ownerBounds.height, 1000)));
 
         categoryPanels = new ArrayList<>();
-        allSelectionBoxes = new ArrayList<>();
+        allSelectionBoxes = new LinkedHashMap<>();
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -110,22 +110,19 @@ public class TrackHubSelectionDialog extends JDialog {
             categoryPanels.add(categoryPanel);
         }
 
-        // If only a single category expand it
-
 
         // If total # of tracks is small expand all
         if (allSelectionBoxes.size() < 50) {
             for (CollapsiblePanel panel : categoryPanels) {
                 panel.expand();
             }
-        } else {
-            if (categoryPanels.size() == 1) {
-                categoryPanels.get(0).expand();
-            }
+        } else if (categoryPanels.size() == 1) {
+            categoryPanels.get(0).expand();
         }
 
+
         // Search button.
-        JButton searchButton = createSearchButton("Search " + hub.getShortLabel() , allSelectionBoxes);
+        JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), allSelectionBoxes);
         topButtonPanel.add(searchButton, BorderLayout.EAST);
 
         JPanel buttonPanel = new JPanel();
@@ -147,8 +144,8 @@ public class TrackHubSelectionDialog extends JDialog {
 //            buttonPanel.add(cancelButton);
 //            buttonPanel.add(okButton);
 //        } else {
-            buttonPanel.add(okButton);
-            buttonPanel.add(cancelButton);
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
         //}
 
         getRootPane().setDefaultButton(okButton);
@@ -189,13 +186,16 @@ public class TrackHubSelectionDialog extends JDialog {
         int maxWidth = 0;
         List<SelectionBox> selectionBoxes = new ArrayList<>();
         boolean isSelected = false;
+        if (allSelectionBoxes.get(configGroup.label) == null) {
+            allSelectionBoxes.put(configGroup.label, new ArrayList<>());
+        }
         for (TrackConfig trackConfig : configGroup.tracks) {
 
             isSelected = isSelected || trackConfig.getVisible();
 
             SelectionBox p = new SelectionBox(trackConfig);
             selectionBoxes.add(p);
-            allSelectionBoxes.add(p);
+            allSelectionBoxes.get(configGroup.label).add(p);
 
             maxWidth = Math.max(maxWidth, p.getPreferredSize().width);
 
@@ -215,8 +215,8 @@ public class TrackHubSelectionDialog extends JDialog {
 
         // Add a search button for categories with large numbers of records
 
-        if (configGroup.tracks.size() > 2) {
-            final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes);
+        if (configGroup.tracks.size() > 50) {
+            final JButton searchButton = createSearchButton("Search " + configGroup.label, Map.of(configGroup.name, selectionBoxes));
             searchButton.addActionListener(e -> collapsiblePanel.expand());
             collapsiblePanel.addSearchButton(searchButton);
         }
@@ -225,41 +225,55 @@ public class TrackHubSelectionDialog extends JDialog {
         return collapsiblePanel;
     }
 
-    private JButton createSearchButton(String label, List<SelectionBox> selectionBoxes) {
+    private JButton createSearchButton(String label, Map<String, List<SelectionBox>> selectionBoxes) {
 
         JButton searchButton = new JButton("Search");
 
         searchButton.addActionListener(e -> {
 
             Set<String> attributeNames = new LinkedHashSet<>();
-            attributeNames.add("Name");
-            attributeNames.add("Description");
-            attributeNames.add("Format");
+            if(selectionBoxes.size() > 1) {
+                attributeNames.add("Group");
+                attributeNames.add("Name");
+                attributeNames.add("Description");
+                attributeNames.add("Format");
+            }
 
             Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
 
             List<FileRecord> records = new ArrayList<>();
 
-            for (SelectionBox selectionBox : selectionBoxes) {
-                TrackConfig trackConfig = selectionBox.getTrackConfig();
-                final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
-                Map<String, String> attributes = trackConfigAttributes;
-                if (attributes == null) {
-                    attributes = new LinkedHashMap<>();
-                }
-                attributes.put("Name", trackConfig.getName());
-                attributes.put("Description", trackConfig.getDescription());
-                attributes.put("Format", trackConfig.getFormat());
+            for(Map.Entry<String, List<SelectionBox>> entry : selectionBoxes.entrySet()) {
 
-                if (trackConfigAttributes != null) {
-                    attributes.putAll(trackConfigAttributes);
-                    attributeNames.addAll(trackConfigAttributes.keySet());
-                }
+                String group = entry.getKey();
+                List<SelectionBox> boxes = entry.getValue();
 
-                final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                record.setSelected(trackConfig.getVisible());
-                records.add(record);
-                recordSelectionBoxMap.put(record, selectionBox);
+                for(SelectionBox selectionBox : boxes) {
+
+                    TrackConfig trackConfig = selectionBox.getTrackConfig();
+                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                    Map<String, String> attributes = trackConfigAttributes;
+                    if (attributes == null) {
+                        attributes = new LinkedHashMap<>();
+                    }
+                    if(selectionBoxes.size() > 1) {
+                        attributes.put("Group", group);
+                    }
+                    attributes.put("Name", trackConfig.getName());
+                    attributes.put("Description", trackConfig.getDescription());
+                    attributes.put("Format", trackConfig.getFormat());
+
+                    if (trackConfigAttributes != null) {
+                        attributes.putAll(trackConfigAttributes);
+                        attributeNames.addAll(trackConfigAttributes.keySet());
+                    }
+
+                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
+                    record.getAttributes().put("Group", group);
+                    record.setSelected(trackConfig.getVisible());
+                    records.add(record);
+                    recordSelectionBoxMap.put(record, selectionBox);
+                }
             }
 
             List<String> headings = new ArrayList<>(attributeNames);

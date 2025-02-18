@@ -278,4 +278,8 @@ public class TrackConfig implements Cloneable {
     public Map<String, String> getAttributes() {
         return attributes;
     }
+
+    public void setAttribute(String group, String label) {
+        this.attributes.put(group, label);
+    }
 }
