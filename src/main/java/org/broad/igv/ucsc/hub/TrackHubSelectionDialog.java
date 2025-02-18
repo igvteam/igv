@@ -1,9 +1,12 @@
 package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.Globals;
+import org.broad.igv.encode.FileRecord;
+import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.HyperlinkFactory;
 import org.broad.igv.ui.util.IconFactory;
 
@@ -28,26 +31,28 @@ public class TrackHubSelectionDialog extends JDialog {
 
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
 
+    private final List<TrackConfigGroup> trackConfigGroups;
     Hub hub;
-    private Map<JCheckBox, TrackConfig> configMap;
     private ArrayList<CollapsiblePanel> categoryPanels;
+    boolean canceled = false;
 
-    public TrackHubSelectionDialog(Hub hub, List<TrackConfigGroup> groupedTrackConfigurations, Frame owner) {
+
+    public TrackHubSelectionDialog(Hub hub, List<TrackConfigGroup> trackConfigGroups, Frame owner) {
         super(owner);
         setModal(true);
         this.hub = hub;
-        init(groupedTrackConfigurations);
+        this.trackConfigGroups = trackConfigGroups;
+        init(trackConfigGroups);
         setLocationRelativeTo(owner);
     }
 
 
-    void init(List<TrackConfigGroup> trackConfigurations) {
+    void init(List<TrackConfigGroup> trackConfigGroups) {
 
         setTitle(this.hub.getLongLabel());
 
         setSize(new Dimension(1000, 800));
 
-        configMap = new HashMap<>();
         categoryPanels = new ArrayList<>();
 
         JPanel mainPanel = new JPanel();
@@ -91,7 +96,7 @@ public class TrackHubSelectionDialog extends JDialog {
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Loop through track groups
-        for (TrackConfigGroup configGroup : trackConfigurations) {
+        for (TrackConfigGroup configGroup : trackConfigGroups) {
             categoryContainer.add(Box.createVerticalStrut(10));
             CollapsiblePanel categoryPanel = createCategoryPanel(configGroup);
             categoryContainer.add(categoryPanel);
@@ -107,10 +112,16 @@ public class TrackHubSelectionDialog extends JDialog {
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
 
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(e -> setVisible(false));
+        cancelButton.addActionListener(e -> {
+            canceled = true;
+            setVisible(false);
+        });
 
         JButton okButton = new JButton("OK");
-        okButton.addActionListener(e -> okAction());
+        okButton.addActionListener(e -> {
+            canceled = false;
+            setVisible(false);
+        });
 
         if (Globals.IS_MAC) {
             buttonPanel.add(cancelButton);
@@ -137,16 +148,9 @@ public class TrackHubSelectionDialog extends JDialog {
         return hubURLPanel;
     }
 
-    private void okAction() {
-        for (Map.Entry<JCheckBox, TrackConfig> entry : configMap.entrySet()) {
-            final TrackConfig trackConfig = entry.getValue();
-            if (entry.getKey().isSelected()) {
-                trackConfig.setVisible(true);
-            } else {
-                trackConfig.setVisible(false);
-            }
-        }
-        setVisible(false);
+
+    public boolean isCanceled() {
+        return canceled;
     }
 
     /**
@@ -167,14 +171,9 @@ public class TrackHubSelectionDialog extends JDialog {
         boolean isSelected = false;
         for (TrackConfig trackConfig : configGroup.tracks) {
 
-            final JCheckBox checkBox = new JCheckBox();
-            configMap.put(checkBox, trackConfig);
-            checkBox.setSelected(trackConfig.getVisible());
             isSelected = isSelected || trackConfig.getVisible();
 
-            String infoLink = trackConfig.getHtml();
-            JLabel label = new JLabel(trackConfig.getName());
-            SelectionBox p = new SelectionBox(checkBox, label, infoLink);
+            SelectionBox p = new SelectionBox(trackConfig);
             selectionBoxes.add(p);
             maxWidth = Math.max(maxWidth, p.getPreferredSize().width);
 
@@ -186,11 +185,77 @@ public class TrackHubSelectionDialog extends JDialog {
             trackContainer.add(p);
         }
 
-        for(SelectionBox selectionBox : selectionBoxes) {
+        for (SelectionBox selectionBox : selectionBoxes) {
             selectionBox.setPreferredWidth(maxWidth);
         }
 
-        return new CollapsiblePanel(configGroup.label, trackContainer, isSelected || configGroup.defaultOpen);
+        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(configGroup.label, trackContainer, isSelected || configGroup.defaultOpen);
+
+        // Add a search button for categories with large numbers of records
+
+        if (configGroup.tracks.size() > 20) {
+
+            JButton searchButton = new JButton("Search");
+
+            searchButton.addActionListener(e -> {
+
+                collapsiblePanel.expand();
+
+                Set<String> attributeNames = new LinkedHashSet<>();
+                attributeNames.add("Name");
+                attributeNames.add("Description");
+                attributeNames.add("Format");
+
+                Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
+
+                List<FileRecord> records = new ArrayList<>();
+
+                for (SelectionBox selectionBox : selectionBoxes) {
+                    TrackConfig trackConfig = selectionBox.getTrackConfig();
+                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                    Map<String, String> attributes = trackConfigAttributes;
+                    if (attributes == null) {
+                        attributes = new LinkedHashMap<>();
+                    }
+                    attributes.put("Name", trackConfig.getName());
+                    attributes.put("Description", trackConfig.getDescription());
+                    attributes.put("Format", trackConfig.getFormat());
+
+                    if(trackConfigAttributes != null) {
+                        attributes.putAll(trackConfigAttributes);
+                        attributeNames.addAll(trackConfigAttributes.keySet());
+                    }
+
+                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
+                    record.setSelected(trackConfig.getVisible());
+                    records.add(record);
+                    recordSelectionBoxMap.put(record, selectionBox);
+                }
+
+                List<String> headings = new ArrayList<>(attributeNames);
+
+                TrackChooser chooser = new TrackChooser(
+                        IGV.getInstance().getMainFrame(),
+                        headings,
+                        records,
+                        "Search " + configGroup.label);
+                chooser.setSize(this.getSize());
+                chooser.setLocationRelativeTo(getOwner());
+                chooser.setVisible(true);
+
+                if (!chooser.isCanceled()) {
+                    Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
+                    for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
+                        entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
+                    }
+                }
+            });
+
+            collapsiblePanel.addSearchButton(searchButton);
+        }
+
+
+        return collapsiblePanel;
     }
 
     /**
@@ -199,19 +264,36 @@ public class TrackHubSelectionDialog extends JDialog {
      * @return
      */
     public List<TrackConfig> getSelectedConfigs() {
-        List<TrackConfig> selected = configMap.values().stream().filter(trackConfig -> trackConfig.getVisible()).collect(Collectors.toList());
-        return selected;
+        return trackConfigGroups.stream()
+                .flatMap(group -> group.tracks.stream())
+                .filter(trackConfig -> trackConfig.getVisible())
+                .collect(Collectors.toList());
     }
 
     static class SelectionBox extends JPanel {
 
+        TrackConfig trackConfig;
+        private JCheckBox checkbox;
         int preferredWidth = -1;
         private int minWidth;
 
-        public SelectionBox(JCheckBox checkBox, JLabel label, String infoLink) {
+
+        public SelectionBox(TrackConfig trackConfig) {
+
             this.setLayout(new BorderLayout());
-            label.setLabelFor(checkBox);
-            add(checkBox, BorderLayout.WEST);
+            this.trackConfig = trackConfig;
+
+            this.checkbox = new JCheckBox();
+            checkbox.setSelected(trackConfig.getVisible());
+            checkbox.addActionListener(e -> {
+                trackConfig.setVisible(checkbox.isSelected());
+            });
+
+            JLabel label = new JLabel(trackConfig.getName());
+            label.setLabelFor(checkbox);
+            add(checkbox, BorderLayout.WEST);
+
+            String infoLink = trackConfig.getHtml();
 
             if (infoLink == null || "".equals(infoLink.trim())) {
                 add(label, BorderLayout.CENTER);
@@ -258,6 +340,19 @@ public class TrackHubSelectionDialog extends JDialog {
         @Override
         public Dimension getMaximumSize() {
             return getPreferredSize();
+        }
+
+        public void setSelected(boolean selected) {
+            checkbox.setSelected(selected);
+            trackConfig.setVisible(selected);
+        }
+
+        public boolean isSelected() {
+            return checkbox.isSelected();
+        }
+
+        public TrackConfig getTrackConfig() {
+            return trackConfig;
         }
     }
 

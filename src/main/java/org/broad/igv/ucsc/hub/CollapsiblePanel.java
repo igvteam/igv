@@ -9,7 +9,7 @@ import java.awt.*;
 
 public class CollapsiblePanel extends JPanel {
 
-    public static final Color HEADER_BG = new Color(180,204,226);
+    public static final Color HEADER_BG = new Color(180, 204, 226);
 
 
     private final JButton collapseButton;
@@ -18,8 +18,12 @@ public class CollapsiblePanel extends JPanel {
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
-    public CollapsiblePanel(String label, JComponent content) {
-        this(label, content, false);
+
+
+
+    public void addSearchButton(JComponent searchButton) {
+        header.add(searchButton, BorderLayout.EAST);
+        revalidate();
     }
 
     public CollapsiblePanel(String label, JComponent content, boolean isOpen) {
@@ -53,6 +57,8 @@ public class CollapsiblePanel extends JPanel {
         jLabel.setHorizontalAlignment(SwingConstants.CENTER);
         header.add(jLabel, BorderLayout.CENTER);
 
+
+
         this.add(header, BorderLayout.NORTH);
 
     }
@@ -67,7 +73,6 @@ public class CollapsiblePanel extends JPanel {
         content.setVisible(true);
     }
 
-
     /**
      * Constrain the maximum height to prevent BoxLayout from needlessly resizing the panel to fill space.  This is
      * rather hardcoded for the TrackHubSelectionDialog.
@@ -78,7 +83,7 @@ public class CollapsiblePanel extends JPanel {
     @Override
     public Dimension getMaximumSize() {
         Dimension d4 = header.getMinimumSize();
-        if(!content.isVisible()) {
+        if (!content.isVisible()) {
             return new Dimension(Integer.MAX_VALUE, d4.height);
         } else {
             Dimension d5 = content.getMinimumSize();
@@ -89,7 +94,7 @@ public class CollapsiblePanel extends JPanel {
     public static void main(String[] args) {
 
         JComponent content = new JTextArea("alskdfjalskdjflsdkjfsaldkfjsladkfjsalkfj");
-        CollapsiblePanel cp = new CollapsiblePanel("Expand/Collapse", content);
+        CollapsiblePanel cp = new CollapsiblePanel("Expand/Collapse", content, false);
 
         JFrame f = new JFrame("test");
         f.setSize(500, 500);

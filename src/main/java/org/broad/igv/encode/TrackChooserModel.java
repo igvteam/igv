@@ -25,33 +25,36 @@
 
 package org.broad.igv.encode;
 
+import org.broad.igv.ui.IGV;
+
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jrobinso
- *         Date: 10/31/13
- *         Time: 10:09 PM
+ * Date: 10/31/13
+ * Time: 10:09 PM
  */
-public class EncodeTableModel extends AbstractTableModel {
+public class TrackChooserModel extends AbstractTableModel {
 
     private String[] columnHeadings;
-    private List<EncodeFileRecord> records;
-    private final TableRowSorter<EncodeTableModel> sorter;
+    private List<FileRecord> records;
+    private final TableRowSorter<TrackChooserModel> sorter;
 
-    public EncodeTableModel(List<String> headings, List<EncodeFileRecord> records) {
+    public TrackChooserModel(List<String> headings, List<FileRecord> records) {
 
         this.records = records;
 
         List<String> tmp = new ArrayList<String>();
         tmp.add("");  // Checkbox heading
-        for(String h : headings) {
+        for (String h : headings) {
             String heading = h.trim();
-            if(heading.length() > 0 && !"path".equals(heading)) {
+            if (heading.length() > 0 && !"path".equals(heading)) {
                 tmp.add(heading);
             }
         }
@@ -69,7 +72,7 @@ public class EncodeTableModel extends AbstractTableModel {
         });
     }
 
-    public TableRowSorter<EncodeTableModel> getSorter() {
+    public TableRowSorter<TrackChooserModel> getSorter() {
         return sorter;
     }
 
@@ -100,7 +103,7 @@ public class EncodeTableModel extends AbstractTableModel {
             return null;
         }
 
-        EncodeFileRecord record = records.get(rowIndex);
+        FileRecord record = records.get(rowIndex);
         if (columnIndex == 0) {
             return record.isSelected();
         } else {
@@ -117,15 +120,25 @@ public class EncodeTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object value, int row, int col) {
-        if(col == 0) {
+        if (col == 0) {
             records.get(row).setSelected((Boolean) value);
         }
         fireTableCellUpdated(row, col);
     }
 
+    public void updateSelections() {
 
+        Set<String> loadedPaths = IGV.getInstance().getLoadedPaths();
 
-    public List<EncodeFileRecord> getRecords() {
+        for (int row = 0; row < records.size(); row++) {
+            FileRecord record = records.get(row);
+            if (loadedPaths.contains(record.getPath())) {
+                record.setSelected(true);
+            }
+        }
+    }
+
+    public List<FileRecord> getRecords() {
         return records;
     }
 }

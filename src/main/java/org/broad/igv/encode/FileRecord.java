@@ -34,14 +34,13 @@ import java.util.Map;
  *         Date: 10/31/13
  *         Time: 10:11 PM
  */
-public class EncodeFileRecord {
+public class FileRecord {
 
     boolean selected = false;
     String path;
     Map<String, String> attributes;
-    String trackName;
 
-    public EncodeFileRecord(String path, Map<String, String> attributes) {
+    public FileRecord(String path, Map<String, String> attributes) {
         this.path = path;
         this.attributes = attributes;
     }
@@ -62,7 +61,9 @@ public class EncodeFileRecord {
 
     public String getAttributeValue(String name) {
         String value = attributes.get(name);
-        if (name.equals("type") && value == null) value = getFileType();
+        if (value != null) {
+            if (name.equals("type") && value == null) value = getFileType();
+        }
         return value;
     }
 
@@ -74,35 +75,13 @@ public class EncodeFileRecord {
         return attributes;
     }
 
-    boolean isSelected() {
+    public boolean isSelected() {
         return selected;
     }
 
-    void setSelected(boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
-    /**
-     * Return a friendly name for the track.  Unfortunately it is neccessary to hardcode certain attributes.
-     *
-     * @return
-     */
-    public String getTrackName() {
-
-        if (trackName == null) {
-            StringBuffer sb = new StringBuffer();
-            if(attributes.containsKey("cell")) sb.append(attributes.get("cell") + " ");
-            if(attributes.containsKey("antibody")) sb.append(attributes.get("antibody") + " ");
-            if(attributes.containsKey("dataType")) sb.append(attributes.get("dataType") + " ");
-            if(attributes.containsKey("view")) sb.append(attributes.get("view") + " ");
-            if(attributes.containsKey("replicate")) sb.append("rep " + attributes.get("replicate"));
-
-            trackName = sb.toString().trim();
-            if(sb.length() == 0) trackName = (new File(path)).getName();
-        }
-
-        return trackName;
-
-    }
 
 }

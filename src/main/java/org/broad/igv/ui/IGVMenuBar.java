@@ -64,7 +64,7 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.blat.BlatClient;
-import org.broad.igv.encode.EncodeTrackChooser;
+import org.broad.igv.encode.EncodeTrackChooserFactory;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -318,13 +318,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         // ENCODE items.  These will be hidden / shown depending on genome chosen
-        if (EncodeTrackChooser.genomeSupportedUCSC(genomeId) || EncodeTrackChooser.genomeSupported(genomeId)) {
+        if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId) || EncodeTrackChooserFactory.genomeSupported(genomeId)) {
 
             JSeparator separator = new JSeparator();
             menuItems.add(separator);
 
             // Post 2012 ENCODE menu
-            if (EncodeTrackChooser.genomeSupported(genomeId)) {
+            if (EncodeTrackChooserFactory.genomeSupported(genomeId)) {
                 JMenuItem chipItem = new JMenuItem();
                 chipItem.setAction(new BrowseEncodeAction("ENCODE ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
                 menuItems.add(chipItem);
@@ -339,7 +339,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
 
             // UCSC hosted ENCODE menu.
-            if (EncodeTrackChooser.genomeSupportedUCSC(genomeId)) {
+            if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId)) {
                 JMenuItem encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
                         new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
                 menuItems.add(encodeUCSCMenuItem);

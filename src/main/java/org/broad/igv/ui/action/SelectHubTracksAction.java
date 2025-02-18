@@ -40,9 +40,11 @@ import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 
@@ -75,62 +77,88 @@ public class SelectHubTracksAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent evt) {
 
-        try {
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            if (hub == null) {
-                hub = genome.getGenomeHub();
-                if (hub == null) {
-                    // This should not happen
-                    MessageUtils.showMessage("No tracks available for current genome.");
-                }
-            }
+        final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
 
-            final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
-            Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
-            List<TrackConfigGroup> groups = hub.getGroupedTrackConfigurations();
-            for (TrackConfigGroup g : groups) {
-                for (TrackConfig config : g.tracks) {
-                    config.setVisible(loadedTrackPaths.contains(config.getUrl()));
-                }
-            }
+        SwingWorker worker = new SwingWorker() {
 
-            TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, groups, IGV.getInstance().getMainFrame());
-            dlg.setVisible(true);
-
-            // The dialog action will modify the visible state for each track config
-            Set<String> trackPathsToRemove = new HashSet<>();
-            List<TrackConfig> tracksToLoad = new ArrayList<>();
-            List<TrackConfig> selected = new ArrayList<>();
-            for (TrackConfigGroup g : groups) {
-                for (TrackConfig config : g.tracks) {
-                    if (config.getVisible()) {
-                        selected.add(config);
-                        if (!loadedTrackPaths.contains(config.getUrl())) {
-                            tracksToLoad.add(config);
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    if (hub == null) {
+                        hub = genome.getGenomeHub();
+                        if (hub == null) {
+                            // This should not happen
+                            MessageUtils.showMessage("No tracks available for current genome.");
                         }
-                    } else {
-                        trackPathsToRemove.add(config.getUrl());
+                    }
+
+                    final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
+                    Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+                    List<TrackConfigGroup> groups = hub.getGroupedTrackConfigurations();
+                    for (TrackConfigGroup g : groups) {
+                        for (TrackConfig config : g.tracks) {
+                            config.setVisible(loadedTrackPaths.contains(config.getUrl()));
+                        }
+                    }
+
+                    TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, groups, IGV.getInstance().getMainFrame());
+
+                    SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
+
+                    if (!dlg.isCanceled()) {
+
+
+                        // The dialog action will modify the visible state for each track config
+                        Set<String> trackPathsToRemove = new HashSet<>();
+                        List<TrackConfig> tracksToLoad = new ArrayList<>();
+                        List<TrackConfig> selected = new ArrayList<>();
+                        for (TrackConfigGroup g : groups) {
+                            for (TrackConfig config : g.tracks) {
+                                if (config.getVisible()) {
+                                    selected.add(config);
+                                    if (!loadedTrackPaths.contains(config.getUrl())) {
+                                        tracksToLoad.add(config);
+                                    }
+                                } else {
+                                    trackPathsToRemove.add(config.getUrl());
+                                }
+                            }
+                        }
+
+                        List<Track> tracksToRemove = loadedTracks.stream().filter(t -> trackPathsToRemove.contains(t.getResourceLocator().getPath())).toList();
+                        IGV.getInstance().deleteTracks(tracksToRemove);
+
+                        List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
+                        IGV.getInstance().loadTracks(locators);
+
+                        // Update genome
+                        if (updateGenome) {
+                            genome.setAnnotationResources(locators);
+                            // Update preferences
+                            String key = "hub:" + hub.getUrl();
+                            PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error loading track configurations", e);
+                    MessageUtils.showMessage(e.getMessage());
+                } finally {
+                    if (token != null) {
+                        WaitCursorManager.removeWaitCursor(token);
                     }
                 }
+                return null;
             }
 
-            List<Track> tracksToRemove = loadedTracks.stream().filter(t -> trackPathsToRemove.contains(t.getResourceLocator().getPath())).toList();
-            IGV.getInstance().deleteTracks(tracksToRemove);
-
-            List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
-            IGV.getInstance().loadTracks(locators);
-
-            // Update genome
-            if (updateGenome) {
-                genome.setAnnotationResources(locators);
-                // Update preferences
-                String key = "hub:" + hub.getUrl();
-                PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
+            @Override
+            protected void done() {
+                WaitCursorManager.removeWaitCursor(token);
             }
-        } catch (Exception e) {
-            log.error("Error loading track configurations", e);
-            MessageUtils.showMessage(e.getMessage());
-        }
+        };
+
+        worker.execute();
+
     }
 
 }
