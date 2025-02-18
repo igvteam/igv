@@ -85,12 +85,14 @@ public class HubGenomeLoader extends GenomeLoader {
             TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, filteredGroups, IGV.getInstance().getMainFrame());
             dlg.setVisible(true);
 
-            List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
-            config.setTracks(selectedTracks);
+            if(!dlg.isCanceled()) {
+                List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
+                config.setTracks(selectedTracks);
 
-            // Remember selections in user preferences
-            List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
-            PreferencesManager.getPreferences().put(key, String.join(",", names));
+                // Remember selections in user preferences
+                List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
+                PreferencesManager.getPreferences().put(key, String.join(",", names));
+            }
         }
 
         Genome genome = new Genome(config);

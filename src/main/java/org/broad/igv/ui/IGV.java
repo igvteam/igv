@@ -296,6 +296,7 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+
     public JRootPane getRootPane() {
         return rootPane;
     }
@@ -1382,18 +1383,6 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-    public Set<TrackType> getLoadedTypes() {
-        Set<TrackType> types = new HashSet();
-        for (Track t : getAllTracks()) {
-            TrackType type = t.getTrackType();
-            if (t != null) {
-                types.add(type);
-            }
-        }
-        return types;
-    }
-
-
     /**
      * Experimental method to support VCF -> BAM coupling
      *
@@ -1661,6 +1650,25 @@ public class IGV implements IGVEventObserver {
         locators.remove(null);
         return locators;
 
+    }
+
+
+    public Set<TrackType> getLoadedTypes() {
+        Set<TrackType> types = new HashSet<>();
+        for (Track t : getAllTracks()) {
+            if (t != null) {
+                TrackType type = t.getTrackType();
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
+
+    public Set<String> getLoadedPaths() {
+        return getDataResourceLocators().stream()
+                .map(rl -> rl.getPath())
+                .collect(Collectors.toSet());
     }
 
 

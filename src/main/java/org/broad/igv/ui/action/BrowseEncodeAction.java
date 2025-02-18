@@ -25,24 +25,27 @@
 
 package org.broad.igv.ui.action;
 
+import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
+import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.encode.EncodeTrackChooser;
-import org.broad.igv.encode.EncodeFileRecord;
+import org.broad.igv.encode.EncodeTrackChooserFactory;
+import org.broad.igv.encode.FileRecord;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
+import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author jrobinso
@@ -95,17 +98,17 @@ public class BrowseEncodeAction extends MenuAction {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-        SwingWorker worker = new SwingWorker<EncodeTrackChooser, Void>() {
+        SwingWorker worker = new SwingWorker<TrackChooser, Void>() {
             @Override
-            protected EncodeTrackChooser doInBackground() throws Exception {
-                return EncodeTrackChooser.getInstance(genome.getId(), BrowseEncodeAction.this.type);
+            protected TrackChooser doInBackground() throws Exception {
+                return EncodeTrackChooserFactory.getInstance(genome.getId(), BrowseEncodeAction.this.type);
             }
 
             @Override
             protected void done() {
                 WaitCursorManager.removeWaitCursor(token);
                 try {
-                    EncodeTrackChooser chooser = get();
+                    TrackChooser chooser = get();
                     if (chooser == null) {
                         MessageUtils.showMessage("Encode data is not available for " + genome.getDisplayName() + " through IGV.");
                         return;
@@ -114,34 +117,28 @@ public class BrowseEncodeAction extends MenuAction {
                     chooser.setVisible(true);
                     if (chooser.isCanceled()) return;
 
-                    java.util.List<EncodeFileRecord> records = chooser.getSelectedRecords();
-                    if (records.size() > 0) {
-                        List<ResourceLocator> locators = new ArrayList<>(records.size());
-                        for (EncodeFileRecord record : records) {
 
-                            ResourceLocator rl = new ResourceLocator(record.getPath());
-                            rl.setName(record.getTrackName());
+                    java.util.List<FileRecord> records = chooser.getAllRecords();
 
-                            Map<String, String> attributes = record.getAttributes();
+                    final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
+                    final Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+                    final Set<String> trackPathsToRemove = new HashSet<>();
+                    final List<ResourceLocator> tracksToLoad = new ArrayList<>(records.size());
 
-                            String antibody = attributes.containsKey("antibody") ? attributes.get("antibody") : attributes.get("Target");
-                            if (antibody != null) {
-                                rl.setColor(colors.get(antibody.toUpperCase()));
+                    for (FileRecord record : records) {
+                        if (record.isSelected()) {
+                            if (!loadedTrackPaths.contains(record.getPath())) {
+                                tracksToLoad.add(getResourceLocator(record));
                             }
-
-                            for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                                String value = entry.getValue();
-                                if (value != null && value.length() > 0 && sampleInfoAttributes.contains(entry.getKey())) {
-                                    AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
-                                }
-                            }
-
-                            rl.setMetadata(attributes);
-
-                            locators.add(rl);
+                        } else {
+                            trackPathsToRemove.add(record.getPath());
                         }
-                        igv.loadTracks(locators);
                     }
+
+                    List<Track> tracksToRemove = loadedTracks.stream().filter(t -> trackPathsToRemove.contains(t.getResourceLocator().getPath())).toList();
+                    igv.deleteTracks(tracksToRemove);
+
+                    igv.loadTracks(tracksToLoad);
 
                 } catch (Exception e) {
                     log.error("Error opening Encode browser", e);
@@ -149,9 +146,48 @@ public class BrowseEncodeAction extends MenuAction {
                 }
             }
         };
-
         worker.execute();
+    }
 
+    private ResourceLocator getResourceLocator(FileRecord record) {
+        ResourceLocator rl = new ResourceLocator(record.getPath());
+        rl.setName(getTrackName(record));
+        Map<String, String> attributes = record.getAttributes();
+        String antibody = attributes.containsKey("antibody") ? attributes.get("antibody") : attributes.get("Target");
+        if (antibody != null) {
+            rl.setColor(colors.get(antibody.toUpperCase()));
+        }
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            String value = entry.getValue();
+            if (value != null && value.length() > 0 && sampleInfoAttributes.contains(entry.getKey())) {
+                AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
+            }
+        }
+        rl.setMetadata(attributes);
+        return rl;
+    }
+
+    /**
+     * Return a friendly name for the track.  Unfortunately it is neccessary to hardcode certain attributes.
+     *
+     * @return
+     */
+    public String getTrackName(FileRecord record) {
+
+        Map<String, String> attributes = record.getAttributes();
+        StringBuffer sb = new StringBuffer();
+        if (attributes.containsKey("cell")) sb.append(attributes.get("cell") + " ");
+        if (attributes.containsKey("antibody")) sb.append(attributes.get("antibody") + " ");
+        if (attributes.containsKey("dataType")) sb.append(attributes.get("dataType") + " ");
+        if (attributes.containsKey("view")) sb.append(attributes.get("view") + " ");
+        if (attributes.containsKey("replicate")) sb.append("rep " + attributes.get("replicate"));
+
+        String trackName = sb.toString().trim();
+        if (sb.length() == 0) {
+            trackName = (new File(record.getPath())).getName();
+        }
+
+        return trackName;
 
     }
 }

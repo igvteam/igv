@@ -1,5 +1,7 @@
 package org.broad.igv.ucsc.hub;
 
+import com.google.gson.Gson;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.ui.IGV;
 
@@ -131,6 +133,7 @@ public class TrackDbHub {
         String format = t.format();
         String url = t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
+        config.setFormat(format);
 
         config.setPanelName(IGV.DATA_PANEL_NAME);
 
@@ -157,9 +160,7 @@ public class TrackDbHub {
             config.setIndexURL(t.getProperty("bigDataIndex"));
         }
 
-        if (t.hasProperty("longLabel") && t.hasProperty("html")) {
-            config.setDescription("<a target=\"_blank\" href=\"" + (t.getProperty("html") + "\">" + t.getProperty("longLabel") + "</a>"));
-        } else if (t.hasProperty("longLabel")) {
+        if (t.hasProperty("longLabel")) {
             config.setDescription(t.getProperty("longLabel"));
         }
 
@@ -174,7 +175,9 @@ public class TrackDbHub {
         }
 
         if(t.hasProperty("maxWindowToDraw")) {
-            config.setVisibilityWindow(Integer.parseInt(t.getProperty("maxWindowToDraw")));
+            long maxWindow = Long.parseLong(t.getProperty("maxWindowToDraw"));
+            int vizWindow = Math.min(Integer.MAX_VALUE, (int) maxWindow);
+            config.setVisibilityWindow(vizWindow);
         }
 
         boolean visibility = t.hasProperty("compositeTrack") ?
@@ -228,6 +231,10 @@ public class TrackDbHub {
         if (t.hasProperty("group")) {
             config.setGroup(t.getProperty("group"));
         }
+        if(t.hasProperty("metadata")) {
+            Map<String, String> metadata = parseMetadata(t.getProperty("metadata"));
+            config.setAttributes(metadata);
+        }
 
         if (t.parent != null) {
             config.setStanzaParent(t.parent.name);
@@ -236,4 +243,41 @@ public class TrackDbHub {
         return config;
     }
 
+    //metadata differentiation="10 hour" treatment=X donor=A lab="List Meta Lab" data_set_id=ucscTest1 access=group assay=long-RNA-seq enriched_in=exon life_stage=postpartum species="Homo sapiens" ucsc_db=hg38
+    static Map<String, String> parseMetadata(String metadata) {
+
+        Map<String ,String> attrs = new HashMap();
+        while(metadata.length() > 0) {
+            int idx = metadata.indexOf("=");
+            if(idx == -1) {
+                break;
+            }
+            int idx2;
+            String key = capitalize(metadata.substring(0, idx));
+            String value;
+
+            if ('"' == metadata.charAt(idx + 1)) {
+                idx++;
+                idx2 = metadata.indexOf('"', idx + 1);
+                value = metadata.substring(idx + 1, idx2);
+                idx2++;
+            } else {
+                idx2 = metadata.indexOf(" ");
+                if(idx2 == -1) {
+                    idx2 = metadata.length();
+                }
+                value = metadata.substring(idx + 1, idx2);
+            }
+            attrs.put(key, value);
+            if(idx2 == metadata.length()) {
+                break;
+            }
+            metadata = metadata.substring(idx2 + 1);
+        }
+        return attrs;
+    }
+
+    private static String capitalize(final String line) {
+        return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
 }

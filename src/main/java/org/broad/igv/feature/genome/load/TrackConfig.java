@@ -1,5 +1,7 @@
 package org.broad.igv.feature.genome.load;
 
+import java.util.Map;
+
 /**
  * A static json-like object, emulates javascript equivalent.   Created to ease port of session code from javascript.
  */
@@ -34,6 +36,7 @@ public class TrackConfig implements Cloneable {
     private String panelName;
 
     private String stanzaParent;   // For supporting track hubs
+    private Map<String, String> attributes;
 
     public TrackConfig() {
     }
@@ -266,5 +269,13 @@ public class TrackConfig implements Cloneable {
     @Override
     protected TrackConfig clone() throws CloneNotSupportedException {
         return (TrackConfig) super.clone();
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
     }
 }

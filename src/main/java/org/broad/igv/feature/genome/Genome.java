@@ -232,7 +232,7 @@ public class Genome {
         if(config.getHubs() != null) {
             for(String hubUrl : config.getHubs()) {
                 try {
-                    trackHubs.add(HubParser.loadHub(hubUrl, getId()));
+                    trackHubs.add(HubParser.loadHub(hubUrl, getUCSCId()));
                 } catch (IOException e) {
                     log.error("Error loading hub", e);
                 }
