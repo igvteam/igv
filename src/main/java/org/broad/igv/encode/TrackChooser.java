@@ -39,6 +39,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
@@ -254,9 +255,22 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
                 int colIndex = columnAtPoint(p);
                 int realColumnIndex = convertColumnIndexToModel(colIndex);
                 if (realColumnIndex > 0) {
-                    return getModel().getValueAt(rowIndex, realColumnIndex).toString();
+                    Object value = table.getValueAt(rowIndex, realColumnIndex);
+                    return value == null ? "" : value.toString();
                 }
                 return null;
+            }
+
+            @Override
+            protected JTableHeader createDefaultTableHeader() {
+                return new JTableHeader(columnModel) {
+                    public String getToolTipText(MouseEvent e) {
+                        java.awt.Point p = e.getPoint();
+                        int index = columnModel.getColumnIndexAtX(p.x);
+                        int realIndex = columnModel.getColumn(index).getModelIndex();
+                        return table.getColumnName(realIndex);
+                    }
+                };
             }
         };
 

@@ -232,23 +232,24 @@ public class TrackHubSelectionDialog extends JDialog {
         searchButton.addActionListener(e -> {
 
             Set<String> attributeNames = new LinkedHashSet<>();
-            if(selectionBoxes.size() > 1) {
+            if (selectionBoxes.size() > 1) {
                 attributeNames.add("Group");
-                attributeNames.add("Name");
-                attributeNames.add("Description");
-                attributeNames.add("Format");
             }
+            attributeNames.add("Name");
+            attributeNames.add("Description");
+            attributeNames.add("Format");
+
 
             Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
 
             List<FileRecord> records = new ArrayList<>();
 
-            for(Map.Entry<String, List<SelectionBox>> entry : selectionBoxes.entrySet()) {
+            for (Map.Entry<String, List<SelectionBox>> entry : selectionBoxes.entrySet()) {
 
                 String group = entry.getKey();
                 List<SelectionBox> boxes = entry.getValue();
 
-                for(SelectionBox selectionBox : boxes) {
+                for (SelectionBox selectionBox : boxes) {
 
                     TrackConfig trackConfig = selectionBox.getTrackConfig();
                     final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
@@ -256,7 +257,7 @@ public class TrackHubSelectionDialog extends JDialog {
                     if (attributes == null) {
                         attributes = new LinkedHashMap<>();
                     }
-                    if(selectionBoxes.size() > 1) {
+                    if (selectionBoxes.size() > 1) {
                         attributes.put("Group", group);
                     }
                     attributes.put("Name", trackConfig.getName());
@@ -277,6 +278,10 @@ public class TrackHubSelectionDialog extends JDialog {
             }
 
             List<String> headings = new ArrayList<>(attributeNames);
+            // Limit # of columns
+            if(headings.size() > 15) {
+                headings = headings.subList(0, 15);
+            }
 
             Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
 
