@@ -108,7 +108,7 @@ public class BlatQueryWindow extends JFrame {
 
     private void saveItemActionPerformed(ActionEvent e) {
 
-        File f = FileDialogUtils.chooseFile("Save BLAT results", DirectoryManager.getUserDefaultDirectory(), FileDialogUtils.SAVE);
+        File f = FileDialogUtils.chooseFile("Save BLAT results", DirectoryManager.getUserDirectory(), FileDialogUtils.SAVE);
         if (f != null) {
             try {
                 model.save(f);

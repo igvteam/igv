@@ -473,7 +473,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             try {
                 File importDirectory = PreferencesManager.getPreferences().getLastGenomeImportDirectory();
                 if (importDirectory == null) {
-                    PreferencesManager.getPreferences().setLastGenomeImportDirectory(DirectoryManager.getUserDefaultDirectory());
+                    PreferencesManager.getPreferences().setLastGenomeImportDirectory(DirectoryManager.getUserDirectory());
                 }
                 // Display the dialog
                 File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);

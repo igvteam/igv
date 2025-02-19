@@ -78,7 +78,7 @@ public class ExportRegionsMenuAction extends MenuAction {
 
         File exportRegionDirectory = PreferencesManager.getPreferences().getLastExportedRegionDirectory();
         if (exportRegionDirectory == null) {
-            exportRegionDirectory = DirectoryManager.getUserDefaultDirectory();
+            exportRegionDirectory = DirectoryManager.getUserDirectory();
         }
 
         String title = "Export Regions of Interest ...";

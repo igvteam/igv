@@ -73,7 +73,7 @@ public class DirectoryManager {
      * The user directory.  On Mac and Linux this should be the user home directory.  On Windows platforms this
      * is the "My Documents" directory.
      */
-    public static synchronized File getUserDefaultDirectory() {
+    public static synchronized File getUserDirectory() {
         if (USER_DIRECTORY == null) {
             USER_DIRECTORY = FileSystemView.getFileSystemView().getDefaultDirectory();
             //Mostly for testing, in some environments USER_DIRECTORY can be null
@@ -96,7 +96,7 @@ public class DirectoryManager {
             // Hack for known Java / Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
             if (System.getProperty("os.name").startsWith("Windows")) {
                 try {
-                    Runtime.getRuntime().exec("attrib -r \"" + getUserDefaultDirectory().getAbsolutePath() + "\"");
+                    Runtime.getRuntime().exec("attrib -r \"" + getUserDirectory().getAbsolutePath() + "\"");
                 } catch (Exception e) {
                     // We tried
                 }

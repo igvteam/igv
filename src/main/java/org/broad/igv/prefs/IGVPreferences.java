@@ -526,7 +526,7 @@ public class IGVPreferences {
 
         File directory = null;
 
-        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             directory = new File(lastFilePath);
@@ -550,7 +550,7 @@ public class IGVPreferences {
 
         File genomeImportDirectory = null;
 
-        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             genomeImportDirectory = new File(lastFilePath);

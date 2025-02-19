@@ -53,7 +53,7 @@ public class FileDialogUtils {
     }
 
     public static File chooseFile(String title) {
-        return chooseFile(title, DirectoryManager.getUserDefaultDirectory(), null, FileDialog.LOAD);
+        return chooseFile(title, DirectoryManager.getUserDirectory(), null, FileDialog.LOAD);
     }
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {
