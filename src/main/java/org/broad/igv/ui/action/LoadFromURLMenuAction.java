@@ -54,7 +54,7 @@ import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
  */
 public class LoadFromURLMenuAction extends MenuAction {
 
-    public static final String LOAD_FROM_URL = "Load Track from URL...";
+    public static final String LOAD_FROM_URL = "Load from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     public static final String LOAD_TRACKHUB = "Load Track Hub...";

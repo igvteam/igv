@@ -107,10 +107,6 @@ public class BBFeatureSource implements FeatureSource {
         }
     }
 
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null;
-    }
-
     public boolean isSearchable() {
         return reader.isSearchable();
     }

@@ -161,12 +161,6 @@ public class MotifFinderSource implements FeatureSource<Feature>, Persistable {
     }
 
     @Override
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        //TODO Precalculate and/or store?
-        return null;
-    }
-
-    @Override
     public int getFeatureWindowSize() {
         return this.featureWindowSize;
     }

@@ -28,8 +28,7 @@ package org.broad.igv.track;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
-import org.broad.igv.bedpe.BedPEParser;
-import org.broad.igv.bedpe.InteractionTrack;
+import org.broad.igv.bedpe.*;
 import org.broad.igv.blast.BlastMapping;
 import org.broad.igv.blast.BlastParser;
 import org.broad.igv.data.*;
@@ -129,7 +128,7 @@ public class TrackLoader {
             if ("bed".equals(format)) {
                 try {
                     String tmp = FileFormatUtils.determineFormat(locator.getPath());
-                    if(tmp != null && !tmp.equals("sampleinfo")) {
+                    if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
                     }
@@ -224,7 +223,7 @@ public class TrackLoader {
                 loadSMAPFile(locator, newTracks, genome);
             } else if (format.equals("dsi")) {
                 loadDSIFile(locator, newTracks, genome);
-            } else if (format.equals("bedpe")) {
+            } else if (format.equals("bedpe") || format.equals("interact")) {
                 loadBedPEFile(locator, newTracks, genome);
             } else if (format.equals("clusters")) {
                 loadClusterFile(locator, newTracks, genome);
@@ -420,8 +419,11 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        BedPEParser.Dataset features = BedPEParser.parse(locator, genome);
-        newTracks.add(new InteractionTrack(locator, features, genome));
+        List<BedPE> features = "interact".equals(locator.format) ?
+                InteractParser.parse(locator, genome) :
+                BedPEParser.parse(locator, genome);
+        BedPESource featureSource = new BedPESource(features, genome);
+        newTracks.add(new InteractionTrack(locator, featureSource));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -470,7 +472,10 @@ public class TrackLoader {
             }
 
             // Create feature source and track
-            FeatureTrack t = new FeatureTrack(locator, src);
+            AbstractTrack t =
+                    "interact".equals(locator.format) ?
+                            new InteractionTrack(locator, src) :
+                            new FeatureTrack(locator, src);
 
             //t.setRendererClass(BasicTribbleRenderer.class);
 
@@ -490,11 +495,11 @@ public class TrackLoader {
                     t.setHeight(15);
                 }
             }
-
-            if (format.equals(".narrowpeak") ||
-                    locator.getPath().equals(".broadpeak") ||
-                    locator.getPath().equals(".gappedpeak") ||
-                    locator.getPath().equals(".regionpeak")) {
+            String path = locator.getPath().toLowerCase();
+            if (path.contains(".narrowpeak") ||
+                    locator.getPath().contains(".broadpeak") ||
+                    locator.getPath().contains(".gappedpeak") ||
+                    locator.getPath().contains(".regionpeak")) {
                 t.setUseScore(true);
             }
             newTracks.add(t);

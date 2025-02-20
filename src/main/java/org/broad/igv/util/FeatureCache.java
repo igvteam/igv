@@ -104,9 +104,8 @@ public class FeatureCache<T extends Locatable> {
         }
 
         IntervalTree<List<T>> tree = featureMap.get(lastChr);
-        tree.insert(new Interval(currentMin, currentMax, currentFeatureList));
-
-
+        if(tree != null) {
+            tree.insert(new Interval(currentMin, currentMax, currentFeatureList));
+        }
     }
-
 }

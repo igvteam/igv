@@ -87,11 +87,6 @@ public class HtsgetVariantSource implements FeatureSource {
     }
 
     @Override
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null;
-    }
-
-    @Override
     public int getFeatureWindowSize() {
         return featureWindowSize;
     }
