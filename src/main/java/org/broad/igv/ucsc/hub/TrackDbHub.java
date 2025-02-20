@@ -142,7 +142,7 @@ public class TrackDbHub {
 
         // A rather complex workaround for some composite tracks
         String longLabel = t.getOwnProperty("longLabel");
-        if(longLabel == null) {
+        if (longLabel == null) {
             String inheritedLongLabel = t.getProperty("longLabel");
             longLabel = inheritedLongLabel.length() > config.getName().length() ? inheritedLongLabel : config.getName();
         }
@@ -153,12 +153,14 @@ public class TrackDbHub {
 
         config.setUrl(t.getProperty("bigDataUrl"));
 
+        if (t.hasProperty("bigDataIndex")) {
+            config.setIndexURL(t.getProperty("bigDataIndex"));
+        } else if (t.format().equals("vcfTabix")) {
+            config.setIndexURL(t.getProperty("bigDataUrl") + ".tbi");
+        }
+
         // Expanded display mode does not work well in IGV desktop for some tracks
         //config.displayMode = t.displayMode();
-
-        if(t.hasProperty("bigDataIndex")) {
-            config.setIndexURL(t.getProperty("bigDataIndex"));
-        }
 
         if (t.hasProperty("longLabel")) {
             config.setDescription(t.getProperty("longLabel"));
@@ -174,7 +176,7 @@ public class TrackDbHub {
             config.setDisplayMode(vizModeMap.get(vizProperty));
         }
 
-        if(t.hasProperty("maxWindowToDraw")) {
+        if (t.hasProperty("maxWindowToDraw")) {
             long maxWindow = Long.parseLong(t.getProperty("maxWindowToDraw"));
             int vizWindow = Math.min(Integer.MAX_VALUE, (int) maxWindow);
             config.setVisibilityWindow(vizWindow);
@@ -231,7 +233,7 @@ public class TrackDbHub {
         if (t.hasProperty("group")) {
             config.setGroup(t.getProperty("group"));
         }
-        if(t.hasProperty("metadata")) {
+        if (t.hasProperty("metadata")) {
             Map<String, String> metadata = parseMetadata(t.getProperty("metadata"));
             config.setAttributes(metadata);
         }
@@ -246,10 +248,10 @@ public class TrackDbHub {
     //metadata differentiation="10 hour" treatment=X donor=A lab="List Meta Lab" data_set_id=ucscTest1 access=group assay=long-RNA-seq enriched_in=exon life_stage=postpartum species="Homo sapiens" ucsc_db=hg38
     static Map<String, String> parseMetadata(String metadata) {
 
-        Map<String ,String> attrs = new HashMap();
-        while(metadata.length() > 0) {
+        Map<String, String> attrs = new HashMap();
+        while (metadata.length() > 0) {
             int idx = metadata.indexOf("=");
-            if(idx == -1) {
+            if (idx == -1) {
                 break;
             }
             int idx2;
@@ -263,13 +265,13 @@ public class TrackDbHub {
                 idx2++;
             } else {
                 idx2 = metadata.indexOf(" ");
-                if(idx2 == -1) {
+                if (idx2 == -1) {
                     idx2 = metadata.length();
                 }
                 value = metadata.substring(idx + 1, idx2);
             }
             attrs.put(key, value);
-            if(idx2 == metadata.length()) {
+            if (idx2 == metadata.length()) {
                 break;
             }
             metadata = metadata.substring(idx2 + 1);
