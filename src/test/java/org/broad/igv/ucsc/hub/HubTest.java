@@ -34,7 +34,7 @@ public class HubTest {
     public void testGetGroupedTrackConfigurations() throws IOException {
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
         Hub hub = HubParser.loadAssemblyHub(hubFile);
-        List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
         assertEquals(5, groupedTrackConfigurations.size());
     }
 
@@ -43,7 +43,7 @@ public class HubTest {
 
         String hubFile = "https://ftp.ncbi.nlm.nih.gov/snp/population_frequency/TrackHub/latest/hub.txt";
         Hub hub = HubParser.loadHub(hubFile, "hg38");
-        List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
         assertEquals(1, groupedTrackConfigurations.size());
         assertEquals(12, groupedTrackConfigurations.get(0).tracks.size());
 

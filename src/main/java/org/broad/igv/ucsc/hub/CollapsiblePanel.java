@@ -10,15 +10,20 @@ import java.awt.*;
 public class CollapsiblePanel extends JPanel {
 
     public static final Color HEADER_BG = new Color(180, 204, 226);
+    public static final Color HEADER_BG2 = new Color(204, 204, 204);
 
 
-    private  JButton collapseButton;
-    private  JComponent content;
-    private  JPanel header;
+    private JButton collapseButton;
+    private JComponent content;
+    private JPanel header;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
     public CollapsiblePanel(String label, JComponent content, boolean isOpen) {
+        this(label, content, isOpen, HEADER_BG);
+    }
+
+    public CollapsiblePanel(String label, JComponent content, boolean isOpen, Color backgroundColor) {
 
         setLayout(new BorderLayout());
         this.content = content;
@@ -30,7 +35,7 @@ public class CollapsiblePanel extends JPanel {
 
         header = new JPanel();
         header.setLayout(new BorderLayout());
-        header.setBackground(HEADER_BG);
+        header.setBackground(backgroundColor);
 
         this.collapseButton = new JButton();
         collapseButton.setIcon(isOpen ? openIcon : closeIcon);
@@ -40,7 +45,7 @@ public class CollapsiblePanel extends JPanel {
         collapseButton.addActionListener(e -> {
             collapseButton.setIcon(content.isVisible() ? closeIcon : openIcon);
             content.setVisible(!content.isVisible());
-            this.getParent().revalidate();
+            //this.getParent().revalidate();
         });
         header.add(collapseButton, BorderLayout.WEST);
 

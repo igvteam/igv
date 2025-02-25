@@ -15,9 +15,9 @@ public class HubParser {
 
     private static Logger log = LogManager.getLogger(HubParser.class);
 
-    private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl","desriptionUrl",
+    private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
-            "genomesFile","trackDb","groups", "include", "html", "searchTrix"));
+            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix"));
 
     public static Hub loadAssemblyHub(String url) throws IOException {
         return loadHub(url, null);
@@ -74,7 +74,7 @@ public class HubParser {
         }
 
         // Assembly hub validation
-        if(assemblyHub) {
+        if (assemblyHub) {
             if (!genomeStanza.hasProperty("twoBitPath")) {
                 throw new RuntimeException("Assembly hubs must specify 'twoBitPath'");
             }
@@ -134,7 +134,7 @@ public class HubParser {
             String line;
             while ((line = br.readLine()) != null) {
 
-                if(line.startsWith("#")) {
+                if (line.startsWith("#")) {
                     continue;
                 }
 
@@ -146,9 +146,14 @@ public class HubParser {
                 } else {
                     String key = line.substring(indent, i);
                     if (key.startsWith("#")) continue;
-                    String value = line.substring(i + 1);
 
-                    if(urlProperties.contains(key) || value.endsWith("URL") || value.endsWith("Url")) {
+                    String value = line.substring(i + 1).trim();
+                    if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key))) {
+                        String[] tokens = Globals.whitespacePattern.split(value);
+                        value = tokens[0];
+                    }
+
+                    if (urlProperties.contains(key) || value.endsWith("URL") || value.endsWith("Url")) {
                         value = getDataURL(value, host, baseURL);
                     }
 
@@ -160,7 +165,7 @@ public class HubParser {
                         currentNode = newNode;
                         startNewNode = false;
                     }
-                    currentNode.setProperty(key, value);
+                    currentNode.properties.put(key, value);
                 }
             }
         }

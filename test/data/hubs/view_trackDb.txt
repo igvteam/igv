@@ -1,0 +1,68 @@
+track RoadmapConsolidatedHMM
+compositeTrack on
+shortLabel chromHMM
+longLabel chromHMM tracks from Roadmap
+subGroup1 view Views AuxiliaryHMM=AuxiliaryHMM PrimaryHMM=PrimaryHMM ImputedHMM=ImputedHMM
+subGroup2 sampleType Sample_Type s13048=HepG2 s13300=CD4+_CD25-_IL17-_PMA-Ionomycin_stimulated_MACS_purified_Th_Primary_Cells s13301=Lung s13302=Ovary s13303=Thymus s13049=HMEC s13025=CD4_Naive_Primary_cells s13149=CD4+_CD25-_CD45RA+_Naive_Primary_Cells s13021=CD8_Naive_Primary_cells s13020=CD4_Memory_Primary_cells s13023=Mobilized_CD34_Primary_cells s13022=CD3_Primary_cells s13146=Stomach_Mucosa s13028=CD19_Primary_cells s13144=Penis_Foreskin_Fibroblast_Primary_Cells s13145=Penis_Foreskin_Melanocyte_Primary_Cells s11104=H9 s11106=HUES48 s11107=HUES64 s11101=H1 s11102=hES-I3 s11103=WA-7 s13099=CD14_primary_cells s13052=HUVEC s14044=Dnd41 s13010=Adult_Liver s13011=Bone_Marrow_Derived_Mesenchymal_Stem_cell s13013=Adipose_Nuclei s13014=Colonic_Mucosa s13015=Rectal_Mucosa s13151=CD4+_CD25-_IL17+_PMA-Ionomcyin_stimulated_Th17_Primary_Cells s13150=CD4+_CD25-_CD45RO+_Memory_Primary_Cells s13153=CD8_Memory_Primary_Cells s13152=CD4+_CD25int_CD127+_Tmem_Primary_Cells s13155=Brain_Germinal_Matrix s11304=H9_Derived_Neuronal_Progenitor_Cultured_Cells s13157=CD4+_CD25-_Th_Primary_Cells s13216=Esophagus s13211=Right_Atrium s13160=Brain_Angular_Gyrus s13162=Duodenum_Smooth_Muscle s13163=Duodenum_Mucosa s11213=iPS_DF_19.11 s11216=iPS_DF_6.9 s13007=Breast_vHMEC s13005=Breast_Myoepithelial_cells s13004=Rectal_Smooth_Muscle s13003=Skeletal_Muscle s13002=Stomach_Smooth_Muscle s13001=Muscle_Satellite_Cultured_Cells s13018=Peripheral_Blood_Mononuclear_Primary_cells s11205=hiPS-20b s13019=CD34_Primary_cells s13029=CD15_Primary_cells s13171=PanIslets s11206=hiPS-15b s13154=CD4+_CD25+_CD127-_Treg_Primary_Cells s12219=Fetal_Lung s12218=Fetal_Kidney s13068=Monocytes-CD14+ s11208=hiPS-18b s12107=Fetal_Placenta s12224=Fetal_Intestine_Small s12225=Fetal_Muscle_Trunk s12226=Fetal_Muscle_Leg s14001=HeLa-S3 s12222=Fetal_Adrenal_Gland s12223=Fetal_Intestine_Large s12228=Fetal_Thymus s13054=NH-A s13055=NHDF-Ad s13056=NHEK s13057=NHLF s13050=HSMM s13051=HSMMtube s13218=Psoas_Muscle s11309=H1_Derived_Neuronal_Progenitor_Cultured_Cells s15001=Placenta_Amnion s13217=Aorta s13214=Right_Ventricle s13215=Gastric s13058=Osteobl s13213=Sigmoid_Colon s13210=Left_Ventricle s13147=Colon_Smooth_Muscle s14011=A549 s14018=K562 s13043=Brain_Inferior_Temporal_Lobe s13042=Brain_Hippocampus_Middle s13041=Brain_Cingulate_Gyrus s13040=Brain_Anterior_Caudate s13047=GM12878 s13208=Pancreas s13045=Brain_Substantia_Nigra s13044=Brain_Mid_Frontal_Lobe s13205=Spleen s11314=Mesenchymal_Stem_Cell_Derived_Adipocyte_Cultured_Cells s13207=Small_Intestine s11316=Chondrocytes_from_Bone_Marrow_Derived_Mesenchymal_Stem_Cell_Cultured_Cells s11311=H1_BMP4_Derived_Mesendoderm_Cultured_Cells s11310=IMR90 s11313=H1_Derived_Mesenchymal_Stem_Cells s11312=H1_BMP4_Derived_Trophoblast_Cultured_Cells s11315=Adipose_Derived_Mesenchymal_Stem_Cell_Cultured_Cells s11120=HUES6 s11125=UCSF-4star s11319=H9_Derived_Neuron_Cultured_Cells s12003=Fetal_Brain s12006=Fetal_Heart s13046=CD34_cultured_cells s12227=Fetal_Stomach s11323=hESC_Derived_CD56+_Mesoderm_Cultured_Cells s11327=hESC_Derived_CD56+_Ectoderm_Cultured_Cells s13037=CD56_primary_cells s13035=Penis_Foreskin_Keratinocyte_Primary_Cells s13033=Neurospheres,_Cortex_Derived s13031=Neurospheres,_Ganglionic_Eminence_Derived s11317=hESC_Derived_CD184+_Endoderm_Cultured_Cells
+subGroup3 dataType Data_Type Real=Real Imputed=Imputed
+dimensions dimensionX=view dimensionY=sampleType dimA=dataType
+sortOrder sampleType=+ view=+
+dividers sampleType
+dragAndDrop on
+visibility dense
+type bed 3
+
+    track RoadmapConsolidatedHMMViewAuxiliaryHMM
+    shortLabel AuxiliaryHMM
+    view AuxiliaryHMM
+    maxHeightPixels 64:32:16
+    parent RoadmapConsolidatedHMM
+    visibility dense
+
+        track AuxiliaryHMM_Real_E071_a27004
+        shortLabel BRN.HIPP.MID
+        longLabel E071 Brain Hippocampus Middle AuxiliaryHMM
+        type bigBed 9 .
+        itemRgb on
+        bigDataUrl https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/core_K27ac/jointModel/final/E071_18_core_K27ac_hg38lift_dense.bb
+        visibility dense
+        noInherit on
+        maxHeightPixels 64:32:16
+        metadata "Epigenome_Mnemonic"="BRN.HIPP.MID" "Standardized_Epigenome_name"="Brain Hippocampus Middle" "EDACC_Epigenome_name"="Brain_Hippocampus_Middle" "Group"="<span style="color:#C5912B">Brain</span>" "Age"="81Y, 73Y" "Lab"="BI" "Sex"="Male" "Anatomy"="BRAIN" "EID"="E071" "Type"="PrimaryTissue" "Order"="64" "Ethnicity"="Unknown"
+        subGroups view=AuxiliaryHMM sampleType=s13042 dataType=Real
+        parent RoadmapConsolidatedHMMViewAuxiliaryHMM off
+
+    track RoadmapConsolidatedHMMViewPrimaryHMM
+    shortLabel PrimaryHMM
+    view PrimaryHMM
+    maxHeightPixels 64:32:16
+    parent RoadmapConsolidatedHMM
+    visibility dense
+
+        track PrimaryHMM_Real_E012_a27004
+        shortLabel ESDR.CD56.ECTO
+        longLabel E012 hESC Derived CD56+ Ectoderm Cultured Cells PrimaryHMM
+        type bigBed 9 .
+        itemRgb on
+        bigDataUrl https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E012_15_coreMarks_hg38lift_dense.bb
+        visibility dense
+        noInherit on
+        maxHeightPixels 64:32:16
+        metadata "Epigenome_Mnemonic"="ESDR.CD56.ECTO" "Standardized_Epigenome_name"="hESC Derived CD56+ Ectoderm Cultured Cells" "EDACC_Epigenome_name"="hESC_Derived_CD56+_Ectoderm_Cultured_Cells" "Group"="<span style="color:#4178AE">ES-deriv</span>" "Age"="CL" "Lab"="BI" "Sex"="Male" "Anatomy"="ESC_DERIVED" "EID"="E012" "Type"="ESCDerived" "Order"="19" "Ethnicity"="NA"
+        subGroups view=PrimaryHMM sampleType=s11327 dataType=Real
+        parent RoadmapConsolidatedHMMViewPrimaryHMM off
+
+
+
+        track PrimaryHMM_Real_E087_a27004
+        shortLabel PANC.ISLT
+        longLabel E087 Pancreatic Islets PrimaryHMM
+        type bigBed 9 .
+        itemRgb on
+        bigDataUrl https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/E087_15_coreMarks_hg38lift_dense.bb
+        visibility dense
+        noInherit on
+        maxHeightPixels 64:32:16
+        metadata "Epigenome_Mnemonic"="PANC.ISLT" "Standardized_Epigenome_name"="Pancreatic Islets" "EDACC_Epigenome_name"="Pancreatic_Islets" "Group"="<span style="color:#999999">Other</span>" "Age"="Unknown, Unknown, 45Y" "Lab"="BI;UCSF-UBC" "Sex"="Male" "Anatomy"="PANCREAS" "EID"="E087" "Type"="PrimaryTissue" "Order"="105" "Ethnicity"="Unknown, Unknown, Caucasian"
+        subGroups view=PrimaryHMM sampleType=s13171 dataType=Real
+        parent RoadmapConsolidatedHMMViewPrimaryHMM off

@@ -27,12 +27,10 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ucsc.hub.TrackConfigGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;

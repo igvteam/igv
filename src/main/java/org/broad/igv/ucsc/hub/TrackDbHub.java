@@ -1,9 +1,8 @@
 package org.broad.igv.ucsc.hub;
 
-import com.google.gson.Gson;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -12,8 +11,6 @@ import static org.broad.igv.ucsc.hub.Hub.getPriority;
 
 public class TrackDbHub {
 
-    List<Stanza> trackStanzas;
-    List<Stanza> groupStanzas;
 
     static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix", "refgene"));
 
@@ -26,105 +23,102 @@ public class TrackDbHub {
             "squish", "SQUISHED",
             "dense", "COLLAPSED");
 
+    List<Stanza> trackStanzas;
+    List<Stanza> groupStanzas;
+    List<TrackConfigContainer> groupTrackConfigs;
+
 
     public TrackDbHub(List<Stanza> trackStanzas, List<Stanza> groupStanzas) {
-
         this.groupStanzas = groupStanzas;
         this.trackStanzas = trackStanzas;
     }
 
-    public List<TrackConfigGroup> getGroupedTrackConfigurations() {
+    public List<TrackConfigContainer> getGroupedTrackConfigurations(String hubName) {
 
-        // Build map of group objects
-        Map<String, TrackConfigGroup> groupMap = new HashMap<>();
-        // Create a group for tracks without a group
-        groupMap.put("", new TrackConfigGroup("", "", 0, true));
+        if (groupTrackConfigs == null) {
+            // Build map of group objects
+            groupTrackConfigs = new ArrayList<>();
+            Map<String, TrackConfigContainer> trackContainers = new HashMap<>();
 
-        if (this.groupStanzas != null) {
-            for (Stanza groupStanza : this.groupStanzas) {
-                String name = groupStanza.getProperty("name");
-                boolean defaultOpen = "0".equals(groupStanza.getProperty("defaultIsClosed"));
-                int priority = groupStanza.hasProperty("priority") ? getPriority(groupStanza.getProperty("priority")) : Integer.MAX_VALUE - 1;
-                groupMap.put(name, new TrackConfigGroup(name, groupStanza.getProperty("label"), priority, defaultOpen));
-            }
-        }
+            // Create a group for tracks without a group
+            TrackConfigContainer nullContainer = new TrackConfigContainer(hubName, hubName, 0, true);
+            groupTrackConfigs.add(nullContainer);
 
-        // Build map of stanzas to resolve parents
-        Map<String, Stanza> trackStanzaMap = new HashMap<>();
-        for (Stanza s : this.trackStanzas) {
-            trackStanzaMap.put(s.getProperty("track"), s);
-        }
-
-        // Initialized cache of track containers.  Use linked hashmap to maintain insertion order
-        LinkedHashMap<String, TrackConfigGroup> parentCache = new LinkedHashMap<>();
-
-        // Tracks
-        final List<TrackConfig> trackConfigs = this.getTrackConfigs(stanza -> !filterTracks.contains(stanza.name));
-        for (TrackConfig c : trackConfigs) {
-            String groupName = c.getGroup() != null ? c.getGroup() : "";
-
-            // Some heads (at least one, the washu epigenomics hub) reference groups that are not defined.
-            if (!groupMap.containsKey(groupName)) {
-                groupMap.put(groupName, new TrackConfigGroup(groupName, groupName, Integer.MAX_VALUE, false));
-            }
-
-            final TrackConfigGroup trackConfigGroup = groupMap.get(groupName);
-            int priority = trackConfigGroup.priority;
-            trackConfigGroup.tracks.add(c);
-
-            String parentName = c.getStanzaParent();
-            if (parentName != null && trackStanzaMap.containsKey(parentName)) {
-                // Create a contingent container, will be used if a sufficient # of tracks belong to this container
-                TrackConfigGroup container = parentCache.get(parentName);
-                if (container == null) {
-                    Stanza s = trackStanzaMap.get(parentName);
-                    String label = trackConfigGroup.label.equals("") ?
-                            s.getProperty("shortLabel") :
-                            trackConfigGroup.label + " - " + s.getProperty("shortLabel");
-                    int p = s.hasProperty("priority") ? getPriority(s.getProperty("priority")) : priority + 1;
-                    container = new TrackConfigGroup(parentName, label, p, false);
-                    parentCache.put(parentName, container);
+            if (this.groupStanzas != null) {
+                for (Stanza groupStanza : this.groupStanzas) {
+                    String name = groupStanza.getProperty("name");
+                    boolean defaultOpen = "0".equals(groupStanza.getProperty("defaultIsClosed"));
+                    int priority = groupStanza.hasProperty("priority") ? getPriority(groupStanza.getProperty("priority")) : Integer.MAX_VALUE - 1;
+                    final TrackConfigContainer container = new TrackConfigContainer(name, groupStanza.getProperty("label"), priority, defaultOpen);
+                    trackContainers.put(name, container);
+                    groupTrackConfigs.add(container);
                 }
-                container.tracks.add(c);
             }
-        }
 
-        // Flatten the track groups into a list.  Remove empty groups.
-        List<TrackConfigGroup> groupedTrackConfigurations = groupMap.values().stream()
-                .filter(g -> !g.isEmpty()).collect(Collectors.toList());
+            for (Stanza s : trackStanzas) {
 
-        // Promote contingent embedded track groups (e.g. composite tracks) to top level group if # of tracks > threshold
-        // Member tracks must also be removed from existing top level categories
-        List<TrackConfigGroup> tmp = new ArrayList<>();
-        Set<TrackConfig> toRemove = new HashSet<>();
-        for (TrackConfigGroup parent : parentCache.values()) {
-            if (parent.tracks.size() > 5) {
-                tmp.add(parent);
-                toRemove.addAll(parent.tracks);
+                boolean isContainer = s.hasOwnProperty("superTrack") ||
+                        s.hasOwnProperty("compositeTrack") ||
+                        s.hasOwnProperty("view") ||
+                        (s.hasOwnProperty("container") && s.getOwnProperty("container").equals("multiWig"));
+
+                // Find parent, if any.  "group" containers can be implicit, all other types should be explicitly
+                // defined before their children
+                TrackConfigContainer parent = null;
+                if (s.hasProperty("group")) {
+                    String groupName = s.getProperty("group");
+                    if (trackContainers.containsKey(groupName)) {
+                        parent = trackContainers.get(groupName);
+                    } else {
+                        // Group not found, just append to name
+                    }
+                }
+
+                if (parent == null && s.hasOwnProperty("parent")) {
+                    parent = trackContainers.get(s.getOwnProperty("parent"));
+                }
+
+
+                if (isContainer) {
+
+                    String name = s.getProperty("track");
+                    int priority = s.hasProperty("priority") ? getPriority(s.getProperty("priority")) : Integer.MAX_VALUE - 1;
+                    final TrackConfigContainer container = new TrackConfigContainer(name, s.getProperty("shortLabel"), priority, false);
+                    if (trackContainers.containsKey(name)) {
+                        throw new RuntimeException("Duplicate track container: " + name);
+                    }
+                    trackContainers.put(name, container);
+
+                    if (parent == null || s.hasOwnProperty("superTrack")) {
+                        // No parent or a superTrack => promote to top level
+                        groupTrackConfigs.add(container);
+                    } else {
+                        parent.children.add(container);
+                    }
+
+                } else if (!filterTracks.contains(s.name) &&
+                        s.hasProperty("bigDataUrl") &&
+                        supportedTypes.contains(s.format())) {
+
+                    final TrackConfig trackConfig = getTrackConfig(s);
+                    if (parent != null) {
+                        parent.tracks.add(trackConfig);
+                    } else {
+                        nullContainer.tracks.add(trackConfig);
+                    }
+                }
             }
-        }
-        if (toRemove.size() > 0) {
-            for (TrackConfigGroup g : groupedTrackConfigurations) {
-                g.tracks = g.tracks.stream().filter(t -> !toRemove.contains(t)).collect(Collectors.toList());
+
+            // Filter empty groups and sort
+            for (TrackConfigContainer c : groupTrackConfigs) {
+                c.trim();
             }
+            groupTrackConfigs = groupTrackConfigs.stream().filter(t -> !t.isEmpty()).collect(Collectors.toList());
+
+
+            Collections.sort(groupTrackConfigs, Comparator.comparingInt(o -> o.priority));
         }
-
-        // Filter empty groups
-        groupedTrackConfigurations = groupedTrackConfigurations.stream().filter(t -> t.tracks.size() > 0).collect(Collectors.toList());
-        groupedTrackConfigurations.addAll(tmp);
-        Collections.sort(groupedTrackConfigurations, Comparator.comparingInt(o -> o.priority));
-        return groupedTrackConfigurations;
-    }
-
-    /**
-     * Return an array of igv track config objects that satisfy the filter
-     */
-    List<TrackConfig> getTrackConfigs(java.util.function.Function<Stanza, Boolean> filter) {
-        return this.trackStanzas.stream().filter(t -> {
-                    return supportedTypes.contains(t.format()) && t.hasProperty("bigDataUrl") && (filter == null || filter.apply(t));
-                })
-                .map(t -> this.getTrackConfig(t))
-                .toList();
+        return groupTrackConfigs;
     }
 
 
@@ -144,7 +138,7 @@ public class TrackDbHub {
         String longLabel = t.getOwnProperty("longLabel");
         if (longLabel == null) {
             String inheritedLongLabel = t.getProperty("longLabel");
-            longLabel = inheritedLongLabel.length() > config.getName().length() ? inheritedLongLabel : config.getName();
+            longLabel = inheritedLongLabel != null && inheritedLongLabel.length() > config.getName().length() ? inheritedLongLabel : config.getName();
         }
         config.setLongLabel(longLabel);
 
@@ -171,10 +165,10 @@ public class TrackDbHub {
         }
 
         String vizProperty = t.getProperty("visibility");
-
         if (vizProperty != null && vizModeMap.containsKey(vizProperty)) {
             config.setDisplayMode(vizModeMap.get(vizProperty));
         }
+        config.setVisible(vizProperty != null && !("hide".equals(vizProperty)));
 
         if (t.hasProperty("maxWindowToDraw")) {
             long maxWindow = Long.parseLong(t.getProperty("maxWindowToDraw"));
@@ -182,11 +176,6 @@ public class TrackDbHub {
             config.setVisibilityWindow(vizWindow);
         }
 
-        boolean visibility = t.hasProperty("compositeTrack") ?
-                "on".equals(t.getProperty("compositeTrack")) :
-                !("hide".equals(vizProperty));
-
-        config.setVisible(visibility);
 
         if (t.hasProperty("autoScale")) {
             config.setAutoscale(t.getProperty("autoScale").toLowerCase().equals("on"));
@@ -239,7 +228,7 @@ public class TrackDbHub {
         }
 
         if (t.parent != null) {
-            config.setStanzaParent(t.parent.name);
+            config.setStanzaParent(t.getAncestor().name);
         }
 
         return config;
@@ -250,18 +239,19 @@ public class TrackDbHub {
 
         Map<String, String> attrs = new HashMap();
         while (metadata.length() > 0) {
+
             int idx = metadata.indexOf("=");
             if (idx == -1) {
                 break;
             }
             int idx2;
-            String key = capitalize(metadata.substring(0, idx));
+            String key = StringUtils.stripQuotes(capitalize(metadata.substring(0, idx)));
             String value;
 
             if ('"' == metadata.charAt(idx + 1)) {
                 idx++;
-                idx2 = metadata.indexOf('"', idx + 1);
-                value = metadata.substring(idx + 1, idx2);
+                idx2 = metadata.indexOf("\" ", idx + 1);
+                value = idx2 > 0 ? metadata.substring(idx + 1, idx2) : metadata.substring(idx + 1);
                 idx2++;
             } else {
                 idx2 = metadata.indexOf(" ");
@@ -270,16 +260,35 @@ public class TrackDbHub {
                 }
                 value = metadata.substring(idx + 1, idx2);
             }
+            value = StringUtils.stripQuotes(value);
+            if (value.endsWith("\"")) {
+                value = value.substring(0, value.length() - 1);
+            }
+            if (value.startsWith("<") && value.endsWith(">")) {
+                value = htmlText(value);
+            }
             attrs.put(key, value);
             if (idx2 == metadata.length()) {
                 break;
             }
-            metadata = metadata.substring(idx2 + 1);
+            metadata = idx2 > 0 ? metadata.substring(idx2 + 1) : "";
         }
         return attrs;
     }
 
     private static String capitalize(final String line) {
         return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
+
+
+    static String htmlText(String html) {
+        // Assumes a pattern like <span style="color:#C58DAA">Digestive</span>
+        int idx1 = html.indexOf('>');
+        int idx2 = html.indexOf('<', idx1);
+        if (idx1 > 0 && idx2 > idx1) {
+            return html.substring(idx1 + 1, idx2);
+        } else {
+            return html;
+        }
     }
 }

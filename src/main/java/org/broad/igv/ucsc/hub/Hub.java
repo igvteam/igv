@@ -171,7 +171,7 @@ public class Hub {
         return config;
     }
 
-    public List<TrackConfigGroup> getGroupedTrackConfigurations() {
+    public List<TrackConfigContainer> getGroupedTrackConfigurations() {
         if (this.trackHub == null) {
             try {
                 List<Stanza> trackStanzas = HubParser.loadStanzas(this.trackDbURL);
@@ -180,7 +180,7 @@ public class Hub {
                 throw new RuntimeException("Error loading track configurations: " + e.getMessage(), e);
             }
         }
-        return trackHub.getGroupedTrackConfigurations();
+        return trackHub.getGroupedTrackConfigurations(this.getLongLabel());
     }
 
     public String getUrl() {

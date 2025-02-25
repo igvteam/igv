@@ -40,8 +40,8 @@ public class HyperlinkFactory {
 
             return hyperLink;
         } catch (URISyntaxException e) {
-            log.error("Error creating hyperlink for: " + link, e);
-            return  null;
+            // Not a url
+            return new JLabel(link);
         }
     }
 }
