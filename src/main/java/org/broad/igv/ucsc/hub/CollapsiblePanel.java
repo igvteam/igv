@@ -11,8 +11,7 @@ public class CollapsiblePanel extends JPanel {
 
     public static final Color HEADER_BG = new Color(180, 204, 226);
     public static final Color HEADER_BG2 = new Color(204, 204, 204);
-
-
+    private final JLabel jlabel;
     private JButton collapseButton;
     private JComponent content;
     private JPanel header;
@@ -20,10 +19,8 @@ public class CollapsiblePanel extends JPanel {
     private ImageIcon closeIcon;
 
     public CollapsiblePanel(String label, JComponent content, boolean isOpen) {
-        this(label, content, isOpen, HEADER_BG);
-    }
 
-    public CollapsiblePanel(String label, JComponent content, boolean isOpen, Color backgroundColor) {
+        Color backgroundColor = HEADER_BG;
 
         setLayout(new BorderLayout());
         this.content = content;
@@ -49,13 +46,17 @@ public class CollapsiblePanel extends JPanel {
         });
         header.add(collapseButton, BorderLayout.WEST);
 
-        final JLabel jLabel = new JLabel(label);
-        jLabel.setFont(FontManager.getFont(14));
-        jLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        header.add(jLabel, BorderLayout.CENTER);
+        jlabel = new JLabel(label);
+        jlabel.setFont(FontManager.getFont(14));
+        jlabel.setHorizontalAlignment(SwingConstants.CENTER);
+        header.add(jlabel, BorderLayout.CENTER);
 
         this.add(header, BorderLayout.NORTH);
 
+    }
+
+    public void updateLabel(String label) {
+        jlabel.setText(label);
     }
 
     public void addSearchButton(JComponent searchButton) {

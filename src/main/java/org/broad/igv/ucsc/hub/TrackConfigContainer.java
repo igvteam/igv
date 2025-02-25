@@ -30,23 +30,36 @@ public class TrackConfigContainer {
     }
 
     public void map(Function<TrackConfig, Void> f) {
-        for(TrackConfig config: tracks) {
+        for (TrackConfig config : tracks) {
             f.apply(config);
         }
-        for(TrackConfigContainer g: children) {
+        for (TrackConfigContainer g : children) {
             g.map(f);
         }
     }
 
     public void findSelectedConfigs(List<TrackConfig> selectedConfigs) {
-        for(TrackConfig trackConfig : selectedConfigs) {
-            if(trackConfig.getVisible() == true) {
+        for (TrackConfig trackConfig : selectedConfigs) {
+            if (trackConfig.getVisible() == true) {
                 selectedConfigs.add(trackConfig);
             }
         }
-        for(TrackConfigContainer container : children) {
+        for (TrackConfigContainer container : children) {
             container.findSelectedConfigs(selectedConfigs);
         }
+    }
+
+    public int countSelectedConfigs() {
+        int count = 0;
+        for (TrackConfig trackConfig : tracks) {
+            if (trackConfig.getVisible() == true) {
+                count++;
+            }
+        }
+        for (TrackConfigContainer container : children) {
+            count += container.countSelectedConfigs();
+        }
+        return count;
     }
 
     public void trim() {
@@ -54,10 +67,10 @@ public class TrackConfigContainer {
     }
 
     public void setTrackVisibility(Set<String> loadedTrackPaths) {
-        for(TrackConfig trackConfig : tracks) {
+        for (TrackConfig trackConfig : tracks) {
             trackConfig.setVisible(loadedTrackPaths.contains(trackConfig.getUrl()));
         }
-        for(TrackConfigContainer container : children) {
+        for (TrackConfigContainer container : children) {
             container.setTrackVisibility(loadedTrackPaths);
         }
     }

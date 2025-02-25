@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.List;
 
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -111,8 +112,8 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         // Search button.
-        JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), allSelectionBoxes);
-        topButtonPanel.add(searchButton, BorderLayout.EAST);
+        //JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), allSelectionBoxes);
+        //topButtonPanel.add(searchButton, BorderLayout.EAST);
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -170,37 +171,68 @@ public class TrackHubSelectionDialog extends JDialog {
         JPanel trackContainer = new JPanel();
         trackContainer.setLayout(new BoxLayout(trackContainer, BoxLayout.Y_AXIS));
 
-        addSelectionBoxes(null, configGroup, trackContainer);
+        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackContainer);
 
         boolean isSelected = false;
         int maxWidth = 0;
-        for (SelectionBox selectionBox : allSelectionBoxes) {
-            isSelected = isSelected || selectionBox.checkbox.isSelected();
+        int selectionCount = 0;
+        for (SelectionBox selectionBox : selectionBoxes) {
+            if (selectionBox.checkbox.isSelected()) {
+                selectionCount++;
+                isSelected = true;
+            }
             maxWidth = Math.max(maxWidth, selectionBox.getPreferredSize().width);
+            allSelectionBoxes.add(selectionBox);
         }
 
-        for (SelectionBox selectionBox : allSelectionBoxes) {
+        for (SelectionBox selectionBox : selectionBoxes) {
             selectionBox.setPreferredWidth(maxWidth);
         }
 
-        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(configGroup.label, trackContainer, isSelected || configGroup.defaultOpen);
+        String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
+
+        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(label, trackContainer, isSelected || configGroup.defaultOpen);
 
         // Add a search button for categories with large numbers of records
-        //if (configGroup.tracks.size() > 50) {
-        final JButton searchButton = createSearchButton("Search " + configGroup.label, allSelectionBoxes);
-        searchButton.addActionListener(e -> collapsiblePanel.expand());
+        final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes,
+                (selectedCount) -> {
+                    String l = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectedCount + " selected)";
+                    collapsiblePanel.updateLabel(l);
+                    return null;
+                });
+
         collapsiblePanel.addSearchButton(searchButton);
-        //}
+
+        for(SelectionBox selectionBox : selectionBoxes) {
+            selectionBox.setCallback( b -> {
+                int selected = configGroup.countSelectedConfigs();
+                String l = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selected + " selected)";
+                collapsiblePanel.updateLabel(l);
+                return null;
+
+            });
+        }
 
         return collapsiblePanel;
     }
 
-    private void addSelectionBoxes(String labelPrefix, TrackConfigContainer child, JPanel trackContainer) {
+    /**
+     * Add selection boxes for the container (a group, superTrack, compositeTrack, or view).  Return true if any
+     * tracks are selected.
+     *
+     * @param labelPrefix
+     * @param container
+     * @param panel
+     * @return
+     */
+    private List<SelectionBox> addSelectionBoxes(String labelPrefix, TrackConfigContainer container, JPanel panel) {
 
         String title = labelPrefix == null ? "" :
-                labelPrefix + (labelPrefix.length() > 0 ? " - " : "") + child.label;
+                labelPrefix + (labelPrefix.length() > 0 ? " - " : "") + container.label;
 
-        if (child.tracks.size() > 0) {
+        List<SelectionBox> selectionBoxes = new ArrayList<>();
+
+        if (container.tracks.size() > 0) {
 
             JPanel trackPanel = new JPanel();
             if (labelPrefix != null) {
@@ -210,25 +242,26 @@ public class TrackHubSelectionDialog extends JDialog {
             wrapLayout.setAlignment(FlowLayout.LEFT);
             trackPanel.setLayout(wrapLayout);
 
-            for (TrackConfig trackConfig : child.tracks) {
+            for (TrackConfig trackConfig : container.tracks) {
                 SelectionBox p = new SelectionBox(trackConfig);
                 trackPanel.add(p);
-                allSelectionBoxes.add(p);
+                selectionBoxes.add(p);
             }
 
-            trackContainer.add(Box.createVerticalStrut(5));
-            trackContainer.add(trackPanel);
+            panel.add(Box.createVerticalStrut(5));
+            panel.add(trackPanel);
 
             // final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(title, trackPanel, false, CollapsiblePanel.HEADER_BG2);
             // trackContainer.add(collapsiblePanel);
         }
 
-        for (TrackConfigContainer childChild : child.children) {
-            addSelectionBoxes(title, childChild, trackContainer);
+        for (TrackConfigContainer childChild : container.children) {
+            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel));
         }
+        return selectionBoxes;
     }
 
-    private JButton createSearchButton(String label, List<SelectionBox> selectionBoxes) {
+    private JButton createSearchButton(String label, List<SelectionBox> selectionBoxes, Function<Integer, Void> callback) {
 
         JButton searchButton = new JButton("Search");
 
@@ -291,6 +324,7 @@ public class TrackHubSelectionDialog extends JDialog {
                 for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
                     entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
                 }
+                callback.apply(selectedRecords.size());
             }
         });
         return searchButton;
@@ -304,7 +338,7 @@ public class TrackHubSelectionDialog extends JDialog {
     public List<TrackConfig> getSelectedConfigs() {
 
         List<TrackConfig> selectedConfigs = new ArrayList<>();
-        for(TrackConfigContainer container : trackConfigContainers) {
+        for (TrackConfigContainer container : trackConfigContainers) {
             container.findSelectedConfigs(selectedConfigs);
         }
         return selectedConfigs;
@@ -316,7 +350,7 @@ public class TrackHubSelectionDialog extends JDialog {
         private CheckBox checkbox;
         int preferredWidth = -1;
         private int minWidth;
-
+        Function<Integer, Void> callback;
 
         public SelectionBox(TrackConfig trackConfig) {
 
@@ -332,6 +366,9 @@ public class TrackHubSelectionDialog extends JDialog {
             checkbox.setSelected(trackConfig.getVisible());
             checkbox.setActionListener(e -> {
                 trackConfig.setVisible(checkbox.isSelected());
+                if (callback != null) {
+                    callback.apply(checkbox.isSelected() ? 1 : 0);
+                }
             });
 
             JLabel label = new JLabel(trackConfig.getName());
@@ -394,6 +431,10 @@ public class TrackHubSelectionDialog extends JDialog {
 
         public TrackConfig getTrackConfig() {
             return trackConfig;
+        }
+
+        public void setCallback(Function<Integer, Void> callback) {
+            this.callback = callback;
         }
     }
 
