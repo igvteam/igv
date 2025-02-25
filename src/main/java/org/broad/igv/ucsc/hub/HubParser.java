@@ -83,7 +83,6 @@ public class HubParser {
             }
         }
 
-
         if (genomeStanza.hasProperty("groups")) {
             if (genomeStanza.hasProperty("groups")) {
                 String groupsTxtURL = genomeStanza.getProperty("groups");
