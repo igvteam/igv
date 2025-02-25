@@ -7,7 +7,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
-import org.broad.igv.ucsc.hub.TrackConfigGroup;
+import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 
@@ -57,7 +57,7 @@ public class HubGenomeLoader extends GenomeLoader {
         // Check previous selections for this hub first
         // TODO -- Maintain track order?
         String key = "hub:" + this.hubURL;
-        final List<TrackConfigGroup> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        final List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
         if (PreferencesManager.getPreferences().hasExplicitValue(key)) {
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
@@ -72,12 +72,12 @@ public class HubGenomeLoader extends GenomeLoader {
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
             int count = 0;
-            for (TrackConfigGroup g : groupedTrackConfigurations) {
+            for (TrackConfigContainer g : groupedTrackConfigurations) {
                 count += g.tracks.size();
             }
 
             // If the total # of tracks is >= 20 filter to "Gene" groups, usually a single group
-            List<TrackConfigGroup> filteredGroups = count < 20 ?
+            List<TrackConfigContainer> filteredGroups = count < 20 ?
                     groupedTrackConfigurations :
                     groupedTrackConfigurations.stream().filter(g -> g.label.startsWith("Gene")).collect(Collectors.toList());
 

@@ -37,7 +37,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
-import org.broad.igv.ucsc.hub.TrackConfigGroup;
+import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
@@ -95,11 +95,11 @@ public class SelectHubTracksAction extends MenuAction {
 
                     final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
                     Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
-                    List<TrackConfigGroup> groups = hub.getGroupedTrackConfigurations();
-                    for (TrackConfigGroup g : groups) {
-                        for (TrackConfig config : g.tracks) {
-                            config.setVisible(loadedTrackPaths.contains(config.getUrl()));
-                        }
+                    List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+
+                    // Overide visibility -- track is vis
+                    for (TrackConfigContainer g : groups) {
+                        g.setTrackVisibility(loadedTrackPaths);
                     }
 
                     TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, groups, IGV.getInstance().getMainFrame());
@@ -113,8 +113,8 @@ public class SelectHubTracksAction extends MenuAction {
                         Set<String> trackPathsToRemove = new HashSet<>();
                         List<TrackConfig> tracksToLoad = new ArrayList<>();
                         List<TrackConfig> selected = new ArrayList<>();
-                        for (TrackConfigGroup g : groups) {
-                            for (TrackConfig config : g.tracks) {
+                        for (TrackConfigContainer g : groups) {
+                            g.map(config -> {
                                 if (config.getVisible()) {
                                     selected.add(config);
                                     if (!loadedTrackPaths.contains(config.getUrl())) {
@@ -123,7 +123,8 @@ public class SelectHubTracksAction extends MenuAction {
                                 } else {
                                     trackPathsToRemove.add(config.getUrl());
                                 }
-                            }
+                                return null;
+                            });
                         }
 
                         List<Track> tracksToRemove = loadedTracks.stream().filter(t -> trackPathsToRemove.contains(t.getResourceLocator().getPath())).toList();

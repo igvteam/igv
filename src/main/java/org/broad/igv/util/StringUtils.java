@@ -317,7 +317,7 @@ public class StringUtils {
      * @return
      */
     public static String stripQuotes(String fileString) {
-        if (isQuoted(fileString)) {
+        if (fileString.length() > 2 && isQuoted(fileString)) {
             fileString = fileString.substring(1, fileString.length() - 1);
         }
         return fileString;

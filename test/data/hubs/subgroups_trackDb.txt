@@ -1,0 +1,46 @@
+track RoadmapH3K4me2
+compositeTrack on
+parent RoadmapChIP-seq off
+shortLabel H3K4me2
+longLabel Roadmap H3K4me2
+group roadmap
+subGroup1 view Views ALN=Alignments COV=Coverage
+subGroup2 sampleType Sample_Type H1=H1 mesendoderm=mesendoderm H9=H9 skeletal_muscle_satellite_cell=skeletal_muscle_satellite_cell neuronal_stem_cell=neuronal_stem_cell IMR-90=IMR-90 trophoblast_cell=trophoblast_cell mesenchymal_stem_cell=mesenchymal_stem_cell
+subGroup3 outputType Output_Type peaks=peaks replicated_peaks=replicated_peaks pseudoreplicated_peaks=pseudoreplicated_peaks signal_p-value=signal_p-value fold_change_over_control=fold_change_over_control
+dimensions dimensionY=sampleType dimensionX=outputType
+sortOrder sampleType=+
+dragAndDrop on, priority 1
+visibility dense
+type bed 3
+
+		track ENCFF230SMK_H1_ChIP-seq
+		shortLabel ENCFF230SMK
+		longLabel H1 ChIP-seq peaks
+		type bigBed
+		color 0,82,41
+		bigDataUrl https://www.encodeproject.org/files/ENCFF230SMK/@@download/ENCFF230SMK.bigBed
+		visibility dense
+		noInherit on
+		maxHeightPixels 64:32:16
+		metadata Sample=H1 Type=peaks Assay=ChIP-seq genome=hg38
+		subGroups view=COV sampleType=H1 outputType=peaks
+		parent RoadmapH3K4me2 off
+		autoScale on
+		yLineOnOff on
+		priority 1
+
+		track ENCFF029XEN_H1_ChIP-seq
+		shortLabel ENCFF029XEN
+		longLabel H1 ChIP-seq peaks
+		type bigBed
+		color 0,82,41
+		bigDataUrl https://www.encodeproject.org/files/ENCFF029XEN/@@download/ENCFF029XEN.bigBed
+		visibility dense
+		noInherit on
+		maxHeightPixels 64:32:16
+		metadata Sample=H1 Type=peaks Assay=ChIP-seq genome=hg38
+		subGroups view=COV sampleType=H1 outputType=peaks
+		parent RoadmapH3K4me2 off
+		autoScale on
+		yLineOnOff on
+		priority 1
