@@ -23,7 +23,7 @@ public class HubTest {
         GenomeConfig genomeConfig = hub.getGenomeConfig();
         assertNotNull(genomeConfig);
         assertEquals("GCF_000186305.1", genomeConfig.getId());
-        assertEquals("Python bivittatus (GCF_000186305.1)", genomeConfig.getName());
+        assertEquals("Python (GCF_000186305.1)", genomeConfig.getName());
         assertNotNull(genomeConfig.getTwoBitBptURL());
         assertNotNull(genomeConfig.getTwoBitURL());
         assertNotNull(genomeConfig.getChromAliasBbURL());
