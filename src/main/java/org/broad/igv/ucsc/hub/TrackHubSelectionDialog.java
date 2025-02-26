@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.List;
 
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -33,12 +32,36 @@ public class TrackHubSelectionDialog extends JDialog {
 
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
 
+    private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<Hub, TrackHubSelectionDialog>();
+
     private final List<TrackConfigContainer> trackConfigContainers;
     Hub hub;
     private ArrayList<CollapsiblePanel> categoryPanels;
     List<SelectionBox> allSelectionBoxes;
     boolean canceled = false;
 
+    public static TrackHubSelectionDialog getTrackHubSelectionDialog(Hub hub, Set<String> loadedTrackPaths) {
+
+        if (hubSelectionDialogs.containsKey(hub)) {
+            TrackHubSelectionDialog dialog = hubSelectionDialogs.get(hub);
+            dialog.resetSelectionBoxes(loadedTrackPaths);
+            return dialog;
+        } else {
+            Frame owner = IGV.getInstance().getMainFrame();
+            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+
+            // Overide visibility
+            if (loadedTrackPaths != null) {
+                for (TrackConfigContainer g : groups) {
+                    g.setTrackVisibility(loadedTrackPaths);
+                }
+            }
+
+            TrackHubSelectionDialog dialog = new TrackHubSelectionDialog(hub, groups, owner);
+            hubSelectionDialogs.put(hub, dialog);
+            return dialog;
+        }
+    }
 
     public TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, Frame owner) {
         super(owner);
@@ -49,6 +72,13 @@ public class TrackHubSelectionDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    private void resetSelectionBoxes(Set<String> loadedTrackPaths) {
+        if (loadedTrackPaths != null) {
+            for (SelectionBox box : allSelectionBoxes) {
+                box.setSelected(loadedTrackPaths.contains(box.trackConfig.getUrl()));
+            }
+        }
+    }
 
     void init(List<TrackConfigContainer> trackConfigContainers) {
 
@@ -171,7 +201,11 @@ public class TrackHubSelectionDialog extends JDialog {
         JPanel trackContainer = new JPanel();
         trackContainer.setLayout(new BoxLayout(trackContainer, BoxLayout.Y_AXIS));
 
-        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackContainer);
+        // There is a (so far) intractable bug if a large # of JCheckboxes are created for this widget.
+        int totalTrackCount = configGroup.countTracks();
+        SelectionBox.CheckboxType checkboxType = totalTrackCount < 1000 ? SelectionBox.CheckboxType.SWING : SelectionBox.CheckboxType.CUSTOM;
+
+        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackContainer, checkboxType);
 
         boolean isSelected = false;
         int maxWidth = 0;
@@ -203,9 +237,9 @@ public class TrackHubSelectionDialog extends JDialog {
 
         collapsiblePanel.addSearchButton(searchButton);
 
-        for(SelectionBox selectionBox : selectionBoxes) {
-            selectionBox.setCallback( b -> {
-                int selected = configGroup.countSelectedConfigs();
+        for (SelectionBox selectionBox : selectionBoxes) {
+            selectionBox.setCallback(b -> {
+                int selected = configGroup.countSelectedTracks();
                 String l = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selected + " selected)";
                 collapsiblePanel.updateLabel(l);
                 return null;
@@ -223,9 +257,10 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param labelPrefix
      * @param container
      * @param panel
+     * @param checkboxType
      * @return
      */
-    private List<SelectionBox> addSelectionBoxes(String labelPrefix, TrackConfigContainer container, JPanel panel) {
+    private List<SelectionBox> addSelectionBoxes(String labelPrefix, TrackConfigContainer container, JPanel panel, SelectionBox.CheckboxType checkboxType) {
 
         String title = labelPrefix == null ? "" :
                 labelPrefix + (labelPrefix.length() > 0 ? " - " : "") + container.label;
@@ -243,7 +278,7 @@ public class TrackHubSelectionDialog extends JDialog {
             trackPanel.setLayout(wrapLayout);
 
             for (TrackConfig trackConfig : container.tracks) {
-                SelectionBox p = new SelectionBox(trackConfig);
+                SelectionBox p = new SelectionBox(trackConfig, checkboxType);
                 trackPanel.add(p);
                 selectionBoxes.add(p);
             }
@@ -256,7 +291,7 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         for (TrackConfigContainer childChild : container.children) {
-            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel));
+            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, checkboxType));
         }
         return selectionBoxes;
     }
@@ -346,13 +381,15 @@ public class TrackHubSelectionDialog extends JDialog {
 
     static class SelectionBox extends JPanel {
 
+        enum CheckboxType {SWING, CUSTOM}
+
         TrackConfig trackConfig;
-        private CheckBox checkbox;
+        private CheckBoxWrapper checkbox;
         int preferredWidth = -1;
         private int minWidth;
         Function<Integer, Void> callback;
 
-        public SelectionBox(TrackConfig trackConfig) {
+        public SelectionBox(TrackConfig trackConfig, CheckboxType checkboxType) {
 
             this.setLayout(new BorderLayout(5, 0));
             this.trackConfig = trackConfig;
@@ -362,7 +399,7 @@ public class TrackHubSelectionDialog extends JDialog {
                 this.setToolTipText(longLabel);
             }
 
-            this.checkbox = new CheckBox();
+            this.checkbox = new CheckBoxWrapper(checkboxType);
             checkbox.setSelected(trackConfig.getVisible());
             checkbox.setActionListener(e -> {
                 trackConfig.setVisible(checkbox.isSelected());
@@ -372,8 +409,8 @@ public class TrackHubSelectionDialog extends JDialog {
             });
 
             JLabel label = new JLabel(trackConfig.getName());
-            label.setLabelFor(checkbox);
-            add(checkbox, BorderLayout.WEST);
+            label.setLabelFor(checkbox.getComponent());
+            add(checkbox.getComponent(), BorderLayout.WEST);
 
             String infoLink = trackConfig.getHtml();
 
@@ -438,6 +475,44 @@ public class TrackHubSelectionDialog extends JDialog {
         }
     }
 
+    static class CheckBoxWrapper {
+
+        CheckBox checkBox;
+        JCheckBox jCheckBox;
+
+        public CheckBoxWrapper(SelectionBox.CheckboxType checkboxType) {
+            if(checkboxType == SelectionBox.CheckboxType.SWING) {
+                jCheckBox = new JCheckBox();
+            } else {
+                checkBox = new CheckBox();
+            }
+        }
+
+        public JComponent getComponent() {
+            return checkBox != null ? checkBox : jCheckBox;
+        }
+
+        public void setSelected(boolean selected) {
+            if (checkBox != null) {
+                checkBox.setSelected(selected);
+            } else {
+                jCheckBox.setSelected(selected);
+            }
+        }
+
+        public boolean isSelected() {
+            return checkBox != null ? checkBox.isSelected() :  jCheckBox.isSelected();
+        }
+
+        public void setActionListener(ActionListener l) {
+            if(checkBox != null) {
+                checkBox.setActionListener(l);
+            } else {
+                jCheckBox.addActionListener(l);
+            }
+        }
+    }
+
     static class CheckBox extends JLabel {
 
         boolean selected = false;
@@ -475,6 +550,11 @@ public class TrackHubSelectionDialog extends JDialog {
 
         public void setActionListener(ActionListener l) {
             this.actionListener = l;
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(16, 16);
         }
     }
 

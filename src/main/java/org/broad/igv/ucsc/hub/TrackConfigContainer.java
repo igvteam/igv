@@ -49,7 +49,15 @@ public class TrackConfigContainer {
         }
     }
 
-    public int countSelectedConfigs() {
+    public int countTracks() {
+        int count = tracks.size();
+        for (TrackConfigContainer container : children) {
+            count += container.countTracks();
+        }
+        return count;
+    }
+
+    public int countSelectedTracks() {
         int count = 0;
         for (TrackConfig trackConfig : tracks) {
             if (trackConfig.getVisible() == true) {
@@ -57,7 +65,7 @@ public class TrackConfigContainer {
             }
         }
         for (TrackConfigContainer container : children) {
-            count += container.countSelectedConfigs();
+            count += container.countSelectedTracks();
         }
         return count;
     }

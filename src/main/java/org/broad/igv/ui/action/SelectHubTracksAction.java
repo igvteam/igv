@@ -95,19 +95,14 @@ public class SelectHubTracksAction extends MenuAction {
 
                     final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
                     Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
-                    List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
 
-                    // Overide visibility -- track is vis
-                    for (TrackConfigContainer g : groups) {
-                        g.setTrackVisibility(loadedTrackPaths);
-                    }
-
-                    TrackHubSelectionDialog dlg = new TrackHubSelectionDialog(hub, groups, IGV.getInstance().getMainFrame());
+                    TrackHubSelectionDialog dlg =  TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths);
 
                     SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
 
                     if (!dlg.isCanceled()) {
 
+                        List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
 
                         // The dialog action will modify the visible state for each track config
                         Set<String> trackPathsToRemove = new HashSet<>();
