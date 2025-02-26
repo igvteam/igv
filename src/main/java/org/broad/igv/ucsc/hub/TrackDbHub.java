@@ -124,10 +124,13 @@ public class TrackDbHub {
 
     private TrackConfig getTrackConfig(Stanza t) {
 
-        String format = t.format();
         String url = t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
-        config.setFormat(format);
+
+        String format = t.format();
+        if(format != null) {
+            config.setFormat(format.toLowerCase());
+        }
 
         config.setPanelName(IGV.DATA_PANEL_NAME);
 
