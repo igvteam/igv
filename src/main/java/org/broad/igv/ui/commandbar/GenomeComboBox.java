@@ -96,7 +96,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
                 if (genomeListItem != null && genomeListItem.getPath() != null) {
 
                     if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                        HostedGenomeSelectionDialog.selectHostedGenome();
+                        HostedGenomeSelectionDialog.downloadHostedGenome();
                     } else {
 
                         try {

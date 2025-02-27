@@ -18,7 +18,7 @@ if [ -d "${prefix}/jdk-21" ]; then
     JAVA_HOME="${prefix}/jdk-21"
     PATH=$JAVA_HOME/bin:$PATH
 else
-     echo "Using system JDK. IGV requires Java 17."
+     echo "Using system JDK. IGV requires Java 21."
 fi
 
 # Report on Java version
