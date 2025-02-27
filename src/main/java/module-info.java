@@ -14,6 +14,7 @@ module org.igv {
     exports org.broad.igv.ucsc;
 
     requires com.google.common;
+    requires org.apache.commons.compress;
     requires commons.math3;
     requires com.google.gson;
     requires htsjdk;
