@@ -34,35 +34,43 @@ public class TrackHubSelectionDialog extends JDialog {
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
 
     private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<>();
-
     private Hub hub;
+    private boolean autoselectDefaults;
     private ArrayList<CollapsiblePanel> categoryPanels;
     private List<SelectionBox> allSelectionBoxes;
     boolean canceled = false;
 
-    public static TrackHubSelectionDialog getTrackHubSelectionDialog(Hub hub, Set<String> loadedTrackPaths) {
+    public static TrackHubSelectionDialog getTrackHubSelectionDialog(Hub hub, Set<String> loadedTrackPaths, boolean autoselectDefaults) {
 
         if (hubSelectionDialogs.containsKey(hub)) {
             TrackHubSelectionDialog dialog = hubSelectionDialogs.get(hub);
             dialog.resetSelectionBoxes(loadedTrackPaths);
+            dialog.autoselectDefaults = autoselectDefaults;
             return dialog;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-            TrackHubSelectionDialog dialog = new TrackHubSelectionDialog(hub, groups, owner);
+            TrackHubSelectionDialog dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
             hubSelectionDialogs.put(hub, dialog);
             return dialog;
         }
     }
 
-    private TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, Frame owner) {
+    private TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, boolean autoselectDefaults, Frame owner) {
         super(owner);
         setModal(true);
+        this.autoselectDefaults = autoselectDefaults;
         this.hub = hub;
         init(trackConfigContainers);
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Called when hub dialog is reused.  Update the selection box state to reflect currently loaded tracks, which
+     * could have changed since last invocation.
+     *
+     * @param loadedTrackPaths
+     */
     private void resetSelectionBoxes(Set<String> loadedTrackPaths) {
         if (loadedTrackPaths != null) {
             for (SelectionBox box : allSelectionBoxes) {
@@ -167,8 +175,6 @@ public class TrackHubSelectionDialog extends JDialog {
         getRootPane().setDefaultButton(okButton);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-
     }
 
     private JPanel getLabeledHyperlink(String label, String url) {
@@ -280,7 +286,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
                 SelectionBox selectionBox = new SelectionBox(trackConfig, checkboxType);
                 final boolean isLoaded = loadedTrackPaths.contains(trackConfig.getUrl());
-                selectionBox.setSelected(isLoaded);
+                selectionBox.setSelected(isLoaded || (autoselectDefaults && trackConfig.getVisible() == true));
                 selectionBox.setEnabled(!isLoaded);
                 trackPanel.add(selectionBox);
                 selectionBoxes.add(selectionBox);
@@ -392,7 +398,7 @@ public class TrackHubSelectionDialog extends JDialog {
         private int minWidth;
         private Function<Integer, Void> callback;
 
-        public SelectionBox(TrackConfig trackConfig,  CheckboxType checkboxType) {
+        public SelectionBox(TrackConfig trackConfig, CheckboxType checkboxType) {
 
             this.setLayout(new BorderLayout(5, 0));
             this.trackConfig = trackConfig;
@@ -601,7 +607,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
-        final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, null);
+        final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, true, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 

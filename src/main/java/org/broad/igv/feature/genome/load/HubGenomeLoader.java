@@ -4,16 +4,22 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.util.MessageUtils;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +27,8 @@ import java.util.stream.Collectors;
  * Loads a "genome" from a UCSC track hub
  */
 public class HubGenomeLoader extends GenomeLoader {
+
+    static Logger log = LogManager.getLogger(HubGenomeLoader.class);
 
     public static boolean isHubURL(String obj) {
         return obj.endsWith("/hub.txt");
@@ -47,11 +55,42 @@ public class HubGenomeLoader extends GenomeLoader {
      * @return
      * @throws IOException
      */
-    public static  Genome loadGenome(String hubURL) throws IOException {
-        Hub hub = HubParser.loadAssemblyHub(hubURL);
-        final GenomeConfig config = getGenomeConfig(hub);
-        File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-        return GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+    public static void loadGenome(String hubURL) throws IOException {
+
+        final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+
+        SwingWorker<File, Void> worker = new SwingWorker<>() {
+            @Override
+            protected File doInBackground() throws Exception {
+                File genomeFile = null;
+                try {
+                    Hub hub = HubParser.loadAssemblyHub(hubURL);
+                    final GenomeConfig config = getGenomeConfig(hub);
+                    genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
+                } catch (Exception e) {
+                    log.error("Error loading hub: " + e.getMessage());
+                    MessageUtils.showMessage("Error loading hub: " + e.getMessage());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                }
+                return genomeFile;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    File genomeFile = get();
+                    WaitCursorManager.removeWaitCursor(token);
+                    GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+                } catch (Exception e) {
+                    log.error("Error loading hub: " + e.getMessage());
+                    MessageUtils.showMessage("Error loading hub: " + e.getMessage());
+                }
+            }
+        };
+
+        worker.execute();
+
     }
 
     private static GenomeConfig getGenomeConfig(Hub hub) throws IOException {
@@ -77,15 +116,18 @@ public class HubGenomeLoader extends GenomeLoader {
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
-            int count = 0;
-            for (TrackConfigContainer g : groupedTrackConfigurations) {
-                count += g.tracks.size();
+            TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, null, true);
+
+            boolean dlgSuccess = true;
+            try {
+                SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
+            } catch (Exception e) {
+                dlgSuccess = false;
+                log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
             }
 
-            TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, null);
-            dlg.setVisible(true);
 
-            if (!dlg.isCanceled()) {
+            if (!dlg.isCanceled() && dlgSuccess) {
                 List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
                 config.setTracks(selectedTracks);
 
@@ -107,6 +149,7 @@ public class HubGenomeLoader extends GenomeLoader {
     // The current IGV version uses the static loadGenome(hubURL) method.
 
     String hubURL;
+
     public HubGenomeLoader(String hubURL) {
         this.hubURL = hubURL;
     }

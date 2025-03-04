@@ -82,7 +82,7 @@ public class SelectHubTracksAction extends MenuAction {
                     final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
                     Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
 
-                    TrackHubSelectionDialog dlg =  TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths);
+                    TrackHubSelectionDialog dlg =  TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false);
 
                     SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
 
