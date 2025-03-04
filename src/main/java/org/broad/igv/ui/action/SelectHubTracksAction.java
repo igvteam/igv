@@ -49,9 +49,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 
 /**
- * Select tracks from a track hub.  This action is used in 2 modes, (1) load tracks from a specific hub, and (2) select
- * default annotation tracks for the currently loaded genome.  Tracks are loaded in both modes, but in the
- * second selected tracks are also added to the genome definition.
+ * Select tracks from a track hub.
  *
  * @author jrobinso
  */
@@ -62,15 +60,10 @@ public class SelectHubTracksAction extends MenuAction {
     private Hub hub;
     IGV mainFrame;
 
-    // Keep track of authorization failures so user isn't constantly harranged
-    static HashSet<String> failedURLs = new HashSet();
-
-    boolean updateGenome;
 
     public SelectHubTracksAction(String label, IGV mainFrame, Hub hub) {
         super(label, null);
         this.mainFrame = mainFrame;
-        this.updateGenome = hub == null;
         this.hub = hub;
     }
 
@@ -85,13 +78,6 @@ public class SelectHubTracksAction extends MenuAction {
             protected Object doInBackground() throws Exception {
                 try {
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    if (hub == null) {
-                        hub = genome.getGenomeHub();
-                        if (hub == null) {
-                            // This should not happen
-                            MessageUtils.showMessage("No tracks available for current genome.");
-                        }
-                    }
 
                     final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
                     Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
@@ -105,7 +91,6 @@ public class SelectHubTracksAction extends MenuAction {
                         List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
 
                         // The dialog action will modify the visible state for each track config
-                        Set<String> trackPathsToRemove = new HashSet<>();
                         List<TrackConfig> tracksToLoad = new ArrayList<>();
                         List<TrackConfig> selected = new ArrayList<>();
                         for (TrackConfigContainer g : groups) {
@@ -115,26 +100,21 @@ public class SelectHubTracksAction extends MenuAction {
                                     if (!loadedTrackPaths.contains(config.getUrl())) {
                                         tracksToLoad.add(config);
                                     }
-                                } else {
-                                    trackPathsToRemove.add(config.getUrl());
                                 }
                                 return null;
                             });
                         }
 
-                        List<Track> tracksToRemove = loadedTracks.stream().filter(t -> trackPathsToRemove.contains(t.getResourceLocator().getPath())).toList();
-                        IGV.getInstance().deleteTracks(tracksToRemove);
-
                         List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
                         IGV.getInstance().loadTracks(locators);
 
                         // Update genome
-                        if (updateGenome) {
-                            genome.setAnnotationResources(locators);
-                            // Update preferences
-                            String key = "hub:" + hub.getUrl();
-                            PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
-                        }
+//                        if (updateGenome) {
+//                            genome.setAnnotationResources(locators);
+//                            // Update preferences
+//                            String key = "hub:" + hub.getUrl();
+//                            PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
+//                        }
                     }
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);

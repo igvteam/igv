@@ -140,7 +140,13 @@ public class GenomeDownloadUtils {
         }
     }
 
-    private static void saveLocalGenome(GenomeConfig genomeConfig, File localFile) throws IOException {
+    public static File saveLocalGenome(GenomeConfig config) throws IOException {
+        File f = new File(DirectoryManager.getGenomeCacheDirectory(), config.getId() + ".json");
+        saveLocalGenome(config, f);
+        return f;
+    }
+
+    public static void saveLocalGenome(GenomeConfig genomeConfig, File localFile) throws IOException {
         log.info("Saving " + localFile.getAbsolutePath());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(localFile))) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();

@@ -38,14 +38,20 @@ public class TrackConfigContainer {
         }
     }
 
-    public void findSelectedConfigs(List<TrackConfig> selectedConfigs) {
-        for (TrackConfig trackConfig : selectedConfigs) {
-            if (trackConfig.getVisible() == true) {
-                selectedConfigs.add(trackConfig);
+    public List<TrackConfig> findTracks(Function<TrackConfig, Boolean> filter) {
+        List<TrackConfig> found = new ArrayList<>();
+        find(found, filter);
+        return found;
+    }
+
+    private void find(List<TrackConfig> found, Function<TrackConfig, Boolean> filter) {
+        for (TrackConfig config : tracks) {
+            if (filter.apply(config)) {
+                found.add(config);
             }
         }
-        for (TrackConfigContainer container : children) {
-            container.findSelectedConfigs(selectedConfigs);
+        for (TrackConfigContainer g : children) {
+            g.find(found, filter);
         }
     }
 

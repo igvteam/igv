@@ -95,7 +95,7 @@ public class UCSCGenArkAction extends MenuAction {
             if (!dlg.isCanceled() && rec != null) {
                 String accession = rec.getAttributeValue("accession");
                 String url = HubGenomeLoader.convertToHubURL(accession);
-                GenomeManager.getInstance().loadGenome(url);
+                HubGenomeLoader.loadGenome(url);
             }
         } catch (IOException e) {
             log.error(e);

@@ -5,6 +5,7 @@ import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.HyperlinkFactory;
 import org.broad.igv.ui.util.IconFactory;
@@ -32,12 +33,11 @@ public class TrackHubSelectionDialog extends JDialog {
 
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
 
-    private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<Hub, TrackHubSelectionDialog>();
+    private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<>();
 
-    private final List<TrackConfigContainer> trackConfigContainers;
-    Hub hub;
+    private Hub hub;
     private ArrayList<CollapsiblePanel> categoryPanels;
-    List<SelectionBox> allSelectionBoxes;
+    private List<SelectionBox> allSelectionBoxes;
     boolean canceled = false;
 
     public static TrackHubSelectionDialog getTrackHubSelectionDialog(Hub hub, Set<String> loadedTrackPaths) {
@@ -49,25 +49,16 @@ public class TrackHubSelectionDialog extends JDialog {
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-
-            // Overide visibility
-            if (loadedTrackPaths != null) {
-                for (TrackConfigContainer g : groups) {
-                    g.setTrackVisibility(loadedTrackPaths);
-                }
-            }
-
             TrackHubSelectionDialog dialog = new TrackHubSelectionDialog(hub, groups, owner);
             hubSelectionDialogs.put(hub, dialog);
             return dialog;
         }
     }
 
-    public TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, Frame owner) {
+    private TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, Frame owner) {
         super(owner);
         setModal(true);
         this.hub = hub;
-        this.trackConfigContainers = trackConfigContainers;
         init(trackConfigContainers);
         setLocationRelativeTo(owner);
     }
@@ -75,7 +66,9 @@ public class TrackHubSelectionDialog extends JDialog {
     private void resetSelectionBoxes(Set<String> loadedTrackPaths) {
         if (loadedTrackPaths != null) {
             for (SelectionBox box : allSelectionBoxes) {
-                box.setSelected(loadedTrackPaths.contains(box.trackConfig.getUrl()));
+                final boolean isLoaded = loadedTrackPaths.contains(box.trackConfig.getUrl());
+                box.setSelected(isLoaded);
+                box.setEnabled(!isLoaded);
             }
         }
     }
@@ -108,7 +101,7 @@ public class TrackHubSelectionDialog extends JDialog {
         topButtonPanel.setLayout(new BorderLayout());
 
         JPanel expandButtonPanel = new JPanel();
-        expandButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        expandButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         JButton expandAllButton = new JButton("Expand All");
         expandAllButton.addActionListener(e -> {
             categoryPanels.forEach(cp -> cp.expand());
@@ -134,9 +127,12 @@ public class TrackHubSelectionDialog extends JDialog {
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Loop through track groups
+        final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
+        Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+
         for (TrackConfigContainer configGroup : trackConfigContainers) {
             categoryContainer.add(Box.createVerticalStrut(10));
-            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup);
+            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup, loadedTrackPaths);
             categoryContainer.add(categoryPanel);
             categoryPanels.add(categoryPanel);
         }
@@ -154,7 +150,7 @@ public class TrackHubSelectionDialog extends JDialog {
             setVisible(false);
         });
 
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton("Load");
         okButton.addActionListener(e -> {
             canceled = false;
             setVisible(false);
@@ -172,7 +168,6 @@ public class TrackHubSelectionDialog extends JDialog {
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // mainPanel.validate();
 
     }
 
@@ -196,16 +191,16 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param configGroup
      * @return
      */
-    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup) {
+    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup, Set<String> loadedTrackPaths) {
 
-        JPanel trackContainer = new JPanel();
-        trackContainer.setLayout(new BoxLayout(trackContainer, BoxLayout.Y_AXIS));
+        JPanel trackPanel = new JPanel();
+        trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
 
         // There is a (so far) intractable bug if a large # of JCheckboxes are created for this widget.
         int totalTrackCount = configGroup.countTracks();
         SelectionBox.CheckboxType checkboxType = totalTrackCount < 1000 ? SelectionBox.CheckboxType.SWING : SelectionBox.CheckboxType.CUSTOM;
 
-        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackContainer, checkboxType);
+        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackPanel, loadedTrackPaths, checkboxType);
 
         boolean isSelected = false;
         int maxWidth = 0;
@@ -225,7 +220,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
 
-        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(label, trackContainer, isSelected || configGroup.defaultOpen);
+        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(label, trackPanel, isSelected || configGroup.defaultOpen);
 
         // Add a search button for categories with large numbers of records
         final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes,
@@ -260,7 +255,11 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param checkboxType
      * @return
      */
-    private List<SelectionBox> addSelectionBoxes(String labelPrefix, TrackConfigContainer container, JPanel panel, SelectionBox.CheckboxType checkboxType) {
+    private List<SelectionBox> addSelectionBoxes(String labelPrefix,
+                                                 TrackConfigContainer container,
+                                                 JPanel panel,
+                                                 Set<String> loadedTrackPaths,
+                                                 SelectionBox.CheckboxType checkboxType) {
 
         String title = labelPrefix == null ? "" :
                 labelPrefix + (labelPrefix.length() > 0 ? " - " : "") + container.label;
@@ -278,9 +277,13 @@ public class TrackHubSelectionDialog extends JDialog {
             trackPanel.setLayout(wrapLayout);
 
             for (TrackConfig trackConfig : container.tracks) {
-                SelectionBox p = new SelectionBox(trackConfig, checkboxType);
-                trackPanel.add(p);
-                selectionBoxes.add(p);
+
+                SelectionBox selectionBox = new SelectionBox(trackConfig, checkboxType);
+                final boolean isLoaded = loadedTrackPaths.contains(trackConfig.getUrl());
+                selectionBox.setSelected(isLoaded);
+                selectionBox.setEnabled(!isLoaded);
+                trackPanel.add(selectionBox);
+                selectionBoxes.add(selectionBox);
             }
 
             panel.add(Box.createVerticalStrut(5));
@@ -291,7 +294,7 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         for (TrackConfigContainer childChild : container.children) {
-            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, checkboxType));
+            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, loadedTrackPaths, checkboxType));
         }
         return selectionBoxes;
     }
@@ -307,33 +310,35 @@ public class TrackHubSelectionDialog extends JDialog {
             attributeNames.add("Description");
             attributeNames.add("Format");
 
-
             Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
 
             List<FileRecord> records = new ArrayList<>();
 
             for (SelectionBox selectionBox : selectionBoxes) {
 
-                TrackConfig trackConfig = selectionBox.getTrackConfig();
-                final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
-                Map<String, String> attributes = trackConfigAttributes;
-                if (attributes == null) {
-                    attributes = new LinkedHashMap<>();
+                if (selectionBox.isEnabled()) {
+
+                    TrackConfig trackConfig = selectionBox.getTrackConfig();
+                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                    Map<String, String> attributes = trackConfigAttributes;
+                    if (attributes == null) {
+                        attributes = new LinkedHashMap<>();
+                    }
+
+                    attributes.put("Name", trackConfig.getName());
+                    attributes.put("Description", trackConfig.getDescription());
+                    attributes.put("Format", trackConfig.getFormat());
+
+                    if (trackConfigAttributes != null) {
+                        attributes.putAll(trackConfigAttributes);
+                        attributeNames.addAll(trackConfigAttributes.keySet());
+                    }
+
+                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
+                    record.setSelected(trackConfig.getVisible());
+                    records.add(record);
+                    recordSelectionBoxMap.put(record, selectionBox);
                 }
-
-                attributes.put("Name", trackConfig.getName());
-                attributes.put("Description", trackConfig.getDescription());
-                attributes.put("Format", trackConfig.getFormat());
-
-                if (trackConfigAttributes != null) {
-                    attributes.putAll(trackConfigAttributes);
-                    attributeNames.addAll(trackConfigAttributes.keySet());
-                }
-
-                final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                record.setSelected(trackConfig.getVisible());
-                records.add(record);
-                recordSelectionBoxMap.put(record, selectionBox);
             }
 
 
@@ -371,25 +376,23 @@ public class TrackHubSelectionDialog extends JDialog {
      * @return
      */
     public List<TrackConfig> getSelectedConfigs() {
-
-        List<TrackConfig> selectedConfigs = new ArrayList<>();
-        for (TrackConfigContainer container : trackConfigContainers) {
-            container.findSelectedConfigs(selectedConfigs);
-        }
-        return selectedConfigs;
+        return allSelectionBoxes.stream()
+                .filter(b -> b.isEnabled() && b.isSelected())
+                .map(SelectionBox::getTrackConfig).toList();
     }
 
     static class SelectionBox extends JPanel {
 
         enum CheckboxType {SWING, CUSTOM}
 
-        TrackConfig trackConfig;
+        private final JLabel label;
+        private TrackConfig trackConfig;
         private CheckBoxWrapper checkbox;
-        int preferredWidth = -1;
+        private int preferredWidth = -1;
         private int minWidth;
-        Function<Integer, Void> callback;
+        private Function<Integer, Void> callback;
 
-        public SelectionBox(TrackConfig trackConfig, CheckboxType checkboxType) {
+        public SelectionBox(TrackConfig trackConfig,  CheckboxType checkboxType) {
 
             this.setLayout(new BorderLayout(5, 0));
             this.trackConfig = trackConfig;
@@ -400,7 +403,7 @@ public class TrackHubSelectionDialog extends JDialog {
             }
 
             this.checkbox = new CheckBoxWrapper(checkboxType);
-            checkbox.setSelected(trackConfig.getVisible());
+
             checkbox.setActionListener(e -> {
                 trackConfig.setVisible(checkbox.isSelected());
                 if (callback != null) {
@@ -408,7 +411,7 @@ public class TrackHubSelectionDialog extends JDialog {
                 }
             });
 
-            JLabel label = new JLabel(trackConfig.getName());
+            label = new JLabel(trackConfig.getName());
             label.setLabelFor(checkbox.getComponent());
             add(checkbox.getComponent(), BorderLayout.WEST);
 
@@ -466,6 +469,18 @@ public class TrackHubSelectionDialog extends JDialog {
             trackConfig.setVisible(selected);
         }
 
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            checkbox.setEnabled(enabled);
+            label.setEnabled(enabled);
+        }
+
+
+        public boolean isSelected() {
+            return checkbox.isSelected();
+        }
+
         public TrackConfig getTrackConfig() {
             return trackConfig;
         }
@@ -481,7 +496,7 @@ public class TrackHubSelectionDialog extends JDialog {
         JCheckBox jCheckBox;
 
         public CheckBoxWrapper(SelectionBox.CheckboxType checkboxType) {
-            if(checkboxType == SelectionBox.CheckboxType.SWING) {
+            if (checkboxType == SelectionBox.CheckboxType.SWING) {
                 jCheckBox = new JCheckBox();
             } else {
                 checkBox = new CheckBox();
@@ -501,15 +516,27 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         public boolean isSelected() {
-            return checkBox != null ? checkBox.isSelected() :  jCheckBox.isSelected();
+            return checkBox != null ? checkBox.isSelected() : jCheckBox.isSelected();
         }
 
         public void setActionListener(ActionListener l) {
-            if(checkBox != null) {
+            if (checkBox != null) {
                 checkBox.setActionListener(l);
             } else {
                 jCheckBox.addActionListener(l);
             }
+        }
+
+        public void setEnabled(boolean enabled) {
+            if (checkBox != null) {
+                checkBox.setEnabled(enabled);
+            } else {
+                jCheckBox.setEnabled(enabled);
+            }
+        }
+
+        public boolean isEnabled() {
+            return checkBox != null ? checkBox.isEnabled() : jCheckBox.isEnabled();
         }
     }
 

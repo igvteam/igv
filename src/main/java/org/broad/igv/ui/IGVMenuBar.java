@@ -109,7 +109,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      * we can't access genome server list
      */
     private JMenuItem loadGenomeFromServerMenuItem;
-    private JMenuItem selectGenomeAnnotationsItem;
 
     private JMenuItem reloadSessionItem;
     private JMenuItem recentFilesMenu;
@@ -480,16 +479,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(new JSeparator());
         MenuAction genArkAction = new UCSCGenArkAction("Load Genome from UCSC GenArk...", 0, igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
-
-        MenuAction menuAction = new SelectHubTracksAction("Select GenArk Genome Tracks...", igv, null);
-        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        Genome newGenome = GenomeManager.getInstance().getCurrentGenome();
-        selectGenomeAnnotationsItem.setEnabled(newGenome != null && newGenome.getGenomeHub() != null);
-        menu.add(selectGenomeAnnotationsItem);
+//
+//        MenuAction menuAction = new SelectHubTracksAction("Select GenArk Genome Tracks...", igv, null);
+//        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+//        Genome newGenome = GenomeManager.getInstance().getCurrentGenome();
+//        selectGenomeAnnotationsItem.setEnabled(newGenome != null && newGenome.getGenomeHub() != null);
+//        menu.add(selectGenomeAnnotationsItem);
         menu.add(new JSeparator());
 
         // Add genome to combo box from server
-        menuAction = new MenuAction("Remove Genomes...", null) {
+        MenuAction menuAction = new MenuAction("Remove Genomes...", null) {
             @Override
             public void actionPerformed(ActionEvent event) {
                 RemoveGenomesDialog dialog2 = new RemoveGenomesDialog(igv.getMainFrame());
@@ -499,10 +498,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menu.addMenuListener((MenuSelectedListener) e -> {
-            Genome genome1 = GenomeManager.getInstance().getCurrentGenome();
-            selectGenomeAnnotationsItem.setEnabled(genome1 != null && genome1.getGenomeHub() != null);
-        });
+//        menu.addMenuListener((MenuSelectedListener) e -> {
+//            Genome genome1 = GenomeManager.getInstance().getCurrentGenome();
+//            selectGenomeAnnotationsItem.setEnabled(genome1 != null && genome1.getGenomeHub() != null);
+//        });
 
         return menu;
 

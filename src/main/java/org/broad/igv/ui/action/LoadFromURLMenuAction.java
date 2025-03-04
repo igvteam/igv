@@ -84,7 +84,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
         } else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
 
-            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .genome or FASTA file",
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .json, hub.txt, or FASTA file",
                     JOptionPane.QUESTION_MESSAGE);
 
             loadGenomeFromUrl(url);
@@ -95,7 +95,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     }
 
     private void loadUrls(List<String> inputs, List<String> indexes, boolean isHtsGet) {
-        checkURLs(inputs);
+
         if (inputs.size() == 1 && HubGenomeLoader.isHubURL(inputs.getFirst())) {
             LongRunningTask.submit(() -> {
                 try {
@@ -119,7 +119,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (!indexes.isEmpty() && indexes.size() != inputs.size()) {
                 throw new RuntimeException("The number of Index URLs must equal the number of File URLs");
             }
-            checkURLs(indexes);
+
             List<ResourceLocator> locators = getResourceLocators(inputs, indexes, isHtsGet);
             igv.addToRecentUrls(locators);
             igv.loadTracks(locators);
@@ -150,8 +150,11 @@ public class LoadFromURLMenuAction extends MenuAction {
         if (url != null && !url.isBlank()) {
             url = url.trim();
             try {
-                checkURLs(List.of(url));
-                GenomeManager.getInstance().loadGenome(url);
+                if(isHubURL(url)) {
+                    HubGenomeLoader.loadGenome(url);
+                } else {
+                    GenomeManager.getInstance().loadGenome(url);
+                }
             } catch (Exception e) {
                 MessageUtils.showMessage("Error loading genome: " + e.getMessage());
             }
@@ -182,15 +185,6 @@ public class LoadFromURLMenuAction extends MenuAction {
     private static boolean isHubURL(String input) {
         return input.endsWith("/hub.txt");
     }
-
-    private static void checkURLs(List<String> urls) {
-        for (String url : urls) {
-             if (url.startsWith("ftp://")) {
-                MessageUtils.showMessage("FTP protocol is not supported");
-            }
-        }
-    }
-
 
 }
 

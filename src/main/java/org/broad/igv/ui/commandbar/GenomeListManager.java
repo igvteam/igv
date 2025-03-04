@@ -101,15 +101,15 @@ public class GenomeListManager {
      */
     public void addGenomeItem(GenomeListItem genomeListItem) {
 
-        if(genomeItemMap.values().stream().anyMatch(item -> genomeListItem.equals(item))) {
+        if (genomeItemMap.values().stream().anyMatch(item -> genomeListItem.equals(item))) {
             return;
         }
 
         genomeItemMap.put(genomeListItem.getId(), genomeListItem);
 
-        if(FileUtils.isRemote(genomeListItem.getPath()) ||
-                !DirectoryManager.getGenomeCacheDirectory().getAbsoluteFile().
-                        equals(new File(genomeListItem.getPath()).getParentFile().getAbsolutePath())) {
+        if (FileUtils.isRemote(genomeListItem.getPath()) ||
+                !DirectoryManager.getGenomeCacheDirectory().
+                        equals(new File(genomeListItem.getPath()).getParentFile())) {
             if (remoteGenomesMap == null) {
                 remoteGenomesMap = new HashMap<>();
             }
@@ -135,7 +135,7 @@ public class GenomeListManager {
         if (matchingItem == null) {
 
             // If genome archive was not found, search hosted genomes
-            matchingItem =  getHostedGenomesMap().get(genomeId);
+            matchingItem = getHostedGenomesMap().get(genomeId);
             if (matchingItem != null) {
                 return matchingItem;
             }
@@ -178,9 +178,9 @@ public class GenomeListManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public  Map<String, GenomeListItem> getDownloadedGenomeMap() {
+    public Map<String, GenomeListItem> getDownloadedGenomeMap() {
 
-        if(downloadedGenomesMap == null) {
+        if (downloadedGenomesMap == null) {
 
             downloadedGenomesMap = new HashMap<>();
             if (!DirectoryManager.getGenomeCacheDirectory().exists()) {
@@ -311,7 +311,14 @@ public class GenomeListManager {
         }
     }
 
-     List<GenomeListItem> getHostedGenomeList() {
+    public void removeRemoteItem(String id) {
+        if (remoteGenomesMap.containsKey(id)) {
+            remoteGenomesMap.remove(id);
+            exportRemoteGenomesList();
+        }
+    }
+
+    List<GenomeListItem> getHostedGenomeList() {
         List<GenomeListItem> items = new ArrayList<>(getHostedGenomesMap().values());
         items.sort(sorter);
         return items;
@@ -397,7 +404,9 @@ public class GenomeListManager {
     }
 
     /**
-     * Return the list of remote genomes for the dropdown
+     * Return the list of remote genomes for the dropdown.
+     *
+     * Remote genomes include all genomes not store locally in the igv/genomes folder.
      *
      * @return LinkedHashSet<GenomeListItem>
      * @throws IOException
@@ -413,7 +422,7 @@ public class GenomeListManager {
 
             File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
 
-            if(!listFile.exists()) {
+            if (!listFile.exists()) {
                 // Try old filename
                 listFile = new File(DirectoryManager.getGenomeCacheDirectory(), "user-defined-genomes.txt");
             }

@@ -97,7 +97,6 @@ public class Genome {
     private String homeChromosome;
     private String defaultPos;
     private String nameSet;
-    private Hub genomeHub;
     private List<Hub> trackHubs;
 
     public Genome(GenomeConfig config) throws IOException {
@@ -809,12 +808,7 @@ public class Genome {
 
     }
 
-    public Hub getGenomeHub() {
-        return genomeHub;
-    }
-
     public void setGenomeHub(Hub genomeHub) {
-        this.genomeHub = genomeHub;
         // A genome hub is by definition also a track hub
         this.trackHubs.add(genomeHub);
     }
