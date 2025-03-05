@@ -70,8 +70,6 @@ public class HubGenomeLoader extends GenomeLoader {
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
                     MessageUtils.showMessage("Error loading hub: " + e.getMessage());
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
                 }
                 return genomeFile;
             }
@@ -85,6 +83,8 @@ public class HubGenomeLoader extends GenomeLoader {
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
                     MessageUtils.showMessage("Error loading hub: " + e.getMessage());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
                 }
             }
         };

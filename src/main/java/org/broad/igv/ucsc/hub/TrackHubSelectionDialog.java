@@ -40,20 +40,24 @@ public class TrackHubSelectionDialog extends JDialog {
     private List<SelectionBox> allSelectionBoxes;
     boolean canceled = false;
 
-    public static TrackHubSelectionDialog getTrackHubSelectionDialog(Hub hub, Set<String> loadedTrackPaths, boolean autoselectDefaults) {
+    public static TrackHubSelectionDialog getTrackHubSelectionDialog(
+            Hub hub,
+            Set<String> loadedTrackPaths,
+            boolean autoselectDefaults) {
 
-        if (hubSelectionDialogs.containsKey(hub)) {
-            TrackHubSelectionDialog dialog = hubSelectionDialogs.get(hub);
-            dialog.resetSelectionBoxes(loadedTrackPaths);
+        TrackHubSelectionDialog dialog;
+        if (hubSelectionDialogs.containsKey(hub) && !autoselectDefaults) {
+             dialog = hubSelectionDialogs.get(hub);
+
             dialog.autoselectDefaults = autoselectDefaults;
-            return dialog;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-            TrackHubSelectionDialog dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
+             dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
             hubSelectionDialogs.put(hub, dialog);
-            return dialog;
         }
+        dialog.resetSelectionBoxes(loadedTrackPaths);
+        return dialog;
     }
 
     private TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, boolean autoselectDefaults, Frame owner) {
@@ -72,12 +76,10 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param loadedTrackPaths
      */
     private void resetSelectionBoxes(Set<String> loadedTrackPaths) {
-        if (loadedTrackPaths != null) {
-            for (SelectionBox box : allSelectionBoxes) {
-                final boolean isLoaded = loadedTrackPaths.contains(box.trackConfig.getUrl());
-                box.setSelected(isLoaded);
-                box.setEnabled(!isLoaded);
-            }
+        for (SelectionBox box : allSelectionBoxes) {
+            final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
+            box.setSelected(isLoaded || (autoselectDefaults && box.trackConfig.getVisible() == true));
+            box.setEnabled(!isLoaded);
         }
     }
 
@@ -125,6 +127,19 @@ public class TrackHubSelectionDialog extends JDialog {
         expandButtonPanel.add(collapseAllButton);
         topButtonPanel.add(expandButtonPanel, BorderLayout.WEST);
 
+        JPanel clearAllPanel = new JPanel();
+        clearAllPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        JButton clearAllButton = new JButton("Clear All");
+        clearAllPanel.add(clearAllButton);
+        clearAllButton.addActionListener(e -> {
+            for (SelectionBox box : allSelectionBoxes) {
+                if (box.isEnabled()) {
+                    box.setSelected(false);
+                }
+            }
+        });
+        topButtonPanel.add(clearAllPanel, BorderLayout.EAST);
+
         topPanel.add(topButtonPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
@@ -140,7 +155,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         for (TrackConfigContainer configGroup : trackConfigContainers) {
             categoryContainer.add(Box.createVerticalStrut(10));
-            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup, loadedTrackPaths);
+            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup);
             categoryContainer.add(categoryPanel);
             categoryPanels.add(categoryPanel);
         }
@@ -197,7 +212,7 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param configGroup
      * @return
      */
-    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup, Set<String> loadedTrackPaths) {
+    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup) {
 
         JPanel trackPanel = new JPanel();
         trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
@@ -206,7 +221,7 @@ public class TrackHubSelectionDialog extends JDialog {
         int totalTrackCount = configGroup.countTracks();
         SelectionBox.CheckboxType checkboxType = totalTrackCount < 1000 ? SelectionBox.CheckboxType.SWING : SelectionBox.CheckboxType.CUSTOM;
 
-        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackPanel, loadedTrackPaths, checkboxType);
+        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackPanel, checkboxType);
 
         boolean isSelected = false;
         int maxWidth = 0;
@@ -264,7 +279,6 @@ public class TrackHubSelectionDialog extends JDialog {
     private List<SelectionBox> addSelectionBoxes(String labelPrefix,
                                                  TrackConfigContainer container,
                                                  JPanel panel,
-                                                 Set<String> loadedTrackPaths,
                                                  SelectionBox.CheckboxType checkboxType) {
 
         String title = labelPrefix == null ? "" :
@@ -285,9 +299,6 @@ public class TrackHubSelectionDialog extends JDialog {
             for (TrackConfig trackConfig : container.tracks) {
 
                 SelectionBox selectionBox = new SelectionBox(trackConfig, checkboxType);
-                final boolean isLoaded = loadedTrackPaths.contains(trackConfig.getUrl());
-                selectionBox.setSelected(isLoaded || (autoselectDefaults && trackConfig.getVisible() == true));
-                selectionBox.setEnabled(!isLoaded);
                 trackPanel.add(selectionBox);
                 selectionBoxes.add(selectionBox);
             }
@@ -295,12 +306,10 @@ public class TrackHubSelectionDialog extends JDialog {
             panel.add(Box.createVerticalStrut(5));
             panel.add(trackPanel);
 
-            // final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(title, trackPanel, false, CollapsiblePanel.HEADER_BG2);
-            // trackContainer.add(collapsiblePanel);
         }
 
         for (TrackConfigContainer childChild : container.children) {
-            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, loadedTrackPaths, checkboxType));
+            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, checkboxType));
         }
         return selectionBoxes;
     }

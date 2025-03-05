@@ -308,7 +308,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         if (genome.getTrackHubs().size() > 0) {
             menuItems.add(new JSeparator());
             for (Hub trackHub : genome.getTrackHubs()) {
-                menuAction = new SelectHubTracksAction(trackHub.getShortLabel(), igv, trackHub);
+                menuAction = new SelectHubTracksAction("Hub: " + trackHub.getShortLabel(), igv, trackHub);
                 menuAction.setToolTipText(trackHub.getLongLabel());
                 JMenuItem selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
                 selectGenomeAnnotationsItem.setToolTipText(trackHub.getLongLabel());
