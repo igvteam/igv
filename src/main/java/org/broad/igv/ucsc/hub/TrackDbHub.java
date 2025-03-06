@@ -12,7 +12,7 @@ import static org.broad.igv.ucsc.hub.Hub.getPriority;
 public class TrackDbHub {
 
 
-    static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix", "refgene"));
+    static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix", "refgene", "bam", "sampleInfo", "vcf.list"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
@@ -83,7 +83,8 @@ public class TrackDbHub {
 
                     String name = s.getProperty("track");
                     int priority = s.hasProperty("priority") ? getPriority(s.getProperty("priority")) : Integer.MAX_VALUE - 1;
-                    final TrackConfigContainer container = new TrackConfigContainer(name, s.getProperty("shortLabel"), priority, false);
+                    boolean defaultOpen = "0".equals(s.getProperty("defaultIsClosed"));
+                    final TrackConfigContainer container = new TrackConfigContainer(name, s.getProperty("shortLabel"), priority, defaultOpen);
                     if (trackContainers.containsKey(name)) {
                         throw new RuntimeException("Duplicate track container: " + name);
                     }
@@ -128,7 +129,7 @@ public class TrackDbHub {
         TrackConfig config = new TrackConfig(url);
 
         String format = t.format();
-        if(format != null) {
+        if (format != null) {
             config.setFormat(format.toLowerCase());
         }
 
@@ -243,38 +244,43 @@ public class TrackDbHub {
         Map<String, String> attrs = new HashMap();
         while (metadata.length() > 0) {
 
-            int idx = metadata.indexOf("=");
-            if (idx == -1) {
-                break;
-            }
-            int idx2;
-            String key = StringUtils.stripQuotes(capitalize(metadata.substring(0, idx)));
-            String value;
-
-            if ('"' == metadata.charAt(idx + 1)) {
-                idx++;
-                idx2 = metadata.indexOf("\" ", idx + 1);
-                value = idx2 > 0 ? metadata.substring(idx + 1, idx2) : metadata.substring(idx + 1);
-                idx2++;
-            } else {
-                idx2 = metadata.indexOf(" ");
-                if (idx2 == -1) {
-                    idx2 = metadata.length();
+            try {
+                int idx = metadata.indexOf("=");
+                if (idx == -1 || idx == metadata.length() - 1) {
+                    break;
                 }
-                value = metadata.substring(idx + 1, idx2);
+                int idx2;
+                String key = StringUtils.stripQuotes(capitalize(metadata.substring(0, idx)));
+                String value;
+
+                if ('"' == metadata.charAt(idx + 1)) {
+                    idx++;
+                    idx2 = metadata.indexOf("\" ", idx + 1);
+                    value = idx2 > 0 ? metadata.substring(idx + 1, idx2) : metadata.substring(idx + 1);
+                    idx2++;
+                } else {
+                    idx2 = metadata.indexOf(" ", idx + 1);
+                    if (idx2 == -1) {
+                        idx2 = metadata.length();
+                    }
+                    value = metadata.substring(idx + 1, idx2);
+                }
+                value = StringUtils.stripQuotes(value);
+                if (value.endsWith("\"")) {
+                    value = value.substring(0, value.length() - 1);
+                }
+                if (value.startsWith("<") && value.endsWith(">")) {
+                    value = htmlText(value);
+                }
+                attrs.put(key, value);
+                if (idx2 == metadata.length()) {
+                    break;
+                }
+                metadata = idx2 > 0 ? metadata.substring(idx2 + 1).trim() : "";
+            } catch (Exception e) {
+                // We don't want to fail parsing the hub due to a failure parsing metadata.  Also we don't want to
+                // overwhelm the log.  Metatdata is or marginal importance in IGV.
             }
-            value = StringUtils.stripQuotes(value);
-            if (value.endsWith("\"")) {
-                value = value.substring(0, value.length() - 1);
-            }
-            if (value.startsWith("<") && value.endsWith(">")) {
-                value = htmlText(value);
-            }
-            attrs.put(key, value);
-            if (idx2 == metadata.length()) {
-                break;
-            }
-            metadata = idx2 > 0 ? metadata.substring(idx2 + 1) : "";
         }
         return attrs;
     }

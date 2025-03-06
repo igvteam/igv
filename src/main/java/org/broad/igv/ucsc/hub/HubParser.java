@@ -90,13 +90,6 @@ public class HubParser {
             }
         }
 
-        // load includes.  Nested includes (includes within includes) are not supported
-        List<Stanza> includes = stanzas.stream().filter(s -> "include".equals(s.type)).toList();
-        for (Stanza s : includes) {
-            List<Stanza> includeStanzas = HubParser.loadStanzas(s.getProperty("include"));
-            trackStanzas.addAll(includeStanzas);
-        }
-
         return new Hub(url, trackDbURL, hubStanza, genomeStanza, trackStanzas, groupStanzas);
     }
 
@@ -137,6 +130,22 @@ public class HubParser {
                     continue;
                 }
 
+                while (line.endsWith("\\")) {
+                    String continuation = br.readLine();
+                    if (continuation == null) {
+                        break;
+                    } else {
+                        line = line.substring(0, line.length() - 1) + " " + continuation.trim();
+                    }
+                }
+
+                if(line.startsWith("include")) {
+                    String relativeURL = line.substring(8).trim();
+                    String includeURL = getDataURL(relativeURL, host, baseURL);
+                    List<Stanza> includeStanzas = HubParser.loadStanzas(includeURL);
+                    nodes.addAll(includeStanzas);
+                }
+
                 int indent = indentLevel(line);
                 int i = line.indexOf(" ", indent);
                 if (i < 0) {
@@ -147,6 +156,7 @@ public class HubParser {
                     if (key.startsWith("#")) continue;
 
                     String value = line.substring(i + 1).trim();
+
                     if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key))) {
                         String[] tokens = Globals.whitespacePattern.split(value);
                         value = tokens[0];

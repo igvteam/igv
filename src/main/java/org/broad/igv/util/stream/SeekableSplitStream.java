@@ -27,13 +27,11 @@ package org.broad.igv.util.stream;
 
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.Globals;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +129,7 @@ public class SeekableSplitStream extends SeekableStream {
             br = new BufferedReader(new InputStreamReader(ParsingUtils.openInputStream(path)));
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
-                String[] tokens = nextLine.split(" ");
+                String[] tokens = Globals.whitespacePattern.split(nextLine);
                 if (tokens.length == 2) {
                     String p = tokens[0];
 
