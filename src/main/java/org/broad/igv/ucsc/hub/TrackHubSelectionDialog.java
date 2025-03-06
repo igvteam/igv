@@ -1,7 +1,5 @@
 package org.broad.igv.ucsc.hub;
 
-import org.broad.igv.encode.FileRecord;
-import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -18,11 +16,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.util.*;
 import java.util.List;
-
-import java.util.function.Function;
 
 
 /**
@@ -34,11 +29,11 @@ public class TrackHubSelectionDialog extends JDialog {
     private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
 
     private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<>();
+
     private Hub hub;
     private boolean autoselectDefaults;
     private ArrayList<CollapsiblePanel> categoryPanels;
-    private List<SelectionBox> allSelectionBoxes;
-    boolean canceled = false;
+    private boolean canceled = false;
 
     public static TrackHubSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
@@ -47,16 +42,16 @@ public class TrackHubSelectionDialog extends JDialog {
 
         TrackHubSelectionDialog dialog;
         if (hubSelectionDialogs.containsKey(hub) && !autoselectDefaults) {
-             dialog = hubSelectionDialogs.get(hub);
-
+            dialog = hubSelectionDialogs.get(hub);
             dialog.autoselectDefaults = autoselectDefaults;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-             dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
+            dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
             hubSelectionDialogs.put(hub, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
+
         return dialog;
     }
 
@@ -76,10 +71,8 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param loadedTrackPaths
      */
     private void resetSelectionBoxes(Set<String> loadedTrackPaths) {
-        for (SelectionBox box : allSelectionBoxes) {
-            final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
-            box.setSelected(isLoaded || (autoselectDefaults && box.trackConfig.getVisible() == true));
-            box.setEnabled(!isLoaded);
+        for (CollapsiblePanel collapsiblePanel : categoryPanels) {
+            collapsiblePanel.resetSelectionBoxes(loadedTrackPaths);
         }
     }
 
@@ -91,7 +84,6 @@ public class TrackHubSelectionDialog extends JDialog {
         setSize(new Dimension(Math.min(ownerBounds.width, 1200), Math.min(ownerBounds.height, 1000)));
 
         categoryPanels = new ArrayList<>();
-        allSelectionBoxes = new ArrayList<>();
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -132,10 +124,8 @@ public class TrackHubSelectionDialog extends JDialog {
         JButton clearAllButton = new JButton("Clear All");
         clearAllPanel.add(clearAllButton);
         clearAllButton.addActionListener(e -> {
-            for (SelectionBox box : allSelectionBoxes) {
-                if (box.isEnabled()) {
-                    box.setSelected(false);
-                }
+            for (CollapsiblePanel collapsiblePanel : categoryPanels) {
+                collapsiblePanel.clearSelections();
             }
         });
         topButtonPanel.add(clearAllPanel, BorderLayout.EAST);
@@ -213,177 +203,9 @@ public class TrackHubSelectionDialog extends JDialog {
      * @return
      */
     private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup) {
-
-        JPanel trackPanel = new JPanel();
-        trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
-
-        // There is a (so far) intractable bug if a large # of JCheckboxes are created for this widget.
-        int totalTrackCount = configGroup.countTracks();
-        SelectionBox.CheckboxType checkboxType = totalTrackCount < 1000 ? SelectionBox.CheckboxType.SWING : SelectionBox.CheckboxType.CUSTOM;
-
-        List<SelectionBox> selectionBoxes = addSelectionBoxes(null, configGroup, trackPanel, checkboxType);
-
-        boolean isSelected = false;
-        int maxWidth = 0;
-        int selectionCount = 0;
-        for (SelectionBox selectionBox : selectionBoxes) {
-            if (selectionBox.checkbox.isSelected()) {
-                selectionCount++;
-                isSelected = true;
-            }
-            maxWidth = Math.max(maxWidth, selectionBox.getPreferredSize().width);
-            allSelectionBoxes.add(selectionBox);
-        }
-
-        for (SelectionBox selectionBox : selectionBoxes) {
-            selectionBox.setPreferredWidth(maxWidth);
-        }
-
-        String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
-
-        final CollapsiblePanel collapsiblePanel = new CollapsiblePanel(label, trackPanel, isSelected || configGroup.defaultOpen);
-
-        // Add a search button for categories with large numbers of records
-        final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes,
-                (selectedCount) -> {
-                    String l = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectedCount + " selected)";
-                    collapsiblePanel.updateLabel(l);
-                    return null;
-                });
-
-        collapsiblePanel.addSearchButton(searchButton);
-
-        for (SelectionBox selectionBox : selectionBoxes) {
-            selectionBox.setCallback(b -> {
-                int selected = configGroup.countSelectedTracks();
-                String l = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selected + " selected)";
-                collapsiblePanel.updateLabel(l);
-                return null;
-
-            });
-        }
-
-        return collapsiblePanel;
+        return new CollapsiblePanel(configGroup, this.autoselectDefaults);
     }
 
-    /**
-     * Add selection boxes for the container (a group, superTrack, compositeTrack, or view).  Return true if any
-     * tracks are selected.
-     *
-     * @param labelPrefix
-     * @param container
-     * @param panel
-     * @param checkboxType
-     * @return
-     */
-    private List<SelectionBox> addSelectionBoxes(String labelPrefix,
-                                                 TrackConfigContainer container,
-                                                 JPanel panel,
-                                                 SelectionBox.CheckboxType checkboxType) {
-
-        String title = labelPrefix == null ? "" :
-                labelPrefix + (labelPrefix.length() > 0 ? " - " : "") + container.label;
-
-        List<SelectionBox> selectionBoxes = new ArrayList<>();
-
-        if (container.tracks.size() > 0) {
-
-            JPanel trackPanel = new JPanel();
-            if (labelPrefix != null) {
-                trackPanel.setBorder(BorderFactory.createTitledBorder(title));
-            }
-            final WrapLayout wrapLayout = new WrapLayout();
-            wrapLayout.setAlignment(FlowLayout.LEFT);
-            trackPanel.setLayout(wrapLayout);
-
-            for (TrackConfig trackConfig : container.tracks) {
-
-                SelectionBox selectionBox = new SelectionBox(trackConfig, checkboxType);
-                trackPanel.add(selectionBox);
-                selectionBoxes.add(selectionBox);
-            }
-
-            panel.add(Box.createVerticalStrut(5));
-            panel.add(trackPanel);
-
-        }
-
-        for (TrackConfigContainer childChild : container.children) {
-            selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, checkboxType));
-        }
-        return selectionBoxes;
-    }
-
-    private JButton createSearchButton(String label, List<SelectionBox> selectionBoxes, Function<Integer, Void> callback) {
-
-        JButton searchButton = new JButton("Search");
-
-        searchButton.addActionListener(e -> {
-
-            Set<String> attributeNames = new LinkedHashSet<>();
-            attributeNames.add("Name");
-            attributeNames.add("Description");
-            attributeNames.add("Format");
-
-            Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
-
-            List<FileRecord> records = new ArrayList<>();
-
-            for (SelectionBox selectionBox : selectionBoxes) {
-
-                if (selectionBox.isEnabled()) {
-
-                    TrackConfig trackConfig = selectionBox.getTrackConfig();
-                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
-                    Map<String, String> attributes = trackConfigAttributes;
-                    if (attributes == null) {
-                        attributes = new LinkedHashMap<>();
-                    }
-
-                    attributes.put("Name", trackConfig.getName());
-                    attributes.put("Description", trackConfig.getDescription());
-                    attributes.put("Format", trackConfig.getFormat());
-
-                    if (trackConfigAttributes != null) {
-                        attributes.putAll(trackConfigAttributes);
-                        attributeNames.addAll(trackConfigAttributes.keySet());
-                    }
-
-                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                    record.setSelected(trackConfig.getVisible());
-                    records.add(record);
-                    recordSelectionBoxMap.put(record, selectionBox);
-                }
-            }
-
-
-            List<String> headings = new ArrayList<>(attributeNames);
-            // Limit # of columns
-            if (headings.size() > 15) {
-                headings = headings.subList(0, 15);
-            }
-
-            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-
-            TrackChooser chooser = new TrackChooser(
-                    owner,
-                    headings,
-                    records,
-                    label);
-            chooser.setSize(this.getSize());
-            chooser.setLocationRelativeTo(getOwner());
-            chooser.setVisible(true);
-
-            if (!chooser.isCanceled()) {
-                Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
-                for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
-                    entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
-                }
-                callback.apply(selectedRecords.size());
-            }
-        });
-        return searchButton;
-    }
 
     /**
      * Convenience method to extract and return selected track configurations.
@@ -391,118 +213,12 @@ public class TrackHubSelectionDialog extends JDialog {
      * @return
      */
     public List<TrackConfig> getSelectedConfigs() {
-        return allSelectionBoxes.stream()
-                .filter(b -> b.isEnabled() && b.isSelected())
-                .map(SelectionBox::getTrackConfig).toList();
-    }
 
-    static class SelectionBox extends JPanel {
-
-        enum CheckboxType {SWING, CUSTOM}
-
-        private final JLabel label;
-        private TrackConfig trackConfig;
-        private CheckBoxWrapper checkbox;
-        private int preferredWidth = -1;
-        private int minWidth;
-        private Function<Integer, Void> callback;
-
-        public SelectionBox(TrackConfig trackConfig, CheckboxType checkboxType) {
-
-            this.setLayout(new BorderLayout(5, 0));
-            this.trackConfig = trackConfig;
-
-            String longLabel = trackConfig.getLongLabel();
-            if (longLabel != null) {
-                this.setToolTipText(longLabel);
-            }
-
-            this.checkbox = new CheckBoxWrapper(checkboxType);
-
-            checkbox.setActionListener(e -> {
-                trackConfig.setVisible(checkbox.isSelected());
-                if (callback != null) {
-                    callback.apply(checkbox.isSelected() ? 1 : 0);
-                }
-            });
-
-            label = new JLabel(trackConfig.getName());
-            label.setLabelFor(checkbox.getComponent());
-            add(checkbox.getComponent(), BorderLayout.WEST);
-
-            String infoLink = trackConfig.getHtml();
-
-            if (infoLink == null || "".equals(infoLink.trim())) {
-                add(label, BorderLayout.CENTER);
-            } else {
-                ImageIcon icon = IconFactory.getInstance().getIcon(IconFactory.IconID.INFO);
-                JLabel iconLabel = new JLabel(icon);
-                iconLabel.setToolTipText(infoLink);
-                iconLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                add(iconLabel, BorderLayout.CENTER);
-                iconLabel.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        try {
-                            Desktop.getDesktop().browse(new URI(infoLink));
-                        } catch (Exception ex) {
-                            log.error("Error following hyperlink: " + infoLink, ex);
-                        }
-                    }
-                });
-
-                JPanel panel = new JPanel();
-                panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-                panel.add(label);
-                panel.add(iconLabel);
-                add(panel, BorderLayout.CENTER);
-            }
+        List<TrackConfig> selectedConfigs = new ArrayList<>();
+        for (CollapsiblePanel collapsiblePanel : categoryPanels) {
+            selectedConfigs.addAll(collapsiblePanel.getSelectedTracks());
         }
-
-        public void setPreferredWidth(int width) {
-            minWidth = 200;
-            this.preferredWidth = Math.max(minWidth, width);
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return preferredWidth > 0 ? new Dimension(preferredWidth, 20) : super.getPreferredSize();
-        }
-
-        @Override
-        public Dimension getMinimumSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public Dimension getMaximumSize() {
-            return getPreferredSize();
-        }
-
-        public void setSelected(boolean selected) {
-            checkbox.setSelected(selected);
-            trackConfig.setVisible(selected);
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            checkbox.setEnabled(enabled);
-            label.setEnabled(enabled);
-        }
-
-
-        public boolean isSelected() {
-            return checkbox.isSelected();
-        }
-
-        public TrackConfig getTrackConfig() {
-            return trackConfig;
-        }
-
-        public void setCallback(Function<Integer, Void> callback) {
-            this.callback = callback;
-        }
+        return selectedConfigs;
     }
 
     static class CheckBoxWrapper {
@@ -510,8 +226,8 @@ public class TrackHubSelectionDialog extends JDialog {
         CheckBox checkBox;
         JCheckBox jCheckBox;
 
-        public CheckBoxWrapper(SelectionBox.CheckboxType checkboxType) {
-            if (checkboxType == SelectionBox.CheckboxType.SWING) {
+        public CheckBoxWrapper(CollapsiblePanel.SelectionBox.CheckboxType checkboxType) {
+            if (checkboxType == CollapsiblePanel.SelectionBox.CheckboxType.SWING) {
                 jCheckBox = new JCheckBox();
             } else {
                 checkBox = new CheckBox();
