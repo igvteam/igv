@@ -12,7 +12,7 @@ import static org.broad.igv.ucsc.hub.Hub.getPriority;
 public class TrackDbHub {
 
 
-    static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "bigbgenepred", "vcftabix", "refgene",
+    static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
             "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
