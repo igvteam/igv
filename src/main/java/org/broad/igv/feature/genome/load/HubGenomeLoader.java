@@ -31,7 +31,7 @@ public class HubGenomeLoader extends GenomeLoader {
     static Logger log = LogManager.getLogger(HubGenomeLoader.class);
 
     public static boolean isHubURL(String obj) {
-        return obj.endsWith("/hub.txt");
+        return obj != null && obj.toLowerCase().endsWith("hub.txt");       // <= very crude, perhaps read the first line
     }
 
     public static String convertToHubURL(String accension) {
@@ -90,8 +90,21 @@ public class HubGenomeLoader extends GenomeLoader {
         };
 
         worker.execute();
-
     }
+
+    /**
+     * Shortcut method provided to support load-from-url.  The hub must be read and parsed to determine if it is an
+     * assembly hub.  This method avoids the need to load and parse again.
+     *
+     * @param hub
+     * @throws IOException
+     */
+    public static void loadAssemblyHub(Hub hub) throws IOException {
+        final GenomeConfig config = getGenomeConfig(hub);
+        File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
+        GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+    }
+
 
     private static GenomeConfig getGenomeConfig(Hub hub) throws IOException {
 

@@ -61,12 +61,15 @@ public class GenomeConfig implements Cloneable {
     private Sequence sequence;
     private LinkedHashMap<String, List<Cytoband>> cytobands;
     private List<List<String>> chromAliases;
+    private boolean fromJson = false;  // Until proven otherwise
 
     public static GenomeConfig fromJson(String json) {
         if (json.contains("chromosomeOrder")) {
             json = fixChromosomeOrder(json);
         }
-        return (new Gson()).fromJson(json, GenomeConfig.class);
+        GenomeConfig config = (new Gson()).fromJson(json, GenomeConfig.class);
+        config.fromJson = true;
+        return config;
     }
 
     public GenomeConfig() {
@@ -82,6 +85,13 @@ public class GenomeConfig implements Cloneable {
 
     public void setHubs(List<String> hubs) {
         this.hubs = hubs;
+    }
+
+    public void addHub(String hub) {
+        if (hubs == null) {
+            hubs = new ArrayList();
+        }
+        hubs.add(hub);
     }
 
     public String getId() {
@@ -339,4 +349,7 @@ public class GenomeConfig implements Cloneable {
         return (new Gson()).toJson(obj);
     }
 
+    public boolean isFromJson() {
+        return fromJson;
+    }
 }

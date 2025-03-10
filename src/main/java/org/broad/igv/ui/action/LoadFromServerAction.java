@@ -71,7 +71,7 @@ public class LoadFromServerAction extends MenuAction {
 
     public static String getGenomeDataURL(String genomeId) {
         String urlString = PreferencesManager.getPreferences().getDataServerURL();
-        String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
+        String genomeURL = urlString == null ? null : urlString.replaceAll("\\$\\$", genomeId);
         return genomeURL;
     }
 
@@ -105,21 +105,23 @@ public class LoadFromServerAction extends MenuAction {
     public static LinkedHashSet<String> getNodeURLs(String genomeId) {
 
         String genomeURL = getGenomeDataURL(genomeId);
-
-        InputStream is = null;
         LinkedHashSet<String> nodeURLs = null;
-        try {
-            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-            nodeURLs = getResourceUrls(bufferedReader);
-        } catch (IOException e) {
-            //This is common and not an error, a load-from-server "data registry" file is optional
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    log.error("Error closing input stream", e);
+
+        if(genomeURL != null && genomeURL.length() > 0) {
+            InputStream is = null;
+            try {
+                is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                nodeURLs = getResourceUrls(bufferedReader);
+            } catch (IOException e) {
+                //This is common and not an error, a load-from-server "data registry" file is optional
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        log.error("Error closing input stream", e);
+                    }
                 }
             }
         }

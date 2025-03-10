@@ -63,13 +63,9 @@ public class JsonGenomeLoader extends GenomeLoader {
     public GenomeConfig loadGenomeConfig() throws IOException {
 
         try (InputStream is = ParsingUtils.openInputStream(genomePath)) {
-
             String jsonString = ParsingUtils.readContentsFromStream(is);
-
             GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
-
             fixPaths(genomeConfig);
-
             return genomeConfig;
 
         }

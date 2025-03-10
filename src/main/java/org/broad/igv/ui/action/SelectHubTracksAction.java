@@ -77,45 +77,8 @@ public class SelectHubTracksAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    selectTracks(hub);
 
-                    final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
-                    Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
-
-                    TrackHubSelectionDialog dlg =  TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false);
-
-                    SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
-
-                    if (!dlg.isCanceled()) {
-
-                        List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-
-                        // The dialog action will modify the visible state for each track config
-                        List<TrackConfig> tracksToLoad = new ArrayList<>();
-                        List<TrackConfig> selected = new ArrayList<>();
-                        for (TrackConfigContainer g : groups) {
-                            g.map(config -> {
-                                if (config.getVisible()) {
-                                    selected.add(config);
-                                    if (!loadedTrackPaths.contains(config.getUrl())) {
-                                        tracksToLoad.add(config);
-                                    }
-                                }
-                                return null;
-                            });
-                        }
-
-                        List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
-                        IGV.getInstance().loadTracks(locators);
-
-                        // Update genome
-//                        if (updateGenome) {
-//                            genome.setAnnotationResources(locators);
-//                            // Update preferences
-//                            String key = "hub:" + hub.getUrl();
-//                            PreferencesManager.getPreferences().put(key, String.join(",", selected.stream().map(c -> c.getName()).toList()));
-//                        }
-                    }
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);
                     MessageUtils.showMessage(e.getMessage());
@@ -135,6 +98,39 @@ public class SelectHubTracksAction extends MenuAction {
 
         worker.execute();
 
+    }
+
+    public static void selectTracks(Hub hub) {
+
+        final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
+        Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+
+        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false);
+
+        dlg.setVisible(true);
+
+        if (!dlg.isCanceled()) {
+
+            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+
+            // The dialog action will modify the visible state for each track config
+            List<TrackConfig> tracksToLoad = new ArrayList<>();
+            List<TrackConfig> selected = new ArrayList<>();
+            for (TrackConfigContainer g : groups) {
+                g.map(config -> {
+                    if (config.getVisible()) {
+                        selected.add(config);
+                        if (!loadedTrackPaths.contains(config.getUrl())) {
+                            tracksToLoad.add(config);
+                        }
+                    }
+                    return null;
+                });
+            }
+
+            List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
+            IGV.getInstance().loadTracks(locators);
+        }
     }
 
 }

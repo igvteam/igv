@@ -50,6 +50,10 @@ public class Hub {
         }
     }
 
+    public boolean isAssemblyHub() {
+        return genomeStanza.hasProperty("twoBitPath");
+    }
+
 
     public String getShortLabel() {
         return hubStanza.hasProperty("shortLabel") ? hubStanza.getProperty("shortLabel") : this.url;

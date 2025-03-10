@@ -12,7 +12,8 @@ import static org.broad.igv.ucsc.hub.Hub.getPriority;
 public class TrackDbHub {
 
 
-    static Set supportedTypes = new HashSet(Arrays.asList("bigBed", "bigWig", "bigGenePred", "vcfTabix", "refgene", "bam", "sampleInfo", "vcf.list"));
+    static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "bigbgenepred", "vcftabix", "refgene",
+            "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
@@ -99,7 +100,7 @@ public class TrackDbHub {
 
                 } else if (!filterTracks.contains(s.name) &&
                         s.hasProperty("bigDataUrl") &&
-                        supportedTypes.contains(s.format())) {
+                        supportedTypes.contains(s.format().toLowerCase())) {
 
                     final TrackConfig trackConfig = getTrackConfig(s);
                     if (parent != null) {
