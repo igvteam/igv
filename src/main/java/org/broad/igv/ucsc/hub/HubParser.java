@@ -25,10 +25,6 @@ public class HubParser {
 
     public static Hub loadHub(String url, String genomeId) throws IOException {
 
-        boolean assemblyHub = genomeId == null;
-
-        int idx = url.lastIndexOf("/");
-
         // Load stanzas from the hub.txt file, which might be all stanzas if 'useOneFile' is on
         List<Stanza> stanzas = HubParser.loadStanzas(url);
 
@@ -51,6 +47,14 @@ public class HubParser {
                 throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
             }
             genomeStanza = stanzas.get(1);
+
+            if(!genomeStanza.hasProperty("twoBitPath")) {
+                // Not an assembly hub, validate genome
+                if(!genomeStanza.getProperty("genome").equals(genomeId)) {
+                    throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
+                }
+            }
+
             trackStanzas = new ArrayList<>(stanzas.subList(2, stanzas.size()));
 
         } else {
@@ -63,6 +67,7 @@ public class HubParser {
             List<Stanza> genomeStanzaList = HubParser.loadStanzas(hubStanza.getProperty("genomesFile"));
 
             // Find stanza for requested genome, or if no requested genome the first.
+
             for (Stanza s : genomeStanzaList) {
                 if (genomeId == null || genomeId.equals(s.getProperty("genome"))) {
                     stanzas.add(s);
@@ -71,15 +76,15 @@ public class HubParser {
                     break;
                 }
             }
+            if(trackDbURL == null) {
+                throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
+            }
         }
 
         // Assembly hub validation
-        if (assemblyHub) {
+        if (genomeId == null ) {
             if (!genomeStanza.hasProperty("twoBitPath")) {
                 throw new RuntimeException("Assembly hubs must specify 'twoBitPath'");
-            }
-            if (!genomeStanza.hasProperty("groups")) {
-                throw new RuntimeException("Assembly hubs must specify 'groups'");
             }
         }
 

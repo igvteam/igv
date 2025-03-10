@@ -74,7 +74,7 @@ public class Genome {
     private static final int MAX_WHOLE_GENOME_LONG = 100;
     private static Logger log = LogManager.getLogger(Genome.class);
 
-    GenomeConfig config;
+
     private String id;
     private String displayName;
     private List<String> chromosomeNames;
@@ -98,9 +98,21 @@ public class Genome {
     private String defaultPos;
     private String nameSet;
     private List<Hub> trackHubs;
+    private GenomeConfig config;
+
+
+    private static Genome nullGenome = null;
+
+    public synchronized static Genome nullGenome() {
+        if (nullGenome == null) {
+            nullGenome = new Genome("None", Arrays.asList(new Chromosome(0, "", 0)));
+        }
+        return nullGenome;
+    }
+
 
     public Genome(GenomeConfig config) throws IOException {
-
+        this.config = config;
         id = config.getId();
         displayName = config.getName();
         nameSet = config.getNameSet();
@@ -180,7 +192,7 @@ public class Genome {
             }
         } else {
             // No chromosome list.  Try to fetch chromosome names from the sequence
-            if(this.chromosomeNames.isEmpty()) {
+            if (this.chromosomeNames.isEmpty()) {
                 this.chromosomeNames = sequence.getChromosomeNames();
             }
         }
@@ -228,8 +240,8 @@ public class Genome {
             // TODO -- no place to go
         }
 
-        if(config.getHubs() != null) {
-            for(String hubUrl : config.getHubs()) {
+        if (config.getHubs() != null) {
+            for (String hubUrl : config.getHubs()) {
                 try {
                     trackHubs.add(HubParser.loadHub(hubUrl, getUCSCId()));
                 } catch (Exception e) {
@@ -315,7 +327,7 @@ public class Genome {
             try {
                 ChromAlias aliasRecord = chromAliasSource.search(str);
 
-                if(aliasRecord == null && !str.equals(str.toLowerCase())) {
+                if (aliasRecord == null && !str.equals(str.toLowerCase())) {
                     aliasRecord = chromAliasSource.search(str.toLowerCase());
                 }
 
@@ -817,12 +829,21 @@ public class Genome {
         return trackHubs;
     }
 
-    public synchronized static Genome nullGenome() {
-        if(nullGenome == null) {
-            nullGenome = new Genome("None", Arrays.asList(new Chromosome(0, "", 0)));
+    public void addTrackHub(Hub hub) {
+
+        if(!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
+            trackHubs.add(hub);
+            if (config.isFromJson()) {
+                config.addHub(hub.getUrl());
+            }
         }
-        return  nullGenome;
     }
 
-    private static Genome nullGenome = null;
+    public boolean isFromJson() {
+        return config != null && config.isFromJson();
+    }
+
+    public GenomeConfig getConfig() {
+        return config;
+    }
 }
