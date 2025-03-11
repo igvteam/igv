@@ -103,10 +103,12 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             LongRunningTask.submit(() -> {
                 try {
+
+
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     String id = genome != null ? genome.getId() : null;
                     Hub hub = HubParser.loadHub(inputs.getFirst(), id);
-                    if (hub.isAssemblyHub()) {
+                    if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcsdID().equals(genome.getUCSCId()))) {
                         HubGenomeLoader.loadAssemblyHub(hub);
                     } else if(genome != null) {
                         SelectHubTracksAction.selectTracks(hub);

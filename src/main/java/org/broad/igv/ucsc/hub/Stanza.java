@@ -64,7 +64,7 @@ class Stanza {
         return getProperty(key) != null;
     }
 
-    String format() {
+    String type() {
         String type = this.getOwnProperty("type");
         if (type != null) {
             // Trim extra bed qualifiers (e.g. bigBed + 4)

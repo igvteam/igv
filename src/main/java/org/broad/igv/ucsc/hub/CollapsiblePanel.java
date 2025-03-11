@@ -27,18 +27,18 @@ public class CollapsiblePanel extends JPanel {
     private final JLabel jlabel;
     private final List<SelectionBox> selectionBoxes;
     private final boolean autoselectDefaults;
-    private final TrackConfigContainer configGroup;
+    private final TrackConfigContainer configContainer;
     private JButton collapseButton;
     private JComponent content;
     private JPanel header;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
-    public CollapsiblePanel(TrackConfigContainer configGroup, boolean autoselectDefaults) {
+    public CollapsiblePanel(TrackConfigContainer configContainer, boolean autoselectDefaults) {
 
         Color backgroundColor = HEADER_BG;
 
-        this.configGroup = configGroup;
+        this.configContainer = configContainer;
         this.autoselectDefaults = autoselectDefaults;
 
         setLayout(new BorderLayout());
@@ -47,10 +47,10 @@ public class CollapsiblePanel extends JPanel {
         trackPanel.setLayout(new BoxLayout(trackPanel, BoxLayout.Y_AXIS));
 
         // There is a (so far) intractable bug if a large # of JCheckboxes are created for this widget.
-        int totalTrackCount = configGroup.countTracks();
+        int totalTrackCount = configContainer.countTracks();
         SelectionBox.CheckboxType checkboxType = totalTrackCount < 1000 ? SelectionBox.CheckboxType.SWING : SelectionBox.CheckboxType.CUSTOM;
 
-        selectionBoxes = addSelectionBoxes(null, configGroup, trackPanel, checkboxType);
+        selectionBoxes = addSelectionBoxes(null, configContainer, trackPanel, checkboxType);
 
         boolean isSelected = false;
         int maxWidth = 0;
@@ -68,9 +68,9 @@ public class CollapsiblePanel extends JPanel {
             selectionBox.setPreferredWidth(maxWidth);
         }
 
-        String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
+        String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
 
-        boolean isOpen = isSelected || configGroup.defaultOpen;
+        boolean isOpen = isSelected || configContainer.defaultOpen;
 
         this.content = trackPanel;
         this.openIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.MINUS);
@@ -102,7 +102,7 @@ public class CollapsiblePanel extends JPanel {
 
         this.add(header, BorderLayout.NORTH);
 
-        final JButton searchButton = createSearchButton("Search " + configGroup.label, selectionBoxes,
+        final JButton searchButton = createSearchButton("Search " + configContainer.label, selectionBoxes,
                 (selectedCount) -> {
                     this.updateLabel();
                     return null;
@@ -121,7 +121,9 @@ public class CollapsiblePanel extends JPanel {
     public void resetSelectionBoxes(Set<String> loadedTrackPaths) {
         for (CollapsiblePanel.SelectionBox box : selectionBoxes) {
             final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
-            box.setSelected(isLoaded || (autoselectDefaults && box.trackConfig.getVisible() == true));
+            box.setSelected(
+                    isLoaded ||
+                    (autoselectDefaults && box.trackConfig.getVisible() == true) && configContainer.name.toLowerCase().equals("genes"));
             box.setEnabled(!isLoaded);
             updateLabel();
         }
@@ -134,7 +136,7 @@ public class CollapsiblePanel extends JPanel {
                 count++;
             }
         }
-        String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, " + count + " selected)";
+        String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, " + count + " selected)";
         jlabel.setText(label);
     }
 
@@ -144,7 +146,7 @@ public class CollapsiblePanel extends JPanel {
                 box.setSelected(false);
             }
         }
-        String label = configGroup.label + "   (" + selectionBoxes.size() + " tracks, 0 selected)";
+        String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, 0 selected)";
         jlabel.setText(label);
     }
 
