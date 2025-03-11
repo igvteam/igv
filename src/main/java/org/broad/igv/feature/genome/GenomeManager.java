@@ -64,8 +64,6 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
-
 /**
  * @author jrobinso
  */
@@ -241,12 +239,11 @@ public class GenomeManager {
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
         if (geneFeatureTrack != null) {
-            PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                    PanelName.DATA_PANEL : PanelName.FEATURE_PANEL;
             geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
-            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack), panelName);
+            geneFeatureTrack.getResourceLocator().setPanelName(PanelName.ANNOTATION_PANEL.getName());
+            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack));
         }
 
         List<ResourceLocator> resources = genome.getAnnotationResources();
@@ -254,6 +251,7 @@ public class GenomeManager {
         if (resources != null) {
             for (ResourceLocator locator : resources) {
                 try {
+                    locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
                     List<Track> tracks = IGV.getInstance().load(locator);
                     annotationTracks.addAll(tracks);
                 } catch (DataLoadException e) {

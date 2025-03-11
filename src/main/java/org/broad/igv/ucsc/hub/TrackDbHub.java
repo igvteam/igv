@@ -13,7 +13,7 @@ public class TrackDbHub {
 
 
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
-            "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf"));
+            "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
@@ -24,10 +24,14 @@ public class TrackDbHub {
             "squish", "SQUISHED",
             "dense", "COLLAPSED");
 
+    static Map<String, String> typeFormatMap = Map.of(
+            "vcftabix", "vcf"
+    );
+
+
     List<Stanza> trackStanzas;
     List<Stanza> groupStanzas;
     List<TrackConfigContainer> groupTrackConfigs;
-
 
     public TrackDbHub(List<Stanza> trackStanzas, List<Stanza> groupStanzas) {
         this.groupStanzas = groupStanzas;
@@ -100,7 +104,7 @@ public class TrackDbHub {
 
                 } else if (!filterTracks.contains(s.name) &&
                         s.hasProperty("bigDataUrl") &&
-                        supportedTypes.contains(s.format().toLowerCase())) {
+                        supportedTypes.contains(s.type().toLowerCase())) {
 
                     final TrackConfig trackConfig = getTrackConfig(s);
                     if (parent != null) {
@@ -123,18 +127,16 @@ public class TrackDbHub {
         return groupTrackConfigs;
     }
 
-
     private TrackConfig getTrackConfig(Stanza t) {
 
         String url = t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
 
-        String format = t.format();
-        if (format != null) {
+        String type = t.type();
+        if (type != null) {
+            String format = typeFormatMap.containsKey(type) ? typeFormatMap.get(type) : type;
             config.setFormat(format.toLowerCase());
         }
-
-        config.setPanelName(IGV.DATA_PANEL_NAME);
 
         config.setId(t.getProperty("track"));
         config.setName(t.getProperty("shortLabel"));
@@ -154,7 +156,7 @@ public class TrackDbHub {
 
         if (t.hasProperty("bigDataIndex")) {
             config.setIndexURL(t.getProperty("bigDataIndex"));
-        } else if (t.format().equals("vcfTabix")) {
+        } else if (t.type().equals("vcfTabix")) {
             config.setIndexURL(t.getProperty("bigDataUrl") + ".tbi");
         }
 
@@ -180,7 +182,6 @@ public class TrackDbHub {
             int vizWindow = Math.min(Integer.MAX_VALUE, (int) maxWindow);
             config.setVisibilityWindow(vizWindow);
         }
-
 
         if (t.hasProperty("autoScale")) {
             config.setAutoscale(t.getProperty("autoScale").toLowerCase().equals("on"));

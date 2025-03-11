@@ -552,7 +552,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         int numLoads = 1;
 
         for (int ii = 0; ii < numLoads; ii++) {
-            IGV.getInstance().loadResources(Arrays.asList(new ResourceLocator(filePath)));
+            IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(filePath)));
         }
         exec.execute("goto chr1:9,713,386-9,733,865");
 

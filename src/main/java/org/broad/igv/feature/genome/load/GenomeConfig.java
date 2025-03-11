@@ -239,9 +239,8 @@ public class GenomeConfig implements Cloneable {
     }
 
     public String getUcsdID() {
-        return ucsdID;
+        return ucsdID == null ? id : ucsdID;
     }
-
     public void setUcsdID(String ucsdID) {
         this.ucsdID = ucsdID;
     }

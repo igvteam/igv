@@ -378,10 +378,40 @@ public class IGV implements IGVEventObserver {
             contentPane.getStatusBar().setMessage("Loading ...");
 
             NamedRunnable runnable = new NamedRunnable() {
+
                 public void run() {
                     //Collect size statistics before loading
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
-                    loadResources(locators);
+
+                    final MessageCollection messages = new MessageCollection();
+                    for (final ResourceLocator locator : locators) {
+
+                        // If it's a local file, check explicitly for existence (rather than rely on exception)
+                        if (locator.isLocal()) {
+                            File trackSetFile = new File(locator.getPath());
+                            if (!trackSetFile.exists()) {
+                                messages.append("File not found: " + locator.getPath() + "\n");
+                                continue;
+                            }
+                        }
+
+                        try {
+                            List<Track> tracks = load(locator);
+                            addTracks(tracks);
+
+                        } catch (Exception e) {
+                            log.error("Error loading track", e);
+                            messages.append("Error loading " + locator + ": " + e.getMessage());
+                        }
+
+                    }
+                    if (!messages.isEmpty()) {
+                        for (String message : messages.getMessages()) {
+                            MessageUtils.showMessage(message);
+                        }
+                    }
+
+
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
                     revalidateTrackPanels();
@@ -1121,7 +1151,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public RecentFileSet getRecentSessionList() {
-        if(recentSessionList == null){
+        if (recentSessionList == null) {
             recentSessionList = PreferencesManager.getPreferences().getRecentSessions();
             //remove sessions that no longer exist
             recentSessionList.removeIf(file -> !(new File(file)).exists());
@@ -1130,7 +1160,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public RecentUrlsSet getRecentUrls() {
-        if(recentUrlsList == null){
+        if (recentUrlsList == null) {
             recentUrlsList = PreferencesManager.getPreferences().getRecentUrls();
         }
         return recentUrlsList;
@@ -1141,10 +1171,10 @@ public class IGV implements IGVEventObserver {
      * allows showing the menu when the first URL is added to the collection.
      * @param toAdd
      */
-    public void addToRecentUrls(Collection<ResourceLocator> toAdd){
+    public void addToRecentUrls(Collection<ResourceLocator> toAdd) {
         RecentUrlsSet recentFiles = getRecentUrls();
         recentFiles.addAll(toAdd);
-        if(!recentFiles.isEmpty()){
+        if (!recentFiles.isEmpty()) {
             menuBar.showRecentFilesMenu();
         }
     }
@@ -1175,85 +1205,18 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-
     /**
-     * Load resources into IGV. Tracks are added to the appropriate panel
-     * <p>
-     * NOTE: this must be run on the event tread as UI components are added here.
-     *
-     * @param locators
-     */
-    public void loadResources(Collection<ResourceLocator> locators) {
-
-        final MessageCollection messages = new MessageCollection();
-
-        for (final ResourceLocator locator : locators) {
-
-            // If it's a local file, check explicitly for existence (rather than rely on exception)
-            if (locator.isLocal()) {
-                File trackSetFile = new File(locator.getPath());
-                if (!trackSetFile.exists()) {
-                    messages.append("File not found: " + locator.getPath() + "\n");
-                    continue;
-                }
-            }
-
-
-            try {
-                List<Track> tracks = load(locator);
-                addTracks(tracks);
-
-            } catch (Exception e) {
-                log.error("Error loading track", e);
-                messages.append("Error loading " + locator + ": " + e.getMessage());
-            }
-
-        }
-        if (!messages.isEmpty()) {
-            for (String message : messages.getMessages()) {
-                MessageUtils.showMessage(message);
-            }
-        }
-
-    }
-
-    /**
-     * Add tracks to the specified panel
-     *
-     * @param tracks
-     * @param panelName
-     * @api
-     */
-
-    public void addTracks(List<Track> tracks, PanelName panelName) {
-        TrackPanel panel = getTrackPanel(panelName.getName());
-        panel.addTracks(tracks);
-        repaint();
-    }
-
-    /**
-     * Add the specified tracks to the appropriate panel. Panel
+     * Add the specified tracks to the appropriate panel. The list of tracks share a common file (locator).  Panel
      * is chosen based on characteristics of the {@code locator}.
-     *
-     * @param tracks
      */
-    public void addTracks(List<Track> tracks) {
+    public void addTracks(List<Track> trackList) {
 
-        if (tracks.size() > 0) {
-            String path = tracks.get(0).getResourceLocator().getPath();//  locator.getPath();
+        // Group tracks by locator.
+        Map<String, List<Track>> map = trackList.stream().collect(Collectors.groupingBy(t -> t.getResourceLocator().getPath()));
+
+        for(List<Track> tracks : map.values()) {
             Track representativeTrack = tracks.get(0);
-
-            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
-            // is greater than 10
             TrackPanel panel = getPanelFor(representativeTrack);
-            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-                Track t = tracks.get(0);
-                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
-                    String newPanelName = "Panel" + System.currentTimeMillis();
-                    panel = addDataPanel(newPanelName).getTrackPanel();
-                }
-            }
             panel.addTracks(tracks);
         }
     }
@@ -1338,29 +1301,6 @@ public class IGV implements IGVEventObserver {
         }
 
         ResourceLocator locator = track.getResourceLocator();
-        if (locator != null) {
-            TrackPanel panel = getPanelFor(locator);
-            if (panel != null) {
-                return panel;
-            }
-        }
-
-        if (track.getClass() == FeatureTrack.class && !PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY))
-            return getTrackPanel(FEATURE_PANEL_NAME);
-        else {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-    }
-
-    /**
-     * Return a DataPanel appropriate for the resource type.  This method should be considered deprecated in
-     * favor of getPanelFor(Track), however the UCSCSessionReader still uses this form.
-     *
-     * @param locator
-     * @return
-     */
-    public TrackPanel getPanelFor(ResourceLocator locator) {
-
         final String format = locator.getFormat();
         if (locator.getPanelName() != null) {
             return getTrackPanel(locator.getPanelName());
@@ -1371,15 +1311,12 @@ public class IGV implements IGVEventObserver {
         } else if (TrackLoader.isAlignmentTrack(format)) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
+        } else  if (track instanceof VariantTrack && ((VariantTrack) track).getAllSamples().size() > 10) {
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            return addDataPanel(newPanelName).getTrackPanel();
         } else {
-            if (format != null && format.equalsIgnoreCase("das")) {
-                return getTrackPanel(FEATURE_PANEL_NAME);
-            }
-            if (isAnnotationFile(format)) {
-                return getTrackPanel(FEATURE_PANEL_NAME);
-            } else {
-                return null;  // Can't determine from locator
-            }
+            // Default
+            return getTrackPanel(DATA_PANEL_NAME);
         }
     }
 
@@ -1853,7 +1790,6 @@ public class IGV implements IGVEventObserver {
 
     ////////////////////////////////////////////////////////////////////////////////////////
     // Groups
-
     public String getGroupByAttribute() {
         return session.getGroupByAttribute();
     }
@@ -1877,8 +1813,6 @@ public class IGV implements IGVEventObserver {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Startup
-
-
     public Future startUp(Main.IGVArgs igvArgs) {
 
         if (log.isDebugEnabled()) {

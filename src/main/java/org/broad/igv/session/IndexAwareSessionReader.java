@@ -122,11 +122,7 @@ public class IndexAwareSessionReader implements SessionReader {
                     locator.setTrackLine(trackLine);
                     // Alignment tracks must be loaded synchronously
                     if (isAlignmentFile(locator.getPath())) {
-                        TrackPanel panel = igv.getPanelFor(locator);
-                        if (panel == null) {
-                            panel = igv.getTrackPanel(DATA_PANEL_NAME);
-                        }
-                        panel.addTracks(igv.load(locator));
+                        igv.addTracks(igv.load(locator));
                     } else {
                         aSync.add(locator);
                     }
@@ -233,8 +229,7 @@ public class IndexAwareSessionReader implements SessionReader {
         String[] tokens = line.split("\\s+");
         if (tokens.length == 1) {
             locator = new ResourceLocator(tokens[0]);
-        }
-        else if (tokens.length >= 2) {
+        } else if (tokens.length >= 2) {
             // Might want to do some error checking here on
             // making sure file prefixes match and file extensions
             // indicate the index comes second.

@@ -58,14 +58,18 @@ public class GenomeDownloadUtils {
 
         // Create a directory for the data files (sequence and annotations)
         final File genomeDirectory = DirectoryManager.getGenomeCacheDirectory();
-        File dataDirectory = new File(genomeDirectory, config.getId());
-        if (dataDirectory.exists()) {
-            if (!dataDirectory.isDirectory()) {
-                throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
-            }
-        } else {
-            if (!dataDirectory.mkdir()) {
-                throw new RuntimeException("Error downloading genome.  Could not create directory: " + dataDirectory.getAbsolutePath());
+        File dataDirectory = null;
+
+        if(downloadSequence || downloadAnnotations) {
+            dataDirectory = new File(genomeDirectory, config.getId());
+            if (dataDirectory.exists()) {
+                if (!dataDirectory.isDirectory()) {
+                    throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
+                }
+            } else {
+                if (!dataDirectory.mkdir()) {
+                    throw new RuntimeException("Error downloading genome.  Could not create directory: " + dataDirectory.getAbsolutePath());
+                }
             }
         }
 
