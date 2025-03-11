@@ -329,6 +329,9 @@ public class Main {
                 case "FLATINTELLIJ":
                     UIManager.setLookAndFeel(new FlatIntelliJLaf());
                     break;
+                case "FLATINTELLIJDARK":
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    break;
                 default:
                     UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                     break;

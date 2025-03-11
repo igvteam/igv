@@ -25,7 +25,7 @@ DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
 FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
-USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ	SYSTEM
+USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK	SYSTEM
 
 ##Nucleotide Colors
 COLOR.A	A	color	0,150,0
