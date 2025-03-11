@@ -19,7 +19,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
