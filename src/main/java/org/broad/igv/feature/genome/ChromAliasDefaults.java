@@ -47,18 +47,24 @@ public class ChromAliasDefaults extends ChromAliasSource {
                     alias = alias.substring(0, dotIndex);
                     record.put("ncbi-gi", alias);
                 }
+            } else if (name.equals("chrX")) {
+                record.put("*", "X");
+            } else if (name.equals("chrY")) {
+                record.put("*", "Y");
+            } else if (name.equals("X")) {
+                record.put("*", "chrX");
+            } else if (name.equals("Y")) {
+                record.put("*", "chrY");
             } else {
                 // Special cases for human and mouse
                 if (id.startsWith("hg") || id.equals("1kg_ref") || id.equals("b37")) {
                     switch (name) {
                         case "chrX":
                             record.put("ncbi", "23");
-                            record.put("?", "X");
                             skipRest = true;
                             break;
                         case "chrY":
                             record.put("ncbi", "24");
-                            record.put("?", "Y");
                             skipRest = true;
                             break;
                     }

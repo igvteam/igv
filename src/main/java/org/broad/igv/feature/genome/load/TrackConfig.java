@@ -34,6 +34,7 @@ public class TrackConfig implements Cloneable {
     private Boolean hidden;
     private String html;
     private String panelName;
+    private String labelField;
 
     private String stanzaParent;   // For supporting track hubs
     private Map<String, String> attributes;
@@ -64,6 +65,14 @@ public class TrackConfig implements Cloneable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLabelField() {
+        return labelField;
+    }
+
+    public void setLabelField(String labelField) {
+        this.labelField = labelField;
     }
 
     public String getLongLabel() {

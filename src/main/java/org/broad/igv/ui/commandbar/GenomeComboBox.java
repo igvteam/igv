@@ -63,7 +63,6 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
         Vector<GenomeListItem> vector = new Vector<>(genomes);
         vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
-        vector.add(GenomeListItem.DOWNLOAD_ITEM);
         return new DefaultComboBoxModel(vector);
     }
 
@@ -94,18 +93,12 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             final Runnable runnable = () -> {
 
                 if (genomeListItem != null && genomeListItem.getPath() != null) {
-
-                    if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                        HostedGenomeSelectionDialog.downloadHostedGenome();
-                    } else {
-
-                        try {
-                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
-                        } catch (Exception e) {
-                            log.error(e);
-                            MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
-                                    "' could not be read.", e);
-                        }
+                    try {
+                        GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
+                    } catch (Exception e) {
+                        log.error(e);
+                        MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
+                                "' could not be read.", e);
                     }
                 }
             };

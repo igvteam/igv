@@ -439,11 +439,14 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         JMenu menu = new JMenu("Genomes");
 
-        loadGenomeFromServerMenuItem = new JMenuItem("Download Hosted Genome...");
+        loadGenomeFromServerMenuItem = new JMenuItem("Load Genome...");
         loadGenomeFromServerMenuItem.addActionListener(e -> HostedGenomeSelectionDialog.downloadHostedGenome());
         loadGenomeFromServerMenuItem.setToolTipText(LOAD_GENOME_SERVER_TOOLTIP);
         menu.add(loadGenomeFromServerMenuItem);
 
+        // Genark
+        MenuAction genArkAction = new UCSCGenArkAction("Load Genome from UCSC GenArk...", 0, igv);
+        menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
 
         // Load genome json file
         JMenuItem fileItem = new JMenuItem("Load Genome from File...", KeyEvent.VK_I);
@@ -473,17 +476,23 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         urlMenuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menu.add(MenuAndToolbarUtils.createMenuItem(urlMenuAction));
 
-
-        // Track hubs
-        menu.add(new JSeparator());
-        MenuAction genArkAction = new UCSCGenArkAction("Load Genome from UCSC GenArk...", 0, igv);
-        menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
+//        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+//        if (currentGenome != null && currentGenome.getGenomeHub() != null) {
+//            menu.add(new JSeparator());
+//            JMenuItem editItem = new JMenuItem("Select Genome Annotations ...", KeyEvent.VK_E);
+//            Hub trackHub = currentGenome.getGenomeHub();
+//            editItem.addActionListener(e -> {
+//                MenuAction menuAction;
+//                menuAction = new SelectHubTracksAction("Hub: " + trackHub.getShortLabel(), igv, trackHub);
+//                menuAction.setToolTipText(trackHub.getLongLabel());
+//                JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+//                selectHubTracksItem.setToolTipText(trackHub.getLongLabel());
 //
-//        MenuAction menuAction = new SelectHubTracksAction("Select GenArk Genome Tracks...", igv, null);
-//        selectGenomeAnnotationsItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-//        Genome newGenome = GenomeManager.getInstance().getCurrentGenome();
-//        selectGenomeAnnotationsItem.setEnabled(newGenome != null && newGenome.getGenomeHub() != null);
-//        menu.add(selectGenomeAnnotationsItem);
+//            });
+//            menu.add(editItem);
+//        }
+
+
         menu.add(new JSeparator());
 
         // Add genome to combo box from server

@@ -13,7 +13,8 @@ public class TrackDbHub {
 
 
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
-            "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf"));
+            "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf", "vcfphasedtrio",
+            "bigdbsnp"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
             "cpgIslandExtUnmasked", "windowMasker"));
@@ -25,7 +26,9 @@ public class TrackDbHub {
             "dense", "COLLAPSED");
 
     static Map<String, String> typeFormatMap = Map.of(
-            "vcftabix", "vcf"
+            "vcftabix", "vcf",
+            "vcfphasedtrio", "vcf",
+            "bigdbsnp", "bigbed"
     );
 
 
@@ -62,7 +65,12 @@ public class TrackDbHub {
 
             for (Stanza s : trackStanzas) {
 
-                boolean isContainer = s.hasOwnProperty("superTrack") ||
+                if("TFrPeakClusters".equals(s.getProperty("track"))) {
+                    System.out.println("TFrPeakClusters");
+                }
+
+
+                boolean isContainer = (s.hasOwnProperty("superTrack") && !s.hasOwnProperty("bigDataUrl")) ||
                         s.hasOwnProperty("compositeTrack") ||
                         s.hasOwnProperty("view") ||
                         (s.hasOwnProperty("container") && s.getOwnProperty("container").equals("multiWig"));
@@ -70,17 +78,21 @@ public class TrackDbHub {
                 // Find parent, if any.  "group" containers can be implicit, all other types should be explicitly
                 // defined before their children
                 TrackConfigContainer parent = null;
-                if (s.hasProperty("group")) {
+
+                if (s.hasOwnProperty("parent")) {
+                    parent =  trackContainers.get(s.getOwnProperty("parent"));
+                }
+
+                if (parent == null && s.hasProperty("group")) {
                     String groupName = s.getProperty("group");
                     if (trackContainers.containsKey(groupName)) {
                         parent = trackContainers.get(groupName);
                     } else {
-                        // Group not found, just append to name
+                        TrackConfigContainer container = new TrackConfigContainer(groupName, groupName, 1000, true);
+                        trackContainers.put(groupName, container);
+                        groupTrackConfigs.add(container);
+                        parent = container;
                     }
-                }
-
-                if (parent == null && s.hasOwnProperty("parent")) {
-                    parent = trackContainers.get(s.getOwnProperty("parent"));
                 }
 
 
@@ -89,13 +101,14 @@ public class TrackDbHub {
                     String name = s.getProperty("track");
                     int priority = s.hasProperty("priority") ? getPriority(s.getProperty("priority")) : Integer.MAX_VALUE - 1;
                     boolean defaultOpen = "0".equals(s.getProperty("defaultIsClosed"));
-                    final TrackConfigContainer container = new TrackConfigContainer(name, s.getProperty("shortLabel"), priority, defaultOpen);
+                    String label = s.hasProperty("longLabel") ? s.getProperty("longLabel") : s.getProperty("shortLabel");
+                    final TrackConfigContainer container = new TrackConfigContainer(name, label, priority, defaultOpen);
                     if (trackContainers.containsKey(name)) {
                         throw new RuntimeException("Duplicate track container: " + name);
                     }
                     trackContainers.put(name, container);
 
-                    if (parent == null || s.hasOwnProperty("superTrack")) {
+                    if (parent == null) {
                         // No parent or a superTrack => promote to top level
                         groupTrackConfigs.add(container);
                     } else {
@@ -134,7 +147,8 @@ public class TrackDbHub {
 
         String type = t.type();
         if (type != null) {
-            String format = typeFormatMap.containsKey(type) ? typeFormatMap.get(type) : type;
+            String tlc = type.toLowerCase();
+            String format = typeFormatMap.containsKey(tlc) ? typeFormatMap.get(tlc) : type;
             config.setFormat(format.toLowerCase());
         }
 
@@ -231,6 +245,11 @@ public class TrackDbHub {
         if (t.hasProperty("metadata")) {
             Map<String, String> metadata = parseMetadata(t.getProperty("metadata"));
             config.setAttributes(metadata);
+        }
+        if(t.hasProperty("defaultLabelFields")) {
+            config.setLabelField(t.getProperty("defaultLabelFields").split(",")[0]);
+        } else if (t.hasProperty("labelFields")) {
+            config.setLabelField(t.getProperty("labelFields").split(",")[0]);
         }
 
         if (t.parent != null) {

@@ -14,9 +14,14 @@ import org.broad.igv.ucsc.bb.codecs.BBCodec;
 import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 
@@ -104,6 +109,7 @@ public class BBFile {
     private BBZoomHeader[] zoomHeaders;
     private ByteOrder byteOrder;
     private Genome genome;
+    private byte[] _preloadBytes;
 
     public BBFile(String path, Genome genome) throws IOException {
         this.path = path;
@@ -111,6 +117,12 @@ public class BBFile {
         this.chrAliasTable = new HashMap<>();
         this.rTreeCache = new HashMap<>();
         init();
+    }
+
+    public void preload() throws IOException {
+        if (FileUtils.isRemote(path)) {
+            this._preloadBytes = HttpUtils.getInstance().getContentsAsBytes(new URL(this.path), null);
+        }
     }
 
     public BBFile(String path, Genome genome, String trixPath) throws IOException {
@@ -137,6 +149,7 @@ public class BBFile {
     public Genome getGenome() {
         return genome;
     }
+
     public boolean isBigWigFile() {
         return type == Type.BIGWIG;
     }
@@ -148,6 +161,7 @@ public class BBFile {
     public double getFeatureDensity() {
         return featureDensity;
     }
+
     public String getAutoSQL() {
         return autosql;
     }
@@ -160,7 +174,7 @@ public class BBFile {
 
         // The common header
         ByteOrder order = ByteOrder.LITTLE_ENDIAN;
-        UnsignedByteBuffer buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+        UnsignedByteBuffer buffer = loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
         long magic = buffer.getUInt();
         if (magic == BIGWIG_MAGIC) {
             this.type = Type.BIGWIG;
@@ -169,7 +183,7 @@ public class BBFile {
         } else {
             //Try big endian order
             order = ByteOrder.BIG_ENDIAN;
-            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+            buffer = loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
             magic = buffer.getUInt();
             if (magic == BIGWIG_MAGIC) {
                 this.type = Type.BIGWIG;
@@ -199,7 +213,7 @@ public class BBFile {
                 header.totalSummaryOffset - BBFILE_HEADER_SIZE + 40 :
                 Math.min(header.fullDataOffset, header.chromTreeOffset) - BBFILE_HEADER_SIZE);
 
-        buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, size);
+        buffer = loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, size);
 
         // Zoom headers -- immediately follows the common header
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
@@ -228,7 +242,7 @@ public class BBFile {
         }
 
         // Chromosome tree -- we know the start offset but not the size.  But we can try to estimate it.
-        int chromtreeBufferSize =  header.fullDataOffset > header.chromTreeOffset ?
+        int chromtreeBufferSize = header.fullDataOffset > header.chromTreeOffset ?
                 (int) Math.min(10000, header.fullDataOffset - header.chromTreeOffset) :
                 10000;
 
@@ -239,7 +253,7 @@ public class BBFile {
 
         if (type == Type.BIGBED) {
             //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
-            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
+            buffer = loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
             header.dataCount = buffer.getInt();
             this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
 
@@ -260,7 +274,7 @@ public class BBFile {
 
     void loadExtendedHeader(long offset) throws IOException {
 
-        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
+        UnsignedByteBuffer binaryParser = loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
 
         int extensionSize = binaryParser.getUShort();
         int extraIndexCount = binaryParser.getUShort();
@@ -268,7 +282,7 @@ public class BBFile {
         if (extraIndexCount == 0) return;
 
         int sz = extraIndexCount * (2 + 2 + 8 + 4 + 10 * (2 + 2));
-        binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
+        binaryParser = loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
 
         // const type = []
         // const fieldCount = []
@@ -335,18 +349,15 @@ public class BBFile {
             int size = (int) (end - start);
             int uncompressBufSize = this.header.uncompressBuffSize;
 
-            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path)) {
-                byte[] buffer = new byte[size];
-                is.seek(start);
-                is.readFully(buffer);
+            byte[] buffer = getBytes(start, size);
 
-                for (RPTree.Item item : leafItems) {
-                    int offset = (int) (item.dataOffset - start);
-                    int end_ = (int) (offset + item.dataSize);
-                    byte[] itemBuffer = leafItems.size() == 1 ? buffer : Arrays.copyOfRange(buffer, offset, end_);
-                    leafChunks.add(itemBuffer);
-                }
+            for (RPTree.Item item : leafItems) {
+                int offset = (int) (item.dataOffset - start);
+                int end_ = (int) (offset + item.dataSize);
+                byte[] itemBuffer = leafItems.size() == 1 ? buffer : Arrays.copyOfRange(buffer, offset, end_);
+                leafChunks.add(itemBuffer);
             }
+
         }
 
         return leafChunks;
@@ -450,25 +461,22 @@ public class BBFile {
         if (region != null) {
             long start = region[0];
             int size = (int) region[1];
-            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path)) {
-                byte[] buffer = new byte[size];
-                is.seek(start);
-                is.readFully(buffer);
-                List<BasicFeature> features = decodeFeatures(buffer, -1, -1, -1);
+            byte[] buffer = this.getBytes(start, size);
+            List<BasicFeature> features = decodeFeatures(buffer, -1, -1, -1);
 
-                // Filter features to those matching term
-                final String searchTerm = term;
+            // Filter features to those matching term
+            final String searchTerm = term;
 
-                BasicFeature largest = features.stream().filter(f -> {
-                    return f.getName().equalsIgnoreCase(searchTerm) || f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
-                }).reduce((f1, f2) -> {
-                    int l1 = f1.getEnd() - f1.getStart();
-                    int l2 = f2.getEnd() - f2.getStart();
-                    return l1 > l2 ? f1 : f2;
-                }).get();
+            BasicFeature largest = features.stream().filter(f -> {
+                return f.getName().equalsIgnoreCase(searchTerm) || f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
+            }).reduce((f1, f2) -> {
+                int l1 = f1.getEnd() - f1.getStart();
+                int l2 = f2.getEnd() - f2.getStart();
+                return l1 > l2 ? f1 : f2;
+            }).get();
 
-                return largest;
-            }
+            return largest;
+
         }
         return null;
     }
@@ -651,8 +659,24 @@ public class BBFile {
             }
         }
         return this._searchTrees;
-
     }
 
+    UnsignedByteBuffer loadBinaryBuffer(String path, ByteOrder order, long start, int size) throws IOException {
+        byte[] bytes = getBytes(start, size);
+        return UnsignedByteBufferImpl.wrap(bytes, byteOrder);
+    }
 
+    private byte[] getBytes(long start, int size) throws IOException {
+
+        if (_preloadBytes != null) {
+            return Arrays.copyOfRange(_preloadBytes, (int) start, (int) start + size);
+        } else {
+            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+                byte[] bytes = new byte[size];
+                is.seek(start);
+                is.readFully(bytes);
+                return bytes;
+            }
+        }
+    }
 }

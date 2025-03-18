@@ -17,7 +17,8 @@ public class HubParser {
 
     private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
-            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix"));
+            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "groups",
+            "chromSizes"));
 
     public static Hub loadAssemblyHub(String url) throws IOException {
         return loadHub(url, null);
@@ -162,7 +163,7 @@ public class HubParser {
 
                     String value = line.substring(i + 1).trim();
 
-                    if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key))) {
+                    if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key) || "label".equals(key))) {
                         String[] tokens = Globals.whitespacePattern.split(value);
                         value = tokens[0];
                     }
@@ -205,6 +206,7 @@ public class HubParser {
             if (n.properties.containsKey("parent")) {
                 String parentName = firstWord(n.properties.get("parent"));
                 n.parent = nodeMap.get(parentName);
+                n.properties.put("parent", parentName);  
             }
         }
         return nodes;

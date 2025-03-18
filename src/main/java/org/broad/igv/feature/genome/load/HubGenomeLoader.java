@@ -65,7 +65,9 @@ public class HubGenomeLoader extends GenomeLoader {
                 try {
                     Hub hub = HubParser.loadAssemblyHub(hubURL);
                     final GenomeConfig config = getGenomeConfig(hub);
-                    genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
+                    if (config != null) {
+                        genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
+                    }
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
                     MessageUtils.showMessage("Error loading hub: " + e.getMessage());
@@ -77,8 +79,10 @@ public class HubGenomeLoader extends GenomeLoader {
             protected void done() {
                 try {
                     File genomeFile = get();
-                    WaitCursorManager.removeWaitCursor(token);
-                    GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+                    if (genomeFile != null) {
+                        WaitCursorManager.removeWaitCursor(token);
+                        GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+                    }
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
                     MessageUtils.showMessage("Error loading hub: " + e.getMessage());
@@ -100,8 +104,10 @@ public class HubGenomeLoader extends GenomeLoader {
      */
     public static void loadAssemblyHub(Hub hub) throws IOException {
         final GenomeConfig config = getGenomeConfig(hub);
-        File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-        GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+        if (config != null) {
+            File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
+            GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+        }
     }
 
 
@@ -138,16 +144,18 @@ public class HubGenomeLoader extends GenomeLoader {
                 log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
             }
 
-
-            if (!dlg.isCanceled() && dlgSuccess) {
-                List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
-                config.setTracks(selectedTracks);
-
-                // Remember selections in user preferences
-                // List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
-                // PreferencesManager.getPreferences().put(key, String.join(",", names));
-                // TODO -- read these for backward compatibility?
+            if (dlg.isCanceled() || !dlgSuccess) {
+                return null;
             }
+
+            List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
+            config.setTracks(selectedTracks);
+
+            // Remember selections in user preferences
+            // List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
+            // PreferencesManager.getPreferences().put(key, String.join(",", names));
+            // TODO -- read these for backward compatibility?
+
         }
         config.setHubs(Arrays.asList(hub.getUrl()));
         Genome genome = new Genome(config);
@@ -178,6 +186,10 @@ public class HubGenomeLoader extends GenomeLoader {
 
         GenomeConfig config = getGenomeConfig(hub);
 
+        if (config == null) {
+            return GenomeManager.getInstance().getCurrentGenome();
+        }
+
         // Search for list of tracks for this hub in the preferences.  This was used prior to version 2.19.2, current
         // versions of IGV store track information in a genome json file.
         String key = "hub:" + this.hubURL;
@@ -206,6 +218,7 @@ public class HubGenomeLoader extends GenomeLoader {
         Genome genome = new Genome(config);
         genome.setGenomeHub(hub);
         return genome;
+
     }
 
 }

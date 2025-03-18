@@ -97,9 +97,9 @@ public class Genome {
     private String homeChromosome;
     private String defaultPos;
     private String nameSet;
+    private Hub genomeHub;
     private List<Hub> trackHubs;
     private GenomeConfig config;
-
 
     private static Genome nullGenome = null;
 
@@ -218,8 +218,8 @@ public class Genome {
             chromAliasSource = (new ChromAliasFile(config.getAliasURL(), chromosomeNames));
         } else if (config.getChromAliasBbURL() != null) {
             chromAliasSource = (new ChromAliasBB(config.getChromAliasBbURL(), this));
-            if (chromosomeNames == null || chromosomeNames.size() == 0) {
-                chromosomeNames = Arrays.asList(((ChromAliasBB) chromAliasSource).getChromosomeNames());
+            if(chromosomeNames != null && !chromosomeNames.isEmpty()) {
+                ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
             }
         } else {
             chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
@@ -822,6 +822,7 @@ public class Genome {
 
     public void setGenomeHub(Hub genomeHub) {
         // A genome hub is by definition also a track hub
+        this.genomeHub = genomeHub;
         this.trackHubs.add(genomeHub);
     }
 
@@ -845,5 +846,9 @@ public class Genome {
 
     public GenomeConfig getConfig() {
         return config;
+    }
+
+    public Hub getGenomeHub() {
+        return null;
     }
 }

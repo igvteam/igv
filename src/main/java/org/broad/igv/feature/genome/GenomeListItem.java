@@ -37,12 +37,6 @@ public class GenomeListItem {
     private String path;
     private String id;
 
-    public static final GenomeListItem DOWNLOAD_ITEM;
-
-    static {
-        DOWNLOAD_ITEM = new GenomeListItem("Click for more ...", "", "More...");
-    }
-
 
     /**
      * @param displayableName The name that can be shown to a user.

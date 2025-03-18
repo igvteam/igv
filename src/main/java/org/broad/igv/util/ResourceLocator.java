@@ -700,6 +700,10 @@ public class ResourceLocator {
         }
         res.setTrackProperties(properties);
 
+        if(trackConfig.getLabelField() != null) {
+            res.setLabelField(trackConfig.getLabelField());
+        }
+
         return res;
 
     }

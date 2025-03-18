@@ -34,6 +34,7 @@ public class Hub {
         this.hubStanza = hubStanza;
         this.genomeStanza = genomeStanza;
         this.trackStanzas = trackStanzas;
+        this.groupStanzas = groupStanzas;
 
         // load includes.  Nested includes (includes within includes) are not supported
 //        List<Stanza> includes = stanzas.stream().filter(s -> "include".equals(s.type)).toList();
@@ -153,6 +154,9 @@ public class Hub {
 
         if (genomeStanza.hasProperty("htmlPath")) {
             config.setInfoURL(genomeStanza.getProperty("htmlPath"));
+        }
+        if(genomeStanza.hasProperty("chromSizes")) {
+            config.setChromSizesURL(genomeStanza.getProperty("chromSizes"));
         }
 
         // Search for cytoband

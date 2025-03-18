@@ -11,8 +11,7 @@ import java.util.*;
  */
 public class ChromAliasFile extends ChromAliasSource {
 
-    private String[] nameSets;
-
+    private String[] nameSets = null;
 
     public ChromAliasFile(String path, List<String> chromosomeNames) throws IOException {
         try (BufferedReader br = ParsingUtils.openBufferedReader(path)) {
@@ -22,18 +21,33 @@ public class ChromAliasFile extends ChromAliasSource {
             Set<String> chromosomeNameSet = chromosomeNames != null ? new HashSet<>(chromosomeNames) : Collections.EMPTY_SET;
 
             // First line
+            // NOTE -- different conventions have been used for the first line.  Older chr alias files do not specify
+            // name sets.  So we apply some heuristics.
+            //   (1) no column header contains internal spaces (multiple words)
+            //   (2) # of header columns == # of columns in data rows
+            //
+            // Examples of non-conforming and conforming alias file headers:
+            //   # sequenceName	alias names	UCSC database: mm10
+            //   # refseq	assembly	genbank	ncbi	ucsc
+
             boolean firstLine = true;
+            String [] headers = null;
             String line;
             while ((line = br.readLine()) != null) {
                 if (firstLine && line.startsWith("#")) {
-                    String[] tokens = line.substring(1).split("\t");
-                    this.nameSets = new String[tokens.length];
-                    for (int i = 0; i < tokens.length; i++) {
-                        this.nameSets[i] = tokens[i].trim();
+                    String[] tokens = line.substring(1).trim().split("\\s*\t\\s*");
+                    if(Arrays.stream(tokens).noneMatch(token -> token.contains(" "))) {
+                        headers = tokens;
                     }
                 } else {
                     String[] tokens = line.split("\t");
                     if (tokens.length > 1) {
+
+                        if(nameSets == null && headers != null) {
+                            if(headers.length == tokens.length) {
+                                nameSets = headers;
+                            }
+                        }
 
                         // Find the canonical chromosome
                         String chr = null;
@@ -116,4 +130,7 @@ public class ChromAliasFile extends ChromAliasSource {
         return this.aliasCache.get(alias);
     }
 
+    public boolean hasNameSets() {
+        return nameSets != null;
+    }
 }

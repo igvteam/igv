@@ -57,8 +57,8 @@ public class TrackDbHubTest {
      */
     @Test
     public void testSuperTrack() throws IOException {
-        String bbFile = TestUtils.DATA_DIR + "hubs/supertrack_trackDb.txt";
-        List<Stanza> stanzas = HubParser.loadStanzas(bbFile);
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/supertrack_trackDb.txt");
 
         TrackDbHub trackDbHub = new TrackDbHub(stanzas, null);
 
@@ -81,5 +81,26 @@ public class TrackDbHubTest {
         TrackConfig track = view.tracks.get(0);
         Map<String, String> meta = track.getAttributes();
         assertEquals(4, meta.size());
+    }
+
+    @Test
+    public void testGroupedContainers() throws IOException {
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/gtexCoverage.txt");
+        List<Stanza> groupStanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, groupStanzas);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(1, containers.size());
+
+        TrackConfigContainer groupContainer = containers.get(0);
+        assertEquals("expression", groupContainer.name);
+        assertEquals(1, groupContainer.children.size());
+        assertEquals(0, groupContainer.tracks.size());
+
+        TrackConfigContainer compositeContainer = groupContainer.children.get(0);
+        assertEquals("gtexCov", compositeContainer.name);
+        assertEquals(0, compositeContainer.children.size());
+        assertEquals(2, compositeContainer.tracks.size());
+
     }
 }

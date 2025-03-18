@@ -3,6 +3,7 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.ucsc.bb.BBFile;
 import java.io.IOException;
+import java.util.List;
 
 public class ChromAliasBB extends ChromAliasSource {
 
@@ -13,6 +14,16 @@ public class ChromAliasBB extends ChromAliasSource {
         this.reader =  new BBFile(path, genome);
     }
 
+    void preload(List<String> chromosomeNames) {
+        try {
+            this.reader.preload();
+            for (String chr : chromosomeNames) {
+                search(chr);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Return an alternate chromosome name (alias).

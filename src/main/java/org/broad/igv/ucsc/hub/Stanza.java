@@ -11,7 +11,7 @@ class Stanza {
             "altColor", "autoscale", "viewLimits", "negativeValues", "maxWindowToQuery", "transformFun",
             "windowingFunction", "yLineMark", "yLineOnOff", "graphTypeDefault", "interactUp", "interactMultiRegion",
             "endsVisible", "maxHeightPixels", "scoreMin", "scoreFilter", "scoreFilterLimits",
-            "minAliQual", "bamColorTag", "bamColorMode", "bamGrayMode", "colorByStrand", "itemRgb"));
+            "minAliQual", "bamColorTag", "bamColorMode", "bamGrayMode", "colorByStrand", "itemRgb", "html"));
     final String type;
     final String name;
     Stanza parent;

@@ -1,0 +1,24 @@
+track gtexCov
+shortLabel GTEx RNA-Seq Coverage
+longLabel GTEx V8 RNA-Seq Read Coverage by Tissue
+maxHeightPixels 100:50:8
+group expression
+compositeTrack on
+priority 10.20
+autoScale group
+
+track gtexCovWholeBlood
+shortLabel Whole Blood
+type bigWig
+longLabel Whole Blood
+parent gtexCov
+bigDataUrl https://hgdownload.soe.ucsc.edu/gbdb/hg38/gtex/cov/GTEX-1LG7Z-0005-SM-DKPQ6.Whole_Blood.RNAseq.bw
+color 255,0,255
+
+track gtexCovVagina
+shortLabel Vagina
+type bigWig
+longLabel Vagina
+parent gtexCov
+bigDataUrl https://hgdownload.soe.ucsc.edu/gbdb/hg38/gtex/cov/GTEX-1IDJU-1026-SM-AHZ2U.Vagina.RNAseq.bw
+color 238,213,210
