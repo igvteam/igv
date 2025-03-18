@@ -13,7 +13,7 @@ public class Hub {
     private static Logger log = LogManager.getLogger(Hub.class);
     private final String url;
     private final String trackDbURL;
-
+    private int order;
     Stanza hubStanza;
     Stanza genomeStanza;
     List<Stanza> trackStanzas;
@@ -51,10 +51,17 @@ public class Hub {
         }
     }
 
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     public boolean isAssemblyHub() {
         return genomeStanza.hasProperty("twoBitPath");
     }
-
 
     public String getShortLabel() {
         return hubStanza.hasProperty("shortLabel") ? hubStanza.getProperty("shortLabel") : this.url;
@@ -155,7 +162,7 @@ public class Hub {
         if (genomeStanza.hasProperty("htmlPath")) {
             config.setInfoURL(genomeStanza.getProperty("htmlPath"));
         }
-        if(genomeStanza.hasProperty("chromSizes")) {
+        if (genomeStanza.hasProperty("chromSizes")) {
             config.setChromSizesURL(genomeStanza.getProperty("chromSizes"));
         }
 
@@ -188,7 +195,9 @@ public class Hub {
                 throw new RuntimeException("Error loading track configurations: " + e.getMessage(), e);
             }
         }
-        return trackHub.getGroupedTrackConfigurations(this.getLongLabel());
+        String longLabel = this.getLongLabel();
+        String hubLabel = longLabel != null && longLabel.length() < 50 ? longLabel : this.getShortLabel();
+        return trackHub.getGroupedTrackConfigurations(hubLabel);
     }
 
     public String getUrl() {

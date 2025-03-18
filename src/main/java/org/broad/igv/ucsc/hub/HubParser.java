@@ -25,6 +25,12 @@ public class HubParser {
     }
 
     public static Hub loadHub(String url, String genomeId) throws IOException {
+        return loadHub(url, genomeId, 0);
+    }
+
+    public static Hub loadHub(String url, String genomeId, int order) throws IOException {
+
+        log.info("Loading Hub: " + url);
 
         // Load stanzas from the hub.txt file, which might be all stanzas if 'useOneFile' is on
         List<Stanza> stanzas = HubParser.loadStanzas(url);
@@ -49,9 +55,9 @@ public class HubParser {
             }
             genomeStanza = stanzas.get(1);
 
-            if(!genomeStanza.hasProperty("twoBitPath")) {
+            if (!genomeStanza.hasProperty("twoBitPath")) {
                 // Not an assembly hub, validate genome
-                if(!genomeStanza.getProperty("genome").equals(genomeId)) {
+                if (!genomeStanza.getProperty("genome").equals(genomeId)) {
                     throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
                 }
             }
@@ -77,13 +83,13 @@ public class HubParser {
                     break;
                 }
             }
-            if(trackDbURL == null) {
+            if (trackDbURL == null) {
                 throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
             }
         }
 
         // Assembly hub validation
-        if (genomeId == null ) {
+        if (genomeId == null) {
             if (!genomeStanza.hasProperty("twoBitPath")) {
                 throw new RuntimeException("Assembly hubs must specify 'twoBitPath'");
             }
@@ -96,7 +102,9 @@ public class HubParser {
             }
         }
 
-        return new Hub(url, trackDbURL, hubStanza, genomeStanza, trackStanzas, groupStanzas);
+        Hub hub =  new Hub(url, trackDbURL, hubStanza, genomeStanza, trackStanzas, groupStanzas);
+        hub.setOrder(order);
+        return hub;
     }
 
     private static String getHost(String url) {
@@ -145,7 +153,7 @@ public class HubParser {
                     }
                 }
 
-                if(line.startsWith("include")) {
+                if (line.startsWith("include")) {
                     String relativeURL = line.substring(8).trim();
                     String includeURL = getDataURL(relativeURL, host, baseURL);
                     List<Stanza> includeStanzas = HubParser.loadStanzas(includeURL);
@@ -206,7 +214,7 @@ public class HubParser {
             if (n.properties.containsKey("parent")) {
                 String parentName = firstWord(n.properties.get("parent"));
                 n.parent = nodeMap.get(parentName);
-                n.properties.put("parent", parentName);  
+                n.properties.put("parent", parentName);
             }
         }
         return nodes;

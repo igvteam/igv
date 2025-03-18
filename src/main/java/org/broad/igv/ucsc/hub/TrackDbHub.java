@@ -97,7 +97,8 @@ public class TrackDbHub {
                     String name = s.getProperty("track");
                     int priority = s.hasProperty("priority") ? getPriority(s.getProperty("priority")) : Integer.MAX_VALUE - 1;
                     boolean defaultOpen = "0".equals(s.getProperty("defaultIsClosed"));
-                    String label = s.hasProperty("longLabel") ? s.getProperty("longLabel") : s.getProperty("shortLabel");
+                    String longLabel = s.getProperty("longLabel");
+                    String label = longLabel != null && longLabel.length() < 50 ? longLabel : s.getProperty("shortLabel");
                     final TrackConfigContainer container = new TrackConfigContainer(name, label, priority, defaultOpen);
                     if (trackContainers.containsKey(name)) {
                         throw new RuntimeException("Duplicate track container: " + name);

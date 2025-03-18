@@ -56,6 +56,7 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -98,10 +99,10 @@ public class Genome {
     private String defaultPos;
     private String nameSet;
     private Hub genomeHub;
-    private List<Hub> trackHubs;
+    private Collection<Hub> trackHubs;
     private GenomeConfig config;
 
-    private static Genome nullGenome = null;
+    public static Genome nullGenome = null;
 
     public synchronized static Genome nullGenome() {
         if (nullGenome == null) {
@@ -117,7 +118,9 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.getNameSet();
         blatDB = config.getBlatDB();
-        trackHubs = new ArrayList<>();
+        trackHubs =  Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+
+                //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         if (config.getUcsdID() == null) {
             ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         } else {
@@ -241,12 +244,19 @@ public class Genome {
         }
 
         if (config.getHubs() != null) {
+            int order = 0;
             for (String hubUrl : config.getHubs()) {
-                try {
-                    trackHubs.add(HubParser.loadHub(hubUrl, getUCSCId()));
-                } catch (Exception e) {
-                    log.error("Error loading hub", e);
-                }
+                order++;
+                final int o = order;
+                LongRunningTask.submit(() -> {
+                    try {
+                        final Hub hub = HubParser.loadHub(hubUrl, getUCSCId(), o);
+                        trackHubs.add(hub);
+                    } catch (Exception e) {
+                        log.error("Error loading hub " + hubUrl, e);
+                    }
+                });
+
             }
         }
 
@@ -278,8 +288,8 @@ public class Genome {
         this.longChromosomeNames = computeLongChromosomeNames();
         this.homeChromosome = this.longChromosomeNames.size() > 1 ? Globals.CHR_ALL : chromosomeNames.get(0);
         this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
-
-        this.trackHubs = new ArrayList<>();
+        this.trackHubs =
+                Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
     }
 
     private void addTracks(GenomeConfig config) {
@@ -823,16 +833,18 @@ public class Genome {
     public void setGenomeHub(Hub genomeHub) {
         // A genome hub is by definition also a track hub
         this.genomeHub = genomeHub;
+        genomeHub.setOrder(this.trackHubs.size());
         this.trackHubs.add(genomeHub);
     }
 
-    public List<Hub> getTrackHubs() {
+    public Collection<Hub> getTrackHubs() {
         return trackHubs;
     }
 
     public void addTrackHub(Hub hub) {
 
         if(!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
+            hub.setOrder(trackHubs.size());
             trackHubs.add(hub);
             if (config.isFromJson()) {
                 config.addHub(hub.getUrl());
