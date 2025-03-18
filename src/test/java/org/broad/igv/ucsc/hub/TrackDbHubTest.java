@@ -70,7 +70,7 @@ public class TrackDbHubTest {
         assertEquals(1, superTrack.children.size());
 
         TrackConfigContainer compositeTrack = superTrack.children.get(0);
-        assertEquals("HUES64", compositeTrack.label);
+        assertEquals("HUES64 tracks", compositeTrack.label);
         assertEquals(1, compositeTrack.children.size());
 
         TrackConfigContainer view = compositeTrack.children.get(0);
