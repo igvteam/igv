@@ -1,12 +1,9 @@
 package org.broad.igv.ucsc.hub;
 
-import org.broad.igv.encode.FileRecord;
-import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
@@ -25,7 +22,7 @@ public class CollapsiblePanel extends JPanel {
     public static final Color HEADER_BG = new Color(180, 204, 226);
     public static final Color HEADER_BG2 = new Color(204, 204, 204);
     private final JLabel jlabel;
-    private final List<SelectionBox> selectionBoxes;
+    final List<SelectionBox> selectionBoxes;
     private final boolean autoselectDefaults;
     private final TrackConfigContainer configContainer;
     private JButton collapseButton;
@@ -34,7 +31,9 @@ public class CollapsiblePanel extends JPanel {
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
-    public CollapsiblePanel(TrackConfigContainer configContainer, boolean autoselectDefaults) {
+    private static Set<String> autoselectTracks = Set.of("ncbiRefSeq", "augustus", "ensGene");
+
+    public CollapsiblePanel(TrackConfigContainer configContainer, boolean autoselectDefaults, boolean addSearchButton) {
 
         Color backgroundColor = HEADER_BG;
 
@@ -102,13 +101,15 @@ public class CollapsiblePanel extends JPanel {
 
         this.add(header, BorderLayout.NORTH);
 
-        final JButton searchButton = createSearchButton("Search " + configContainer.label, selectionBoxes,
-                (selectedCount) -> {
-                    this.updateLabel();
-                    return null;
-                });
+        if(addSearchButton) {
+            final JButton searchButton = TrackHubSelectionDialog.createSearchButton("Search " + configContainer.label, Arrays.asList(this),
+                    (selectedCount) -> {
+                        this.updateLabel();
+                        return null;
+                    });
 
-        this.addSearchButton(searchButton);
+            this.addSearchButton(searchButton);
+        }
 
         for (SelectionBox selectionBox : selectionBoxes) {
             selectionBox.setCallback(b -> {
@@ -118,15 +119,20 @@ public class CollapsiblePanel extends JPanel {
         }
     }
 
+    public String containerLabel() {
+        return configContainer.label;
+    }
+
     public void resetSelectionBoxes(Set<String> loadedTrackPaths) {
+
         for (CollapsiblePanel.SelectionBox box : selectionBoxes) {
             final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
             box.setSelected(
                     isLoaded ||
-                    (autoselectDefaults && box.trackConfig.getVisible() == true) && configContainer.name.toLowerCase().equals("genes"));
+                    (autoselectDefaults && (autoselectTracks.contains(box.trackConfig.getId()) || selectionBoxes.size() == 1)));
             box.setEnabled(!isLoaded);
-            updateLabel();
         }
+        updateLabel();
     }
 
     public void updateLabel() {
@@ -236,81 +242,6 @@ public class CollapsiblePanel extends JPanel {
             selectionBoxes.addAll(addSelectionBoxes(title, childChild, panel, checkboxType));
         }
         return selectionBoxes;
-    }
-
-    private JButton createSearchButton(String label, java.util.List<SelectionBox> selectionBoxes, Function<Integer, Void> callback) {
-
-        JButton searchButton = new JButton("Search");
-
-        searchButton.addActionListener(e -> {
-
-            Set<String> attributeNames = new LinkedHashSet<>();
-            attributeNames.add("Name");
-            attributeNames.add("Description");
-            attributeNames.add("Format");
-
-            Map<FileRecord, SelectionBox> recordSelectionBoxMap = new HashMap<>();
-
-            java.util.List<FileRecord> records = new ArrayList<>();
-
-            for (SelectionBox selectionBox : selectionBoxes) {
-
-                if (selectionBox.isEnabled()) {
-
-                    TrackConfig trackConfig = selectionBox.getTrackConfig();
-                    final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
-                    Map<String, String> attributes = trackConfigAttributes;
-                    if (attributes == null) {
-                        attributes = new LinkedHashMap<>();
-                    }
-
-                    attributes.put("Name", trackConfig.getName());
-                    attributes.put("Description", trackConfig.getDescription());
-                    attributes.put("Format", trackConfig.getFormat());
-
-                    if (trackConfigAttributes != null) {
-                        attributes.putAll(trackConfigAttributes);
-                        attributeNames.addAll(trackConfigAttributes.keySet());
-                    }
-
-                    final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                    record.setSelected(trackConfig.getVisible());
-                    records.add(record);
-                    recordSelectionBoxMap.put(record, selectionBox);
-                }
-            }
-
-
-            List<String> headings = new ArrayList<>(attributeNames);
-            // Limit # of columns
-            if (headings.size() > 15) {
-                headings = headings.subList(0, 15);
-            }
-
-            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-
-            TrackChooser chooser = new TrackChooser(
-                    owner,
-                    headings,
-                    records,
-                    label);
-
-            if(owner != null) {
-                Rectangle ownerBounds = owner.getBounds();
-                chooser.setSize(new Dimension(Math.min(ownerBounds.width, 1200), Math.min(ownerBounds.height, 800)));
-                chooser.setLocationRelativeTo(owner);
-            }
-            chooser.setVisible(true);
-
-            if (!chooser.isCanceled()) {
-                Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
-                for (Map.Entry<FileRecord, SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
-                    entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
-                }
-                callback.apply(selectedRecords.size());
-            }
-        });
-        return searchButton;
     }
 
 

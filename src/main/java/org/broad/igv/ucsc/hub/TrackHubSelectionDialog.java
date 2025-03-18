@@ -1,5 +1,7 @@
 package org.broad.igv.ucsc.hub;
 
+import org.broad.igv.encode.FileRecord;
+import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 
 
 /**
@@ -33,7 +36,7 @@ public class TrackHubSelectionDialog extends JDialog {
     private Hub hub;
     private boolean autoselectDefaults;
     private ArrayList<CollapsiblePanel> categoryPanels;
-    private boolean canceled = false;
+    private boolean canceled = true;
 
     public static TrackHubSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
@@ -119,16 +122,16 @@ public class TrackHubSelectionDialog extends JDialog {
         expandButtonPanel.add(collapseAllButton);
         topButtonPanel.add(expandButtonPanel, BorderLayout.WEST);
 
-        JPanel clearAllPanel = new JPanel();
-        clearAllPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        JButton clearAllButton = new JButton("Clear All");
-        clearAllPanel.add(clearAllButton);
-        clearAllButton.addActionListener(e -> {
-            for (CollapsiblePanel collapsiblePanel : categoryPanels) {
-                collapsiblePanel.clearSelections();
-            }
-        });
-        topButtonPanel.add(clearAllPanel, BorderLayout.EAST);
+//        JPanel clearAllPanel = new JPanel();
+//        clearAllPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+//        JButton clearAllButton = new JButton("Clear All");
+//        clearAllPanel.add(clearAllButton);
+//        clearAllButton.addActionListener(e -> {
+//            for (CollapsiblePanel collapsiblePanel : categoryPanels) {
+//                collapsiblePanel.clearSelections();
+//            }
+//        });
+//        topButtonPanel.add(clearAllPanel, BorderLayout.EAST);
 
         topPanel.add(topButtonPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -139,20 +142,29 @@ public class TrackHubSelectionDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(categoryContainer);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Loop through track groups
-        final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
-        Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+        // Get total track count
+        int count = 0;
+        for(TrackConfigContainer cp : trackConfigContainers) {
+            count += cp.countTracks();
+        }
 
+        // Loop through track groups
+        boolean catSearch = count > 10000;
         for (TrackConfigContainer configGroup : trackConfigContainers) {
             categoryContainer.add(Box.createVerticalStrut(10));
-            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup);
+            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup, catSearch);
             categoryContainer.add(categoryPanel);
             categoryPanels.add(categoryPanel);
         }
 
         // Search button.
-        //JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), allSelectionBoxes);
-        //topButtonPanel.add(searchButton, BorderLayout.EAST);
+        if(!catSearch) {
+            JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
+                categoryPanels.stream().forEach(p -> p.updateLabel());
+                return null;
+            });
+            topButtonPanel.add(searchButton, BorderLayout.EAST);
+        }
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -202,8 +214,11 @@ public class TrackHubSelectionDialog extends JDialog {
      * @param configGroup
      * @return
      */
-    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup) {
-        return new CollapsiblePanel(configGroup, this.autoselectDefaults);
+    private CollapsiblePanel createCategoryPanel(TrackConfigContainer configGroup, boolean search) {
+
+        boolean autoselectGenes = this.autoselectDefaults && configGroup.name.toLowerCase().equals("genes");
+
+        return new CollapsiblePanel(configGroup, autoselectGenes, search);
     }
 
 
@@ -315,6 +330,88 @@ public class TrackHubSelectionDialog extends JDialog {
             return new Dimension(16, 16);
         }
     }
+
+    public static JButton createSearchButton(String label, List<CollapsiblePanel> panels, Function<Integer, Void> callback) {
+
+        JButton searchButton = new JButton("Search");
+
+        searchButton.addActionListener(e -> {
+
+            Set<String> attributeNames = new LinkedHashSet<>();
+            if (panels.size() > 1) {
+                attributeNames.add("Group");
+            }
+            attributeNames.add("Name");
+            attributeNames.add("Description");
+            attributeNames.add("Format");
+
+            Map<FileRecord, CollapsiblePanel.SelectionBox> recordSelectionBoxMap = new HashMap<>();
+
+            List<FileRecord> records = new ArrayList<>();
+
+            for (CollapsiblePanel panel : panels) {
+
+                for (CollapsiblePanel.SelectionBox selectionBox : panel.selectionBoxes) {
+
+                    if (selectionBox.isEnabled()) {
+
+                        TrackConfig trackConfig = selectionBox.getTrackConfig();
+                        final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                        Map<String, String> attributes = trackConfigAttributes;
+                        if (attributes == null) {
+                            attributes = new LinkedHashMap<>();
+                        }
+                        attributes.put("Group", panel.containerLabel());
+                        attributes.put("Name", trackConfig.getName());
+                        attributes.put("Description", trackConfig.getDescription());
+                        attributes.put("Format", trackConfig.getFormat());
+
+                        if (trackConfigAttributes != null) {
+                            attributes.putAll(trackConfigAttributes);
+                            attributeNames.addAll(trackConfigAttributes.keySet());
+                        }
+
+                        final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
+                        record.setSelected(trackConfig.getVisible());
+                        records.add(record);
+                        recordSelectionBoxMap.put(record, selectionBox);
+                    }
+                }
+            }
+
+
+            List<String> headings = new ArrayList<>(attributeNames);
+            // Limit # of columns
+            if (headings.size() > 15) {
+                headings = headings.subList(0, 15);
+            }
+
+            Frame owner = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+
+            TrackChooser chooser = new TrackChooser(
+                    owner,
+                    headings,
+                    records,
+                    label);
+
+            if (owner != null) {
+                Rectangle ownerBounds = owner.getBounds();
+                chooser.setSize(new Dimension(Math.min(ownerBounds.width, 1200), Math.min(ownerBounds.height, 800)));
+                chooser.setLocationRelativeTo(owner);
+            }
+            chooser.setVisible(true);
+
+            if (!chooser.isCanceled()) {
+                Set<FileRecord> selectedRecords = new HashSet<>(chooser.getSelectedRecords());
+                for (Map.Entry<FileRecord, CollapsiblePanel.SelectionBox> entry : recordSelectionBoxMap.entrySet()) {
+                    entry.getValue().setSelected(selectedRecords.contains(entry.getKey()));
+                }
+                callback.apply(selectedRecords.size());
+            }
+        });
+        return searchButton;
+    }
+
 
     /**
      * main for testing and development

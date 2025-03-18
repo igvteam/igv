@@ -52,6 +52,7 @@ public class TrackDbHub {
             TrackConfigContainer nullContainer = new TrackConfigContainer(hubName, hubName, 0, true);
             groupTrackConfigs.add(nullContainer);
 
+            boolean hasGroups = this.groupStanzas != null;
             if (this.groupStanzas != null) {
                 for (Stanza groupStanza : this.groupStanzas) {
                     String name = groupStanza.getProperty("name");
@@ -64,11 +65,6 @@ public class TrackDbHub {
             }
 
             for (Stanza s : trackStanzas) {
-
-                if("TFrPeakClusters".equals(s.getProperty("track"))) {
-                    System.out.println("TFrPeakClusters");
-                }
-
 
                 boolean isContainer = (s.hasOwnProperty("superTrack") && !s.hasOwnProperty("bigDataUrl")) ||
                         s.hasOwnProperty("compositeTrack") ||
@@ -83,7 +79,7 @@ public class TrackDbHub {
                     parent =  trackContainers.get(s.getOwnProperty("parent"));
                 }
 
-                if (parent == null && s.hasProperty("group")) {
+                if (parent == null && hasGroups && s.hasProperty("group")) {
                     String groupName = s.getProperty("group");
                     if (trackContainers.containsKey(groupName)) {
                         parent = trackContainers.get(groupName);
