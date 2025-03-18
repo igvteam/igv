@@ -132,6 +132,7 @@ dependencies {
             [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: xmlGraphicsVersion],
             [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: xmlGraphicsVersion],
             [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
+            [group: 'com.formdev', name: 'flatlaf', version: '3.5.4'],
 
             // Amazon deps
             [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: amazonVersion],
