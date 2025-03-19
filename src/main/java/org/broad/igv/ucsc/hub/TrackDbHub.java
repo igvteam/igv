@@ -14,10 +14,9 @@ public class TrackDbHub {
 
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
             "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf", "vcfphasedtrio",
-            "bigdbsnp"));
+            "bigdbsnp", "rmask"));
 
-    static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly", "gap", "gapOverlap", "allGaps",
-            "cpgIslandExtUnmasked", "windowMasker"));
+    static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly"));
 
     static Map<String, String> vizModeMap = Map.of(
             "pack", "EXPANDED",

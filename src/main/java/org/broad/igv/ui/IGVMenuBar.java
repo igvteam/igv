@@ -298,10 +298,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         // Track hubs
         if (genome != null && genome.getTrackHubs().size() > 0) {
-            menu.add(new JSeparator());
-            for (Hub trackHub : genome.getTrackHubs()) {
-                menu.add(createTrackHubItem(trackHub));
-            }
+            addTrackHubs(genome, menu);
         }
 
         // ENCODE items.  These will be hidden / shown depending on genome chosen
@@ -424,6 +421,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         );
 
         return menu;
+    }
+
+    private void addTrackHubs(Genome genome, JMenu menu) {
+        menu.add(new JSeparator());
+        for (Hub trackHub : genome.getTrackHubs()) {
+            menu.add(createTrackHubItem(trackHub));
+        }
     }
 
     private JMenuItem createTrackHubItem(Hub trackHub) {

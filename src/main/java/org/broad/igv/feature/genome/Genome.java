@@ -65,6 +65,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
@@ -118,9 +121,9 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.getNameSet();
         blatDB = config.getBlatDB();
-        trackHubs =  Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+        trackHubs = Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
 
-                //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
+        //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         if (config.getUcsdID() == null) {
             ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         } else {
@@ -221,7 +224,7 @@ public class Genome {
             chromAliasSource = (new ChromAliasFile(config.getAliasURL(), chromosomeNames));
         } else if (config.getChromAliasBbURL() != null) {
             chromAliasSource = (new ChromAliasBB(config.getChromAliasBbURL(), this));
-            if(chromosomeNames != null && !chromosomeNames.isEmpty()) {
+            if (chromosomeNames != null && !chromosomeNames.isEmpty()) {
                 ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
             }
         } else {
@@ -243,26 +246,31 @@ public class Genome {
             // TODO -- no place to go
         }
 
+        // Load track hubs in parallel, but set a timeout to prevent a non-responsive hub server from preventing
+        // genome load
         if (config.getHubs() != null) {
-            int order = 0;
-            for (String hubUrl : config.getHubs()) {
-                order++;
-                final int o = order;
-                LongRunningTask.submit(() -> {
-                    try {
-                        final Hub hub = HubParser.loadHub(hubUrl, getUCSCId(), o);
-                        trackHubs.add(hub);
-                    } catch (Exception e) {
-                        log.error("Error loading hub " + hubUrl, e);
-                    }
-                });
-
+            List<String> hubs = config.getHubs();
+            List<CompletableFuture<Object>> futures = IntStream.range(0, hubs.size())
+                    .parallel()
+                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
+                        try {
+                            final Hub hub = HubParser.loadHub(hubs.get(i), getUCSCId(), i + 1);
+                            trackHubs.add(hub);
+                        } catch (Exception e) {
+                            log.error("Error loading hub " + hubs.get(i), e);
+                        }
+                        return null;
+                    }))
+                    .collect(Collectors.toList());
+            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            try {
+                combinedFuture.get(20, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.error("Error loading hubs", e);
             }
         }
 
-
         addTracks(config);
-
     }
 
 
@@ -289,7 +297,7 @@ public class Genome {
         this.homeChromosome = this.longChromosomeNames.size() > 1 ? Globals.CHR_ALL : chromosomeNames.get(0);
         this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
         this.trackHubs =
-                Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
+                Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
     }
 
     private void addTracks(GenomeConfig config) {
@@ -843,7 +851,7 @@ public class Genome {
 
     public void addTrackHub(Hub hub) {
 
-        if(!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
+        if (!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
             hub.setOrder(trackHubs.size());
             trackHubs.add(hub);
             if (config.isFromJson()) {
