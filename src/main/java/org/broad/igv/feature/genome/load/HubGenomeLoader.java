@@ -117,8 +117,7 @@ public class HubGenomeLoader extends GenomeLoader {
 
         // Potentially override default tracks from hub with user selections
 
-        // Check previous selections for this hub first
-        // TODO -- Maintain track order?
+        // Check previous selections for this hub first -- this is deprecated, kept for backward compatibility.
         String key = "hub:" + hub.getUrl();
         final List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 

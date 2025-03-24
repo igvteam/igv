@@ -29,13 +29,9 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
@@ -47,6 +43,7 @@ import org.broad.igv.util.ResourceLocator;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Select tracks from a track hub.
@@ -77,7 +74,7 @@ public class SelectHubTracksAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    selectTracks(hub);
+                    selectAndLoadTracks(hub);
 
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);
@@ -100,10 +97,12 @@ public class SelectHubTracksAction extends MenuAction {
 
     }
 
-    public static void selectTracks(Hub hub) {
+    public static void selectAndLoadTracks(Hub hub) {
 
-        final List<Track> loadedTracks = IGV.getInstance().getAllTracks().stream().filter(t -> t.getResourceLocator() != null).toList();
-        Set<String> loadedTrackPaths = new HashSet<>(loadedTracks.stream().map(t -> t.getResourceLocator().getPath()).toList());
+        Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
+                .filter(t -> t.getResourceLocator() != null)
+                .map(t -> t.getResourceLocator().getPath())
+                .collect(Collectors.toSet());
 
         TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false);
 

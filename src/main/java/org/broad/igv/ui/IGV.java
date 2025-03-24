@@ -1616,6 +1616,15 @@ public class IGV implements IGVEventObserver {
 
     }
 
+    public void deleteTracksByPath(Set<String> paths) {
+        List<Track> toRemove = getAllTracks().stream().filter(t -> {
+            ResourceLocator locator = t.getResourceLocator();
+            String path = locator == null ? null : locator.getPath();
+            return path != null && paths.contains(path);
+        }).collect(Collectors.toList());
+        deleteTracks(toRemove);
+    }
+
     /**
      * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
      *

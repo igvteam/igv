@@ -48,6 +48,9 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
+import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
@@ -62,6 +65,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -284,9 +288,7 @@ public class GenomeManager {
         IGV.getInstance().revalidateTrackPanels();
     }
 
-
     public File downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
-
         try {
 
             if (item.getPath().endsWith(".genome")) {
@@ -295,6 +297,17 @@ public class GenomeManager {
             } else {
                 JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
                 GenomeConfig config = loader.loadGenomeConfig();
+
+                // If config has a hub,  allow changing default annotation.
+                if (config.getHubs() != null && config.getHubs().size() > 0) {
+
+                    List<TrackConfig> selectedTracks = selectAnnotationTracks(config);
+                    if (selectedTracks == null) {
+                        return null;
+                    }
+                    config.setTracks(selectedTracks);
+                }
+
                 File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
                 return downloadedGenome;
             }
@@ -306,6 +319,66 @@ public class GenomeManager {
         }
     }
 
+    public void updateAnnotations() throws IOException {
+        if (currentGenome != null) {
+            GenomeConfig config = currentGenome.getConfig();
+
+            if (config != null) {
+
+                List<String> currentAnnotationPaths = config.getTrackConfigs().stream().map(TrackConfig::getUrl).toList();
+
+                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config);
+                config.setTracks(selectedConfigs);
+                GenomeDownloadUtils.saveLocalGenome(config);
+
+                Set<String> selectedTrackPaths = selectedConfigs.stream().map(TrackConfig::getUrl).collect(Collectors.toSet());
+
+                // Load or unload tracks
+                Set<String> pathsToRemove = new HashSet<>();
+                for (String p : currentAnnotationPaths) {
+                    if (!selectedTrackPaths.contains(p)) {
+                        pathsToRemove.add(p);
+                    }
+                }
+
+                Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
+                        .filter(t -> t.getResourceLocator() != null)
+                        .map(t -> t.getResourceLocator().getPath())
+                        .collect(Collectors.toSet());
+
+
+                List<TrackConfig> tracksToLoad = selectedConfigs.stream()
+                        .filter(trackConfig -> !loadedTrackPaths.contains(trackConfig.getUrl()))
+                        .collect(Collectors.toList());
+                
+                List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
+                for (ResourceLocator locator : locators) {
+                    locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
+                }
+
+                IGV.getInstance().deleteTracksByPath(pathsToRemove);
+                IGV.getInstance().loadTracks(locators);
+            }
+        }
+    }
+
+    List<TrackConfig> selectAnnotationTracks(GenomeConfig config) throws IOException {
+        String annotationHub = config.getHubs().get(0);  // IGV convention
+        Hub hub = HubParser.loadHub(annotationHub, config.getId());
+        Set<String> currentSelections = config.getTrackConfigs().stream().map(trackConfig -> trackConfig.getUrl()).collect(Collectors.toSet());
+        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true);
+        try {
+            UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
+            if (dlg.isCanceled()) {
+                return null;
+            } else {
+                return dlg.getSelectedConfigs();
+            }
+        } catch (Exception e) {
+            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
+            return null;
+        }
+    }
 
     /**
      * Delete the specified genome files

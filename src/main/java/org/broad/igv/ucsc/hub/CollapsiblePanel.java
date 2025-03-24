@@ -129,8 +129,8 @@ public class CollapsiblePanel extends JPanel {
             final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
             box.setSelected(
                     isLoaded ||
-                    (autoselectDefaults && (autoselectTracks.contains(box.trackConfig.getId()) || selectionBoxes.size() == 1)));
-            box.setEnabled(!isLoaded);
+                    ((loadedTrackPaths == null || loadedTrackPaths.isEmpty()) && autoselectDefaults && (autoselectTracks.contains(box.trackConfig.getId()) || selectionBoxes.size() == 1)));
+            box.setEnabled(this.autoselectDefaults || !isLoaded);
         }
         updateLabel();
     }

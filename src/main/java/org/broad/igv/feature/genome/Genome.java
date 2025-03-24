@@ -869,6 +869,7 @@ public class Genome {
     }
 
     public Hub getGenomeHub() {
-        return null;
+        return genomeHub != null ? genomeHub :
+                this.trackHubs.size() > 0 ? this.trackHubs.stream().findFirst().get() : null;
     }
 }

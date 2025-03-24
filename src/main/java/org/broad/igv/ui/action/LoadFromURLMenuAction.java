@@ -29,7 +29,6 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
@@ -50,8 +49,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.broad.igv.util.AmazonUtils.isObjectAccessible;
 
 /**
  * @author jrobinso
@@ -111,7 +108,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcsdID().equals(genome.getUCSCId()))) {
                         HubGenomeLoader.loadAssemblyHub(hub);
                     } else if(genome != null) {
-                        SelectHubTracksAction.selectTracks(hub);
+                        SelectHubTracksAction.selectAndLoadTracks(hub);
                         genome.addTrackHub(hub);
                         IGVMenuBar.getInstance().updateFileMenu(genome);
                         if(genome.isFromJson()){

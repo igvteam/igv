@@ -33,10 +33,10 @@ public class GenomeDownloadUtils {
         return path.endsWith(".json");
     }
 
-    public static boolean isSequenceDownloadable(String path) {
-        if (path != null && path.endsWith(".json")) {
+    public static boolean isSequenceDownloadable(String genomePath) {
+        if (genomePath != null && genomePath.endsWith(".json")) {
             try {
-                String jsonString = FileUtils.getContents(path);
+                String jsonString = FileUtils.getContents(genomePath);
                 GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
                 String sequenceURL = genomeConfig.getTwoBitURL();
                 if (sequenceURL == null) {
@@ -45,7 +45,7 @@ public class GenomeDownloadUtils {
                 return isRemoteURL(sequenceURL) && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
 
             } catch (IOException e) {
-                log.error("Error fetching genome json " + path);
+                log.error("Error fetching genome json " + genomePath);
             }
         }
         return false;
@@ -113,10 +113,7 @@ public class GenomeDownloadUtils {
 
         }
 
-        File localGenomeFile = new File(genomeDirectory, config.getId() + ".json");
-        saveLocalGenome(config, localGenomeFile);
-        return localGenomeFile;
-
+        return saveLocalGenome(config);
     }
 
     private static void downloadAndUpdateConfig(boolean downloadData, String[] fields, Object config, File dataDirectory, String relativeDataDirectory) {
@@ -144,20 +141,27 @@ public class GenomeDownloadUtils {
         }
     }
 
-    public static File saveLocalGenome(GenomeConfig config) throws IOException {
-        File f = new File(DirectoryManager.getGenomeCacheDirectory(), config.getId() + ".json");
-        saveLocalGenome(config, f);
-        return f;
-    }
-
-    public static void saveLocalGenome(GenomeConfig genomeConfig, File localFile) throws IOException {
+    /**
+     * Save the genome definition as a json file in the genome directory.
+     *
+     * @param genomeConfig
+     * @return
+     * @throws IOException
+     */
+    public static File saveLocalGenome(GenomeConfig genomeConfig) throws IOException {
+        String id = genomeConfig.getId();
+        if (id == null) {
+            throw new IllegalArgumentException("Config ID is null. I can't work with this.");
+        }
+        String sanitizedId = id.replaceAll("[^a-zA-Z0-9-_]", "_");
+        File localFile = new File(DirectoryManager.getGenomeCacheDirectory(), sanitizedId + ".json");
         log.info("Saving " + localFile.getAbsolutePath());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(localFile))) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(genomeConfig, writer);
         }
+        return localFile;
     }
-
 
     public static File constructLocalFile(URL url, File directory) {
         String path = url.getPath();

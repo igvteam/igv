@@ -1,6 +1,5 @@
 package org.broad.igv.feature.genome.load;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import htsjdk.tribble.CloseableTribbleIterator;
@@ -19,9 +18,7 @@ import org.broad.igv.util.ResourceLocator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class JsonGenomeLoader extends GenomeLoader {
 
@@ -36,24 +33,9 @@ public class JsonGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-
         GenomeConfig genomeConfig = loadGenomeConfig();
 
         Genome genome = new Genome(genomeConfig);
-
-        // Load liftover "chain" files.  This enables navigating by coordinates of another genome.
-        // Not a common option.
-//            JsonElement chains = config.chains;
-//            if (chains != null) {
-//                Map<String, Liftover> liftoverMap = new HashMap<>();
-//                JsonObject chainsObj = chains.getAsJsonObject();
-//                for (Map.Entry<String, JsonElement> entry : chainsObj.entrySet()) {
-//                    String chainsPath = FileUtils.getAbsolutePath(entry.getValue().getAsString(), genomePath);
-//                    liftoverMap.put(entry.getKey(), Liftover.load(chainsPath));
-//
-//                }
-//                newGenome.setLiftoverMap(liftoverMap);
-//            }
 
         return genome;
 
@@ -67,7 +49,6 @@ public class JsonGenomeLoader extends GenomeLoader {
             GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
             fixPaths(genomeConfig);
             return genomeConfig;
-
         }
     }
 

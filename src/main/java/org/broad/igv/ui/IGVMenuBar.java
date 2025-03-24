@@ -112,6 +112,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenuItem reloadSessionItem;
     private JMenuItem recentFilesMenu;
+    private JMenuItem editAnnotationsItem;
 
     static IGVMenuBar createInstance(IGV igv) {
         if (instance != null) {
@@ -480,21 +481,19 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         urlMenuAction.setToolTipText("Load a FASTA, .json, or .genome file...");
         menu.add(MenuAndToolbarUtils.createMenuItem(urlMenuAction));
 
-//        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-//        if (currentGenome != null && currentGenome.getGenomeHub() != null) {
-//            menu.add(new JSeparator());
-//            JMenuItem editItem = new JMenuItem("Select Genome Annotations ...", KeyEvent.VK_E);
-//            Hub trackHub = currentGenome.getGenomeHub();
-//            editItem.addActionListener(e -> {
-//                MenuAction menuAction;
-//                menuAction = new SelectHubTracksAction("Hub: " + trackHub.getShortLabel(), igv, trackHub);
-//                menuAction.setToolTipText(trackHub.getLongLabel());
-//                JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-//                selectHubTracksItem.setToolTipText(trackHub.getLongLabel());
-//
-//            });
-//            menu.add(editItem);
-//        }
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+
+        menu.add(new JSeparator());
+        editAnnotationsItem = new JMenuItem("Select Genome Annotations ...", KeyEvent.VK_E);
+        editAnnotationsItem.addActionListener(e -> {
+            try {
+                GenomeManager.getInstance().updateAnnotations();
+            } catch (IOException ex) {
+                log.error("Error updating annotations", ex);
+            }
+        });
+        editAnnotationsItem.setEnabled(currentGenome != null && currentGenome.getGenomeHub() != null);
+        menu.add(editAnnotationsItem);
 
 
         menu.add(new JSeparator());
@@ -1185,6 +1184,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             IGVMenuBar.this.remove(0);
             JMenu fileMenu = createFileMenu(genome);
             IGVMenuBar.this.add(fileMenu, 0);
+
+            editAnnotationsItem.setEnabled(genome != null && genome.getGenomeHub() != null);
         });
     }
 
