@@ -133,7 +133,9 @@ public class HubGenomeLoader extends GenomeLoader {
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
-            TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, null, true);
+            TrackHubSelectionDialog dlg =
+                    TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, null, true,
+                            GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
 
             boolean dlgSuccess = true;
             try {

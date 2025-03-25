@@ -73,6 +73,9 @@ import java.util.stream.Stream;
  */
 public class GenomeManager {
 
+    public static final String UPDATE_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.";
+    public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  You can change these selections later " +
+            "using the 'Genomes > Select Genome Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeManager theInstance;
@@ -304,11 +307,10 @@ public class GenomeManager {
                 // If config has a hub,  allow changing default annotation.
                 if (config.getHubs() != null && config.getHubs().size() > 0) {
 
-                    List<TrackConfig> selectedTracks = selectAnnotationTracks(config);
-                    if (selectedTracks == null) {
-                        return null;
+                    List<TrackConfig> selectedTracks = selectAnnotationTracks(config, SELECT_ANNOTATIONS_MESSAGE);
+                    if (selectedTracks != null && selectedTracks.size() > 0) {
+                        config.setTracks(selectedTracks);
                     }
-                    config.setTracks(selectedTracks);
                 }
 
                 File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
@@ -339,7 +341,7 @@ public class GenomeManager {
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
                         trackConfigs.stream().map(TrackConfig::getUrl).toList();
 
-                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config);
+                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, UPDATE_ANNOTATIONS_MESSAGE);
                 if (selectedConfigs == null) {
                     return;
                 }
@@ -385,15 +387,15 @@ public class GenomeManager {
      * @throws IOException
      */
 
-    private List<TrackConfig> selectAnnotationTracks(GenomeConfig config) throws IOException {
+    private List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
         String annotationHub = config.getHubs().get(0);  // IGV convention
-        Hub hub = HubParser.loadHub(annotationHub, config.getId());
+        Hub hub = HubParser.loadHub(annotationHub, config.getUcscID());
 
         Set<String> currentSelections = config.getTrackConfigs() == null ? Collections.emptySet() :
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.getUrl())
                         .collect(Collectors.toSet());
-        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true);
+        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
         try {
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             if (dlg.isCanceled()) {

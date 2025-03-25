@@ -104,7 +104,8 @@ public class SelectHubTracksAction extends MenuAction {
                 .map(t -> t.getResourceLocator().getPath())
                 .collect(Collectors.toSet());
 
-        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false);
+        TrackHubSelectionDialog dlg =
+                TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false, null);
 
         dlg.setVisible(true);
 

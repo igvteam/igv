@@ -7,7 +7,6 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A static json-like object representing a genome configuration. Emulates the javascript equivalent.
@@ -45,7 +44,7 @@ public class GenomeConfig implements Cloneable {
 
     private Boolean ordered;
     private String blatDB;
-    private String ucsdID;
+    private String ucscID;
     private String aliasURL;
     private String[] chromosomeOrder;
     private String chains;
@@ -238,11 +237,11 @@ public class GenomeConfig implements Cloneable {
         this.blatDB = blatDB;
     }
 
-    public String getUcsdID() {
-        return ucsdID == null ? id : ucsdID;
+    public String getUcscID() {
+        return ucscID == null ? id : ucscID;
     }
-    public void setUcsdID(String ucsdID) {
-        this.ucsdID = ucsdID;
+    public void setUcscID(String ucscID) {
+        this.ucscID = ucscID;
     }
 
     public String getAliasURL() {

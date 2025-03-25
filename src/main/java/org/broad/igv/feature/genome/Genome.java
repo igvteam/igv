@@ -56,7 +56,6 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
-import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -124,10 +123,10 @@ public class Genome {
         trackHubs = Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
-        if (config.getUcsdID() == null) {
+        if (config.getUcscID() == null) {
             ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         } else {
-            ucscID = config.getUcsdID();
+            ucscID = config.getUcscID();
         }
         blatDB = (config.getBlatDB() != null) ? config.getBlatDB() : ucscID;
         defaultPos = config.getDefaultPos();

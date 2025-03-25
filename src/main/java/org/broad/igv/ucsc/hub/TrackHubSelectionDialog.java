@@ -5,7 +5,7 @@ import org.broad.igv.encode.TrackChooser;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.track.Track;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.HyperlinkFactory;
 import org.broad.igv.ui.util.IconFactory;
@@ -41,7 +41,8 @@ public class TrackHubSelectionDialog extends JDialog {
     public static TrackHubSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
             Set<String> loadedTrackPaths,
-            boolean autoselectDefaults) {
+            boolean autoselectDefaults,
+            String message) {
 
         TrackHubSelectionDialog dialog;
         if (hubSelectionDialogs.containsKey(hub) && !autoselectDefaults) {
@@ -50,7 +51,7 @@ public class TrackHubSelectionDialog extends JDialog {
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-            dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, owner);
+            dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, message, owner);
             hubSelectionDialogs.put(hub, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
@@ -58,12 +59,16 @@ public class TrackHubSelectionDialog extends JDialog {
         return dialog;
     }
 
-    private TrackHubSelectionDialog(Hub hub, List<TrackConfigContainer> trackConfigContainers, boolean autoselectDefaults, Frame owner) {
+    private TrackHubSelectionDialog(Hub hub,
+                                    List<TrackConfigContainer> trackConfigContainers,
+                                    boolean autoselectDefaults,
+                                    String message,
+                                    Frame owner) {
         super(owner);
         setModal(true);
         this.autoselectDefaults = autoselectDefaults;
         this.hub = hub;
-        init(trackConfigContainers);
+        init(trackConfigContainers, message);
         setLocationRelativeTo(owner);
     }
 
@@ -79,7 +84,7 @@ public class TrackHubSelectionDialog extends JDialog {
         }
     }
 
-    void init(List<TrackConfigContainer> trackConfigContainers) {
+    void init(List<TrackConfigContainer> trackConfigContainers, String message) {
 
         setTitle(this.hub.getLongLabel());
 
@@ -94,6 +99,18 @@ public class TrackHubSelectionDialog extends JDialog {
 
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+
+        if (message != null) {
+            JTextPane messagePane = new JTextPane();
+            messagePane.setBorder(BorderFactory.createEmptyBorder(20, 5, 20, 5));
+            messagePane.setFont(FontManager.getFont(Font.BOLD, 14));
+            messagePane.setBackground(new Color(230, 230, 230));
+            messagePane.setForeground(Color.BLACK);
+            messagePane.setText(message);
+            messagePane.setEditable(false);
+            topPanel.add(messagePane);
+        }
+
         topPanel.add(getLabeledHyperlink("Hub URL: ", hub.getUrl()));
         String descriptionURL = hub.getDescriptionURL();
 
@@ -144,7 +161,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         // Get total track count
         int count = 0;
-        for(TrackConfigContainer cp : trackConfigContainers) {
+        for (TrackConfigContainer cp : trackConfigContainers) {
             count += cp.countTracks();
         }
 
@@ -158,7 +175,7 @@ public class TrackHubSelectionDialog extends JDialog {
         }
 
         // Search button.
-        if(!catSearch) {
+        if (!catSearch) {
             JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
                 categoryPanels.stream().forEach(p -> p.updateLabel());
                 return null;
@@ -175,7 +192,7 @@ public class TrackHubSelectionDialog extends JDialog {
             setVisible(false);
         });
 
-        JButton okButton = new JButton("Load");
+        JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> {
             canceled = false;
             setVisible(false);
@@ -429,7 +446,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
-        final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, true, null);
+        final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, true, null, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 
