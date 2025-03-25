@@ -241,13 +241,12 @@ public class GenomeManager {
         IGV.getInstance().setSequenceTrack();
 
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
-        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
+        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Used for .genome and .gbk formats.  Otherwise null
         if (geneFeatureTrack != null) {
             geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
-            geneFeatureTrack.getResourceLocator().setPanelName(PanelName.ANNOTATION_PANEL.getName());
-            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack));
+            IGV.getInstance().addTrack(geneFeatureTrack, PanelName.ANNOTATION_PANEL.getName());
         }
 
         List<ResourceLocator> resources = genome.getAnnotationResources();
@@ -255,9 +254,11 @@ public class GenomeManager {
         if (resources != null) {
             for (ResourceLocator locator : resources) {
                 try {
-                    locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
-                    List<Track> tracks = IGV.getInstance().load(locator);
-                    annotationTracks.addAll(tracks);
+                    if(locator != null) {
+                        locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
+                        List<Track> tracks = IGV.getInstance().load(locator);
+                        annotationTracks.addAll(tracks);
+                    }
                 } catch (DataLoadException e) {
                     log.error("Error loading genome annotations", e);
                 }
@@ -268,20 +269,22 @@ public class GenomeManager {
             IGV.getInstance().addTracks(annotationTracks);
             for (Track track : annotationTracks) {
                 ResourceLocator locator = track.getResourceLocator();
-                String fn = "";
-                if (locator != null) {
-                    fn = locator.getPath();
-                    int lastSlashIdx = fn.lastIndexOf("/");
-                    if (lastSlashIdx < 0) {
-                        lastSlashIdx = fn.lastIndexOf("\\");
+                if(locator != null) {
+                    String fn = "";
+                    if (locator != null) {
+                        fn = locator.getPath();
+                        int lastSlashIdx = fn.lastIndexOf("/");
+                        if (lastSlashIdx < 0) {
+                            lastSlashIdx = fn.lastIndexOf("\\");
+                        }
+                        if (lastSlashIdx > 0) {
+                            fn = fn.substring(lastSlashIdx + 1);
+                        }
                     }
-                    if (lastSlashIdx > 0) {
-                        fn = fn.substring(lastSlashIdx + 1);
-                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
                 }
-                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
             }
         }
 
@@ -319,53 +322,77 @@ public class GenomeManager {
         }
     }
 
+    /**
+     * Update the annotation tracks for the current genome.  This will prompt the user to select tracks from the
+     * genomes default hub.  The selected tracks will be saved in the genome config file, and loaded.  Deselected
+     * tracks will be removed.
+     *
+     * @throws IOException
+     */
     public void updateAnnotations() throws IOException {
         if (currentGenome != null) {
             GenomeConfig config = currentGenome.getConfig();
 
             if (config != null) {
 
-                List<String> currentAnnotationPaths = config.getTrackConfigs().stream().map(TrackConfig::getUrl).toList();
+                final List<TrackConfig> trackConfigs = config.getTrackConfigs();
+                List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
+                        trackConfigs.stream().map(TrackConfig::getUrl).toList();
 
                 List<TrackConfig> selectedConfigs = selectAnnotationTracks(config);
+                if (selectedConfigs == null) {
+                    return;
+                }
+
                 config.setTracks(selectedConfigs);
                 GenomeDownloadUtils.saveLocalGenome(config);
 
                 Set<String> selectedTrackPaths = selectedConfigs.stream().map(TrackConfig::getUrl).collect(Collectors.toSet());
 
-                // Load or unload tracks
+                // Unload deselected tracks
                 Set<String> pathsToRemove = new HashSet<>();
                 for (String p : currentAnnotationPaths) {
                     if (!selectedTrackPaths.contains(p)) {
                         pathsToRemove.add(p);
                     }
                 }
+                IGV.getInstance().deleteTracksByPath(pathsToRemove);
 
+                // Load selected tracks.Filter out tracks already loaded
                 Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
                         .filter(t -> t.getResourceLocator() != null)
                         .map(t -> t.getResourceLocator().getPath())
                         .collect(Collectors.toSet());
-
-
                 List<TrackConfig> tracksToLoad = selectedConfigs.stream()
                         .filter(trackConfig -> !loadedTrackPaths.contains(trackConfig.getUrl()))
                         .collect(Collectors.toList());
-                
+
                 List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
                 for (ResourceLocator locator : locators) {
                     locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
                 }
 
-                IGV.getInstance().deleteTracksByPath(pathsToRemove);
                 IGV.getInstance().loadTracks(locators);
             }
         }
     }
 
-    List<TrackConfig> selectAnnotationTracks(GenomeConfig config) throws IOException {
+    /**
+     * Prompt the user to select annotation tracks from the genome's default hub.
+     *
+     * @param config
+     * @return
+     * @throws IOException
+     */
+
+    private List<TrackConfig> selectAnnotationTracks(GenomeConfig config) throws IOException {
         String annotationHub = config.getHubs().get(0);  // IGV convention
         Hub hub = HubParser.loadHub(annotationHub, config.getId());
-        Set<String> currentSelections = config.getTrackConfigs().stream().map(trackConfig -> trackConfig.getUrl()).collect(Collectors.toSet());
+
+        Set<String> currentSelections = config.getTrackConfigs() == null ? Collections.emptySet() :
+                config.getTrackConfigs().stream()
+                        .map(trackConfig -> trackConfig.getUrl())
+                        .collect(Collectors.toSet());
         TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true);
         try {
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));

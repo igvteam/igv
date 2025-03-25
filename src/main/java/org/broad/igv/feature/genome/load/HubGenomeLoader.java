@@ -150,11 +150,6 @@ public class HubGenomeLoader extends GenomeLoader {
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
             config.setTracks(selectedTracks);
 
-            // Remember selections in user preferences
-            // List<String> names = selectedTracks.stream().map((trackConfig) -> trackConfig.getName()).toList();
-            // PreferencesManager.getPreferences().put(key, String.join(",", names));
-            // TODO -- read these for backward compatibility?
-
         }
         config.setHubs(Arrays.asList(hub.getUrl()));
         Genome genome = new Genome(config);

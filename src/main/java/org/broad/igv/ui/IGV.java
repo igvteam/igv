@@ -1210,17 +1210,23 @@ public class IGV implements IGVEventObserver {
      * is chosen based on characteristics of the {@code locator}.
      */
     public void addTracks(List<Track> trackList) {
-
         // Group tracks by locator.
         Map<String, List<Track>> map = trackList.stream().collect(Collectors.groupingBy(t -> t.getResourceLocator().getPath()));
-
-        for(List<Track> tracks : map.values()) {
+        for (List<Track> tracks : map.values()) {
             Track representativeTrack = tracks.get(0);
             TrackPanel panel = getPanelFor(representativeTrack);
             panel.addTracks(tracks);
         }
     }
 
+    /**
+     * Add the specified tracks to the specified panel.  This method is used to support legacy genome formats
+     * (.genome and .gbk)
+     */
+    public void addTrack(Track track, String panelName) {
+        TrackPanel panel = getTrackPanel(panelName);
+        panel.addTracks(Collections.singleton(track));
+    }
 
     /**
      * Load a resource and return the tracks.
@@ -1311,7 +1317,7 @@ public class IGV implements IGVEventObserver {
         } else if (TrackLoader.isAlignmentTrack(format)) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
-        } else  if (track instanceof VariantTrack && ((VariantTrack) track).getAllSamples().size() > 10) {
+        } else if (track instanceof VariantTrack && ((VariantTrack) track).getAllSamples().size() > 10) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
