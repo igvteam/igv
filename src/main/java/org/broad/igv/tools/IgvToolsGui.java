@@ -29,6 +29,7 @@ import org.broad.igv.logging.*;
 import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -161,7 +162,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog {
     }
 
     private void updateTextArea(final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
                 outputText.append(text);
             }

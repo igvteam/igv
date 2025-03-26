@@ -25,6 +25,8 @@
 
 package slider;
 
+import org.broad.igv.ui.util.UIUtilities;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -122,7 +124,7 @@ public class RangeSliderDemo extends JPanel {
             ex.printStackTrace();
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
                 new RangeSliderDemo().display();
             }

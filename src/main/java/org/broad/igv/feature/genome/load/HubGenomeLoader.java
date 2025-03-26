@@ -15,6 +15,7 @@ import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.io.File;
@@ -139,7 +140,7 @@ public class HubGenomeLoader extends GenomeLoader {
 
             boolean dlgSuccess = true;
             try {
-                SwingUtilities.invokeAndWait(() -> dlg.setVisible(true));
+                UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             } catch (Exception e) {
                 dlgSuccess = false;
                 log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());

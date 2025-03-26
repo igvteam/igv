@@ -211,7 +211,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void updateAWSMenu() {
-        SwingUtilities.invokeLater(() -> AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
+        UIUtilities.invokeOnEventThread(() -> AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
     }
 
     /**

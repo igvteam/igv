@@ -505,7 +505,7 @@ public class IGV implements IGVEventObserver {
 
         final CursorToken token = WaitCursorManager.showWaitCursor();
 
-        SwingUtilities.invokeLater(new NamedRunnable() {
+        UIUtilities.invokeOnEventThread(new NamedRunnable() {
             public void run() {
                 try {
                     if (geneList == null) {

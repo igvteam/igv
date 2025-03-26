@@ -64,6 +64,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author jrobinso
@@ -154,7 +155,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         if (IGV.hasInstance()) {
 
-            if(GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome) {
+            if (GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome) {
                 UIUtilities.invokeOnEventThread(() -> {
                     searchTextField.setText("");
                 });
