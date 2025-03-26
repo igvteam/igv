@@ -172,6 +172,14 @@ public class GenomeManager {
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
 
+            // If the genome does not explicitly define track hubs search auxillary list.
+            if(newGenome.getTrackHubs() == null || newGenome.getTrackHubs().isEmpty()) {
+                Collection<Hub> hubs = HubParser.loadHubsFor(newGenome.getUCSCId());
+                if (hubs != null) {
+                    newGenome.setTrackHubs(hubs);
+                }
+            }
+
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             final File genomeCacheDirectory = DirectoryManager.getGenomeCacheDirectory();
             try {

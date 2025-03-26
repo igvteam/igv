@@ -64,9 +64,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
@@ -248,24 +245,11 @@ public class Genome {
         // Load track hubs in parallel, but set a timeout to prevent a non-responsive hub server from preventing
         // genome load
         if (config.getHubs() != null) {
-            List<String> hubs = config.getHubs();
-            List<CompletableFuture<Object>> futures = IntStream.range(0, hubs.size())
-                    .parallel()
-                    .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
-                        try {
-                            final Hub hub = HubParser.loadHub(hubs.get(i), getUCSCId(), i + 1);
-                            trackHubs.add(hub);
-                        } catch (Exception e) {
-                            log.error("Error loading hub " + hubs.get(i), e);
-                        }
-                        return null;
-                    }))
-                    .collect(Collectors.toList());
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            try {
-                combinedFuture.get(20, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.error("Error loading hubs", e);
+            trackHubs = HubParser.loadHubs(config.getUcscID(), config.getHubs());
+            // Set a "genomeHub".  The genomeHub is used for selecting default annotations, and should be the first
+            // hub listed.
+            if (trackHubs.size() > 0) {
+                genomeHub = trackHubs.iterator().next();
             }
         }
 
@@ -868,7 +852,11 @@ public class Genome {
     }
 
     public Hub getGenomeHub() {
-        return genomeHub != null ? genomeHub :
-                this.trackHubs.size() > 0 ? this.trackHubs.stream().findFirst().get() : null;
+        return genomeHub;
+    }
+
+    // Directly set track hubs -- for backward compatibility.  Do not add to the configuration or set genomeHub
+    public void setTrackHubs(Collection<Hub> hubs) {
+        this.trackHubs = hubs;
     }
 }

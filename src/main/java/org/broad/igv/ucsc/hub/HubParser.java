@@ -10,10 +10,16 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HubParser {
 
     private static Logger log = LogManager.getLogger(HubParser.class);
+
+    static Map<String, List<String>> hubURLMap = null;
 
     private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
@@ -25,10 +31,6 @@ public class HubParser {
     }
 
     public static Hub loadHub(String url, String genomeId) throws IOException {
-        return loadHub(url, genomeId, 0);
-    }
-
-    public static Hub loadHub(String url, String genomeId, int order) throws IOException {
 
         log.info("Loading Hub: " + url);
 
@@ -103,28 +105,78 @@ public class HubParser {
         }
 
         Hub hub =  new Hub(url, trackDbURL, hubStanza, genomeStanza, trackStanzas, groupStanzas);
-        hub.setOrder(order);
         return hub;
     }
 
-    private static String getHost(String url) {
-        String host;
-        if (url.startsWith("https://") || url.startsWith("http://")) {
-            try {
-                URL tmp = new URL(url);
-                host = tmp.getProtocol() + "://" + tmp.getHost();
-            } catch (MalformedURLException e) {
-                // This should never happen
-                log.error("Error parsing base URL host", e);
-                throw new RuntimeException(e);
-            }
-        } else {
-            // Local file, no host
-            host = "";
+    public static Collection<Hub> loadHubs(String ucscId, List<String> hubs) {
+
+        Collection<Hub> trackHubs = Collections.synchronizedSortedSet(new TreeSet<Hub>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+
+        List<CompletableFuture<Object>> futures = IntStream.range(0, hubs.size())
+                .parallel()
+                .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        int order = i + 1;
+                        final Hub hub = HubParser.loadHub(hubs.get(i), ucscId);
+                        hub.setOrder(order);
+                        trackHubs.add(hub);
+                    } catch (Exception e) {
+                        log.error("Error loading hub " + hubs.get(i), e);
+                    }
+                    return null;
+                }))
+                .collect(Collectors.toList());
+        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        try {
+            combinedFuture.get(20, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Error loading hubs", e);
         }
-        return host;
+        return trackHubs;
     }
 
+    public static Collection<Hub> loadHubsFor(String ucscId) {
+        List<String> hubs = getHubURLs(ucscId);
+        if (hubs != null) {
+            return loadHubs(ucscId, hubs);
+        } else {
+            return null;
+        }
+    }
+
+
+    private static List<String> getHubURLs(String genomeId) {
+
+        if (hubURLMap == null) {
+
+            String filePath = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/hubs.txt";
+
+            hubURLMap = new HashMap<>();
+            try (BufferedReader br = ParsingUtils.openBufferedReader(filePath)) {
+                String line;
+                String currentGenomeId = null;
+                List<String> currentURLList = null;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("#")) {
+                        continue;
+                    }
+                    line = line.trim();
+                    if (currentGenomeId == null) {
+                        currentGenomeId = line;
+                        currentURLList = new ArrayList<>();
+                        hubURLMap.put(currentGenomeId, currentURLList);
+                    } else if (line.length() == 0) {
+                        currentGenomeId = null;
+                    } else {
+                        currentURLList.add(line);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return hubURLMap.get(genomeId);
+    }
 
     static List<Stanza> loadStanzas(String url) throws IOException {
 
@@ -220,7 +272,6 @@ public class HubParser {
         return nodes;
     }
 
-
     static String firstWord(String str) {
         return Globals.whitespacePattern.split(str)[0];
     }
@@ -229,5 +280,24 @@ public class HubParser {
         return url.startsWith("http://") || url.startsWith("https://") ? url :
                 url.startsWith("/") ? host + url : baseURL + url;
     }
+
+    private static String getHost(String url) {
+        String host;
+        if (url.startsWith("https://") || url.startsWith("http://")) {
+            try {
+                URL tmp = new URL(url);
+                host = tmp.getProtocol() + "://" + tmp.getHost();
+            } catch (MalformedURLException e) {
+                // This should never happen
+                log.error("Error parsing base URL host", e);
+                throw new RuntimeException(e);
+            }
+        } else {
+            // Local file, no host
+            host = "";
+        }
+        return host;
+    }
+
 
 }

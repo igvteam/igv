@@ -13,7 +13,7 @@ public class Hub {
     private static Logger log = LogManager.getLogger(Hub.class);
     private final String url;
     private final String trackDbURL;
-    private int order;
+    private int order = 0;
     Stanza hubStanza;
     Stanza genomeStanza;
     List<Stanza> trackStanzas;
