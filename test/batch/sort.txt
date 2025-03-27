@@ -1,5 +1,5 @@
-# Test a variety of commands, not comprehensive (yet)
-snapshotDirectory $SCRIPT_DIR/snapshots/sort
+# Test a variety of sort commands
+snapshotDirectory $SCRIPT_DIR/snapshots
 version
 new
 genome hg19

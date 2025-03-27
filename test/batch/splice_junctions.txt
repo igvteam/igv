@@ -1,5 +1,6 @@
+snapshotDirectory $SCRIPT_DIR/snapshots
 new
 genome hg19
 load https://www.broadinstitute.org/igvdata/tutorials/SL2C5A3/liver.bodyMap.bam
 goto slc25a3
-snapshot
+snapshot splice_junctions.png

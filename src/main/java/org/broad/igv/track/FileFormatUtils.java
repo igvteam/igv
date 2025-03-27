@@ -58,6 +58,10 @@ public class FileFormatUtils {
             }
         }
 
+        return determineFormat(bytes);
+    }
+
+    public static String determineFormat(byte[] bytes) {
         // Try BAM and CRAM
         if (Arrays.equals(bytes, 0, 4, BAM_MAGIC, 0, 4)) {
             return "bam";
@@ -95,7 +99,7 @@ public class FileFormatUtils {
                 return "gff";
             }
             if(firstLine.startsWith("##fileformat=")) {
-                return firstLine.substring(13).toLowerCase();   // Non standard extension of VCF convention
+                return firstLine.substring(13).toLowerCase();
             }
 
             // Read maximum of first 100 lines searching for format indication.

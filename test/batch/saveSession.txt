@@ -1,4 +1,4 @@
-snapshotDirectory $SCRIPT_DIR/snapshots/saveSession
+snapshotDirectory $SCRIPT_DIR/snapshots
 genome hg19
 new
 goto egfr

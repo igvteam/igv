@@ -1,2 +1,0 @@
-#genome "/Users/jrobinso/igv-team Dropbox/James Robinson/projects/igv/test/data/fasta/ecoli_out.padded.fasta"
-genome hg19

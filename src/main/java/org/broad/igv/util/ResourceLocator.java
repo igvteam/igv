@@ -129,13 +129,13 @@ public class ResourceLocator {
      */
     private Map<String, String> metadata;
     private boolean indexed;
-    private boolean dataURL;
+
 
     /**
      * True if this is an htsget resource
      */
     private boolean htsget;
-
+    private boolean dataURL;
     private Integer visibilityWindow;
     private String trixURL;
     private String panelName;
@@ -716,6 +716,13 @@ public class ResourceLocator {
         this.panelName = panelName;
     }
 
+    public void setDataURL(boolean dataURL) {
+        this.dataURL = dataURL;
+    }
+
+    public boolean isDataUrl() {
+        return dataURL;
+    }
 
     /**
      * FOR LOAD FROM SERVER

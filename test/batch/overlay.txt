@@ -1,4 +1,4 @@
-snapshotDirectory $SCRIPT_DIR/snapshots/overlay
+snapshotDirectory $SCRIPT_DIR/snapshots
 genome hg19
 new
 goto chr1

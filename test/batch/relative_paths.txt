@@ -1,7 +1,7 @@
 # Test 2 kinds of relative paths
 #    (1) relative to application startup directory (assumed to be repository root), and
 #    (2) relative to this script
-snapshotDirectory $SCRIPT_DIR/snapshots/relative_paths
+snapshotDirectory $SCRIPT_DIR/snapshots
 genome hg19
 new
 load "test/data/folder with spaces/test.wig"
