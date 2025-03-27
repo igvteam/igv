@@ -222,9 +222,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        if (FrameManager.isGeneListMode()) {
-            IGV.getInstance().setGeneList(null);
-        }
+        IGV.getInstance().setGeneList(null);
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
             if (chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())) {
