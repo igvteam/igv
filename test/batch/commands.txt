@@ -1,4 +1,4 @@
-# Test a variety of commands, not comprehensive (yet)
+# Test a variety of commands, not comprehensive
 snapshotDirectory $SCRIPT_DIR/snapshots
 version
 new
