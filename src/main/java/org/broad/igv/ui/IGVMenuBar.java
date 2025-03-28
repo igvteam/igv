@@ -287,7 +287,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if (genome != null && LoadFromServerAction.getNodeURLs(genome.getId()) != null) {
+        if (genome != null && LoadFromServerAction.getNodeURLs(genome.getId()) != null && !LoadFromServerAction.getNodeURLs(genome.getId()).isEmpty()) {
             menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, igv);
             menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
             JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
@@ -296,11 +296,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         recentFilesMenu = new RecentUrlsMenu();
         menu.add(recentFilesMenu);
-
-        menu.add(new JSeparator());
-        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.add(new JSeparator());
 
@@ -525,6 +520,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 menuItems.add(new JSeparator());
             }
         }
+
+        // Reload tracks
+        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuItems.add(new JSeparator());
 
         // Sort Context
         menuAction = new SortTracksMenuAction("Sort Tracks...", KeyEvent.VK_S, IGV.getInstance());
