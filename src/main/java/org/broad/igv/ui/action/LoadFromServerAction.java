@@ -33,7 +33,6 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
@@ -59,10 +58,7 @@ import java.util.*;
 public class LoadFromServerAction extends MenuAction {
 
     static Logger log = LogManager.getLogger(LoadFromServerAction.class);
-
     IGV mainFrame;
-
-    static Map<String, Set<String>> cachedNodeURLs = new HashMap();
 
     // Keep track of authorization failures so user isn't constantly harranged
     static HashSet<String> failedURLs = new HashSet();
@@ -87,7 +83,7 @@ public class LoadFromServerAction extends MenuAction {
 
         try {
 
-            Set<String> nodeURLs = getNodeURLs(genomeId);
+            LinkedHashSet<String> nodeURLs = getNodeURLs(genomeId);
 
             if (nodeURLs == null || nodeURLs.isEmpty()) {
                 MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
@@ -106,33 +102,26 @@ public class LoadFromServerAction extends MenuAction {
 
     }
 
-    public static Set<String> getNodeURLs(String genomeId) {
+    public static LinkedHashSet<String> getNodeURLs(String genomeId) {
 
         String genomeURL = getGenomeDataURL(genomeId);
+        LinkedHashSet<String> nodeURLs = null;
 
-        Set<String> nodeURLs;
-        synchronized (cachedNodeURLs) {
-            nodeURLs = cachedNodeURLs.get(genomeId);
-            if (nodeURLs == null) {
-                if (genomeURL != null && genomeURL.length() > 0) {
-                    InputStream is = null;
+        if(genomeURL != null && genomeURL.length() > 0) {
+            InputStream is = null;
+            try {
+                is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+                nodeURLs = getResourceUrls(bufferedReader);
+            } catch (IOException e) {
+                //This is common and not an error, a load-from-server "data registry" file is optional
+            } finally {
+                if (is != null) {
                     try {
-                        is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                        nodeURLs = getResourceUrls(bufferedReader);
+                        is.close();
                     } catch (IOException e) {
-                        // This is common and not an error, a load-from-server "data registry" file is optional
-                        nodeURLs = Collections.emptySet();
-                    } finally {
-                        if (is != null) {
-                            try {
-                                is.close();
-                            } catch (IOException e) {
-                                log.error("Error closing input stream", e);
-                            }
-                        }
+                        log.error("Error closing input stream", e);
                     }
-                    cachedNodeURLs.put(genomeId, nodeURLs);
                 }
             }
         }
@@ -140,7 +129,7 @@ public class LoadFromServerAction extends MenuAction {
         return nodeURLs;
     }
 
-    private List<ResourceLocator> loadNodes(final Set<String> xmlUrls) {
+    private List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
 
         if ((xmlUrls == null) || xmlUrls.isEmpty()) {
             log.error("No datasets are available from this server for the current genome (");
@@ -319,7 +308,7 @@ public class LoadFromServerAction extends MenuAction {
 
             xmlFileUrl = xmlFileUrl.trim();
 
-            if (xmlFileUrl.length() == 0 || xmlFileUrl.startsWith("#")) {
+            if(xmlFileUrl.length() == 0 || xmlFileUrl.startsWith("#")){
                 continue;
             }
 
