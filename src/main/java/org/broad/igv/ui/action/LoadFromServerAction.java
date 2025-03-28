@@ -114,16 +114,15 @@ public class LoadFromServerAction extends MenuAction {
         synchronized (cachedNodeURLs) {
             nodeURLs = cachedNodeURLs.get(genomeId);
             if (nodeURLs == null) {
-                nodeURLs = new LinkedHashSet<>();
                 if (genomeURL != null && genomeURL.length() > 0) {
                     InputStream is = null;
                     try {
                         is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
                         nodeURLs = getResourceUrls(bufferedReader);
-                        cachedNodeURLs.put(genomeId, nodeURLs);
                     } catch (IOException e) {
                         // This is common and not an error, a load-from-server "data registry" file is optional
+                        nodeURLs = Collections.emptySet();
                     } finally {
                         if (is != null) {
                             try {
@@ -133,6 +132,7 @@ public class LoadFromServerAction extends MenuAction {
                             }
                         }
                     }
+                    cachedNodeURLs.put(genomeId, nodeURLs);
                 }
             }
         }
