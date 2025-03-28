@@ -98,7 +98,7 @@ public class Genome {
     private String defaultPos;
     private String nameSet;
     private Hub genomeHub;
-    private Collection<Hub> trackHubs;
+    private List<Hub> trackHubs;
     private GenomeConfig config;
 
     public static Genome nullGenome = null;
@@ -117,7 +117,7 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.getNameSet();
         blatDB = config.getBlatDB();
-        trackHubs = Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+        trackHubs = new ArrayList<>();
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         if (config.getUcscID() == null) {
@@ -242,11 +242,9 @@ public class Genome {
             // TODO -- no place to go
         }
 
-        // Load track hubs in parallel, but set a timeout to prevent a non-responsive hub server from preventing
-        // genome load
         if (config.getHubs() != null) {
-            trackHubs = HubParser.loadHubs(config.getUcscID(), config.getHubs());
-            // Set a "genomeHub".  The genomeHub is used for selecting default annotations, and should be the first
+            trackHubs.addAll(HubParser.loadHubs(config.getUcscID(), config.getHubs()));
+            // Set a "genomeHub", which by convention is the first
             // hub listed.
             if (trackHubs.size() > 0) {
                 genomeHub = trackHubs.iterator().next();
@@ -279,8 +277,7 @@ public class Genome {
         this.longChromosomeNames = computeLongChromosomeNames();
         this.homeChromosome = this.longChromosomeNames.size() > 1 ? Globals.CHR_ALL : chromosomeNames.get(0);
         this.chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
-        this.trackHubs =
-                Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+        this.trackHubs = new ArrayList<>();
     }
 
     private void addTracks(GenomeConfig config) {
@@ -309,6 +306,10 @@ public class Genome {
         if (hiddenTracks.size() > 0) {
             addToFeatureDB(hiddenTracks, this);
         }
+    }
+
+    public boolean supportsWholeGenomeView() {
+        return showWholeGenomeView;
     }
 
     /**
@@ -649,7 +650,7 @@ public class Genome {
      * @return
      */
     public List<String> getLongChromosomeNames() {
-        return longChromosomeNames;
+        return longChromosomeNames == null ? Collections.EMPTY_LIST : longChromosomeNames;
     }
 
     public long getWGLength() {
@@ -823,17 +824,20 @@ public class Genome {
 
     public void setGenomeHub(Hub genomeHub) {
         // A genome hub is by definition also a track hub
-        this.genomeHub = genomeHub;
-        genomeHub.setOrder(this.trackHubs.size());
-        this.trackHubs.add(genomeHub);
+        genomeHub = genomeHub;
+        genomeHub.setOrder(-1);  // Always on top
+        trackHubs.add(genomeHub);
     }
 
     public Collection<Hub> getTrackHubs() {
         return trackHubs;
     }
 
-    public void addTrackHub(Hub hub) {
+    public boolean hasHub(String url) {
+        return trackHubs.stream().anyMatch(h -> h.getUrl().equals(url));
+    }
 
+    public void addTrackHub(Hub hub) {
         if (!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
             hub.setOrder(trackHubs.size());
             trackHubs.add(hub);
@@ -841,6 +845,10 @@ public class Genome {
                 config.addHub(hub.getUrl());
             }
         }
+    }
+
+    public void addTrackHubs(List<Hub> hubs) {
+        trackHubs.addAll(hubs);
     }
 
     public boolean isFromJson() {
@@ -855,8 +863,5 @@ public class Genome {
         return genomeHub;
     }
 
-    // Directly set track hubs -- for backward compatibility.  Do not add to the configuration or set genomeHub
-    public void setTrackHubs(Collection<Hub> hubs) {
-        this.trackHubs = hubs;
-    }
+
 }

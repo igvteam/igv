@@ -108,20 +108,26 @@ public class HubParser {
         return hub;
     }
 
-    public static Collection<Hub> loadHubs(String ucscId, List<String> hubs) {
+    /**
+     * Load track hubs in parallel, but set a timeout to prevent a non-responsive hub server from preventing genome load
+     * @param ucscId
+     * @param hubUrls
+     * @return
+     */
+    public static List<Hub> loadHubs(String ucscId, List<String> hubUrls) {
 
-        Collection<Hub> trackHubs = Collections.synchronizedSortedSet(new TreeSet<Hub>((o1, o2) -> o1.getOrder() - o2.getOrder()));
+        List<Hub> trackHubs = new ArrayList<>();
 
-        List<CompletableFuture<Object>> futures = IntStream.range(0, hubs.size())
+        List<CompletableFuture<Object>> futures = IntStream.range(0, hubUrls.size())
                 .parallel()
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
                     try {
                         int order = i + 1;
-                        final Hub hub = HubParser.loadHub(hubs.get(i), ucscId);
+                        final Hub hub = HubParser.loadHub(hubUrls.get(i), ucscId);
                         hub.setOrder(order);
                         trackHubs.add(hub);
                     } catch (Exception e) {
-                        log.error("Error loading hub " + hubs.get(i), e);
+                        log.error("Error loading hub " + hubUrls.get(i), e);
                     }
                     return null;
                 }))
@@ -132,20 +138,11 @@ public class HubParser {
         } catch (Exception e) {
             log.error("Error loading hubs", e);
         }
+        Collections.sort(trackHubs, (h1, h2) -> h1.getOrder() - h2.getOrder());
         return trackHubs;
     }
 
-    public static Collection<Hub> loadHubsFor(String ucscId) {
-        List<String> hubs = getHubURLs(ucscId);
-        if (hubs != null) {
-            return loadHubs(ucscId, hubs);
-        } else {
-            return null;
-        }
-    }
-
-
-    private static List<String> getHubURLs(String genomeId) {
+    public static List<String> getHubURLs(String genomeId) {
 
         if (hubURLMap == null) {
 

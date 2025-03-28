@@ -172,12 +172,11 @@ public class GenomeManager {
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
 
-            // If the genome does not explicitly define track hubs search auxillary list.
-            if(newGenome.getTrackHubs() == null || newGenome.getTrackHubs().isEmpty()) {
-                Collection<Hub> hubs = HubParser.loadHubsFor(newGenome.getUCSCId());
-                if (hubs != null) {
-                    newGenome.setTrackHubs(hubs);
-                }
+            // Add hubs from auxillary list
+            List<String> hubUrls = HubParser.getHubURLs(newGenome.getUCSCId());
+            if(hubUrls != null && !hubUrls.isEmpty()) {
+                hubUrls = hubUrls.stream().filter(hubUrl -> !newGenome.hasHub(hubUrl)).collect(Collectors.toList());
+                newGenome.addTrackHubs(HubParser.loadHubs(newGenome.getUCSCId(), hubUrls));
             }
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
