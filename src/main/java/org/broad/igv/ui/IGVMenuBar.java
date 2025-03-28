@@ -172,7 +172,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
         menus.add(createViewMenu());
-        menus.add(createTracksMenu());
+        menus.add(createTracksMenu(GenomeManager.getInstance().getCurrentGenome()));
         menus.add(createRegionsMenu());
 
         refreshToolsMenu();
@@ -296,43 +296,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         recentFilesMenu = new RecentUrlsMenu();
         menu.add(recentFilesMenu);
-
-        // Track hubs
-        if (genome != null && genome.getTrackHubs().size() > 0) {
-            addTrackHubs(genome, menu);
-        }
-
-        // ENCODE items.  These will be hidden / shown depending on genome chosen
-        if (genome != null) {
-            String genomeId = genome.getUCSCId();
-            if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId) || EncodeTrackChooserFactory.genomeSupported(genomeId)) {
-
-                JSeparator separator = new JSeparator();
-                menu.add(separator);
-
-                // Post 2012 ENCODE menu
-                if (EncodeTrackChooserFactory.genomeSupported(genomeId)) {
-                    JMenuItem chipItem = new JMenuItem();
-                    chipItem.setAction(new BrowseEncodeAction("ENCODE ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
-                    menu.add(chipItem);
-
-                    JMenuItem otherSignalsItem = new JMenuItem();
-                    otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
-                    menu.add(otherSignalsItem);
-
-                    JMenuItem otherItem = new JMenuItem();
-                    otherItem.setAction(new BrowseEncodeAction("ENCODE Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
-                    menu.add(otherItem);
-                }
-
-                // UCSC hosted ENCODE menu.
-                if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId)) {
-                    JMenuItem encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
-                            new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
-                    menu.add(encodeUCSCMenuItem);
-                }
-            }
-        }
 
         menu.add(new JSeparator());
         menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
@@ -519,10 +482,49 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
 
-    private JMenu createTracksMenu() {
+    private JMenu createTracksMenu(Genome genome) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
+
+        // Track hubs
+        if (genome != null && genome.getTrackHubs().size() > 0) {
+            for (Hub trackHub : genome.getTrackHubs()) {
+                menuItems.add(createTrackHubItem(trackHub));
+            }
+            menuItems.add(new JSeparator());
+        }
+
+        // ENCODE items.  These will be hidden / shown depending on genome chosen
+        if (genome != null) {
+            String genomeId = genome.getUCSCId();
+            if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId) || EncodeTrackChooserFactory.genomeSupported(genomeId)) {
+
+                // Post 2012 ENCODE menu
+                if (EncodeTrackChooserFactory.genomeSupported(genomeId)) {
+                    JMenuItem chipItem = new JMenuItem();
+                    chipItem.setAction(new BrowseEncodeAction("ENCODE ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
+                    menuItems.add(chipItem);
+
+                    JMenuItem otherSignalsItem = new JMenuItem();
+                    otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
+                    menuItems.add(otherSignalsItem);
+
+                    JMenuItem otherItem = new JMenuItem();
+                    otherItem.setAction(new BrowseEncodeAction("ENCODE Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
+                    menuItems.add(otherItem);
+                }
+
+                // UCSC hosted ENCODE menu.
+                if (EncodeTrackChooserFactory.genomeSupportedUCSC(genomeId)) {
+                    JMenuItem encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
+                            new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
+                    menuItems.add(encodeUCSCMenuItem);
+                }
+
+                menuItems.add(new JSeparator());
+            }
+        }
 
         // Sort Context
         menuAction = new SortTracksMenuAction("Sort Tracks...", KeyEvent.VK_S, IGV.getInstance());
@@ -1180,13 +1182,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public synchronized void updateFileMenu(Genome genome) {
-        UIUtilities.invokeOnEventThread(() -> {
-            IGVMenuBar.this.remove(0);
-            JMenu fileMenu = createFileMenu(genome);
-            IGVMenuBar.this.add(fileMenu, 0);
 
-            editAnnotationsItem.setEnabled(genome != null && genome.getGenomeHub() != null);
-        });
+        if(genome != null) {
+            UIUtilities.invokeOnEventThread(() -> {
+                IGVMenuBar.this.remove(0);
+                IGVMenuBar.this.add(createFileMenu(genome), 0);
+                IGVMenuBar.this.remove(3);
+                IGVMenuBar.this.add(createTracksMenu(genome), 3);
+                editAnnotationsItem.setEnabled(genome.getGenomeHub() != null);
+            });
+        }
     }
 
     public void enableReloadSession() {
