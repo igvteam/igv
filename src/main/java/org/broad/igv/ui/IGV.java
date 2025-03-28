@@ -1219,6 +1219,10 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+    public void addTrack(Track track) {
+       getPanelFor(track).addTrack(track);
+    }
+
     /**
      * Add the specified tracks to the specified panel.  This method is used to support legacy genome formats
      * (.genome and .gbk)
