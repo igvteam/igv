@@ -180,12 +180,9 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                if (!cmd.contains("/oauthCallback")) {
-                    if (cmd.startsWith("SetAccessToken")) {
-                        log.info(cmd.substring(0, 14) + " *****");
-                    } else {
-                        log.info(cmd);
-                    }
+                boolean oauthCallback = cmd.startsWith("GET /oauthCallback") || cmd.startsWith("GET /?state=");
+                if (oauthCallback) {
+                    log.info("OAuth callback received");
                 }
 
                 boolean isHTTP = cmd.startsWith("OPTIONS") || cmd.startsWith("HEAD") || cmd.startsWith("GET");
@@ -224,7 +221,7 @@ public class CommandListener implements Runnable {
 
                             if (command != null) {
                                 // Detect  oauth callback
-                                if (command.equals("/oauthCallback")) {
+                                if (oauthCallback) {
                                     OAuthProvider provider = OAuthUtils.getInstance().getProviderForState(params.get("state"));
                                     if (params.containsKey("error")) {
                                         sendTextResponse(out, "Error authorizing IGV: " + params.get("error"));

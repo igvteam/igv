@@ -321,7 +321,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     JMenu createSessionsMenu() {
 
-        final JMenu menu = new JMenu("Session");
+        final JMenu menu = new JMenu("Sessions");
 
         MenuAction menuAction;
 

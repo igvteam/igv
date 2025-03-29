@@ -54,8 +54,6 @@ public class OAuthUtils {
 
     private static Logger log = LogManager.getLogger(OAuthUtils.class);
 
-    private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
-
     private static OAuthUtils theInstance;
 
     static OAuthProvider awsProvider;
