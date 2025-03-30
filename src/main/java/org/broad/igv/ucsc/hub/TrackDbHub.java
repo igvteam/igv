@@ -1,7 +1,6 @@
 package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.feature.genome.load.TrackConfig;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
 import java.util.*;
@@ -76,7 +75,7 @@ public class TrackDbHub {
                 TrackConfigContainer parent = null;
 
                 if (s.hasOwnProperty("parent")) {
-                    parent =  trackContainers.get(s.getOwnProperty("parent"));
+                    parent = trackContainers.get(s.getOwnProperty("parent"));
                 }
 
                 if (parent == null && hasGroups && s.hasProperty("group")) {
@@ -113,7 +112,7 @@ public class TrackDbHub {
 
                 } else if (!filterTracks.contains(s.name) &&
                         s.hasProperty("bigDataUrl") &&
-                        supportedTypes.contains(s.type().toLowerCase())) {
+                        supportedTypes.contains(s.format().toLowerCase())) {
 
                     final TrackConfig trackConfig = getTrackConfig(s);
                     if (parent != null) {
@@ -141,7 +140,7 @@ public class TrackDbHub {
         String url = t.getProperty("bigDataUrl");
         TrackConfig config = new TrackConfig(url);
 
-        String type = t.type();
+        String type = t.format();
         if (type != null) {
             String tlc = type.toLowerCase();
             String format = typeFormatMap.containsKey(tlc) ? typeFormatMap.get(tlc) : type;
@@ -166,7 +165,7 @@ public class TrackDbHub {
 
         if (t.hasProperty("bigDataIndex")) {
             config.setIndexURL(t.getProperty("bigDataIndex"));
-        } else if (t.type().equals("vcfTabix")) {
+        } else if (t.format().equals("vcfTabix")) {
             config.setIndexURL(t.getProperty("bigDataUrl") + ".tbi");
         }
 
@@ -212,6 +211,10 @@ public class TrackDbHub {
             String c = t.getProperty("altColor");
             config.setAltColor(c.indexOf(",") > 0 ? "rgb(" + c + ")" : c);
         }
+        if (t.hasProperty("min") && t.hasProperty("max")) {
+            config.setMin(Float.parseFloat(t.getProperty("min")));
+            config.setMax(Float.parseFloat(t.getProperty("max")));
+        }
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
             config.setMin(Float.parseFloat(tokens[0]));
@@ -242,7 +245,7 @@ public class TrackDbHub {
             Map<String, String> metadata = parseMetadata(t.getProperty("metadata"));
             config.setAttributes(metadata);
         }
-        if(t.hasProperty("defaultLabelFields")) {
+        if (t.hasProperty("defaultLabelFields")) {
             config.setLabelField(t.getProperty("defaultLabelFields").split(",")[0]);
         } else if (t.hasProperty("labelFields")) {
             config.setLabelField(t.getProperty("labelFields").split(",")[0]);

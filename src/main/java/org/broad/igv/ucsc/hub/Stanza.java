@@ -19,7 +19,6 @@ class Stanza {
 
 
     Stanza(String type, String name) {
-
         this.type = type;
         this.name = name;
         this.properties = new HashMap<>();
@@ -64,7 +63,7 @@ class Stanza {
         return getProperty(key) != null;
     }
 
-    String type() {
+    String format() {
         String type = this.getOwnProperty("type");
         if (type != null) {
             // Trim extra bed qualifiers (e.g. bigBed + 4)

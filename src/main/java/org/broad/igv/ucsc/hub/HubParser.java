@@ -220,7 +220,22 @@ public class HubParser {
 
                     String value = line.substring(i + 1).trim();
 
-                    if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key) || "label".equals(key))) {
+                    if("type".equals(key)) {
+                        // The "type" property contains format and sometimes other information.  For example, data range
+                        // on a bigwig "type bigWig 0 .5"
+                        String[] tokens = Globals.whitespacePattern.split(value);
+                        value = tokens[0];
+                        if("bigWig".equals(value) && tokens.length == 3) {
+                            // This is a bigWig with a range
+                            String min = tokens[1];
+                            String max = tokens[2];
+                            if (currentNode != null) {
+                                currentNode.properties.put("min", min);
+                                currentNode.properties.put("max", max);
+                            }
+                        }
+
+                    } else if (!("shortLabel".equals(key) || "longLabel".equals(key) || "metadata".equals(key) || "label".equals(key))) {
                         String[] tokens = Globals.whitespacePattern.split(value);
                         value = tokens[0];
                     }
