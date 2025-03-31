@@ -101,7 +101,7 @@ public class CollapsiblePanel extends JPanel {
 
         this.add(header, BorderLayout.NORTH);
 
-        if(addSearchButton) {
+        if (addSearchButton) {
             final JButton searchButton = TrackHubSelectionDialog.createSearchButton("Search " + configContainer.label, Arrays.asList(this),
                     (selectedCount) -> {
                         this.updateLabel();
@@ -126,10 +126,11 @@ public class CollapsiblePanel extends JPanel {
     public void resetSelectionBoxes(Set<String> loadedTrackPaths) {
 
         for (CollapsiblePanel.SelectionBox box : selectionBoxes) {
-            final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.getUrl());
+            final boolean isLoaded = loadedTrackPaths != null && loadedTrackPaths.contains(box.trackConfig.url);
             box.setSelected(
                     isLoaded ||
-                    ((loadedTrackPaths == null || loadedTrackPaths.isEmpty()) && autoselectDefaults && (autoselectTracks.contains(box.trackConfig.getId()) || selectionBoxes.size() == 1)));
+                            ((loadedTrackPaths == null || loadedTrackPaths.isEmpty()) && autoselectDefaults &&
+                                    (autoselectTracks.contains(box.trackConfig.id) || selectionBoxes.size() == 1)));
             box.setEnabled(this.autoselectDefaults || !isLoaded);
         }
         updateLabel();
@@ -261,7 +262,7 @@ public class CollapsiblePanel extends JPanel {
             this.setLayout(new BorderLayout(5, 0));
             this.trackConfig = trackConfig;
 
-            String longLabel = trackConfig.getLongLabel();
+            String longLabel = trackConfig.longLabel;
             if (longLabel != null) {
                 this.setToolTipText(longLabel);
             }
@@ -269,17 +270,17 @@ public class CollapsiblePanel extends JPanel {
             this.checkbox = new TrackHubSelectionDialog.CheckBoxWrapper(checkboxType);
 
             checkbox.setActionListener(e -> {
-                trackConfig.setVisible(checkbox.isSelected());
+                trackConfig.visible = (checkbox.isSelected());
                 if (callback != null) {
                     callback.apply(checkbox.isSelected() ? 1 : 0);
                 }
             });
 
-            label = new JLabel(trackConfig.getName());
+            label = new JLabel(trackConfig.name);
             label.setLabelFor(checkbox.getComponent());
             add(checkbox.getComponent(), BorderLayout.WEST);
 
-            String infoLink = trackConfig.getHtml();
+            String infoLink = trackConfig.html;
 
             if (infoLink == null || "".equals(infoLink.trim())) {
                 add(label, BorderLayout.CENTER);
@@ -330,7 +331,7 @@ public class CollapsiblePanel extends JPanel {
 
         public void setSelected(boolean selected) {
             checkbox.setSelected(selected);
-            trackConfig.setVisible(selected);
+            trackConfig.visible = (selected);
         }
 
         @Override

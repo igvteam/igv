@@ -139,6 +139,7 @@ public class ResourceLocator {
     private Integer visibilityWindow;
     private String trixURL;
     private String panelName;
+    private String autoscaleGroup;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -177,6 +178,35 @@ public class ResourceLocator {
 
         return locators;
     }
+
+
+    /**
+     * Create a ResourceLocator from a TrackConfig object.  This is used to create
+     * a ResourceLocator for a track hub track.
+     *
+     * @param trackConfig
+     * @return
+     */
+
+    public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
+        String trackPath = trackConfig.url;
+        ResourceLocator res = new ResourceLocator(trackPath);
+        res.setName(trackConfig.name);
+        res.setIndexPath(trackConfig.indexURL);
+        res.setFormat(trackConfig.format);
+        res.setVisibilityWindow(trackConfig.visibilityWindow);
+        res.setPanelName(trackConfig.panelName);
+        res.setTrixURL(trackConfig.trixURL);
+        res.setFeatureInfoURL(trackConfig.infoURL);
+        res.setIndexed(trackConfig.indexed != null ? trackConfig.indexed : false);
+        res.setLabelField(trackConfig.labelField);
+        res.setDescription(trackConfig.description);
+        res.setAutoscaleGroup(trackConfig.autoscaleGroup);
+        res.setTrackProperties(new TrackProperties(trackConfig));
+        return res;
+
+    }
+
 
     /**
      * Constructor for local files and URLs
@@ -634,38 +664,6 @@ public class ResourceLocator {
         this.metadata = metadata;
     }
 
-    public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
-        String trackPath = trackConfig.getUrl();
-        ResourceLocator res = new ResourceLocator(trackPath);
-        res.setName(trackConfig.getName());
-        res.setIndexPath(trackConfig.getIndexURL());
-        res.setFormat(trackConfig.getFormat());
-        Integer vw = trackConfig.getVisibilityWindow();
-        if (vw != null) {
-            res.setVisibilityWindow(vw);
-        }
-        if (trackConfig.getPanelName() != null) {
-            res.setPanelName(trackConfig.getPanelName());
-        }
-        if (trackConfig.getTrixURL() != null) {
-            res.setTrixURL(trackConfig.getTrixURL());
-        }
-
-        res.setFeatureInfoURL(trackConfig.getInfoURL());
-        Boolean indexed = trackConfig.getIndexed();
-        if (indexed != null) {
-            res.setIndexed(indexed);
-        }
-
-        // Track properties
-        res.setTrackProperties(new TrackProperties(trackConfig));
-        res.setLabelField(trackConfig.getLabelField());
-        res.setDescription(trackConfig.getDescription());
-
-        return res;
-
-    }
-
     public String getPanelName() {
         return panelName;
     }
@@ -680,6 +678,14 @@ public class ResourceLocator {
 
     public boolean isDataUrl() {
         return dataURL;
+    }
+
+    public void setAutoscaleGroup(String autoscaleGroup) {
+        this.autoscaleGroup = autoscaleGroup;
+    }
+
+    public String getAutoscaleGroup() {
+        return autoscaleGroup;
     }
 
     /**

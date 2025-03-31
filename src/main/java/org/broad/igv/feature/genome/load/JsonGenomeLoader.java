@@ -97,11 +97,11 @@ public class JsonGenomeLoader extends GenomeLoader {
         List<TrackConfig> trackConfigs = config.getTrackConfigs();
         if (trackConfigs != null) {
             trackConfigs.forEach((TrackConfig trackConfig) -> {
-                if (trackConfig.getUrl() != null) {
-                    trackConfig.setUrl(FileUtils.getAbsolutePath(trackConfig.getUrl(), genomePath));
+                if (trackConfig.url != null) {
+                    trackConfig.url = (FileUtils.getAbsolutePath(trackConfig.url, genomePath));
                 }
-                if (trackConfig.getIndexURL() != null) {
-                    trackConfig.setIndexURL(FileUtils.getAbsolutePath(trackConfig.getIndexURL(), genomePath));
+                if (trackConfig.indexURL != null) {
+                    trackConfig.indexURL = (FileUtils.getAbsolutePath(trackConfig.indexURL, genomePath));
                 }
             });
         }

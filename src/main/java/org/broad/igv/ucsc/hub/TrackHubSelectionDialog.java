@@ -373,23 +373,23 @@ public class TrackHubSelectionDialog extends JDialog {
                     if (selectionBox.isEnabled()) {
 
                         TrackConfig trackConfig = selectionBox.getTrackConfig();
-                        final Map<String, String> trackConfigAttributes = trackConfig.getAttributes();
+                        final Map<String, String> trackConfigAttributes = trackConfig.attributes;
                         Map<String, String> attributes = trackConfigAttributes;
                         if (attributes == null) {
                             attributes = new LinkedHashMap<>();
                         }
                         attributes.put("Group", panel.containerLabel());
-                        attributes.put("Name", trackConfig.getName());
-                        attributes.put("Description", trackConfig.getDescription());
-                        attributes.put("Format", trackConfig.getFormat());
+                        attributes.put("Name", trackConfig.name);
+                        attributes.put("Description", trackConfig.description);
+                        attributes.put("Format", trackConfig.format);
 
                         if (trackConfigAttributes != null) {
                             attributes.putAll(trackConfigAttributes);
                             attributeNames.addAll(trackConfigAttributes.keySet());
                         }
 
-                        final FileRecord record = new FileRecord(trackConfig.getUrl(), attributes);
-                        record.setSelected(trackConfig.getVisible());
+                        final FileRecord record = new FileRecord(trackConfig.url, attributes);
+                        record.setSelected(trackConfig.visible);
                         records.add(record);
                         recordSelectionBoxMap.put(record, selectionBox);
                     }
@@ -451,7 +451,7 @@ public class TrackHubSelectionDialog extends JDialog {
         dlf.setVisible(true);
 
         for (TrackConfig config : dlf.getSelectedConfigs()) {
-            System.out.println(config.getName());
+            System.out.println(config.name);
         }
     }
 

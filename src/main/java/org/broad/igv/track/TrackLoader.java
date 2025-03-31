@@ -99,6 +99,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
+import static org.broad.igv.track.AttributeManager.GROUP_AUTOSCALE;
 
 /**
  * User: jrobinso
@@ -286,7 +287,6 @@ public class TrackLoader {
                     tp = new TrackProperties();
                     ParsingUtils.parseTrackLine(trackLine, tp);
                 }
-
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
                         track.setFeatureInfoURL(locator.getFeatureInfoURL());
@@ -302,6 +302,9 @@ public class TrackLoader {
                     }
                     if (locator.getSampleId() != null) {
                         track.setSampleId(locator.getSampleId());
+                    }
+                    if(locator.getAutoscaleGroup()!=null){
+                        track.setAttributeValue(GROUP_AUTOSCALE, locator.getAutoscaleGroup());
                     }
                 }
             }

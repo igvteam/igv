@@ -126,7 +126,7 @@ public class HubGenomeLoader extends GenomeLoader {
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
             List<TrackConfig> selectedTracks = groupedTrackConfigurations.stream()
                     .flatMap(group -> group.tracks.stream())
-                    .filter(trackConfig -> selectedTrackNames.contains(trackConfig.getName()))
+                    .filter(trackConfig -> selectedTrackNames.contains(trackConfig.name))
                     .collect(Collectors.toList());
             config.setTracks(selectedTracks);
         }
@@ -195,9 +195,9 @@ public class HubGenomeLoader extends GenomeLoader {
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
             List<TrackConfigContainer> trackConfigGroups = hub.getGroupedTrackConfigurations();
             for (TrackConfigContainer group : trackConfigGroups) {
-                List<TrackConfig> trackConfigs = group.findTracks(trackConfig -> selectedTrackNames.contains(trackConfig.getName()));
+                List<TrackConfig> trackConfigs = group.findTracks(trackConfig -> selectedTrackNames.contains(trackConfig.name));
                 for (TrackConfig trackConfig : trackConfigs) {
-                    if (selectedTrackNames.contains(trackConfig.getName())) {
+                    if (selectedTrackNames.contains(trackConfig.name)) {
                         selectedTracks.add(trackConfig);
                     }
                 }

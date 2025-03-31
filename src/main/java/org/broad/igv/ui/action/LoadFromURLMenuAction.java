@@ -55,7 +55,8 @@ import java.util.List;
  */
 public class LoadFromURLMenuAction extends MenuAction {
 
-    public static final String LOAD_FROM_URL = "Load from URL...";
+    public static final String LOAD_TRACKS_FROM_URL = "Load Tracks from URL...";
+    public static final String LOAD_SESSION_FROM_URL = "Load Session from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
     public static final String LOAD_TRACKHUB = "Load Track Hub...";
@@ -75,7 +76,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         ta.setPreferredSize(new Dimension(600, 20));
         String command = e.getActionCommand();
         boolean isHtsGet = command.equalsIgnoreCase(LOAD_FROM_HTSGET);
-        if (command.equalsIgnoreCase(LOAD_FROM_URL) || isHtsGet) {
+        if (command.equalsIgnoreCase(LOAD_TRACKS_FROM_URL) || isHtsGet) {
 
             LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
@@ -83,7 +84,18 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (!dlg.isCanceled()) {
                 loadUrls(dlg.getFileURLs(), dlg.getIndexURLs(), isHtsGet);
             }
-        } else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
+        } else if((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
+
+           final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
+
+            if (url != null && !url.trim().isBlank()) {
+                try {
+                    LongRunningTask.submit(() -> this.igv.loadSession(url.trim(), null));
+                } catch (Exception ex) {
+                    MessageUtils.showMessage("Error loading session: " + ex.getMessage());
+                }
+            }
+        }else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
 
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.QUESTION_MESSAGE);
 
@@ -110,7 +122,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     } else if(genome != null) {
                         SelectHubTracksAction.selectAndLoadTracks(hub);
                         genome.addTrackHub(hub);
-                        IGVMenuBar.getInstance().updateFileMenu(genome);
+                        IGVMenuBar.getInstance().updateTracksMenu(genome);
                         if(genome.isFromJson()){
                             GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
                         }
