@@ -79,7 +79,7 @@ public abstract class AbstractTrack implements Track {
     private boolean itemRGB = true;
 
     private boolean useScore;
-    protected boolean autoScale;
+    protected boolean autoScale = true;   // By default, can be overriden by track line
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
     private int fontSize;
@@ -593,8 +593,6 @@ public abstract class AbstractTrack implements Track {
         // If view limits are explicitly set turn off autoscale
         if (!Float.isNaN(viewLimitMin) && !Float.isNaN(viewLimitMax)) {
             this.setAutoScale(false);
-        } else {
-            this.setAutoScale(properties.isAutoScale());
         }
 
         // Color scale properties
