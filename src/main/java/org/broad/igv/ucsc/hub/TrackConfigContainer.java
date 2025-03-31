@@ -66,7 +66,7 @@ public class TrackConfigContainer {
     public int countSelectedTracks() {
         int count = 0;
         for (TrackConfig trackConfig : tracks) {
-            if (trackConfig.getVisible() == true) {
+            if (trackConfig.visible == true) {
                 count++;
             }
         }
@@ -82,7 +82,7 @@ public class TrackConfigContainer {
 
     public void setTrackVisibility(Set<String> loadedTrackPaths) {
         for (TrackConfig trackConfig : tracks) {
-            trackConfig.setVisible(loadedTrackPaths.contains(trackConfig.getUrl()));
+            trackConfig.visible = (loadedTrackPaths.contains(trackConfig.url));
         }
         for (TrackConfigContainer container : children) {
             container.setTrackVisibility(loadedTrackPaths);

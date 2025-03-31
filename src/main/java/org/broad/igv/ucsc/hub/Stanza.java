@@ -8,7 +8,7 @@ class Stanza {
 
     private static Set<String> parentOverrideProperties = new HashSet<>(Arrays.asList("visibility", "priority", "group"));
     private static Set<String> inheritableProperties = new HashSet<>(Arrays.asList("group", "priority", "color",
-            "altColor", "autoscale", "viewLimits", "negativeValues", "maxWindowToQuery", "transformFun",
+            "altColor", "autoscale", "autoScale", "viewLimits", "negativeValues", "maxWindowToQuery", "transformFun",
             "windowingFunction", "yLineMark", "yLineOnOff", "graphTypeDefault", "interactUp", "interactMultiRegion",
             "endsVisible", "maxHeightPixels", "scoreMin", "scoreFilter", "scoreFilterLimits",
             "minAliQual", "bamColorTag", "bamColorMode", "bamGrayMode", "colorByStrand", "itemRgb", "html"));

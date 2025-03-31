@@ -118,9 +118,9 @@ public class SelectHubTracksAction extends MenuAction {
             List<TrackConfig> selected = new ArrayList<>();
             for (TrackConfigContainer g : groups) {
                 g.map(config -> {
-                    if (config.getVisible()) {
+                    if (config.visible) {
                         selected.add(config);
-                        if (!loadedTrackPaths.contains(config.getUrl())) {
+                        if (!loadedTrackPaths.contains(config.url)) {
                             tracksToLoad.add(config);
                         }
                     }

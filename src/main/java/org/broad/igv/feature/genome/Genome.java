@@ -291,7 +291,7 @@ public class Genome {
 
             trackConfigs.forEach((TrackConfig trackConfig) -> {
                 ResourceLocator res = ResourceLocator.fromTrackConfig(trackConfig);
-                Boolean hidden = trackConfig.getHidden();    // Not to be confused with "visible"
+                Boolean hidden = trackConfig.hidden;    // Not to be confused with "visible"
                 if (hidden != null && hidden) {
                     hiddenTracks.add(res);
                 } else {

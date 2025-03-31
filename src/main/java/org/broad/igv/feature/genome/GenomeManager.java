@@ -346,7 +346,7 @@ public class GenomeManager {
 
                 final List<TrackConfig> trackConfigs = config.getTrackConfigs();
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
-                        trackConfigs.stream().map(TrackConfig::getUrl).toList();
+                        trackConfigs.stream().map(t -> t.url).toList();
 
                 List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, UPDATE_ANNOTATIONS_MESSAGE);
                 if (selectedConfigs == null) {
@@ -356,7 +356,7 @@ public class GenomeManager {
                 config.setTracks(selectedConfigs);
                 GenomeDownloadUtils.saveLocalGenome(config);
 
-                Set<String> selectedTrackPaths = selectedConfigs.stream().map(TrackConfig::getUrl).collect(Collectors.toSet());
+                Set<String> selectedTrackPaths = selectedConfigs.stream().map(t -> t.url).collect(Collectors.toSet());
 
                 // Unload deselected tracks
                 Set<String> pathsToRemove = new HashSet<>();
@@ -373,7 +373,7 @@ public class GenomeManager {
                         .map(t -> t.getResourceLocator().getPath())
                         .collect(Collectors.toSet());
                 List<TrackConfig> tracksToLoad = selectedConfigs.stream()
-                        .filter(trackConfig -> !loadedTrackPaths.contains(trackConfig.getUrl()))
+                        .filter(trackConfig -> !loadedTrackPaths.contains(trackConfig.url))
                         .collect(Collectors.toList());
 
                 List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
@@ -400,7 +400,7 @@ public class GenomeManager {
 
         Set<String> currentSelections = config.getTrackConfigs() == null ? Collections.emptySet() :
                 config.getTrackConfigs().stream()
-                        .map(trackConfig -> trackConfig.getUrl())
+                        .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
         TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
         try {

@@ -28,13 +28,16 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.*;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.broad.igv.util.StringUtils.stripQuotes;
 
 
 /**
@@ -106,7 +109,7 @@ public class TrackProperties {
 
     private int offset;
 
-    private boolean autoScaleFlag = false;
+    private boolean autoscale = false;
 
     private float minValue = Float.NaN;
 
@@ -161,6 +164,47 @@ public class TrackProperties {
 
     }
 
+    /**
+     * Initialize TrackProperties from a TrackConfig object.  TrackConfig is a json-friendly bridge object
+     * that is used to load track properties from an igv.js json file or a track hub.
+     *
+     * @param trackConfig
+     */
+    public TrackProperties(TrackConfig trackConfig) {
+        this.color = parseColor(trackConfig.color);
+        this.altColor = parseColor(trackConfig.altColor);
+        this.displayMode = parseDisplayMode(trackConfig.displayMode);
+        setFeatureVisibilityWindow(trackConfig.visibilityWindow != null ? trackConfig.visibilityWindow : -1);
+        setMinValue(trackConfig.min != null ? trackConfig.min : Float.NaN);
+        setMaxValue(trackConfig.max != null ? trackConfig.max : Float.NaN);
+        setAutoScale(Boolean.TRUE.equals(trackConfig.autoscale));
+        setHeight(trackConfig.height != null ? trackConfig.height : this.height);
+        setMinHeight(trackConfig.minHeight != null ? trackConfig.minHeight : this.minHeight);
+    }
+
+
+    private Color parseColor(String color) {
+        if (color != null) {
+            try {
+                return ColorUtilities.stringToColor(color);
+            } catch (Exception e) {
+                log.error("Error parsing color string: " + color, e);
+            }
+        }
+        return null;
+    }
+
+    private Track.DisplayMode parseDisplayMode(String displayMode) {
+        if (displayMode != null) {
+            try {
+                return Track.DisplayMode.valueOf(stripQuotes(displayMode));
+            } catch (Exception e) {
+                log.error("Error parsing displayMode " + displayMode, e);
+            }
+        }
+        return null;
+    }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -168,6 +212,7 @@ public class TrackProperties {
     public String getType() {
         return type;
     }
+
     public String getFormat() {
         return format;
     }
@@ -297,11 +342,11 @@ public class TrackProperties {
 
 
     public boolean isAutoScale() {
-        return autoScaleFlag || Float.isNaN(minValue) || Float.isNaN(maxValue);
+        return autoscale || Float.isNaN(minValue) || Float.isNaN(maxValue);
     }
 
-    public boolean getAutoScale()    {
-        return this.autoScaleFlag;
+    public boolean getAutoScale() {
+        return this.autoscale;
     }
 
     public String getGenome() {
@@ -363,7 +408,7 @@ public class TrackProperties {
     }
 
     public void setAutoScale(boolean autoScale) {
-        this.autoScaleFlag = autoScale;
+        this.autoscale = autoScale;
     }
 
     public float getMidValue() {
@@ -479,7 +524,7 @@ public class TrackProperties {
     }
 
 
-    public Map<String,String> getAttributes() {
+    public Map<String, String> getAttributes() {
         return attributes;
     }
 
