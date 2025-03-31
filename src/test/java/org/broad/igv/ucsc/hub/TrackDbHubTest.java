@@ -79,7 +79,7 @@ public class TrackDbHubTest {
         assertEquals(2, view.tracks.size());
 
         TrackConfig track = view.tracks.get(0);
-        Map<String, String> meta = track.getAttributes();
+        Map<String, String> meta = track.attributes;
         assertEquals(4, meta.size());
     }
 
