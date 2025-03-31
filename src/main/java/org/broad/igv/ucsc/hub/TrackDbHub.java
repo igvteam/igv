@@ -1,7 +1,6 @@
 package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.feature.genome.load.TrackConfig;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.StringUtils;
 
 import java.util.*;
@@ -112,7 +111,7 @@ public class TrackDbHub {
 
                 } else if (!filterTracks.contains(s.name) &&
                         s.hasProperty("bigDataUrl") &&
-                        supportedTypes.contains(s.type().toLowerCase())) {
+                        supportedTypes.contains(s.format().toLowerCase())) {
 
                     final TrackConfig trackConfig = getTrackConfig(s);
                     if (parent != null) {
@@ -138,7 +137,7 @@ public class TrackDbHub {
     private TrackConfig getTrackConfig(Stanza t) {
         TrackConfig config = new TrackConfig(t.getProperty("bigDataUrl"));
 
-        String type = t.type();
+        String type = t.format();
         if (type != null) {
             String format = typeFormatMap.getOrDefault(type.toLowerCase(), type);
             config.format = format.toLowerCase();
@@ -149,9 +148,20 @@ public class TrackDbHub {
 
         String longLabel = t.getOwnProperty("longLabel");
         if (longLabel == null) {
-            longLabel = Optional.ofNullable(t.getProperty("longLabel"))
-                    .filter(label -> label.length() > config.name.length())
-                    .orElse(config.name);
+            String inheritedLongLabel = t.getProperty("longLabel");
+            longLabel = inheritedLongLabel != null && inheritedLongLabel.length() > config.getName().length() ? inheritedLongLabel : config.getName();
+        }
+        config.setLongLabel(longLabel);
+
+        // TODO -- work on recognizing big* formats
+        // config.format = t.format();
+
+        config.setUrl(t.getProperty("bigDataUrl"));
+
+        if (t.hasProperty("bigDataIndex")) {
+            config.setIndexURL(t.getProperty("bigDataIndex"));
+        } else if (t.format().equals("vcfTabix")) {
+            config.setIndexURL(t.getProperty("bigDataUrl") + ".tbi");
         }
         config.longLabel = longLabel;
 
@@ -189,7 +199,6 @@ public class TrackDbHub {
 
         config.color = parseColor(t.getProperty("color"));
         config.altColor = parseColor(t.getProperty("altColor"));
-
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
             config.min = Float.parseFloat(tokens[0]);

@@ -413,7 +413,6 @@ public class BBFile {
     }
 
     BBZoomHeader zoomLevelForScale(double bpPerPixel, int tolerance) {
-        BBZoomHeader level = null;
         for (BBZoomHeader zl : this.zoomHeaders) {
             if (zl.reductionLevel < bpPerPixel) {
                 return zl;
@@ -679,4 +678,56 @@ public class BBFile {
             }
         }
     }
+
+    /**
+     * Method computes bigwig "totalSummary" statistics for comparison with values in file header.  The purpose is to
+     * validate interpretation of file header values.   "sumOfSquares" is literally the sum of squares of the data,
+     * not sum of the differences wrt the mean.  The bigwig specification is not clear on this point.   It states that
+     * "the standard deviation can be easily computed", but its not clear how.
+     *
+     * From Jim Kent https://github.com/ucscGenomeBrowser/kent/blob/7d0bd2b7d089f94c9a8260c417246d4dbfce2523/src/lib/bbiWrite.c#L515
+     * void bbiAddRangeToSummary(bits32 chromId, bits32 chromSize, bits32 start, bits32 end,
+     * 	                         double val, int reduction, struct bbiSummary **pOutList)
+     *       int size = end - start;
+     *       double sum = size * val;
+     *       double sumSquares = sum * val;
+     *
+     *
+     * @throws IOException
+     */
+    public void computeStats() throws IOException {
+
+        long rTreeOffset = getHeader().fullIndexOffset;
+        double sum = 0;
+        long basesCovered = 0;
+        double sumSquares = 0;
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+        for (String chr : this.chromTree.names()) {
+            List<byte[]> chunks = this.getLeafChunks(chr, 0, chr, Integer.MAX_VALUE, rTreeOffset);
+            Integer chrIdx = getIdForChr(chr);
+            for (byte[] c : chunks) {
+                List<LocusScore> features = new ArrayList<>();
+                decodeWigData(c, chrIdx, 0, Integer.MAX_VALUE, features);
+                for (LocusScore score : features) {
+
+                    min = Math.min(min, score.getScore());
+                    max = Math.max(max, score.getScore());
+                    final float val = score.getScore() * (score.getEnd() - score.getStart());
+                    sum += val;
+                    sumSquares += (score.getScore() * val);
+                    basesCovered += score.getEnd() - score.getStart();
+                }
+            }
+        }
+        System.out.println(totalSummary.printString());
+        double mean = sum / basesCovered;
+        System.out.println("basesCovered: " + basesCovered);
+        System.out.println("min: " + min);
+        System.out.println("max: " + max);
+        System.out.println("sum: " + sum);
+        System.out.println("sumSquares: " + sumSquares);
+        System.out.println("mean: " + mean);
+    }
+
 }

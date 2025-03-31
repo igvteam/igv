@@ -51,18 +51,46 @@ public class RPTree {
         this.rootNodeOffset = this.startOffset + RPTREE_HEADER_SIZE;
     }
 
-
+/**
+     * Find all leaf items in the tree that overlap the specified region.
+     *
+     * @param chrIdx1 The first chromosome index
+     * @param startBase The start base of the region
+     * @param chrIdx2 The second chromosome index
+     * @param endBase The end base of the region
+     * @return A list of leaf items that overlap the specified region
+     */
     List<Item> findLeafItemsOverlapping(int chrIdx1, int startBase, int chrIdx2, int endBase) throws IOException {
-
         List<Item> leafItems = new ArrayList<>();
         this.walkTree(this.rootNodeOffset, leafItems, chrIdx1, startBase, chrIdx2, endBase);
         return leafItems;
     }
 
+    /**
+     * Find all leaf items in the tree.
+     *
+     * @return A list of all leaf items
+     */
+    List<Item> findAllLeafItems() throws IOException {
+        List<Item> leafItems = new ArrayList<>();
+        this.walkTree(this.rootNodeOffset, leafItems, -1, -1, -1, -1);
+        return leafItems;
+    }
+
+    /**
+     * Walk the tree recursively, adding items to the list if they overlap the specified region.
+     *
+     * @param offset      The offset of the current node
+     * @param leafItems   The list of items to add to
+     * @param chrIdx1     The first chromosome index
+     * @param startBase   The start base of the region
+     * @param chrIdx2     The second chromosome index
+     * @param endBase     The end base of the region
+     */
     void walkTree(long offset, List<Item> leafItems, int chrIdx1, int startBase, int chrIdx2, int endBase) throws IOException {
             Node node = readNode(offset);
             for (Item item : node.items) {
-                if (item.overlaps(chrIdx1, startBase, chrIdx2, endBase)) {
+                if (chrIdx1 < 0 || item.overlaps(chrIdx1, startBase, chrIdx2, endBase)) {
                     if (node.type == 1) {   // Leaf node
                         leafItems.add(item);
                     } else { // Non leaf node

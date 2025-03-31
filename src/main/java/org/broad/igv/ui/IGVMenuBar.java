@@ -464,10 +464,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     }
 
+
     private JMenu createTracksMenu(Genome genome) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
+
 
         // Load menu items
         menuAction = new LoadFilesMenuAction("Load Tracks from File...", KeyEvent.VK_L, igv);

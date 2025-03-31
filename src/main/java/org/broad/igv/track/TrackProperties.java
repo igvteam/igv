@@ -164,6 +164,7 @@ public class TrackProperties {
 
     }
 
+
     /**
      * Initialize TrackProperties from a TrackConfig object.  TrackConfig is a json-friendly bridge object
      * that is used to load track properties from an igv.js json file or a track hub.
