@@ -61,77 +61,8 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
         this.reader = reader;
         this.genome = genome;
         this.wholeGenomeScores = new HashMap<>();
-        initMinMax();
     }
 
-    /**
-     * Set the "min" and "max" from total summary data.
-     */
-    private void initMinMax() {
-
-        BBTotalSummary totalSummary = reader.getTotalSummary();
-        if (totalSummary == null) {
-            dataMin = 0;
-            dataMax = 100;
-        } else {
-            dataMin = totalSummary.minVal;
-            if (totalSummary.basesCovered < 100) {
-                dataMin = Math.min(0, totalSummary.minVal);
-                dataMax = totalSummary.maxVal;
-            } else if (totalSummary.minVal < 0) {
-                dataMax = Math.min(totalSummary.maxVal, 3 * totalSummary.stddev);
-                dataMin = Math.max(totalSummary.minVal, -dataMax);
-            } else {
-                dataMin = 0;
-                dataMax = Math.min(totalSummary.maxVal, totalSummary.mean + 2 * totalSummary.stddev);
-            }
-        }
-    }
-
-    /**
-     * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
-     */
-//    private void initMinMax2() {
-//
-//        final int oneMB = 1000000;
-//        final BBZoomHeader zoomLevelHeader = zoomLevelForScale(oneMB);
-//
-//        int nValues = 0;
-//        double[] values = new double[10000];
-//
-//        if (zoomLevelHeader == null) {
-//            List<String> chrNames = reader.getChromosomeNames();
-//            for (String chr : chrNames) {
-//                BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
-//                while (iter.hasNext()) {
-//                    WigItem item = iter.next();
-//                    values[nValues++] = item.getWigValue();
-//                    if (nValues >= 10000) break;
-//                }
-//            }
-//        } else {
-//
-//            int z = zoomLevelHeader.getZoomLevel();
-//            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
-//            if (zlIter.hasNext()) {
-//                while (zlIter.hasNext()) {
-//                    ZoomDataRecord rec = zlIter.next();
-//                    values[nValues++] = (rec.getMeanVal());
-//                    if (nValues >= 10000) {
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (nValues > 0) {
-//            dataMin = StatUtils.percentile(values, 0, nValues, 10);
-//            dataMax = StatUtils.percentile(values, 0, nValues, 90);
-//        } else {
-//            dataMin = 0;
-//            dataMax = 100;
-//        }
-//    }
     public double getDataMax() {
         return dataMax;
     }
@@ -171,7 +102,6 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
         }
 
     }
-
 
     /**
      * Return bigwig "zoom data" if available for the resolution encoded by "zoom"

@@ -644,7 +644,7 @@ public class ResourceLocator {
         if (vw != null) {
             res.setVisibilityWindow(vw);
         }
-        if(trackConfig.getPanelName() != null) {
+        if (trackConfig.getPanelName() != null) {
             res.setPanelName(trackConfig.getPanelName());
         }
         if (trackConfig.getTrixURL() != null) {
@@ -658,51 +658,9 @@ public class ResourceLocator {
         }
 
         // Track properties
-        TrackProperties properties = new TrackProperties();
-        String color = trackConfig.getColor();
-        if (color != null) {
-            try {
-                properties.setColor(ColorUtilities.stringToColor(color.toString()));
-            } catch (Exception e) {
-                log.error("Error parsing color string: " + color, e);
-            }
-        }
-        String altColor = trackConfig.getAltColor();
-        if (altColor != null) {
-            try {
-                properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
-            } catch (Exception e) {
-                log.error("Error parsing color string: " + altColor, e);
-            }
-        }
-        String displayMode = trackConfig.getDisplayMode();
-        if (displayMode != null) {
-            try {
-                Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
-                properties.setDisplayMode(dp);
-            } catch (Exception e) {
-                log.error("Error parsing displayMode " + displayMode, e);
-            }
-        }
-        Integer vizwindow = trackConfig.getVisibilityWindow();
-        if (vizwindow != null) {
-            properties.setFeatureVisibilityWindow(vizwindow);
-        } else {
-            // If not explicitly set, assume whole chromosome viz window for annotations
-            properties.setFeatureVisibilityWindow(-1);
-        }
-
-        if (trackConfig.getMin() != null) {
-            properties.setMinValue(trackConfig.getMin());
-        }
-        if (trackConfig.getMax() != null) {
-            properties.setMaxValue(trackConfig.getMax());
-        }
-        res.setTrackProperties(properties);
-
-        if(trackConfig.getLabelField() != null) {
-            res.setLabelField(trackConfig.getLabelField());
-        }
+        res.setTrackProperties(new TrackProperties(trackConfig));
+        res.setLabelField(trackConfig.getLabelField());
+        res.setDescription(trackConfig.getDescription());
 
         return res;
 

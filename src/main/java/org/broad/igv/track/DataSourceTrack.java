@@ -103,7 +103,7 @@ public class DataSourceTrack extends DataTrack {
                 Collections.EMPTY_LIST :
                 dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
         if (tmp == null) tmp = Collections.EMPTY_LIST;
-        if (dataRange == null) {
+        if (dataRange == null && !autoScale) {
             initScale(dataSource, tmp);
         }
         return new LoadedDataInterval<>(chr, startLocation, endLocation, zoom, tmp);
