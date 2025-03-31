@@ -148,26 +148,15 @@ public class TrackDbHub {
 
         String longLabel = t.getOwnProperty("longLabel");
         if (longLabel == null) {
-            String inheritedLongLabel = t.getProperty("longLabel");
-            longLabel = inheritedLongLabel != null && inheritedLongLabel.length() > config.getName().length() ? inheritedLongLabel : config.getName();
-        }
-        config.setLongLabel(longLabel);
-
-        // TODO -- work on recognizing big* formats
-        // config.format = t.format();
-
-        config.setUrl(t.getProperty("bigDataUrl"));
-
-        if (t.hasProperty("bigDataIndex")) {
-            config.setIndexURL(t.getProperty("bigDataIndex"));
-        } else if (t.format().equals("vcfTabix")) {
-            config.setIndexURL(t.getProperty("bigDataUrl") + ".tbi");
+            longLabel = Optional.ofNullable(t.getProperty("longLabel"))
+                    .filter(label -> label.length() > config.name.length())
+                    .orElse(config.name);
         }
         config.longLabel = longLabel;
 
         config.url = t.getProperty("bigDataUrl");
         config.indexURL = t.hasProperty("bigDataIndex") ? t.getProperty("bigDataIndex") :
-                "vcfTabix".equals(t.type()) ? t.getProperty("bigDataUrl") + ".tbi" : null;
+                "vcfTabix".equals(t.format()) ? t.getProperty("bigDataUrl") + ".tbi" : null;
 
         config.description = t.getProperty("longLabel");
         config.html = t.getProperty("html");
