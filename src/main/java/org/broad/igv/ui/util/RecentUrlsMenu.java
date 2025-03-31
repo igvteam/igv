@@ -18,6 +18,7 @@ public class RecentUrlsMenu extends JMenu {
     }
 
     private RecentUrlsMenu(String name) {
+
         super(name);
 
         this.addMenuListener((MenuSelectedListener) e -> {

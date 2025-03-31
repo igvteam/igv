@@ -487,6 +487,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         recentFilesMenu = new RecentUrlsMenu();
         menuItems.add(recentFilesMenu);
+        recentFilesMenu.setVisible(IGV.getInstance().getRecentUrls() != null && !IGV.getInstance().getRecentUrls().isEmpty());
 
         menuItems.add(new JSeparator());
 
@@ -529,35 +530,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         }
 
-        // Reload tracks
-        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        menuItems.add(new JSeparator());
-
-        // Sort Context
-        menuAction = new SortTracksMenuAction("Sort Tracks...", KeyEvent.VK_S, IGV.getInstance());
-        menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new GroupTracksMenuAction("Group Tracks... ", KeyEvent.VK_G, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
         // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks...", KeyEvent.VK_F, IGV.getInstance());
+        filterTracksAction = new FilterTracksMenuAction("Filter Tracks by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
 
         // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Tracks... ", KeyEvent.VK_R, IGV.getInstance());
+        menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // Overlay tracks
-        menuAction = new OverlayTracksMenuAction("Overlay Data Tracks... ", KeyEvent.VK_O, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.OVERLAY_TRACKS_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
         JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
@@ -570,6 +552,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         });
         menuItems.add(exportNames);
 
+        menuItems.add(new JSeparator());
+
+        // Reload tracks
+        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         menuItems.add(new JSeparator());
 
         // Reset Tracks
