@@ -67,7 +67,7 @@ public class GFFtoBedTest {
             gffReader = new BufferedReader(new FileReader(inputFile));
             GFFParser parser = new GFFParser();
             GFFCodec.Version version = inputFile.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
-            GFFCodec codec = new GFFCodec(version, null);
+            GFFCodec codec = new GFFCodec(version, null, null);
             List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome, codec);
 
             bedReader = new BufferedReader(new FileReader(outputFile));

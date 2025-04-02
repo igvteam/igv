@@ -140,6 +140,7 @@ public class ResourceLocator {
     private String trixURL;
     private String panelName;
     private String autoscaleGroup;
+    private String[] filterTypes;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -203,10 +204,18 @@ public class ResourceLocator {
         res.setDescription(trackConfig.description);
         res.setAutoscaleGroup(trackConfig.autoscaleGroup);
         res.setTrackProperties(new TrackProperties(trackConfig));
+        res.setFilterTypes(trackConfig.filterTypes);
         return res;
 
     }
 
+    private void setFilterTypes(String[] filterTypes) {
+        this.filterTypes = filterTypes;
+    }
+
+    public String[] getFilterTypes() {
+        return filterTypes;
+    }
 
     /**
      * Constructor for local files and URLs

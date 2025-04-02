@@ -36,7 +36,8 @@ public class TrackConfig implements Cloneable {
     public String panelName;
     public String labelField;
     public String autoscaleGroup;
-    public String stanzaParent;   // For supporting track hubs
+    public String [] filterTypes;
+    public String stanzaParent; // For supporting track hubs
     public Map<String, String> attributes;
 
     public TrackConfig() {

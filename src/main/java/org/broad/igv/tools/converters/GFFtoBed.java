@@ -53,7 +53,7 @@ public class GFFtoBed {
         PrintWriter pw = null;
         try {
             GFFCodec.Version version = inputFile.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
-            GFFCodec gffCodec = new GFFCodec(version, null);
+            GFFCodec gffCodec = new GFFCodec(version, null, null);
             reader = ParsingUtils.openBufferedReader(new ResourceLocator(inputFile.getAbsolutePath()));
             List<Feature> features = parser.loadFeatures(reader, null, gffCodec);
 
