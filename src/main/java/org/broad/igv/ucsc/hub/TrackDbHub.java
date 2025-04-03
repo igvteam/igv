@@ -186,16 +186,19 @@ public class TrackDbHub {
         if (t.hasProperty("maxHeightPixels")) {
             String[] tokens = t.getProperty("maxHeightPixels").split(":");
             config.maxHeight = Integer.parseInt(tokens[0]);
-            config.height = Integer.parseInt(tokens[1]);
-            config.minHeight = Integer.parseInt(tokens[2]);
+            if (tokens.length > 1) config.height = Integer.parseInt(tokens[1]);
+            if (tokens.length > 2) config.minHeight = Integer.parseInt(tokens[2]);
         }
 
         config.color = parseColor(t.getProperty("color"));
         config.altColor = parseColor(t.getProperty("altColor"));
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
-            config.min = Float.parseFloat(tokens[0]);
-            if (tokens.length > 1) {
+            if(tokens.length == 1) {
+                config.max = Float.parseFloat(tokens[0]);
+            }
+            else if (tokens.length > 1) {
+                config.min = Float.parseFloat(tokens[0]);
                 config.max = Float.parseFloat(tokens[1]);
             }
         }
@@ -208,7 +211,7 @@ public class TrackDbHub {
         String labelFields = t.hasProperty("defaultLabelFields") ?
                 t.getProperty("defaultLabelFields") :
                 t.getProperty("labelFields");
-        if(labelFields != null) {
+        if (labelFields != null) {
             config.labelField = labelFields.split(",")[0];
         }
 
