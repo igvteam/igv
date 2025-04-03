@@ -402,3 +402,4 @@ NO_DATA.COLOR	 No data	color	216,216,216
 NO_CALL.COLOR	 No call	color	150,150,150
 
 AUXILLARY_HUBS_URL	Hub list URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/hubs.txt
+IGV.backup.genome.sequence.dir	Backup genome server URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/genomes.txt
