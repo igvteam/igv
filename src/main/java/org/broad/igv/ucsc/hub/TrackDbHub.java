@@ -111,6 +111,7 @@ public class TrackDbHub {
 
                 } else if (!filterTracks.contains(s.name) &&
                         s.hasProperty("bigDataUrl") &&
+                        s.format() != null &&
                         supportedTypes.contains(s.format().toLowerCase())) {
 
                     final TrackConfig trackConfig = getTrackConfig(s);
