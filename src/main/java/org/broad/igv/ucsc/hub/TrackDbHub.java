@@ -168,7 +168,11 @@ public class TrackDbHub {
         }
 
         if (t.hasProperty("maxWindowToDraw")) {
-            config.visibilityWindow = Math.min(Integer.MAX_VALUE, Integer.parseInt(t.getProperty("maxWindowToDraw")));
+            long maxWindowToDraw = Long.parseLong(t.getProperty("maxWindowToDraw"));
+            if (maxWindowToDraw > Integer.MAX_VALUE) {
+                maxWindowToDraw = Integer.MAX_VALUE;
+            }
+            config.visibilityWindow = (int) maxWindowToDraw;
         }
 
         if (t.hasProperty("autoScale")) {

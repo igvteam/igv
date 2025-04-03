@@ -84,9 +84,9 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (!dlg.isCanceled()) {
                 loadUrls(dlg.getFileURLs(), dlg.getIndexURLs(), isHtsGet);
             }
-        } else if((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
+        } else if ((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
 
-           final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
+            final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
 
             if (url != null && !url.trim().isBlank()) {
                 try {
@@ -95,7 +95,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     MessageUtils.showMessage("Error loading session: " + ex.getMessage());
                 }
             }
-        }else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
+        } else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
 
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.QUESTION_MESSAGE);
 
@@ -112,20 +112,17 @@ public class LoadFromURLMenuAction extends MenuAction {
 
             LongRunningTask.submit(() -> {
                 try {
-
-
                     Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     String id = genome != null ? genome.getUCSCId() : null;
+
                     Hub hub = HubParser.loadHub(inputs.getFirst(), id);
                     if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcscID().equals(id))) {
                         HubGenomeLoader.loadAssemblyHub(hub);
-                    } else if(genome != null) {
+                    } else if (genome != null) {
                         SelectHubTracksAction.selectAndLoadTracks(hub);
                         genome.addTrackHub(hub);
                         IGVMenuBar.getInstance().updateTracksMenu(genome);
-                        if(genome.isFromJson()){
-                            GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
-                        }
+                        GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
                     }
 
                 } catch (IOException ex) {

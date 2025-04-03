@@ -102,8 +102,8 @@ public class TrackHubSelectionDialog extends JDialog {
 
         if (message != null) {
             JTextPane messagePane = new JTextPane();
-            messagePane.setBorder(BorderFactory.createEmptyBorder(20, 5, 20, 5));
-            messagePane.setFont(FontManager.getFont(Font.BOLD, 14));
+            messagePane.setBorder(BorderFactory.createEmptyBorder(30, 5, 20, 5));
+            messagePane.setFont(FontManager.getFont(Font.BOLD, 16));
             messagePane.setBackground(new Color(230, 230, 230));
             messagePane.setForeground(Color.BLACK);
             messagePane.setText(message);

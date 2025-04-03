@@ -57,6 +57,7 @@ final public class Constants {
     public static final String BLAT_SERVER_TYPE = "BLAT_SERVER_TYPE";
     public static final String EXTVIEW_URL = "EXTVIEW_URL";
     public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
+    public static final String AUXILLARY_HUBS_URL = "AUXILLARY_HUBS_URL";
 
     public static final String CRAM_CACHE_SEQUENCES = "CRAM.CACHE_SEQUENCES";
     public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";

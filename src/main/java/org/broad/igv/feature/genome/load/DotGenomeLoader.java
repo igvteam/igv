@@ -140,7 +140,6 @@ public class DotGenomeLoader extends GenomeLoader {
 
         Genome   newGenome = new Genome(config);
 
-
         String geneFileName = genomeDescriptor.getGeneFileName();
         InputStream geneStream = null;
         if (geneFileName != null) {

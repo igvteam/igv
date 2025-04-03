@@ -3,6 +3,8 @@ package org.broad.igv.ucsc.hub;
 import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -142,11 +144,11 @@ public class HubParser {
         return trackHubs;
     }
 
-    public static List<String> getHubURLs(String genomeId) {
+    public static Map<String, List<String>> getHubURLs() {
 
         if (hubURLMap == null) {
 
-            String filePath = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/hubs.txt";
+            String filePath = PreferencesManager.getPreferences().get(Constants.AUXILLARY_HUBS_URL);
 
             hubURLMap = new HashMap<>();
             try (BufferedReader br = ParsingUtils.openBufferedReader(filePath)) {
@@ -172,7 +174,7 @@ public class HubParser {
                 e.printStackTrace();
             }
         }
-        return hubURLMap.get(genomeId);
+        return hubURLMap;
     }
 
     static List<Stanza> loadStanzas(String url) throws IOException {

@@ -74,8 +74,8 @@ import java.util.stream.Stream;
 public class GenomeManager {
 
     public static final String UPDATE_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.";
-    public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  You can change these selections later " +
-            "using the 'Genomes > Select Genome Annotations...' menu.";
+    public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  " +
+            "You can change these selections later using the 'Genomes > Select Genome Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeManager theInstance;
@@ -172,11 +172,13 @@ public class GenomeManager {
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
 
-            // Add hubs from auxillary list
-            List<String> hubUrls = HubParser.getHubURLs(newGenome.getUCSCId());
-            if(hubUrls != null && !hubUrls.isEmpty()) {
-                hubUrls = hubUrls.stream().filter(hubUrl -> !newGenome.hasHub(hubUrl)).collect(Collectors.toList());
-                newGenome.addTrackHubs(HubParser.loadHubs(newGenome.getUCSCId(), hubUrls));
+            // Add hubs from auxillary list.  This is provided to support older genome files that do not specify hubs.
+            if(newGenome.getTrackHubs().isEmpty()) {
+                Map<String, List<String>> hubUrlMap = HubParser.getHubURLs();
+                List<String> hubUrls = hubUrlMap.get(newGenome.getUCSCId());
+                if (hubUrls != null && !hubUrls.isEmpty()) {
+                    newGenome.addTrackHubs(HubParser.loadHubs(newGenome.getUCSCId(), hubUrls));
+                }
             }
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
@@ -395,6 +397,7 @@ public class GenomeManager {
      */
 
     private List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
+
         String annotationHub = config.getHubs().get(0);  // IGV convention
         Hub hub = HubParser.loadHub(annotationHub, config.getUcscID());
 

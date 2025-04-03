@@ -841,18 +841,12 @@ public class Genome {
         if (!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
             hub.setOrder(trackHubs.size());
             trackHubs.add(hub);
-            if (config.isFromJson()) {
-                config.addHub(hub.getUrl());
-            }
+            config.addHub(hub.getUrl());
         }
     }
 
     public void addTrackHubs(List<Hub> hubs) {
         trackHubs.addAll(hubs);
-    }
-
-    public boolean isFromJson() {
-        return config != null && config.isFromJson();
     }
 
     public GenomeConfig getConfig() {
