@@ -121,7 +121,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     } else if (genome != null) {
                         SelectHubTracksAction.selectAndLoadTracks(hub);
                         genome.addTrackHub(hub);
-                        IGVMenuBar.getInstance().updateTracksMenu(genome);
+                        IGVMenuBar.getInstance().updateMenus(genome);
                         GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
                     }
 
