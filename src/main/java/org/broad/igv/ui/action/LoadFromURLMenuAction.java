@@ -55,7 +55,7 @@ import java.util.List;
  */
 public class LoadFromURLMenuAction extends MenuAction {
 
-    public static final String LOAD_TRACKS_FROM_URL = "Load Track from URL...";
+    public static final String LOAD_TRACKS_FROM_URL = "Load Tracks from URL...";
     public static final String LOAD_HUB_FROM_URL = "Load Track Hub from URL...";
     public static final String LOAD_SESSION_FROM_URL = "Load Session from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
