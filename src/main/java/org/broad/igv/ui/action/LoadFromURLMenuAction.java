@@ -55,11 +55,11 @@ import java.util.List;
  */
 public class LoadFromURLMenuAction extends MenuAction {
 
-    public static final String LOAD_TRACKS_FROM_URL = "Load Tracks from URL...";
+    public static final String LOAD_TRACKS_FROM_URL = "Load Track from URL...";
+    public static final String LOAD_HUB_FROM_URL = "Load Track Hub from URL...";
     public static final String LOAD_SESSION_FROM_URL = "Load Session from URL...";
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
-    public static final String LOAD_TRACKHUB = "Load Track Hub...";
 
     private static final Logger log = LogManager.getLogger(LoadFromURLMenuAction.class);
     private final IGV igv;
@@ -77,16 +77,15 @@ public class LoadFromURLMenuAction extends MenuAction {
         String command = e.getActionCommand();
         boolean isHtsGet = command.equalsIgnoreCase(LOAD_FROM_HTSGET);
         if (command.equalsIgnoreCase(LOAD_TRACKS_FROM_URL) || isHtsGet) {
-
             LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
-
             if (!dlg.isCanceled()) {
                 loadUrls(dlg.getFileURLs(), dlg.getIndexURLs(), isHtsGet);
             }
         } else if ((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
 
-            final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
+            final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
+                    "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
 
             if (url != null && !url.trim().isBlank()) {
                 try {
@@ -97,40 +96,26 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
         } else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
 
-            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.QUESTION_MESSAGE);
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
+                    "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.QUESTION_MESSAGE);
+            if (url != null && !url.trim().isBlank()) {
+                loadGenomeFromUrl(url.trim());
+            }
 
-            loadGenomeFromUrl(url);
-
-        } else if ((command.equalsIgnoreCase(LOAD_TRACKHUB))) {
-            loadTrackHub(ta);
+        } else if ((command.equalsIgnoreCase(LOAD_HUB_FROM_URL))) {
+            String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
+                    "Enter URL to a  hub.txt file", JOptionPane.QUESTION_MESSAGE);
+            if (url != null && !url.trim().isBlank()) {
+                loadTrackHub(url.trim());
+            }
         }
     }
 
     private void loadUrls(List<String> inputs, List<String> indexes, boolean isHtsGet) {
 
         if (inputs.size() == 1 && HubGenomeLoader.isHubURL(inputs.getFirst())) {
+            loadTrackHub(inputs.getFirst());
 
-            LongRunningTask.submit(() -> {
-                try {
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                    String id = genome != null ? genome.getUCSCId() : null;
-
-                    Hub hub = HubParser.loadHub(inputs.getFirst(), id);
-                    if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcscID().equals(id))) {
-                        HubGenomeLoader.loadAssemblyHub(hub);
-                    } else if (genome != null) {
-                        SelectHubTracksAction.selectAndLoadTracks(hub);
-                        genome.addTrackHub(hub);
-                        IGVMenuBar.getInstance().updateMenus(genome);
-                        GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
-                    }
-
-                } catch (IOException ex) {
-                    log.error("Error loading tack hub", ex);
-                    MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
-
-                }
-            });
         } else if (inputs.size() == 1 && SessionReader.isSessionFile(inputs.getFirst())) {
             // Session URL
             String url = inputs.getFirst();
@@ -152,22 +137,29 @@ public class LoadFromURLMenuAction extends MenuAction {
     }
 
     // Note: this is not currently used
-    private static void loadTrackHub(JPanel ta) {
-        String urlOrAccension = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta, "Enter GCA or GCF accession, or URL to hub.txt file", JOptionPane.QUESTION_MESSAGE);
+    private static void loadTrackHub(final String url) {
 
-        if (urlOrAccension == null) return;
-        urlOrAccension = urlOrAccension.trim();
-        final String url;
-        if (urlOrAccension.startsWith("GC")) {
-            url = HubGenomeLoader.convertToHubURL(urlOrAccension);
-            if (!FileUtils.resourceExists(url)) {
-                MessageUtils.showMessage("Unrecognized hub identifier: " + urlOrAccension);
+        LongRunningTask.submit(() -> {
+            try {
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                String id = genome != null ? genome.getUCSCId() : null;
+
+                Hub hub = HubParser.loadHub(url, id);
+                if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcscID().equals(id))) {
+                    HubGenomeLoader.loadAssemblyHub(hub);
+                } else if (genome != null) {
+                    SelectHubTracksAction.selectAndLoadTracks(hub);
+                    genome.addTrackHub(hub);
+                    IGVMenuBar.getInstance().updateMenus(genome);
+                    GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
+                }
+
+            } catch (IOException ex) {
+                log.error("Error loading tack hub", ex);
+                MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
+
             }
-        } else {
-            url = urlOrAccension;
-        }
-
-        loadGenomeFromUrl(url);
+        });
     }
 
     private static void loadGenomeFromUrl(String url) {
