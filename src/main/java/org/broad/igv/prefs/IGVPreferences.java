@@ -445,6 +445,10 @@ public class IGVPreferences {
         return get(GENOMES_SERVER_URL);
     }
 
+    public String getBackupGenomeListURL() {
+        return get(BACKUP_GENOMES_SERVER_URL);
+    }
+
     public String getProvisioningURL() {
         return get(PROVISIONING_URL);
     }

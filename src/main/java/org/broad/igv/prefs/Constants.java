@@ -53,6 +53,7 @@ final public class Constants {
 
 
     public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
+    public static final String BACKUP_GENOMES_SERVER_URL = "IGV.backup.genome.sequence.dir";
     public static final String BLAT_URL = "BLAT_URL";
     public static final String BLAT_SERVER_TYPE = "BLAT_SERVER_TYPE";
     public static final String EXTVIEW_URL = "EXTVIEW_URL";

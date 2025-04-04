@@ -17,6 +17,7 @@ import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -332,61 +333,35 @@ public class GenomeListManager {
 
         if (hostedGenomesMap == null) {
             hostedGenomesMap = new HashMap<>();
-            BufferedReader dataReader = null;
-            InputStream inputStream = null;
-            String genomeListURLString = "";
-            try {
-                genomeListURLString = PreferencesManager.getPreferences().getGenomeListURL();
-                if (HttpUtils.isRemoteURL(genomeListURLString)) {
-                    URL serverGenomeURL = HttpUtils.createURL(genomeListURLString);
-                    inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
-                } else {
-                    File file = new File(genomeListURLString.startsWith("file:") ? (new URL(genomeListURLString)).getFile() : genomeListURLString);
-                    inputStream = new FileInputStream(file);
-                }
-                dataReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            try (BufferedReader dataReader = getGenomeServerListReader()) {
+
                 String genomeRecord;
                 while ((genomeRecord = dataReader.readLine()) != null) {
                     if (genomeRecord.startsWith("<") || genomeRecord.startsWith("#")) {
                         continue;
                     }
-                    if (genomeRecord != null) {
-                        genomeRecord = genomeRecord.trim();
-                        String[] fields = genomeRecord.split("\t");
-                        if ((fields != null) && (fields.length >= 3)) {
-                            String name = fields[0];
-                            String url = fields[1];
-                            String id = fields[2];
-                            GenomeListItem item = new GenomeListItem(name, url, id);
-                            hostedGenomesMap.put(item.getId(), item);
-                        } else {
-                            log.error("Found invalid server genome list record: " + genomeRecord);
-                        }
+                    genomeRecord = genomeRecord.trim();
+                    String[] fields = genomeRecord.split("\t");
+                    if (fields.length >= 3) {
+                        String name = fields[0];
+                        String url = fields[1];
+                        String id = fields[2];
+                        GenomeListItem item = new GenomeListItem(name, url, id);
+                        hostedGenomesMap.put(item.getId(), item);
+                    } else {
+                        log.error("Found invalid server genome list record: " + genomeRecord);
                     }
                 }
             } catch (Exception e) {
                 hostedGenomeListUnreachable = true;
                 hostedGenomesMap = Collections.emptyMap();
                 log.error("Error fetching genome list: ", e);
-                ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome server (" +
-                                genomeListURLString + ").    Only locally defined genomes will be available.",
+                ConfirmDialog.optionallyShowInfoDialog("Warning: could not connect to the genome servers." +
+                                "\nTried " + PreferencesManager.getPreferences().getGenomeListURL() +
+                                "\nand " + PreferencesManager.getPreferences().getBackupGenomeListURL() +
+                                ".\nOnly locally defined genomes will be available.",
                         Constants.SHOW_GENOME_SERVER_WARNING);
-
-            } finally {
-                if (dataReader != null) {
-                    try {
-                        dataReader.close();
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
-                }
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
-                }
             }
         }
 
@@ -394,6 +369,18 @@ public class GenomeListManager {
             IGVMenuBar.getInstance().notifyGenomeServerReachable(!hostedGenomeListUnreachable);
         }
         return hostedGenomesMap;
+    }
+
+    private static BufferedReader getGenomeServerListReader() throws IOException {
+        try {
+            return ParsingUtils.openBufferedReader(
+                    PreferencesManager.getPreferences().getGenomeListURL());
+        } catch (IOException e) {
+            log.error("Error fetching genome list: ", e);
+            return ParsingUtils.openBufferedReader(
+                    PreferencesManager.getPreferences().getBackupGenomeListURL());
+
+        }
     }
 
     /**
