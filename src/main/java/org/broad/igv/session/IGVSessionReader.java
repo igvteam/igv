@@ -81,7 +81,6 @@ import java.util.stream.Collectors;
 public class IGVSessionReader implements SessionReader {
 
     private static Logger log = LogManager.getLogger(IGVSessionReader.class);
-    private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
     private static Map<String, String> attributeSynonymMap = new HashMap();
     private static WeakReference<IGVSessionReader> currentReader;
 
@@ -99,7 +98,7 @@ public class IGVSessionReader implements SessionReader {
      */
     private final List<Pair<CombinedDataTrack, Element>> combinedDataSourceTracks = new ArrayList<>();
 
-    private Set<Track> allocatedToPanel;  // List of tracks allocated to panels, if Panel elements are present.
+    private Set<Track> allocatedToPanel = new LinkedHashSet<>();;  // List of tracks allocated to panels, if Panel elements are present.
 
     /**
      * Map of id -> track, for second pass through when tracks reference each other
@@ -157,17 +156,16 @@ public class IGVSessionReader implements SessionReader {
         // Add tracks not explicitly allocated to panels.   This can happen if a track resource path changes after
         // session created, and session is hand-editted.  It can also happen if the annotation paths for a genome change
         // after session creation.
-        if (allocatedToPanel != null) {
-            List<Track> unallocatedTracks = new ArrayList<>();
-            for (List<Track> tracks : allTracks.values()) {
-                for (Track t : tracks) {
-                    if (!allocatedToPanel.contains(t)) {
-                        unallocatedTracks.add(t);
-                    }
+
+        List<Track> unallocatedTracks = new ArrayList<>();
+        for (List<Track> tracks : allTracks.values()) {
+            for (Track t : tracks) {
+                if (allocatedToPanel == null ||!allocatedToPanel.contains(t)) {
+                    unallocatedTracks.add(t);
                 }
             }
-            addUnallocatedTracks(unallocatedTracks);
         }
+        addUnallocatedTracks(unallocatedTracks);
 
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
@@ -191,20 +189,18 @@ public class IGVSessionReader implements SessionReader {
      */
 
     private void processRootNode(Session session, Node node, String sessionPath) {
-
-        if ((node == null) || (session == null)) {
+        if (node == null || session == null) {
             MessageUtils.showMessage("Invalid session file: root node not found");
             return;
         }
 
         String nodeName = node.getNodeName();
-        if (!(nodeName.equalsIgnoreCase(SessionElement.GLOBAL) || nodeName.equalsIgnoreCase(SessionElement.SESSION))) {
-            MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element.  Found: " + nodeName);
+        if (!nodeName.equalsIgnoreCase(SessionElement.GLOBAL) && !nodeName.equalsIgnoreCase(SessionElement.SESSION)) {
+            MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element. Found: " + nodeName);
             return;
         }
 
         Element rootElement = (Element) node;
-
         String versionString = getAttribute(rootElement, SessionAttribute.VERSION);
         try {
             version = Integer.parseInt(versionString);
@@ -212,38 +208,37 @@ public class IGVSessionReader implements SessionReader {
             log.error("Non integer version number in session file: " + versionString);
         }
 
-        // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genomeId = getAttribute(rootElement, SessionAttribute.GENOME);
-        if (genomeId != null && genomeId.length() > 0) {
-            if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
-                // No genome change
-                igv.resetSession(sessionPath);
-                GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
-            } else {
-                // New genome
-                try {
-                    GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
-                    if (item != null) {
-                        genomePath = item.getPath();
-                        GenomeManager.getInstance().loadGenome(item.getPath());
-                    } else {
-                        genomePath = genomeId;
-                        if (!FileUtils.isRemote(genomePath) && !ParsingUtils.fileExists(genomePath)) {
-                            genomePath = getAbsolutePath(genomeId, sessionPath);
-                        }
-                        GenomeManager.getInstance().loadGenome(genomePath);
-                    }
-                } catch (IOException e) {
-                    MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
-                    log.error("Error loading genome: " + genomeId, e);
-                }
-            }
+        if (genomeId != null && !genomeId.isEmpty()) {
+            handleGenomeLoading(sessionPath, genomeId);
         }
 
         session.setLocus(getAttribute(rootElement, SessionAttribute.LOCUS));
         session.setGroupTracksBy(getAttribute(rootElement, SessionAttribute.GROUP_TRACKS_BY));
+        setNextAutoscaleGroup(session, getAttribute(rootElement, SessionAttribute.NEXT_AUTOSCALE_GROUP));
+        setRemoveEmptyTracks(session, getAttribute(rootElement, "removeEmptyTracks"));
 
-        String nextAutoscaleGroup = getAttribute(rootElement, SessionAttribute.NEXT_AUTOSCALE_GROUP);
+        session.setVersion(version);
+        process(session, rootElement.getChildNodes(), sessionPath);
+    }
+
+    private void handleGenomeLoading(String sessionPath, String genomeId) {
+        if (genomeId.equals(GenomeManager.getInstance().getGenomeId())) {
+            igv.resetSession(sessionPath);
+            GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
+        } else {
+            try {
+                GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
+                genomePath = (item != null) ? item.getPath() : getAbsolutePath(genomeId, sessionPath);
+                GenomeManager.getInstance().loadGenome(genomePath);
+            } catch (IOException e) {
+                MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
+                log.error("Error loading genome: " + genomeId, e);
+            }
+        }
+    }
+
+    private void setNextAutoscaleGroup(Session session, String nextAutoscaleGroup) {
         if (nextAutoscaleGroup != null) {
             try {
                 session.setNextAutoscaleGroup(Integer.parseInt(nextAutoscaleGroup));
@@ -251,21 +246,16 @@ public class IGVSessionReader implements SessionReader {
                 log.error("Error setting next autoscale group", e);
             }
         }
+    }
 
-        String removeEmptyTracks = getAttribute(rootElement, "removeEmptyTracks");
+    private void setRemoveEmptyTracks(Session session, String removeEmptyTracks) {
         if (removeEmptyTracks != null) {
             try {
-                Boolean b = Boolean.parseBoolean(removeEmptyTracks);
-                session.setRemoveEmptyPanels(b);
+                session.setRemoveEmptyPanels(Boolean.parseBoolean(removeEmptyTracks));
             } catch (Exception e) {
                 log.error("Error parsing removeEmptyTracks string: " + removeEmptyTracks, e);
             }
         }
-
-        session.setVersion(version);
-        NodeList elements = rootElement.getChildNodes();
-        process(session, elements, sessionPath);
-
     }
 
     private void addUnallocatedTracks(List<Track> tracks) {
@@ -775,8 +765,6 @@ public class IGVSessionReader implements SessionReader {
                 }
                 allTracks.get(id).add(track);
             }
-
-            allocatedToPanel = new LinkedHashSet<>();
 
             // Tracks, if any,  will be placed back as prescribed by panel elements
             removeAllTracksFromPanels();
