@@ -28,13 +28,17 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.*;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.broad.igv.util.StringUtils.stripQuotes;
 
 
 /**
@@ -161,6 +165,52 @@ public class TrackProperties {
 
     }
 
+    public TrackProperties(TrackConfig trackConfig) {
+
+        String color = trackConfig.getColor();
+        if (color != null) {
+            try {
+                this.setColor(ColorUtilities.stringToColor(color.toString()));
+            } catch (Exception e) {
+                log.error("Error parsing color string: " + color, e);
+            }
+        }
+        String altColor = trackConfig.getAltColor();
+        if (altColor != null) {
+            try {
+                this.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
+            } catch (Exception e) {
+                log.error("Error parsing color string: " + altColor, e);
+            }
+        }
+        String displayMode = trackConfig.getDisplayMode();
+        if (displayMode != null) {
+            try {
+                Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
+                this.setDisplayMode(dp);
+            } catch (Exception e) {
+                log.error("Error parsing displayMode " + displayMode, e);
+            }
+        }
+        Integer vizwindow = trackConfig.getVisibilityWindow();
+        if (vizwindow != null) {
+            this.setFeatureVisibilityWindow(vizwindow);
+        } else {
+            // If not explicitly set, assume whole chromosome viz window for annotations
+            this.setFeatureVisibilityWindow(-1);
+        }
+        if (trackConfig.getMin() != null) {
+            this.setMinValue(trackConfig.getMin());
+        }
+        if (trackConfig.getMax() != null) {
+            this.setMaxValue(trackConfig.getMax());
+        }
+        if(trackConfig.getAutoscale() != null) {
+            this.setAutoScale(trackConfig.getAutoscale());
+        }
+
+    }
+
     public void setType(String type) {
         this.type = type;
     }
@@ -168,6 +218,7 @@ public class TrackProperties {
     public String getType() {
         return type;
     }
+
     public String getFormat() {
         return format;
     }

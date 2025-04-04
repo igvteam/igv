@@ -25,9 +25,9 @@
 
 
 /*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
@@ -158,8 +158,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
     @Override
     public void renderAxis(Track track, RenderContext context, Rectangle arect) {
 
-        // For now disable axes for all chromosome view
-        if (context.getChr().equals(Globals.CHR_ALL) || context.multiframe) {
+        if (context.multiframe) {
             return;
         }
 
@@ -188,13 +187,11 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
 
-
             DataRange axisDefinition = track.getDataRange();
             float maxValue = axisDefinition.getMaximum();
             float baseValue = axisDefinition.getBaseline();
             float minValue = axisDefinition.getMinimum();
-
-
+            
             // Bottom (minimum tick mark)
             int pY = computeYPixelValue(drawingRect, axisDefinition, minValue);
 
@@ -260,7 +257,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             IGVPreferences prefs = PreferencesManager.getPreferences();
 
             Color altColor = track.getAltColor();
-            Color borderColor = (prefs.getAsBoolean(CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()) )
+            Color borderColor = (prefs.getAsBoolean(CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()))
                     ? track.getColor() : Color.lightGray;
             Graphics2D borderGraphics = context.getGraphic2DForColor(borderColor);
 

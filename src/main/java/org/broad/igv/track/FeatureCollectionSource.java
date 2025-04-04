@@ -127,7 +127,7 @@ public class FeatureCollectionSource implements FeatureSource {
                 FeatureUtils.sortFeatureList(featureList);
             }
 
-            if (featureMap.size() < 100 && genome != null && genome.supportsWholeGenomeView()) {
+            if (featureMap.size() < 100 && genome != null) {
                 sampleGenomeFeatures();
             }
     }

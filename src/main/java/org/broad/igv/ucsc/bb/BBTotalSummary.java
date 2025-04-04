@@ -9,7 +9,6 @@ public class BBTotalSummary {
     public double sumData;
     public double sumSquares;
     public double mean;
-    public double stddev;
 
     static BBTotalSummary parseSummary(UnsignedByteBuffer buffer) {
         BBTotalSummary totalSummary = new BBTotalSummary();
@@ -18,18 +17,16 @@ public class BBTotalSummary {
         totalSummary.maxVal = buffer.getDouble();
         totalSummary.sumData = buffer.getDouble();
         totalSummary.sumSquares = buffer.getDouble();
-        totalSummary.computeStats();
+        totalSummary.mean = totalSummary.basesCovered > 0 ? totalSummary.sumData / totalSummary.basesCovered : 0;
         return totalSummary;
     }
 
-    private void computeStats() {
-
-        long n = this.basesCovered;
-        if (n > 2) {
-            this.mean = this.sumData / n;
-            this.stddev = Math.sqrt(this.sumSquares / (n - 1));
-        }
+    public String printString() {
+        return "basesCovered " + basesCovered + "\n" +
+                "minVal " + minVal + "\n" +
+                "maxVal " + maxVal + "\n" +
+                "sumData " + sumData + "\n" +
+                "sumSquares " + sumSquares + "\n" +
+                "mean " + mean + "\n";
     }
-
-
 }
