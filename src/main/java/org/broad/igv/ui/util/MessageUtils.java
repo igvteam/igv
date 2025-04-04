@@ -72,7 +72,7 @@ public class MessageUtils {
 
     public static void showMessage(Level level, String message) {
 
-        if(level != null) log.log(level, message);
+        if (level != null) log.log(level, message);
         boolean showDialog = !(Globals.isHeadless() || Globals.isSuppressMessages() || Globals.isTesting() || Globals.isBatch());
         if (showDialog) {
             UIUtilities.invokeAndWaitOnEventThread(() -> {
@@ -148,15 +148,8 @@ public class MessageUtils {
                     returnValue.value = (opt == JOptionPane.YES_OPTION);
                 }
             };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
+
+            UIUtilities.invokeAndWaitOnEventThread(runnable);
 
             return (Boolean) (returnValue.value);
 
@@ -181,15 +174,8 @@ public class MessageUtils {
                 String val = JOptionPane.showInputDialog(parent, actMsg, defaultValue);
                 returnValue.value = val;
             };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
+
+            UIUtilities.invokeAndWaitOnEventThread(runnable);
 
             return (String) (returnValue.value);
         }
@@ -209,15 +195,8 @@ public class MessageUtils {
                     returnValue.value = val;
                 }
             };
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (InterruptedException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                log.error("Error in showMessage", e);
-                throw new RuntimeException(e.getCause());
-            }
+
+            UIUtilities.invokeAndWaitOnEventThread(runnable);
 
             return (String) (returnValue.value);
         }
@@ -252,7 +231,7 @@ public class MessageUtils {
 
 
         // Test on swing thread
-        SwingUtilities.invokeLater(runnable);
+        UIUtilities.invokeOnEventThread(runnable);
 
     }
 

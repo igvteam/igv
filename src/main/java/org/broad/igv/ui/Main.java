@@ -35,6 +35,7 @@ import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
@@ -113,7 +114,7 @@ public class Main {
             open(frame, igvArgs);
         };
 
-        SwingUtilities.invokeLater(runnable);
+        UIUtilities.invokeOnEventThread(runnable);
 
     }
 

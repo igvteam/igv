@@ -23,7 +23,7 @@ public class HubGenomeLoader extends GenomeLoader {
     }
 
     public static boolean isHubURL(String obj) {
-        return obj.endsWith("/hub.txt");
+        return obj != null && obj.toLowerCase().endsWith("hub.txt");       // <= very crude, perhaps read the first line
     }
 
     public static String convertToHubURL(String accension) {

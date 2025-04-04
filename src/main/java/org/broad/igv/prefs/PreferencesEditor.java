@@ -39,11 +39,11 @@ public class PreferencesEditor {
     public static void open(Frame parent) throws IOException {
         List<PreferencesManager.PreferenceGroup> preferenceGroups = PreferencesManager.loadPreferenceList();
 
-        SwingUtilities.invokeLater(() -> {
+        UIUtilities.invokeOnEventThread(() -> {
             JDialog frame = new JDialog(parent, "Preferences", true);
             final JPanel panel = new JPanel();
 
-            SwingUtilities.invokeLater(() -> {
+            UIUtilities.invokeOnEventThread(() -> {
                 init(frame, panel, preferenceGroups);
             });
             panel.setPreferredSize(new Dimension(850, 590));
@@ -292,7 +292,7 @@ public class PreferencesEditor {
                         final File newDirectory = FileDialogUtils.chooseDirectory("Select cache directory", DirectoryManager.getUserDefaultDirectory());
                         if (newDirectory != null && !newDirectory.equals(directory)) {
                             DirectoryManager.moveDirectoryContents(directory, newDirectory);
-                            SwingUtilities.invokeLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
+                            UIUtilities.invokeOnEventThread(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
                         }
                     });
                 });
@@ -323,7 +323,7 @@ public class PreferencesEditor {
                         final File newDirectory = FileDialogUtils.chooseDirectory("Select IGV directory", DirectoryManager.getUserDefaultDirectory());
                         if (newDirectory != null && !newDirectory.equals(igvDirectory)) {
                             DirectoryManager.moveIGVDirectory(newDirectory);
-                            SwingUtilities.invokeLater(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
+                            UIUtilities.invokeOnEventThread(() -> currentDirectoryLabel.setText(newDirectory.getAbsolutePath()));
                         }
                     });
                 });
@@ -346,7 +346,7 @@ public class PreferencesEditor {
         cancelButton.setPreferredSize(new Dimension(100, 30));
         cancelButton.setMaximumSize(new Dimension(100, 30));
         cancelButton.addActionListener((event) -> {
-            SwingUtilities.invokeLater(() -> parent.setVisible(false));
+            UIUtilities.invokeOnEventThread(() -> parent.setVisible(false));
         });
 
         JButton saveButton = new JButton("Save");
@@ -355,7 +355,7 @@ public class PreferencesEditor {
         saveButton.setDefaultCapable(true);
         saveButton.addActionListener((event) -> {
             saveAction(event, updatedPreferencesMap);
-            SwingUtilities.invokeLater(() -> parent.setVisible(false));
+            UIUtilities.invokeOnEventThread(() -> parent.setVisible(false));
         });
 
         if (Globals.IS_MAC) {
