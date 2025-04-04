@@ -110,7 +110,7 @@ public class Hub {
             this.groupPriorityMap = new HashMap<>();
             for (Stanza g : groupStanzas) {
                 if (g.hasProperty("priority")) {
-                    this.groupPriorityMap.put(g.getProperty("name"), Integer.parseInt(g.getProperty("priority")) * 10);
+                    this.groupPriorityMap.put(g.getProperty("name"), (int) Double.parseDouble(g.getProperty("priority")) * 10);
                 }
             }
         }
