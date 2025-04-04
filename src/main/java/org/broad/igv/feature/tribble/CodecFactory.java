@@ -105,11 +105,11 @@ public class CodecFactory {
                 return new REPMaskCodec(genome);
             case "gff3":
             case "gvf":
-                return new GFFCodec(GFFCodec.Version.GFF3, genome);
+                return new GFFCodec(GFFCodec.Version.GFF3, genome, locator.getFilterTypes());
             case "gff":
-                return new GFFCodec(genome);
+                return new GFFCodec(genome, locator.getFilterTypes());
             case "gtf":
-                return new GFFCodec(GFFCodec.Version.GTF, genome);
+                return new GFFCodec(GFFCodec.Version.GTF, genome, locator.getFilterTypes());
             case "psl":
             case "pslx":
                 return new PSLCodec(genome);

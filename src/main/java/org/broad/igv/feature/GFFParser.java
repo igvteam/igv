@@ -54,7 +54,7 @@ public class GFFParser implements FeatureParser {
     private TrackProperties trackProperties = null;
 
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome) {
-        return loadFeatures(reader, genome, new GFFCodec(genome));
+        return loadFeatures(reader, genome, new GFFCodec(genome, null));
     }
 
     public List<htsjdk.tribble.Feature> loadFeatures(BufferedReader reader, Genome genome, GFFCodec codec) {

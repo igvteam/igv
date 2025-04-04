@@ -7,34 +7,35 @@ package org.broad.igv.feature.genome.load;
 
 public class TrackConfig implements Cloneable {
 
-    private String id;
-    private String name;
-    private String url;
-    private String indexURL;
-    private String trixURL;
-    private String format;
-    private String displayMode;
-    private String description;
-    private Boolean autoscale;
-    private Integer maxHeight;
-    private Integer height;
-    private Integer minHeight;
-    private String color;
-    private String altColor;
-    private Float min;
-    private Float max;
-    private Boolean visible;
-    private String infoURL;
-    private String searchIndex;
-
-    private String group;
-    private Integer order;
-    private Integer visibilityWindow;
-    private Boolean indexed;
-    private Boolean hidden;
-    private String html;
-    private String panelName;
-    private String labelField;
+public String id;
+    public String name;
+    public String url;
+    public String indexURL;
+    public String trixURL;
+    public String format;
+    public String displayMode;
+    public String description;
+    public Boolean autoscale;
+    public Integer maxHeight;
+    public Integer height;
+    public Integer minHeight;
+    public String color;
+    public String altColor;
+    public Float min;
+    public Float max;
+    public Boolean visible;
+    public String infoURL;
+    public String searchIndex;
+    public String group;
+    public Integer order;
+    public Integer visibilityWindow;
+    public Boolean indexed;
+    public Boolean hidden;
+    public String html;
+    public String panelName;
+    public String labelField;
+    public String [] filterTypes;
+    public String autoscaleGroup;
 
     public TrackConfig() {
     }
