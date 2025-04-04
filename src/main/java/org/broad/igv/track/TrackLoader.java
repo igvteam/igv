@@ -91,6 +91,8 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -127,9 +129,17 @@ public class TrackLoader {
 
             // Bed format has some specific subtypes, which are determined by examining the file contents
             if ("bed".equals(format)) {
+                String tmp;
                 try {
-                    String tmp = FileFormatUtils.determineFormat(locator.getPath());
-                    if(tmp != null && !tmp.equals("sampleinfo")) {
+                    if (locator.isDataUrl()) {
+                        String dataURL = locator.getPath();
+                        int commaIndex = dataURL.indexOf(',');
+                        String contents = URLDecoder.decode(dataURL.substring(commaIndex + 1), StandardCharsets.UTF_8);
+                        tmp = FileFormatUtils.determineFormat(contents.getBytes());
+                    } else {
+                        tmp = FileFormatUtils.determineFormat(locator.getPath());
+                    }
+                    if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
                     }

@@ -1,18 +1,12 @@
 genome hg19
 new
 load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
-snapshotDirectory $SCRIPT_DIR/snapshots/multiLocus
+snapshotDirectory $SCRIPT_DIR/snapshots
 goto 1:16780041-16782041 1:17553189-17555189
 snapshot multiLocus1.png
-goto 2:16780041-16782041 2:17553189-17555189
-snapshot multiLocus2.png
-goto 3:16780041-16782041 3:17553189-17555189
-snapshot multiLocus3.png
 goto 8:16780041-16782041
-snapshot multiLocus4.png
-goto 7:16780041-16782041
-snapshot multiLocus5.png
+snapshot multiLocus2.png
 goto 1:16780041-16782041 1:17553189-17555189
-snapshot multiLocus6.png
-goto 2:16780041-16782041 2:17553189-17555189
-snapshot multiLocus7.png
+snapshot multiLocus3.png
+new
+

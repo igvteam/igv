@@ -1,3 +1,4 @@
+snapshotDirectory $SCRIPT_DIR/snapshots
 new
 maxPanelHeight 10000
 goto chr1:637-9,175

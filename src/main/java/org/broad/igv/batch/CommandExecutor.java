@@ -784,6 +784,7 @@ public class CommandExecutor {
                         rl.setName(names.get(fi));
                     } else if (isDataURL) {
                         rl.setName("Data");
+                        rl.setDataURL(true);
                     }
                     if (indexFiles != null) {
                         rl.setIndexPath(indexFiles.get(fi));
