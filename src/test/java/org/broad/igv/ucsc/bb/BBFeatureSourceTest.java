@@ -44,6 +44,34 @@ public class BBFeatureSourceTest {
     }
 
     @Test
+    public void testbed9_2_prelod () throws IOException {
+        String path = TestUtils.DATA_DIR + "bb/myBigBed2.bb";
+        String chr = "chr7";
+        int start = 0;
+        int end = Integer.MAX_VALUE;
+
+        Genome genome = null;
+        BBFile reader = new BBFile(path, genome);
+        reader.preload();
+        BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
+
+        Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
+
+        List<BasicFeature> features = new ArrayList<>();
+        while(iter.hasNext()) {
+            features.add(iter.next());
+        }
+
+        assertEquals(3339, features.size());   // Verified in iPad app
+
+        //chr7	773975	792642	uc003sjb.2	0	+	776710	791816	0,255,0	HEATR2	Q86Y56-3
+        BasicFeature f = features.get(20);
+        assertEquals(f.getStart(), 773975);
+        assertEquals(f.getAttribute("geneSymbol"), "HEATR2");
+        assertEquals(f.getAttribute("spID"), "Q86Y56-3");
+    }
+
+    @Test
     public void testChromAlias () throws IOException {
         String path = TestUtils.DATA_DIR + "bb/myBigBed2.bb";
         String chr = "7";
@@ -85,6 +113,33 @@ public class BBFeatureSourceTest {
 
 
        Iterator<BasicFeature> iter =  bbSource.getFeatures(chr, start, end);
+        int count = 0;
+        while (iter.hasNext()) {
+            BasicFeature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
+            count++;
+        }
+        assertEquals("Feature count", 225, count);
+
+    }
+
+    @Test
+    public void testBigBed_preload() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/chr21.refseq.bb";
+        BBFile bbReader = new BBFile(path, null);
+        bbReader.preload();
+        assertTrue(bbReader.getType() == BBFile.Type.BIGBED);
+
+        BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
+
+        String chr = "chr21";
+        int start = 26490012;
+        int end = 42182827;
+
+
+        Iterator<BasicFeature> iter =  bbSource.getFeatures(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
             BasicFeature f = iter.next();

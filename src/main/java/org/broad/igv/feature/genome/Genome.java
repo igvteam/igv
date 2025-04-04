@@ -96,7 +96,8 @@ public class Genome {
     private String homeChromosome;
     private String defaultPos;
     private String nameSet;
-    private Hub hub;
+    private  Hub hub;
+
 
     public Genome(GenomeConfig config) throws IOException {
 
@@ -204,8 +205,8 @@ public class Genome {
             chromAliasSource = (new ChromAliasFile(config.getAliasURL(), chromosomeNames));
         } else if (config.getChromAliasBbURL() != null) {
             chromAliasSource = (new ChromAliasBB(config.getChromAliasBbURL(), this));
-            if (chromosomeNames == null || chromosomeNames.size() == 0) {
-                chromosomeNames = Arrays.asList(((ChromAliasBB) chromAliasSource).getChromosomeNames());
+            if(chromosomeNames != null && !chromosomeNames.isEmpty()) {
+                ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
             }
         } else {
             chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));

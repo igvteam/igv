@@ -260,8 +260,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                 String chrName = FrameManager.getDefaultFrame().getChrName();
                 roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
                 zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
-                if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
-                    chromosomeComboBox.setSelectedItem(chrName);
+                String displayName = GenomeManager.getInstance().getCurrentGenome().getChromosomeDisplayName(chrName);
+                if (!displayName.equals(chromosomeComboBox.getSelectedItem())) {
+                    chromosomeComboBox.setSelectedItem(displayName);
                 }
             }
 
@@ -294,7 +295,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         if ((searchText != null) && (searchText.length() > 0)) {
             String homeChr = GenomeManager.getInstance().getCurrentGenome().getHomeChromosome();
-            if (searchText.equalsIgnoreCase("home")) {
+            if (searchText.equalsIgnoreCase(homeChr)) {
                 homeButtonActionPerformed(null);
             } else {
                 searchTextField.setText(searchText);

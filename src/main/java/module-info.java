@@ -5,7 +5,6 @@ module org.igv {
     exports org.broad.igv.ucsc.twobit;
     exports org.broad.igv.ucsc.bb;
     exports org.broad.igv.ucsc.bb.codecs;
-    exports org.broad.igv.ucsc.hub;
     exports org.broad.igv.prefs;
     exports org.broad.igv.ui;
     exports org.broad.igv.ui.svg;

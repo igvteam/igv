@@ -168,7 +168,7 @@ public class TrackLoader {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (format.equals("trio")) {
                 loadTrioData(locator);
-            } else if (format.equals("gct") || format.equals("res") || format.equals("tab")) {
+            } else if (format.equals("gct")) {
                 loadGctFile(locator, newTracks, genome);
             } else if (format.equals("gbk") || format.equals("gb")) {
                 loadGbkFile(locator, newTracks, genome);

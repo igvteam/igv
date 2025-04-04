@@ -662,36 +662,45 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * <p/>
      * NOTE:  The sample names are actually drawn in the drawBackground method.
      *
-     * @param g2D
+     * @param g
      * @param trackRectangle
      * @param visibleRectangle
      */
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
-        top = trackRectangle.y;
+        Graphics2D g2D = null;
 
-        Rectangle rect = new Rectangle(trackRectangle);
-        g2D.setFont(FontManager.getFont(getFontSize()));
-        g2D.setColor(BAND2_COLOR);
+        try {
+            g2D = (Graphics2D) g.create();
+            top = trackRectangle.y;
+
+            Rectangle rect = new Rectangle(trackRectangle);
+            g2D.setFont(FontManager.getFont(getFontSize()));
+            g2D.setColor(BAND2_COLOR);
 
 
-        g2D.setColor(Color.black);
-        rect.height = getVariantsHeight();
-        if (rect.intersects(visibleRectangle)) {
-            Rectangle intersectedRect = rect.intersection(visibleRectangle);
-            GraphicUtils.drawWrappedText(getName(), intersectedRect, g2D, false);
+            g2D.setColor(Color.black);
+            rect.height = getVariantsHeight();
+            if (rect.intersects(visibleRectangle)) {
+                Rectangle intersectedRect = rect.intersection(visibleRectangle);
+                GraphicUtils.drawWrappedText(getName(), intersectedRect, g2D, false);
+            }
+
+            rect.y += rect.height;
+            rect.height = getGenotypeBandHeight();
+
+            // The sample bounds list will get reset when  the names are drawn.
+            sampleBounds.clear();
+            drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
+
+
+            renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
+        } finally {
+            if(g2D != null) {
+                g2D.dispose();
+            }
         }
-
-        rect.y += rect.height;
-        rect.height = getGenotypeBandHeight();
-
-        // The sample bounds list will get reset when  the names are drawn.
-        sampleBounds.clear();
-        drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
-
-
-        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
 
     }
 
