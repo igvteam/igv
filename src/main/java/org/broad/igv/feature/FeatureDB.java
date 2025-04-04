@@ -81,50 +81,17 @@ public class FeatureDB {
             }
         }
     }
-
-    public static void removeFeature(IGVNamedFeature feature, Genome genome) {
-
-        final String name = feature.getName();
-        if (name != null && name.length() > 0 && !name.equals(".")) {
-            featureMap.remove(name.toUpperCase());
-        }
-        if (feature instanceof BasicFeature) {
-            final BasicFeature igvFeature = (BasicFeature) feature;
-            final String id = igvFeature.getIdentifier();
-            if (id != null && id.length() > 0) {
-                featureMap.remove(id.toUpperCase());
-            }
-
-            removeByAttributes(igvFeature, genome);
-
-            List<Exon> exons = igvFeature.getExons();
-            if (exons != null) {
-                for (Exon exon : exons) {
-                    removeByAttributes(exon, genome);
-                }
-            }
-        }
-    }
-
+    
     private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
         List<String> attributeKeys = igvFeature.getAttributeKeys();
         for (String key : attributeKeys) {
             String value = igvFeature.getAttribute(key);
-            if (value.length() < 20) {
+            if (value.length() < 50) {
                 put(value, igvFeature, genome);
             }
         }
     }
 
-    private static void removeByAttributes(IGVFeature igvFeature, Genome genome) {
-        List<String> attributeKeys = igvFeature.getAttributeKeys();
-        for (String key : attributeKeys) {
-            String value = igvFeature.getAttribute(key);
-            if (value.length() < 20) {
-                featureMap.remove(value.toUpperCase());
-            }
-        }
-    }
 
     /**
      * Add feature to the list of features associated with this name.
