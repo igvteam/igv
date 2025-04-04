@@ -35,6 +35,7 @@ import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.session.SessionReader;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ui.IGV;
@@ -58,6 +59,8 @@ public class LoadFromURLMenuAction extends MenuAction {
     public static final String LOAD_TRACKS_FROM_URL = "Load Tracks from URL...";
     public static final String LOAD_HUB_FROM_URL = "Load Track Hub from URL...";
     public static final String LOAD_SESSION_FROM_URL = "Load Session from URL...";
+    public static final String LOAD_SAMPLEINFO_FROM_URL = "Load Sample Info from URL...";
+
     public static final String LOAD_GENOME_FROM_URL = "Load Genome from URL...";
     public static final String LOAD_FROM_HTSGET = "Load from htsget Server...";
 
@@ -76,12 +79,26 @@ public class LoadFromURLMenuAction extends MenuAction {
         ta.setPreferredSize(new Dimension(600, 20));
         String command = e.getActionCommand();
         boolean isHtsGet = command.equalsIgnoreCase(LOAD_FROM_HTSGET);
+
         if (command.equalsIgnoreCase(LOAD_TRACKS_FROM_URL) || isHtsGet) {
             LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
             if (!dlg.isCanceled()) {
                 loadUrls(dlg.getFileURLs(), dlg.getIndexURLs(), isHtsGet);
             }
+        } else if (command.equalsIgnoreCase(LOAD_SAMPLEINFO_FROM_URL)) {
+            final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
+                    "Enter URL to sample info file", JOptionPane.QUESTION_MESSAGE);
+
+            if (url != null && !url.trim().isBlank()) {
+                try {
+                    ResourceLocator locator = new ResourceLocator(url.trim());
+                    LongRunningTask.submit(() -> AttributeManager.getInstance().loadSampleInfo(locator));
+                } catch (Exception ex) {
+                    MessageUtils.showMessage("Error loading sample info: " + ex.getMessage());
+                }
+            }
+
         } else if ((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
 
             final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
