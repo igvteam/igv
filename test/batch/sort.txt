@@ -12,18 +12,18 @@ sort BASE chr17:7,579,801 reverse
 snapshot sortByBaseReverse.png
 sort BASE reverse
 snapshot sortByBaseReverse2.png
+# Sort by base at an insertion
+goto chr17:7,571,487
+sort BASE
+snapshot sortByBaseInsertion.png
+sort BASE reverse
+snapshot sortByBaseInsertionReverse.png
 # Sort by aligned length at a deletion
 goto chr17:7,579,651
 sort ALIGNED_READ_LENGTH
 snapshot sortByAlignedLength.png
 sort ALIGNED_READ_LENGTH  reverse
 snapshot sortByAlignedLengthReverse.png
-# Sort by aligned length at an insertion
-goto chr17:7,571,487
-sort ALIGNED_READ_LENGTH
-snapshot sortByAlignedLengthInsertion.png
-sort ALIGNED_READ_LENGTH reverse
-snapshot sortByAlignedLengthInsertionReverse.png
 # Color and sort by tag
 colorBy TAG SM
 sort TAG SM

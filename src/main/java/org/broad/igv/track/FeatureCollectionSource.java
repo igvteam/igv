@@ -102,6 +102,11 @@ public class FeatureCollectionSource implements FeatureSource {
         return featureMap.get(chr);
     }
 
+    @Override
+    public int getFeatureWindowSize() {
+        return FeatureSource.super.getFeatureWindowSize();
+    }
+
     private void initFeatures(Iterable<? extends Feature> allFeatures) {
         // Separate features by chromosome
 
@@ -122,7 +127,7 @@ public class FeatureCollectionSource implements FeatureSource {
                 FeatureUtils.sortFeatureList(featureList);
             }
 
-            if (featureMap.size() < 100) {
+            if (featureMap.size() < 100 && genome != null && genome.supportsWholeGenomeView()) {
                 sampleGenomeFeatures();
             }
     }
