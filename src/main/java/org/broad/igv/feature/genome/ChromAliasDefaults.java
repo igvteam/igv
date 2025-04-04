@@ -31,7 +31,7 @@ public class ChromAliasDefaults extends ChromAliasSource {
             if (version >= 0) {
                 int idx = name.indexOf(".");
                 String alias = name.substring(0, idx);
-                if(!allNames.contains(alias)) {
+                if (!allNames.contains(alias)) {
                     record.put("ncbi-noversion", alias);
                 }
             }
@@ -55,66 +55,69 @@ public class ChromAliasDefaults extends ChromAliasSource {
                 record.put("*", "chrX");
             } else if (name.equals("Y")) {
                 record.put("*", "chrY");
-            } else {
-                // Special cases for human and mouse
-                if (id.startsWith("hg") || id.equals("1kg_ref") || id.equals("b37")) {
-                    switch (name) {
-                        case "chrX":
-                            record.put("ncbi", "23");
-                            skipRest = true;
-                            break;
-                        case "chrY":
-                            record.put("ncbi", "24");
-                            skipRest = true;
-                            break;
-                    }
-                } else if (id.startsWith("GRCh")) {
-                    switch (name) {
-                        case "23":
-                            record.put("ucsc", "chrX");
-                            skipRest = true;
-                            break;
-                        case "24":
-                            record.put("ucsc", "chrY");
-                            skipRest = true;
-                            break;
-                    }
-                } else if (id.startsWith("mm") || id.startsWith("rheMac")) {
-                    switch (name) {
-                        case "chrX":
-                            record.put("ncbi", "21");
-                            skipRest = true;
-                            break;
-                        case "chrY":
-                            record.put("ncbi", "22");
-                            skipRest = true;
-                            break;
-                    }
-                } else if (id.startsWith("GRCm")) {
-                    switch (name) {
-                        case "21":
-                            record.put("ucsc", "chrX");
-                            skipRest = true;
-                            break;
-                        case "22":
-                            record.put("ucsc", "chrY");
-                            skipRest = true;
-                            break;
-                    }
-                }
-                if (skipRest) continue;
+            }
 
-                //
-                if (name.equals("chrM")) {
-                    record.put("ncbi", "MT");
-                } else if (name.equals("MT")) {
-                    record.put("ucsc", "chrM");
-                } else if (name.toLowerCase().startsWith("chr")) {
-                    record.put("ncbi", name.substring(3));
-                } else if (StringUtils.isSmallPositiveInteger(name)) {
-                    record.put("ucsc", "chr" + name);
+            // Special cases for human and mouse
+            if (id.startsWith("hg") || id.equals("1kg_ref") || id.equals("b37")) {
+                switch (name) {
+                    case "chrX":
+                        record.put("ncbi", "23");
+                        skipRest = true;
+                        break;
+                    case "chrY":
+                        record.put("ncbi", "24");
+                        skipRest = true;
+                        break;
+                }
+            } else if (id.startsWith("GRCh")) {
+                switch (name) {
+                    case "23":
+                        record.put("ucsc", "chrX");
+                        record.put("*", "X");
+                        skipRest = true;
+                        break;
+                    case "24":
+                        record.put("ucsc", "chrY");
+                        record.put("*", "Y");
+                        skipRest = true;
+                        break;
+                }
+            } else if (id.startsWith("mm") || id.startsWith("rheMac")) {
+                switch (name) {
+                    case "chrX":
+                        record.put("ncbi", "21");
+                        skipRest = true;
+                        break;
+                    case "chrY":
+                        record.put("ncbi", "22");
+                        skipRest = true;
+                        break;
+                }
+            } else if (id.startsWith("GRCm")) {
+                switch (name) {
+                    case "21":
+                        record.put("ucsc", "chrX");
+                        skipRest = true;
+                        break;
+                    case "22":
+                        record.put("ucsc", "chrY");
+                        skipRest = true;
+                        break;
                 }
             }
+            if (skipRest) continue;
+
+            //
+            if (name.equals("chrM")) {
+                record.put("ncbi", "MT");
+            } else if (name.equals("MT")) {
+                record.put("ucsc", "chrM");
+            } else if (name.toLowerCase().startsWith("chr")) {
+                record.put("ncbi", name.substring(3));
+            } else if (StringUtils.isSmallPositiveInteger(name)) {
+                record.put("ucsc", "chr" + name);
+            }
+
         }
 
         for (ChromAlias rec : aliasRecords) {
