@@ -690,6 +690,10 @@ public class ResourceLocator {
         return autoscaleGroup;
     }
 
+    public String[] getFilterTypes() {
+        return filterTypes;
+    }
+
     /**
      * FOR LOAD FROM SERVER
      */
