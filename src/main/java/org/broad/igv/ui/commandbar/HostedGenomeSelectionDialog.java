@@ -66,9 +66,6 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private JTextField genomeFilter;
     private JList<GenomeListItem> genomeList;
-    private JCheckBox downloadSequenceCB;
-    private JCheckBox downloadAnnotationsCB;
-
 
     JPanel downloadSequencePanel;
     ButtonGroup downloadSequenceGroup;
@@ -82,71 +79,6 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private boolean isCanceled;
     private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
-
-
-    /**
-     * Open a selection list to load a genome from the server.   This method is static because its used by multiple
-     * UI elements  (menu bar and genome selection pulldown).
-     */
-    public static void downloadHostedGenome() {
-
-        Runnable showDialog = () -> {
-
-            Collection<GenomeListItem> inputListItems = GenomeListManager.getInstance().getHostedGenomeList();
-            if (inputListItems == null) {
-                return;
-            }
-            HostedGenomeSelectionDialog dialog = new HostedGenomeSelectionDialog(IGV.getInstance().getMainFrame(), inputListItems);
-            UIUtilities.invokeAndWaitOnEventThread(() -> dialog.setVisible(true));
-
-            if (dialog.isCanceled()) {
-                IGVEventBus.getInstance().post(new GenomeResetEvent());
-            } else {
-
-                GenomeListItem selectedItem = dialog.getSelectedValue();
-                if (selectedItem == null) return;
-
-                boolean downloadSequence = dialog.isDownloadSequence();
-                boolean downloadAnnotations = dialog.isDownloadAnnotations();
-
-                File downloadPath = GenomeManager.getInstance().downloadGenome(selectedItem.getPath(), downloadSequence, downloadAnnotations);
-
-                try {
-                    if (downloadPath != null) {
-                        GenomeManager.getInstance().loadGenome(downloadPath.getAbsolutePath());
-                    } else {
-                        GenomeManager.getInstance().loadGenome(selectedItem.getPath());
-                    }
-
-                    // Legacy cleanup - json takes precedence over ".genome"
-                    if (selectedItem.getPath().endsWith(".json")) {
-                        removeDotGenomeFile(selectedItem.getId());
-                    }
-                } catch (IOException e) {
-                    MessageUtils.showErrorMessage("Error loading genome " + selectedItem.getDisplayableName(), e);
-                    log.error("Error loading genome " + selectedItem.getDisplayableName(), e);
-                }
-            }
-        };
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            LongRunningTask.submit(showDialog);
-        } else {
-            showDialog.run();
-        }
-    }
-
-    private static void removeDotGenomeFile(String id) {
-        try {
-            File dotGenomeFile = new File(DirectoryManager.getGenomeCacheDirectory(), id + ".genome");
-            if (dotGenomeFile.exists()) {
-                dotGenomeFile.delete();
-            }
-        } catch (Exception e) {
-            // If anything goes wrong, just log it, this cleanup is not essential
-            log.error("Error deleting .genome file", e);
-        }
-    }
 
     /**
      * @param parent
@@ -183,18 +115,6 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
     private void genomeEntryKeyReleased(KeyEvent e) {
         rebuildHostedGenomeList(genomeFilter.getText());
-    }
-
-    public GenomeListItem getSelectedValue() {
-        return isCanceled ? null : genomeList.getSelectedValue();
-    }
-
-    public boolean isDownloadSequence() {
-        return downloadSequenceRB.isSelected();
-    }
-
-    public boolean isDownloadAnnotations() {
-        return downloadAnnotationsRB.isSelected();
     }
 
     public boolean isCanceled() {

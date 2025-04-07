@@ -42,6 +42,8 @@ import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.commandbar.HostedGenomeSelectionDialog;
@@ -255,7 +257,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         p1.add(downloadAnnotationsPanel);
         p1.setBackground(Color.RED);
 
-        if(includeDownloadButtons) {
+        if (includeDownloadButtons) {
             contentPanel.add(p1);
         }
 
@@ -289,7 +291,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
         outerPanel.add(buttonBar, BorderLayout.SOUTH);
 
-        if(this.model.getColumnCount() == 1) {
+        if (this.model.getColumnCount() == 1) {
             setSize(500, 620);
         } else {
             setSize(1000, 620);
@@ -304,59 +306,60 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
             if (rec != null) {
 
-                if ("IGV".equals(rec.getAttributeValue("_source"))) {
+                final String url = rec.getAttributeValue("url");
+                final String id = rec.getAttributeValue("accession");
 
-                    final String url = rec.getAttributeValue("url");
-                    final String id = rec.getAttributeValue("accession");
+                Runnable showDialog = () -> {
+                    try {
 
-                    Runnable showDialog = () -> {
-                        try {
-                            GenomeConfig config = (new JsonGenomeLoader(url)).loadGenomeConfig();
-
-                            // If config has a hub,  allow changing default annotation.
-                            if (config.getHubs() != null && config.getHubs().size() > 0) {
-
-                                List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-                                if (selectedTracks != null && selectedTracks.size() > 0) {
-                                    config.setTracks(selectedTracks);
-                                }
-                            }
-
-                            File localFile = GenomeDownloadUtils.downloadGenome(config,
-                                    downloadSequenceRB.isSelected(),
-                                    downloadAnnotationsRB.isSelected());
-
-                            if (localFile != null) {
-                                GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
-                            } else {
-                                GenomeManager.getInstance().loadGenome(url);
-                            }
-
-                            // Legacy cleanup - json takes precedence over ".genome"
-                            if (url.endsWith(".json")) {
-                                removeDotGenomeFile(id);
-                            }
-                        } catch (IOException e) {
-                            MessageUtils.showErrorMessage("Error loading genome " + url, e);
-                            log.error("Error loading genome " + url, e);
+                        GenomeConfig config;
+                        if (url != null && url.endsWith(".json")) {
+                            config = (new JsonGenomeLoader(url)).loadGenomeConfig();
+                        } else {
+                            String accession = rec.getAttributeValue("accession");
+                            String hubURL = HubGenomeLoader.convertToHubURL(accession);
+                            Hub hub = HubParser.loadAssemblyHub(hubURL);
+                            config = hub.getGenomeConfig();
+                            config.setHubs(Arrays.asList(hubURL));
                         }
-                    };
+                        // If config has a hub,  allow changing default annotation.
+                        if (config.getHubs() != null && config.getHubs().size() > 0) {
 
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        LongRunningTask.submit(showDialog);
-                    } else {
-                        showDialog.run();
+                            List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+                            if (selectedTracks != null && selectedTracks.size() > 0) {
+                                config.setTracks(selectedTracks);
+                            }
+                        }
+
+                        File localFile = GenomeDownloadUtils.downloadGenome(config,
+                                downloadSequenceRB.isSelected(),
+                                downloadAnnotationsRB.isSelected());
+
+                        if (localFile != null) {
+                            GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
+                        } else {
+                            GenomeManager.getInstance().loadGenome(url);
+                        }
+
+                        // Legacy cleanup
+                        removeDotGenomeFile(id);
+
+                    } catch (IOException e) {
+                        MessageUtils.showErrorMessage("Error loading genome " + url, e);
+                        log.error("Error loading genome " + url, e);
                     }
+                };
 
+                if (SwingUtilities.isEventDispatchThread()) {
+                    LongRunningTask.submit(showDialog);
                 } else {
-                    String accession = rec.getAttributeValue("accession");
-                    String url = HubGenomeLoader.convertToHubURL(accession);
-                    HubGenomeLoader.loadGenome(url);
+                    showDialog.run();
                 }
+
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             log.error(ex);
-            MessageUtils.showMessage("Error loading GenArk hub: " + ex.getMessage());
+            MessageUtils.showMessage("Error loading genome: " + ex.getMessage());
         }
 
         setVisible(false);
