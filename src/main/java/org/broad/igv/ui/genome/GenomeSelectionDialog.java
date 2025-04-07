@@ -53,6 +53,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -91,11 +93,11 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private GenomeTableModel model;
     private boolean canceled;
 
-    public GenomeSelectionDialog(Frame owner, GenomeTableModel model) {
+    public GenomeSelectionDialog(Frame owner, GenomeTableModel model, boolean includeDownloadButtons) {
         super(owner);
         this.model = model;
         setModal(true);
-        initComponents();
+        initComponents(includeDownloadButtons);
         init(model);
     }
 
@@ -162,7 +164,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         }
     }
 
-    private void initComponents() {
+    private void initComponents(boolean includeDownloadButtons) {
 
         //======== this ========
         setModal(true);
@@ -252,7 +254,11 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         downloadAnnotationsPanel.add(remoteAnnotationsRB);
         p1.add(downloadAnnotationsPanel);
         p1.setBackground(Color.RED);
-        contentPanel.add(p1);
+
+        if(includeDownloadButtons) {
+            contentPanel.add(p1);
+        }
+
 
         outerPanel.add(contentPanel, BorderLayout.CENTER);
 
@@ -283,8 +289,11 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
         outerPanel.add(buttonBar, BorderLayout.SOUTH);
 
-        setSize(1000, 620);
-        //pack();
+        if(this.model.getColumnCount() == 1) {
+            setSize(500, 620);
+        } else {
+            setSize(1000, 620);
+        }
         setLocationRelativeTo(getOwner());
     }
 
@@ -295,7 +304,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
 
             if (rec != null) {
 
-                if ("IGV".equals(rec.getAttributeValue("source"))) {
+                if ("IGV".equals(rec.getAttributeValue("_source"))) {
 
                     final String url = rec.getAttributeValue("url");
                     final String id = rec.getAttributeValue("accession");

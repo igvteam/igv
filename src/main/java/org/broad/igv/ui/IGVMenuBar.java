@@ -41,7 +41,6 @@ import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
-import org.broad.igv.ui.commandbar.HostedGenomeSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -393,7 +392,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu = new JMenu("Genomes");
 
         // Hosted & Genark
-        MenuAction genArkAction = new UCSCGenArkAction("Load Genome ...", 0, igv);
+        MenuAction genArkAction = new GenomeSelectionAction("Load Genome ...", 0, igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
 
         // Load genome json file
