@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.table;
+package org.broad.igv.ui.genome;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -35,26 +35,18 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class SearchableTableModel extends AbstractTableModel {
+public class GenomeTableModel extends AbstractTableModel {
 
     private String[] columnHeadings;
-    private List<SearchableTableRecord> records;
-    private final TableRowSorter<SearchableTableModel> sorter;
+    private List<GenomeTableRecord> records;
+    private final TableRowSorter<GenomeTableModel> sorter;
 
-    public SearchableTableModel(String [] headings, List<SearchableTableRecord> records) {
+    public GenomeTableModel(List<String> headings, List<GenomeTableRecord> records) {
 
         this.records = records;
 
-        List<String> tmp = new ArrayList<String>();
-        //tmp.add("");  // Checkbox heading
-        for(String h : headings) {
-            String heading = h.trim();
-            if(heading.length() > 0 && !"path".equals(heading)) {
-                tmp.add(heading);
-            }
-        }
         //tmp.add("path");
-        columnHeadings = tmp.toArray(new String[tmp.size()]);
+        columnHeadings = headings.toArray(new String[0]);
 
         sorter = new TableRowSorter<>(this);
 
@@ -67,7 +59,7 @@ public class SearchableTableModel extends AbstractTableModel {
         });
     }
 
-    public TableRowSorter<SearchableTableModel> getSorter() {
+    public TableRowSorter<GenomeTableModel> getSorter() {
         return sorter;
     }
 
@@ -93,13 +85,13 @@ public class SearchableTableModel extends AbstractTableModel {
             return null;
         }
 
-        SearchableTableRecord record = records.get(rowIndex);
+        GenomeTableRecord record = records.get(rowIndex);
             String att = columnHeadings[columnIndex];
             return record.getAttributeValue(att);
 
     }
 
-    public List<SearchableTableRecord> getRecords() {
+    public List<GenomeTableRecord> getRecords() {
         return records;
     }
 }

@@ -52,9 +52,9 @@ public class GenomeDownloadUtils {
 
     }
 
-    public static File downloadGenome(GenomeConfig c, boolean downloadSequence, boolean downloadAnnotations) throws IOException {
+    public static File downloadGenome(GenomeConfig genomeConfig, boolean downloadSequence, boolean downloadAnnotations) throws IOException {
 
-        GenomeConfig config = c.copy();
+        GenomeConfig config = genomeConfig.copy();
 
         // Create a directory for the data files (sequence and annotations)
         final File genomeDirectory = DirectoryManager.getGenomeCacheDirectory();

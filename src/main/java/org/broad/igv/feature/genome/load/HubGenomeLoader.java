@@ -129,6 +129,7 @@ public class HubGenomeLoader extends GenomeLoader {
                     .filter(trackConfig -> selectedTrackNames.contains(trackConfig.name))
                     .collect(Collectors.toList());
             config.setTracks(selectedTracks);
+            PreferencesManager.getPreferences().remove(key);   // Remove this deprecated preference
         }
 
         // If running in interactive mode opend dialog to set tracks.
@@ -208,14 +209,12 @@ public class HubGenomeLoader extends GenomeLoader {
         // Save genome json for future loads and remove preferences and remote reference (Genome is now defined by
         // local genome json, preferences and remote reference not needed)
         GenomeDownloadUtils.saveLocalGenome(config);
-        PreferencesManager.getPreferences().remove(key);
         GenomeListManager.getInstance().removeRemoteItem(config.getId());
 
 
         Genome genome = new Genome(config);
         genome.setGenomeHub(hub);
         return genome;
-
     }
 
 }

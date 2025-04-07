@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.ui.table;
+package org.broad.igv.ui.genome;
 
 import java.util.Collection;
 import java.util.Map;
@@ -33,12 +33,12 @@ import java.util.Map;
  *         Date: 10/31/13
  *         Time: 10:11 PM
  */
-public class SearchableTableRecord {
+public class GenomeTableRecord {
 
     boolean selected = false;
     Map<String, String> attributes;
 
-    public SearchableTableRecord(Map<String, String> attributes) {
+    public GenomeTableRecord(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 

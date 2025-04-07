@@ -25,25 +25,27 @@
 
 package org.broad.igv.ui.action;
 
+import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
+import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.table.SearchableTableDialog;
-import org.broad.igv.ui.table.SearchableTableModel;
-import org.broad.igv.ui.table.SearchableTableRecord;
+import org.broad.igv.ui.genome.GenomeSelectionDialog;
+import org.broad.igv.ui.genome.GenomeTableModel;
+import org.broad.igv.ui.genome.GenomeTableRecord;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -54,6 +56,7 @@ public class UCSCGenArkAction extends MenuAction {
 
     private static Logger log = LogManager.getLogger(UCSCGenArkAction.class);
     IGV igv;
+    GenomeSelectionDialog genomeSelectionDialog;
 
     public UCSCGenArkAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
@@ -63,43 +66,97 @@ public class UCSCGenArkAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent event) {
+        final GenomeSelectionDialog dlg = getGenomeSelectionDialog();
+        dlg.setVisible(true);
+    }
 
-        try (BufferedReader reader = ParsingUtils.openBufferedReader("https://hgdownload.soe.ucsc.edu/hubs/UCSC_GI.assemblyHubList.txt")) {
+    private GenomeSelectionDialog getGenomeSelectionDialog() {
 
-            String[] headers = null;
-            List<SearchableTableRecord> records = new ArrayList<>();
-            String headerLine = null;
+        if (genomeSelectionDialog == null) {
+            List<String> headers = new ArrayList<>(List.of(new String[]{
+                    "accession",
+                    "assembly",
+                    "scientific name",
+                    "common name",
+                    "taxonId"
+            }));
+            List<GenomeTableRecord> records = new ArrayList<>();
+
+//            try (BufferedReader reader = ParsingUtils.openBufferedReader(PreferencesManager.getPreferences().getGenomeListURL())) {
+//                String genomeRecord;
+//                while ((genomeRecord = reader.readLine()) != null) {
+//                    if (genomeRecord.startsWith("<") || genomeRecord.startsWith("#")) {
+//                        continue;
+//                    }
+//                    genomeRecord = genomeRecord.trim();
+//                    String[] fields = genomeRecord.split("\t");
+//                    //# accession	assembly	scientific name	common name	taxonId	GenArk clade
+//                    if (fields.length >= 3) {
+//                        Map<String, String> attributes = Map.of(
+//                                "common name", fields[0],
+//                                "url", fields[1],
+//                                "accession", fields[2],
+//                                "source", "IGV"
+//                        );
+//                        records.add(new GenomeTableRecord(attributes));
+//                    } else {
+//                        log.error("Found invalid server genome list record: " + genomeRecord);
+//                    }
+//                }
+//            } catch (IOException e) {
+//                log.error(e);
+//                MessageUtils.showMessage("Error loading genome list: " + e.getMessage());
+//            }
+
+            String[] fields = addRecords(PreferencesManager.getPreferences().getGenomeListURL(), records);
+            addUniqueFields(fields, headers);
+
+            fields = addRecords("https://hgdownload.soe.ucsc.edu/hubs/UCSC_GI.assemblyHubList.txt", records);
+            addUniqueFields(fields, headers);
+
+            GenomeTableModel model = new GenomeTableModel(headers, records);
+            genomeSelectionDialog = new GenomeSelectionDialog(null, model);
+            genomeSelectionDialog.setTitle("Genomes");
+        }
+        return genomeSelectionDialog;
+    }
+
+    private Set<String> ignoredFields = new HashSet<>(Arrays.asList(
+            "url",
+            "GenArk clade"
+    ));
+
+    private void addUniqueFields(String[] fields, List<String> headers) {
+        for (String field : fields) {
+            if (!ignoredFields.contains(field) && !headers.contains(field)) {
+                headers.add(field);
+            }
+        }
+    }
+
+    private static String[] addRecords(String url, List<GenomeTableRecord> records) {
+        String[] headers = null;
+        try (BufferedReader reader = ParsingUtils.openBufferedReader(url)) {
+
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
-                    headerLine = line;
-
+                    headers = Globals.tabPattern.split(line.substring(1).trim());
                 } else {
-                    if (headers == null) {
-                        headers = Globals.tabPattern.split(headerLine.substring(1).trim());
-                    }
+                    System.out.println(line);
                     String[] values = Globals.tabPattern.split(line.trim());
                     Map<String, String> attributes = new HashMap<>();
                     for (int i = 0; i < headers.length; i++) {
                         attributes.put(headers[i], values[i]);
                     }
-                    records.add(new SearchableTableRecord(attributes));
+                    records.add(new GenomeTableRecord(attributes));
                 }
-            }
-            SearchableTableModel model = new SearchableTableModel(headers, records);
-            SearchableTableDialog dlg = new SearchableTableDialog(null, model);
-            dlg.setTitle("UCSC GenArk");
-            dlg.setVisible(true);
-
-            SearchableTableRecord rec = dlg.getSelectedRecord();
-            if (!dlg.isCanceled() && rec != null) {
-                String accession = rec.getAttributeValue("accession");
-                String url = HubGenomeLoader.convertToHubURL(accession);
-                HubGenomeLoader.loadGenome(url);
             }
         } catch (IOException e) {
             log.error(e);
-            MessageUtils.showMessage("Error loading GenArk hub: " + e.getMessage());
+            MessageUtils.showMessage("Error loading genark list: " + e.getMessage());
         }
+        return headers;
+
     }
 }

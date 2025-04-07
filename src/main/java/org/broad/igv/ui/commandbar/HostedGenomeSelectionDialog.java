@@ -109,7 +109,7 @@ public class HostedGenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                 boolean downloadSequence = dialog.isDownloadSequence();
                 boolean downloadAnnotations = dialog.isDownloadAnnotations();
 
-                File downloadPath = GenomeManager.getInstance().downloadGenome(selectedItem, downloadSequence, downloadAnnotations);
+                File downloadPath = GenomeManager.getInstance().downloadGenome(selectedItem.getPath(), downloadSequence, downloadAnnotations);
 
                 try {
                     if (downloadPath != null) {

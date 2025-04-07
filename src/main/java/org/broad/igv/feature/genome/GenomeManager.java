@@ -306,14 +306,14 @@ public class GenomeManager {
         IGV.getInstance().revalidateTrackPanels();
     }
 
-    public File downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
+    public File downloadGenome(String url, boolean downloadSequence, boolean downloadAnnotations) {
         try {
 
-            if (item.getPath().endsWith(".genome")) {
-                File genomeFile = DotGenomeUtils.getDotGenomeFile(item.getPath());  // Will be downloaded if remote -- neccessary to unzip
+            if (url.endsWith(".genome")) {
+                File genomeFile = DotGenomeUtils.getDotGenomeFile(url);  // Will be downloaded if remote -- neccessary to unzip
                 return genomeFile;
             } else {
-                JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
+                JsonGenomeLoader loader = new JsonGenomeLoader(url);
                 GenomeConfig config = loader.loadGenomeConfig();
 
                 // If config has a hub,  allow changing default annotation.
@@ -331,7 +331,7 @@ public class GenomeManager {
 
         } catch (Exception e) {
             MessageUtils.showMessage("Error downloading genome: " + e.getMessage());
-            log.error("Error downloading genome " + item.getDisplayableName());
+            log.error("Error downloading genome " + url);
             return null;
         }
     }
@@ -399,7 +399,7 @@ public class GenomeManager {
      * @throws IOException
      */
 
-    private List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
+    public static List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
 
         String annotationHub = config.getHubs().get(0);  // IGV convention
         Hub hub = HubParser.loadHub(annotationHub, config.getUcscID());
