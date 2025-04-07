@@ -143,7 +143,6 @@ public class UCSCGenArkAction extends MenuAction {
                 if (line.startsWith("#")) {
                     headers = Globals.tabPattern.split(line.substring(1).trim());
                 } else {
-                    System.out.println(line);
                     String[] values = Globals.tabPattern.split(line.trim());
                     Map<String, String> attributes = new HashMap<>();
                     for (int i = 0; i < headers.length; i++) {
