@@ -209,7 +209,7 @@ public class HubGenomeLoader extends GenomeLoader {
         // Save genome json for future loads and remove preferences and remote reference (Genome is now defined by
         // local genome json, preferences and remote reference not needed)
         GenomeDownloadUtils.saveLocalGenome(config);
-        GenomeListManager.getInstance().removeRemoteItem(config.getId());
+        GenomeListManager.getInstance().removeRemoteItem(config.id);
 
 
         Genome genome = new Genome(config);

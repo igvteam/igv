@@ -23,40 +23,39 @@ public class GenomeConfig implements Cloneable {
 
     private static Logger log = LogManager.getLogger(GenomeConfig.class);
 
-    private String id;
+    public String id;
+    public String fastaURL;
+    public String indexURL;
+    public String gziIndexURL;
+    public String compressedIndexURL;   // Used by reflection from GSON.  Do not remove even though IDE indicates no usages
+    public String twoBitURL;
+    public String twoBitBptURL;
+    public String nameSet;
+    public String defaultPos;
+    public String description;
+    public String blat;
+    public String chromAliasBbURL;
+    public String chromSizesURL;
+    public String infoURL;
+    public String cytobandURL;
+    public String cytobandBbURL;
+    public Boolean ordered;
+    public String blatDB;
+    public String ucscID;
+    public String aliasURL;
+    public String accession;
+    public String taxId;
+    public String organism;
+    public String scientificName;
+    public String[] chromosomeOrder;
+
+    public boolean wholeGenomeView = true;
     private String name;
-    private String fastaURL;
-    private String indexURL;
-    private String gziIndexURL;
-    private String compressedIndexURL;   // Used by reflection from GSON.  Do not remove
-    private String twoBitURL;
-    private String twoBitBptURL;
-    private String nameSet;
-    private boolean wholeGenomeView = true;
-    private String defaultPos;
-    private String description;
-    private String blat;
-    private String chromAliasBbURL;
-
-    private String infoURL;
-    private String cytobandURL;
-    private String cytobandBbURL;
-
-    private Boolean ordered;
-    private String blatDB;
-    private String ucscID;
-    private String aliasURL;
-    private String[] chromosomeOrder;
-    private String chains;
-
-    private String chromSizesURL;
-
     private List<TrackConfig> tracks;
-
     private List<String> hubs;
 
-    // The properties below support the legacy ".genome" file, which directly loads resources from a zip archive.
-
+    // The properties below support the legacy ".genome", which directly loads resources from a zip archive, as well
+    // as ".gbk" files.
     private Sequence sequence;
     private LinkedHashMap<String, List<Cytoband>> cytobands;
     private List<List<String>> chromAliases;
@@ -70,10 +69,6 @@ public class GenomeConfig implements Cloneable {
     }
 
     public GenomeConfig() {
-    }
-
-    public String toJson() {
-        return new Gson().toJson(this);
     }
 
     public List<String> getHubs() {
@@ -91,187 +86,39 @@ public class GenomeConfig implements Cloneable {
         hubs.add(hub);
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getFastaURL() {
-        return fastaURL;
-    }
-
-    public void setFastaURL(String fastaURL) {
-        this.fastaURL = fastaURL;
-    }
-
-    public String getIndexURL() {
-        return indexURL;
-    }
-
-    public void setIndexURL(String indexURL) {
-        this.indexURL = indexURL;
-    }
-
-    public String getGziIndexURL() {
-        return this.gziIndexURL != null ? gziIndexURL : compressedIndexURL;
-    }
-
-    public void setGziIndexURL(String gziIndexURL) {
-        this.gziIndexURL = gziIndexURL;
-    }
-
-    public String getTwoBitURL() {
-        return twoBitURL;
-    }
-
-    public void setTwoBitURL(String twoBitURL) {
-        this.twoBitURL = twoBitURL;
-    }
-
-    public String getNameSet() {
-        return nameSet;
-    }
-
-    public void setNameSet(String nameSet) {
-        this.nameSet = nameSet;
-    }
-
-    public boolean isWholeGenomeView() {
-        return wholeGenomeView;
-    }
-
-    public void setWholeGenomeView(boolean wholeGenomeView) {
-        this.wholeGenomeView = wholeGenomeView;
-    }
-
-    public String getDefaultPos() {
-        return defaultPos;
-    }
-
-    public void setDefaultPos(String defaultPos) {
-        this.defaultPos = defaultPos;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getBlat() {
-        return blat;
-    }
-
-    public void setBlat(String blat) {
-        this.blat = blat;
-    }
-
-    public String getChromAliasBbURL() {
-        return chromAliasBbURL;
-    }
-
-    public void setChromAliasBbURL(String chromAliasBbURL) {
-        this.chromAliasBbURL = chromAliasBbURL;
-    }
-
-    public String getTwoBitBptURL() {
-        return twoBitBptURL;
-    }
-
-    public void setTwoBitBptURL(String twoBitBptURL) {
-        this.twoBitBptURL = twoBitBptURL;
-    }
-
-    public String getInfoURL() {
-        return infoURL;
-    }
-
-    public void setInfoURL(String infoURL) {
-        this.infoURL = infoURL;
-    }
-
-    public String getCytobandURL() {
-        return cytobandURL;
-    }
-
-    public void setCytobandURL(String cytobandURL) {
-        this.cytobandURL = cytobandURL;
-    }
-
-    public String getCytobandBbURL() {
-        return cytobandBbURL;
-    }
-
-    public void setCytobandBbURL(String cytobandBbURL) {
-        this.cytobandBbURL = cytobandBbURL;
-    }
-
-    public Boolean getOrdered() {
-        return ordered;
-    }
-
-    public void setOrdered(Boolean ordered) {
-        this.ordered = ordered;
-    }
-
-    public String getBlatDB() {
-        return blatDB;
-    }
-
-    public void setBlatDB(String blatDB) {
-        this.blatDB = blatDB;
+    /**
+     * If 'name' is not explicitly set derive it from known properties.
+     *
+     * @return
+     */
+    public String getName() {
+        if (name == null) {
+            if (this.scientificName != null) {
+                name = this.scientificName;
+            } else if (this.organism != null) {
+                name = this.organism;
+            } else if (this.description != null) {
+                name = this.description;
+            }
+            if (name == null) {
+                name = id;
+            } else {
+                name = name + " (" + id + ")";
+            }
+        }
+        return name;
     }
 
     public String getUcscID() {
         return ucscID == null ? id : ucscID;
     }
-    public void setUcscID(String ucscID) {
-        this.ucscID = ucscID;
-    }
-
-    public String getAliasURL() {
-        return aliasURL;
-    }
-
-    public void setAliasURL(String aliasURL) {
-        this.aliasURL = aliasURL;
-    }
 
     public String[] getChromosomeOrder() {
         return chromosomeOrder;
-    }
-
-    public void setChromosomeOrder(String[] chromosomeOrder) {
-        this.chromosomeOrder = chromosomeOrder;
-    }
-
-    public String getChains() {
-        return chains;
-    }
-
-    public void setChains(String chains) {
-        this.chains = chains;
-    }
-
-    public String getChromSizesURL() {
-        return chromSizesURL;
-    }
-
-    public void setChromSizesURL(String chromSizesURL) {
-        this.chromSizesURL = chromSizesURL;
     }
 
     public List<TrackConfig> getTrackConfigs() {

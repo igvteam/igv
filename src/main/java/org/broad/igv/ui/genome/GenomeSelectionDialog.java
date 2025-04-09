@@ -44,26 +44,21 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.ui.commandbar.HostedGenomeSelectionDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.LongRunningTask;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -321,7 +316,13 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                             Hub hub = HubParser.loadAssemblyHub(hubURL);
                             config = hub.getGenomeConfig();
                             config.setHubs(Arrays.asList(hubURL));
+                            if(!checkLoadability(config)) {
+                                return;
+                            }
                         }
+
+                        config.setName(rec.getAttributeValue("common name"));
+
                         // If config has a hub,  allow changing default annotation.
                         if (config.getHubs() != null && config.getHubs().size() > 0) {
 
@@ -363,6 +364,27 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         }
 
         setVisible(false);
+    }
+
+    private boolean checkLoadability(GenomeConfig config) {
+
+        if (config.chromAliasBbURL == null) {
+            return true;
+        }
+        try {
+            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.chromAliasBbURL));
+            if(contentLength > 50000000) {
+                MessageUtils.showMessage("The UCSC hub " + config.accession + " has too many contigs for IGV to load.");
+                return false;
+            } else {
+                return true;
+            }
+        } catch (IOException e) {
+            log.error("Error getting content length of " + config.chromAliasBbURL, e);
+            return true;
+        }
+
+
     }
 
     private static void removeDotGenomeFile(String id) {

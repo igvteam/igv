@@ -64,7 +64,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/bosTau9.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         GenomeConfig genomeConfig = new GenomeConfig();
-        genomeConfig.setId("bosTau9");
+        genomeConfig.id = ("bosTau9");
         genomeConfig.setName("bosTau9");
         genomeConfig.setSequence(sequence);
         Genome genome = new Genome(genomeConfig);
@@ -77,7 +77,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/hg19.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         GenomeConfig genomeConfig = new GenomeConfig();
-        genomeConfig.setId("hg19");
+        genomeConfig.id = ("hg19");
         genomeConfig.setName("hg19");
         genomeConfig.setSequence(sequence);
         Genome genome = new Genome(genomeConfig);
@@ -90,7 +90,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/musa_pseudochromosome.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         GenomeConfig genomeConfig = new GenomeConfig();
-        genomeConfig.setId("musa_pseudochromosome");
+        genomeConfig.id = ("musa_pseudochromosome");
         genomeConfig.setName("musa_pseudochromosome");
         genomeConfig.setSequence(sequence);
         Genome genome = new Genome(genomeConfig);
@@ -103,7 +103,7 @@ public class GenomeTest extends AbstractHeadlessTest {
         String mockIndexPath = TestUtils.DATA_DIR + "fasta/mock_many_small.fa.fai";
         Sequence sequence = new MockSequence(mockIndexPath);
         GenomeConfig genomeConfig = new GenomeConfig();
-        genomeConfig.setId("mock_many_small");
+        genomeConfig.id = ("mock_many_small");
         genomeConfig.setName("mock_many_small");
         genomeConfig.setSequence(sequence);
         Genome genome = new Genome(genomeConfig);
@@ -117,8 +117,8 @@ public class GenomeTest extends AbstractHeadlessTest {
      */
     private class MockSequence implements Sequence {
 
-        private FastaIndex index;
-        private ArrayList<String> chromoNames;
+        private final FastaIndex index;
+        private final ArrayList<String> chromoNames;
 
         public MockSequence(String fastaIndexPath) throws IOException {
             this.index = new FastaIndex(fastaIndexPath);

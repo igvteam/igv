@@ -38,9 +38,9 @@ public class GenomeDownloadUtils {
             try {
                 String jsonString = FileUtils.getContents(genomePath);
                 GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
-                String sequenceURL = genomeConfig.getTwoBitURL();
+                String sequenceURL = genomeConfig.twoBitURL;
                 if (sequenceURL == null) {
-                    sequenceURL = genomeConfig.getFastaURL();
+                    sequenceURL = genomeConfig.fastaURL;
                 }
                 return isRemoteURL(sequenceURL) && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
 
@@ -61,7 +61,7 @@ public class GenomeDownloadUtils {
         File dataDirectory = null;
 
         if(downloadSequence || downloadAnnotations) {
-            dataDirectory = new File(genomeDirectory, config.getId());
+            dataDirectory = new File(genomeDirectory, config.id);
             if (dataDirectory.exists()) {
                 if (!dataDirectory.isDirectory()) {
                     throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
@@ -73,11 +73,11 @@ public class GenomeDownloadUtils {
             }
         }
 
-        String relativeDataDirectory = config.getId() + "/";
+        String relativeDataDirectory = config.id + "/";
 
-        if (config.getTwoBitURL() != null) {
+        if (config.twoBitURL != null) {
 
-            URL url = new URL(config.getTwoBitURL());
+            URL url = new URL(config.twoBitURL);
             File localFile;
             if (downloadSequence) {
                 localFile = download(url, dataDirectory);
@@ -85,14 +85,14 @@ public class GenomeDownloadUtils {
                 localFile = constructLocalFile(url, dataDirectory);  // It might be there from previous downloads
             }
             if (localFile.exists()) {
-                config.setTwoBitURL(relativeDataDirectory + localFile.getName());
+                config.twoBitURL =(relativeDataDirectory + localFile.getName());
                 // Null out urls not needed for .2bit sequences.
-                config.setFastaURL(null);
-                config.setIndexURL(null);
-                config.setGziIndexURL(null);
-                config.setTwoBitBptURL(null);  // Not needed for local .2bit files
+                config.fastaURL = (null);
+                config.indexURL = (null);
+                config.gziIndexURL = (null);
+                config.twoBitBptURL =(null);  // Not needed for local .2bit files
             }
-        } else if (config.getFastaURL() != null) {
+        } else if (config.fastaURL != null) {
 
             String[] fastaFields = {"fastaURL", "indexURL", "gziIndexURL", "compressedIndexURL"};
             downloadAndUpdateConfig(downloadSequence, fastaFields, config, dataDirectory, relativeDataDirectory);
@@ -149,7 +149,7 @@ public class GenomeDownloadUtils {
      * @throws IOException
      */
     public static File saveLocalGenome(GenomeConfig genomeConfig) throws IOException {
-        String id = genomeConfig.getId();
+        String id = genomeConfig.id;
         if (id == null) {
             throw new IllegalArgumentException("Config ID is null. I can't work with this.");
         }

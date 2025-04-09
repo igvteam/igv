@@ -37,7 +37,7 @@ public class GenbankLoader extends GenomeLoader {
         Sequence sequence = new InMemorySequence(chr, seq);
 
         GenomeConfig config = new GenomeConfig();
-        config.setId(chr);
+        config.id = (chr);
         config.setName(name);
         config.setSequence(sequence);
 
