@@ -87,6 +87,10 @@ import java.util.*;
  */
 public class BBFile {
 
+    public int getChromosomeCount() {
+        return (int) chromTree.header.itemCount;
+    }
+
     enum Type {BIGWIG, BIGBED}
 
     static public final int BBFILE_HEADER_SIZE = 64;
@@ -461,7 +465,7 @@ public class BBFile {
             long start = region[0];
             int size = (int) region[1];
             byte[] buffer = this.getBytes(start, size);
-            List<BasicFeature> features = decodeFeatures(buffer, -1, -1, -1);
+            List<BasicFeature> features = decodeFeatures(null, buffer, -1, -1, -1);
 
             // Filter features to those matching term
             final String searchTerm = term;
@@ -480,7 +484,8 @@ public class BBFile {
         return null;
     }
 
-    List<BasicFeature> decodeFeatures(byte[] buffer, int chrIdx, int start, int end) {
+    List<BasicFeature> decodeFeatures(String chr, byte[] buffer, int chrIdx, int start, int end) {
+
         List<BasicFeature> features = new ArrayList<>();
         byte[] uncompressed;
         if (this.header.uncompressBuffSize > 0) {
@@ -503,10 +508,16 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            String chr = getChrForId(chromId);
-            final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
-            final BasicFeature feature = bedCodec.decode(bedData);
-            features.add(feature);
+            // When decoding features from a search the chromosome name is not known until the feature is decoded.
+            // Try to get the chromosome name from the id.
+            if (chr == null) {
+                chr = this.chromTree.getNameForId(chrIdx);
+            }
+            if(chr != null) {
+                final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
+                final BasicFeature feature = bedCodec.decode(bedData);
+                features.add(feature);
+            }
         }
         return features;
     }
@@ -636,8 +647,8 @@ public class BBFile {
             // For now take the first match, we don't support multiple results
             for (BPTree bpTree : searchTrees) {
                 if (bpTree != null) {
-                    long[] result = bpTree.search(term);
-                    if (result != null) {
+                    long[] result = bpTree.searchLongLong(term);
+                    if(result != null) {
                         return result;
                     }
                 }

@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 public class ChromTree {
 
-    private Header header;
+    Header header;
     private HashMap<String, Integer> nameToId;
     private String[] idToName;
 

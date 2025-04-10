@@ -59,9 +59,4 @@ public class ChromAliasBB extends ChromAliasSource {
         }
         return this.aliasCache.get(alias);
     }
-
-    public String [] getChromosomeNames() {
-        return this.reader.getChromosomeNames();
-    }
-
 }

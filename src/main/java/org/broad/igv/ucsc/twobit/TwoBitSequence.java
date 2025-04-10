@@ -197,11 +197,10 @@ public class TwoBitSequence implements Sequence {
         SequenceRecord record = this.sequenceRecordCache.get(seqName);
 
         if (record == null) {
-            long[] offset_length = this.index.search(seqName);
-            if (offset_length == null) {
+            long offset = this.index.searchForOffset(seqName);
+            if (offset < 0) {
                 throw new SequenceNotFoundException("Unknown sequence: " + seqName);
             }
-            long offset = offset_length[0];
 
             // Read size of dna data & # of "N" blocks
             int size = 8;

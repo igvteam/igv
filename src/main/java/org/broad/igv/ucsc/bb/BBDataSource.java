@@ -34,6 +34,8 @@ import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
@@ -42,6 +44,8 @@ import java.util.*;
 
 
 public class BBDataSource extends AbstractDataSource implements DataSource {
+
+    private static Logger log = LogManager.getLogger(BBDataSource.class);
 
     private final Genome genome;
     Collection<WindowFunction> availableWindowFunctions =
@@ -184,9 +188,28 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     int screenWidth = 1000;  // nominal
                     double scale = genome.getWGLength() / screenWidth;
 
-                    int maxChromId = reader.getChromosomeNames().length - 1;
-                    String firstChr = reader.getChrForId(0);
-                    String lastChr = reader.getChrForId(maxChromId);
+                    List<String> longChromosomeNames = genome.getLongChromosomeNames();
+                    if (longChromosomeNames.isEmpty()) {
+                        return null;
+                    }
+
+                   // Find the min and max chromosome ids for whole genome view
+                    String firstChr = longChromosomeNames.get(0);
+                    String lastChr = longChromosomeNames.get(0);
+                    int minID = Integer.MAX_VALUE;
+                    int maxID = -1;
+                    for (String chr : longChromosomeNames) {
+                        int id = reader.getIdForChr(chr);
+                        if (id < minID) {
+                            minID = id;
+                            firstChr = chr;
+                        }
+                        if (id > maxID) {
+                            maxID = id;
+                            lastChr = chr;
+                        }
+                    }
+
 
                     ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
                     wholeGenomeScores.put(windowFunction, scores);
@@ -221,7 +244,8 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 return null;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error getting whole genome scores", e);
+            return null;
         }
     }
 

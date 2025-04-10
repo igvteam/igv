@@ -27,4 +27,6 @@ public interface UnsignedByteBuffer {
 
 
     int remaining();
+
+    byte[] getBytes(int valSize);
 }

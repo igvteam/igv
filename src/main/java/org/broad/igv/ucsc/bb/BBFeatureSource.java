@@ -100,8 +100,8 @@ public class BBFeatureSource implements FeatureSource {
         } else {
             List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
             List features = new ArrayList<>();
-            for (byte[] c : chunks) {
-                features.addAll(reader.decodeFeatures(c, chrIdx, start, end));
+            for (byte[] chunk : chunks) {
+                features.addAll(reader.decodeFeatures(chr, chunk, chrIdx, start, end));
             }
             return new FeatureIterator(features, start, end);
         }
@@ -169,10 +169,4 @@ public class BBFeatureSource implements FeatureSource {
             return retValue;
         }
     }
-
-    public String [] getChromosomeNames() {
-        return this.reader.getChromosomeNames();
-    }
-
-
 }

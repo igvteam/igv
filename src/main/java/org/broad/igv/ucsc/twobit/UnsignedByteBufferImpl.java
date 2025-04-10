@@ -77,6 +77,15 @@ public class UnsignedByteBufferImpl implements UnsignedByteBuffer {
         return wrappedBuffer.getDouble();
     }
 
+    @Override
+    public byte[] getBytes(int length) {
+        byte[] bytes = new byte[length];
+        wrappedBuffer.get(wrappedBuffer.position(), bytes);
+        wrappedBuffer.position(wrappedBuffer.position() + length);
+        return bytes;
+    }
+
+
     /**
      * Return a null (0) terminated string
      * @return
