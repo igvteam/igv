@@ -87,10 +87,6 @@ import java.util.*;
  */
 public class BBFile {
 
-    public int getChromosomeCount() {
-        return (int) chromTree.header.itemCount;
-    }
-
     enum Type {BIGWIG, BIGBED}
 
     static public final int BBFILE_HEADER_SIZE = 64;
@@ -100,7 +96,6 @@ public class BBFile {
     private Trix trix;
     private String autosql;
     private ChromTree chromTree;
-    private String[] chrNames;
     private double featureDensity;
     private Map<String, String> chrAliasTable;
     private BBTotalSummary totalSummary;
@@ -138,8 +133,8 @@ public class BBFile {
         this.header = readHeader();
     }
 
-    public BBTotalSummary getTotalSummary() {
-        return totalSummary;
+    public int getChromosomeCount() {
+        return (int) chromTree.getItemCount();
     }
 
     public Type getType() {
@@ -168,10 +163,6 @@ public class BBFile {
 
     public String getAutoSQL() {
         return autosql;
-    }
-
-    public String[] getChromosomeNames() {
-        return chrNames;
     }
 
     BBHeader readHeader() throws IOException {
@@ -211,6 +202,7 @@ public class BBFile {
         header.totalSummaryOffset = buffer.getLong();
         header.uncompressBuffSize = buffer.getInt();
         header.extensionOffset = buffer.getLong();
+        this.header = header;
 
         // Zoom headers, autosql, and total summary if present
         int size = (int) (header.totalSummaryOffset > 0 ?
@@ -245,26 +237,17 @@ public class BBFile {
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
-        // Chromosome tree -- we know the start offset but not the size.  But we can try to estimate it.
-        int chromtreeBufferSize = header.fullDataOffset > header.chromTreeOffset ?
-                (int) Math.min(10000, header.fullDataOffset - header.chromTreeOffset) :
-                10000;
-
-        buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, chromtreeBufferSize);
-        this.chromTree = ChromTree.parseTree(buffer, header.chromTreeOffset, this.genome);
-        this.chrNames = this.chromTree.names();
-
+        // Chromosome tree
+        this.chromTree = new ChromTree(this.path, this.header.chromTreeOffset);
 
         if (type == Type.BIGBED) {
             //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
             buffer = loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
             header.dataCount = buffer.getInt();
-            this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
+            this.featureDensity = ((double) header.dataCount) / this.chromTree.estimateGenomeSize();
 
             bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
         }
-
-        this.header = header;
 
         //extension
         if (header.extensionOffset > 0) {
@@ -319,17 +302,10 @@ public class BBFile {
         this.header.extraIndexOffsets = indexOffset;
     }
 
-    List<byte[]> getLeafChunks(String chr1, int bpStart, String chr2, int bpEnd, long treeOffset) throws IOException {
+    List<byte[]> getLeafChunks(int chrIdx1, int bpStart, int chrIdx2, int bpEnd, long treeOffset) throws IOException {
 
         if (this.header == null) {
             this.header = this.readHeader();
-        }
-
-        Integer chrIdx1 = this.getIdForChr(chr1);
-        Integer chrIdx2 = this.getIdForChr(chr2);
-
-        if (chrIdx1 == null || chrIdx2 == null) {
-            return Collections.EMPTY_LIST;
         }
 
         // Load the R Tree and fine leaf items
@@ -399,10 +375,6 @@ public class BBFile {
         }
 
         return chrIdx;
-    }
-
-    String getChrForId(int chrIdx) {
-        return chromTree.getNameForId(chrIdx);
     }
 
     /**
@@ -511,9 +483,9 @@ public class BBFile {
             // When decoding features from a search the chromosome name is not known until the feature is decoded.
             // Try to get the chromosome name from the id.
             if (chr == null) {
-                chr = this.chromTree.getNameForId(chrIdx);
+                chr = this.chromTree.getNameForId(chromId);
             }
-            if(chr != null) {
+            if (chr != null) {
                 final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
                 final BasicFeature feature = bedCodec.decode(bedData);
                 features.add(feature);
@@ -522,7 +494,7 @@ public class BBFile {
         return features;
     }
 
-    List<LocusScore> decodeZoomData(byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
+    List<LocusScore> decodeZoomData(String chr, byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
 
         byte[] uncompressed;
         if (header.uncompressBuffSize > 0) {
@@ -548,26 +520,30 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            String chr = getChrForId(chromId);
-
-            float value;
-            switch (windowFunction) {
-                case min:
-                    value = minVal;
-                    break;
-                case max:
-                    value = maxVal;
-                    break;
-                case mean:
-                    value = sumData / validCount;
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported window function: " + windowFunction);
-
+            if(chr == null) {
+                chr = this.chromTree.getNameForId(chromId);
             }
 
-            final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
-            features.add(feature);
+            if(chr != null) {
+                float value;
+                switch (windowFunction) {
+                    case min:
+                        value = minVal;
+                        break;
+                    case max:
+                        value = maxVal;
+                        break;
+                    case mean:
+                        value = sumData / validCount;
+                        break;
+                    default:
+                        throw new RuntimeException("Unsupported window function: " + windowFunction);
+
+                }
+
+                final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
+                features.add(feature);
+            }
         }
         return features;
     }
@@ -648,7 +624,7 @@ public class BBFile {
             for (BPTree bpTree : searchTrees) {
                 if (bpTree != null) {
                     long[] result = bpTree.searchLongLong(term);
-                    if(result != null) {
+                    if (result != null) {
                         return result;
                     }
                 }
@@ -714,12 +690,11 @@ public class BBFile {
         double sumSquares = 0;
         double min = Double.MAX_VALUE;
         double max = -Double.MAX_VALUE;
-        for (String chr : this.chromTree.names()) {
-            List<byte[]> chunks = this.getLeafChunks(chr, 0, chr, Integer.MAX_VALUE, rTreeOffset);
-            Integer chrIdx = getIdForChr(chr);
+        for (int idx = 0; idx < getChromosomeCount(); idx++) {
+            List<byte[]> chunks = this.getLeafChunks(idx, 0, idx, Integer.MAX_VALUE, rTreeOffset);
             for (byte[] c : chunks) {
                 List<LocusScore> features = new ArrayList<>();
-                decodeWigData(c, chrIdx, 0, Integer.MAX_VALUE, features);
+                decodeWigData(c, idx, 0, Integer.MAX_VALUE, features);
                 for (LocusScore score : features) {
 
                     min = Math.min(min, score.getScore());

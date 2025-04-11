@@ -1,9 +1,16 @@
 package org.broad.igv.ucsc.bb;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
+import htsjdk.samtools.seekablestream.SeekableStream;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.ucsc.BPTree;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.stream.IGVSeekableHTTPStream;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.function.Function;
 
 /**
  * Represents the ChromTree of a UCSC bigbed/bigwig file.  The entire tree is walked to produce 2 maps,
@@ -19,98 +26,158 @@ import java.util.HashMap;
 
 public class ChromTree {
 
-    Header header;
-    private HashMap<String, Integer> nameToId;
-    private String[] idToName;
+    private static Logger log = LogManager.getLogger(ChromTree.class);
 
-    public long sumLengths = 0;
+    private final long startOffset;
+    private BPTree bpTree;
+    private HashMap<String, Integer> nameToId = new HashMap<>();
+    private HashMap<Integer, String> idToName = new HashMap<>();
 
-    public static ChromTree parseTree(UnsignedByteBuffer buffer, long startOffset, Genome genome) {
+    public ChromTree(String file, long startOffset) throws IOException {
 
-        return (new ChromTree().parse(buffer, startOffset, genome));
-    }
-
-    private ChromTree() {
-
-    }
-
-    public Integer getIdForName(String chr) {
-        return nameToId.get(chr);
-    }
-
-    public String getNameForId(int id) {
-        if (id < 0 || id >= idToName.length) {
-            return null;
+        if (FileUtils.isRemote(file)) {
+            SeekableStream stream = IGVSeekableStreamFactory.getInstance().getBufferedStream(
+                    IGVSeekableStreamFactory.getInstance().getStreamFor(file), 64 * 1024);
+            this.bpTree = new BPTree(stream, startOffset);
         } else {
-            return idToName[id];
+            this.bpTree = new BPTree(file, startOffset);
         }
+        this.startOffset = startOffset;
     }
 
-    public String[] names() {
-        return idToName;
-    }
-
-    public ChromTree parse(UnsignedByteBuffer buffer, long startOffset, Genome genome) {
-        {
-            Header header = new Header();
-            header.magic = buffer.getInt();
-            header.blockSize = buffer.getInt();
-            header.keySize = buffer.getInt();
-            header.valSize = buffer.getInt();
-            header.itemCount = buffer.getLong();
-            header.reserved = buffer.getLong();
-            this.header = header;
-
-            if (header.valSize != 8) {
-                throw new RuntimeException("Unexpected valSize: " + header.valSize);
+    /**
+     * Return the chromosome ID for the given name.  This is the internal chromosome ID for the parent BB file
+     * only.
+     * @param chr
+     * @return
+     */
+    public Integer getIdForName(String chr) {
+        if (nameToId.containsKey(chr)) {
+            return nameToId.get(chr);
+        } else {
+            try {
+                int[] result = this.bpTree.searchIntInt(chr);
+                if (result != null) {
+                    int id = result[0];
+                    nameToId.put(chr, id);
+                    return id;
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            this.nameToId = new HashMap<>();
-            this.idToName = new String[(int) header.itemCount];
-
-            // Recursively walk tree to populate dictionary
-            readTreeNode(-1, startOffset, buffer, genome);
-
-            return this;
         }
     }
 
-    void readTreeNode(long offset, final long startOffset, UnsignedByteBuffer buffer, Genome genome) {
-        if (offset >= 0) buffer.position((int) offset);
-        byte type = buffer.get();
-        byte reserved = buffer.get();
-        int count = buffer.getUShort();
+    /**
+     * Return the chromosome name for the given ID.  This is a potentially expensive operation as it involves
+     * walking the tree until the leaf item for the given name is found.  Currently it is used in only 2
+     * situations:
+     * (1) decoding features from a bigbed search-by-name query
+     * (2) decoding bigwig data from the whole genome view
+     *
+     * @param id
+     * @return
+     */
+    public String getNameForId(int id) {
+        if (idToName.containsKey(id)) {
+            return idToName.get(id);
+        } else {
+            String name = this.searchForName(id);
+            if (name != null) {
+                idToName.put(id, name);
+                return name;
+            }
+        }
+        return null;
+    }
 
-        if (type == 1) {
+    public long getItemCount() {
+        return this.bpTree.itemCount;
+    }
+
+    /**
+     * Perform a reverse search by traversing the tree starting at the given offset.  This is potentially expensive.
+     */
+    private String searchForName(int id) {
+        try {
+            return reverseSearch(this.startOffset + 32, id);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String reverseSearch(long offset, int id) throws IOException {
+
+        BPTree.Node node = this.bpTree.readTreeNode(offset);
+
+        String found = null;
+
+        if (node.type == 1) {
             // Leaf node
-            for (int i = 0; i < count; i++) {
-                String key = buffer.getFixedLengthString(header.keySize);
-                int value = buffer.getInt();
-                int chromSize = buffer.getInt();
-                nameToId.put(key, value);
-                idToName[value] = key;
-                sumLengths += chromSize;
+            for (BPTree.Item item : node.items) {
+                String key = item.getKey();
+                int[] values = item.getValueAsInts();
+                nameToId.put(key, values[0]);
+                idToName.put(values[0], key);
+                if (values[0] == id) {
+                    found = key;
+                }
+            }
+            return found;
+        } else {
+            // non-leaf
+            for (BPTree.Item item : node.items) {
+                found = reverseSearch(item.offset, id);
+                if (found != null) {
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+
+
+    /**
+     * Return an estimated length of the genome, which might be the actual length if the # of contigs is small.
+     * This is only used for calculating a default feature visibility window.
+     *
+     * @return
+     */
+    public long estimateGenomeSize() {
+        try {
+            double[] avgCount = {0, 0};
+            _estimateSize(this.startOffset + 32, avgCount, 10000);
+            double avg = avgCount[0];
+            return (long) (avg * this.getItemCount());
+        } catch (IOException e) {
+            log.error("Error estimating genome size", e);
+            return -1;
+        }
+    }
+
+    private double[] _estimateSize(long offset, double[] avgCount, int maxCount) throws IOException {
+
+        BPTree.Node node = this.bpTree.readTreeNode(offset);
+
+        if (node.type == 1) {
+            // Leaf node
+            for (BPTree.Item item : node.items) {
+                int[] values = item.getValueAsInts();
+                avgCount[0] = (avgCount[0] * avgCount[1] + values[1]) / (avgCount[1] + 1);
+                avgCount[1] = avgCount[1] + 1;
             }
         } else {
             // non-leaf
-            for (int i = 0; i < count; i++) {
-                String key = buffer.getFixedLengthString(header.keySize);
-                long childOffset = buffer.getLong();
-                long bufferOffset = childOffset - startOffset;
-                long currOffset = buffer.position();
-                readTreeNode(bufferOffset, startOffset, buffer, genome);
-                buffer.position((int) currOffset);
+            for (BPTree.Item item : node.items) {
+                avgCount = _estimateSize(item.offset, avgCount, maxCount);
+                if (avgCount[0] > maxCount) {
+                    break;
+                }
             }
         }
+        return avgCount;
     }
 
-
-    static class Header {
-        int magic;
-        int blockSize;
-        int keySize;
-        int valSize;
-        long itemCount;
-        long reserved;
-    }
 }

@@ -4,9 +4,11 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
@@ -36,29 +38,6 @@ public class BBFileTest {
         assertNotNull(header);
         assertEquals(1, reader.getChromosomeCount());
 
-    }
-
-    //
-    @Test
-    public void testBPTree() throws IOException {
-
-        String bbFile = TestUtils.DATA_DIR + "bb/GCF_000009045.1_ASM904v1.ncbiGene.bb";
-        BPTree tree = BPTree.loadBPTree(bbFile, 1752);
-        int [] results = tree.searchIntInt("NC_000964.3");
-        int chromId = results[0];
-        int chromSize = results [1];
-
-
-        assertNotNull(tree);
-
-
-//        assertEquals(256, tree.blockSize);
-//        assertEquals(15, tree.keySize);
-//        assertEquals(8, tree.valSize);
-//
-//        long[] result = tree.search("RJWJ011179649.1");
-//        assertEquals(748759988, result[0]);
-//        assertNotNull(result);
     }
 
 

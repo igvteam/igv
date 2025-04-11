@@ -14,13 +14,17 @@ public class UnsignedByteBufferImpl implements UnsignedByteBuffer {
 
     public static UnsignedByteBufferImpl loadBinaryBuffer(String path, ByteOrder byteOrder, long start, int size) throws IOException {
         try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
-            ByteBuffer bb = ByteBuffer.allocate(size);
-            bb.order(byteOrder);
-            byte[] bytes = bb.array();
-            is.seek(start);
-            is.readFully(bytes);
-            return new UnsignedByteBufferImpl(bb);
+            return getUnsignedByteBuffer(is, byteOrder, start, size);
         }
+    }
+
+    public static UnsignedByteBufferImpl getUnsignedByteBuffer(SeekableStream is, ByteOrder byteOrder, long start, int size ) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(size);
+        bb.order(byteOrder);
+        byte[] bytes = bb.array();
+        is.seek(start);
+        is.readFully(bytes);
+        return new UnsignedByteBufferImpl(bb);
     }
 
     public static UnsignedByteBufferImpl wrap(byte[] bytes, ByteOrder byteOrder) {

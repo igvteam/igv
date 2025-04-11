@@ -80,9 +80,12 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
 
         try {
             long rTreeOffset = reader.getHeader().fullIndexOffset;
-            List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
-
             Integer chrIdx = reader.getIdForChr(chr);
+            if (chrIdx == null) {
+                return null;
+            }
+            List<byte[]> chunks = this.reader.getLeafChunks(chrIdx, start, chrIdx, end, rTreeOffset);
+
 
             List<LocusScore> features = new ArrayList<>();
             for (byte[] c : chunks) {
@@ -143,11 +146,14 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 return null;
             } else {
                 long rTreeOffset = zlHeader.indexOffset;
-                int chrIdx = reader.getIdForChr(chr);
-                List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+                Integer chrIdx = reader.getIdForChr(chr);
+                if (chrIdx == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                List<byte[]> chunks = this.reader.getLeafChunks(chrIdx, start, chrIdx, end, rTreeOffset);
                 List<LocusScore> features = new ArrayList<>();
-                for (byte[] c : chunks) {
-                    reader.decodeZoomData(c, chrIdx, start, end, windowFunction, features);
+                for (byte[] chunk : chunks) {
+                    reader.decodeZoomData(chr, chunk, chrIdx, start, end, windowFunction, features);
                 }
                 return features;
             }
@@ -193,23 +199,21 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                         return null;
                     }
 
-                   // Find the min and max chromosome ids for whole genome view
-                    String firstChr = longChromosomeNames.get(0);
-                    String lastChr = longChromosomeNames.get(0);
+                    // Find the min and max chromosome ids for whole genome view
                     int minID = Integer.MAX_VALUE;
                     int maxID = -1;
                     for (String chr : longChromosomeNames) {
-                        int id = reader.getIdForChr(chr);
+                        Integer id = reader.getIdForChr(chr);
+                        if (id == null) {
+                            continue;
+                        }
                         if (id < minID) {
                             minID = id;
-                            firstChr = chr;
                         }
                         if (id > maxID) {
                             maxID = id;
-                            lastChr = chr;
                         }
                     }
-
 
                     ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
                     wholeGenomeScores.put(windowFunction, scores);
@@ -220,11 +224,11 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
                     long rTreeOffset = lowestResHeader.indexOffset;
-                    List<byte[]> chunks = this.reader.getLeafChunks(firstChr, 0, lastChr, Integer.MAX_VALUE, rTreeOffset);
+                    List<byte[]> chunks = this.reader.getLeafChunks(minID, 0, maxID, Integer.MAX_VALUE, rTreeOffset);
 
                     List<LocusScore> features = new ArrayList<>();
-                    for (byte[] c : chunks) {
-                        reader.decodeZoomData(c, -1, -1, -1, windowFunction, features);
+                    for (byte[] chunk : chunks) {
+                        reader.decodeZoomData(null, chunk, -1, -1, -1, windowFunction, features);
                     }
 
                     for (LocusScore s : features) {

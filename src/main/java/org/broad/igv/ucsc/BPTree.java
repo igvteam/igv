@@ -42,23 +42,26 @@ package org.broad.igv.ucsc;
  */
 
 
-import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Created by jrobinso on 6/13/17.
  */
-public class BPTree implements BPIndex{
+public class BPTree implements BPIndex {
 
     // the number 0x78CA8C91 in the architecture of the machine that created the file
     static int SIGNATURE = 0x78CA8C91;
 
     String path;
+    SeekableStream stream;
+
     private long fileOffset;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
 
@@ -73,19 +76,33 @@ public class BPTree implements BPIndex{
     long nodeOffset;
 
     public static BPTree loadBPTree(String path, long fileOffset) throws IOException {
-        BPTree tree = new BPTree(path, fileOffset);
-        tree.init();
-        return tree;
+        return new BPTree(path, fileOffset);
     }
 
-    private BPTree(String path, long fileOffset) throws IOException {
+    public BPTree(String path, long fileOffset) throws IOException {
         this.path = path;
         this.fileOffset = fileOffset;
         this.nodeCache = new HashMap<>();
+        this.init();
+    }
+
+    /**
+     * Alternative constructor backed by a seekable stream.
+     *
+     * @param stream
+     * @param fileOffset
+     */
+    public BPTree(SeekableStream stream, long fileOffset) throws IOException {
+        this.stream = stream;
+        this.fileOffset = fileOffset;
+        this.nodeCache = new HashMap<>();
+        this.init();
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        return UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, start, size);
+        return this.stream != null ?
+                UnsignedByteBufferImpl.getUnsignedByteBuffer(this.stream, this.byteOrder, start, size) :
+                UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, start, size);
     }
 
     private void init() throws IOException {
@@ -139,7 +156,7 @@ public class BPTree implements BPIndex{
         }
     }
 
-    public int []  searchIntInt(String term) throws IOException {
+    public int[] searchIntInt(String term) throws IOException {
         byte[] bytes = search(term);
         if (bytes != null) {
             int offset = bytesToInt(bytes, 0);
@@ -150,8 +167,7 @@ public class BPTree implements BPIndex{
         }
     }
 
-
-    Node readTreeNode(long offset) throws IOException {
+    public Node readTreeNode(long offset) throws IOException {
 
         if (this.nodeCache.containsKey(offset)) {
             return this.nodeCache.get(offset);
@@ -253,10 +269,10 @@ public class BPTree implements BPIndex{
         return value;
     }
 
-    class Node {
-        int type;
+    public class Node {
+        public int type;
         int count;
-        List<Item> items;
+        public List<Item> items;
 
         public Node(int type, int count, List<Item> items) {
             this.type = type;
@@ -268,10 +284,11 @@ public class BPTree implements BPIndex{
     /**
      * Represents a single item in a B+ tree node. An item should have a value (for leaf nodes),  or an offset, but not both.
      */
-    class Item {
+    public class Item {
+
         String key;
         byte[] value;
-        long offset;
+        public long offset;
 
         public Item(String key, long offset) {
             this.key = key;
@@ -282,6 +299,22 @@ public class BPTree implements BPIndex{
             this.key = key;
             this.value = value;
         }
+
+        public String getKey() {
+            return key;
+        }
+
+        public int[] getValueAsInts() {
+            if (value != null) {
+                int offset = bytesToInt(value, 0);
+                int size = bytesToInt(value, 4);
+                return new int[]{offset, size};
+            } else {
+                return null;
+            }
+        }
+
+
     }
 }
 

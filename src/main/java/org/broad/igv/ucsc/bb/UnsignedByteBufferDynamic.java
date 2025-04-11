@@ -36,17 +36,17 @@ public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
     ByteOrder byteOrder;
     String path;
 
-    public static UnsignedByteBufferDynamic loadBinaryBuffer(String path, ByteOrder byteOrder, long start, int size) throws IOException {
-        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(path, byteOrder, start, size);
+    public static UnsignedByteBufferDynamic loadBinaryBuffer(String path, ByteOrder byteOrder, long offset, int size) throws IOException {
+        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(path, byteOrder, offset, size);
         b.updateBuffer();
         return b;
     }
 
-    private UnsignedByteBufferDynamic(String path, ByteOrder byteOrder, long start, int bufferSize) {
+    private UnsignedByteBufferDynamic(String path, ByteOrder byteOrder, long offset, int bufferSize) {
         this.path = path;
         this.byteOrder = byteOrder;
-        this.offset = start;
-        this.originalOffset = start;
+        this.offset = offset;
+        this.originalOffset = offset;
         this.bufferSize = bufferSize;
     }
 

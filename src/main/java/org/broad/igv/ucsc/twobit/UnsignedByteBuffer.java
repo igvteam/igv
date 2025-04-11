@@ -1,6 +1,7 @@
 package org.broad.igv.ucsc.twobit;
 
 public interface UnsignedByteBuffer {
+
     byte get();
 
     short getShort();
@@ -24,7 +25,6 @@ public interface UnsignedByteBuffer {
     int position();
 
     void position(int i);
-
 
     int remaining();
 

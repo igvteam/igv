@@ -98,7 +98,7 @@ public class BBFeatureSource implements FeatureSource {
         if(chrIdx == null) {
             return Collections.emptyIterator();
         } else {
-            List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+            List<byte[]> chunks = this.reader.getLeafChunks(chrIdx, start, chrIdx, end, rTreeOffset);
             List features = new ArrayList<>();
             for (byte[] chunk : chunks) {
                 features.addAll(reader.decodeFeatures(chr, chunk, chrIdx, start, end));
