@@ -8,7 +8,4 @@ import java.util.List;
 public interface CytobandSource {
 
     List<Cytoband> getCytobands(String chr) throws IOException;
-
-    String [] getChromosomeNames();
-
 }

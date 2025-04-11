@@ -60,11 +60,11 @@ public class TwoBitIndex implements BPIndex {
         }
     }
 
-    public long[] search(String term) {
+    public long searchForOffset(String term) {
         if(sequenceDataOffsets.containsKey(term)) {
-            return new long[]{sequenceDataOffsets.get(term)};
+            return sequenceDataOffsets.get(term);
         } else {
-            return null;
+            return -1;
         }
     }
 

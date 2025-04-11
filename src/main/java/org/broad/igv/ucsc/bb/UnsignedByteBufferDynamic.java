@@ -36,17 +36,17 @@ public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
     ByteOrder byteOrder;
     String path;
 
-    public static UnsignedByteBufferDynamic loadBinaryBuffer(String path, ByteOrder byteOrder, long start, int size) throws IOException {
-        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(path, byteOrder, start, size);
+    public static UnsignedByteBufferDynamic loadBinaryBuffer(String path, ByteOrder byteOrder, long offset, int size) throws IOException {
+        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(path, byteOrder, offset, size);
         b.updateBuffer();
         return b;
     }
 
-    private UnsignedByteBufferDynamic(String path, ByteOrder byteOrder, long start, int bufferSize) {
+    private UnsignedByteBufferDynamic(String path, ByteOrder byteOrder, long offset, int bufferSize) {
         this.path = path;
         this.byteOrder = byteOrder;
-        this.offset = start;
-        this.originalOffset = start;
+        this.offset = offset;
+        this.originalOffset = offset;
         this.bufferSize = bufferSize;
     }
 
@@ -134,6 +134,18 @@ public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
         }
         return wrappedBuffer.getDouble();
     }
+
+    @Override
+    public byte[] getBytes(int length) {
+        if (wrappedBuffer.remaining() < length) {
+            advanceBuffer();
+        }
+        byte[] bytes = new byte[length];
+        wrappedBuffer.get(wrappedBuffer.position(), bytes);
+        wrappedBuffer.position(wrappedBuffer.position() + length);
+        return bytes;
+    }
+
 
     /**
      * Return a null (0) terminated string.  This method assumes short strings, and will fail if string length is > 1000

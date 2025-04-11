@@ -118,7 +118,10 @@ public class Hub {
             genomeConfig.defaultPos = (this.genomeStanza.getProperty("defaultPos"));
             genomeConfig.blat = genomeStanza.getProperty("blat");
             genomeConfig.chromAliasBbURL = genomeStanza.getProperty("chromAliasBb");
-            genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
+            genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptURL");
+            if(genomeConfig.twoBitBptURL == null) {
+                genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
+            }
             genomeConfig.description = genomeStanza.getProperty("description");
             genomeConfig.organism = genomeStanza.getProperty("organism");
             genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
