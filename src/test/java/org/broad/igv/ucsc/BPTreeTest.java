@@ -4,6 +4,7 @@ import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 
 import static org.junit.Assert.*;
 
@@ -20,8 +21,8 @@ public class BPTreeTest {
         assertEquals(15, tree.keySize);
         assertEquals(8, tree.valSize);
 
-        long[] result = tree.search("RJWJ011179649.1");
-        assertEquals(748759988, result[0]);
+        long result = tree.searchForOffset("RJWJ011179649.1");
+        assertEquals(748759988, result);
         assertNotNull(result);
     }
 
@@ -42,4 +43,6 @@ public class BPTreeTest {
 //        assertEquals(748759988, result[0]);
 //        assertNotNull(result);
 //    }
+
+
 }

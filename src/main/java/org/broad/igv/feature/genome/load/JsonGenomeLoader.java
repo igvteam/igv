@@ -32,14 +32,9 @@ public class JsonGenomeLoader extends GenomeLoader {
 
     @Override
     public Genome loadGenome() throws IOException {
-
         GenomeConfig genomeConfig = loadGenomeConfig();
-
         Genome genome = new Genome(genomeConfig);
-
         return genome;
-
-
     }
 
     public GenomeConfig loadGenomeConfig() throws IOException {
@@ -61,39 +56,43 @@ public class JsonGenomeLoader extends GenomeLoader {
      */
     private GenomeConfig fixPaths(GenomeConfig config) {
 
-        if (config.getChromAliasBbURL() != null) {
-            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
+        if (config.chromAliasBbURL != null) {
+            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
         }
-        if (config.getTwoBitURL() != null) {
-            config.setTwoBitURL(FileUtils.getAbsolutePath(config.getTwoBitURL(), genomePath));
+        if (config.twoBitURL != null) {
+            config.twoBitURL = FileUtils.getAbsolutePath(config.twoBitURL, genomePath);
         }
-        if (config.getTwoBitBptURL() != null) {
-            config.setTwoBitBptURL(FileUtils.getAbsolutePath(config.getTwoBitBptURL(), genomePath));
+        if (config.twoBitBptURL != null) {
+            config.twoBitBptURL = FileUtils.getAbsolutePath(config.twoBitBptURL, genomePath);
         }
-        if (config.getCytobandBbURL() != null) {
-            config.setCytobandBbURL(FileUtils.getAbsolutePath(config.getCytobandBbURL(), genomePath));
+        if (config.cytobandBbURL != null) {
+            config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
         }
-        if (config.getChromSizesURL() != null) {
-            config.setChromSizesURL(FileUtils.getAbsolutePath(config.getChromSizesURL(), genomePath));
+        if (config.chromSizesURL != null) {
+            config.chromSizesURL = FileUtils.getAbsolutePath(config.chromSizesURL, genomePath);
         }
-        if (config.getFastaURL() != null) {
-            config.setFastaURL(FileUtils.getAbsolutePath(config.getFastaURL(), genomePath));
+        if (config.fastaURL != null) {
+            config.fastaURL = FileUtils.getAbsolutePath(config.fastaURL, genomePath);
         }
-        if (config.getIndexURL() != null) {
-            config.setIndexURL(FileUtils.getAbsolutePath(config.getIndexURL(), genomePath));
+        if (config.indexURL != null) {
+            config.indexURL = FileUtils.getAbsolutePath(config.indexURL, genomePath);
         }
-        if (config.getGziIndexURL() != null) {
-            config.setGziIndexURL(FileUtils.getAbsolutePath(config.getGziIndexURL(), genomePath));
+        if (config.gziIndexURL != null) {
+            config.gziIndexURL = FileUtils.getAbsolutePath(config.gziIndexURL, genomePath);
         }
-        if (config.getCytobandURL() != null) {
-            config.setCytobandURL(FileUtils.getAbsolutePath(config.getCytobandURL(), genomePath));
+        if (config.cytobandURL != null) {
+            config.cytobandURL = FileUtils.getAbsolutePath(config.cytobandURL, genomePath);
         }
-        if (config.getAliasURL() != null) {
-            config.setAliasURL(FileUtils.getAbsolutePath(config.getAliasURL(), genomePath));
+        if (config.aliasURL != null) {
+            config.aliasURL = FileUtils.getAbsolutePath(config.aliasURL, genomePath);
         }
-        if (config.getChromAliasBbURL() != null) {
-            config.setChromAliasBbURL(FileUtils.getAbsolutePath(config.getChromAliasBbURL(), genomePath));
+        if (config.chromAliasBbURL != null) {
+            config.chromAliasBbURL = FileUtils.getAbsolutePath(config.chromAliasBbURL, genomePath);
         }
+        if (config.infoURL != null) {
+            config.infoURL = FileUtils.getAbsolutePath(config.infoURL, genomePath);
+        }
+
         List<TrackConfig> trackConfigs = config.getTrackConfigs();
         if (trackConfigs != null) {
             trackConfigs.forEach((TrackConfig trackConfig) -> {
@@ -168,9 +167,6 @@ public class JsonGenomeLoader extends GenomeLoader {
             return name;
         }
 
-        public String getFastaURL() {
-            return fastaURL;
-        }
     }
 
 }

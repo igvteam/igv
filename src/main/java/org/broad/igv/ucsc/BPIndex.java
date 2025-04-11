@@ -3,5 +3,5 @@ package org.broad.igv.ucsc;
 import java.io.IOException;
 
 public interface BPIndex {
-    long [] search(String term) throws IOException;
+    long searchForOffset(String term) throws IOException;
 }

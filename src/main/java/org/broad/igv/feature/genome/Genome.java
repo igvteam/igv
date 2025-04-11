@@ -56,6 +56,7 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
 
@@ -63,6 +64,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -113,20 +115,19 @@ public class Genome {
 
     public Genome(GenomeConfig config) throws IOException {
         this.config = config;
-        id = config.getId();
+        id = config.id;
         displayName = config.getName();
-        nameSet = config.getNameSet();
-        blatDB = config.getBlatDB();
+        nameSet = config.nameSet != null ? config.nameSet : "ucsc";
         trackHubs = new ArrayList<>();
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
-        if (config.getUcscID() == null) {
+        if (config.ucscID == null) {
             ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
         } else {
-            ucscID = config.getUcscID();
+            ucscID = config.ucscID;
         }
-        blatDB = (config.getBlatDB() != null) ? config.getBlatDB() : ucscID;
-        defaultPos = config.getDefaultPos();
+        blatDB = (config.blatDB != null) ? config.blatDB : ucscID;
+        defaultPos = config.defaultPos;
 
         // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
         // has preference but the fasta index might still be read for chromosome information.
@@ -134,14 +135,14 @@ public class Genome {
         if (config.getSequence() != null) {
             // Genbank sequences are read directly into memory and referenced by the "sequence" object
             uncachedSequence = config.getSequence();
-        } else if (config.getTwoBitURL() != null) {
-            uncachedSequence = (config.getTwoBitBptURL() != null) ?
-                    new TwoBitSequence(config.getTwoBitURL(), config.getTwoBitBptURL()) :
-                    new TwoBitSequence(config.getTwoBitURL());
-        } else if (config.getFastaURL() != null) {
-            String fastaPath = config.getFastaURL();
-            String indexPath = config.getIndexURL();
-            String gziIndexPath = config.getGziIndexURL();   // Synonyms
+        } else if (config.twoBitURL != null) {
+            uncachedSequence = (config.twoBitBptURL != null) ?
+                    new TwoBitSequence(config.twoBitURL, config.twoBitBptURL) :
+                    new TwoBitSequence(config.twoBitURL);
+        } else if (config.fastaURL != null) {
+            String fastaPath = config.fastaURL;
+            String indexPath = config.indexURL;
+            String gziIndexPath = config.gziIndexURL;   // Synonyms
             uncachedSequence = fastaPath.endsWith(".gz") ?
                     new FastaBlockCompressedSequence(fastaPath, gziIndexPath, indexPath) :
                     new FastaIndexedSequence(fastaPath, indexPath);
@@ -154,18 +155,25 @@ public class Genome {
         // lengths are required to support whole genome view.  Both can be obtained from fasta index files, but
         // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wg view are disabled.
         List<Chromosome> chromosomeList = null;
-        if (config.getChromSizesURL() != null) {
-            chromosomeList = ChromSizesParser.parse(config.getChromSizesURL());
-        } else if (sequence != null && sequence.hasChromosomes()) {
-            chromosomeList = sequence.getChromosomes();
-        } else if (config.getIndexURL() != null) {
-            try {
-                // If chromosome info is not otherwise available try to parse the fasta index, if available.  This
-                // situation can occur if a twoBitURL is defined but chromSizes is not.
-                FastaIndex index = new FastaIndex(config.getIndexURL());
-                chromosomeList = index.getChromosomes();
-            } catch (IOException e) {
-                log.error("Error loading fasta index", e);
+        if (config.chromSizesURL != null) {
+            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.chromSizesURL));
+            if (contentLength > 0 && contentLength < 100000) {
+                chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
+            }
+        }
+
+        if (chromosomeList == null) {
+            if (sequence != null && sequence.hasChromosomes()) {
+                chromosomeList = sequence.getChromosomes();
+            } else if (config.indexURL != null) {
+                try {
+                    // If chromosome info is not otherwise available try to parse the fasta index, if available.  This
+                    // situation can occur if a twoBitURL is defined but chromSizes is not.
+                    FastaIndex index = new FastaIndex(config.indexURL);
+                    chromosomeList = index.getChromosomes();
+                } catch (IOException e) {
+                    log.error("Error loading fasta index", e);
+                }
             }
         }
 
@@ -189,7 +197,7 @@ public class Genome {
                 }
             }
             // If whole genome chromosomes are not explicitly specified try to infer them.
-            if (this.longChromosomeNames == null && config.isWholeGenomeView() != false) {
+            if (this.longChromosomeNames == null && config.wholeGenomeView != false) {
                 this.longChromosomeNames = computeLongChromosomeNames();
             }
         } else {
@@ -201,7 +209,7 @@ public class Genome {
 
         // Whole genome view is enabled by default if we have the chromosome information amd the
         // number of chromosomes is not too large
-        showWholeGenomeView = config.isWholeGenomeView() &&
+        showWholeGenomeView = config.wholeGenomeView &&
                 chromosomeList != null &&
                 chromosomeList.size() > 1 &&
                 longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
@@ -209,23 +217,41 @@ public class Genome {
         // Cytobands
         if (config.getCytobands() != null) {
             cytobandSource = new CytobandMap(config.getCytobands());    // Directly supplied, from .genome file
-        } else if (config.getCytobandBbURL() != null) {
-            cytobandSource = new CytobandSourceBB(config.getCytobandBbURL(), this);
-        } else if (config.getCytobandURL() != null) {
-            cytobandSource = new CytobandMap(config.getCytobandURL());
+        } else if (config.cytobandBbURL != null) {
+            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.cytobandBbURL));
+            if (contentLength > 0 && contentLength < 1000000) {
+                cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
+            }
+
+        }
+        if (cytobandSource == null && config.cytobandURL != null) {
+            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.cytobandURL));
+            if (contentLength > 0 && contentLength < 100000) {
+                cytobandSource = new CytobandMap(config.cytobandURL);
+            }
         }
 
         // Chromosome aliases
-        if (config.getAliasURL() != null) {
-            chromAliasSource = (new ChromAliasFile(config.getAliasURL(), chromosomeNames));
-        } else if (config.getChromAliasBbURL() != null) {
-            chromAliasSource = (new ChromAliasBB(config.getChromAliasBbURL(), this));
-            if (chromosomeNames != null && !chromosomeNames.isEmpty()) {
-                ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
+        if (config.aliasURL != null) {
+            chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
+        } else if (config.chromAliasBbURL != null) {
+
+            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.chromAliasBbURL));
+
+            if(contentLength > 0 && contentLength < 1000000) {
+                chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
+                if (chromosomeNames != null && !chromosomeNames.isEmpty()) {
+                        ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
+                }
             }
-        } else {
-            chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
         }
+        if (chromAliasSource == null) {
+            nameSet = null;
+            if(chromosomeNames != null) {
+                chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
+            }
+        }
+
         if (config.getChromAliases() != null) {
             addChrAliases(config.getChromAliases());
         }
@@ -233,9 +259,9 @@ public class Genome {
         // Set the default position.
         if (showWholeGenomeView) {
             homeChromosome = Globals.CHR_ALL;
-        } else if (config.getDefaultPos() != null) {
-            int idx = config.getDefaultPos().indexOf(":");
-            homeChromosome = idx > 0 ? config.getDefaultPos().substring(0, idx) : config.getDefaultPos();
+        } else if (config.defaultPos != null) {
+            int idx = config.defaultPos.indexOf(":");
+            homeChromosome = idx > 0 ? config.defaultPos.substring(0, idx) : config.defaultPos;
         } else if (this.chromosomeNames != null && this.chromosomeNames.size() > 0) {
             homeChromosome = this.chromosomeNames.get(0);
         } else {

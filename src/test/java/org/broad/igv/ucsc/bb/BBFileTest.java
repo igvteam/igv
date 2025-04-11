@@ -1,10 +1,14 @@
 package org.broad.igv.ucsc.bb;
 
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
@@ -19,8 +23,7 @@ public class BBFileTest {
         String bbFile = "https://data.broadinstitute.org/igvdata/test/data/bb/chromTreeTest.bigwig";
         BBFile reader = new BBFile(bbFile, null);
         reader.readHeader();
-        String [] chrNames = reader.getChromosomeNames();
-        assertEquals(6, chrNames.length);
+        assertEquals(6, reader.getChromosomeCount());
     }
 
     /**
@@ -33,9 +36,10 @@ public class BBFileTest {
         BBFile reader = new BBFile(bbFile, null);
         BBHeader header = reader.readHeader();
         assertNotNull(header);
-        String [] chrNames = reader.getChromosomeNames();
-        assertEquals(1, chrNames.length);
+        assertEquals(1, reader.getChromosomeCount());
+
     }
+
 
     @Test
     public void testAutoSQL() throws IOException {
@@ -87,7 +91,7 @@ public class BBFileTest {
         assertEquals(ncbiName, f1.getAttribute("ncbi"));
 
         String ucscName = "chr2";
-        BasicFeature f2 =  bbReader.search(ucscName);
+        BasicFeature f2 = bbReader.search(ucscName);
         assertEquals(ucscName, f2.getAttribute("ucsc"));
 
         assertNull(bbReader.search("zzzz"));
@@ -102,13 +106,13 @@ public class BBFileTest {
 
         // Search by name, which is the index parameter, does not require trix
         String name = "NP_389226.1";
-        BasicFeature f =  bbReader.search(name);
+        BasicFeature f = bbReader.search(name);
         assertEquals(name, f.getName());
 
 
         // Search by alternate name,  does require trix
         String name2 = "ykoX";
-        BasicFeature f2 =  bbReader.search(name2);
+        BasicFeature f2 = bbReader.search(name2);
         assertEquals(name, f2.getName());
 
         assertNull(bbReader.search("zzzz"));

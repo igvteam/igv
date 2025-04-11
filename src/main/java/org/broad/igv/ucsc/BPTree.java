@@ -42,22 +42,26 @@ package org.broad.igv.ucsc;
  */
 
 
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Created by jrobinso on 6/13/17.
  */
-public class BPTree implements BPIndex{
+public class BPTree implements BPIndex {
 
     // the number 0x78CA8C91 in the architecture of the machine that created the file
     static int SIGNATURE = 0x78CA8C91;
 
     String path;
+    SeekableStream stream;
+
     private long fileOffset;
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
 
@@ -67,24 +71,38 @@ public class BPTree implements BPIndex{
     int blockSize;
     int keySize;
     int valSize;
-    long itemCount;
+    public long itemCount;
     long reserved;
     long nodeOffset;
 
     public static BPTree loadBPTree(String path, long fileOffset) throws IOException {
-        BPTree tree = new BPTree(path, fileOffset);
-        tree.init();
-        return tree;
+        return new BPTree(path, fileOffset);
     }
 
-    private BPTree(String path, long fileOffset) throws IOException {
+    public BPTree(String path, long fileOffset) throws IOException {
         this.path = path;
         this.fileOffset = fileOffset;
         this.nodeCache = new HashMap<>();
+        this.init();
+    }
+
+    /**
+     * Alternative constructor backed by a seekable stream.
+     *
+     * @param stream
+     * @param fileOffset
+     */
+    public BPTree(SeekableStream stream, long fileOffset) throws IOException {
+        this.stream = stream;
+        this.fileOffset = fileOffset;
+        this.nodeCache = new HashMap<>();
+        this.init();
     }
 
     UnsignedByteBuffer loadBinaryBuffer(long start, int size) throws IOException {
-        return UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, start, size);
+        return this.stream != null ?
+                UnsignedByteBufferImpl.getUnsignedByteBuffer(this.stream, this.byteOrder, start, size) :
+                UnsignedByteBufferImpl.loadBinaryBuffer(this.path, this.byteOrder, start, size);
     }
 
     private void init() throws IOException {
@@ -104,25 +122,52 @@ public class BPTree implements BPIndex{
         this.blockSize = buffer.getInt();
         this.keySize = buffer.getInt();
         this.valSize = buffer.getInt();
+        if (!(valSize == 16 || valSize == 8)) {
+            throw new RuntimeException("Unexpected valSiz: " + this.valSize);
+        }
         this.itemCount = buffer.getLong();
         this.reserved = buffer.getLong();
         this.nodeOffset = this.fileOffset + 32;
     }
 
-    public long[] search(String term) throws IOException {
-
-        int keySize = this.keySize;
-        int valSize = this.valSize;
-
-        if (!(valSize == 16 || valSize == 8)) {
-            throw new RuntimeException("Unexpected valSiz: " + this.valSize);
-        }
+    private byte[] search(String term) throws IOException {
 
         // Kick things off
         return walkTreeNode(this.nodeOffset, term);
     }
 
-    Node readTreeNode(long offset) throws IOException {
+    public long searchForOffset(String term) throws IOException {
+        byte[] bytes = search(term);
+        if (bytes != null) {
+            return bytesToLong(bytes, 0);
+        } else {
+            return -1;
+        }
+    }
+
+    public long[] searchLongLong(String term) throws IOException {
+        byte[] bytes = search(term);
+        if (bytes != null) {
+            long offset = bytesToLong(bytes, 0);
+            long size = bytesToLong(bytes, 8);
+            return new long[]{offset, size};
+        } else {
+            return null;
+        }
+    }
+
+    public int[] searchIntInt(String term) throws IOException {
+        byte[] bytes = search(term);
+        if (bytes != null) {
+            int offset = bytesToInt(bytes, 0);
+            int size = bytesToInt(bytes, 4);
+            return new int[]{offset, size};
+        } else {
+            return null;
+        }
+    }
+
+    public Node readTreeNode(long offset) throws IOException {
 
         if (this.nodeCache.containsKey(offset)) {
             return this.nodeCache.get(offset);
@@ -141,14 +186,7 @@ public class BPTree implements BPIndex{
                 buffer = loadBinaryBuffer(offset + 4, size);
                 for (int i = 0; i < count; i++) {
                     String key = buffer.getFixedLengthString(keySize);
-                    long itemOffset = buffer.getLong();
-                    long[] value;
-                    if (valSize == 16) {
-                        long length = buffer.getLong();
-                        value = new long[]{itemOffset, length};
-                    } else {
-                        value = new long[]{itemOffset};
-                    }
+                    byte[] value = buffer.getBytes(valSize);
                     items.add(new Item(key, value));
                 }
             } else {
@@ -158,9 +196,8 @@ public class BPTree implements BPIndex{
 
                 for (int i = 0; i < count; i++) {
                     String key = buffer.getFixedLengthString(keySize);
-                    long itemOffset = buffer.getLong();
-                    long[] value = new long[]{itemOffset};
-                    items.add(new Item(key, value));
+                    long childOffset = buffer.getLong();
+                    items.add(new Item(key, childOffset));
                 }
             }
 
@@ -170,7 +207,7 @@ public class BPTree implements BPIndex{
         }
     }
 
-    long[] walkTreeNode(long offset, String term) throws IOException {
+    byte[] walkTreeNode(long offset, String term) throws IOException {
 
         Node node = readTreeNode(offset);
 
@@ -186,26 +223,56 @@ public class BPTree implements BPIndex{
         } else {
 
             // Non leaf node
-
-            // Read and discard the first key. -- why? Not sure, that's what the "C" code does
-            long childOffset = node.items.get(0).value[0];
-
+            long childOffset = node.items.get(0).offset;
             for (int i = 1; i < node.items.size(); i++) {
                 String key = node.items.get(i).key;
                 if (term.compareTo(key) < 0) {
                     break;
                 }
-                childOffset = node.items.get(i).value[0];
+                childOffset = node.items.get(i).offset;
             }
             return walkTreeNode(childOffset, term);
         }
     }
 
 
-    class Node {
-        int type;
+    private long bytesToLong(byte[] bytes, int start) {
+        long value = 0;
+        int length = Math.min(bytes.length, 8);
+        if (byteOrder == ByteOrder.BIG_ENDIAN) {
+            for (int i = start; i < start + length; i++) {
+                value <<= 8;
+                value |= (bytes[i] & 0xFF);
+            }
+        } else { // Little-endian
+            for (int i = start + length - 1; i >= start; i--) {
+                value <<= 8;
+                value |= (bytes[i] & 0xFF);
+            }
+        }
+        return value;
+    }
+
+    private int bytesToInt(byte[] bytes, int start) {
+        int value = 0;
+        if (byteOrder == ByteOrder.BIG_ENDIAN) {
+            for (int i = start; i < start + 4; i++) {
+                value <<= 8;
+                value |= (bytes[i] & 0xFF);
+            }
+        } else { // Little-endian
+            for (int i = start + 4 - 1; i >= start; i--) {
+                value <<= 8;
+                value |= (bytes[i] & 0xFF);
+            }
+        }
+        return value;
+    }
+
+    public class Node {
+        public int type;
         int count;
-        List<Item> items;
+        public List<Item> items;
 
         public Node(int type, int count, List<Item> items) {
             this.type = type;
@@ -214,17 +281,43 @@ public class BPTree implements BPIndex{
         }
     }
 
-    class Item {
-        String key;
-        long[] value;
+    /**
+     * Represents a single item in a B+ tree node. An item should have a value (for leaf nodes),  or an offset, but not both.
+     */
+    public class Item {
 
-        public Item(String key, long[] value) {
+        String key;
+        byte[] value;
+        public long offset;
+
+        public Item(String key, long offset) {
+            this.key = key;
+            this.offset = offset;
+        }
+
+        public Item(String key, byte[] value) {
             this.key = key;
             this.value = value;
         }
-    }
 
+        public String getKey() {
+            return key;
+        }
+
+        public int[] getValueAsInts() {
+            if (value != null) {
+                int offset = bytesToInt(value, 0);
+                int size = bytesToInt(value, 4);
+                return new int[]{offset, size};
+            } else {
+                return null;
+            }
+        }
+
+
+    }
 }
+
 
 
 

@@ -22,12 +22,12 @@ public class HubTest {
 
         GenomeConfig genomeConfig = hub.getGenomeConfig();
         assertNotNull(genomeConfig);
-        assertEquals("GCF_000186305.1", genomeConfig.getId());
+        assertEquals("GCF_000186305.1", genomeConfig.id);
         assertEquals("Python (GCF_000186305.1)", genomeConfig.getName());
-        assertNotNull(genomeConfig.getTwoBitBptURL());
-        assertNotNull(genomeConfig.getTwoBitURL());
-        assertNotNull(genomeConfig.getChromAliasBbURL());
-        assertNotNull(genomeConfig.getCytobandBbURL());
+        assertNotNull(genomeConfig.twoBitBptURL);
+        assertNotNull(genomeConfig.twoBitURL);
+        assertNotNull(genomeConfig.chromAliasBbURL);
+        assertNotNull(genomeConfig.cytobandBbURL);
     }
 
     @Test

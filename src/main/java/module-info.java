@@ -19,7 +19,7 @@ module org.igv {
     exports org.broad.igv.ui.color;
     exports org.broad.igv.ui.action;
     exports org.broad.igv.ui.commandbar;
-    exports org.broad.igv.ui.table;
+    exports org.broad.igv.ui.genome;
     exports org.broad.igv.maf;
     exports org.broad.igv.renderer;
     exports org.broad.igv.tools;

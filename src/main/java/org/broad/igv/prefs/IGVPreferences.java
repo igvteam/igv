@@ -121,6 +121,33 @@ public class IGVPreferences {
         return val == null ? defaultValue : val;
     }
 
+    /**
+     * Return preference as explicitly set in prefs.properties.  If no value is set return null.
+     * @param key
+     * @return
+     */
+    public String getExplicitValue(String key) {
+        key = key.trim();
+        String val = userPreferences.get(key);
+        if (val == null && parent != null) {
+            val = parent.userPreferences.get(key);
+        }
+        return val;
+    }
+
+    /**
+     * Return the default preference value as set in org.broad.igv.prefs.preferences.tab
+     * @param key
+     * @return
+     */
+    public String getDefault(String key) {
+        key = key.trim();
+        String val = defaults.get(key);
+        if (val == null && parent != null) {
+            val = parent.defaults.get(key);
+        }
+        return val;
+    }
 
     /**
      * Return the preference as a boolean value.
@@ -313,8 +340,8 @@ public class IGVPreferences {
     }
 
     private void checkForRestartChanges(Map<String, String> updatedPreferenceMap) {
-        for(String key : RESTART_KEYS) {
-            if(updatedPreferenceMap.containsKey(key)) {
+        for (String key : RESTART_KEYS) {
+            if (updatedPreferenceMap.containsKey(key)) {
                 MessageUtils.showMessage("Preference changes will take effect after restart.");
                 return;
             }
@@ -323,7 +350,7 @@ public class IGVPreferences {
 
     private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {
 
-        if(updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
+        if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
             try {
                 IGVMenuBar.getInstance().enableGoogleMenu(getAsBoolean(ENABLE_GOOGLE_MENU));
             } catch (IOException e) {

@@ -19,6 +19,7 @@ public class Hub {
     List<Stanza> trackStanzas;
     List<Stanza> groupStanzas;
     TrackDbHub trackHub;
+    private GenomeConfig genomeConfig;
 
     Hub(String url,
         String trackDbURL,
@@ -104,69 +105,31 @@ public class Hub {
 
     public GenomeConfig getGenomeConfig() {
 
-        // TODO -- add blat?  htmlPath?
+        if(genomeConfig == null) {
 
-        GenomeConfig config = new GenomeConfig();
-        config.setId(this.genomeStanza.getProperty("genome"));
-        if (this.genomeStanza.hasProperty("scientificName")) {
-            config.setName(this.genomeStanza.getProperty("scientificName"));
-        } else if (this.genomeStanza.hasProperty("organism")) {
-            config.setName(this.genomeStanza.getProperty("organism"));
-        } else if (this.genomeStanza.hasProperty("description")) {
-            config.setName(this.genomeStanza.getProperty("description"));
-        }
-        if (config.getName() == null) {
-            config.setName(config.getId());
-        } else {
-            config.setName(config.getName() + " (" + config.getId() + ")");
-        }
+            genomeConfig = new GenomeConfig();
+            genomeConfig.nameSet = "ucsc";
+            genomeConfig.wholeGenomeView = false;
+            genomeConfig.id = this.genomeStanza.getProperty("genome");
+            genomeConfig.accession = this.genomeStanza.getProperty("genome");
+            genomeConfig.taxId = this.genomeStanza.getProperty("taxId");
+            genomeConfig.scientificName = this.genomeStanza.getProperty("scientificName");
+            genomeConfig.twoBitURL = (this.genomeStanza.getProperty("twoBitPath"));
+            genomeConfig.defaultPos = (this.genomeStanza.getProperty("defaultPos"));
+            genomeConfig.blat = genomeStanza.getProperty("blat");
+            genomeConfig.chromAliasBbURL = genomeStanza.getProperty("chromAliasBb");
+            genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptURL");
+            if(genomeConfig.twoBitBptURL == null) {
+                genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
+            }
+            genomeConfig.description = genomeStanza.getProperty("description");
+            genomeConfig.organism = genomeStanza.getProperty("organism");
+            genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
+            genomeConfig.infoURL = (genomeStanza.getProperty("htmlPath"));
+            genomeConfig.chromSizesURL = (genomeStanza.getProperty("chromSizes"));
 
-        config.setTwoBitURL(this.genomeStanza.getProperty("twoBitPath"));
-        config.setNameSet("ucsc");
-        config.setWholeGenomeView(false);
 
-        if (this.genomeStanza.hasProperty("defaultPos")) {
-            config.setDefaultPos(this.genomeStanza.getProperty("defaultPos"));
-        }
-
-        config.setDescription(config.getId());
-
-        if (genomeStanza.hasProperty("blat")) {
-            config.setBlat(genomeStanza.getProperty("blat"));
-        }
-        if (genomeStanza.hasProperty("chromAliasBb")) {
-            config.setChromAliasBbURL(genomeStanza.getProperty("chromAliasBb"));
-        }
-        if (genomeStanza.hasProperty("twoBitBptURL")) {
-            config.setTwoBitBptURL(genomeStanza.getProperty("twoBitBptURL"));
-        }
-        if (genomeStanza.hasProperty("twoBitBptUrl")) {
-            config.setTwoBitBptURL(genomeStanza.getProperty("twoBitBptUrl"));
-        }
-
-        // chromSizes can take a very long time to load, and is not useful with the default WGV = off
-        // if (this.genomeStanza.hasProperty("chromSizes")) {
-        //     config.chromSizes = this.baseURL + this.genomeStanza.getProperty("chromSizes")
-        // }
-
-        if (genomeStanza.hasProperty("description")) {
-            config.setDescription(config.getDescription() + "\n" + genomeStanza.getProperty("description"));
-        }
-        if (genomeStanza.hasProperty("organism")) {
-            config.setDescription(config.getDescription() + "\n" + genomeStanza.getProperty("organism"));
-        }
-        if (genomeStanza.hasProperty("scientificName")) {
-            config.setDescription(config.getDescription() + "\n" + genomeStanza.getProperty("scientificName"));
-        }
-
-        if (genomeStanza.hasProperty("htmlPath")) {
-            config.setInfoURL(genomeStanza.getProperty("htmlPath"));
-        }
-        if (genomeStanza.hasProperty("chromSizes")) {
-            config.setChromSizesURL(genomeStanza.getProperty("chromSizes"));
-        }
-
-        // Search for cytoband
+            // Search for cytoband
         /*
         track cytoBandIdeo
         shortLabel Chromosome Band (Ideogram)
@@ -176,14 +139,15 @@ public class Hub {
         type bigBed 4 +
         bigDataUrl bbi/GCA_004027145.1_DauMad_v1_BIUU.cytoBand.bb
          */
-        for (Stanza t : this.trackStanzas) {
-            if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
-                config.setCytobandBbURL(t.getProperty("bigDataUrl"));
-                break;
+            for (Stanza t : this.trackStanzas) {
+                if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
+                    genomeConfig.cytobandBbURL = t.getProperty("bigDataUrl");
+                    break;
+                }
             }
         }
 
-        return config;
+        return genomeConfig;
     }
 
     public List<TrackConfigContainer> getGroupedTrackConfigurations() {

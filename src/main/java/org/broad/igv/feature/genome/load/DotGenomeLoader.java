@@ -98,14 +98,14 @@ public class DotGenomeLoader extends GenomeLoader {
         if (sequencePath == null) {
             // TODO -- is this an error?
         } else {
-            config.setFastaURL(sequencePath);
-            config.setIndexURL(sequencePath + ".fai");
+            config.fastaURL = (sequencePath);
+            config.indexURL = (sequencePath + ".fai");
             if (sequencePath.endsWith(".gz")) {
-                config.setGziIndexURL(sequencePath + ".gzi");
+                config.gziIndexURL = (sequencePath + ".gzi");
             }
         }
 
-        config.setId(id);
+        config.id = (id);
         config.setName(displayName);
 
 
