@@ -5,12 +5,13 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.stream.IGVSeekableHTTPStream;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.function.Function;
+import java.util.List;
 
 /**
  * Represents the ChromTree of a UCSC bigbed/bigwig file.  The entire tree is walked to produce 2 maps,
@@ -147,37 +148,56 @@ public class ChromTree {
      */
     public long estimateGenomeSize() {
         try {
-            double[] avgCount = {0, 0};
-            _estimateSize(this.startOffset + 32, avgCount, 10000);
-            double avg = avgCount[0];
-            return (long) (avg * this.getItemCount());
+            RunningTotal runningTotal = new RunningTotal(0, 0);
+            accumulateSize(this.startOffset + 32, runningTotal, 10000);
+            double avg = runningTotal.getAverage();
+            return (long) (this.getItemCount() * avg);
         } catch (IOException e) {
             log.error("Error estimating genome size", e);
             return -1;
         }
     }
 
-    private double[] _estimateSize(long offset, double[] avgCount, int maxCount) throws IOException {
+    private RunningTotal accumulateSize(long offset, RunningTotal runningTotal, int maxCount) throws IOException {
 
         BPTree.Node node = this.bpTree.readTreeNode(offset);
-
         if (node.type == 1) {
             // Leaf node
             for (BPTree.Item item : node.items) {
                 int[] values = item.getValueAsInts();
-                avgCount[0] = (avgCount[0] * avgCount[1] + values[1]) / (avgCount[1] + 1);
-                avgCount[1] = avgCount[1] + 1;
+                runningTotal.total += values[1];
+                runningTotal.count++;
             }
         } else {
-            // non-leaf
-            for (BPTree.Item item : node.items) {
-                avgCount = _estimateSize(item.offset, avgCount, maxCount);
-                if (avgCount[0] > maxCount) {
+            // non-leaf.  Visit items in random order to try to avoid bias.
+            List<Integer> numbers = new ArrayList<>();
+            for (int i = 0; i < node.items.size(); i++) {
+                numbers.add(i);
+            }
+            Collections.shuffle(numbers);
+
+            for (int i : numbers) {
+                BPTree.Item item = node.items.get(i);
+                accumulateSize(item.offset, runningTotal, maxCount);
+                if (runningTotal.count > maxCount) {
                     break;
                 }
             }
         }
-        return avgCount;
+        return runningTotal;
+    }
+}
+
+class RunningTotal {
+    double total;
+    int count;
+
+    RunningTotal(double total, int count) {
+        this.total = total;
+        this.count = count;
     }
 
+    public double getAverage() {
+        return this.total / this.count;
+    }
 }

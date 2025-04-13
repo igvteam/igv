@@ -52,17 +52,19 @@ public class ChromTreeTest {
     }
 
     /**
-     * Test a BB file with a very large chrom tree (> 7 million contigs
+     * Test a BB file with a very large chrom tree (> 7 million contigs).  The main point of this test is to insure
+     * the calculation of the estimated genome size works.  The accuracy of the estimate is not crucial
+     * Actual size = 5335596729
      */
     @Test
     public void testChromSizeEstimate2() throws IOException {
 
         String bbFile = "https://hgdownload.soe.ucsc.edu/hubs/GCA/004/027/955/GCA_004027955.1/GCA_004027955.1.chromAlias.bb";
         ChromTree chromTree = new ChromTree(bbFile, 738);
-        System.out.println(chromTree.getItemCount());
         assertNotNull(chromTree);
         long estSize = chromTree.estimateGenomeSize();
-        assertTrue(estSize > 0);
+        double ratio =  (double) estSize / 5335596728l;
+        assertTrue(ratio > 0.05 && ratio < 20);
 
     }
 }
