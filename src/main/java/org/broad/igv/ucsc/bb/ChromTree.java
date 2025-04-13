@@ -149,9 +149,8 @@ public class ChromTree {
     public long estimateGenomeSize() {
         try {
             RunningTotal runningTotal = new RunningTotal(0, 0);
-            accumulateSize(this.startOffset + 32, runningTotal, 10000);
-            double avg = runningTotal.getAverage();
-            return (long) (this.getItemCount() * avg);
+            accumulateSize(this.startOffset + 32, runningTotal, 1000);
+            return (long) ((double) (this.getItemCount() / runningTotal.count) * runningTotal.total);
         } catch (IOException e) {
             log.error("Error estimating genome size", e);
             return -1;
@@ -170,14 +169,9 @@ public class ChromTree {
             }
         } else {
             // non-leaf.  Visit items in random order to try to avoid bias.
-            List<Integer> numbers = new ArrayList<>();
-            for (int i = 0; i < node.items.size(); i++) {
-                numbers.add(i);
-            }
-            Collections.shuffle(numbers);
-
-            for (int i : numbers) {
-                BPTree.Item item = node.items.get(i);
+            List<BPTree.Item> shuffledItems = new ArrayList<>(node.items);
+            Collections.shuffle(shuffledItems);
+            for (BPTree.Item item : shuffledItems) {
                 accumulateSize(item.offset, runningTotal, maxCount);
                 if (runningTotal.count > maxCount) {
                     break;

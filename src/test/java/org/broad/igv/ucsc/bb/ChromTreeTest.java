@@ -1,11 +1,9 @@
 package org.broad.igv.ucsc.bb;
 
-import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +41,7 @@ public class ChromTreeTest {
     }
 
     @Test
-    public void testChromSizeEstimate() throws IOException {
+    public void testGenomeSizeEstimate() throws IOException {
         String bbFile = "https://hgdownload.soe.ucsc.edu/gbdb/hs1/ncbiRefSeq/ncbiRefSeqCurated.bb";
         ChromTree chromTree = new ChromTree(bbFile, 1752);
         assertNotNull(chromTree);
@@ -57,7 +55,7 @@ public class ChromTreeTest {
      * Actual size = 5335596729
      */
     @Test
-    public void testChromSizeEstimate2() throws IOException {
+    public void testGenomeSizeEstimate2() throws IOException {
 
         String bbFile = "https://hgdownload.soe.ucsc.edu/hubs/GCA/004/027/955/GCA_004027955.1/GCA_004027955.1.chromAlias.bb";
         ChromTree chromTree = new ChromTree(bbFile, 738);
