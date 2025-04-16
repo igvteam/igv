@@ -271,9 +271,8 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.txt
-
-MASTER_RESOURCE_FILE_KEY	Data registry URL	string	null
+IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.tsv
+MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://igv.org/genomes/registry/$$_dataServerRegistry.txt
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
@@ -402,5 +401,3 @@ MUTATION_Other_likely_neutral_COLO	Other Likely NeutralR	color	225,180,225
 MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 
 OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
-
-AUXILLARY_HUBS_URL	Hub list URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/hubs.txt
