@@ -35,6 +35,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.HttpMappings;
 import org.broad.igv.util.HttpUtils;
 
 
@@ -167,9 +168,6 @@ public class OAuthUtils {
 
 
     private String loadAsString(String urlOrPath) throws IOException {
-        if (HttpUtils.isRemoteURL(urlOrPath)) {
-            urlOrPath = HttpUtils.mapURL(urlOrPath);
-        }
         InputStream is = null;
         try {
             is = openInputStream(urlOrPath);
