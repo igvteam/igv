@@ -27,13 +27,9 @@ package org.broad.igv.util;
 
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.FeatureParser;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
@@ -41,7 +37,6 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPUtils;
-import software.amazon.awssdk.utils.StringInputStream;
 
 import java.awt.*;
 import java.io.*;
@@ -123,9 +118,13 @@ public class ParsingUtils {
             // TODO -- check optional media type - only text/plain supported
             String contents = URLDecoder.decode(dataURL.substring(commaIndex + 1), StandardCharsets.UTF_8);
             return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
-        } else if (HttpUtils.isRemoteURL(locator.getPath())) {
+        }
+
+        BufferedInputStream bis;
+        if (HttpUtils.isRemoteURL(locator.getPath())) {
             URL url = HttpUtils.createURL(locator.getPath());
             inputStream = HttpUtils.getInstance().openConnectionStream(url);
+            bis = new GZIPSafeBufferedStream(inputStream);
         } else {
             String path = locator.getPath();
             if (path.startsWith("file://")) {
@@ -133,13 +132,25 @@ public class ParsingUtils {
             }
             File file = new File(path);
             inputStream = new FileInputStream(file);
+            bis = new BufferedInputStream(inputStream);
         }
 
-        if (locator.getPath().endsWith("gz")) {
-            return new GZIPInputStream(inputStream);
+        // Check if the stream is gzipped
+        if (isGzip(bis)) {
+            bis.reset();
+            return new GZIPInputStream(bis);
         } else {
-            return inputStream;
+            bis.reset();
+            return bis;
         }
+    }
+
+    private static boolean isGzip(BufferedInputStream bis) throws IOException {
+        bis.mark(2);
+        byte[] signature = new byte[2];
+        int read = bis.read(signature);
+        bis.reset();
+        return read == 2 && (signature[0] == (byte) 0x1F && signature[1] == (byte) 0x8B);
     }
 
     public static String readContentsFromStream(InputStream is) throws IOException {
@@ -605,4 +616,26 @@ public class ParsingUtils {
     public static boolean isDataURL(String url) {
         return url != null && url.startsWith("data:") && !((new File(url)).exists());
     }
+}
+
+class GZIPSafeBufferedStream extends BufferedInputStream {
+
+    public GZIPSafeBufferedStream(InputStream in) {
+        super(in);
+    }
+
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        int ret = super.read(b, off, len);
+        if(available() == 0) {
+            mark(26);
+            read();
+            reset();
+        }
+        return ret;
+    }
+
+
+
 }
