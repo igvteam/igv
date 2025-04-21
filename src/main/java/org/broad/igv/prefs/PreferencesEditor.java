@@ -4,10 +4,12 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorSwatch;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.legend.HeatmapLegendPanel;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -196,7 +198,7 @@ public class PreferencesEditor {
                             label.setToolTipText(pref.getComment());
                             comboBox.setToolTipText(pref.getComment());
                         }
-                    } else if (pref.getType().startsWith("color")) {
+                    } else if (pref.getType().equals("color")) {
                         String colorString = preferences.get(pref.getKey());
                         Color c;
                         if (colorString == null) {
@@ -214,6 +216,20 @@ public class PreferencesEditor {
                         grid.addLayoutComponent(colorSwatch, new GridBagConstraints(1, row, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
                         group.add(label);
                         group.add(colorSwatch);
+
+                    } else if ("colorscale".equals(pref.getType())) {
+                        String key = pref.getKey();
+                        String trackType = key.substring(Constants.COLOR_SCALE_KEY.length()).trim();
+                        HeatmapLegendPanel p = new HeatmapLegendPanel(TrackType.valueOf(trackType));
+                        Dimension d = new Dimension(500, 30);
+                        p.setPreferredSize(d);
+                        p.setMaximumSize(d);
+
+                        JLabel label = new JLabel(pref.getLabel());
+                        grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
+                        grid.addLayoutComponent(p, new GridBagConstraints(1, row, 10, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
+                        group.add(label);
+                        group.add(p);
 
                     } else {
                         JLabel label = new JLabel(pref.getLabel());

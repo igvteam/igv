@@ -45,6 +45,12 @@ CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
 TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
 EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
 
+##Color Scales
+-0.1, -1.5, 0.1, 1.5, negColor, neutralColor, posColor
+
+COLOR_SCALE_COPY_NUMBER	Segmented copy number	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
+COLOR_SCALE_GENE_EXPRESSION	Gene expression	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
+
 #Variants
 
 ##Variant Colors

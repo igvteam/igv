@@ -54,11 +54,27 @@ public class GenomeSelectionAction extends MenuAction {
 
     private static Logger log = LogManager.getLogger(GenomeSelectionAction.class);
 
-    private static String [] legacyHeaders = {
-            "name",
+    private static String [] defaultHeaders = {
+                    "common name",
+                    "scientific name",
+                    "assembly",
+                    "accession",
+                    "taxonId"
+    };
+
+    private static String[] legacyColumns = {
+            "common name",
             "url",
             "id"
     };
+
+    private static Set<String> ignoredFields = new HashSet<>(Arrays.asList(
+            "url",
+            "GenArk clade",
+            "id",
+            "_source"
+    ));
+
 
     IGV igv;
     GenomeSelectionDialog genomeSelectionDialog;
@@ -78,48 +94,47 @@ public class GenomeSelectionAction extends MenuAction {
     private GenomeSelectionDialog getGenomeSelectionDialog() {
 
         if (genomeSelectionDialog == null) {
-            List<String> headers = new ArrayList<>();
-//            (List.of(new String[]{
-//                    "accession",
-//                    "assembly",
-//                    "scientific name",
-//                    "common name",
-//                    "taxonId"
-//            }));
             List<GenomeTableRecord> records = new ArrayList<>();
-
             final IGVPreferences preferences = PreferencesManager.getPreferences();
             final String genomesServerURL = preferences.get(GENOMES_SERVER_URL);
-            final boolean isCustom = !(genomesServerURL.equals(preferences.getDefault(GENOMES_SERVER_URL)) ||
-                    genomesServerURL.equals(preferences.getDefault(BACKUP_GENOMES_SERVER_URL)));
+            final boolean isCustom =
+                    !(genomesServerURL.equals(preferences.getDefault(GENOMES_SERVER_URL)) ||
+                            genomesServerURL.equals(preferences.getDefault(BACKUP_GENOMES_SERVER_URL)));
             final String genarkURL = "https://hgdownload.soe.ucsc.edu/hubs/UCSC_GI.assemblyHubList.txt";
 
+            List<String> headers;
+            if (isCustom) {
+                headers = new ArrayList<>();
+            } else {
+                headers = (List.of(defaultHeaders));
+            }
+
             List<String> errors = new ArrayList<>();
-            String[] fields = null;
+
             try {
-                fields = addRecords(genomesServerURL, records,"IGV");
-                addUniqueFields(fields, headers);
+                String [] fields = addRecords(genomesServerURL, records, "IGV");
+                if(isCustom) {
+                    addUniqueFields(fields, headers);
+                }
             } catch (Exception e) {
-                log.error("Error connecting to genomes server URL: " + e.getMessage());
+                log.error("Error loading genome list from: " + genomesServerURL, e);
                 if (isCustom) {
                     MessageUtils.showMessage("Error loading genome list from: " + genomesServerURL + "   (" + e.getMessage() + ")");
                     return null;
                 } else {
                     errors.add("Error loading genome list from: " + genomesServerURL + "   (" + e.getMessage() + ")");
                     try {
-                        fields = addRecords(preferences.get(BACKUP_GENOMES_SERVER_URL), records, "IGV");
-                        addUniqueFields(fields, headers);
+                        addRecords(preferences.get(BACKUP_GENOMES_SERVER_URL), records, "IGV");
                     } catch (Exception ex) {
                         errors.add("Error loading genome list from: " + preferences.get(BACKUP_GENOMES_SERVER_URL) + "   (" + ex.getMessage() + ")");
                     }
                 }
             }
 
+
             if (!isCustom) {
                 try {
-
-                    fields = addRecords(genarkURL, records,"Genark");
-                    addUniqueFields(fields, headers);
+                    addRecords(genarkURL, records, "Genark");
                 } catch (Exception e) {
                     log.error("Error connecting to UCSC Genark server URL: " + e.getMessage());
                     errors.add("Error connecting to UCSC Genark server: " + genarkURL + "  (" + e.getMessage() + ")");
@@ -141,13 +156,6 @@ public class GenomeSelectionAction extends MenuAction {
         return genomeSelectionDialog;
     }
 
-    private Set<String> ignoredFields = new HashSet<>(Arrays.asList(
-            "url",
-            "GenArk clade",
-            "id",
-            "_source"
-    ));
-
     private void addUniqueFields(String[] fields, List<String> headers) {
         for (String field : fields) {
             if (!ignoredFields.contains(field) && !headers.contains(field)) {
@@ -166,9 +174,9 @@ public class GenomeSelectionAction extends MenuAction {
                     headers = Globals.tabPattern.split(line.substring(1).trim());
                 } else {
                     String[] values = Globals.tabPattern.split(line.trim());
-                    if(firstRow) {
-                        if(values.length == 3 && headers.length != 3) {
-                            headers = legacyHeaders;
+                    if (firstRow) {
+                        if (values.length == 3 && headers.length != 3) {
+                            headers = legacyColumns;
                         }
                         firstRow = false;
                     }
@@ -182,7 +190,7 @@ public class GenomeSelectionAction extends MenuAction {
             }
         } catch (IOException e) {
             log.error(e);
-            MessageUtils.showMessage("Error loading genark list: " + e.getMessage());
+            MessageUtils.showMessage("Error loading genome list: " + url + "  " + e.getMessage());
         }
         return headers;
 

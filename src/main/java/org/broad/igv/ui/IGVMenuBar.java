@@ -53,7 +53,6 @@ import org.broad.igv.tools.motiffinder.MotifFinderPlugin;
 import org.broad.igv.track.CombinedDataSourceDialog;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.commandbar.RemoveGenomesDialog;
-import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -595,17 +594,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 };
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction =
-                new MenuAction("Color Legends ...", null, KeyEvent.VK_H) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new LegendDialog(igv.getMainFrame())).setVisible(true);
-                    }
-                };
-        menuAction.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
+        
         menuItems.add(new JSeparator());
 
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {

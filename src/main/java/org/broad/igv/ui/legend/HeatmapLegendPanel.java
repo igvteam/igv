@@ -64,18 +64,11 @@ public class HeatmapLegendPanel extends LegendPanel {
         this.colorScale = PreferencesManager.getPreferences().getColorScale(type);
     }
 
-    public HeatmapLegendPanel(TrackType type, Orientation orientation) {
-        this(type);
-        this.orientation = orientation;
-    }
-
     protected void persistResetPreferences() {
         PreferencesManager.getPreferences().setColorScale(type, colorScale);
     }
 
     protected void resetPreferencesToDefault() {
-        // TODO -- temporary hack.  We need some specific knowledge fo the implementation
-        // in order to edit it,  but do it without a cast
         colorScale = PreferencesManager.getPreferences().getDefaultColorScale(type);
         persistResetPreferences();
         showResetDisplay();
@@ -111,9 +104,7 @@ public class HeatmapLegendPanel extends LegendPanel {
             PreferencesManager.getPreferences().setColorScale(type, colorScale);
             IGV.getInstance().repaint();
             try {
-
                 reloadPreferences();
-
             } finally {
 
                 UIUtilities.invokeOnEventThread(() -> SwingUtilities.getWindowAncestor(HeatmapLegendPanel.this).toFront());
