@@ -115,6 +115,7 @@ module org.igv {
     requires batik.svggen;
     requires batik.dom;
     requires AbsoluteLayout.RELEASE110;
+    requires com.formdev.flatlaf;
 
     // AWS
     requires software.amazon.awssdk.core;
