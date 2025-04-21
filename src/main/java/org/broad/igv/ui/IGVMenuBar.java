@@ -530,6 +530,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         }
 
+        // Sort Tracks
+        menuAction = new SortTracksMenuAction("Sort Tracks by Attribute...", KeyEvent.VK_S, IGV.getInstance());
+        menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Group Tracks
+        menuAction = new GroupTracksMenuAction("Group Tracks by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
         // Filter Tracks
         filterTracksAction = new FilterTracksMenuAction("Filter Tracks by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
