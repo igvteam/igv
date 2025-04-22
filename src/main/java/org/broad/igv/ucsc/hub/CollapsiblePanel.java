@@ -83,8 +83,12 @@ public class CollapsiblePanel extends JPanel {
         header.setBackground(backgroundColor);
 
         this.collapseButton = new JButton();
+        this.collapseButton.setBackground(backgroundColor);
+        this.collapseButton.setBorderPainted(false);
+        this.collapseButton.setFocusPainted(false);
+        this.collapseButton.setContentAreaFilled(false);
         collapseButton.setIcon(isOpen ? openIcon : closeIcon);
-        collapseButton.setBorder(new EmptyBorder(10, 5, 10, 0));
+        //collapseButton.setBorder(new EmptyBorder(10, 5, 10, 0));
         collapseButton.setHorizontalAlignment(SwingConstants.LEFT);
 
         collapseButton.addActionListener(e -> {
