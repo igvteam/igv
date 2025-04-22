@@ -307,22 +307,26 @@ public class Main {
 
         try {
             String lnfselect = PreferencesManager.getPreferences().get(USER_THEME);
-
-            switch(lnfselect){
+            UIManager.LookAndFeelInfo[] looks = UIManager.getInstalledLookAndFeels();
+            String cross = UIManager.getCrossPlatformLookAndFeelClassName();
+            switch (lnfselect) {
                 case "SYSTEM":
                     if (!Globals.IS_LINUX)
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     else
-                        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                        UIManager.setLookAndFeel(cross);
+                    break;
+                case "CROSS":
+                    UIManager.setLookAndFeel(cross);
                     break;
                 case "FLATLIGHT":
-                    if(Globals.IS_MAC)
+                    if (Globals.IS_MAC)
                         UIManager.setLookAndFeel(new FlatMacLightLaf());
                     else
                         UIManager.setLookAndFeel(new FlatLightLaf());
                     break;
                 case "FLATDARK":
-                    if(Globals.IS_MAC)
+                    if (Globals.IS_MAC)
                         UIManager.setLookAndFeel(new FlatMacDarkLaf());
                     else
                         UIManager.setLookAndFeel(new FlatDarkLaf());
@@ -333,8 +337,21 @@ public class Main {
                 case "FLATINTELLIJDARK":
                     UIManager.setLookAndFeel(new FlatDarculaLaf());
                     break;
+                case "NIMBUS":
+                case "METAL":
+                    boolean found = false;
+                    for (UIManager.LookAndFeelInfo info : looks) {
+                        if (info.getName().toUpperCase().contains(lnfselect)) {
+                            UIManager.setLookAndFeel(info.getClassName());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(found) {
+                        break;
+                    }
                 default:
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                    UIManager.setLookAndFeel(cross);
                     break;
             }
 

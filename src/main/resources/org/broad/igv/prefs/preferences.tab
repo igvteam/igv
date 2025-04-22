@@ -25,14 +25,7 @@ DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
 FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
-USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK	SYSTEM
-
-##Nucleotide Colors
-COLOR.A	A	color	0,150,0
-COLOR.C	C	color	0,0,255
-COLOR.T	T	color	255,0,0
-COLOR.G	G	color	209,113,5
-COLOR.N	n	color	128,128,128
+USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK|NIMBUS|METAL|CROSS	SYSTEM
 
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
@@ -51,6 +44,13 @@ EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
 
 COLOR_SCALE_COPY_NUMBER	Segmented copy number	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
 COLOR_SCALE_GENE_EXPRESSION	Gene expression	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
+
+##Nucleotide Colors
+COLOR.A	A	color	0,150,0
+COLOR.C	C	color	0,0,255
+COLOR.T	T	color	255,0,0
+COLOR.G	G	color	209,113,5
+COLOR.N	n	color	128,128,128
 
 #Variants
 
