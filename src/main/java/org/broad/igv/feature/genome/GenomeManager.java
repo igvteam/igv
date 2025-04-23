@@ -50,7 +50,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
-import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
+import org.broad.igv.ucsc.hub.TrackSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
@@ -173,15 +173,6 @@ public class GenomeManager {
             FeatureDB.clearFeatures();
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
-
-            // Add hubs from auxillary list.  This is provided to support older genome files that do not specify hubs.
-            if(newGenome.getTrackHubs().isEmpty()) {
-                Map<String, List<String>> hubUrlMap = HubParser.getHubURLs();
-                List<String> hubUrls = hubUrlMap.get(newGenome.getUCSCId());
-                if (hubUrls != null && !hubUrls.isEmpty()) {
-                    newGenome.addTrackHubs(HubParser.loadHubs(newGenome.getUCSCId(), hubUrls));
-                }
-            }
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             final File genomeCacheDirectory = DirectoryManager.getGenomeCacheDirectory();
@@ -378,7 +369,7 @@ public class GenomeManager {
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
-        TrackHubSelectionDialog dlg = TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
+        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
         try {
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             if (dlg.isCanceled()) {

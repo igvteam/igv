@@ -66,6 +66,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
@@ -859,10 +860,6 @@ public class Genome {
         return trackHubs;
     }
 
-    public boolean hasHub(String url) {
-        return trackHubs.stream().anyMatch(h -> h.getUrl().equals(url));
-    }
-
     public void addTrackHub(Hub hub) {
         if (!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
             hub.setOrder(trackHubs.size());
@@ -870,11 +867,15 @@ public class Genome {
             config.addHub(hub.getUrl());
         }
     }
-
-    public void addTrackHubs(List<Hub> hubs) {
-        trackHubs.addAll(hubs);
+    public void removeHubs(Set<String> unselectedURLS) {
+        for (int i = trackHubs.size() - 1; i >= 0; i--) {
+            Hub hub = trackHubs.get(i);
+            if (unselectedURLS.contains(hub.getUrl())) {
+                trackHubs.remove(i);
+                config.removeHub(hub.getUrl());
+            }
+        }
     }
-
     public GenomeConfig getConfig() {
         return config;
     }

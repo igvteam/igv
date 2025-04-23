@@ -27,31 +27,31 @@ import java.util.function.Function;
  * Dialog to enable selection of tracks defined by track hubs.  Modifies the "visible" property of
  * supplied track configurations.
  */
-public class TrackHubSelectionDialog extends JDialog {
+public class TrackSelectionDialog extends JDialog {
 
-    private static Logger log = LogManager.getLogger(TrackHubSelectionDialog.class);
+    private static Logger log = LogManager.getLogger(TrackSelectionDialog.class);
 
-    private static Map<Hub, TrackHubSelectionDialog> hubSelectionDialogs = new HashMap<>();
+    private static Map<Hub, TrackSelectionDialog> hubSelectionDialogs = new HashMap<>();
 
     private Hub hub;
     private boolean autoselectDefaults;
     private ArrayList<CollapsiblePanel> categoryPanels;
     private boolean canceled = true;
 
-    public static TrackHubSelectionDialog getTrackHubSelectionDialog(
+    public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
             Set<String> loadedTrackPaths,
             boolean autoselectDefaults,
             String message) {
 
-        TrackHubSelectionDialog dialog;
+        TrackSelectionDialog dialog;
         if (hubSelectionDialogs.containsKey(hub) && !autoselectDefaults) {
             dialog = hubSelectionDialogs.get(hub);
             dialog.autoselectDefaults = autoselectDefaults;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
-            dialog = new TrackHubSelectionDialog(hub, groups, autoselectDefaults, message, owner);
+            dialog = new TrackSelectionDialog(hub, groups, autoselectDefaults, message, owner);
             hubSelectionDialogs.put(hub, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
@@ -59,11 +59,11 @@ public class TrackHubSelectionDialog extends JDialog {
         return dialog;
     }
 
-    private TrackHubSelectionDialog(Hub hub,
-                                    List<TrackConfigContainer> trackConfigContainers,
-                                    boolean autoselectDefaults,
-                                    String message,
-                                    Frame owner) {
+    private TrackSelectionDialog(Hub hub,
+                                 List<TrackConfigContainer> trackConfigContainers,
+                                 boolean autoselectDefaults,
+                                 String message,
+                                 Frame owner) {
         super(owner);
         setModal(true);
         this.autoselectDefaults = autoselectDefaults;
@@ -446,7 +446,7 @@ public class TrackHubSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
 
-        final TrackHubSelectionDialog dlf = new TrackHubSelectionDialog(hub, groupedTrackConfigurations, true, null, null);
+        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, true, null, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 

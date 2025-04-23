@@ -3,8 +3,6 @@ package org.broad.igv.ucsc.hub;
 import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -20,8 +18,6 @@ import java.util.stream.IntStream;
 public class HubParser {
 
     private static Logger log = LogManager.getLogger(HubParser.class);
-
-    static Map<String, List<String>> hubURLMap = null;
 
     private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
@@ -136,45 +132,12 @@ public class HubParser {
                 .collect(Collectors.toList());
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         try {
-            combinedFuture.get(20, TimeUnit.SECONDS);
+            combinedFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("Error loading hubs", e);
         }
         Collections.sort(trackHubs, (h1, h2) -> h1.getOrder() - h2.getOrder());
         return trackHubs;
-    }
-
-    public static Map<String, List<String>> getHubURLs() {
-
-        if (hubURLMap == null) {
-
-            String filePath = PreferencesManager.getPreferences().get(Constants.AUXILLARY_HUBS_URL);
-
-            hubURLMap = new HashMap<>();
-            try (BufferedReader br = ParsingUtils.openBufferedReader(filePath)) {
-                String line;
-                String currentGenomeId = null;
-                List<String> currentURLList = null;
-                while ((line = br.readLine()) != null) {
-                    if (line.startsWith("#")) {
-                        continue;
-                    }
-                    line = line.trim();
-                    if (currentGenomeId == null) {
-                        currentGenomeId = line;
-                        currentURLList = new ArrayList<>();
-                        hubURLMap.put(currentGenomeId, currentURLList);
-                    } else if (line.length() == 0) {
-                        currentGenomeId = null;
-                    } else {
-                        currentURLList.add(line);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return hubURLMap;
     }
 
     static List<Stanza> loadStanzas(String url) throws IOException {

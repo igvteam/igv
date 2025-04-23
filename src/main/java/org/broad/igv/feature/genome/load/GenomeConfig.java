@@ -192,4 +192,7 @@ public class GenomeConfig implements Cloneable {
         return (new Gson()).toJson(obj);
     }
 
+    public void removeHub(String url) {
+        this.hubs.remove(url);
+    }
 }

@@ -36,11 +36,14 @@ import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubRegistry;
+import org.broad.igv.ucsc.hub.HubSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
@@ -492,12 +495,43 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         tracksMenu.add(new JSeparator());
 
         // Track hubs
+        boolean hubItemsAdded = false;
         if (genome != null && genome.getTrackHubs().size() > 0) {
             for (Hub trackHub : genome.getTrackHubs()) {
                 tracksMenu.add(createTrackHubItem(trackHub));
             }
-            tracksMenu.add(new JSeparator());
+            hubItemsAdded = true;
         }
+
+        // Optionally add "More Hubs" menu item
+        if (genome != null && HubRegistry.hasHubsForGenome(genome.getUCSCId())) {
+            JMenuItem addHubItem = new JMenuItem("More Hubs ...");
+            addHubItem.addActionListener(e -> {
+
+                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame(), genome);
+                hubSelectionDialog.setVisible(true);
+                List<Hub> selectedHubs = hubSelectionDialog.getSelectedHubs();
+                Set<String> unselectedURLS = hubSelectionDialog.getUnselectedURLs();
+                genome.removeHubs(unselectedURLS);
+
+                if (selectedHubs != null) {
+                    for(Hub hub : selectedHubs) {
+                        genome.addTrackHub(hub);
+                    }
+                    IGVMenuBar.getInstance().updateMenus(genome);
+                    try {
+                        GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
+                    } catch (IOException ex) {
+                        log.error("Error saving local genome", ex);
+                    }
+                }
+            });
+
+            tracksMenu.add(addHubItem);
+            hubItemsAdded = true;
+        }
+
+        if(hubItemsAdded) tracksMenu.add(new JSeparator());
 
         // ENCODE items.  These will be hidden / shown depending on genome chosen
         if (genome != null) {
@@ -582,7 +616,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-
     }
 
     private JMenu createViewMenu() {
@@ -604,7 +637,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 };
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        
+
         menuItems.add(new JSeparator());
 
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
@@ -1253,9 +1286,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
     }
 
-    public void  disableTracksMenu() {
+    public void disableTracksMenu() {
         tracksMenu.setEnabled(false);
     }
+
     public void enableTracksMenu() {
         tracksMenu.setEnabled(true);
     }

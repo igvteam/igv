@@ -7,7 +7,6 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -106,7 +105,7 @@ public class CollapsiblePanel extends JPanel {
         this.add(header, BorderLayout.NORTH);
 
         if (addSearchButton) {
-            final JButton searchButton = TrackHubSelectionDialog.createSearchButton("Search " + configContainer.label, Arrays.asList(this),
+            final JButton searchButton = TrackSelectionDialog.createSearchButton("Search " + configContainer.label, Arrays.asList(this),
                     (selectedCount) -> {
                         this.updateLabel();
                         return null;
@@ -256,7 +255,7 @@ public class CollapsiblePanel extends JPanel {
 
         private final JLabel label;
         private TrackConfig trackConfig;
-        private TrackHubSelectionDialog.CheckBoxWrapper checkbox;
+        private TrackSelectionDialog.CheckBoxWrapper checkbox;
         private int preferredWidth = -1;
         private int minWidth;
         private Function<Integer, Void> callback;
@@ -271,7 +270,7 @@ public class CollapsiblePanel extends JPanel {
                 this.setToolTipText(longLabel);
             }
 
-            this.checkbox = new TrackHubSelectionDialog.CheckBoxWrapper(checkboxType);
+            this.checkbox = new TrackSelectionDialog.CheckBoxWrapper(checkboxType);
 
             checkbox.setActionListener(e -> {
                 trackConfig.visible = (checkbox.isSelected());

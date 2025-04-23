@@ -167,4 +167,11 @@ public class Hub {
     public String getUrl() {
         return url;
     }
+
+    public String getName() {
+        return this.hubStanza.getProperty("shortLabel");
+    }
+    public String getDescription() {
+        return this.hubStanza.getProperty("longLabel");
+    }
 }

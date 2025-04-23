@@ -34,7 +34,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.TrackConfigContainer;
-import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
+import org.broad.igv.ucsc.hub.TrackSelectionDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -104,8 +104,8 @@ public class SelectHubTracksAction extends MenuAction {
                 .map(t -> t.getResourceLocator().getPath())
                 .collect(Collectors.toSet());
 
-        TrackHubSelectionDialog dlg =
-                TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false, null);
+        TrackSelectionDialog dlg =
+                TrackSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false, null);
 
         dlg.setVisible(true);
 

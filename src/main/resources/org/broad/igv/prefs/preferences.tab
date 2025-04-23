@@ -25,7 +25,7 @@ DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
 FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
-USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK|NIMBUS|METAL|CROSS	SYSTEM
+USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK|NIMBUS|METAL|CROSS	FLATLIGHT
 
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40

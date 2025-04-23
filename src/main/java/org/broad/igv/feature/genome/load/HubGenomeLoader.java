@@ -11,7 +11,7 @@ import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ucsc.hub.TrackHubSelectionDialog;
+import org.broad.igv.ucsc.hub.TrackSelectionDialog;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -135,8 +135,8 @@ public class HubGenomeLoader extends GenomeLoader {
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
-            TrackHubSelectionDialog dlg =
-                    TrackHubSelectionDialog.getTrackHubSelectionDialog(hub, null, true,
+            TrackSelectionDialog dlg =
+                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, null, true,
                             GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
 
             boolean dlgSuccess = true;
