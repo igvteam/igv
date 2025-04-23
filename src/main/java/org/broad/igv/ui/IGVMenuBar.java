@@ -1291,7 +1291,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void enableTracksMenu() {
-        tracksMenu.setEnabled(true);
+      UIUtilities.invokeOnEventThread(() ->  tracksMenu.setEnabled(true));
     }
 }
 
