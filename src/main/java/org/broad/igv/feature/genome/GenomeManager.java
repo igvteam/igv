@@ -369,7 +369,7 @@ public class GenomeManager {
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
-        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
+        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
         try {
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             if (dlg.isCanceled()) {

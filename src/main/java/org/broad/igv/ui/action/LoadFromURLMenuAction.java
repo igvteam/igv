@@ -30,7 +30,6 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -38,6 +37,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
+import org.broad.igv.ucsc.hub.HubRegistry;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
@@ -153,7 +153,12 @@ public class LoadFromURLMenuAction extends MenuAction {
         }
     }
 
-    // Note: this is not currently used
+    /**
+     * Load a track hub from a URL.  This method is called from the menu action and also from the
+     * HubGenomeLoader when loading a genome.
+     *
+     * @param url
+     */
     private static void loadTrackHub(final String url) {
 
         LongRunningTask.submit(() -> {
@@ -165,10 +170,9 @@ public class LoadFromURLMenuAction extends MenuAction {
                 if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcscID().equals(id))) {
                     HubGenomeLoader.loadAssemblyHub(hub);
                 } else if (genome != null) {
-                    SelectHubTracksAction.selectAndLoadTracks(hub);
-                    genome.addTrackHub(hub);
+                    SelectHubTracksAction.selectAndLoadTracks(hub, id);
+                    HubRegistry.addUserHub(hub);
                     IGVMenuBar.getInstance().updateMenus(genome);
-                    GenomeDownloadUtils.saveLocalGenome(genome.getConfig());
                 }
 
             } catch (IOException ex) {

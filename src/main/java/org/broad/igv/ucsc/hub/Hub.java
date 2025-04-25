@@ -7,35 +7,50 @@ import org.broad.igv.logging.Logger;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Hub object representing a UCSC hub.  This is a collection of genome and track
+ *
+ *
+ * Example genomes stanza or genomes.txt file for an assembly hub:
+ *
+ * genome ricCom1
+ * trackDb ricCom1/trackDb.txt
+ * groups ricCom1/groups.txt
+ * description July 2011 Castor bean
+ * twoBitPath ricCom1/ricCom1.2bit
+ * organism Ricinus communis
+ * defaultPos EQ973772:1000000-2000000
+ * orderKey 4800
+ * scientificName Ricinus communis
+ * htmlPath ricCom1/description.html
+ * transBlat yourLab.yourInstitution.edu 17777
+ * blat yourLab.yourInstitution.edu 17779
+ * isPcr yourLab.yourInstitution.edu 17779
+ */
+
 
 public class Hub {
 
     private static Logger log = LogManager.getLogger(Hub.class);
     private final String url;
-    private final String trackDbURL;
     private int order = 0;
     Stanza hubStanza;
-    Stanza genomeStanza;
-    List<Stanza> trackStanzas;
+    List<Stanza> genomeStanzas;
     List<Stanza> groupStanzas;
-    TrackDbHub trackHub;
+    Map<String, TrackDbHub> trackHubMap;
     private GenomeConfig genomeConfig;
 
     Hub(String url,
-        String trackDbURL,
         Stanza hubStanza,
-        Stanza genomeStanza,
+        List<Stanza> genomeStanzas,
         List<Stanza> trackStanzas,
         List<Stanza> groupStanzas) throws IOException {
 
         this.url = url;
-        this.trackDbURL = trackDbURL;
-
-        // Validation checks
         this.hubStanza = hubStanza;
-        this.genomeStanza = genomeStanza;
-        this.trackStanzas = trackStanzas;
+        this.genomeStanzas = genomeStanzas;
         this.groupStanzas = groupStanzas;
+        this.trackHubMap = new HashMap<>();
 
         // load includes.  Nested includes (includes within includes) are not supported
 //        List<Stanza> includes = stanzas.stream().filter(s -> "include".equals(s.type)).toList();
@@ -47,8 +62,10 @@ public class Hub {
 //            }
 //        }
 
+        // trackStanzas will not be null if this is a "onefile" hub
         if (trackStanzas != null) {
-            this.trackHub = new TrackDbHub(trackStanzas, groupStanzas);
+            String genomeId = genomeStanzas.get(0).getProperty("genome");     // Assmuption here this is a single genome hub
+            trackHubMap.put(genomeId, new TrackDbHub(trackStanzas, groupStanzas));
         }
     }
 
@@ -60,8 +77,26 @@ public class Hub {
         this.order = order;
     }
 
+    /**
+     *  * Example genomes stanza or genomes.txt file for an assembly hub:
+     *  *
+     *  * genome ricCom1
+     *  * trackDb ricCom1/trackDb.txt
+     *  * groups ricCom1/groups.txt
+     *  * description July 2011 Castor bean
+     *  * twoBitPath ricCom1/ricCom1.2bit
+     *  * organism Ricinus communis
+     *  * defaultPos EQ973772:1000000-2000000
+     *  * orderKey 4800
+     *  * scientificName Ricinus communis
+     *  * htmlPath ricCom1/description.html
+     *  * transBlat yourLab.yourInstitution.edu 17777
+     *  * blat yourLab.yourInstitution.edu 17779
+     *  * isPcr yourLab.yourInstitution.edu 17779
+     */
+
     public boolean isAssemblyHub() {
-        return genomeStanza.hasProperty("twoBitPath");
+        return genomeStanzas.stream().allMatch(gs -> gs.hasProperty("twoBitPath"));
     }
 
     public String getShortLabel() {
@@ -75,6 +110,47 @@ public class Hub {
     public String getDescriptionURL() {
         return hubStanza.hasProperty("descriptionUrl") ? hubStanza.getProperty("descriptionUrl") :
                 hubStanza.hasProperty("desriptionUrl") ? hubStanza.getProperty("desriptionUrl") : null;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getName() {
+        return this.hubStanza.getProperty("shortLabel");
+    }
+
+    public String getDescription() {
+        return this.hubStanza.getProperty("longLabel");
+    }
+
+    public List<TrackConfigContainer> getGroupedTrackConfigurations(String genomeId) {
+
+        final TrackDbHub trackHub = getTrackDbHub(genomeId);
+        String longLabel = this.getLongLabel();
+        String hubLabel = longLabel != null && longLabel.length() < 50 ? longLabel : this.getShortLabel();
+        return trackHub.getGroupedTrackConfigurations(hubLabel);
+    }
+
+    private TrackDbHub getTrackDbHub(String genomeId) {
+        TrackDbHub trackHub = trackHubMap.get(genomeId);
+        if (trackHub == null) {
+            for (Stanza s : genomeStanzas) {
+                if (genomeId.equals(s.getProperty("genome"))) {
+                    try {
+                        String trackDbURL = s.getProperty("trackDb");
+                        List<Stanza> trackStanzas = HubParser.loadStanzas(trackDbURL);
+                        trackHub = new TrackDbHub(trackStanzas, this.groupStanzas);
+                        trackHubMap.put(genomeId, trackHub);
+                    } catch (IOException e) {
+                        log.error("Error loading trackDb file: " + s.getProperty("trackDb"), e);
+                    }
+                    //TODO -- groups
+                }
+
+            }
+        }
+        return trackHub;
     }
 
 
@@ -103,23 +179,34 @@ public class Hub {
         }
     }
 
+
+    /**
+     * Return the genome configuration for this assembly hub.  Currently we support only a single genome
+     * in an assembly hub.
+     *
+     * @return GenomeConfig
+     */
     public GenomeConfig getGenomeConfig() {
 
-        if(genomeConfig == null) {
+        if (genomeConfig == null) {
 
+            Stanza genomeStanza = genomeStanzas.get(0);
+            if (genomeStanza == null) {
+                throw new RuntimeException("No genome stanza found in hub");
+            }
             genomeConfig = new GenomeConfig();
+            genomeConfig.id = genomeStanza.getProperty("genome");
             genomeConfig.nameSet = "ucsc";
             genomeConfig.wholeGenomeView = false;
-            genomeConfig.id = this.genomeStanza.getProperty("genome");
-            genomeConfig.accession = this.genomeStanza.getProperty("genome");
-            genomeConfig.taxId = this.genomeStanza.getProperty("taxId");
-            genomeConfig.scientificName = this.genomeStanza.getProperty("scientificName");
-            genomeConfig.twoBitURL = (this.genomeStanza.getProperty("twoBitPath"));
-            genomeConfig.defaultPos = (this.genomeStanza.getProperty("defaultPos"));
+            genomeConfig.accession = genomeStanza.getProperty("genome");
+            genomeConfig.taxId = genomeStanza.getProperty("taxId");
+            genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
+            genomeConfig.twoBitURL = (genomeStanza.getProperty("twoBitPath"));
+            genomeConfig.defaultPos = (genomeStanza.getProperty("defaultPos"));
             genomeConfig.blat = genomeStanza.getProperty("blat");
             genomeConfig.chromAliasBbURL = genomeStanza.getProperty("chromAliasBb");
             genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptURL");
-            if(genomeConfig.twoBitBptURL == null) {
+            if (genomeConfig.twoBitBptURL == null) {
                 genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
             }
             genomeConfig.description = genomeStanza.getProperty("description");
@@ -130,48 +217,10 @@ public class Hub {
 
 
             // Search for cytoband
-        /*
-        track cytoBandIdeo
-        shortLabel Chromosome Band (Ideogram)
-        longLabel Ideogram for Orientation
-        group map
-        visibility dense
-        type bigBed 4 +
-        bigDataUrl bbi/GCA_004027145.1_DauMad_v1_BIUU.cytoBand.bb
-         */
-            for (Stanza t : this.trackStanzas) {
-                if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
-                    genomeConfig.cytobandBbURL = t.getProperty("bigDataUrl");
-                    break;
-                }
-            }
+            TrackDbHub trackDbHub = getTrackDbHub(genomeConfig.id);
+            genomeConfig.cytobandBbURL = trackDbHub.findCytobandURL();
         }
 
         return genomeConfig;
-    }
-
-    public List<TrackConfigContainer> getGroupedTrackConfigurations() {
-        if (this.trackHub == null) {
-            try {
-                List<Stanza> trackStanzas = HubParser.loadStanzas(this.trackDbURL);
-                this.trackHub = new TrackDbHub(trackStanzas, this.groupStanzas);
-            } catch (IOException e) {
-                throw new RuntimeException("Error loading track configurations: " + e.getMessage(), e);
-            }
-        }
-        String longLabel = this.getLongLabel();
-        String hubLabel = longLabel != null && longLabel.length() < 50 ? longLabel : this.getShortLabel();
-        return trackHub.getGroupedTrackConfigurations(hubLabel);
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getName() {
-        return this.hubStanza.getProperty("shortLabel");
-    }
-    public String getDescription() {
-        return this.hubStanza.getProperty("longLabel");
     }
 }

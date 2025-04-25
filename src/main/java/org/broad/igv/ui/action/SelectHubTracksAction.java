@@ -55,13 +55,12 @@ public class SelectHubTracksAction extends MenuAction {
     static Logger log = LogManager.getLogger(SelectHubTracksAction.class);
 
     private Hub hub;
-    IGV mainFrame;
+    String genomeId;
 
-
-    public SelectHubTracksAction(String label, IGV mainFrame, Hub hub) {
+    public SelectHubTracksAction(String label, Hub hub, String id) {
         super(label, null);
-        this.mainFrame = mainFrame;
         this.hub = hub;
+        this.genomeId = id;
     }
 
     @Override
@@ -74,7 +73,7 @@ public class SelectHubTracksAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    selectAndLoadTracks(hub);
+                    selectAndLoadTracks(hub, genomeId);
 
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);
@@ -97,7 +96,7 @@ public class SelectHubTracksAction extends MenuAction {
 
     }
 
-    public static void selectAndLoadTracks(Hub hub) {
+    public static void selectAndLoadTracks(Hub hub, String id) {
 
         Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
                 .filter(t -> t.getResourceLocator() != null)
@@ -105,13 +104,13 @@ public class SelectHubTracksAction extends MenuAction {
                 .collect(Collectors.toSet());
 
         TrackSelectionDialog dlg =
-                TrackSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false, null);
+                TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
 
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
 
-            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(id);
 
             // The dialog action will modify the visible state for each track config
             List<TrackConfig> tracksToLoad = new ArrayList<>();

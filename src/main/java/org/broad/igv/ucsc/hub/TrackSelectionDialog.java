@@ -40,6 +40,7 @@ public class TrackSelectionDialog extends JDialog {
 
     public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
+            String genomeId,
             Set<String> loadedTrackPaths,
             boolean autoselectDefaults,
             String message) {
@@ -50,7 +51,7 @@ public class TrackSelectionDialog extends JDialog {
             dialog.autoselectDefaults = autoselectDefaults;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
-            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(genomeId);
             dialog = new TrackSelectionDialog(hub, groups, autoselectDefaults, message, owner);
             hubSelectionDialogs.put(hub, dialog);
         }
@@ -444,7 +445,7 @@ public class TrackSelectionDialog extends JDialog {
 
         Hub hub = HubParser.loadHub(hubFile, "hs1");
 
-        List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hs1");
 
         final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, true, null, null);
         dlf.setSize(new Dimension(800, 600));
