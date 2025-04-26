@@ -6,6 +6,7 @@ import org.broad.igv.logging.Logger;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Hub object representing a UCSC hub.  This is a collection of genome and track
@@ -52,21 +53,24 @@ public class Hub {
         this.groupStanzas = groupStanzas;
         this.trackHubMap = new HashMap<>();
 
-        // load includes.  Nested includes (includes within includes) are not supported
-//        List<Stanza> includes = stanzas.stream().filter(s -> "include".equals(s.type)).toList();
-//        for (Stanza s : includes) {
-//            List<Stanza> includeStanzas = HubParser.loadStanzas(getDataURL(s.getProperty("include")));
-//            for (Stanza inc : includeStanzas) {
-//                inc.setProperty("visibility", "hide");
-//                stanzas.add(inc);
-//            }
-//        }
-
         // trackStanzas will not be null if this is a "onefile" hub
         if (trackStanzas != null) {
             String genomeId = genomeStanzas.get(0).getProperty("genome");     // Assmuption here this is a single genome hub
             trackHubMap.put(genomeId, new TrackDbHub(trackStanzas, groupStanzas));
         }
+    }
+
+    public HubDescriptor getDescriptor() {
+        String dbList = genomeStanzas.stream()
+                .map(stanza -> stanza.getProperty("genome"))
+                .collect(Collectors.joining(","));
+
+        return new HubDescriptor(
+                this.url,
+                this.hubStanza.getProperty("shortLabel"),
+                this.hubStanza.getProperty("longLabel"),
+                this.hubStanza.getProperty("descriptionUrl"),
+                dbList);
     }
 
     public int getOrder() {

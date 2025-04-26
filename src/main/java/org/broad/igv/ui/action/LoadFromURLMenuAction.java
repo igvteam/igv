@@ -166,7 +166,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 String id = genome != null ? genome.getUCSCId() : null;
 
-                Hub hub = HubParser.loadHub(url, id);
+                Hub hub = HubParser.loadHub(url);
                 if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfig().getUcscID().equals(id))) {
                     HubGenomeLoader.loadAssemblyHub(hub);
                 } else if (genome != null) {

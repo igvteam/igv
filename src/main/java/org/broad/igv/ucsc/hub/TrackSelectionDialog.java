@@ -443,7 +443,7 @@ public class TrackSelectionDialog extends JDialog {
 
         String hubFile = "https://hgdownload.soe.ucsc.edu/gbdb/hs1/hubs/public/hub.txt";
 
-        Hub hub = HubParser.loadHub(hubFile, "hs1");
+        Hub hub = HubParser.loadHub(hubFile);
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hs1");
 

@@ -27,15 +27,14 @@ public class HubParser {
     private static final Map<String, Hub> hubCache = new HashMap<>();
 
     public static Hub loadAssemblyHub(String url) throws IOException {
-        return loadHub(url, null);
+        return loadHub(url);
     }
 
-    public static Hub loadHub(String url, String genomeId) throws IOException {
+    public static Hub loadHub(String url) throws IOException {
 
         // Check if the Hub is already cached
-        String key = url + (genomeId == null ? "" : genomeId);
+        String key = url;
         if (hubCache.containsKey(key)) {
-
             return hubCache.get(key);
         }
 
@@ -63,15 +62,6 @@ public class HubParser {
             }
             Stanza genomeStanza = stanzas.get(1);
             genomeStanzas = Arrays.asList(genomeStanza);
-
-            final boolean isAssemblyHub = genomeStanza.hasProperty("twoBitPath");
-            if (!isAssemblyHub && genomeId != null) {
-                // Not an assembly hub, validate genome
-                if (!genomeStanza.getProperty("genome").equals(genomeId)) {
-                    throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
-                }
-            }
-
             trackStanzas = new ArrayList<>(stanzas.subList(2, stanzas.size()));
 
         } else {
@@ -111,7 +101,7 @@ public class HubParser {
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
                     try {
                         int order = i + 1;
-                        final Hub hub = HubParser.loadHub(hubUrls.get(i), ucscId);
+                        final Hub hub = HubParser.loadHub(hubUrls.get(i));
                         hub.setOrder(order);
                         trackHubs.add(hub);
                     } catch (Exception e) {
@@ -160,7 +150,7 @@ public class HubParser {
                 if (line.startsWith("include")) {
                     String relativeURL = line.substring(8).trim();
                     String includeURL = getDataURL(relativeURL, host, baseURL);
-                    List<Stanza> includeStanzas = HubParser.loadStanzas(includeURL);
+                    List<Stanza> includeStanzas = loadStanzas(includeURL);
                     nodes.addAll(includeStanzas);
                 }
 

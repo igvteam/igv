@@ -42,7 +42,7 @@ public class HubTest {
     public void testNCBIHostedHub() throws IOException {
 
         String hubFile = "https://ftp.ncbi.nlm.nih.gov/snp/population_frequency/TrackHub/latest/hub.txt";
-        Hub hub = HubParser.loadHub(hubFile, "hg38");
+        Hub hub = HubParser.loadHub(hubFile);
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hg38");
         assertEquals(1, groupedTrackConfigurations.size());
         assertEquals(12, groupedTrackConfigurations.get(0).tracks.size());

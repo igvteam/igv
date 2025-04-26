@@ -36,12 +36,12 @@ import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDownloadUtils;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubDescriptor;
 import org.broad.igv.ucsc.hub.HubRegistry;
 import org.broad.igv.ucsc.hub.HubSelectionDialog;
 import org.broad.igv.util.GoogleUtils;
@@ -178,6 +178,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(createSessionsMenu());
         menus.add(createViewMenu());
         menus.add(createRegionsMenu());
+        menus.add(createHubsMenu());
         refreshToolsMenu();
         menus.add(toolsMenu);
 
@@ -380,7 +381,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
 
-    private JMenuItem createTrackHubItem(Hub trackHub, String id) {
+    private JMenuItem createTrackHubItem(HubDescriptor trackHub, String id) {
         MenuAction menuAction;
         menuAction = new SelectHubTracksAction("Hub: " + trackHub.getShortLabel(), trackHub, id);
         menuAction.setToolTipText(trackHub.getLongLabel());
@@ -484,41 +485,23 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         tracksMenu.add(new JSeparator());
 
-        // Track hub load options
-        // Load from URL
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Add UCSC public hubs item if available
-        if (HubRegistry.hasHubsForGenome(genome.getUCSCId())) {
-            JMenuItem addHubItem = new JMenuItem("Select UCSC Public Track Hubs ...");
-            addHubItem.addActionListener(e -> {
-                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame(), genome);
-                hubSelectionDialog.setVisible(true);
-                List<Hub> selectedHubs = hubSelectionDialog.getSelectedHubs();
-                HubRegistry.setSelectedHubs(genome.getUCSCId(), selectedHubs);
-                updateTracksMenu(genome);
-            });
-            tracksMenu.add(addHubItem);
-        }
-        tracksMenu.add(new JSeparator());
-
         // Track hubs
         if (genome.getTrackHubs().size() > 0) {
             for (Hub trackHub : genome.getTrackHubs()) {
-                tracksMenu.add(createTrackHubItem(trackHub, genome.getUCSCId()));
+                tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
             }
             tracksMenu.add(new JSeparator());
         }
 
         // Selected UCSC public hubs.  Selections are stored in preferences.
-        if (HubRegistry.hasSelectedHubs(genome.getUCSCId())) {
-            List<Hub> selectedHubs = HubRegistry.getSelectedHubs(genome.getUCSCId());
-            for (Hub hub : selectedHubs) {
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubs(genome.getUCSCId());
+        if (selectedHubs != null && selectedHubs.size() > 0) {
+            for (HubDescriptor hub : selectedHubs) {
                 tracksMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }
             tracksMenu.add(new JSeparator());
         }
+
 
         // TODO -- not sure what this does or where it belongs in the new menu structure
 //        recentFilesMenu = new RecentUrlsMenu();
@@ -800,6 +783,36 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         MenuAction dataMenuAction = new MenuAction("Regions", null, KeyEvent.VK_V);
         viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
         return viewMenu;
+    }
+
+    private JMenu createHubsMenu() {
+
+        List<JComponent> menuItems = new ArrayList<>();
+        MenuAction menuAction = null;
+
+        // Track hub load options
+        // Load from URL
+        JMenu hubsMenu = new JMenu("Hubs");
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // Add UCSC public hubs item if available
+        List<HubDescriptor> hubs = HubRegistry.getAllHubDescriptors();
+        if (!hubs.isEmpty()) {
+            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
+            addHubItem.addActionListener(e -> {
+                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
+                hubSelectionDialog.setVisible(true);
+                List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
+                HubRegistry.setSelectedHubs(selectedHubs);
+                updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+            });
+            hubsMenu.add(addHubItem);
+        }
+        hubsMenu.add(new JSeparator());
+
+        return hubsMenu;
     }
 
     private JMenu createHelpMenu() {

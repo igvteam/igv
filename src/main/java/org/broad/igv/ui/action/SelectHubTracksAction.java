@@ -32,9 +32,7 @@ package org.broad.igv.ui.action;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.ucsc.hub.Hub;
-import org.broad.igv.ucsc.hub.TrackConfigContainer;
-import org.broad.igv.ucsc.hub.TrackSelectionDialog;
+import org.broad.igv.ucsc.hub.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -54,12 +52,12 @@ public class SelectHubTracksAction extends MenuAction {
 
     static Logger log = LogManager.getLogger(SelectHubTracksAction.class);
 
-    private Hub hub;
+    private HubDescriptor hubDescriptor;
     String genomeId;
 
-    public SelectHubTracksAction(String label, Hub hub, String id) {
+    public SelectHubTracksAction(String label, HubDescriptor hubDescriptor, String id) {
         super(label, null);
-        this.hub = hub;
+        this.hubDescriptor = hubDescriptor;
         this.genomeId = id;
     }
 
@@ -73,6 +71,7 @@ public class SelectHubTracksAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
+                    Hub hub = HubParser.loadHub(hubDescriptor.getUrl());
                     selectAndLoadTracks(hub, genomeId);
 
                 } catch (Exception e) {
