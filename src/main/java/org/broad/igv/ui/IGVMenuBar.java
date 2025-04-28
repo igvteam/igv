@@ -174,17 +174,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(createGenomesMenu());
         tracksMenu = new JMenu("Tracks");
         menus.add(tracksMenu);
-        updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+        menus.add(createHubsMenu());
         menus.add(createSessionsMenu());
         menus.add(createViewMenu());
         menus.add(createRegionsMenu());
-        menus.add(createHubsMenu());
-        refreshToolsMenu();
-        menus.add(toolsMenu);
-
+        menus.add(createToolsMenu());
         extrasMenu = createExtrasMenu();
-        //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
+
+        updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
 
         // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
         // by loading a protected Google resource
@@ -222,8 +220,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      * Generate the "tools" menu.
      * Legacy pattern -- at one times tools could be loaded dynamically as plug-ins
      */
-    void refreshToolsMenu() {
-        List<JComponent> menuItems = new ArrayList<JComponent>(10);
+    JMenu createToolsMenu() {
+
+        JMenu menuItems = new JMenu("Tools");
 
         // batch script
         MenuAction menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, igv);
@@ -255,17 +254,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         });
         menuItems.add(combineDataItem);
 
-
-        MenuAction toolsMenuAction = new MenuAction("Tools", null);
-        if (toolsMenu == null) {
-            toolsMenu = MenuAndToolbarUtils.createMenu(menuItems, toolsMenuAction);
-            toolsMenu.setName("Tools");
-        } else {
-            toolsMenu.removeAll();
-            for (JComponent item : menuItems) {
-                toolsMenu.add(item);
-            }
-        }
+        return menuItems;
 
     }
 
@@ -787,15 +776,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenu createHubsMenu() {
 
-        List<JComponent> menuItems = new ArrayList<>();
-        MenuAction menuAction = null;
-
-        // Track hub load options
-        // Load from URL
         JMenu hubsMenu = new JMenu("Hubs");
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Add UCSC public hubs item if available
         List<HubDescriptor> hubs = HubRegistry.getAllHubs();
@@ -812,6 +793,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             });
             hubsMenu.add(addHubItem);
         }
+
+        // Load hub from URL
+        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         return hubsMenu;
     }
