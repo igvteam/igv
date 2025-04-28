@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
@@ -212,11 +213,19 @@ public class HttpUtils {
         return new String(bytes, "UTF-8");
     }
 
-    public byte[] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
+    public byte[] getContentsAsBytes(URL url, Map<String, String> requestHeaders) throws IOException {
         InputStream is = null;
-        HttpURLConnection conn = openConnection(url, headers);
+        if(requestHeaders == null) {
+            requestHeaders = new HashMap<>();
+        }
+        requestHeaders.put("Accept-Encoding", "gzip");
+        HttpURLConnection conn = openConnection(url, requestHeaders);
         try {
             is = conn.getInputStream();
+            if(conn.getHeaderField("Content-Encoding") != null && conn.getHeaderField("Content-Encoding").equalsIgnoreCase("gzip")) {
+                System.out.println("Gzipped");
+                is = new GZIPInputStream(is);
+            }
             return is.readAllBytes();
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
@@ -229,11 +238,15 @@ public class HttpUtils {
     public String getContentsAsJSON(URL url) throws IOException {
 
         InputStream is = null;
-        Map<String, String> reqProperties = new HashMap();
-        reqProperties.put("Accept", "application/json,text/plain");
-        HttpURLConnection conn = openConnection(url, reqProperties);
+        Map<String, String> requestHeaders = new HashMap();
+        requestHeaders.put("Accept", "application/json,text/plain");
+        requestHeaders.put("Accept-Encoding", "gzip");
+        HttpURLConnection conn = openConnection(url, requestHeaders);
         try {
             is = conn.getInputStream();
+            if(conn.getHeaderField("Content-Encoding") != null && conn.getHeaderField("Content-Encoding").equalsIgnoreCase("gzip")) {
+                is = new GZIPInputStream(is);
+            }
             return ParsingUtils.readContentsFromStream(is);
 
         } catch (IOException e) {
