@@ -67,10 +67,11 @@ public class Hub {
 
         return new HubDescriptor(
                 this.url,
-                this.hubStanza.getProperty("shortLabel"),
                 this.hubStanza.getProperty("longLabel"),
-                this.hubStanza.getProperty("descriptionUrl"),
-                dbList);
+                this.hubStanza.getProperty("shortLabel"),
+                dbList,
+                this.hubStanza.getProperty("descriptionUrl")
+        );
     }
 
     public int getOrder() {
@@ -157,6 +158,13 @@ public class Hub {
         return trackHub;
     }
 
+    public int getSupportedTrackCount(String genomeId) {
+        TrackDbHub trackHub = getTrackDbHub(genomeId);
+        if (trackHub == null) {
+            return 0;
+        }
+        return trackHub.getSupportedTrackCount();
+    }
 
     /**
      * Return the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).

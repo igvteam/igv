@@ -1,13 +1,20 @@
 package org.broad.igv.ucsc.hub;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeTableModel;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -20,6 +27,7 @@ public class HubSelectionDialog extends JDialog {
     List<HubDescriptor> hubDescriptors;
     private boolean canceled;
     private JTable table;
+    private JTextField filterTextField;
 
     public HubSelectionDialog(Frame owner) {
 
@@ -31,7 +39,7 @@ public class HubSelectionDialog extends JDialog {
         }
 
 
-        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubDescriptors();
+        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubs();
         final List<HubDescriptor> allSelectedHubs = HubRegistry.getAllSelectedHubs();
 
         // Filter track hubs to those supporting current genome list or selected
@@ -48,8 +56,8 @@ public class HubSelectionDialog extends JDialog {
             return;
         }
 
-
         initComponents(allSelectedHubs);
+
     }
 
     private List<HubDescriptor> filterHubs(List<HubDescriptor> hubDescriptors, List<HubDescriptor> allSelectedHubs) {
@@ -62,7 +70,7 @@ public class HubSelectionDialog extends JDialog {
             if (hubGenomes == null || hubGenomes.length == 0) {
                 return true;
             }
-            if(allSelectedURLs.contains(h.getUrl())) {
+            if (allSelectedURLs.contains(h.getUrl())) {
                 return true;
             }
             for (String genome : hubGenomes) {
@@ -92,35 +100,82 @@ public class HubSelectionDialog extends JDialog {
 
 
     public List<HubDescriptor> getSelectedHubs() {
-        return IntStream.range(0, table.getRowCount())
-                .filter(i -> (Boolean) table.getValueAt(i, 0))
-                .mapToObj(hubDescriptors::get)
-                .collect(Collectors.toList());
+        return this.hubDescriptors.stream().filter(HubDescriptor::isSelected).collect(Collectors.toList());
     }
 
 
     private void initComponents(Collection<HubDescriptor> loadedHubs) {
 
-        this.setLayout(new BorderLayout());
+        JPanel outerPanel = new JPanel();
+        outerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        outerPanel.setLayout(new BorderLayout(0, 20));
+        add(outerPanel);
 
+        // Header message
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        JLabel headerMessage = new JLabel("Public track hubs from https://genome.ucsc.edu/goldenpath/help/api.html");
+        headerPanel.add(headerMessage);
+        outerPanel.add(headerPanel, BorderLayout.NORTH);
+
+        //======== contentPanel ========
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        outerPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Filter panel
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.X_AXIS));
+        final String filterToolTip = "Enter multiple filter strings separated by spaces.";
+
+        JLabel filterLabel = new JLabel("Filter:");
+        filterLabel.setLabelFor(filterTextField);
+        filterLabel.setRequestFocusEnabled(false);
+        filterLabel.setToolTipText(filterToolTip);
+        filterPanel.add(filterLabel);
+
+        filterTextField = new JTextField();
+        filterTextField.setToolTipText(filterToolTip);
+        filterTextField.setMaximumSize(new Dimension(Integer.MAX_VALUE, filterTextField.getPreferredSize().height));
+        filterTextField.setToolTipText("Type keywords to filter the track hubs, e.g. hg38. Use spaces to separate multiple keywords.");
+
+        filterPanel.add(Box.createHorizontalStrut(5)); // Add spacing between label and text field
+        filterPanel.add(filterTextField);
+
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void insertUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void removeUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+                });
+
+
+        contentPanel.add(filterPanel);
+
+
+        // Table
         Set<String> loadedURLs = loadedHubs.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
-
-        String[] columnNames = {"", "Name", "Description", "DB List", "Info"};
-        Object[][] data = new Object[this.hubDescriptors.size()][5];
         for (int i = 0; i < this.hubDescriptors.size(); i++) {
             HubDescriptor hub = this.hubDescriptors.get(i);
-            data[i][0] = loadedURLs.contains(hub.getUrl()); // Default unchecked checkbox
-            data[i][1] = hub.getShortLabel();
-            data[i][2] = hub.getLongLabel();
-            data[i][3] = hub.getDbList();
-            data[i][4] = hub.getDescriptionUrl();
+            hub.setSelected(loadedURLs.contains(hub.getUrl()));
         }
-
-        table = new HubTable(data, columnNames);
+        HubTableModel model = new HubTableModel(this.hubDescriptors);
+        table = new HubTable(model);
 
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(5,10,5,10));
-        add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        contentPanel.add(scrollPane);
+
+
+        // Button panel
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -146,7 +201,73 @@ public class HubSelectionDialog extends JDialog {
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);
         //}
-        add(buttonPanel, BorderLayout.SOUTH);
+        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    /**
+     * Update the row filter regular expression from the expression in
+     * the text box.
+     */
+    private void updateFilter() {
+
+
+        RowFilter<GenomeTableModel, Object> rf = null;
+        //If current expression doesn't parse, don't update.
+        try {
+            rf = new RegexFilter(filterTextField.getText());
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        ((DefaultRowSorter) table.getRowSorter()).setRowFilter(rf);
+    }
+
+    private class RegexFilter extends RowFilter {
+
+        List<Matcher> matchers;
+
+
+        RegexFilter(String text) {
+            if (text == null) {
+                throw new IllegalArgumentException("Pattern must be non-null");
+            }
+
+            matchers = Arrays.stream(Globals.whitespacePattern.split(text))
+                    .map(t -> {
+                        String value = t.trim();
+                        return Pattern.compile("(?i)" + value).matcher("");
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        /**
+         * Include row if each matcher succeeds in at least one column.  In other words all the conditions
+         * are combined with "and"
+         *
+         * @param value
+         * @return
+         */
+        @Override
+        public boolean include(Entry value) {
+            return matchers.stream()
+                    .allMatch(entry -> {
+                        Matcher matcher = entry;
+
+                        return IntStream.range(0, table.getColumnCount())
+                                .anyMatch(index -> {
+                                    matcher.reset(table.getColumnName(index).toLowerCase());
+                                    if (matcher.find()) {
+                                        return true;
+                                    }
+
+                                    return matcher.reset(value.getStringValue(index)).find();
+                                });
+                    });
+        }
+
     }
 }
 

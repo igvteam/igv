@@ -494,7 +494,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
 
         // Selected UCSC public hubs.  Selections are stored in preferences.
-        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubs(genome.getUCSCId());
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
         if (selectedHubs != null && selectedHubs.size() > 0) {
             for (HubDescriptor hub : selectedHubs) {
                 tracksMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
@@ -798,19 +798,20 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Add UCSC public hubs item if available
-        List<HubDescriptor> hubs = HubRegistry.getAllHubDescriptors();
+        List<HubDescriptor> hubs = HubRegistry.getAllHubs();
         if (!hubs.isEmpty()) {
             JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
             addHubItem.addActionListener(e -> {
                 final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
                 hubSelectionDialog.setVisible(true);
-                List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
-                HubRegistry.setSelectedHubs(selectedHubs);
-                updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+                if (!hubSelectionDialog.isCanceled()) {
+                    List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
+                    HubRegistry.setSelectedHubs(selectedHubs);
+                    updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+                }
             });
             hubsMenu.add(addHubItem);
         }
-        hubsMenu.add(new JSeparator());
 
         return hubsMenu;
     }
@@ -1219,6 +1220,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         if (event instanceof GenomeChangeEvent) {
             updateMenus(((GenomeChangeEvent) event).genome());
         }
+    }
+
+    public void updateMenus() {
+        updateMenus(GenomeManager.getInstance().getCurrentGenome());
     }
 
     public synchronized void updateMenus(Genome genome) {

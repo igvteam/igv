@@ -34,6 +34,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ucsc.hub.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -72,7 +73,16 @@ public class SelectHubTracksAction extends MenuAction {
             protected Object doInBackground() throws Exception {
                 try {
                     Hub hub = HubParser.loadHub(hubDescriptor.getUrl());
-                    selectAndLoadTracks(hub, genomeId);
+                    if(hub.getSupportedTrackCount(genomeId) > 0) {
+                        selectAndLoadTracks(hub, genomeId);
+                    } else {
+                        boolean remove =  MessageUtils.confirm(hubDescriptor.getShortLabel() +
+                                " does not have any IGV supported tracks for " + genomeId + ". Remove from list?");
+                        if (remove) {
+                            HubRegistry.removeHub(hubDescriptor);
+                            IGVMenuBar.getInstance().updateMenus();
+                        }
+                    }
 
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);
