@@ -363,13 +363,13 @@ public class GenomeManager {
     public static List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
 
         String annotationHub = config.getHubs().get(0);  // IGV convention
-        Hub hub = HubParser.loadHub(annotationHub, config.getUcscID());
+        Hub hub = HubParser.loadHub(annotationHub);
 
         Set<String> currentSelections = config.getTrackConfigs() == null ? Collections.emptySet() :
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
-        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, currentSelections, true, message);
+        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
         try {
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             if (dlg.isCanceled()) {

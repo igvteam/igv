@@ -120,7 +120,7 @@ public class HubGenomeLoader extends GenomeLoader {
 
         // Check previous selections for this hub first -- this is deprecated, kept for backward compatibility.
         String key = "hub:" + hub.getUrl();
-        final List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations();
+        final List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations(config.id);
 
         if (PreferencesManager.getPreferences().hasExplicitValue(key)) {
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
@@ -136,7 +136,7 @@ public class HubGenomeLoader extends GenomeLoader {
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
             TrackSelectionDialog dlg =
-                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, null, true,
+                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(),null, true,
                             GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
 
             boolean dlgSuccess = true;
@@ -194,7 +194,7 @@ public class HubGenomeLoader extends GenomeLoader {
         if (PreferencesManager.getPreferences().hasExplicitValue(key)) {
             List<TrackConfig> selectedTracks = new ArrayList<>();
             Set<String> selectedTrackNames = new HashSet<>(Arrays.asList(PreferencesManager.getPreferences().get(key).split(",")));
-            List<TrackConfigContainer> trackConfigGroups = hub.getGroupedTrackConfigurations();
+            List<TrackConfigContainer> trackConfigGroups = hub.getGroupedTrackConfigurations(config.getUcscID());
             for (TrackConfigContainer group : trackConfigGroups) {
                 List<TrackConfig> trackConfigs = group.findTracks(trackConfig -> selectedTrackNames.contains(trackConfig.name));
                 for (TrackConfig trackConfig : trackConfigs) {

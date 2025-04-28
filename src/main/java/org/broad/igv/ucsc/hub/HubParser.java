@@ -24,11 +24,19 @@ public class HubParser {
             "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "groups",
             "chromSizes"));
 
+    private static final Map<String, Hub> hubCache = new HashMap<>();
+
     public static Hub loadAssemblyHub(String url) throws IOException {
-        return loadHub(url, null);
+        return loadHub(url);
     }
 
-    public static Hub loadHub(String url, String genomeId) throws IOException {
+    public static Hub loadHub(String url) throws IOException {
+
+        // Check if the Hub is already cached
+        String key = url;
+        if (hubCache.containsKey(key)) {
+            return hubCache.get(key);
+        }
 
         log.info("Loading Hub: " + url);
 
@@ -43,66 +51,38 @@ public class HubParser {
             throw new RuntimeException("Unexpected hub.txt file -- does the first line start with 'hub'?");
         }
         Stanza hubStanza = stanzas.get(0);
-        Stanza genomeStanza = null;
         List<Stanza> trackStanzas = null;
         List<Stanza> groupStanzas = null;
-        String trackDbURL = null;
+        List<Stanza> genomeStanzas = null;
 
         if ("on".equals(stanzas.get(0).getProperty("useOneFile"))) {
 
             if (!"genome".equals(stanzas.get(1).type)) {
                 throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
             }
-            genomeStanza = stanzas.get(1);
-
-            if (!genomeStanza.hasProperty("twoBitPath")) {
-                // Not an assembly hub, validate genome
-                if (!genomeStanza.getProperty("genome").equals(genomeId)) {
-                    throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
-                }
-            }
-
+            Stanza genomeStanza = stanzas.get(1);
+            genomeStanzas = Arrays.asList(genomeStanza);
             trackStanzas = new ArrayList<>(stanzas.subList(2, stanzas.size()));
 
         } else {
-
             if (!hubStanza.hasProperty("genomesFile")) {
                 throw new RuntimeException("hub.txt must specify 'genomesFile'");
             }
-
-            // Load genome stanza(s)
-            List<Stanza> genomeStanzaList = HubParser.loadStanzas(hubStanza.getProperty("genomesFile"));
-
-            // Find stanza for requested genome, or if no requested genome the first.
-
-            for (Stanza s : genomeStanzaList) {
-                if (genomeId == null || genomeId.equals(s.getProperty("genome"))) {
-                    stanzas.add(s);
-                    genomeStanza = s;
-                    trackDbURL = genomeStanza.getProperty("trackDb");
-                    break;
-                }
-            }
-            if (trackDbURL == null) {
-                throw new RuntimeException("Hub file does not contain tracks for genome " + genomeId);
-            }
+            genomeStanzas = HubParser.loadStanzas(hubStanza.getProperty("genomesFile"));
         }
 
-        // Assembly hub validation
-        if (genomeId == null) {
-            if (!genomeStanza.hasProperty("twoBitPath")) {
-                throw new RuntimeException("Assembly hubs must specify 'twoBitPath'");
-            }
+        // Load group files for all genomes, if any.
+        groupStanzas = new ArrayList<>();
+        Set<String> uniqGroupURLs = genomeStanzas.stream().map(s -> s.getProperty("groups")).filter(Objects::nonNull).collect(Collectors.toSet());
+        for (String groupTxtURL : uniqGroupURLs) {
+            groupStanzas.addAll(HubParser.loadStanzas(groupTxtURL));
         }
 
-        if (genomeStanza.hasProperty("groups")) {
-            if (genomeStanza.hasProperty("groups")) {
-                String groupsTxtURL = genomeStanza.getProperty("groups");
-                groupStanzas = HubParser.loadStanzas(groupsTxtURL);
-            }
-        }
+        Hub hub = new Hub(url, hubStanza, genomeStanzas, trackStanzas, groupStanzas);
 
-        Hub hub =  new Hub(url, trackDbURL, hubStanza, genomeStanza, trackStanzas, groupStanzas);
+        // Cache the loaded Hub
+        hubCache.put(key, hub);
+
         return hub;
     }
 
@@ -121,7 +101,7 @@ public class HubParser {
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
                     try {
                         int order = i + 1;
-                        final Hub hub = HubParser.loadHub(hubUrls.get(i), ucscId);
+                        final Hub hub = HubParser.loadHub(hubUrls.get(i));
                         hub.setOrder(order);
                         trackHubs.add(hub);
                     } catch (Exception e) {
@@ -170,7 +150,7 @@ public class HubParser {
                 if (line.startsWith("include")) {
                     String relativeURL = line.substring(8).trim();
                     String includeURL = getDataURL(relativeURL, host, baseURL);
-                    List<Stanza> includeStanzas = HubParser.loadStanzas(includeURL);
+                    List<Stanza> includeStanzas = loadStanzas(includeURL);
                     nodes.addAll(includeStanzas);
                 }
 
@@ -185,12 +165,12 @@ public class HubParser {
 
                     String value = line.substring(i + 1).trim();
 
-                    if("type".equals(key)) {
+                    if ("type".equals(key)) {
                         // The "type" property contains format and sometimes other information.  For example, data range
                         // on a bigwig "type bigWig 0 .5"
                         String[] tokens = Globals.whitespacePattern.split(value);
                         value = tokens[0];
-                        if("bigWig".equals(value) && tokens.length == 3) {
+                        if ("bigWig".equals(value) && tokens.length == 3) {
                             // This is a bigWig with a range
                             String min = tokens[1];
                             String max = tokens[2];

@@ -32,10 +32,9 @@ package org.broad.igv.ui.action;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.ucsc.hub.Hub;
-import org.broad.igv.ucsc.hub.TrackConfigContainer;
-import org.broad.igv.ucsc.hub.TrackSelectionDialog;
+import org.broad.igv.ucsc.hub.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -54,14 +53,13 @@ public class SelectHubTracksAction extends MenuAction {
 
     static Logger log = LogManager.getLogger(SelectHubTracksAction.class);
 
-    private Hub hub;
-    IGV mainFrame;
+    private HubDescriptor hubDescriptor;
+    String genomeId;
 
-
-    public SelectHubTracksAction(String label, IGV mainFrame, Hub hub) {
+    public SelectHubTracksAction(String label, HubDescriptor hubDescriptor, String id) {
         super(label, null);
-        this.mainFrame = mainFrame;
-        this.hub = hub;
+        this.hubDescriptor = hubDescriptor;
+        this.genomeId = id;
     }
 
     @Override
@@ -74,7 +72,17 @@ public class SelectHubTracksAction extends MenuAction {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    selectAndLoadTracks(hub);
+                    Hub hub = HubParser.loadHub(hubDescriptor.getUrl());
+                    if(hub.getSupportedTrackCount(genomeId) > 0) {
+                        selectAndLoadTracks(hub, genomeId);
+                    } else {
+                        boolean remove =  MessageUtils.confirm(hubDescriptor.getShortLabel() +
+                                " does not have any IGV supported tracks for " + genomeId + ". Remove from list?");
+                        if (remove) {
+                            HubRegistry.removeHub(hubDescriptor);
+                            IGVMenuBar.getInstance().updateMenus();
+                        }
+                    }
 
                 } catch (Exception e) {
                     log.error("Error loading track configurations", e);
@@ -97,7 +105,7 @@ public class SelectHubTracksAction extends MenuAction {
 
     }
 
-    public static void selectAndLoadTracks(Hub hub) {
+    public static void selectAndLoadTracks(Hub hub, String id) {
 
         Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
                 .filter(t -> t.getResourceLocator() != null)
@@ -105,13 +113,13 @@ public class SelectHubTracksAction extends MenuAction {
                 .collect(Collectors.toSet());
 
         TrackSelectionDialog dlg =
-                TrackSelectionDialog.getTrackHubSelectionDialog(hub, loadedTrackPaths, false, null);
+                TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
 
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
 
-            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations();
+            List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(id);
 
             // The dialog action will modify the visible state for each track config
             List<TrackConfig> tracksToLoad = new ArrayList<>();

@@ -1,152 +1,210 @@
 package org.broad.igv.ucsc.hub;
 
-import org.broad.igv.prefs.Constants;
-import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.util.ParsingUtils;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
+import org.broad.igv.DirectoryManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.util.HttpUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.*;
 import java.net.URL;
-import java.util.Map;
-
+import java.util.*;
 
 public class HubRegistry {
 
+    public static final String UCSC_REST_PUBLICHUBS = "https://api.genome.ucsc.edu/list/publicHubs";
+    public static final String BACKUP_HUBS_URL = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/publicHubs.json";
 
-    static Map<String, List<String>> hubURLMap = null;
-    static Map<String, List<HubDescriptor>> hubDescriptorMap = null;
+    private static Logger log = LogManager.getLogger(HubRegistry.class);
 
-    public static boolean hasHubsForGenome(String ucscId) {
-        Map<String, List<String>> hubURLMap = getHubURLs();
-        List<String> hubUrls = hubURLMap.get(ucscId);
-        return hubUrls != null && !hubUrls.isEmpty();
+
+    private static List<HubDescriptor> allHubDescriptors = null;
+    private static List<HubDescriptor> selectedHubDescriptors = null;
+    private static Map<String, List<HubDescriptor>> selectedHubsMap = null;
+
+    private HubRegistry() {
+        // Private constructor to prevent instantiation
     }
 
-    public static List<String> getHubUrlsForGenome(String ucscId) {
-        Map<String, List<String>> hubURLMap = getHubURLs();
-        return hubURLMap == null ? null : hubURLMap.get(ucscId);
+    /**
+     * Get all available hubs. This includes hubs loaded from  from the UCSC REST API and directly by URL.
+     *
+     * @return List of HubDescriptor objects
+     */
+    public static List<HubDescriptor> getAllHubs() {
+        if (allHubDescriptors == null) {
+            allHubDescriptors = loadDescriptors(UCSC_REST_PUBLICHUBS);
+        }
+        return allHubDescriptors;
     }
 
-    private static Map<String, List<String>> getHubURLs() {
+    /**
+     * Get all user selected hubs. This is a subset of all hubs.
+     *
+     * @return List of HubDescriptor objects
+     */
+    public static List<HubDescriptor> getAllSelectedHubs() {
+        return selectedHubDescriptors;
+    }
 
-        if (hubURLMap == null) {
+    /**
+     * Get all user selected hubs for a specific genome.
+     *
+     * @param ucscId
+     * @return List of HubDescriptor objects
+     */
+    public static List<HubDescriptor> getSelectedHubsForGenome(String ucscId) {
+        if (selectedHubsMap == null) {
+            initializeSelectedHubsMap();
+        }
+        return selectedHubsMap.get(ucscId);
+    }
 
-            String filePath = PreferencesManager.getPreferences().get(Constants.AUXILLARY_HUBS_URL);
+    public static void addUserHub(Hub hub) {
+        if (selectedHubDescriptors == null) {
+            selectedHubDescriptors = new ArrayList<>();
+        }
+        selectedHubDescriptors.add(hub.getDescriptor());
+        resetSelectedHubsMap();
+        writeSelectedHubs();
+    }
 
-            hubURLMap = new HashMap<>();
-            try (BufferedReader br = ParsingUtils.openBufferedReader(filePath)) {
-                String line;
-                String currentGenomeId = null;
-                List<String> currentURLList = null;
-                while ((line = br.readLine()) != null) {
-                    if (line.startsWith("#")) {
-                        continue;
-                    }
-                    line = line.trim();
-                    if (currentGenomeId == null) {
-                        currentGenomeId = line;
-                        currentURLList = new ArrayList<>();
-                        hubURLMap.put(currentGenomeId, currentURLList);
-                    } else if (line.length() == 0) {
-                        currentGenomeId = null;
-                    } else {
-                        currentURLList.add(line);
+    /**
+     * Remove an individual hub.
+     *
+     * @param hubDescriptor
+     */
+    public static void removeHub(HubDescriptor hubDescriptor) {
+        selectedHubDescriptors.removeIf(hd -> hd.getUrl().equals(hubDescriptor.getUrl()));
+        resetSelectedHubsMap();
+        writeSelectedHubs();
+    }
+
+    /**
+     * Replace the list of selected hubs with the provided list. This is called from the selection dialog
+     *
+     * @param hubDescriptors
+     */
+    public static void setSelectedHubs(List<HubDescriptor> hubDescriptors) {
+        selectedHubDescriptors = hubDescriptors;
+        resetSelectedHubsMap();
+        writeSelectedHubs();
+    }
+
+    private static void writeSelectedHubs() {
+        File file = new File(DirectoryManager.getIgvDirectory(), "hubs.txt");
+        try (PrintWriter writer = new PrintWriter(file)) {
+            // Write header
+            writer.println("hubUrl\tshortLabel\tlongLabel\tdbList\tdescriptionUrl");
+
+            // Write each hub descriptor
+            for (HubDescriptor hub : selectedHubDescriptors) {
+                writer.printf("%s\t%s\t%s\t%s\t%s%n",
+                        hub.getUrl(),
+                        hub.getShortLabel(),
+                        hub.getLongLabel(),
+                        hub.getDbList(),
+                        hub.getDescriptionUrl());
+            }
+        } catch (IOException e) {
+            log.error("Error writing selected hubs to file", e);
+        }
+    }
+
+    private static List<HubDescriptor> readSelectedHubs() {
+        selectedHubDescriptors = new ArrayList<>();
+        File file = new File(DirectoryManager.getIgvDirectory(), "hubs.txt");
+
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+                // Skip the header line
+                String line = reader.readLine();
+
+                // Read each line and create HubDescriptor objects
+                while ((line = reader.readLine()) != null) {
+                    String[] fields = line.split("\t");
+                    if (fields.length == 5) {
+                        String url = fields[0];
+                        String shortLabel = fields[1];
+                        String longLabel = fields[2];
+                        String dbList = fields[3];
+                        String descriptionUrl = fields[4];
+                        selectedHubDescriptors.add(new HubDescriptor(url, shortLabel, longLabel, dbList, descriptionUrl));
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Error reading selected hubs from file", e);
             }
+        } else {
+            log.warn("Selected hubs file does not exist: " + file.getAbsolutePath());
         }
-        return hubURLMap;
+
+        return selectedHubDescriptors;
     }
 
-
-    public static List<HubDescriptor> getPublicHubs(String ucscId) {
-        if (hubDescriptorMap == null) {
-            loadPublicDescriptors();
-        }
-        return hubDescriptorMap.get(ucscId);
+    private static void initializeSelectedHubsMap() {
+        selectedHubsMap = new HashMap<>();
+        selectedHubDescriptors = readSelectedHubs();
+        resetSelectedHubsMap();
     }
 
-    public static void loadPublicDescriptors() {
-
-        if(hubDescriptorMap == null) {
-            hubDescriptorMap = new HashMap<>();
-        }
-
-        Map<String, Object> jsonResponse = loadJSON();
-
-        if (jsonResponse != null) {
-            Object hubObj = jsonResponse.get("publicHubs");
-
-            for (Map<String, Object> hub : (List<Map<String, Object>>) hubObj) {
-                String dbList = hub.get("dbList").toString();
-                String hubUrl = hub.get("hubUrl").toString();
-                String shortLabel = hub.get("shortLabel").toString();
-                String longLabel = hub.get("longLabel").toString();
-
-                HubDescriptor hubDescriptor = new HubDescriptor(shortLabel, longLabel, hubUrl);
-                String[] dbs = dbList.split(",");
-                for(String db : dbs) {
-                    db = db.trim();
-                    if (hubDescriptorMap.containsKey(db)) {
-                        hubDescriptorMap.get(db).add(hubDescriptor);
-                    } else {
-                        List<HubDescriptor> hubList = new ArrayList<>();
-                        hubList.add(hubDescriptor);
-                        hubDescriptorMap.put(db, hubList);
-                    }
+    private static void resetSelectedHubsMap() {
+        selectedHubsMap.clear();
+        for (HubDescriptor hub : selectedHubDescriptors) {
+            String dbList = hub.getDbList();
+            String[] dbs = dbList.split(",");
+            for (String db : dbs) {
+                db = db.trim();
+                if (selectedHubsMap.containsKey(db)) {
+                    selectedHubsMap.get(db).add(hub);
+                } else {
+                    List<HubDescriptor> hubList = new ArrayList<>();
+                    hubList.add(hub);
+                    selectedHubsMap.put(db, hubList);
                 }
             }
         }
     }
 
-    public static Map<String, Object> loadJSON() {
-        String apiUrl = "https://api.genome.ucsc.edu/list/publicHubs";
+    public static List<HubDescriptor> loadDescriptors(String apiUrl) {
+
+        List<HubDescriptor> hubDescriptors = new ArrayList<>();
+
+        Map<String, Object> jsonResponse = null;
         Gson gson = new Gson();
         try {
             URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/json");
 
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                Map<String, Object> jsonResponse = gson.fromJson(reader, Map.class);
-                reader.close();
-                return jsonResponse;
-            } else {
-                System.err.println("Failed to fetch data from API. HTTP code: " + connection.getResponseCode());
-                return null;
-            }
+            String jsonString = HttpUtils.getInstance().getContentsAsJSON(url);
+            jsonResponse = gson.fromJson(jsonString, Map.class);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        List<HubDescriptor> descriptors = getPublicHubs("hg38");
-        if (descriptors != null) {
-            for (HubDescriptor descriptor : descriptors) {
-                System.out.println("Hub URL: " + descriptor.getUrl());
-               // System.out.println("Short Label: " + descriptor.getShortLabel());
-              //   System.out.println("Long Label: " + descriptor.getLongLabel());
+            // Try backup URL
+            try {
+                log.error("Failed to load Hub JSON.  Trying backup URL", e);
+                String jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(BACKUP_HUBS_URL));
+                jsonResponse = gson.fromJson(jsonString, Map.class);
+            } catch (IOException ex) {
+                log.error("Failed to load Hub JSON", e);
             }
-        } else {
-            System.out.println("No public hubs found for the specified genome.");
         }
+
+        if (jsonResponse != null) {
+            Object hubObj = jsonResponse.get("publicHubs");
+            for (Map<String, Object> hub : (List<Map<String, Object>>) hubObj) {
+                String hubUrl = hub.get("hubUrl").toString();
+                String shortLabel = hub.get("shortLabel").toString();
+                String longLabel = hub.get("longLabel").toString();
+                String dbList = hub.get("dbList").toString();
+                String descriptionUrl = hub.get("descriptionUrl").toString();
+                hubDescriptors.add(new HubDescriptor(hubUrl, shortLabel, longLabel, dbList, descriptionUrl));
+            }
+        }
+
+        return hubDescriptors;
     }
+
+
+
 }
 

@@ -41,6 +41,28 @@ public class TrackDbHub {
         this.trackStanzas = trackStanzas;
     }
 
+    public String findCytobandURL() {
+        for (Stanza t : this.trackStanzas) {
+            if ("cytoBandIdeo".equals(t.name) && t.hasProperty("bigDataUrl")) {
+                return t.getProperty("bigDataUrl");
+            }
+        }
+        return null;
+    }
+
+    public int getSupportedTrackCount() {
+        int count = 0;
+        for (Stanza t : this.trackStanzas) {
+            if (!filterTracks.contains(t.name) &&
+                    t.hasProperty("bigDataUrl") &&
+                    t.format() != null &&
+                    supportedTypes.contains(t.format().toLowerCase())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public List<TrackConfigContainer> getGroupedTrackConfigurations(String hubName) {
 
         if (groupTrackConfigs == null) {

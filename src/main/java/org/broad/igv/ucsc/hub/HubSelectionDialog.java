@@ -1,15 +1,22 @@
 package org.broad.igv.ucsc.hub;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeTableModel;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HubSelectionDialog extends JDialog {
 
@@ -17,84 +24,158 @@ public class HubSelectionDialog extends JDialog {
 
     private static Map<String, HubSelectionDialog> instances = new java.util.HashMap<>();
 
-    String ucscId;
-    List<HubDescriptor> hubs;
+    List<HubDescriptor> hubDescriptors;
     private boolean canceled;
     private JTable table;
+    private JTextField filterTextField;
 
-    public HubSelectionDialog(Frame owner, Genome genome) {
+    public HubSelectionDialog(Frame owner) {
 
         super(owner, "Select Track Hubs", true);
-        this.ucscId = genome.getUCSCId();
 
         setSize(owner.getWidth() - 20, 600);
-
-        if(owner != null) {
+        if (owner != null) {
             setLocationRelativeTo(owner);
-           // setLocation(getX() - getWidth() / 2, getY() - getHeight() / 2);
         }
 
 
-        final String ucscId = genome.getUCSCId();
-        List<HubDescriptor> hubUrls = HubRegistry.getPublicHubs (ucscId);
-        if (hubUrls != null && !hubUrls.isEmpty()) {
-            this.hubs = hubUrls;
+        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubs();
+        final List<HubDescriptor> allSelectedHubs = HubRegistry.getAllSelectedHubs();
+
+        // Filter track hubs to those supporting current genome list or selected
+        allHubDescriptors = filterHubs(allHubDescriptors, allSelectedHubs);
+
+        if (allHubDescriptors != null && !allHubDescriptors.isEmpty()) {
+            this.hubDescriptors = allHubDescriptors;
         } else {
-            new ArrayList<>();
+            this.hubDescriptors = new ArrayList<>();
         }
 
-        Collection<Hub> loadedHubs = genome.getTrackHubs();
+        if (this.hubDescriptors.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hubs available");
+            return;
+        }
 
-        initComponents(loadedHubs);
+        initComponents(allSelectedHubs);
+
     }
 
+    private List<HubDescriptor> filterHubs(List<HubDescriptor> hubDescriptors, List<HubDescriptor> allSelectedHubs) {
 
-    public List<Hub> getSelectedHubs() {
-        List<Hub> selectedHubs = new ArrayList<>();
-        for (int i = 0; i < table.getRowCount(); i++) {
-            Boolean isSelected = (Boolean) table.getValueAt(i, 0);
-            if (isSelected) {
-                try {
-                    selectedHubs.add(HubParser.loadHub(hubs.get(i).getUrl(), ucscId ));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        Set<String> allSelectedURLs = allSelectedHubs.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
+
+        return hubDescriptors.stream().filter(h -> {
+            Set<String> genomeIDs = getGenomeIDList();
+            String[] hubGenomes = h.getDbList().split(",");
+            if (hubGenomes == null || hubGenomes.length == 0) {
+                return true;
+            }
+            if (allSelectedURLs.contains(h.getUrl())) {
+                return true;
+            }
+            for (String genome : hubGenomes) {
+                if (genomeIDs.contains(genome)) {
+                    return true;
                 }
             }
-        }
-        return selectedHubs;
+            return false;
+        }).toList();
     }
 
-    public Set<String> getUnselectedURLs() {
-        Set<String> unselectedURLs = new HashSet<>();
-        for (int i = 0; i < table.getRowCount(); i++) {
-            Boolean isSelected = (Boolean) table.getValueAt(i, 0);
-            if (!isSelected) {
-                unselectedURLs.add(hubs.get(i).getUrl());
-            }
+    /**
+     * Get a list of genome IDs from the genome list manager.
+     * @return
+     */
+    private Set<String> getGenomeIDList() {
+        try {
+            Collection<GenomeListItem> genomeListItems = GenomeListManager.getInstance().getGenomeItemMap().values();
+            HashSet<String> ids = new HashSet<>(genomeListItems.stream().map(GenomeListItem::getId).collect(Collectors.toList()));
+            ids.add("hg38");
+            ids.add("hg19");
+            return ids;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return unselectedURLs;
     }
 
 
-    private void initComponents(Collection<Hub> loadedHubs) {
+    public List<HubDescriptor> getSelectedHubs() {
+        return this.hubDescriptors.stream().filter(HubDescriptor::isSelected).collect(Collectors.toList());
+    }
 
-        this.setLayout(new BorderLayout());
 
-        Set<String> loadedURLs = loadedHubs.stream().map(Hub::getUrl).collect(Collectors.toSet());
+    private void initComponents(Collection<HubDescriptor> loadedHubs) {
 
-        String[] columnNames = {"", "Name", "Description"};
-        Object[][] data = new Object[this.hubs.size()][3];
-        for (int i = 0; i < this.hubs.size(); i++) {
-            HubDescriptor hub = this.hubs.get(i);
-            data[i][0] = loadedURLs.contains(hub.getUrl()); // Default unchecked checkbox
-            data[i][1] = hub.getShortLabel();
-            data[i][2] = hub.getLongLabel();
+        JPanel outerPanel = new JPanel();
+        outerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        outerPanel.setLayout(new BorderLayout(0, 20));
+        add(outerPanel);
+
+        // Header message
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        JLabel headerMessage = new JLabel("Public track hubs from https://genome.ucsc.edu/goldenpath/help/api.html");
+        headerPanel.add(headerMessage);
+        outerPanel.add(headerPanel, BorderLayout.NORTH);
+
+        //======== contentPanel ========
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        outerPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Filter panel
+        JPanel filterPanel = new JPanel();
+        filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.X_AXIS));
+        final String filterToolTip = "Enter multiple filter strings separated by spaces.";
+
+        JLabel filterLabel = new JLabel("Filter:");
+        filterLabel.setLabelFor(filterTextField);
+        filterLabel.setRequestFocusEnabled(false);
+        filterLabel.setToolTipText(filterToolTip);
+        filterPanel.add(filterLabel);
+
+        filterTextField = new JTextField();
+        filterTextField.setToolTipText(filterToolTip);
+        filterTextField.setMaximumSize(new Dimension(Integer.MAX_VALUE, filterTextField.getPreferredSize().height));
+        filterTextField.setToolTipText("Type keywords to filter the track hubs, e.g. hg38. Use spaces to separate multiple keywords.");
+
+        filterPanel.add(Box.createHorizontalStrut(5)); // Add spacing between label and text field
+        filterPanel.add(filterTextField);
+
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void insertUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void removeUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+                });
+
+
+        contentPanel.add(filterPanel);
+
+
+        // Table
+        Set<String> loadedURLs = loadedHubs.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
+        for (int i = 0; i < this.hubDescriptors.size(); i++) {
+            HubDescriptor hub = this.hubDescriptors.get(i);
+            hub.setSelected(loadedURLs.contains(hub.getUrl()));
         }
-
-        table = new HubTable(data, columnNames);
+        HubTableModel model = new HubTableModel(this.hubDescriptors);
+        table = new HubTable(model);
 
         JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        contentPanel.add(scrollPane);
+
+
+        // Button panel
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -120,91 +201,73 @@ public class HubSelectionDialog extends JDialog {
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);
         //}
-        add(buttonPanel, BorderLayout.SOUTH);
+        outerPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
-}
 
-class HubTable extends JTable {
+    public boolean isCanceled() {
+        return canceled;
+    }
 
-    public static final Color ALT_BACKGROUND = new Color(245, 245, 245);
-    private final Map<String, JTextArea> cellRendererCache = new HashMap<>();
+    /**
+     * Update the row filter regular expression from the expression in
+     * the text box.
+     */
+    private void updateFilter() {
 
-    public HubTable(Object[][] data, String[] columnNames) {
-        super(data, columnNames);
-        getColumnModel().getColumn(0).setMaxWidth(30);
-        getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JCheckBox checkBox = new JCheckBox();
-                checkBox.setSelected(value != null && (Boolean) value);
-                checkBox.setHorizontalAlignment(SwingConstants.CENTER);
-                checkBox.setVerticalAlignment(SwingConstants.TOP);
-                checkBox.setOpaque(true);
-                checkBox.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-                return checkBox;
+
+        RowFilter<GenomeTableModel, Object> rf = null;
+        //If current expression doesn't parse, don't update.
+        try {
+            rf = new RegexFilter(filterTextField.getText());
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        ((DefaultRowSorter) table.getRowSorter()).setRowFilter(rf);
+    }
+
+    private class RegexFilter extends RowFilter {
+
+        List<Matcher> matchers;
+
+
+        RegexFilter(String text) {
+            if (text == null) {
+                throw new IllegalArgumentException("Pattern must be non-null");
             }
-        });
-    }
 
-    @Override
-    public Class<?> getColumnClass(int column) {
-        return column == 0 ? Boolean.class : String.class;
-    }
+            matchers = Arrays.stream(Globals.whitespacePattern.split(text))
+                    .map(t -> {
+                        String value = t.trim();
+                        return Pattern.compile("(?i)" + value).matcher("");
+                    })
+                    .collect(Collectors.toList());
+        }
 
-    @Override
-    public TableCellRenderer getCellRenderer(int row, int column) {
-        if (column == 1 || column == 2) { // Columns for "Name" and "Description"
-            return new DefaultTableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                    String cacheKey = row + ":" + column;
-                    JTextArea textArea = cellRendererCache.computeIfAbsent(cacheKey, key -> {
-                        JTextArea newTextArea = new JTextArea(value != null ? value.toString() : "");
-                        newTextArea.setLineWrap(true);
-                        newTextArea.setWrapStyleWord(true);
-                        newTextArea.setOpaque(true);
-                        return newTextArea;
+        /**
+         * Include row if each matcher succeeds in at least one column.  In other words all the conditions
+         * are combined with "and"
+         *
+         * @param value
+         * @return
+         */
+        @Override
+        public boolean include(Entry value) {
+            return matchers.stream()
+                    .allMatch(entry -> {
+                        Matcher matcher = entry;
+
+                        return IntStream.range(0, table.getColumnCount())
+                                .anyMatch(index -> {
+                                    matcher.reset(table.getColumnName(index).toLowerCase());
+                                    if (matcher.find()) {
+                                        return true;
+                                    }
+
+                                    return matcher.reset(value.getStringValue(index)).find();
+                                });
                     });
-
-                    textArea.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-                    textArea.setForeground(table.getForeground());
-
-                    // Set the width of the JTextArea to match the column width
-                    int columnWidth = table.getColumnModel().getColumn(column).getWidth();
-                    textArea.setSize(columnWidth, Short.MAX_VALUE);
-
-                    // Adjust row height to fit the content
-                    int preferredHeight = textArea.getPreferredSize().height;
-                    if (table.getRowHeight(row) != preferredHeight) {
-                        table.setRowHeight(row, preferredHeight);
-                    }
-
-                    return textArea;
-                }
-            };
         }
-        return super.getCellRenderer(row, column);
+
     }
-
-    @Override
-    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-        Component component = super.prepareRenderer(renderer, row, column);
-        if (!isRowSelected(row)) {
-            component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Color.WHITE);
-        }
-        return component;
-    }
-
-    @Override
-    public boolean isCellSelected(int row, int column) {
-        return false;
-    }
-
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return column == 0;
-    }
-
-
-
 }
+
