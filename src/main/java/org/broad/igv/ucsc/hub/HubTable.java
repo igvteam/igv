@@ -56,6 +56,7 @@ class HubTable extends JTable {
         getColumnModel().getColumn(2).setCellRenderer(getMultiLineCellRenderer());
 
         getColumnModel().getColumn(3).setPreferredWidth(150);
+        getColumnModel().getColumn(3).setMaxWidth(150);
         getColumnModel().getColumn(3).setCellRenderer(getMultiLineCellRenderer());
 
         getColumnModel().getColumn(4).setMaxWidth(30);

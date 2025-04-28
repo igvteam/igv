@@ -44,7 +44,6 @@ public class Locus extends Range implements IGVNamedFeature {
     }
 
 
-
     /**
      * Generate Locus from locusString of form [chr]:[start]-[end]
      * Returns null if invalid string
@@ -59,12 +58,21 @@ public class Locus extends Range implements IGVNamedFeature {
     public Locus(String locusString) {
         this(null, -1, -1);
         parseLocusString(locusString);
-
     }
 
     public boolean isValid() {
         return getChr() != null && getStart() >= 0 && getEnd() >= getStart();
     }
+
+    public void merge(Locus other) {
+        if (this.getChr().equals(other.getChr())) {
+            this.start = Math.min(this.start, other.start);
+            this.end = Math.max(this.end, other.end);
+        } else {
+            throw new IllegalArgumentException("Cannot merge loci on different chromosomes");
+        }
+    }
+
 
     // Only accept full locus strings,  i.e. must contain : and -
     private void parseLocusString(String locusString) {
