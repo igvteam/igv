@@ -1223,15 +1223,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void enableReloadSession() {
-        this.reloadSessionItem.setEnabled(true);
+        if(this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(true);
     }
 
     public void showRecentFilesMenu() {
-        this.recentFilesMenu.setVisible(true);
+        if(this.recentFilesMenu != null) this.recentFilesMenu.setVisible(true);
     }
 
     public void disableReloadSession() {
-        this.reloadSessionItem.setEnabled(false);
+        if(this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(false);
     }
 
     public static JMenuItem createBlatMenuItem() {
