@@ -2,6 +2,7 @@ package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.genome.GenomeTableModel;
 
@@ -42,7 +43,7 @@ public class HubSelectionDialog extends JDialog {
         List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubs();
         final List<HubDescriptor> allSelectedHubs = HubRegistry.getAllSelectedHubs();
 
-        // Filter track hubs to those supporting current genome list or selected
+        // Filter track hubs to those supporting the superset of IGV loaded + UCSC DB genomes
         allHubDescriptors = filterHubs(allHubDescriptors, allSelectedHubs);
 
         if (allHubDescriptors != null && !allHubDescriptors.isEmpty()) {
@@ -58,6 +59,10 @@ public class HubSelectionDialog extends JDialog {
 
         initComponents(allSelectedHubs);
 
+        // Preset filter to currently loaded genome
+        String genomeID = GenomeManager.getInstance().getCurrentGenome().getId();
+        filterTextField.setText(genomeID);
+
     }
 
     private List<HubDescriptor> filterHubs(List<HubDescriptor> hubDescriptors, List<HubDescriptor> allSelectedHubs) {
@@ -65,7 +70,8 @@ public class HubSelectionDialog extends JDialog {
         Set<String> allSelectedURLs = allSelectedHubs.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
 
         return hubDescriptors.stream().filter(h -> {
-            Set<String> genomeIDs = getGenomeIDList();
+            Set<String> genomeIDs = getLoadedGenomeIDs();
+            genomeIDs.addAll(HubRegistry.getUcscGenomeIDs());
             String[] hubGenomes = h.getDbList().split(",");
             if (hubGenomes == null || hubGenomes.length == 0) {
                 return true;
@@ -86,7 +92,7 @@ public class HubSelectionDialog extends JDialog {
      * Get a list of genome IDs from the genome list manager.
      * @return
      */
-    private Set<String> getGenomeIDList() {
+    private Set<String> getLoadedGenomeIDs() {
         try {
             Collection<GenomeListItem> genomeListItems = GenomeListManager.getInstance().getGenomeItemMap().values();
             HashSet<String> ids = new HashSet<>(genomeListItems.stream().map(GenomeListItem::getId).collect(Collectors.toList()));
@@ -157,7 +163,6 @@ public class HubSelectionDialog extends JDialog {
                     }
                 });
 
-
         contentPanel.add(filterPanel);
 
 
@@ -176,7 +181,6 @@ public class HubSelectionDialog extends JDialog {
 
 
         // Button panel
-
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
 

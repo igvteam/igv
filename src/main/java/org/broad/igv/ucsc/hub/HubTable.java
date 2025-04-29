@@ -52,12 +52,12 @@ class HubTable extends JTable {
             }
         });
 
-        getColumnModel().getColumn(1).setCellRenderer(getMultiLineCellRenderer());
-        getColumnModel().getColumn(2).setCellRenderer(getMultiLineCellRenderer());
+        getColumnModel().getColumn(1).setCellRenderer(getMultiLineCellRenderer(Integer.MAX_VALUE));
+        getColumnModel().getColumn(2).setCellRenderer(getMultiLineCellRenderer(Integer.MAX_VALUE));
 
         getColumnModel().getColumn(3).setPreferredWidth(150);
-        getColumnModel().getColumn(3).setMaxWidth(150);
-        getColumnModel().getColumn(3).setCellRenderer(getMultiLineCellRenderer());
+        getColumnModel().getColumn(3).setMaxWidth(200);
+        getColumnModel().getColumn(3).setCellRenderer(getMultiLineCellRenderer(100));
 
         getColumnModel().getColumn(4).setMaxWidth(30);
         getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
@@ -105,11 +105,16 @@ class HubTable extends JTable {
         });
     }
 
-    private static DefaultTableCellRenderer getMultiLineCellRenderer() {
+    private static DefaultTableCellRenderer getMultiLineCellRenderer(int maxLength) {
         return new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
+                String v = value != null ? value.toString() : "";
+                if(v.length() > maxLength) {
+                    v = v.substring(0, maxLength) + "...";
+                }
+                JTextArea textArea = new JTextArea(v);
+                textArea.setToolTipText(value.toString());
                 textArea.setLineWrap(true);
                 textArea.setWrapStyleWord(true);
                 textArea.setOpaque(true);

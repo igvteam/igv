@@ -209,7 +209,7 @@ public class HubRegistry {
     }
 
 
-    private Set<String> getUcscGenomeIDs() {
+    public static Set<String> getUcscGenomeIDs() {
         if (ucscGenomeIDs == null) {
             try {
                 String jsonString = getContentsAsJSON(UCSC_GENOMES, UCSC_GENOMES_BACKUP);
@@ -218,13 +218,13 @@ public class HubRegistry {
                 Map<String, Object> hubGenomes = (Map<String, Object>) jsonResponse.get("ucscGenomes");
                 ucscGenomeIDs = hubGenomes.keySet();
             } catch (IOException e) {
-                log.error("Error loading UCSC hub genomes", e);
+                log.error("Error loading UCSC genome IDs", e);
             }
         }
         return ucscGenomeIDs;
     }
 
-    private String getContentsAsJSON(String url, String backupURL) throws IOException {
+    private static String getContentsAsJSON(String url, String backupURL) throws IOException {
         String jsonString = null;
         try {
             jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
