@@ -26,6 +26,8 @@
 package org.broad.igv.feature;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.track.TribbleFeatureSource;
@@ -44,7 +46,7 @@ import static junit.framework.Assert.*;
  * @author Jim Robinson
  * @date 5/10/12
  */
-public class GFFTest {//} extends AbstractHeadlessTest{
+public class GFFTest  extends AbstractHeadlessTest {
 
 
     private List<Feature> getFeatures(String filePath, GFFCodec.Version version) throws Exception {
@@ -52,7 +54,7 @@ public class GFFTest {//} extends AbstractHeadlessTest{
     }
 
     private List<Feature> getFeatures(String filePath, String chr, GFFCodec.Version version) throws Exception {
-        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), null), version);
+        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(filePath), genome), version);
         List<Feature> features = new ArrayList<Feature>();
         Iterator<Feature> iter = src.getFeatures(chr, 0, Integer.MAX_VALUE);
         while (iter.hasNext()) features.add(iter.next());

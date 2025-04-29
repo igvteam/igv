@@ -25,6 +25,7 @@
 
 package org.broad.igv.tools.converters;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
@@ -45,7 +46,7 @@ import static junit.framework.Assert.assertTrue;
  * @author Jim Robinson
  * @date 2/15/12
  */
-public class GFFtoBedTest {
+public class GFFtoBedTest extends AbstractHeadlessTest {
 
 
     @Test

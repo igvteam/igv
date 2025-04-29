@@ -94,7 +94,9 @@ public class GFFParser implements FeatureParser {
         //Combine the features
         List<Feature> iFeatures = combiner.combineFeatures();
 
-        genome.getFeatureDB().addFeatures(iFeatures, genome);
+        if(genome != null) {
+            genome.getFeatureDB().addFeatures(iFeatures, genome);
+        }
 
         return iFeatures;
     }

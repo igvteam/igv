@@ -56,7 +56,7 @@ public class GFFCodecTest extends AbstractHeadlessTest {
         String path = TestUtils.DATA_DIR + "gtf/transcript_id.gtf";
         String expName = "YAL069W";
 
-        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), null), GFFCodec.Version.GTF);
+        GFFFeatureSource src = new GFFFeatureSource(TribbleFeatureSource.getFeatureSource(new ResourceLocator(path), genome), GFFCodec.Version.GTF);
 
         Iterator<Feature> iter = src.getFeatures("I", 0, Integer.MAX_VALUE);
         while (iter.hasNext()) {

@@ -1,6 +1,7 @@
 package org.broad.igv.feature;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class DataURLParserTest {
+public class DataURLParserTest extends AbstractHeadlessTest {
 
 
     @Test
@@ -22,7 +23,7 @@ public class DataURLParserTest {
 
         DataURLParser parser = new DataURLParser();
 
-        parser.parseFeatures(dataURL, "bed", null);
+        parser.parseFeatures(dataURL, "bed", genome);
         List<Feature> features = parser.getFeatures();
         assertEquals(18, features.size());
 
