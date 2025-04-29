@@ -30,11 +30,12 @@
 
 package org.broad.igv.feature;
 
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
-import htsjdk.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static junit.framework.Assert.assertNotNull;
 
@@ -45,7 +46,7 @@ public class TestLoadGeneManager extends AbstractHeadlessTest {
 
     @Test
     public void main() throws IOException {
-        Feature feature = FeatureDB.getFeature("EGFR");
+        NamedFeature feature = genome.getFeatureDB().getFeature("EGFR");
         assertNotNull(feature);
     }
 

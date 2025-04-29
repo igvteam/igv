@@ -26,6 +26,7 @@
 package org.broad.igv.data.expression;
 
 import htsjdk.tribble.Feature;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.FeatureDB;
@@ -50,6 +51,7 @@ public class GeneToLocusHelper {
 
     static String LOCUS_START_DELIMITER = "|@";
     static String LOCUS_END_DELIMITER = "|";
+    private final Genome genome;
 
     Map<String, List<Locus>> probeLocusMap;
 
@@ -59,8 +61,10 @@ public class GeneToLocusHelper {
      * @param probeResource - file path or URL to a bed file containing the probe mappings.  CAN BE NULL.
      * @throws IOException
      */
-    public GeneToLocusHelper(String probeResource) throws IOException {
+    public GeneToLocusHelper(String probeResource, Genome genome) throws IOException {
 
+        this.genome = genome;
+                
         if (probeResource != null && probeResource.trim().length() > 0) {
             loadProbeMap(probeResource);
         }
@@ -186,7 +190,7 @@ public class GeneToLocusHelper {
             return locus;
         } else {
             // Maybe its a gene or feature
-            Feature gene = FeatureDB.getFeature(geneOrLocusString);
+            Feature gene = genome.getFeatureDB().getFeature(geneOrLocusString);
             if (gene != null) {
                 return new Locus(gene.getChr(), gene.getStart(), gene.getEnd());
             }

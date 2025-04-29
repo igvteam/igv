@@ -65,7 +65,8 @@ public class HubGenomeLoader extends GenomeLoader {
                 File genomeFile = null;
                 try {
                     Hub hub = HubParser.loadAssemblyHub(hubURL);
-                    final GenomeConfig config = getGenomeConfig(hub);
+                    GenomeConfig config = hub.getGenomeConfigs().get(0);
+                    selectAnnotationTracks(hub, config);
                     if (config != null) {
                         genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
                     }
@@ -104,17 +105,23 @@ public class HubGenomeLoader extends GenomeLoader {
      * @throws IOException
      */
     public static void loadAssemblyHub(Hub hub) throws IOException {
-        final GenomeConfig config = getGenomeConfig(hub);
-        if (config != null) {
+
+        List<GenomeConfig> configs = hub.getGenomeConfigs();
+
+        for (GenomeConfig config : configs) {
+            config.setHubs(Arrays.asList(hub.getUrl()));
+            if (configs.size() == 1) {
+                selectAnnotationTracks(hub, config);
+            }
             File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-            GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+            if (configs.size() == 1) {
+                GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+            }
         }
     }
 
 
-    private static GenomeConfig getGenomeConfig(Hub hub) throws IOException {
-
-        GenomeConfig config = hub.getGenomeConfig();
+    private static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
 
         // Potentially override default tracks from hub with user selections
 
@@ -136,7 +143,7 @@ public class HubGenomeLoader extends GenomeLoader {
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
             TrackSelectionDialog dlg =
-                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(),null, true,
+                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
                             GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
 
             boolean dlgSuccess = true;
@@ -148,17 +155,12 @@ public class HubGenomeLoader extends GenomeLoader {
             }
 
             if (dlg.isCanceled() || !dlgSuccess) {
-                return null;
+                return;
             }
 
             List<TrackConfig> selectedTracks = dlg.getSelectedConfigs();
             config.setTracks(selectedTracks);
-
         }
-        config.setHubs(Arrays.asList(hub.getUrl()));
-        Genome genome = new Genome(config);
-        genome.setGenomeHub(hub);
-        return config;
     }
 
 
@@ -182,7 +184,8 @@ public class HubGenomeLoader extends GenomeLoader {
 
         Hub hub = HubParser.loadAssemblyHub(hubURL);
 
-        GenomeConfig config = getGenomeConfig(hub);
+        GenomeConfig config = hub.getGenomeConfigs().get(0);
+        selectAnnotationTracks(hub, config);
 
         if (config == null) {
             return GenomeManager.getInstance().getCurrentGenome();
@@ -211,10 +214,7 @@ public class HubGenomeLoader extends GenomeLoader {
         GenomeDownloadUtils.saveLocalGenome(config);
         GenomeListManager.getInstance().removeRemoteItem(config.id);
 
-
-        Genome genome = new Genome(config);
-        genome.setGenomeHub(hub);
-        return genome;
+        return new Genome(config);
     }
 
 }

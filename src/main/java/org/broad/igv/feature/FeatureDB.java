@@ -57,8 +57,13 @@ public class FeatureDB {
     //private static Map<String, IGVNamedFeature> featureMap = new HashMap(10000);
     private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static final int MAX_DUPLICATE_COUNT = 20;
+    private final Genome genome;
 
-    public static void addFeature(NamedFeature feature, Genome genome) {
+    public FeatureDB(Genome genome) {
+        this.genome = genome;
+    }
+    
+    public  void addFeature(NamedFeature feature, Genome genome) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
@@ -82,7 +87,7 @@ public class FeatureDB {
         }
     }
 
-    private static void addByAttributes(IGVFeature igvFeature, Genome genome) {
+    private  void addByAttributes(IGVFeature igvFeature, Genome genome) {
         List<String> attributeKeys = igvFeature.getAttributeKeys();
         for (String key : attributeKeys) {
             String value = igvFeature.getAttribute(key);
@@ -101,12 +106,13 @@ public class FeatureDB {
      * @param genome  The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
-    static boolean put(String name, NamedFeature feature, Genome genome) {
+     void put(String name, NamedFeature feature, Genome genome) {
+
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
             Genome currentGenome = genome != null ? genome : GenomeManager.getInstance().getCurrentGenome();
             if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
-                return false;
+                return;
             }
         }
 
@@ -119,15 +125,14 @@ public class FeatureDB {
                 if (added) {
                     featureMap.put(key, newList);
                 }
-                return added;
+                return;
             } else {
                 // Don't let list grow without bounds
                 if (currentList.size() > MAX_DUPLICATE_COUNT) {
-                    return false;
+                    return;
                 }
 
-                return currentList.add(feature);
-
+                currentList.add(feature);
             }
         }
     }
@@ -167,16 +172,11 @@ public class FeatureDB {
      */
 
 
-    public static void addFeature(String name, IGVNamedFeature feature, Genome genome) {
+    public  void addFeature(String name, IGVNamedFeature feature, Genome genome) {
         put(name.toUpperCase(), feature, genome);
     }
-
-
-    private FeatureDB() {
-    }
-
-
-    public static void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
+    
+    public  void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
         for (htsjdk.tribble.Feature feature : features) {
             if (feature instanceof IGVFeature)
                 addFeature((IGVFeature) feature, genome);
@@ -184,18 +184,18 @@ public class FeatureDB {
     }
 
 
-    public static void clearFeatures() {
+    public  void clearFeatures() {
         featureMap.clear();
     }
 
-    static int size() {
+     int size() {
         return featureMap.size();
     }
 
     /**
      * Return a feature with the given name.
      */
-    public static NamedFeature getFeature(String name) {
+    public  NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();
         List<NamedFeature> features = featureMap.get(nm);
 
@@ -222,9 +222,9 @@ public class FeatureDB {
      *             string will be found.
      * @return
      */
-    static Map<String, List<IGVNamedFeature>> getFeaturesMap(String name) {
+     Map<String, List<NamedFeature>> getFeaturesMap(String name) {
         String nm = name.trim().toUpperCase();
-        SortedMap<String, List<IGVNamedFeature>> treeMap = (SortedMap) featureMap;
+        SortedMap<String, List<NamedFeature>> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
         return treeMap.subMap(nm, nm + Character.MAX_VALUE);
     }
@@ -237,7 +237,7 @@ public class FeatureDB {
      * @return
      * @see #getFeaturesList(String, int, boolean)
      */
-    public static List<IGVNamedFeature> getFeaturesList(String name, int limit) {
+    public  List<NamedFeature> getFeaturesList(String name, int limit) {
         return getFeaturesList(name, limit, true);
     }
 
@@ -250,18 +250,18 @@ public class FeatureDB {
      * @param longestOnly Whether to take only the longest feature for each name
      * @return
      */
-    public static List<IGVNamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
+    public  List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
 
         //Note: We are iterating over submap, this needs
         //to be synchronized over the main map.
         synchronized (featureMap) {
-            Map<String, List<IGVNamedFeature>> resultMap = getFeaturesMap(name);
+            Map<String, List<NamedFeature>> resultMap = getFeaturesMap(name);
             Set<String> names = resultMap.keySet();
             Iterator<String> nameIter = names.iterator();
-            ArrayList<IGVNamedFeature> features = new ArrayList<IGVNamedFeature>((Math.min(limit, names.size())));
+            ArrayList<NamedFeature> features = new ArrayList<>((Math.min(limit, names.size())));
             int ii = 0;
             while (nameIter.hasNext() && ii < limit) {
-                List<IGVNamedFeature> subFeats = resultMap.get(nameIter.next());
+                List<NamedFeature> subFeats = resultMap.get(nameIter.next());
                 if (longestOnly) {
                     features.add(subFeats.get(0));
                 } else {
@@ -378,10 +378,8 @@ public class FeatureDB {
                         results.put(genomePosition, bf);
                     }
                 }
-
             }
         }
-
         return results;
     }
 

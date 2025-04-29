@@ -235,7 +235,7 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String[] args = {"toTDF", "-z", "1", "--windowFunctions", "min", inputFile, file1, hg18id};
         igvTools.run(args);
 
-        FeatureDB.clearFeatures();
+        genome.getFeatureDB().clearFeatures();
         Runtime.getRuntime().gc();
 
         args = new String[]{"toTDF", "-z", "1", "--windowFunctions", "max", inputFile, file2, hg18id};

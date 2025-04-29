@@ -113,20 +113,20 @@ public class IGVBEDCodec extends UCSCCodec<BasicFeature> {
 
                 String id = atts.get("ID");
                 if (id != null) {
-                    FeatureDB.addFeature(id, feature, genome);
+                    genome.getFeatureDB().addFeature(id, feature, genome);
                     feature.setIdentifier(id);
                 } else {
                     feature.setIdentifier(name);
                 }
                 String alias = atts.get("Alias");
                 if (alias != null) {
-                    FeatureDB.addFeature(alias, feature, genome);
+                    genome.getFeatureDB().addFeature(alias, feature, genome);
                 }
                 String geneSymbols = atts.get("Symbol");
                 if (geneSymbols != null) {
                     String[] symbols = geneSymbols.split(",");
                     for (String sym : symbols) {
-                        FeatureDB.addFeature(sym.trim(), feature, genome);
+                        genome.getFeatureDB().addFeature(sym.trim(), feature, genome);
                     }
                 }
 

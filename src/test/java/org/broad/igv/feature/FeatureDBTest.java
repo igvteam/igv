@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature;
 
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -61,7 +62,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
     public void setUpTest() throws Exception {
 
         try {
-            if (FeatureDB.size() == 0) {
+            if (genome.getFeatureDB().size() == 0) {
                 reload = true;
             }
         } catch (NullPointerException e) {
@@ -74,7 +75,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeaturesMap() throws Exception {
-        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
+        Map<String, List<NamedFeature>> fMap = genome.getFeatureDB().getFeaturesMap(CHECK_STR);
 
         for (String k : fMap.keySet()) {
 
@@ -85,10 +86,10 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureListSize() throws Exception {
-        List<IGVNamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, 3);
+        List<NamedFeature> features = genome.getFeatureDB().getFeaturesList(CHECK_STR, 3);
         assertEquals(3, features.size());
 
-        features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        features = genome.getFeatureDB().getFeaturesList(CHECK_STR, LARGE);
         assertTrue(features.size() < LARGE);
         int expected = 50;
         assertEquals(expected, features.size());
@@ -96,10 +97,10 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureList() throws Exception {
-        List<IGVNamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
-        for (IGVNamedFeature f : features) {
+        List<NamedFeature> features = genome.getFeatureDB().getFeaturesList(CHECK_STR, LARGE);
+        for (NamedFeature f : features) {
             assertTrue(f.getName().startsWith(CHECK_STR));
-            assertNotNull(FeatureDB.getFeature(f.getName()));
+            assertNotNull(genome.getFeatureDB().getFeature(f.getName()));
         }
 
     }
@@ -107,21 +108,21 @@ public class FeatureDBTest extends AbstractHeadlessTest {
     @Test
     public void testMultiRetrieve() throws Exception {
         String checkstr = "EGFLAM";
-        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
-        List<IGVNamedFeature> data = fMap.get(checkstr);
+        Map<String, List<NamedFeature>> fMap = genome.getFeatureDB().getFeaturesMap(checkstr);
+        List<NamedFeature> data = fMap.get(checkstr);
         assertEquals(4, data.size());
     }
 
     @Test
     public void testMultipleEntries() throws Exception {
         String checkstr = "EG";
-        Map<String, List<IGVNamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
+        Map<String, List<NamedFeature>> fMap = genome.getFeatureDB().getFeaturesMap(checkstr);
         for (String k : fMap.keySet()) {
-            List<IGVNamedFeature> data = fMap.get(k);
+            List<NamedFeature> data = fMap.get(k);
             //System.out.println("key " + k + " has " + data.size());
             for (int ii = 0; ii < data.size() - 1; ii++) {
-                IGVNamedFeature feat1 = data.get(ii);
-                IGVNamedFeature feat2 = data.get(ii + 1);
+                NamedFeature feat1 = data.get(ii);
+                NamedFeature feat2 = data.get(ii + 1);
                 int len1 = feat1.getEnd() - feat1.getStart();
                 int len2 = feat2.getEnd() - feat2.getStart();
                 assertTrue("Data for key " + k + " not sorted", len1 >= len2);
@@ -140,7 +141,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         String[] muts = new String[]{"I", "R", "P", "P", "R"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutationAA(name, ii + 1, symbols[ii], muts[ii], genome);
+            matches = genome.getFeatureDB().getMutationAA(name, ii + 1, symbols[ii], muts[ii], genome);
             assertEquals(1, matches.size());
             for (int pos : matches.keySet()) {
                 assertEquals(name, matches.get(pos).getName());
@@ -149,7 +150,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
         name = "EGFLAM";
         int exp_start = 38439399;
-        matches = FeatureDB.getMutationAA(name, 2, "H", "H", genome);
+        matches = genome.getFeatureDB().getMutationAA(name, 2, "H", "H", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
             assertEquals(exp_start, matches.get(geneloc).getStart());
@@ -157,7 +158,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
         String[] others = new String[]{"I", "M", "T"};
         for (String c : others) {
-            matches = FeatureDB.getMutationAA(name, 2, "H", c, genome);
+            matches = genome.getFeatureDB().getMutationAA(name, 2, "H", c, genome);
             assertEquals(0, matches.size());
         }
     }
@@ -166,7 +167,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
     public void testMutationSearchNegStrand() throws Exception {
         String name = "KRAS";
         int exp_start = 25249446;
-        Map<Integer, BasicFeature> matches = FeatureDB.getMutationAA(name, 1, "M", "I", genome);
+        Map<Integer, BasicFeature> matches = genome.getFeatureDB().getMutationAA(name, 1, "M", "I", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
             assertEquals(exp_start, matches.get(geneloc).getStart());
@@ -180,7 +181,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         String[] symbols = "R,P,S,G,M".split(",");
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutationAA(name, ii + 1, symbols[ii], "M", genome);
+            matches = genome.getFeatureDB().getMutationAA(name, ii + 1, symbols[ii], "M", genome);
             assertEquals(0, matches.size());
         }
     }
@@ -191,7 +192,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         String[] bps = new String[]{"A", "T", "G"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < bps.length; ii++) {
-            matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);
+            matches = genome.getFeatureDB().getMutationNT(name, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
         }
     }
@@ -202,7 +203,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         String[] bps = new String[]{"A", "T", "G"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < bps.length; ii++) {
-            matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);
+            matches = genome.getFeatureDB().getMutationNT(name, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
         }
 
@@ -210,7 +211,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
         int startNT = (56 - 1) * 3;
         char[] bps2 = "CTCGACACAGCAGGT".toCharArray();
         for (int ii = 0; ii < bps2.length; ii++) {
-            matches = FeatureDB.getMutationNT(name, ii + startNT + 1, String.valueOf(bps2[ii]), genome);
+            matches = genome.getFeatureDB().getMutationNT(name, ii + startNT + 1, String.valueOf(bps2[ii]), genome);
             assertEquals(1, matches.size());
         }
     }

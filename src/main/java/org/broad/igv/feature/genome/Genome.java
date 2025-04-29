@@ -76,7 +76,7 @@ public class Genome {
 
     private static final int MAX_WHOLE_GENOME_LONG = 100;
     private static Logger log = LogManager.getLogger(Genome.class);
-
+    public static Genome nullGenome = null;
 
     private String id;
     private String displayName;
@@ -103,8 +103,7 @@ public class Genome {
     private Hub genomeHub;
     private List<Hub> trackHubs;
     private GenomeConfig config;
-
-    public static Genome nullGenome = null;
+    private FeatureDB featureDB;
 
     public synchronized static Genome nullGenome() {
         if (nullGenome == null) {
@@ -113,13 +112,13 @@ public class Genome {
         return nullGenome;
     }
 
-
     public Genome(GenomeConfig config) throws IOException {
         this.config = config;
         id = config.id;
         displayName = config.getName();
         nameSet = config.nameSet != null ? config.nameSet : "ucsc";
         trackHubs = new ArrayList<>();
+        featureDB = new FeatureDB(this);
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         if (config.ucscID == null) {
@@ -246,6 +245,7 @@ public class Genome {
                 }
             }
         }
+
         if (chromAliasSource == null) {
             nameSet = null;
             if(chromosomeNames != null) {
@@ -792,7 +792,7 @@ public class Genome {
                 while (iter.hasNext()) {
                     Feature f = iter.next();
                     if (f instanceof NamedFeature) {
-                        FeatureDB.addFeature((NamedFeature) f, genome);
+                        genome.getFeatureDB().addFeature((NamedFeature) f, genome);
                     }
                 }
             } catch (IOException e) {
@@ -849,33 +849,10 @@ public class Genome {
 
     }
 
-    public void setGenomeHub(Hub genomeHub) {
-        // A genome hub is by definition also a track hub
-        genomeHub = genomeHub;
-        genomeHub.setOrder(-1);  // Always on top
-        trackHubs.add(genomeHub);
-    }
-
     public Collection<Hub> getTrackHubs() {
         return trackHubs;
     }
 
-    public void addTrackHub(Hub hub) {
-        if (!trackHubs.stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()))) {
-            hub.setOrder(trackHubs.size());
-            trackHubs.add(hub);
-            config.addHub(hub.getUrl());
-        }
-    }
-    public void removeHubs(Set<String> unselectedURLS) {
-        for (int i = trackHubs.size() - 1; i >= 0; i--) {
-            Hub hub = trackHubs.get(i);
-            if (unselectedURLS.contains(hub.getUrl())) {
-                trackHubs.remove(i);
-                config.removeHub(hub.getUrl());
-            }
-        }
-    }
     public GenomeConfig getConfig() {
         return config;
     }
@@ -884,5 +861,9 @@ public class Genome {
         return genomeHub;
     }
 
-
+    public FeatureDB getFeatureDB() {
+        return featureDB;
+    }
+    
+    
 }

@@ -169,9 +169,6 @@ public class GenomeManager {
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
 
-            // Clear Feature DB
-            FeatureDB.clearFeatures();
-
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority

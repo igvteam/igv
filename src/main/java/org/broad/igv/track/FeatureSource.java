@@ -103,7 +103,7 @@ public interface FeatureSource<T extends Feature> {
         return false;
     }
 
-    default NamedFeature search(String name) {
+    default List<NamedFeature> search(String name) {
         return null;
     }
 }

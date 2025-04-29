@@ -123,31 +123,6 @@ public class JsonGenomeLoader extends GenomeLoader {
         }
     }
 
-    private void addToFeatureDB(List<ResourceLocator> locators, Genome genome) {
-        for (ResourceLocator locator : locators) {
-            try {
-                FeatureReader featureReader = TribbleFeatureSource.getBasicReader(locator, genome);
-                CloseableTribbleIterator<Feature> iter = featureReader.iterator();
-                while (iter.hasNext()) {
-                    Feature f = iter.next();
-                    if (f instanceof IGVNamedFeature) {
-                        FeatureDB.addFeature((IGVNamedFeature) f, genome);
-                    }
-                }
-            } catch (IOException e) {
-                log.error("Error loading " + locator.getPath());
-            }
-        }
-    }
-
-    private String stripQuotes(String str) {
-        if (str.startsWith("\"")) {
-            return str.substring(1, str.length() - 1);  // Assume also ends with
-        } else {
-            return str;
-        }
-    }
-
     public static class GenomeDescriptor {
         String id;
         String name;

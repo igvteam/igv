@@ -55,7 +55,7 @@ public class GenbankLoader extends GenomeLoader {
         Genome genome =  new Genome(config);
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
-            FeatureDB.addFeatures(genbankParser.getFeatures(), genome);
+            genome.getFeatureDB().addFeatures(genbankParser.getFeatures(), genome);
             FeatureTrack geneFeatureTrack = createGeneTrack(genome, genbankParser.getFeatures());
             genome.setGeneTrack(geneFeatureTrack);
         }

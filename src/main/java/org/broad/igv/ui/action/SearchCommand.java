@@ -40,13 +40,13 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.Track;
+import org.broad.igv.ucsc.SearchAPI;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.HttpUtils;
 
-import java.net.URL;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -309,11 +309,6 @@ public class SearchCommand implements Runnable {
      */
     private SearchResult parseToken(String token) {
 
-        // Check featureDB first -- this is cheap
-        NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
-        if (feat != null) {
-            return new SearchResult(feat);
-        }
 
         //Check if a full or partial locus string
         SearchResult result = calcChromoLocus(token);
@@ -321,23 +316,50 @@ public class SearchCommand implements Runnable {
             return result;
         }
 
-        //Check if we have an exact match for the feature name
-        List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
-        for (Track t : searchableTracks) {
-            NamedFeature match = t.search(token);
-            if (match != null) {
-                return new SearchResult(match);
+        // Search by feature name - try searchable tracks first
+        List<NamedFeature> matchingFeatures;
+
+        // Check featureDB first -- this is cheap
+        matchingFeatures = genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false);
+
+        // If no matches, check searchable tracks.  Break if we  a match
+        if(matchingFeatures == null || matchingFeatures.isEmpty()) {
+            matchingFeatures = new ArrayList<>();
+            List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
+            for (Track t : searchableTracks) {
+                List<NamedFeature> matches = t.search(token);
+                if (matches != null && matches.size() > 0) {
+                    matchingFeatures.addAll(matches);
+                    break;
+                }
             }
         }
 
-        // Try the webservice
-        feat = searchWebservice(token);
-        if (feat != null) {
-            return new SearchResult(feat);
+        if (matchingFeatures.isEmpty()) {
+            // Try the webservice
+            matchingFeatures .addAll(searchWebservice(token));
+        }
+
+        if (matchingFeatures.size() > 0) {
+
+            // Prefer longer features over shorter ones
+            matchingFeatures.sort((r1, r2) -> Integer.compare(r2.getEnd() - r2.getStart(), r1.getEnd() - r1.getStart()));
+
+            // If the genome defines long chromosome names, prefer those
+            Set<String> lnames = new HashSet<>(genome.getLongChromosomeNames());
+            if (lnames.size() > 0) {
+                for (NamedFeature l : matchingFeatures) {
+                    if (lnames.contains(l.getChr())) {
+                        return new SearchResult(l);
+                    }
+                }
+            }
+            NamedFeature l = matchingFeatures.get(0);
+            return new SearchResult(l);
         }
 
 
-        //2 possible mutation notations, either amino acid (A123B) or nucleotide (123G>C)
+        //Try mutation syntax. 2 possible mutation notations, either amino acid (A123B) or nucleotide (123G>C)
         boolean mutAA = token.matches(featureMutAA);
         boolean mutNT = token.matches(featureMutNT);
         if (mutAA || mutNT) {
@@ -359,13 +381,13 @@ public class SearchCommand implements Runnable {
                 String strLoc = coords.substring(1, coordLength - 1);
                 int location = Integer.parseInt(strLoc) - 1;
 
-                genomePosList = FeatureDB.getMutationAA(name, location + 1, refSymbol, mutSymbol, genome);
+                genomePosList = genome.getFeatureDB().getMutationAA(name, location + 1, refSymbol, mutSymbol, genome);
             } else if (mutNT) {
                 //Exclude the "A>T" at end
                 String strLoc = coords.substring(0, coordLength - 3);
                 String refSymbol = coords.substring(coordLength - 3, coordLength - 2);
                 int location = Integer.parseInt(strLoc) - 1;
-                genomePosList = FeatureDB.getMutationNT(name, location + 1, refSymbol, genome);
+                genomePosList = genome.getFeatureDB().getMutationNT(name, location + 1, refSymbol, genome);
             } else {
                 //This should never happen
                 throw new IllegalArgumentException("Something went wrong parsing input token");
@@ -384,25 +406,15 @@ public class SearchCommand implements Runnable {
         return null;
     }
 
-    private NamedFeature searchWebservice(String str) {
+    private List<Locus> searchWebservice(String str) {
         try {
-            String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
-            String genomeID = GenomeManager.getInstance().getGenomeId();
-            if (genomeID != null && genomeID.indexOf("/") < 0 && genomeID.indexOf("\\") < 0) {   // Filter out file paths
-                URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", str));
-                String r = HttpUtils.getInstance().getContentsAsString(url);
-                String[] t = Globals.whitespacePattern.split(r);
-                if (t.length > 2) {
-                    Locus l = Locus.fromString(t[1]);
-                    String chr = genome == null ? l.getChr() : genome.getCanonicalChrName(l.getChr());
-                    return new BasicFeature(chr, l.getStart(), l.getEnd());
-                }
-            }
-        } catch (Exception e) {
-
-            log.error("Search webservice error", e);
+            return SearchAPI.search(str, genome.getId());
+        } catch (IOException e) {
+            log.error("Error searching webservice", e);
+            MessageUtils.showMessage("Error searching webservice: " + e.getMessage());
+            return Collections.emptyList();
         }
-        return null;
+
     }
 
 
@@ -646,9 +658,9 @@ public class SearchCommand implements Runnable {
      * @param objects
      * @return
      */
-    public static List<SearchResult> getResults(List<IGVNamedFeature> objects) {
+    public static List<SearchResult> getResults(List<NamedFeature> objects) {
         List<SearchResult> results = new ArrayList<SearchResult>(objects.size());
-        for (IGVNamedFeature f : objects) {
+        for (NamedFeature f : objects) {
             results.add(new SearchCommand.SearchResult(f));
         }
         return results;

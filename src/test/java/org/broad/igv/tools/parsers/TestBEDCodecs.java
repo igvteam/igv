@@ -127,7 +127,7 @@ public class TestBEDCodecs {
             assertEquals(feat.getName(), feat.getIdentifier());
             assertNotNull("No ID found for feature", feat.getIdentifier());
             assertNotNull("No description found for feature", feat.getDescription());
-            assertNotNull("Feature not in FeatureDB", FeatureDB.getFeature(feat.getIdentifier()));
+            assertNotNull("Feature not in FeatureDB", genome.getFeatureDB().getFeature(feat.getIdentifier()));
         }
 
 

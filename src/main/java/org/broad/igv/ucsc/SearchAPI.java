@@ -1,24 +1,58 @@
 package org.broad.igv.ucsc;
 
 import com.google.gson.Gson;
+import htsjdk.tribble.NamedFeature;
+import org.broad.igv.Globals;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// e.g. https://api.genome.ucsc.edu/search?search=brca1&genome=hg38
+/**
+ * Search for a feature from the UCSC or IGV web services.  The UCSC service can be slow, for the time being
+ * the IGV service is preferred.
+ *
+ * <p>
+ * This class is not thread safe.  It is not intended to be used in a multi-threaded environment.
+ */
 public class SearchAPI {
 
+
+
     public static List<Locus> search(String searchTerm, String genome) throws IOException {
+
+        List<String> positions = searchIGV(searchTerm, genome);  //searchUCSC(searchTerm, genome);
+
+        return mergeOverlaps(positions);
+    }
+
+    private static List<String> searchIGV(String str, String genomeID) throws IOException {
+
+        String tmp = "https://igv.org/genomes/locus.php?genome=$GENOME$&name=$FEATURE$";
+
+        if (genomeID != null && genomeID.indexOf("/") < 0 && genomeID.indexOf("\\") < 0) {   // Filter out file paths
+            URL url = new URL(tmp.replace("$GENOME$", genomeID).replace("$FEATURE$", str));
+            String r = HttpUtils.getInstance().getContentsAsString(url);
+            return List.of(Globals.whitespacePattern.split(r));
+        } else {
+            return null;
+        }
+    }
+
+
+    private static List<String> searchUCSC(String searchTerm, String genome) throws IOException {
         String url = "https://api.genome.ucsc.edu/search?search=" + searchTerm + "&genome=" + genome;
         String response = HttpUtils.getInstance().getContentsAsString(new URL(url));
         Gson gson = new Gson();
-        return mergeOverlaps(reduceSearchResults(gson.fromJson(response, Map.class), searchTerm));
+        return reduceSearchResults(gson.fromJson(response, Map.class), searchTerm);
     }
 
     public static List<String> reduceSearchResults(Map<String, Object> searchResults, String searchTerm) {
@@ -65,7 +99,7 @@ public class SearchAPI {
     }
 
     public static void main(String[] args) throws IOException {
-        String searchTerm = "rs121913433";
+        String searchTerm = "PKD1";
         String genome = "hg38";
         List<Locus> results = search(searchTerm, genome);
         for (Locus result : results) {

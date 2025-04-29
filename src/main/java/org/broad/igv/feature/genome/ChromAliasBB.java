@@ -2,6 +2,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.ucsc.bb.BBFile;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class ChromAliasBB extends ChromAliasSource {
     BBFile reader;
 
     public ChromAliasBB(String path, Genome genome) throws IOException {
-        this.reader =  new BBFile(path, genome);
+        this.reader = new BBFile(path, genome);
     }
 
     void preload(List<String> chromosomeNames) {
@@ -45,15 +46,17 @@ public class ChromAliasBB extends ChromAliasSource {
      */
     public ChromAlias search(String alias) throws IOException {
         if (!this.aliasCache.containsKey(alias)) {
-            BasicFeature f =  this.reader.search(alias);
-            if (f != null) {
-                String chr = f.getChr();
-                ChromAlias aliasRecord = new ChromAlias(chr);
-                this.aliasCache.put(chr, aliasRecord);
-                for (String key : f.getAttributeKeys()){
-                    final String a = f.getAttribute(key);
-                    aliasRecord.put(key, a);
-                    this.aliasCache.put(a, aliasRecord);      // One entry for each alias
+            List<BasicFeature> results = this.reader.search(alias);
+            if (results != null) {
+                for (BasicFeature f : results) {
+                    String chr = f.getChr();
+                    ChromAlias aliasRecord = new ChromAlias(chr);
+                    this.aliasCache.put(chr, aliasRecord);
+                    for (String key : f.getAttributeKeys()) {
+                        final String a = f.getAttribute(key);
+                        aliasRecord.put(key, a);
+                        this.aliasCache.put(a, aliasRecord);      // One entry for each alias
+                    }
                 }
             }
         }

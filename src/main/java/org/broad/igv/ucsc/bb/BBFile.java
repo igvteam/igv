@@ -1,6 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /* bigWig/bigBed file structure:
  *     fixedWidthHeader
@@ -413,7 +415,7 @@ public class BBFile {
      * @returns {Promise<void>}
      */
 
-    public BasicFeature search(String term) throws IOException {
+    public List<BasicFeature> search(String term) throws IOException {
 
         if (this.header == null) {
             this.readHeader();
@@ -442,15 +444,10 @@ public class BBFile {
             // Filter features to those matching term
             final String searchTerm = term;
 
-            BasicFeature largest = features.stream().filter(f -> {
-                return f.getName().equalsIgnoreCase(searchTerm) || f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
-            }).reduce((f1, f2) -> {
-                int l1 = f1.getEnd() - f1.getStart();
-                int l2 = f2.getEnd() - f2.getStart();
-                return l1 > l2 ? f1 : f2;
-            }).get();
-
-            return largest;
+            return features.stream().filter(f -> {
+                return f.getName().equalsIgnoreCase(searchTerm) ||
+                        f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
+            }).collect(Collectors.toList());
 
         }
         return null;

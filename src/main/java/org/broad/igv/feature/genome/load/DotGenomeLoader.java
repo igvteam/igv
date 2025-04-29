@@ -40,7 +40,7 @@ public class DotGenomeLoader extends GenomeLoader {
     private static FeatureTrack createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
                                                 String annotationURL) {
 
-        FeatureDB.clearFeatures();
+        genome.getFeatureDB().clearFeatures();
         FeatureTrack geneFeatureTrack = null;
 
         if (reader != null) {

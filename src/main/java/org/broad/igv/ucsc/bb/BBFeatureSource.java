@@ -116,7 +116,7 @@ public class BBFeatureSource implements FeatureSource {
     }
 
     @Override
-    public NamedFeature search(String term) {
+    public List<BasicFeature> search(String term) {
         try {
             return reader.search(term);
         } catch (IOException e) {

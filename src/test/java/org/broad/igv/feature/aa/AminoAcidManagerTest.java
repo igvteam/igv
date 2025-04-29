@@ -84,7 +84,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Test
     public void testStartEgfr() {
         String expectedSeq = "MRPSGTAGAALLALLAALCPASRALEEKKVC";
-        IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
+        IGVFeature egfr = (IGVFeature) genome.getFeatureDB().getFeature("EGFR");
 
         Exon nextExon = egfr.getExons().get(1);
         AminoAcidSequence aaSeq = egfr.getExons().get(0).getAminoAcidSequence(genome, null, nextExon);
@@ -103,7 +103,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void testExon2EGFR() {
         // Note:  frame == 1,  phase == 2
         String expectedSeq = "VCQGT";
-        IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
+        IGVFeature egfr = (IGVFeature) genome.getFeatureDB().getFeature("EGFR");
 
         Exon exon = egfr.getExons().get(1);
         Exon prevExon = egfr.getExons().get(0);
@@ -123,7 +123,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String expectedSeq = "TIQEV";
         String expectedEndSeq = "NLQE";
 
-        IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
+        IGVFeature egfr = (IGVFeature) genome.getFeatureDB().getFeature("EGFR");
         Exon exon = egfr.getExons().get(exonIndex);
         Exon prevExon = egfr.getExons().get(exonIndex - 1);
         Exon nextExon = egfr.getExons().get(exonIndex + 1);
@@ -148,7 +148,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     @Test
     public void testNegativeEndExon() {
         String expectedSeq = "LLEQNM";
-        IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
+        IGVFeature fbxw7 = (IGVFeature) genome.getFeatureDB().getFeature("FBXW7");
 
         // Insure that this is a negative strand gene, and that its transcript can be read
         Assert.assertEquals(Strand.NEGATIVE, fbxw7.getStrand());
@@ -177,7 +177,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
         String expectedSeq = "GQLTQLCQGTKI";
         String expectedEndSeq = "HIGDF";
 
-        IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
+        IGVFeature fbxw7 = (IGVFeature) genome.getFeatureDB().getFeature("FBXW7");
         Exon exon = fbxw7.getExons().get(1);
         Exon prevExon = fbxw7.getExons().get(0);
         Exon nextExon = fbxw7.getExons().get(2);
@@ -205,7 +205,7 @@ public class AminoAcidManagerTest extends AbstractHeadlessTest {
     public void testNegativeGeneMidExon2() {
         String expectedSeq = "QLSYV";
         String expectedEndSeq = "GSVVR";
-        IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
+        IGVFeature fbxw7 = (IGVFeature) genome.getFeatureDB().getFeature("FBXW7");
 
         Exon exon = fbxw7.getExons().get(2);
         Exon prevExon = fbxw7.getExons().get(1);
