@@ -39,7 +39,7 @@ public class Hub {
     List<Stanza> genomeStanzas;
     List<Stanza> groupStanzas;
     Map<String, TrackDbHub> trackHubMap;
-    private GenomeConfig genomeConfig;
+    private List<GenomeConfig> genomeConfigs;
 
     Hub(String url,
         Stanza hubStanza,
@@ -72,6 +72,10 @@ public class Hub {
                 dbList,
                 this.hubStanza.getProperty("descriptionUrl")
         );
+    }
+
+    public boolean isOneFile() {
+        return "on".equals(hubStanza.getProperty("useOneFile"));
     }
 
     public int getOrder() {
@@ -198,41 +202,47 @@ public class Hub {
      *
      * @return GenomeConfig
      */
-    public GenomeConfig getGenomeConfig() {
+    public List<GenomeConfig> getGenomeConfigs() {
 
-        if (genomeConfig == null) {
+        if (genomeConfigs == null) {
 
-            Stanza genomeStanza = genomeStanzas.get(0);
-            if (genomeStanza == null) {
-                throw new RuntimeException("No genome stanza found in hub");
+            genomeConfigs = new ArrayList<>();
+
+            for(Stanza genomeStanza : genomeStanzas) {
+
+                GenomeConfig genomeConfig = new GenomeConfig();
+                genomeConfig.id = genomeStanza.getProperty("genome");
+                genomeConfig.nameSet = "ucsc";
+                genomeConfig.wholeGenomeView = false;
+                genomeConfig.accession = genomeStanza.getProperty("genome");
+                genomeConfig.taxId = genomeStanza.getProperty("taxId");
+                genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
+                genomeConfig.twoBitURL = (genomeStanza.getProperty("twoBitPath"));
+                genomeConfig.defaultPos = (genomeStanza.getProperty("defaultPos"));
+                genomeConfig.blat = genomeStanza.getProperty("blat");
+                genomeConfig.chromAliasBbURL = genomeStanza.getProperty("chromAliasBb");
+                genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptURL");
+                if (genomeConfig.twoBitBptURL == null) {
+                    genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
+                }
+                genomeConfig.description = genomeStanza.getProperty("description");
+                genomeConfig.organism = genomeStanza.getProperty("organism");
+                genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
+                genomeConfig.infoURL = (genomeStanza.getProperty("htmlPath"));
+                genomeConfig.chromSizesURL = (genomeStanza.getProperty("chromSizes"));
+
+                // Search for cytoband
+                if(isOneFile()) {
+                    TrackDbHub trackDbHub = getTrackDbHub(genomeConfig.id);
+                    genomeConfig.cytobandBbURL = trackDbHub.findCytobandURL();
+                }
+
+                genomeConfig.getName(); // This will set the name if it is not already set.  Bad use of side effect.
+
+                genomeConfigs.add(genomeConfig);
             }
-            genomeConfig = new GenomeConfig();
-            genomeConfig.id = genomeStanza.getProperty("genome");
-            genomeConfig.nameSet = "ucsc";
-            genomeConfig.wholeGenomeView = false;
-            genomeConfig.accession = genomeStanza.getProperty("genome");
-            genomeConfig.taxId = genomeStanza.getProperty("taxId");
-            genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
-            genomeConfig.twoBitURL = (genomeStanza.getProperty("twoBitPath"));
-            genomeConfig.defaultPos = (genomeStanza.getProperty("defaultPos"));
-            genomeConfig.blat = genomeStanza.getProperty("blat");
-            genomeConfig.chromAliasBbURL = genomeStanza.getProperty("chromAliasBb");
-            genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptURL");
-            if (genomeConfig.twoBitBptURL == null) {
-                genomeConfig.twoBitBptURL = genomeStanza.getProperty("twoBitBptUrl");
-            }
-            genomeConfig.description = genomeStanza.getProperty("description");
-            genomeConfig.organism = genomeStanza.getProperty("organism");
-            genomeConfig.scientificName = genomeStanza.getProperty("scientificName");
-            genomeConfig.infoURL = (genomeStanza.getProperty("htmlPath"));
-            genomeConfig.chromSizesURL = (genomeStanza.getProperty("chromSizes"));
-
-
-            // Search for cytoband
-            TrackDbHub trackDbHub = getTrackDbHub(genomeConfig.id);
-            genomeConfig.cytobandBbURL = trackDbHub.findCytobandURL();
         }
 
-        return genomeConfig;
+        return genomeConfigs;
     }
 }

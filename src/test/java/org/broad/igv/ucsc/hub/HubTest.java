@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public class HubTest {
 
     @Test
-    public void testGetGenomeConfig() throws IOException {
+    public void testGetGenomeConfigs() throws IOException {
 
         String hubFile = TestUtils.DATA_DIR + "hubs/hub.txt";
         Hub hub = HubParser.loadAssemblyHub(hubFile);
@@ -20,7 +20,7 @@ public class HubTest {
         //assertNotNull(hub.genomeStanza);
        // assertEquals(22, hub.trackStanzas.size());
 
-        GenomeConfig genomeConfig = hub.getGenomeConfig();
+        GenomeConfig genomeConfig = hub.getGenomeConfigs().get(0);
         assertNotNull(genomeConfig);
         assertEquals("GCF_000186305.1", genomeConfig.id);
         assertEquals("Python (GCF_000186305.1)", genomeConfig.getName());

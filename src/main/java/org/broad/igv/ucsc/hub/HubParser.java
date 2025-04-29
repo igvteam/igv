@@ -55,8 +55,9 @@ public class HubParser {
         List<Stanza> groupStanzas = null;
         List<Stanza> genomeStanzas = null;
 
-        if ("on".equals(stanzas.get(0).getProperty("useOneFile"))) {
+        if ("on".equals(hubStanza.getProperty("useOneFile"))) {
 
+            // This is a "onefile" hub, all stanzas are in the same file
             if (!"genome".equals(stanzas.get(1).type)) {
                 throw new RuntimeException("Unexpected hub file -- expected 'genome' stanza but found " + stanzas.get(1).type);
             }

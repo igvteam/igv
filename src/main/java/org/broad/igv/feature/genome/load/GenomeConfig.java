@@ -79,13 +79,6 @@ public class GenomeConfig implements Cloneable {
         this.hubs = hubs;
     }
 
-    public void addHub(String hub) {
-        if (hubs == null) {
-            hubs = new ArrayList();
-        }
-        hubs.add(hub);
-    }
-
     public void setName(String name) {
         this.name = name;
     }

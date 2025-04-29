@@ -3,6 +3,7 @@ package org.broad.igv.feature.genome.load;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDownloadUtils;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -65,11 +66,7 @@ public class HubGenomeLoader extends GenomeLoader {
                 File genomeFile = null;
                 try {
                     Hub hub = HubParser.loadAssemblyHub(hubURL);
-                    GenomeConfig config = hub.getGenomeConfigs().get(0);
-                    selectAnnotationTracks(hub, config);
-                    if (config != null) {
-                        genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-                    }
+                    loadAssemblyHub(hub);
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
                     MessageUtils.showMessage("Error loading hub: " + e.getMessage());
@@ -108,6 +105,7 @@ public class HubGenomeLoader extends GenomeLoader {
 
         List<GenomeConfig> configs = hub.getGenomeConfigs();
 
+        Map<GenomeConfig, File> genomeFiles = new HashMap();
         for (GenomeConfig config : configs) {
             config.setHubs(Arrays.asList(hub.getUrl()));
             if (configs.size() == 1) {
@@ -116,6 +114,14 @@ public class HubGenomeLoader extends GenomeLoader {
             File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
             if (configs.size() == 1) {
                 GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
+            }
+            genomeFiles.put(config, genomeFile);
+        }
+
+        if (configs.size() > 1) {
+            for (GenomeConfig config : configs) {
+                GenomeListItem item = new GenomeListItem(config.getName(), genomeFiles.get(config).getAbsolutePath(), config.id);
+                GenomeListManager.getInstance().addGenomeItem(item);
             }
         }
     }

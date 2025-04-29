@@ -13,7 +13,10 @@ import java.util.*;
 public class HubRegistry {
 
     public static final String UCSC_REST_PUBLICHUBS = "https://api.genome.ucsc.edu/list/publicHubs";
-    public static final String BACKUP_HUBS_URL = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/publicHubs.json";
+    public static final String BACKUP_HUBS_URL = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/ucsc/publicHubs.json";
+    public static final String UCSC_GENOMES = "https://api.genome.ucsc.edu/list/ucscGenomes";
+    public static final String UCSC_GENOMES_BACKUP = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/ucsc/ucscGenomes.json";
+
 
     private static Logger log = LogManager.getLogger(HubRegistry.class);
 
@@ -21,6 +24,7 @@ public class HubRegistry {
     private static List<HubDescriptor> allHubDescriptors = null;
     private static List<HubDescriptor> selectedHubDescriptors = null;
     private static Map<String, List<HubDescriptor>> selectedHubsMap = null;
+    private static Set<String> ucscGenomeIDs = null;
 
     private HubRegistry() {
         // Private constructor to prevent instantiation
@@ -205,6 +209,31 @@ public class HubRegistry {
     }
 
 
+    private Set<String> getUcscGenomeIDs() {
+        if (ucscGenomeIDs == null) {
+            try {
+                String jsonString = getContentsAsJSON(UCSC_GENOMES, UCSC_GENOMES_BACKUP);
+                Gson gson = new Gson();
+                Map<String, Object> jsonResponse = gson.fromJson(jsonString, Map.class);
+                Map<String, Object> hubGenomes = (Map<String, Object>) jsonResponse.get("ucscGenomes");
+                ucscGenomeIDs = hubGenomes.keySet();
+            } catch (IOException e) {
+                log.error("Error loading UCSC hub genomes", e);
+            }
+        }
+        return ucscGenomeIDs;
+    }
+
+    private String getContentsAsJSON(String url, String backupURL) throws IOException {
+        String jsonString = null;
+        try {
+            jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
+        } catch (IOException e) {
+            log.error("Failed to load JSON from " + url + ". Trying backup URL");
+            jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(backupURL));
+        }
+        return jsonString;
+    }
 
 }
 

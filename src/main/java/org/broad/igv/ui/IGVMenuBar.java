@@ -429,7 +429,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         editAnnotationsItem.setEnabled(currentGenome != null && currentGenome.getGenomeHub() != null);
         menu.add(editAnnotationsItem);
 
-
         menu.add(new JSeparator());
 
         // Add genome to combo box from server
@@ -443,13 +442,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText("Remove genomes which appear in the dropdown list");
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-//        menu.addMenuListener((MenuSelectedListener) e -> {
-//            Genome genome1 = GenomeManager.getInstance().getCurrentGenome();
-//            selectGenomeAnnotationsItem.setEnabled(genome1 != null && genome1.getGenomeHub() != null);
-//        });
-
         return menu;
-
     }
 
 
