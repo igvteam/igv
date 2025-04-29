@@ -361,7 +361,7 @@ public class BasicFeature extends AbstractFeature {
      * positions not found. Sorted ascending for positive strand,
      * descending for negative strand.
      */
-    int[] featureToGenomePosition(int[] featurePositions) {
+    public int[] featureToGenomePosition(int[] featurePositions) {
         List<Exon> exons = getExons();
         int[] genomePositions = new int[featurePositions.length];
         Arrays.fill(genomePositions, -1);

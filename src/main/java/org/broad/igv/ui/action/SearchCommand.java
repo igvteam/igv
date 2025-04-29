@@ -30,6 +30,10 @@ package org.broad.igv.ui.action;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
+import org.broad.igv.feature.aa.AminoAcidManager;
+import org.broad.igv.feature.aa.Codon;
+import org.broad.igv.feature.aa.CodonTable;
+import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -39,6 +43,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ucsc.SearchAPI;
 import org.broad.igv.ui.IGV;
@@ -323,7 +328,7 @@ public class SearchCommand implements Runnable {
         matchingFeatures = genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false);
 
         // If no matches, check searchable tracks.  Break if we  a match
-        if(matchingFeatures == null || matchingFeatures.isEmpty()) {
+        if (matchingFeatures == null || matchingFeatures.isEmpty()) {
             matchingFeatures = new ArrayList<>();
             List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
             for (Track t : searchableTracks) {
@@ -337,7 +342,7 @@ public class SearchCommand implements Runnable {
 
         if (matchingFeatures.isEmpty()) {
             // Try the webservice
-            matchingFeatures .addAll(searchWebservice(token));
+            matchingFeatures.addAll(searchWebservice(token));
         }
 
         if (matchingFeatures.size() > 0) {
@@ -381,13 +386,13 @@ public class SearchCommand implements Runnable {
                 String strLoc = coords.substring(1, coordLength - 1);
                 int location = Integer.parseInt(strLoc) - 1;
 
-                genomePosList = genome.getFeatureDB().getMutationAA(name, location + 1, refSymbol, mutSymbol, genome);
+                genomePosList = getMutationAA(matchingFeatures, location + 1, refSymbol, mutSymbol, genome);
             } else if (mutNT) {
                 //Exclude the "A>T" at end
                 String strLoc = coords.substring(0, coordLength - 3);
                 String refSymbol = coords.substring(coordLength - 3, coordLength - 2);
                 int location = Integer.parseInt(strLoc) - 1;
-                genomePosList = genome.getFeatureDB().getMutationNT(name, location + 1, refSymbol, genome);
+                genomePosList = getMutationNT(matchingFeatures, location + 1, refSymbol, genome);
             } else {
                 //This should never happen
                 throw new IllegalArgumentException("Something went wrong parsing input token");
@@ -406,6 +411,59 @@ public class SearchCommand implements Runnable {
         return null;
     }
 
+
+    /**
+     * Find features with a given name, which have refNT as the base pair at the specified position within the feature.
+     * refNT considered based on the read strand, so a negative strand feature with A at position 1 on the positive strand
+     * would be found only if refNT = T.
+     *
+     * @param possibles   List of features to search
+     * @param startPosition 1-based location within the feature
+     * @param refNT         Nucleotide (A, G, C, T) of feature.
+     * @param currentGenome The genome in which to search
+     * @return
+     */
+    public static Map<Integer, BasicFeature> getMutationNT(List<NamedFeature> possibles, int startPosition, String refNT, Genome currentGenome) {
+
+        if (!Globals.isHeadless() && currentGenome == null) {
+            currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        }
+
+        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
+
+        String tempNT;
+        String brefNT = refNT.toUpperCase();
+
+
+        for (NamedFeature f : possibles) {
+            if (!(f instanceof BasicFeature)) {
+                continue;
+            }
+
+            BasicFeature bf = (BasicFeature) f;
+
+            int genomePosition = bf.featureToGenomePosition(new int[]{startPosition - 1})[0];
+            if (genomePosition < 0) {
+                continue;
+            }
+            final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
+            if (nuclSequence == null) {
+                continue;
+            }
+            tempNT = new String(nuclSequence);
+            if (bf.getStrand() == Strand.NEGATIVE) {
+                tempNT = SequenceTrack.getReverseComplement(tempNT);
+            }
+
+            if (tempNT.toUpperCase().equals(brefNT)) {
+                results.put(genomePosition, bf);
+            }
+
+        }
+        return results;
+    }
+
+
     private List<Locus> searchWebservice(String str) {
         try {
             return SearchAPI.search(str, genome.getId());
@@ -417,6 +475,52 @@ public class SearchCommand implements Runnable {
 
     }
 
+    /**
+     * Search for a feature with the given name, which has the specified aminoAcid
+     * at the specified (1-indexed) proteinPosition .
+     *
+     * @param proteinPosition 1-indexed position along the feature in which the amino acid is found, in protein coordinates
+     * @param refAA           String symbolizing the desired amino acid
+     * @param mutAA           String symbolizing the mutated amino acid
+     * @param currentGenome
+     * @return Map from genome position to features found. Feature name
+     * must be exact, but there can be multiple features with the same name
+     */
+    public static Map<Integer, BasicFeature> getMutationAA(List<NamedFeature> possibles, int proteinPosition, String refAA,
+                                                           String mutAA, Genome currentGenome) {
+
+        if (!Globals.isHeadless() && currentGenome == null) {
+            currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        }
+
+        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
+
+        for (NamedFeature f : possibles) {
+            if (!(f instanceof BasicFeature)) {
+                continue;
+            }
+
+            BasicFeature bf = (BasicFeature) f;
+            Codon c = bf.getCodon(currentGenome, bf.getChr(), proteinPosition);
+            if (c == null) {
+                continue;
+            }
+            if (c.getAminoAcid().equalsByName(refAA)) {
+
+                CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(currentGenome.getId(), bf.getChr());
+                if (codonTable != null) {
+                    Set<String> snps = AminoAcidManager.getInstance().getMappingSNPs(c.getSequence(),
+                            AminoAcidManager.getAminoAcidByName(mutAA), codonTable);
+                    if (snps.size() >= 1) {
+                        results.put(c.getGenomePositions()[0], bf);
+                    }
+                }
+            }
+        }
+
+        return results;
+
+    }
 
     /**
      * Parse a string of locus coordinates.
