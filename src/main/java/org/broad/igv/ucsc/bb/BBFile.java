@@ -7,6 +7,8 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
@@ -88,6 +90,8 @@ import java.util.stream.Collectors;
  *     magic# 		4 bytes - same as magic number at start of header
  */
 public class BBFile {
+
+    static Logger log = LogManager.getLogger(BBFile.class);
 
     enum Type {BIGWIG, BIGBED}
 
@@ -517,11 +521,11 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            if(chr == null) {
+            if (chr == null) {
                 chr = this.chromTree.getNameForId(chromId);
             }
 
-            if(chr != null) {
+            if (chr != null) {
                 float value;
                 switch (windowFunction) {
                     case min:
@@ -654,11 +658,21 @@ public class BBFile {
         if (_preloadBytes != null) {
             return Arrays.copyOfRange(_preloadBytes, (int) start, (int) start + size);
         } else {
-            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+            SeekableStream is = null;
+            try {
+                is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
                 byte[] bytes = new byte[size];
                 is.seek(start);
                 is.readFully(bytes);
                 return bytes;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        log.error("Error closing stream for " + path, e);
+                    }
+                }
             }
         }
     }
