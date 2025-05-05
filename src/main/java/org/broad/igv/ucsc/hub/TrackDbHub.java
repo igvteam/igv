@@ -256,9 +256,9 @@ public class TrackDbHub {
     static Map<String, String> parseMetadata(String metadata) {
 
         Map<String, String> attrs = new HashMap();
-        int lastMetadataLength = metadata.length();
+        int lastMetadataLength = 0;
         while (metadata != null && metadata.length() > 0) {
-            if (lastMetadataLength > metadata.length()) {
+            if (lastMetadataLength == metadata.length()) {
                 break;  // prevent infinite loop
             }
             lastMetadataLength = metadata.length();
