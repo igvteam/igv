@@ -193,9 +193,8 @@ public class HubParser {
                     if (startNewNode) {
                         // Start a new node -- indent is currently ignored as igv.js does not support sub-tracks,
                         // so track stanzas are flattened
-                        Stanza newNode = new Stanza(key, value);
-                        nodes.add(newNode);
-                        currentNode = newNode;
+                        currentNode = new Stanza(key, value);
+                        nodes.add(currentNode);
                         startNewNode = false;
                     }
                     currentNode.properties.put(key, value);
@@ -223,7 +222,8 @@ public class HubParser {
         for (Stanza n : nodes) {
             if (n.properties.containsKey("parent")) {
                 String parentName = firstWord(n.properties.get("parent"));
-                n.parent = nodeMap.get(parentName);
+                final Stanza parent = nodeMap.get(parentName);
+                n.setParent(parent);
                 n.properties.put("parent", parentName);
             }
         }

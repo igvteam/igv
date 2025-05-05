@@ -214,10 +214,11 @@ public class Genome {
                 chromosomeList.size() > 1 &&
                 longChromosomeNames.size() <= MAX_WHOLE_GENOME_LONG;
 
-        // Cytobands
+        // Cytobands.
         if (config.getCytobands() != null) {
             cytobandSource = new CytobandMap(config.getCytobands());    // Directly supplied, from .genome file
         } else if (config.cytobandBbURL != null) {
+            // The cytoband BB file can be enormous if there are many chromosomes, and is usually not informative in that case
             long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.cytobandBbURL));
             if (contentLength > 0 && contentLength < 1000000) {
                 cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);

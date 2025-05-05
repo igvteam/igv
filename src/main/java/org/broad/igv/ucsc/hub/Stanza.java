@@ -14,7 +14,7 @@ class Stanza {
             "minAliQual", "bamColorTag", "bamColorMode", "bamGrayMode", "colorByStrand", "itemRgb", "html"));
     final String type;
     final String name;
-    Stanza parent;
+    private Stanza parent;
     Map<String, String> properties;
 
 
@@ -45,9 +45,8 @@ class Stanza {
     }
 
     String getProperty(String key) {
-
         if (this.properties.containsKey("noInherit")) {
-            return this.properties.get(key);
+            return this.getOwnProperty(key);
         } else if (parentOverrideProperties.contains(key) && this.parent != null && this.parent.hasProperty(key)) {
             return this.parent.getProperty(key);
         } else if (this.properties.containsKey(key)) {
@@ -77,6 +76,9 @@ class Stanza {
     }
 
     public void setParent(Stanza parent) {
+        if(parent == this) {
+            throw new IllegalArgumentException("Stanza cannot be its own parent");
+        }
         this.parent = parent;
     }
 

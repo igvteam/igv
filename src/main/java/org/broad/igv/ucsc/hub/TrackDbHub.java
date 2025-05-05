@@ -1,15 +1,16 @@
 package org.broad.igv.ucsc.hub;
 
 import org.broad.igv.feature.genome.load.TrackConfig;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.broad.igv.ucsc.hub.Hub.getPriority;
-
 public class TrackDbHub {
 
+    private static Logger log = LogManager.getLogger(TrackDbHub.class);
 
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
             "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf", "vcfphasedtrio",
@@ -75,7 +76,7 @@ public class TrackDbHub {
             groupTrackConfigs.add(nullContainer);
 
             boolean hasGroups = this.groupStanzas != null;
-            if (this.groupStanzas != null) {
+            if (hasGroups) {
                 for (Stanza groupStanza : this.groupStanzas) {
                     String name = groupStanza.getProperty("name");
                     boolean defaultOpen = "0".equals(groupStanza.getProperty("defaultIsClosed"));
@@ -202,8 +203,8 @@ public class TrackDbHub {
         if (t.hasProperty("autoScale")) {
             String value = t.getProperty("autoScale").toLowerCase();
             config.autoscale = "on".equals(value);
-            if ("group".equals(value) && t.parent != null) {
-                config.autoscaleGroup = t.parent.name;
+            if ("group".equals(value) && t.getParent() != null) {
+                config.autoscaleGroup = t.getParent().name;
             }
         }
 
@@ -218,10 +219,9 @@ public class TrackDbHub {
         config.altColor = parseColor(t.getProperty("altColor"));
         if (t.hasProperty("viewLimits")) {
             String[] tokens = t.getProperty("viewLimits").split(":");
-            if(tokens.length == 1) {
+            if (tokens.length == 1) {
                 config.max = Float.parseFloat(tokens[0]);
-            }
-            else if (tokens.length > 1) {
+            } else if (tokens.length > 1) {
                 config.min = Float.parseFloat(tokens[0]);
                 config.max = Float.parseFloat(tokens[1]);
             }
@@ -231,7 +231,9 @@ public class TrackDbHub {
         config.searchIndex = t.getProperty("searchIndex");
         config.trixURL = t.getProperty("searchTrix");
         config.group = t.getProperty("group");
-        config.attributes = parseMetadata(t.getProperty("metadata"));
+        if(t.hasProperty("metadata")) {
+            config.attributes = parseMetadata(t.getProperty("metadata"));
+        }
         String labelFields = t.hasProperty("defaultLabelFields") ?
                 t.getProperty("defaultLabelFields") :
                 t.getProperty("labelFields");
@@ -239,7 +241,7 @@ public class TrackDbHub {
             config.labelField = labelFields.split(",")[0];
         }
 
-        if (t.parent != null) {
+        if (t.getParent() != null) {
             config.stanzaParent = t.getAncestor().name;
         }
 
@@ -254,8 +256,12 @@ public class TrackDbHub {
     static Map<String, String> parseMetadata(String metadata) {
 
         Map<String, String> attrs = new HashMap();
+        int lastMetadataLength = metadata.length();
         while (metadata != null && metadata.length() > 0) {
-
+            if (lastMetadataLength > metadata.length()) {
+                break;  // prevent infinite loop
+            }
+            lastMetadataLength = metadata.length();
             try {
                 int idx = metadata.indexOf("=");
                 if (idx == -1 || idx == metadata.length() - 1) {
@@ -312,4 +318,30 @@ public class TrackDbHub {
             return html;
         }
     }
+
+    /**
+     * Return the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
+     * Ignore levels > 3
+     *
+     * @param priorityString Priority as a string (e.g. 3.4)
+     * @return A priority as an integer
+     */
+
+    static int getPriority(String priorityString) {
+        try {
+            String[] tokens = priorityString.trim().split("\\.");
+            int p = Integer.parseInt(tokens[0]) * 100;
+            if (tokens.length > 1) {
+                p += Integer.parseInt(tokens[1]) * 10;
+            }
+            if (tokens.length > 2) {
+                p += Integer.parseInt(tokens[2]);
+            }
+            return p;
+        } catch (Exception e) {
+            log.error("Error parsing priority string: " + priorityString, e);
+            return Integer.MAX_VALUE;
+        }
+    }
+
 }

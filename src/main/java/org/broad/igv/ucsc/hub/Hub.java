@@ -156,7 +156,6 @@ public class Hub {
                     }
                     //TODO -- groups
                 }
-
             }
         }
         return trackHub;
@@ -170,35 +169,9 @@ public class Hub {
         return trackHub.getSupportedTrackCount();
     }
 
-    /**
-     * Return the priority for the group.  The priority format is uncertain, but extends to at least 2 levels (e.g. 3.4).
-     * Ignore levels > 3
-     *
-     * @param priorityString Priority as a string (e.g. 3.4)
-     * @return A priority as an integer
-     */
-
-    static int getPriority(String priorityString) {
-        try {
-            String[] tokens = priorityString.trim().split("\\.");
-            int p = Integer.parseInt(tokens[0]) * 100;
-            if (tokens.length > 1) {
-                p += Integer.parseInt(tokens[1]) * 10;
-            }
-            if (tokens.length > 2) {
-                p += Integer.parseInt(tokens[2]);
-            }
-            return p;
-        } catch (Exception e) {
-            log.error("Error parsing priority string: " + priorityString, e);
-            return Integer.MAX_VALUE;
-        }
-    }
-
 
     /**
-     * Return the genome configuration for this assembly hub.  Currently we support only a single genome
-     * in an assembly hub.
+     * Return the genome configuration for this assembly hub.
      *
      * @return GenomeConfig
      */
