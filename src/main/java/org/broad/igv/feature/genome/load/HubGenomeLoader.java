@@ -65,7 +65,7 @@ public class HubGenomeLoader extends GenomeLoader {
             protected File doInBackground() throws Exception {
                 File genomeFile = null;
                 try {
-                    Hub hub = HubParser.loadAssemblyHub(hubURL);
+                    Hub hub = HubParser.loadHub(hubURL);
                     loadAssemblyHub(hub);
                 } catch (Exception e) {
                     log.error("Error loading hub: " + e.getMessage());
@@ -188,7 +188,7 @@ public class HubGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
 
-        Hub hub = HubParser.loadAssemblyHub(hubURL);
+        Hub hub = HubParser.loadHub(hubURL);
 
         GenomeConfig config = hub.getGenomeConfigs().get(0);
         selectAnnotationTracks(hub, config);

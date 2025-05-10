@@ -272,7 +272,7 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/genomes.tsv
+IGV.genome.sequence.dir	Genome server URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/genomes/genomes.tsv
 
 MASTER_RESOURCE_FILE_KEY	Data registry URL	string	null
 ---

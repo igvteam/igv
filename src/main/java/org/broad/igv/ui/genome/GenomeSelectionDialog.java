@@ -311,7 +311,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
                         } else {
                             String accession = rec.getAttributeValue("accession");
                             String hubURL = HubGenomeLoader.convertToHubURL(accession);
-                            Hub hub = HubParser.loadAssemblyHub(hubURL);
+                            Hub hub = HubParser.loadHub(hubURL);
                             config = hub.getGenomeConfigs().get(0);
                             config.setHubs(Arrays.asList(hubURL));
                         }
