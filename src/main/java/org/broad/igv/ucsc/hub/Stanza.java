@@ -7,11 +7,11 @@ import java.util.*;
 class Stanza {
 
     private static Set<String> parentOverrideProperties = new HashSet<>(Arrays.asList("visibility", "priority", "group"));
-    private static Set<String> inheritableProperties = new HashSet<>(Arrays.asList("group", "priority", "color",
-            "altColor", "autoscale", "autoScale", "viewLimits", "negativeValues", "maxWindowToQuery", "transformFun",
-            "windowingFunction", "yLineMark", "yLineOnOff", "graphTypeDefault", "interactUp", "interactMultiRegion",
-            "endsVisible", "maxHeightPixels", "scoreMin", "scoreFilter", "scoreFilterLimits",
-            "minAliQual", "bamColorTag", "bamColorMode", "bamGrayMode", "colorByStrand", "itemRgb", "html"));
+    private static final Set<String> nonInheritableProperties = new HashSet<>(Arrays.asList(
+            "track", "type", "shortLabel", "longLabel", "bigDataUrl",
+            "parent", "superTrack", "priority", "compositeTrack", "view", "compositeContainer"
+    ));
+
     final String type;
     final String name;
     private Stanza parent;
@@ -51,7 +51,7 @@ class Stanza {
             return this.parent.getProperty(key);
         } else if (this.properties.containsKey(key)) {
             return this.properties.get(key);
-        } else if (this.parent != null && this.inheritableProperties.contains(key)) {
+        } else if (this.parent != null && !this.nonInheritableProperties.contains(key)) {
             return this.parent.getProperty(key);
         } else {
             return null;
@@ -76,7 +76,7 @@ class Stanza {
     }
 
     public void setParent(Stanza parent) {
-        if(parent == this) {
+        if (parent == this) {
             throw new IllegalArgumentException("Stanza cannot be its own parent");
         }
         this.parent = parent;

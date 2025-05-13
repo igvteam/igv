@@ -472,7 +472,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             for (Hub trackHub : genome.getTrackHubs()) {
                 tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
             }
-            tracksMenu.add(new JSeparator());
         }
 
         // Selected UCSC public hubs.  Selections are stored in preferences.
@@ -481,6 +480,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             for (HubDescriptor hub : selectedHubs) {
                 tracksMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }
+        }
+
+        if(genome.getTrackHubs().size() > 0 || selectedHubs != null && selectedHubs.size() > 0) {
             tracksMenu.add(new JSeparator());
         }
 

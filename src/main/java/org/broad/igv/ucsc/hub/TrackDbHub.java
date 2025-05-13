@@ -200,6 +200,15 @@ public class TrackDbHub {
             config.visibilityWindow = (int) maxWindowToDraw;
         }
 
+        // IGV does not support "maxWindowCoverage" in the same way as UCSC.  Use to limit visibility window
+        if (t.hasProperty("maxWindowCoverage")) {
+            long maxWindowCoverage = Long.parseLong(t.getProperty("maxWindowCoverage"));
+            if (maxWindowCoverage > Integer.MAX_VALUE) {
+                maxWindowCoverage = Integer.MAX_VALUE;
+            }
+            config.visibilityWindow = (int) maxWindowCoverage;
+        }
+
         if (t.hasProperty("autoScale")) {
             String value = t.getProperty("autoScale").toLowerCase();
             config.autoscale = "on".equals(value);
@@ -343,5 +352,8 @@ public class TrackDbHub {
             return Integer.MAX_VALUE;
         }
     }
+
+
+
 
 }
