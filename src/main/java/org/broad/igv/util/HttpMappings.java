@@ -14,8 +14,8 @@ public class HttpMappings {
     private static Map<String, String> mappedURLCache = new HashMap<>();
 
     static {
-        mappedURLCache.put("https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/data/url_mappings.tsv",
-                "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/data/url_mappings.tsv");
+        mappedURLCache.put("https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/url_mappings.tsv",
+                "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/url_mappings.tsv");
     }
 
     static Map<String, String> urlMappings = new HashMap<>();
@@ -55,7 +55,7 @@ public class HttpMappings {
     private static void loadMappings() {
 
         try {
-            URL fileUrl = new URL("https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/data/url_mappings.tsv"); // Replace with the actual URL of the file
+            URL fileUrl = new URL("https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/url_mappings.tsv"); // Replace with the actual URL of the file
             InputStream inputStream = HttpUtils.getInstance().openConnectionStream(fileUrl);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
