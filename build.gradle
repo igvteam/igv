@@ -112,7 +112,7 @@ configurations {
     }
 }
 
-def amazonVersion = '2.27.4'
+def amazonVersion = '2.30.17'
 def xmlGraphicsVersion = '1.17'
 
 dependencies {
