@@ -41,7 +41,7 @@ public class GenomeListManager {
 
     private static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
-            "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/json/hg38.json",
+            "https://igv.org/genomes/hg38.json",
             "hg38");
 
 
