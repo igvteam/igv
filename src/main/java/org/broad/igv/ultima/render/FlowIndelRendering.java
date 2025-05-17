@@ -332,10 +332,18 @@ public class FlowIndelRendering {
     }
 
     private double getQualityFromT0(SAMRecord record, AlignmentBlock block, boolean delIsBeforeBlock) {
-
-        final byte[] t0 = record.getStringAttribute(TAG_T0).getBytes();
-        final int t0Index = delIsBeforeBlock ? block.getIndexOnRead() : (block.getIndexOnRead() + block.getLength() - 1);
-        return t0[t0Index] - 33;
+        final String t0Attribute = record.getStringAttribute(TAG_T0);
+        if ( t0Attribute == null ) {
+            return Double.NaN;
+        } else {
+            final byte[] t0 = t0Attribute.getBytes();
+            final int t0Index = delIsBeforeBlock ? block.getIndexOnRead() : (block.getIndexOnRead() + block.getLength() - 1);
+            if ( t0Index < 0 || t0Index >= t0.length ) {
+                return Double.NaN;
+            } else {
+                return t0[t0Index] - 33;
+            }
+        }
     }
 
     private int getMC(SAMRecord record) {
