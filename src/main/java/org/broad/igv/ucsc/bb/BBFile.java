@@ -413,6 +413,9 @@ public class BBFile {
     }
 
     BBZoomHeader zoomLevelForScale(double bpPerPixel, int tolerance) {
+        if(this.zoomHeaders.length == 0) {
+            return null;
+        }
         for (BBZoomHeader zl : this.zoomHeaders) {
             if (zl.reductionLevel < bpPerPixel) {
                 return zl;
