@@ -221,14 +221,14 @@ public class BBFile {
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
         for (int i = 0; i < header.nZoomLevels; ++i) {
             BBZoomHeader zlh = new BBZoomHeader();
-            zlh.reductionLevel = buffer.getInt();
+            zlh.reductionLevel = buffer.getUInt();
             zlh.reserved = buffer.getInt();
             zlh.dataOffset = buffer.getLong();
             zlh.indexOffset = buffer.getLong();
             this.zoomHeaders[i] = zlh;
         }
         // Sort in order of decreasing reduction level (increasing resolution
-        Arrays.sort(zoomHeaders, (o1, o2) -> o2.reductionLevel - o1.reductionLevel);
+        Arrays.sort(zoomHeaders, (o1, o2) -> (int) (o2.reductionLevel - o1.reductionLevel));
 
         // Autosql -- spec implies this follows the zoom headers
         final int startOffset = BBFILE_HEADER_SIZE;
