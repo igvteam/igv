@@ -28,10 +28,7 @@ package org.broad.igv.sam;
 import org.broad.igv.logging.*;
 import org.broad.igv.util.collections.IntArrayList;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Jim Robinson
@@ -107,6 +104,11 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getEnd() {
         return end;
+    }
+
+    @Override
+    public Set<Byte> getBases() {
+        return Set.of((byte) 'A', (byte) 'C', (byte) 'G', (byte) 'T', (byte) 'N');
     }
 
     public int getNumberOfPoints() {

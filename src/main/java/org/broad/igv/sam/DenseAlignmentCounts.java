@@ -27,6 +27,8 @@ package org.broad.igv.sam;
 
 import org.broad.igv.logging.*;
 
+import java.util.*;
+
 /**
  * @author jrobinso
  * @date Feb 23, 2011
@@ -35,22 +37,13 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = LogManager.getLogger(DenseAlignmentCounts.class);
 
+    Set<Byte> nucleotides;
+    Map<Byte, int[]> posCounts;
+    Map<Byte, int[]> negCounts;
+    Map<Byte, int[]> qualities;
+
     // counts
-    int[] posA;
-    int[] posT;
-    int[] posC;
-    int[] posG;
-    int[] posN;
-    int[] negA;
-    int[] negT;
-    int[] negC;
-    int[] negG;
-    int[] negN;
-    int[] qA;
-    int[] qT;
-    int[] qC;
-    int[] qG;
-    int[] qN;
+    int nPts;
     int[] posTotal;
     int[] negTotal;
     int[] del;
@@ -68,24 +61,20 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     public DenseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
         super(start, end, bisulfiteContext);
 
-        int nPts = end - start;
-        posA = new int[nPts];
-        posT = new int[nPts];
-        posC = new int[nPts];
-        posG = new int[nPts];
-        posN = new int[nPts];
+        nPts = end - start;
+        nucleotides = new LinkedHashSet<>(List.of((byte) 'A', (byte) 'T', (byte) 'C', (byte) 'G', (byte) 'N'));
+
+        posCounts = new java.util.HashMap<>();
+        negCounts = new java.util.HashMap<>();
+        qualities = new java.util.HashMap<>();
+        for (byte nt : nucleotides) {
+            posCounts.put(nt, new int[nPts]);
+            negCounts.put(nt, new int[nPts]);
+            qualities.put(nt, new int[nPts]);
+        }
         posTotal = new int[nPts];
-        negA = new int[nPts];
-        negT = new int[nPts];
-        negC = new int[nPts];
-        negG = new int[nPts];
-        negN = new int[nPts];
         negTotal = new int[nPts];
-        qA = new int[nPts];
-        qT = new int[nPts];
-        qC = new int[nPts];
-        qG = new int[nPts];
-        qN = new int[nPts];
+
         del = new int[nPts];
         ins = new int[nPts];
         totalQ = new int[nPts];
@@ -98,21 +87,25 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         return end - start;
     }
 
+    public Set<Byte> getBases() {
+        return nucleotides;
+    }
+
     @Override
     public int getMaxCount(int strt, int end) {
 
-        if(maxCounts == null || maxCounts.length == 0) return 1;
+        if (maxCounts == null || maxCounts.length == 0) return 1;
 
         strt = Math.max(0, strt);
         end = Math.min(getEnd(), end);
-        int startMCI = Math.max(0, (strt-this.start) / MAX_COUNT_INTERVAL);
-        int endMCI = Math.max(0, (end-this.start) / MAX_COUNT_INTERVAL);
+        int startMCI = Math.max(0, (strt - this.start) / MAX_COUNT_INTERVAL);
+        int endMCI = Math.max(0, (end - this.start) / MAX_COUNT_INTERVAL);
         endMCI = Math.min(endMCI, maxCounts.length - 1);
 
 
         int max = 1;
-        for(int mci= startMCI; mci <= endMCI; mci++){
-            if(mci >= maxCounts.length) {
+        for (int mci = startMCI; mci <= endMCI; mci++) {
+            if (mci >= maxCounts.length) {
                 log.error("startMCI index out of range: " + mci + " startMCI=" + startMCI + "  endMCI=" + endMCI);
                 return max;
             }
@@ -127,7 +120,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getTotalCount(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -139,7 +132,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getTotalPositiveCount(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -151,7 +144,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getTotalNegativeCount(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -163,7 +156,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getTotalQuality(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -176,97 +169,46 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getCount(int pos, byte b) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
             return 0;
         } else {
-            switch (b) {
-                case 'a':
-                case 'A':
-                    return posA[offset] + negA[offset];
-                case 't':
-                case 'T':
-                    return posT[offset] + negT[offset];
-                case 'c':
-                case 'C':
-                    return posC[offset] + negC[offset];
-                case 'g':
-                case 'G':
-                    return posG[offset] + negG[offset];
-                case 'n':
-                case 'N':
-                    return posN[offset] + negN[offset];
-            }
-            log.debug("Unknown nucleotide: " + b);
-            return 0;
+            b = toUpperCase(b);
+            return posCounts.get(b)[offset] + negCounts.get(b)[offset];
         }
     }
 
     public int getNegCount(int pos, byte b) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
             return 0;
         } else {
-            switch (b) {
-                case 'a':
-                case 'A':
-                    return negA[offset];
-                case 't':
-                case 'T':
-                    return negT[offset];
-                case 'c':
-                case 'C':
-                    return negC[offset];
-                case 'g':
-                case 'G':
-                    return negG[offset];
-                case 'n':
-                case 'N':
-                    return negN[offset];
-            }
-            log.error("Unknown nucleotide: " + b);
-            return 0;
+            b = toUpperCase(b);  //   "toUppercase"
+            return negCounts.get(b)[offset];
         }
     }
 
     public int getPosCount(int pos, byte b) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
             return 0;
         } else {
-            switch (b) {
-                case 'a':
-                case 'A':
-                    return posA[offset];
-                case 't':
-                case 'T':
-                    return posT[offset];
-                case 'c':
-                case 'C':
-                    return posC[offset];
-                case 'g':
-                case 'G':
-                    return posG[offset];
-                case 'n':
-                case 'N':
-                    return posN[offset];
-            }
-            log.error("Unknown nucleotide: " + b);
-            return 0;
+            b = toUpperCase(b);
+            return posCounts.get(b)[offset];
         }
     }
 
     public int getDelCount(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -278,7 +220,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getInsCount(int pos) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
@@ -289,31 +231,19 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     public int getQuality(int pos, byte b) {
         int offset = pos - start;
-        if (offset < 0 || offset >= posA.length) {
+        if (offset < 0 || offset >= nPts) {
             if (log.isDebugEnabled()) {
                 log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
             }
             return 32;
         } else {
-            switch (b) {
-                case 'a':
-                case 'A':
-                    return qA[offset];
-                case 't':
-                case 'T':
-                    return qT[offset];
-                case 'c':
-                case 'C':
-                    return qC[offset];
-                case 'g':
-                case 'G':
-                    return qG[offset];
-                case 'n':
-                case 'N':
-                    return qN[offset];
+            b = toUpperCase(b);
+            if (qualities.containsKey(b)) {
+                return qualities.get(b)[offset];
+            } else {
+                log.error("Unknown nucleotide: " + b);
+                return 0;
             }
-            log.error("Unknown nucleotide: " + posN);
-            return 0;
         }
     }
 
@@ -338,7 +268,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         int offset = pos - start;
         // Insertions are between bases.  increment count at position just before insertion
         if (offset >= 0 && offset < ins.length) {
-           ins[offset] = ins[offset] + 1;
+            ins[offset] = ins[offset] + 1;
         }
     }
 
@@ -349,7 +279,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         if (bases != null) {
             for (int i = 0; i < bases.length; i++) {
                 int pos = start + i;
-                byte q =  block.getQuality (i);
+                byte q = block.getQuality(i);
                 byte n = bases.getByte(i);
                 incPositionCount(pos, n, q, isNegativeStrand);
             }
@@ -359,67 +289,39 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     protected void incPositionCount(int pos, byte b, byte q, boolean isNegativeStrand) {
 
         int offset = pos - start;
-        if (offset >= 0 && offset < posA.length) {
-            switch (b) {
-                case 'a':
-                case 'A':
-                    if (isNegativeStrand) {
-                        negA[offset] = negA[offset] + 1;
-                    } else {
-                        posA[offset] = posA[offset] + 1;
-                    }
-                    qA[offset] = qA[offset] + q;
-                    break;
-                case 't':
-                case 'T':
-                    if (isNegativeStrand) {
-                        negT[offset] = negT[offset] + 1;
-                    } else {
-                        posT[offset] = posT[offset] + 1;
-                    }
-                    qT[offset] = qT[offset] + q;
-                    break;
-                case 'c':
-                case 'C':
-                    if (isNegativeStrand) {
-                        negC[offset] = negC[offset] + 1;
-                    } else {
-                        posC[offset] = posC[offset] + 1;
-                    }
-                    qC[offset] = qC[offset] + q;
-                    break;
-                case 'g':
-                case 'G':
-                    if (isNegativeStrand) {
-                        negG[offset] = negG[offset] + 1;
-                    } else {
-                        posG[offset] = posG[offset] + 1;
-                    }
-                    qG[offset] = qG[offset] + q;
-                    break;
-                // Everything else is counted as "N".  This might be an actual "N",  or an ambiguity code
-                default:
-                    if (isNegativeStrand) {
-                        negN[offset] = negN[offset] + 1;
-                    } else {
-                        posN[offset] = posN[offset] + 1;
-                    }
-                    qN[offset] = qN[offset] + q;
-
+        if (offset >= 0 && offset < nPts) {
+            b = toUpperCase(b);
+            if (!nucleotides.contains(b)) {
+                nucleotides.add(b);
+                posCounts.put(b, new int[nPts]);
+                negCounts.put(b, new int[nPts]);
+                qualities.put(b, new int[nPts]);
             }
             if (isNegativeStrand) {
+                negCounts.get(b)[offset] = negCounts.get(b)[offset] + 1;
                 negTotal[offset] = negTotal[offset] + 1;
             } else {
+                posCounts.get(b)[offset] = posCounts.get(b)[offset] + 1;
                 posTotal[offset] = posTotal[offset] + 1;
             }
+            qualities.get(b)[offset] = qualities.get(b)[offset] + q;
+
             totalQ[offset] = totalQ[offset] + q;
 
             int tmp = posTotal[offset] + negTotal[offset];
             int maxCountInt = offset / MAX_COUNT_INTERVAL;
-            if(tmp > maxCounts[maxCountInt]){
+            if (tmp > maxCounts[maxCountInt]) {
                 maxCounts[maxCountInt] = tmp;
             }
         }
     }
 
+    private static byte toUpperCase(byte b) {
+        if (b >= 'a' && b <= 'z') {
+            return (byte) (b - ('a' - 'A'));
+        }
+        return b;
+    }
 }
+
+
