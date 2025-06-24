@@ -176,6 +176,9 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             return 0;
         } else {
             b = toUpperCase(b);
+            if (!posCounts.containsKey(b) || !negCounts.containsKey(b)) {
+                return 0;
+            }
             return posCounts.get(b)[offset] + negCounts.get(b)[offset];
         }
     }
