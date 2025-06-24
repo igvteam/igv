@@ -241,6 +241,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
             if (ref > 0) {
                 if (ref < 96) ref += 32;  // a fast "toLowercase"
                 for (byte c : getBases()) {
+                    if(c < 96) c += 32; // a fast "toLowercase"
                     if (c != ref && c != 'n') {
                         mismatchQualitySum += (qualityWeight ? getQuality(pos, (byte) c) : getCount(pos, (byte) c));
                     }
