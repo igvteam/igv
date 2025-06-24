@@ -37,10 +37,10 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = LogManager.getLogger(DenseAlignmentCounts.class);
 
-    Set<Byte> nucleotides;
-    Map<Byte, int[]> posCounts;
-    Map<Byte, int[]> negCounts;
-    Map<Byte, int[]> qualities;
+    private final Set<Byte> nucleotides;
+    private final Map<Byte, int[]> posCounts;
+    private final Map<Byte, int[]> negCounts;
+    private final Map<Byte, int[]> qualities;
 
     // counts
     int nPts;
