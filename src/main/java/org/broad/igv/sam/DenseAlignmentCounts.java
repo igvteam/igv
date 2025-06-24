@@ -64,9 +64,9 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
         nPts = end - start;
         nucleotides = new LinkedHashSet<>(List.of((byte) 'A', (byte) 'T', (byte) 'C', (byte) 'G', (byte) 'N'));
 
-        posCounts = new java.util.HashMap<>();
-        negCounts = new java.util.HashMap<>();
-        qualities = new java.util.HashMap<>();
+        posCounts = new HashMap<>();
+        negCounts = new HashMap<>();
+        qualities = new HashMap<>();
         for (byte nt : nucleotides) {
             posCounts.put(nt, new int[nPts]);
             negCounts.put(nt, new int[nPts]);
