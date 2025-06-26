@@ -27,6 +27,7 @@ package org.broad.igv;
 
 import org.broad.igv.logging.*;
 
+import javax.swing.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -179,6 +180,11 @@ public class Globals {
             curVersion = curVersion.substring(0, minVersion.length());
         }
         return curVersion.compareTo(minVersion) >= 0;
+    }
+
+    public static boolean isDarkMode() {
+        final String name = UIManager.getLookAndFeel().getName().toLowerCase();
+        return name.contains("dark") || name.contains("darcula");
     }
 
     public static double log2(final double value) {

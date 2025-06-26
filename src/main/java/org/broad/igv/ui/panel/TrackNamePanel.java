@@ -94,6 +94,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
+        if(darkMode) {
+          setBackground(UIManager.getColor("Panel.background"));
+        }
+
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -110,7 +114,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         borderGraphics.setColor(Color.lightGray);
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        Graphics2D bg = (Graphics2D) g.create();
+
         paintImpl(g, rect, true);
 
         borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
@@ -130,12 +134,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         boolean isGrouped = groups.size() > 1;
 
         Graphics2D fontGraphics = (Graphics2D) g.create();
-        fontGraphics.setColor(Color.BLACK);
+        fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
 
         if (!groups.isEmpty()) {
-
-            final Graphics2D graphics2D = (Graphics2D) g;
-            graphics2D.setColor(Color.BLACK);
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
             greyGraphics.setColor(UIConstants.LIGHT_GREY);
@@ -185,7 +186,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 }
 
             }
-            graphics2D.dispose();
             greyGraphics.dispose();
         }
 
@@ -210,9 +210,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                                 Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
 
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
-        final Color backgroundColor = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+        final Color backgroundColor = darkMode ?
+                UIManager.getColor("Panel.background"):
+                PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
-        graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
+        //graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
 
 
         for (Track track : tmp) {
@@ -251,7 +253,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     private void init() {
 
     //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
-        setBackground(new java.awt.Color(255, 255, 255));
+    //    setBackground(new java.awt.Color(255, 255, 255));
         GroupLayout dataTrackNamePanelLayout = new org.jdesktop.layout.GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);
         dataTrackNamePanelLayout.setHorizontalGroup(

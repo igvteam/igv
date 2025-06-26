@@ -72,6 +72,7 @@ public class RulerPanel extends JPanel {
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     private static final int INSERTION_ROW_HEIGHT = 9;
+    private final boolean darkMode;
 
     // TODO -- get from preferences
     boolean drawSpan = true;
@@ -94,6 +95,7 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
+        this.darkMode = Globals.isDarkMode();
         init();
     }
 
@@ -105,6 +107,10 @@ public class RulerPanel extends JPanel {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+
+        if(darkMode) {
+            setBackground(UIManager.getColor("Panel.background"));
+        }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -131,7 +137,7 @@ public class RulerPanel extends JPanel {
     private void render(Graphics g) {
 
         clickLinks.clear();
-        g.setColor(Color.black);
+        g.setColor(darkMode ? Color.white : Color.black);
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
         } else {

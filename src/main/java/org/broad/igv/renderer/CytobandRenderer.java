@@ -51,6 +51,7 @@ import java.util.Map;
  */
 public class CytobandRenderer {
 
+    private final boolean darkMode;
     boolean drawLabels = true;
     static final public int CYTOBAND_Y_OFFSET = 5;
     static final public int LABEL_OFFSET = 25;
@@ -59,6 +60,19 @@ public class CytobandRenderer {
     private String fontFamilyName = "Lucida Sans";
 
     private static Map<Integer, Color> stainColors = new HashMap<Integer, Color>();
+
+    public CytobandRenderer(boolean darkMode) {
+        this.darkMode = darkMode;
+
+//        if (darkMode) {
+//            fontFamilyName = "Lucida Sans Typewriter";
+//        }
+//        // Initialize stain colors
+//        for (int i = 0; i <= 100; i += 5) {
+//            int shade = (int) (255 - i / 100.0 * 255);
+//            stainColors.put(i, new Color(shade, shade, shade));
+//        }
+    }
 
     public void drawIdeogram(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
 
@@ -75,6 +89,9 @@ public class CytobandRenderer {
                     String locus = frame.getFormattedLocusString();
                     if (locus != null) {
                         Graphics g2 = g2D.create();
+                        if(darkMode) {
+                            g2.setColor(Color.WHITE);
+                        }
                         g2.setFont(FontManager.getFont(Font.BOLD, 11));
                         g2.drawString(locus, 3, 11);
                         g2.dispose();

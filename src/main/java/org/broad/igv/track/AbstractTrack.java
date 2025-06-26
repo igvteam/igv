@@ -63,13 +63,16 @@ import static org.broad.igv.prefs.Constants.*;
  */
 
 public abstract class AbstractTrack implements Track {
+
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
-    public static final Color DEFAULT_COLOR = Color.blue.darker();
+
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
     public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
+    protected final boolean darkMode;
 
+    Color DEFAULT_COLOR;
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
@@ -115,12 +118,15 @@ public abstract class AbstractTrack implements Track {
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
 
     public AbstractTrack() {
+        this.darkMode = Globals.isDarkMode();
+        DEFAULT_COLOR = darkMode ? Color.CYAN : Color.blue.darker();
     }
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
             String id,
             String name) {
+        this();
         this.resourceLocator = dataResourceLocator;
         this.id = id;
         this.name = name;
@@ -136,8 +142,7 @@ public abstract class AbstractTrack implements Track {
 
         try {
             fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error initializing font size. ", e);
         }
 
@@ -853,7 +858,7 @@ public abstract class AbstractTrack implements Track {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html>" + getName());
 
-        if(resourceLocator != null) {
+        if (resourceLocator != null) {
             Map<String, String> metadata = resourceLocator.getMetadata();
             if (metadata != null && metadata.size() > 0) {
                 for (Map.Entry<String, String> entry : metadata.entrySet()) {

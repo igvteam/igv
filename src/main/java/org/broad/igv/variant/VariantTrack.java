@@ -52,6 +52,7 @@ import org.broad.igv.variant.vcf.MateVariant;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -697,7 +698,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
         } finally {
-            if(g2D != null) {
+            if (g2D != null) {
                 g2D.dispose();
             }
         }
@@ -811,7 +812,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return;
         }
 
-        boolean coloredLast = true;
+        // boolean coloredLast = true;
         Rectangle textRectangle = new Rectangle(bandRectangle);
         textRectangle.height--;
 
@@ -825,7 +826,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 int y0 = bandRectangle.y;
 
                 List<String> sampleList = sampleGroup.getValue();
-                coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, sampleList, type);
+                colorBand(g2D, bandRectangle, visibleRectangle, textRectangle, sampleList, type);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
                 if (type == BackgroundType.NAME && bandRectangle.height < 3) {
@@ -842,27 +843,21 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
 
         } else {
-            coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, allSamples, type);
+            colorBand(g2D, bandRectangle, visibleRectangle, textRectangle, allSamples, type);
         }
         g2D.setFont(oldFont);
     }
 
 
-    private boolean colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
-                              boolean coloredLast, Rectangle textRectangle, List<String> sampleList,
+    private void colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                              Rectangle textRectangle, List<String> sampleList,
                               BackgroundType type) {
 
         boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
 
         for (String sample : sampleList) {
 
-            if (coloredLast) {
-                g2D.setColor(BAND1_COLOR);
-                coloredLast = false;
-            } else {
-                g2D.setColor(BAND2_COLOR);
-                coloredLast = true;
-            }
+            g2D.setColor(darkMode ? UIManager.getColor("Panel.background") : Color.white);
 
             if (bandRectangle.intersects(visibleRectangle)) {
                 if (!supressFill) {
@@ -877,7 +872,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                     if (bandRectangle.height >= 3) {
                         String printName = sample;
                         textRectangle.y = bandRectangle.y + 1;
-                        g2D.setColor(Color.black);
+                        g2D.setColor(darkMode ? Color.white : Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
                     }
 
@@ -887,9 +882,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 }
             }
             bandRectangle.y += bandRectangle.height;
-
         }
-        return coloredLast;
     }
 
     public boolean getHideFiltered() {
@@ -1053,7 +1046,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         String id = variant.getID();
 
         StringBuffer toolTip = new StringBuffer();
-        if(id.length() > 0) {
+        if (id.length() > 0) {
             toolTip.append("ID: " + id + "<br>");
         }
         toolTip.append("Chr: " + variant.getChr());
@@ -1100,14 +1093,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             double[] af = variant.getAlleleFreqs();
 
-            int nonNegativeCounts=0;
-            for(int i=0; i<af.length;i++) {
-                if(af[i] >= 0) nonNegativeCounts++;
+            int nonNegativeCounts = 0;
+            for (int i = 0; i < af.length; i++) {
+                if (af[i] >= 0) nonNegativeCounts++;
             }
-            if(nonNegativeCounts > 0) {
+            if (nonNegativeCounts > 0) {
                 String afString = nonNegativeCounts > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
                 for (int i = 0; i < af.length; i++) {
-                    if(af[i] >= 0) {
+                    if (af[i] >= 0) {
                         afString += Double.toString(af[i]);
                         if (i < af.length - 1) afString += ", ";
                     }

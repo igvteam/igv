@@ -1,5 +1,6 @@
 package org.broad.igv.ucsc.hub;
 
+import org.broad.igv.Globals;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 class HubTable extends JTable {
 
-    public static final Color ALT_BACKGROUND = new Color(245, 245, 245);
+    public static  Color ALT_BACKGROUND = new Color(245, 245, 245);
     private final Map<Integer, Integer> rowHeights = new HashMap<>();
 
     public HubTable(HubTableModel model) {
@@ -103,6 +104,22 @@ class HubTable extends JTable {
                 }
             }
         });
+
+        if(Globals.isDarkMode()) {
+            setBackground(Color.DARK_GRAY);
+            setForeground(Color.WHITE);
+            setSelectionBackground(Color.GRAY);
+            setSelectionForeground(Color.WHITE);
+            ALT_BACKGROUND = new Color(60, 60, 60); // Darker alternate background
+            // Update renderers
+            for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
+                TableCellRenderer renderer = getColumnModel().getColumn(i).getCellRenderer();
+                if (renderer instanceof DefaultTableCellRenderer) {
+                    ((DefaultTableCellRenderer) renderer).setBackground(getBackground());
+                    ((DefaultTableCellRenderer) renderer).setForeground(getForeground());
+                }
+            }
+        }
     }
 
     private static DefaultTableCellRenderer getMultiLineCellRenderer(int maxLength) {
@@ -160,7 +177,7 @@ class HubTable extends JTable {
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
-        component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Color.WHITE);
+        component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Globals.isDarkMode() ? Color.black : Color.WHITE);
         return component;
     }
 

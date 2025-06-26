@@ -37,6 +37,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.Globals;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
@@ -60,12 +61,14 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
     final static int MAXIMUM_FONT_SIZE = 10;
     public final static int ATTRIBUTE_COLUMN_WIDTH = 10;
     public final static int COLUMN_BORDER_WIDTH = 1;
+    private final boolean darkMode;
 
     Map<String, Boolean> sortOrder = new HashMap();
 
 
     public AttributeHeaderPanel() {
-        setBackground(new java.awt.Color(255, 255, 255));
+        this.darkMode = Globals.isDarkMode();
+        setBackground(darkMode ? UIManager.getColor("Panel.background") : new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createLineBorder(Color.lightGray));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener();
@@ -91,48 +94,56 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
         super.paintComponent(graphics);
 
+        if(darkMode){
+            setBackground(UIManager.getColor("Panel.background"));
+        }
+
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
         if (keys != null && keys.size() > 0) {
-
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
-            if (PreferencesManager.getPreferences().getAntiAliasing()) {
-                graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            try {
+                if (PreferencesManager.getPreferences().getAntiAliasing()) {
+                    graphics2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
+                if (darkMode) {
+                    graphics2.setColor(Color.white);
+                }
+
+                // Divide the remaining space to get column widths
+                int columnWidth = getAttributeColumnWidth();
+
+                // Create font and font size
+                int fontSize = (int) (0.9 * columnWidth);
+                if (fontSize > MAXIMUM_FONT_SIZE) {
+                    fontSize = MAXIMUM_FONT_SIZE;
+                }
+                Font font = FontManager.getFont(fontSize);
+
+                FontMetrics fm = graphics2.getFontMetrics();
+                int fontAscent = fm.getHeight();
+
+                // Change the origin for the text
+                AffineTransform transform = AffineTransform.getTranslateInstance(0, getHeight() - COLUMN_BORDER_WIDTH);
+                graphics2.transform(transform);
+
+                // Now rotate text counter-clockwise 90 degrees
+                transform = AffineTransform.getQuadrantRotateInstance(-1);
+                graphics2.transform(transform);
+                graphics2.setFont(font);
+
+                int i = 1;
+                int x;
+                for (String key : keys) {
+                    int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
+                    x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
+                    String toDraw = key;
+                    int stringOffset = 2;
+                    graphics2.drawString(toDraw, stringOffset, x);
+                }
+            } finally {
+                graphics2.dispose();
             }
-
-            // Divide the remaining space to get column widths
-            int columnWidth = getAttributeColumnWidth();
-
-            // Create font and font size
-            int fontSize = (int) (0.9 * columnWidth);
-            if (fontSize > MAXIMUM_FONT_SIZE) {
-                fontSize = MAXIMUM_FONT_SIZE;
-            }
-            Font font = FontManager.getFont(fontSize);
-
-            FontMetrics fm = graphics2.getFontMetrics();
-            int fontAscent = fm.getHeight();
-
-            // Change the origin for the text
-            AffineTransform transform = AffineTransform.getTranslateInstance(0, getHeight() - COLUMN_BORDER_WIDTH);
-            graphics2.transform(transform);
-
-            // Now rotate text counter-clockwise 90 degrees
-            transform = AffineTransform.getQuadrantRotateInstance(-1);
-            graphics2.transform(transform);
-            graphics2.setFont(font);
-
-            int i = 1;
-            int x;
-            for (String key : keys) {
-                int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
-                x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
-                String toDraw = key;
-                int stringOffset = 2;
-                graphics2.drawString(toDraw, stringOffset, x);
-            }
-
-            graphics2.dispose();
         }
     }
 
@@ -196,7 +207,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         Graphics2D borderGraphics = (Graphics2D) g.create();
         paintComponent(g);
         borderGraphics.setColor(Color.lightGray);
-        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
         borderGraphics.dispose();
     }
 

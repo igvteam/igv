@@ -93,6 +93,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     private static final int MAX_NAME_LENGTH = 60;
 
+    /**
+     * Constructor for IGVFeatureRenderer
+     */
+    public IGVFeatureRenderer() {
+
+    }
 
     /**
      * Note:  assumption is that featureList is sorted by start position.
@@ -122,7 +128,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // by font, only by color, so its neccessary to create a new one to prevent
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
-            Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
+            Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(fontColor).create();
             fontGraphics.setFont(font);
 
             // Track coordinates
@@ -378,12 +384,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                              Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode,
                              boolean alternateExonColor, Color color1, Color color2) {
 
-        Graphics2D exonNumberGraphics = (Graphics2D) g2D.create();
-
-
-        exonNumberGraphics.setColor(Color.BLACK);
-        exonNumberGraphics.setFont(FontManager.getFont(Font.BOLD, 8));
-
         // Now get the individual regions of the
         // feature are drawn here
 
@@ -445,12 +445,12 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
-            if(lastExon) {
+            if (lastExon) {
                 // draw a small gap if there is room
-                if(pEnd - pStart > 5) {
+                if (pEnd - pStart > 5) {
                     pEnd--;
                 }
-                if(pEnd - pStart > 10) {
+                if (pEnd - pStart > 10) {
                     pStart++;
                 }
             }
@@ -537,7 +537,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 }
 
             }
-            exonNumberGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+
             fontGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
         }
     }

@@ -79,13 +79,11 @@ public class MessageUtils {
                 // Always use HTML for message displays, but first remove any embedded <html> tags.
                 String dlgMessage = "<html>" + message.replaceAll("<html>", "");
                 Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-                Color background = parent != null ? parent.getBackground() : Color.lightGray;
 
                 //JEditorPane So users can select text
                 JEditorPane content = new JEditorPane();
                 content.setContentType("text/html");
                 content.setText(dlgMessage);
-                content.setBackground(background);
                 content.setEditable(false);
                 Component dispMessage = content;
 

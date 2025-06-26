@@ -1,5 +1,6 @@
 package org.broad.igv.ucsc.hub;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -19,7 +20,7 @@ public class CollapsiblePanel extends JPanel {
 
     private static Logger log = LogManager.getLogger(CollapsiblePanel.class);
     public static final Color HEADER_BG = new Color(180, 204, 226);
-    public static final Color HEADER_BG2 = new Color(204, 204, 204);
+    public static final Color HEADER_BG_DARK = HEADER_BG.darker();
     private final JLabel jlabel;
     final List<SelectionBox> selectionBoxes;
     private final boolean autoselectDefaults;
@@ -34,7 +35,9 @@ public class CollapsiblePanel extends JPanel {
 
     public CollapsiblePanel(TrackConfigContainer configContainer, boolean autoselectDefaults, boolean addSearchButton) {
 
-        Color backgroundColor = HEADER_BG;
+        boolean darkMode = Globals.isDarkMode();
+
+        Color backgroundColor =  darkMode ? HEADER_BG_DARK : HEADER_BG;
 
         this.configContainer = configContainer;
         this.autoselectDefaults = autoselectDefaults;
@@ -100,6 +103,9 @@ public class CollapsiblePanel extends JPanel {
         jlabel = new JLabel(label);
         jlabel.setFont(FontManager.getFont(14));
         jlabel.setHorizontalAlignment(SwingConstants.CENTER);
+        if(darkMode) {
+            jlabel.setForeground(Color.WHITE);
+        }
         header.add(jlabel, BorderLayout.CENTER);
 
         this.add(header, BorderLayout.NORTH);

@@ -55,10 +55,10 @@ COLOR.N	n	color	128,128,128
 #Variants
 
 ##Variant Colors
-HOMREF.COLOR	Homozygous reference	color	235,235,235
+HOMREF.COLOR	Homozygous reference	color	200,200,200
 HOMVAR.COLOR	Homozygous variant	color	0,245,255
 HETVAR.COLOR	Heterozygous variant	color	0,0,255
-NOCALL.COLOR	No call	color	255,255,255
+NOCALL.COLOR	No call	color	230,230,230
 AF_REF.COLOR	Allele frequency - reference	color	0,0,220
 AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE

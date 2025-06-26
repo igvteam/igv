@@ -1,5 +1,6 @@
 package org.broad.igv.feature.cyto;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.genome.Genome;
@@ -25,7 +26,7 @@ public class CytobandTrack extends AbstractTrack {
     public CytobandTrack(ResourceLocator locator, BufferedReader reader, Genome genome) {
         super(locator);
         this.setHeight(30);
-        renderer = new CytobandRenderer();
+        renderer = new CytobandRenderer(Globals.isDarkMode());
         load(reader, genome);
     }
 
