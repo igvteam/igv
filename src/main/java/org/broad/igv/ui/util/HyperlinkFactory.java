@@ -1,5 +1,6 @@
 package org.broad.igv.ui.util;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 
@@ -20,7 +21,7 @@ public class HyperlinkFactory {
     public static JLabel createLink(String label, String link) throws HeadlessException {
 
         JLabel hyperLink = new JLabel(label);
-        hyperLink.setForeground(Color.BLUE.darker());
+        hyperLink.setForeground(Globals.isDarkMode() ? Color.CYAN : Color.BLUE.darker());
         hyperLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         hyperLink.setToolTipText(link);
 

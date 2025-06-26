@@ -33,6 +33,7 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.Globals;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
@@ -44,9 +45,6 @@ import javax.swing.event.MouseInputAdapter;
 import java.util.List;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * @author jrobinso
@@ -71,7 +69,9 @@ public class ZoomSliderPanel extends JPanel {
     int numZoomLevels = 25;
     private int minZoomLevel = 0;
     private ReferenceFrame referenceFrame;
-
+    private boolean darkMode;
+    private Color markColor;
+    private Color tickColor;
 
 
     /**
@@ -138,7 +138,7 @@ public class ZoomSliderPanel extends JPanel {
 
 
         final boolean enabled = isEnabled();
-        g.setColor(enabled ? Color.BLACK : Color.LIGHT_GRAY);
+        g.setColor(enabled ? this.tickColor : Color.LIGHT_GRAY);
         double x = insets.left;
 
         double xStep = ((double) (panelWidth - 2 * buttonWidth - 10)) / (numZoomLevels);
@@ -186,7 +186,7 @@ public class ZoomSliderPanel extends JPanel {
             if (zoom >= 0 && zoom < zoomLevelRects.length) {
                 Rectangle rect = zoomLevelRects[zoom];
 
-                g.setColor(TICK_BLUE);
+                g.setColor(this.markColor);
                 g.fill3DRect(
                         (int) (rect.getX() + rect.getWidth() / 2) - 3,
                         (int) rect.getY(),
@@ -253,6 +253,10 @@ public class ZoomSliderPanel extends JPanel {
 
 
     private void init() {
+
+        this.darkMode = Globals.isDarkMode();
+        this.markColor = darkMode ? Color.CYAN : TICK_BLUE;
+        this.tickColor = darkMode ? Color.white : Color.black;
 
         MouseInputAdapter mouseAdapter = new IGVMouseInputAdapter() {
 

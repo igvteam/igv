@@ -29,6 +29,7 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IGVMouseInputAdapter;
 
@@ -44,8 +45,12 @@ import java.awt.event.MouseEvent;
 public class NameHeaderPanel extends JPanel implements Paintable {
 
 
+    private final boolean darkMode;
+
     public NameHeaderPanel() {
 
+        this.darkMode = Globals.isDarkMode();
+        
         // Clicking on panel will clear all track selections
         this.addMouseListener(new IGVMouseInputAdapter() {
             @Override
@@ -58,6 +63,16 @@ public class NameHeaderPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
         paintComponent(g);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if(darkMode){
+            setBackground(UIManager.getColor("Panel.background"));
+        }
+
     }
 
     @Override

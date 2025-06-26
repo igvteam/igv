@@ -35,6 +35,7 @@
 package org.broad.igv.ui.panel;
 
 
+import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -71,6 +72,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
     private RulerPanel rulerPanel;
     private RegionOfInterestPanel regionOfInterestPane;
     private JPanel geneListPanel;
+    private boolean darkMode;
 
 
     public HeaderPanel(ReferenceFrame frame) {
@@ -81,8 +83,10 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
 
     private void init() {
 
+        this.darkMode = Globals.isDarkMode();
+
         //setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(darkMode ? UIManager.getColor("Panel.background") : new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(700, 0));
         setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());

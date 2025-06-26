@@ -105,8 +105,8 @@ public class TrackSelectionDialog extends JDialog {
             JTextPane messagePane = new JTextPane();
             messagePane.setBorder(BorderFactory.createEmptyBorder(30, 5, 20, 5));
             messagePane.setFont(FontManager.getFont(Font.BOLD, 16));
-            messagePane.setBackground(new Color(230, 230, 230));
-            messagePane.setForeground(Color.BLACK);
+            //messagePane.setBackground(new Color(230, 230, 230));
+            //messagePane.setForeground(Color.BLACK);
             messagePane.setText(message);
             messagePane.setEditable(false);
             topPanel.add(messagePane);

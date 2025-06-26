@@ -56,8 +56,9 @@ import java.util.List;
 abstract public class TrackPanelComponent extends JPanel {
 
     private static final String DELETE_TRACKS_KEY = "deleteTracks";
-    List<MouseableRegion> mouseRegions;
 
+    protected final boolean darkMode;
+    List<MouseableRegion> mouseRegions;
     private TrackPanel trackPanel;
 
     public TrackPanelComponent(TrackPanel trackPanel) {
@@ -66,6 +67,7 @@ abstract public class TrackPanelComponent extends JPanel {
         mouseRegions = new ArrayList<>();
 
         initKeyDispatcher();
+        this.darkMode = Globals.isDarkMode();
     }
 
     private void initKeyDispatcher() {
