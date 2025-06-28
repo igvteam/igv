@@ -8,7 +8,7 @@
 #https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt 
 #Add the flag -Ddevelopment = true to use features still in development
 #Add the flag -Dsun.java2d.uiScale=2 for HiDPI displays
-prefix=`dirname $(readlink -f $0 || echo $0)`
+prefix="$(cd "$(dirname "$0")" && pwd)"
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-21" ]; then
