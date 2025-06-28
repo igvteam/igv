@@ -29,6 +29,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.Globals;
 import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
@@ -99,7 +100,12 @@ public class GraphicUtils {
             gb.fillRect(xs, ys - 3*th/4, (int) textBounds.getWidth(), th);
         }
 
+        Color origColor = g.getColor();
+        if(Globals.isDarkMode()) {
+            g.setColor(Color.WHITE);
+        }
         g.drawString(text, xs, ys);
+        g.setColor(origColor);
     }
 
     public static void drawVerticallyCenteredText(String text, int margin, Rectangle rect, Graphics g2D, boolean rightJustify) {

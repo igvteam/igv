@@ -187,7 +187,7 @@ public class CytobandRenderer {
         int y = (int) graphicRect.getY() + LABEL_OFFSET;
 
         // Draw labels
-        g.setColor(Color.BLACK);
+        g.setColor(darkMode ? Color.white : Color.BLACK);
         FontMetrics fm = g.getFontMetrics();
         int minSpacing = 10;
         int prevEnd = 0;
