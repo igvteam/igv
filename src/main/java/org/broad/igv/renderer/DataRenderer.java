@@ -144,8 +144,12 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
      */
     public static void drawScale(DataRange range, RenderContext context, Rectangle arect) {
         if (range != null && context.multiframe == false) {
-            Graphics2D g = context.getGraphic2DForColor(Color.black);
-            Font font = g.getFont();
+            Graphics2D g = (Graphics2D) context.getGraphics().create();
+            if(Globals.isDarkMode()) {
+                g.setColor(Color.WHITE);
+            } else {
+                g.setColor(Color.BLACK);
+            }
             Font smallFont = FontManager.getFont(8);
             try {
                 g.setFont(smallFont);
@@ -156,7 +160,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
                 g.drawString(scale, arect.x + 5, arect.y + 10);
 
             } finally {
-                g.setFont(font);
+                g.dispose();
             }
         }
     }

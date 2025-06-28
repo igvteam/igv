@@ -84,6 +84,9 @@ public class RulerPanel extends JPanel {
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
 
+    private Color expandedColor = Color.BLUE;
+    private Color collapsedColor = Color.BLACK;
+
     boolean dragging = false;
     int dragStart;
     int dragEnd;
@@ -110,6 +113,8 @@ public class RulerPanel extends JPanel {
 
         if(darkMode) {
             setBackground(UIManager.getColor("Panel.background"));
+            expandedColor = Color.CYAN;
+            collapsedColor = Color.WHITE;
         }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
@@ -330,12 +335,13 @@ public class RulerPanel extends JPanel {
             Polygon p;
             Color c;
             if (expanded != null && insertionMarker.position == expanded.position) {
+                c = expandedColor;
                 x0 = frame.getScreenPosition(insertionMarker.position);
                 x1 = (int) ((insertionMarker.position + insertionMarker.size - frame.origin) / frame.getScale());
                 p = new Polygon(
                         new int[]{x0 - w, x1 + w, x1, x0},
                         new int[]{y, y, y + INSERTION_ROW_HEIGHT, y + INSERTION_ROW_HEIGHT}, 4);
-                c = Color.BLUE;
+
 
                 String tooltipText = "Click to collapse insertion";
                 clickLinks.add(new ClickLink(p, null, tooltipText, obj -> {
@@ -352,7 +358,7 @@ public class RulerPanel extends JPanel {
                 double expandedInsertionWidth = insertionMarker.size / frame.getScale();
 
                 if (expandedInsertionWidth > 5) {
-                    c = Color.BLACK;
+                    c = collapsedColor;
                     String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
                     Rectangle clickArea = p.getBounds();
                     clickArea.y -= 2;

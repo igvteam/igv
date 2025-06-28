@@ -315,6 +315,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         setLayout(layout);
 
+        boolean darkMode = Globals.isDarkMode();
+
         final String detailsPreference = PreferencesManager.getPreferences().get(Constants.DETAILS_BEHAVIOR_KEY);
         detailsBehavior = ShowDetailsBehavior.valueOf((detailsPreference.toUpperCase()));
 
@@ -422,7 +424,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         backButton = new JideButton();
         //backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //backButton.setBorder(toolButtonBorder);
-        backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/left-arrow.gif")));
+        backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/left-arrow.invert.gif" : "/images/left-arrow.gif")));
         backButton.setToolTipText("Go back");
         backButton.setMaximumSize(new java.awt.Dimension(32, 32));
         backButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -437,7 +440,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         forwardButton = new JideButton();
         //forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //forwardButton.setBorder(toolButtonBorder);
-        forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/right-arrow.gif")));
+        forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/right-arrow.invert.gif" : "/images/right-arrow.gif")));
         forwardButton.setToolTipText("Go forward");
         forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
         forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -487,7 +491,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         //fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //fitToWindowButton.setBorder(toolButtonBorder);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
-        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/collapseall.gif")));
+        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/collapseall.invert.gif" : "/images/collapseall.gif")));
         fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));

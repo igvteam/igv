@@ -58,6 +58,7 @@ import java.util.List;
  */
 public class RegionOfInterestPanel extends JPanel {
 
+    private final boolean darkMode;
     ReferenceFrame frame;
     RegionOfInterest focusROI;
     boolean switchStartOrEnd;
@@ -66,7 +67,7 @@ public class RegionOfInterestPanel extends JPanel {
     private static RegionOfInterest selectedRegion = null;
 
     public RegionOfInterestPanel(ReferenceFrame frame) {
-
+        this.darkMode = Globals.isDarkMode();
         setToolTipText("Regions of Interest");
         this.frame = frame;
         MouseInputAdapter ma = new ROIMouseAdapater();
@@ -85,7 +86,7 @@ public class RegionOfInterestPanel extends JPanel {
 
         //drawInsertionMarkers((Graphics2D) g, getHeight());
 
-        g.setColor(Color.BLACK);
+        g.setColor(darkMode ? Color.WHITE : Color.BLACK);
         g.drawLine(0, 0, getWidth(), 0);
     }
 
