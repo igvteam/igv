@@ -325,7 +325,10 @@ public class SearchCommand implements Runnable {
         List<NamedFeature> matchingFeatures;
 
         // Check featureDB first -- this is cheap
-        matchingFeatures = genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false);
+        matchingFeatures = new ArrayList<>(genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false)
+                .stream()
+                .filter(f -> f.getName().equalsIgnoreCase(token.trim()))
+                .toList());
 
         // If no matches, check searchable tracks.  Break if we  a match
         if (matchingFeatures == null || matchingFeatures.isEmpty()) {
