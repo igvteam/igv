@@ -666,7 +666,7 @@ public class HttpUtils {
 
             if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
 
-                log.error("Range header removed by client or ignored by server for url: " + url.toString());
+                log.info("Range header removed by client or ignored by server for url: " + url.toString());
 
                 if (!SwingUtilities.isEventDispatchThread()) {
                     MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
