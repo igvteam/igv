@@ -69,6 +69,7 @@ public class TestUtils {
     public static final String TEST_UNIQUE_RUN_BASE = System.currentTimeMillis() + "_" + Math.random();
     private static final String TESTPREFS_PROPERTIES = "testprefs_" + TEST_UNIQUE_RUN_BASE + ".properties";
     public static final String DATA_DIR = "test/data/";
+    public static final String REMOTE_DATA_DIR = "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/";
     public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/" + TEST_UNIQUE_RUN_BASE + "/";
 
     static {

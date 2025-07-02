@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>IGV Web links</title>
+</head>
+<body>
+
+<h2>IGV desktop links</h2>
+<p>
+    <a href="http://localhost:60151/load?genome=hg38&locus=chr8:127733434-127744951&file=https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb,https://hgdownload.soe.ucsc.edu/gbdb/hg38/ncbiRefSeq/ncbiRefSeqOther.bb&name=Known genes, Refseq other">
+        Load multiple files, new session, specify genome and locaus</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&merge=false&locus=myc">
+        Load merge=false</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&merge=true&locus=myc">
+        Load merge=true</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&merge=ask&locus=myc">
+        Load merge=ask</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&locus=chr1&name=GM12878+loops">
+        Load with name</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&locus=chr1&name=GM12878+loops&dup=true">
+        Load with name -- allow dups</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam&locus=myc&dup=true">
+        Load BAM -- allow dups</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https%253A%252F%252Fs3.amazonaws.com%252Figv.org.test%252Fdata%252Fgm12878_loops.bedpe.gz&locus=chr1&name=GM12878%20loops">
+        Load with name - url encoded</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&locus=chr1&name=GM12878+loops;&merge=false">
+        Load with name into new session</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&locus=chr1&name=GM12878+loops;&merge=true">
+        Load with name into current session</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
+        Load with index</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz,gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi,gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam.bai&locus=chr1&name=SNPs,Alignments&locus=myc">
+        Load with index - multiple files</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https%3A%2F%2Fdata.broadinstitute.org%2Figvdata%2Fannotations%2Fhg19%2FdbSnp%2Fsnp137.hg19.bed.gz%2Cgs%3A%2F%2Fgenomics-public-data%2Fplatinum-genomes%2Fbam%2FNA12877_S1.bam&index=https%3A%2F%2Fdata.broadinstitute.org%2Figvdata%2Fannotations%2Fhg19%2FdbSnp%2Fsnp137.hg19.bed.gz.tbi%2Cgs%3A%2F%2Fgenomics-public-data%2Fplatinum-genomes%2Fbam%2FNA12877_S1.bam.bai&locus=chr1&name=SNPs%2CAlignments&locus=myc">
+        Load with index - multiple files url encoded</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?genome=https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta">
+        Load fasta</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/sessions/arcs_session.xml">
+        Load session</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/sessions/arcs_session.xml&merge=true">
+        Load session</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/sessions/arcs_session.xml&locus=chr22">
+        Load session with initial locus (chr22)</a>
+</p>
+<p>
+    <a href="http://localhost:60151/goto?locus=MYC">
+        Goto locus 'MYC'</a>
+</p>
+
+<h3>Issue 1261</h3>
+<p>
+    <a href="http://localhost:60151/load?file=https://1000genomes.s3.amazonaws.com/phase3/data/HG01880/alignment/HG01880.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam&merge=ask&locus=chr10%3A89617063">
+        Load HG01880 BAM, merge=ask</a>
+</p>
+<p>
+    <a href="http://localhost:60151/load?file=https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/alignment/HG01879.mapped.ILLUMINA.bwa.ACB.low_coverage.20120522.bam&merge=ask&locus=chr9%3A5443964">
+        Load HG01879 BAM, merge=ask</a>
+</p>
+
+<h2>IGV web app links</h2>
+<p>
+    <a target="_blank"
+       href="https://igv.org/app/?file=https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bedpe/GM12878_loops.bedpe&locus=chr1&name=GM12878+loops">
+        Load with name</a>
+</p>
+<p>
+    <a target="_blank"
+       href="https://igv.org/app/?file=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz&index=https://data.broadinstitute.org/igvdata/annotations/hg19/dbSnp/snp137.hg19.bed.gz.tbi&amp;locus=chr1&amp;name=SNPs">
+        Load with index</a>
+</p>
+<p>
+    <a target="_blank"
+       href="https://igv.org/app/?genome=https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta">
+        Load fasta</a>
+</p>
+
+</body>
+</html>
