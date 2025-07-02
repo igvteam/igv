@@ -179,9 +179,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         headerMessage.setText("Enter one or more search terms to filter genome list.");
         headerMessage.setLineWrap(true);
         headerMessage.setWrapStyleWord(true);
-        headerMessage.setBackground(UIManager.getColor("Button.background"));
-        //headerMessage.setRows(2);
-        //headerMessage.setMaximumSize(new Dimension(2147483647, 60));
         headerMessage.setRequestFocusEnabled(false);
         headerMessage.setEditable(false);
         outerPanel.add(headerMessage, BorderLayout.NORTH);
@@ -192,9 +189,8 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         final String filterToolTip = "Enter multiple filter strings separated by spaces.";
 
         filterTextField = new JTextField();
-        filterTextField.setMinimumSize(new Dimension(100, 20));
-        filterTextField.setPreferredSize(new Dimension(900, 20));
-        // filterPanel.add(filterTextField, BorderLayout.CENTER);
+        filterTextField.setColumns(80);
+        filterPanel.add(filterTextField, BorderLayout.CENTER);
         filterTextField.setToolTipText(filterToolTip);
 
         JLabel filterLabel = new JLabel("Filter:");
