@@ -30,6 +30,7 @@
 //~--- non-JDK imports --------------------------------------------------------
 
  import htsjdk.tribble.Feature;
+ import org.broad.igv.Globals;
  import org.broad.igv.logging.*;
  import org.broad.igv.feature.IGVFeature;
  import org.broad.igv.feature.SpliceJunctionFeature;
@@ -39,6 +40,7 @@
  import org.broad.igv.track.FeatureTrack;
  import org.broad.igv.track.RenderContext;
  import org.broad.igv.track.Track;
+ import org.broad.igv.ui.color.ColorUtilities;
 
  import java.awt.*;
  import java.awt.geom.GeneralPath;
@@ -63,6 +65,17 @@
      private static Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
 
      private int maxDepth = 50;
+
+     public SpliceJunctionRenderer() {
+         if (Globals.isDarkMode()) {
+             // Use brighter colors in dark mode
+             ARC_COLOR_NEG = ColorUtilities.modifyAlpha(Color.BLUE, 140);
+             ARC_COLOR_POS = ColorUtilities.modifyAlpha(Color.RED, 140);
+             ARC_COLOR_HIGHLIGHT_NEG = Color.BLUE;
+             ARC_COLOR_HIGHLIGHT_POS = Color.RED;
+             COLOR_CENTERLINE = new Color(255, 255, 255, 100);
+         }
+     }
 
      /**
       * Note:  assumption is that featureList is sorted by pStart position.
@@ -91,7 +104,7 @@
                  double locScale = context.getScale();
                  double end = origin + locScale * trackRectangle.width;
 
-                 Feature selectedFeature =((FeatureTrack) track).getSelectedFeature();
+                 Feature selectedFeature = ((FeatureTrack) track).getSelectedFeature();
                  boolean shouldShowFlankingRegions = PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_JUNCTION_FLANKINGREGIONS);
 
                  for (IGVFeature feature : featureList) {
@@ -158,15 +171,15 @@
           */
          final Color color;
          final Color trackColor = isPositiveStrand ? track.getExplicitColor() : track.getExplicitAltColor();
-         if( trackColor != null ) {
+         if (trackColor != null) {
              color = adjustAlpha(trackColor, highlight);
          } else if (featureColor != null) {
              color = adjustAlpha(featureColor, highlight);
-         }  else {
+         } else {
              if (isPositiveStrand) {
                  color = highlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
              } else {
-                color = highlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+                 color = highlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
              }
          }
 
@@ -252,7 +265,7 @@
      }
 
      /**
-      * @return  a variant of the input color with a different alpha depending on if it is a highlight color or not
+      * @return a variant of the input color with a different alpha depending on if it is a highlight color or not
       */
      private static Color adjustAlpha(final Color featureColor, final boolean highlight) {
          Color color;

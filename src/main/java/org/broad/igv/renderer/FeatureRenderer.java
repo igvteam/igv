@@ -46,7 +46,7 @@ public abstract class FeatureRenderer implements Renderer<IGVFeature> {
      */
     private static Logger log = LogManager.getLogger(FeatureRenderer.class);
 
-    protected final boolean darkMode;
+    protected boolean darkMode;
     protected final Color fontColor;
 
     private Feature highlightFeature = null;
