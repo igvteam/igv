@@ -70,7 +70,6 @@ public class GenomeDescriptor {
         return attributes.get(name);
     }
 
-
     public String getId() {
         return id;
     }
@@ -86,4 +85,17 @@ public class GenomeDescriptor {
     public String toString() {
         return displayableName;
     }
+
+    @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof GenomeDescriptor)) return false;
+            GenomeDescriptor that = (GenomeDescriptor) o;
+            return id != null ? id.equals(that.id) : that.id == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return id != null ? id.hashCode() : 0;
+        }
 }

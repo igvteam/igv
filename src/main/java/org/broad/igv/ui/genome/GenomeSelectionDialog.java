@@ -243,7 +243,6 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         downloadAnnotationsPanel.add(downloadAnnotationsRB);
         downloadAnnotationsPanel.add(remoteAnnotationsRB);
         p1.add(downloadAnnotationsPanel);
-        p1.setBackground(Color.RED);
         contentPanel.add(p1);
 
         outerPanel.add(contentPanel, BorderLayout.CENTER);

@@ -74,7 +74,6 @@ import java.util.stream.Stream;
  */
 public class GenomeManager {
 
-    public static final String UPDATE_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.";
     public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  " +
             "You can change these selections later using the 'Genomes > Select Genome Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
@@ -311,7 +310,8 @@ public class GenomeManager {
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
                         trackConfigs.stream().map(t -> t.url).toList();
 
-                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, UPDATE_ANNOTATIONS_MESSAGE);
+                String message = "Select defaul tannoations for " + config.getName();
+                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, message);
                 if (selectedConfigs == null) {
                     return;
                 }
