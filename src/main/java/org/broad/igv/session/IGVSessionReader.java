@@ -33,7 +33,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
@@ -227,7 +227,7 @@ public class IGVSessionReader implements SessionReader {
             GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
         } else {
             try {
-                GenomeDescriptor item = GenomeManager.getInstance().getGenomeTableRecord(genomeId);
+                GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(genomeId);
                 genomePath = (item != null) ? item.getPath() : getAbsolutePath(genomeId, sessionPath);
                 GenomeManager.getInstance().loadGenome(genomePath);
             } catch (IOException e) {

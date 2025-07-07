@@ -35,7 +35,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -143,7 +143,7 @@ public class CommandExecutor {
                 }
                 String id = GenomeManager.getInstance().getCurrentGenome().getId();
                 if (id != null) {
-                    GenomeDescriptor item = GenomeManager.getInstance().getGenomeTableRecord(id);
+                    GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(id);
                     if (item != null) {
                         result = item.getPath();
                     }

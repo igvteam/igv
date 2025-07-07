@@ -3,7 +3,7 @@ package org.broad.igv.feature.genome.load;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDownloadUtils;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -120,7 +120,7 @@ public class HubGenomeLoader extends GenomeLoader {
 
         if (configs.size() > 1) {
             for (GenomeConfig config : configs) {
-                GenomeDescriptor item = new GenomeDescriptor(config.getName(), genomeFiles.get(config).getAbsolutePath(), config.id);
+                GenomeListItem item = new GenomeListItem(config.getName(), genomeFiles.get(config).getAbsolutePath(), config.id);
                 GenomeListManager.getInstance().addGenomeItem(item);
             }
         }

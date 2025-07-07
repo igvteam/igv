@@ -7,10 +7,11 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.feature.genome.HostedGenomes;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -34,16 +35,16 @@ public class GenomeListManager {
 
     private static final String REMOTE_GENOMES_FILE = "remote-genomes.txt";
 
-    private static final GenomeDescriptor DEFAULT_GENOME = new GenomeDescriptor(
+    private static final GenomeListItem DEFAULT_GENOME = new GenomeListItem(
             "Human (hg38)",
             "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/legacy/json/hg38.json",
             "hg38");
 
-    private Map<String, GenomeDescriptor> genomeItemMap;
+    private Map<String, GenomeListItem> genomeItemMap;
 
-    private Map<String, GenomeDescriptor> remoteGenomesMap;
+    private Map<String, GenomeListItem> remoteGenomesMap;
 
-    private Map<String, GenomeDescriptor> downloadedGenomesMap;
+    private Map<String, GenomeListItem> downloadedGenomesMap;
 
     private static GenomeListSorter sorter = new GenomeListSorter();
 
@@ -65,7 +66,7 @@ public class GenomeListManager {
      * @return
      * @throws IOException
      */
-    public Map<String, GenomeDescriptor> getGenomeItemMap() throws IOException {
+    public Map<String, GenomeListItem> getGenomeItemMap() throws IOException {
         if (genomeItemMap.isEmpty()) {
             rebuildGenomeItemMaps();
         }
@@ -78,8 +79,8 @@ public class GenomeListManager {
         rebuildGenomeItemMaps();
     }
 
-    public List<GenomeDescriptor> getGenomeTableRecords() {
-        List<GenomeDescriptor> items = new ArrayList<>(genomeItemMap.values());
+    public List<GenomeListItem> getGenomeTableRecords() {
+        List<GenomeListItem> items = new ArrayList<>(genomeItemMap.values());
         items.sort(sorter);
         return items;
     }
@@ -88,24 +89,33 @@ public class GenomeListManager {
     /**
      * Add an item to the selectable genomes map and record in preferences.
      *
-     * @param genomeDescriptor
+     * @param genomeListItem
      */
-    public void addGenomeItem(GenomeDescriptor genomeDescriptor) {
+    public void addGenomeItem(GenomeListItem genomeListItem) {
 
-        if (genomeItemMap.values().stream().anyMatch(item -> genomeDescriptor.equals(item))) {
+        if (genomeItemMap.values().stream().anyMatch(item -> genomeListItem.equals(item))) {
             return;
         }
 
-        genomeItemMap.put(genomeDescriptor.getId(), genomeDescriptor);
+        genomeItemMap.put(genomeListItem.getId(), genomeListItem);
 
-        if (FileUtils.isRemote(genomeDescriptor.getPath()) ||
-                !DirectoryManager.getGenomeCacheDirectory().
-                        equals(new File(genomeDescriptor.getPath()).getParentFile())) {
+        GenomeListItem hostedListItem = HostedGenomes.getGenomeListItem(genomeListItem.getId());
+        boolean isHosted = hostedListItem != null && hostedListItem.equals(genomeListItem);
+        boolean isCached = DirectoryManager.getGenomeCacheDirectory().
+                equals(new File(genomeListItem.getPath()).getParentFile());
+
+        // If this genome is otherwise unknown (not in the hosted set or local cache) record it in the remote genomes map
+        if (!isHosted && !isCached) {
             if (remoteGenomesMap == null) {
                 remoteGenomesMap = new HashMap<>();
             }
-            remoteGenomesMap.put(genomeDescriptor.getId(), genomeDescriptor);
-            exportRemoteGenomesList();
+
+            if(hostedListItem == null || !hostedListItem.equals(genomeListItem)) {
+
+                remoteGenomesMap.put(genomeListItem.getId(), genomeListItem);
+                remoteGenomesMap.put(genomeListItem.getId(), genomeListItem);
+                exportRemoteGenomesList();
+            }
         }
 
         IGVEventBus.getInstance().post(new GenomeResetEvent());
@@ -120,9 +130,9 @@ public class GenomeListManager {
      * @param genomeId
      * @return
      */
-    public GenomeDescriptor getGenomeTableRecord(String genomeId) {
+    public GenomeListItem getGenomeTableRecord(String genomeId) {
 
-        GenomeDescriptor matchingItem = genomeItemMap.get(genomeId);
+        GenomeListItem matchingItem = genomeItemMap.get(genomeId);
         if (matchingItem == null) {
 
             // If not found rebuild the item map
@@ -161,9 +171,9 @@ public class GenomeListManager {
      *
      * @return LinkedHashSet<GenomeTableRecord>
      * @throws IOException
-     * @see GenomeDescriptor
+     * @see GenomeListItem
      */
-    public Map<String, GenomeDescriptor> getDownloadedGenomeMap() {
+    public Map<String, GenomeListItem> getDownloadedGenomeMap() {
 
         if (downloadedGenomesMap == null) {
 
@@ -197,8 +207,8 @@ public class GenomeListManager {
                         Properties properties = new Properties();
                         properties.load(inputStream);
 
-                        GenomeDescriptor item =
-                                new GenomeDescriptor(properties.getProperty(org.broad.igv.feature.genome.load.GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
+                        GenomeListItem item =
+                                new GenomeListItem(properties.getProperty(org.broad.igv.feature.genome.load.GenomeDescriptor.GENOME_ARCHIVE_NAME_KEY),
                                         file.getAbsolutePath(),
                                         properties.getProperty(org.broad.igv.feature.genome.load.GenomeDescriptor.GENOME_ARCHIVE_ID_KEY));
 
@@ -266,7 +276,7 @@ public class GenomeListManager {
                                 continue;
                             }
 
-                            GenomeDescriptor item = new GenomeDescriptor(name.getAsString(), file.getAbsolutePath(), id.getAsString());
+                            GenomeListItem item = new GenomeListItem(name.getAsString(), file.getAbsolutePath(), id.getAsString());
                             downloadedGenomesMap.put(item.getId(), item);
 
                         }
@@ -280,11 +290,11 @@ public class GenomeListManager {
         return downloadedGenomesMap;
     }
 
-    public void removeItems(List<GenomeDescriptor> removedValuesList) {
+    public void removeItems(List<GenomeListItem> removedValuesList) {
 
         boolean updateImportFile = false;
-        for (GenomeDescriptor GenomeTableRecord : removedValuesList) {
-            final String id = GenomeTableRecord.getId();
+        for (GenomeListItem genomeListItem : removedValuesList) {
+            final String id = genomeListItem.getId();
             genomeItemMap.remove(id);
             if (remoteGenomesMap != null && remoteGenomesMap.containsKey(id)) {
                 remoteGenomesMap.remove(id);
@@ -323,9 +333,9 @@ public class GenomeListManager {
      *
      * @return LinkedHashSet<GenomeTableRecord>
      * @throws IOException
-     * @see GenomeDescriptor
+     * @see GenomeListItem
      */
-    public Map<String, GenomeDescriptor> getRemoteGenomesMap() {
+    public Map<String, GenomeListItem> getRemoteGenomesMap() {
 
         if (remoteGenomesMap == null) {
 
@@ -375,7 +385,7 @@ public class GenomeListManager {
                         }
 
                         try {
-                            GenomeDescriptor item = new GenomeDescriptor(fields[0], file, fields[2]);
+                            GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
                             remoteGenomesMap.put(item.getId(), item);
                         } catch (Exception e) {
                             log.error("Error updating user genome list line '" + nextLine + "'", e);
@@ -429,12 +439,12 @@ public class GenomeListManager {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(listFile)));
-            for (GenomeDescriptor GenomeTableRecord : remoteGenomesMap.values()) {
-                writer.print(GenomeTableRecord.getDisplayableName());
+            for (GenomeListItem genomeListItem : remoteGenomesMap.values()) {
+                writer.print(genomeListItem.getDisplayableName());
                 writer.print("\t");
-                writer.print(GenomeTableRecord.getPath());
+                writer.print(genomeListItem.getPath());
                 writer.print("\t");
-                writer.println(GenomeTableRecord.getId());
+                writer.println(genomeListItem.getId());
             }
 
         } catch (Exception e) {
@@ -464,10 +474,10 @@ public class GenomeListManager {
     }
 
 
-    private static class GenomeListSorter implements Comparator<GenomeDescriptor> {
+    private static class GenomeListSorter implements Comparator<GenomeListItem> {
 
         @Override
-        public int compare(GenomeDescriptor o1, GenomeDescriptor o2) {
+        public int compare(GenomeListItem o1, GenomeListItem o2) {
             return o1.getDisplayableName().toLowerCase().compareTo(o2.getDisplayableName().toLowerCase());
         }
     }

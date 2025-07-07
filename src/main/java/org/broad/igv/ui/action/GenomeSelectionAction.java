@@ -31,7 +31,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.genome.GenomeSelectionDialog;
 import org.broad.igv.ui.genome.GenomeTableModel;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
@@ -72,7 +72,7 @@ public class GenomeSelectionAction extends MenuAction {
     private GenomeSelectionDialog getGenomeSelectionDialog() {
 
         if (genomeSelectionDialog == null) {
-            List<GenomeDescriptor> records = HostedGenomes.getRecords();
+            List<GenomeListItem> records = HostedGenomes.getRecords();
             List<String> headers = Arrays.asList(defaultHeaders);
             GenomeTableModel model = new GenomeTableModel(headers, records);
             genomeSelectionDialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), model);

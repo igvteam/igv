@@ -37,10 +37,10 @@ import java.util.List;
 public class GenomeTableModel extends AbstractTableModel {
 
     private String[] columnHeadings;
-    private List<GenomeDescriptor> records;
+    private List<GenomeListItem> records;
     private final TableRowSorter<GenomeTableModel> sorter;
 
-    public GenomeTableModel(List<String> headings, List<GenomeDescriptor> records) {
+    public GenomeTableModel(List<String> headings, List<GenomeListItem> records) {
 
         this.records = records;
 
@@ -84,13 +84,13 @@ public class GenomeTableModel extends AbstractTableModel {
             return null;
         }
 
-        GenomeDescriptor record = records.get(rowIndex);
+        GenomeListItem record = records.get(rowIndex);
             String att = columnHeadings[columnIndex];
             return record.getAttributeValue(att);
 
     }
 
-    public List<GenomeDescriptor> getRecords() {
+    public List<GenomeListItem> getRecords() {
         return records;
     }
 }

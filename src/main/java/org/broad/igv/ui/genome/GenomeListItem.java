@@ -25,16 +25,13 @@
 
 package org.broad.igv.ui.genome;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author jrobinso
- *         Date: 10/31/13
- *         Time: 10:11 PM
+ * A record representing a genome hosted on a remote server, or more specifically a row in the IGV hosted genome table.
  */
-public class GenomeDescriptor {
+public class GenomeListItem {
 
     String id;
     String path;
@@ -42,7 +39,7 @@ public class GenomeDescriptor {
 
     Map<String, String> attributes;
 
-    public GenomeDescriptor(String displayableName, String path, String id, Map<String, String> attributes) {
+    public GenomeListItem(String displayableName, String path, String id, Map<String, String> attributes) {
         this.id = id;
         this.path = path;
         this.displayableName = displayableName;
@@ -56,7 +53,7 @@ public class GenomeDescriptor {
      * @param path            The location of the genome archive, can be a file path or URL
      * @param id              The id of the genome.
      */
-    public GenomeDescriptor(String displayableName, String path, String id) {
+    public GenomeListItem(String displayableName, String path, String id) {
         this.id = id;
         this.path = path;
         this.displayableName = displayableName;
@@ -86,16 +83,19 @@ public class GenomeDescriptor {
         return displayableName;
     }
 
-    @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof GenomeDescriptor)) return false;
-            GenomeDescriptor that = (GenomeDescriptor) o;
-            return id != null ? id.equals(that.id) : that.id == null;
-        }
+@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GenomeListItem)) return false;
+        GenomeListItem that = (GenomeListItem) o;
+        return id != null && id.equals(that.id) &&
+               path != null && path.equals(that.path);
+    }
 
-        @Override
-        public int hashCode() {
-            return id != null ? id.hashCode() : 0;
-        }
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (path != null ? path.hashCode() : 0);
+        return result;
+    }
 }

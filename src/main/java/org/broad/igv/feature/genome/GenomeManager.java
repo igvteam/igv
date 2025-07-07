@@ -55,7 +55,7 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.ResourceLocator;
@@ -136,7 +136,7 @@ public class GenomeManager {
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             genomePath = genomeId;
         } else {
-            GenomeDescriptor item = getGenomeTableRecord(genomeId);
+            GenomeListItem item = getGenomeTableRecord(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
                 return false;
@@ -190,8 +190,8 @@ public class GenomeManager {
             }
 
             // Add an entry to the pulldown
-            GenomeDescriptor GenomeTableRecord = new GenomeDescriptor(newGenome.getDisplayName(), genomePath, newGenome.getId());
-            GenomeListManager.getInstance().addGenomeItem(GenomeTableRecord);
+            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
+            GenomeListManager.getInstance().addGenomeItem(genomeListItem);
 
             setCurrentGenome(newGenome);
 
@@ -385,9 +385,9 @@ public class GenomeManager {
      *
      * @param removedValuesList
      */
-    public void deleteDownloadedGenomes(List<GenomeDescriptor> removedValuesList) throws IOException {
+    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
 
-        for (GenomeDescriptor item : removedValuesList) {
+        for (GenomeListItem item : removedValuesList) {
 
             String loc = item.getPath();
             File genomeFile = new File(loc);
@@ -439,12 +439,12 @@ public class GenomeManager {
      * @param genomeId
      * @return
      */
-    public GenomeDescriptor getGenomeTableRecord(String genomeId) {
+    public GenomeListItem getGenomeTableRecord(String genomeId) {
 
-        GenomeDescriptor matchingItem = GenomeListManager.getInstance().getGenomeTableRecord(genomeId);
+        GenomeListItem matchingItem = GenomeListManager.getInstance().getGenomeTableRecord(genomeId);
         if (matchingItem == null) {
             // If genome archive was not found, search hosted genomes
-            matchingItem = HostedGenomes.getGenomeTableRecord(genomeId);
+            matchingItem = HostedGenomes.getGenomeListItem(genomeId);
         }
         return matchingItem;
     }

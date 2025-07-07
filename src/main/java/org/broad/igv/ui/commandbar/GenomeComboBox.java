@@ -4,7 +4,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
@@ -22,7 +22,7 @@ import java.util.Vector;
 /**
  * Created by jrobinso on 7/6/17.
  */
-public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
+public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
     private static Logger log = LogManager.getLogger(GenomeComboBox.class);
 
@@ -42,7 +42,7 @@ public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
 
         int c = this.getItemCount();
         for (int i = 0; i < c; i++) {
-            final GenomeDescriptor item = this.getItemAt(i);
+            final GenomeListItem item = this.getItemAt(i);
             if (curId.equals(item.getId())) {
                 setSelectedItem(item);
                 break;
@@ -56,7 +56,7 @@ public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
      * @return
      */
     private DefaultComboBoxModel buildModel() {
-        Collection<GenomeDescriptor> genomes;
+        Collection<GenomeListItem> genomes;
         try {
             genomes = GenomeListManager.getInstance().getGenomeItemMap().values();
         } catch (IOException e) {
@@ -65,8 +65,8 @@ public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
             MessageUtils.showErrorMessage("Error reading genome list ", e);
         }
 
-        Vector<GenomeDescriptor> vector = new Vector<>(genomes);
-        vector.sort(Comparator.comparing(GenomeDescriptor::getDisplayableName));
+        Vector<GenomeListItem> vector = new Vector<>(genomes);
+        vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
         return new DefaultComboBoxModel(vector);
     }
 
@@ -74,10 +74,10 @@ public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
 
         public void actionPerformed(ActionEvent actionEvent) {
             Object selItem = getSelectedItem();
-            if (!(selItem instanceof GenomeDescriptor)) {
+            if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
-            GenomeDescriptor GenomeTableRecord = (GenomeDescriptor) selItem;
+            GenomeListItem GenomeTableRecord = (GenomeListItem) selItem;
 
             // If we haven't changed genomes do nothing
             if (GenomeTableRecord.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {

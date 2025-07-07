@@ -81,7 +81,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     ButtonGroup downloadAnnotationsGroup;
     private JRadioButton downloadAnnotationsRB;
     private JRadioButton remoteAnnotationsRB;
-    private List<GenomeDescriptor> allListItems;
+    private List<GenomeListItem> allListItems;
     private DefaultListModel genomeListModel;
 
     private GenomeTableModel model;
@@ -148,7 +148,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         return canceled;
     }
 
-    private GenomeDescriptor getSelectedRecord() {
+    private GenomeListItem getSelectedRecord() {
         int idx = table.getSelectedRow();
         if (idx < 0) {
             return null;
@@ -285,7 +285,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private void loadButtonActionPerformed(ActionEvent evt) {
         canceled = false;
         try {
-            GenomeDescriptor rec = getSelectedRecord();
+            GenomeListItem rec = getSelectedRecord();
 
             if (rec != null) {
 

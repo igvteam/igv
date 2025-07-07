@@ -5,14 +5,13 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.ui.genome.GenomeDescriptor;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
 
-import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.broad.igv.prefs.Constants.BACKUP_GENOMES_SERVER_URL;
 import static org.broad.igv.prefs.Constants.GENOMES_SERVER_URL;
@@ -32,11 +31,11 @@ public class HostedGenomes {
     };
 
 
-    private static CopyOnWriteArrayList<GenomeDescriptor> records;
+    private static CopyOnWriteArrayList<GenomeListItem> records;
 
-    private static Map<String, GenomeDescriptor> hostedGenomesMap = null;
+    private static Map<String, GenomeListItem> hostedGenomesMap = null;
 
-    public static List<GenomeDescriptor> getRecords() {
+    public static List<GenomeListItem> getRecords() {
         if (records == null) {
             records = new CopyOnWriteArrayList<>(readRecords());
         }
@@ -44,19 +43,19 @@ public class HostedGenomes {
     }
 
 
-    public static GenomeDescriptor getGenomeTableRecord(String genomeId) {
+    public static GenomeListItem getGenomeListItem(String genomeId) {
         if (hostedGenomesMap == null) {
             hostedGenomesMap = new HashMap<>();
-            for (GenomeDescriptor record : getRecords()) {
+            for (GenomeListItem record : getRecords()) {
                 hostedGenomesMap.put(record.getId(), record);
             }
         }
         return hostedGenomesMap.get(genomeId);
     }
 
-private static List<GenomeDescriptor> readRecords() {
+private static List<GenomeListItem> readRecords() {
 
-    records = new ArrayList<>();
+    records = new CopyOnWriteArrayList<>();
 
     final IGVPreferences preferences = PreferencesManager.getPreferences();
     final String genomesServerURL = preferences.get(GENOMES_SERVER_URL);
@@ -154,7 +153,7 @@ private static boolean loadGenomeList(String url, String idColumn, List<String> 
                 String id = attributes.get(idColumn);
                 String displayableName = attributes.get("common name");
                 String path = attributes.get("url");
-                records.add(new GenomeDescriptor(displayableName, path, id, attributes));
+                records.add(new GenomeListItem(displayableName, path, id, attributes));
             }
         }
     }
