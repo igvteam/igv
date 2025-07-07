@@ -50,8 +50,7 @@ public class GenomeSelectionAction extends MenuAction {
             "common name",
             "scientific name",
             "assembly",
-            "accession",
-            "taxonId"
+            "accession"
     };
 
     IGV igv;
@@ -73,7 +72,7 @@ public class GenomeSelectionAction extends MenuAction {
 
         if (genomeSelectionDialog == null) {
             List<GenomeListItem> records = HostedGenomes.getRecords();
-            List<String> headers = Arrays.asList(defaultHeaders);
+            String [] headers = defaultHeaders;
             GenomeTableModel model = new GenomeTableModel(headers, records);
             genomeSelectionDialog = new GenomeSelectionDialog(IGV.getInstance().getMainFrame(), model);
             genomeSelectionDialog.setTitle("Genomes");

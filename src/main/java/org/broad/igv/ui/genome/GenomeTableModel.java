@@ -40,12 +40,12 @@ public class GenomeTableModel extends AbstractTableModel {
     private List<GenomeListItem> records;
     private final TableRowSorter<GenomeTableModel> sorter;
 
-    public GenomeTableModel(List<String> headings, List<GenomeListItem> records) {
+    public GenomeTableModel(String [] headers, List<GenomeListItem> records) {
 
         this.records = records;
 
         //tmp.add("path");
-        columnHeadings = headings.toArray(new String[0]);
+        columnHeadings = headers;
 
         sorter = new TableRowSorter<>(this);
 
