@@ -36,7 +36,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
@@ -946,17 +945,6 @@ public class IGVPreferences {
         remove(PROXY_TYPE);
         remove(PROXY_WHITELIST);
         HttpUtils.getInstance().updateProxySettings();
-    }
-
-    public static String generateGenomeIdString(Collection<GenomeListItem> genomeListItems) {
-        String genomeString = "";
-
-        for (GenomeListItem serverItem : genomeListItems) {
-            genomeString += serverItem.getId() + Globals.HISTORY_DELIMITER;
-        }
-
-        genomeString = genomeString.substring(0, genomeString.length() - 1);
-        return genomeString;
     }
 
     /**

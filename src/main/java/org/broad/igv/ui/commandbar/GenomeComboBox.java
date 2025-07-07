@@ -1,9 +1,10 @@
 package org.broad.igv.ui.commandbar;
 
-import org.broad.igv.logging.*;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.genome.GenomeDescriptor;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
@@ -13,12 +14,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Vector;
 
 /**
  * Created by jrobinso on 7/6/17.
  */
-public class GenomeComboBox extends JComboBox<GenomeListItem> {
+public class GenomeComboBox extends JComboBox<GenomeDescriptor> {
 
     private static Logger log = LogManager.getLogger(GenomeComboBox.class);
 
@@ -38,7 +42,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
         int c = this.getItemCount();
         for (int i = 0; i < c; i++) {
-            final GenomeListItem item = this.getItemAt(i);
+            final GenomeDescriptor item = this.getItemAt(i);
             if (curId.equals(item.getId())) {
                 setSelectedItem(item);
                 break;
@@ -52,7 +56,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
      * @return
      */
     private DefaultComboBoxModel buildModel() {
-        Collection<GenomeListItem> genomes;
+        Collection<GenomeDescriptor> genomes;
         try {
             genomes = GenomeListManager.getInstance().getGenomeItemMap().values();
         } catch (IOException e) {
@@ -61,43 +65,33 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             MessageUtils.showErrorMessage("Error reading genome list ", e);
         }
 
-        Vector<GenomeListItem> vector = new Vector<>(genomes);
-        vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
+        Vector<GenomeDescriptor> vector = new Vector<>(genomes);
+        vector.sort(Comparator.comparing(GenomeDescriptor::getDisplayableName));
         return new DefaultComboBoxModel(vector);
-    }
-
-    public boolean hasItem(Object item) {
-        int c = this.getItemCount();
-        for (int i = 0; i < c; i++) {
-            if (item.equals(this.getItemAt(i))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     class GenomeBoxActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
             Object selItem = getSelectedItem();
-            if (!(selItem instanceof GenomeListItem)) {
+            if (!(selItem instanceof GenomeDescriptor)) {
                 return;
             }
-            GenomeListItem genomeListItem = (GenomeListItem) selItem;
+            GenomeDescriptor GenomeTableRecord = (GenomeDescriptor) selItem;
 
             // If we haven't changed genomes do nothing
-            if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
+            if (GenomeTableRecord.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
                 return;
             }
 
             final Runnable runnable = () -> {
 
-                if (genomeListItem != null && genomeListItem.getPath() != null) {
+                if (GenomeTableRecord != null && GenomeTableRecord.getPath() != null) {
                     try {
-                        GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
+                        GenomeManager.getInstance().loadGenomeById(GenomeTableRecord.getId());
                     } catch (Exception e) {
                         log.error(e);
-                        MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
+                        MessageUtils.showErrorMessage("The genome '" + GenomeTableRecord.getDisplayableName() +
                                 "' could not be read.", e);
                     }
                 }

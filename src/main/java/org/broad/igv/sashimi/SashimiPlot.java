@@ -25,6 +25,7 @@
 
 package org.broad.igv.sashimi;
 
+import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.event.IGVEventObserver;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private final SashimiContentPane sashimiContentPane;
+    private final boolean darkMode;
     private List<SpliceJunctionTrack> spliceJunctionTracks;
 
     private ReferenceFrame referenceFrame;
@@ -92,10 +94,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     public SashimiPlot(ReferenceFrame iframe, Collection<AlignmentTrack> alignmentTracks, FeatureTrack geneTrack) {
 
-        // setContentPane(new SashimiContentPane());
+        this.darkMode = Globals.isDarkMode();
+
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         getContentPane().setLayout(new BorderLayout());
-        setBackground(Color.white);
+        setBackground(darkMode ? Color.black : Color.white);
 
         this.eventBus = new IGVEventBus();
         this.referenceFrame = new ReferenceFrame(iframe, eventBus);
@@ -113,7 +116,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
 
         JPanel sashimiPanel = new JPanel();
-        sashimiPanel.setBackground(Color.WHITE);
+        sashimiPanel.setBackground(darkMode ? Color.black : Color.white);
         BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
         sashimiPanel.setLayout(boxLayout);
 

@@ -43,6 +43,7 @@ import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -74,13 +75,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     // Static -- property is shared by all instances
     private static ShapeType shapeType = ShapeType.TEXT;
 
-
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
-    private Color color = ARC_COLOR_POS;
+    private Color color;
 
     //central horizontal line color
-    Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
+    private Color colorCenterline;
 
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
@@ -100,6 +100,14 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * between window openings, don't care.
      */
     private Map<Feature, Boolean> drawFeatureAbove = null;
+
+    public SashimiJunctionRenderer() {
+        this.darkMode = Globals.isDarkMode();
+        this.color = darkMode ? ColorUtilities.modifyAlpha(Color.RED, 140) : ARC_COLOR_POS;
+        this.colorCenterline = darkMode ?
+                ColorUtilities.modifyAlpha(Color.WHITE, 100) :
+                new Color(0, 0, 0, 100);
+    }
 
     /**
      * If there are multiple arcs with the same start/end positions (e.g. different strands)
@@ -279,7 +287,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             }
 
             //draw a central horizontal line
-            Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
+            Graphics2D g2D = context.getGraphic2DForColor(colorCenterline);
             g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
                     (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
 

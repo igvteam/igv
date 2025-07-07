@@ -156,7 +156,7 @@ public class SearchCommand implements Runnable {
         }
 
         for (String s : tokens) {
-            SearchResult result = parseToken(s);
+            SearchResult result = searchFeatures(s);
             if (result != null) {
                 results.add(result);
             }
@@ -312,8 +312,9 @@ public class SearchCommand implements Runnable {
      * @param token
      * @return searchResult
      */
-    private SearchResult parseToken(String token) {
+    private SearchResult searchFeatures(String token) {
 
+        Set<String> mainChromosomes = new HashSet<>(genome.getLongChromosomeNames());
 
         //Check if a full or partial locus string
         SearchResult result = calcChromoLocus(token);
@@ -325,9 +326,12 @@ public class SearchCommand implements Runnable {
         List<NamedFeature> matchingFeatures;
 
         // Check featureDB first -- this is cheap
-        matchingFeatures = genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false);
+        matchingFeatures = new ArrayList<>(genome.getFeatureDB().getFeaturesList(token.toUpperCase().trim(), 100, false)
+                .stream()
+                .filter(f -> f.getName().equalsIgnoreCase(token.trim()))
+                .toList());
 
-        // If no matches, check searchable tracks.  Break if we  a match
+        // If no matches, check searchable tracks.  Break if we find a match on a main chromosome to avoid searching all tracks.
         if (matchingFeatures == null || matchingFeatures.isEmpty()) {
             matchingFeatures = new ArrayList<>();
             List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
@@ -335,7 +339,10 @@ public class SearchCommand implements Runnable {
                 List<NamedFeature> matches = t.search(token);
                 if (matches != null && matches.size() > 0) {
                     matchingFeatures.addAll(matches);
-                    break;
+                    if (mainChromosomes.isEmpty() ||
+                            matches.stream().anyMatch(m -> mainChromosomes.contains(genome.getCanonicalChrName(m.getChr())))) {
+                        break;
+                    }
                 }
             }
         }
@@ -351,10 +358,10 @@ public class SearchCommand implements Runnable {
             matchingFeatures.sort((r1, r2) -> Integer.compare(r2.getEnd() - r2.getStart(), r1.getEnd() - r1.getStart()));
 
             // If the genome defines long chromosome names, prefer those
-            Set<String> lnames = new HashSet<>(genome.getLongChromosomeNames());
-            if (lnames.size() > 0) {
+            if (mainChromosomes.size() > 0) {
                 for (NamedFeature l : matchingFeatures) {
-                    if (lnames.contains(l.getChr())) {
+                    String chrName = genome.getCanonicalChrName(l.getChr());
+                    if (mainChromosomes.contains(chrName)) {
                         return new SearchResult(l);
                     }
                 }

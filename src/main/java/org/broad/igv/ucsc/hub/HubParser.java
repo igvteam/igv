@@ -3,6 +3,7 @@ package org.broad.igv.ucsc.hub;
 import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -235,7 +236,7 @@ public class HubParser {
     }
 
     private static String getDataURL(String url, String host, String baseURL) {
-        return url.startsWith("http://") || url.startsWith("https://") ? url :
+        return FileUtils.isRemote(url)  ? url :
                 url.startsWith("/") ? host + url : baseURL + url;
     }
 

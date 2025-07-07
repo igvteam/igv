@@ -30,6 +30,5 @@ public class HttpMappingsTest {
         mappedUrl = HttpMappings.mapURL(url);
         assertEquals("https://hgdownload.soe.ucsc.edu/goldenPath/mm9/database/refGene.txt.gz", mappedUrl);
 
-
     }
 }

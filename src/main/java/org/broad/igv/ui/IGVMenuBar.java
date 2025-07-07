@@ -105,16 +105,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
-    /**
-     * We store this as a field because we alter it if
-     * we can't access genome server list
-     */
-    private JMenuItem loadGenomeFromServerMenuItem;
 
     private JMenuItem reloadSessionItem;
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu tracksMenu;
+    private JMenu hubsMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
         if (instance != null) {
@@ -150,17 +146,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         }
     }
 
-
-    public void notifyGenomeServerReachable(boolean reachable) {
-        if (loadGenomeFromServerMenuItem != null) {
-            UIUtilities.invokeOnEventThread(() -> {
-                loadGenomeFromServerMenuItem.setEnabled(reachable);
-                String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
-                loadGenomeFromServerMenuItem.setToolTipText(tooltip);
-            });
-        }
-    }
-
     public void showAboutDialog() {
         (new AboutDialog(igv.getMainFrame(), true)).setVisible(true);
     }
@@ -174,7 +159,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(createGenomesMenu());
         tracksMenu = new JMenu("Tracks");
         menus.add(tracksMenu);
-        menus.add(createHubsMenu());
+        hubsMenu = new JMenu("Hubs");
+        menus.add(hubsMenu);
         menus.add(createSessionsMenu());
         menus.add(createViewMenu());
         menus.add(createRegionsMenu());
@@ -183,6 +169,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(extrasMenu);
 
         updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+        updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
 
         // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
         // by loading a protected Google resource
@@ -318,10 +305,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         MenuAction menuAction;
 
-        menu.add(new JSeparator());
-
-        // Load menu items
-
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
@@ -369,22 +352,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return menu;
     }
 
-
-    private JMenuItem createTrackHubItem(HubDescriptor trackHub, String id) {
-        MenuAction menuAction;
-        menuAction = new SelectHubTracksAction("Hub: " + trackHub.getShortLabel(), trackHub, id);
-        menuAction.setToolTipText(trackHub.getLongLabel());
-        JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        selectHubTracksItem.setToolTipText(trackHub.getLongLabel());
-        return selectHubTracksItem;
-    }
-
     private JMenu createGenomesMenu() {
 
         JMenu menu = new JMenu("Genomes");
 
         // Hosted & Genark
-        MenuAction genArkAction = new GenomeSelectionAction("Load Genome ...", 0, igv);
+        MenuAction genArkAction = new GenomeSelectionAction("Load Genome from Host ...", 0, igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
 
         // Load genome json file
@@ -449,7 +422,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private void updateTracksMenu(Genome genome) {
 
 
-        MenuAction menuAction = null;
+        MenuAction menuAction;
         tracksMenu.removeAll();
 
         if (genome == null) {
@@ -464,28 +437,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKS_FROM_URL, KeyEvent.VK_U, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        tracksMenu.add(new JSeparator());
-
-        // Track hubs
-        if (genome.getTrackHubs().size() > 0) {
-            for (Hub trackHub : genome.getTrackHubs()) {
-                tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
-            }
-        }
-
-        // Selected UCSC public hubs.  Selections are stored in preferences.
-        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
-        if (selectedHubs != null && selectedHubs.size() > 0) {
-            for (HubDescriptor hub : selectedHubs) {
-                tracksMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
-            }
-        }
-
-        if(genome.getTrackHubs().size() > 0 || selectedHubs != null && selectedHubs.size() > 0) {
-            tracksMenu.add(new JSeparator());
-        }
-
 
         // TODO -- not sure what this does or where it belongs in the new menu structure
 //        recentFilesMenu = new RecentUrlsMenu();
@@ -502,10 +453,19 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             tracksMenu.add(new JSeparator());
         }
 
+        // Track hubs
+        if (genome.getTrackHubs().size() > 0) {
+            tracksMenu.addSeparator();
+            for (Hub trackHub : genome.getTrackHubs()) {
+                tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
+            }
+        }
 
         // ENCODE items.  These will be hidden / shown depending on genome chosen
         String ucscId = genome.getUCSCId();
         if (EncodeTrackChooserFactory.genomeSupportedUCSC(ucscId) || EncodeTrackChooserFactory.genomeSupported(ucscId)) {
+
+            tracksMenu.addSeparator();
 
             // Post 2012 ENCODE menu
             if (EncodeTrackChooserFactory.genomeSupported(ucscId)) {
@@ -528,10 +488,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                         new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
                 tracksMenu.add(encodeUCSCMenuItem);
             }
-
-            tracksMenu.add(new JSeparator());
         }
 
+        tracksMenu.addSeparator();
 
         // Sort Tracks
         menuAction = new SortTracksMenuAction("Sort Tracks by Attribute...", KeyEvent.VK_S, IGV.getInstance());
@@ -578,13 +537,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuAction.setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
         // Set track height
         menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
     }
 
     private JMenu createViewMenu() {
@@ -769,9 +725,13 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return viewMenu;
     }
 
-    private JMenu createHubsMenu() {
+    private void updateHubsMenu(Genome genome) {
 
-        JMenu hubsMenu = new JMenu("Hubs");
+        if (genome == null) {
+            return;
+        }
+
+        hubsMenu.removeAll();
 
         // Add UCSC public hubs item if available
         List<HubDescriptor> hubs = HubRegistry.getAllHubs();
@@ -784,6 +744,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
                     HubRegistry.setSelectedHubs(selectedHubs);
                     updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
                 }
             });
             hubsMenu.add(addHubItem);
@@ -794,7 +755,15 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        return hubsMenu;
+        // Selected UCSC public and user loaded hubs.  Selections are stored in preferences.
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
+        if (selectedHubs != null && selectedHubs.size() > 0) {
+            hubsMenu.addSeparator();
+            for (HubDescriptor hub : selectedHubs) {
+                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
+            }
+        }
+
     }
 
     private JMenu createHelpMenu() {
@@ -1212,21 +1181,22 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         if (genome != null) {
             UIUtilities.invokeOnEventThread(() -> {
                 updateTracksMenu(genome);
+                updateHubsMenu(genome);
                 editAnnotationsItem.setEnabled(genome.getGenomeHub() != null);
             });
         }
     }
 
     public void enableReloadSession() {
-        if(this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(true);
+        if (this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(true);
     }
 
     public void showRecentFilesMenu() {
-        if(this.recentFilesMenu != null) this.recentFilesMenu.setVisible(true);
+        if (this.recentFilesMenu != null) this.recentFilesMenu.setVisible(true);
     }
 
     public void disableReloadSession() {
-        if(this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(false);
+        if (this.reloadSessionItem != null) this.reloadSessionItem.setEnabled(false);
     }
 
     public static JMenuItem createBlatMenuItem() {
@@ -1289,10 +1259,25 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     public void disableTracksMenu() {
         tracksMenu.setEnabled(false);
+        hubsMenu.setEnabled(false);
     }
 
     public void enableTracksMenu() {
-        UIUtilities.invokeOnEventThread(() -> tracksMenu.setEnabled(true));
+        UIUtilities.invokeOnEventThread(() -> {
+            tracksMenu.setEnabled(true);
+            hubsMenu.setEnabled(true);
+        });
     }
+
+
+    private JMenuItem createTrackHubItem(HubDescriptor trackHub, String id) {
+        MenuAction menuAction;
+        menuAction = new SelectHubTracksAction(/*"Hub: " + */trackHub.getShortLabel() + "... ", trackHub, id);
+        menuAction.setToolTipText(trackHub.getLongLabel());
+        JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        selectHubTracksItem.setToolTipText(trackHub.getLongLabel());
+        return selectHubTracksItem;
+    }
+
 }
 

@@ -14,8 +14,6 @@ public class HubRegistry {
 
     public static final String UCSC_REST_PUBLICHUBS = "https://api.genome.ucsc.edu/list/publicHubs";
     public static final String BACKUP_HUBS_URL = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/ucsc/publicHubs.json";
-    public static final String UCSC_GENOMES = "https://api.genome.ucsc.edu/list/ucscGenomes";
-    public static final String UCSC_GENOMES_BACKUP = "https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/ucsc/ucscGenomes.json";
 
 
     private static Logger log = LogManager.getLogger(HubRegistry.class);
@@ -178,18 +176,16 @@ public class HubRegistry {
         Gson gson = new Gson();
         try {
             URL url = new URL(apiUrl);
-
             String jsonString = HttpUtils.getInstance().getContentsAsJSON(url);
             jsonResponse = gson.fromJson(jsonString, Map.class);
 
         } catch (Exception e) {
-            // Try backup URL
+            log.error("Failed to public hub list from " + apiUrl, e);
             try {
-                log.error("Failed to load Hub JSON.  Trying backup URL", e);
                 String jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(BACKUP_HUBS_URL));
                 jsonResponse = gson.fromJson(jsonString, Map.class);
             } catch (IOException ex) {
-                log.error("Failed to load Hub JSON", e);
+                log.error("Failed to load public hub list from " + BACKUP_HUBS_URL, e);
             }
         }
 
@@ -206,33 +202,6 @@ public class HubRegistry {
         }
 
         return hubDescriptors;
-    }
-
-
-    public static Set<String> getUcscGenomeIDs() {
-        if (ucscGenomeIDs == null) {
-            try {
-                String jsonString = getContentsAsJSON(UCSC_GENOMES, UCSC_GENOMES_BACKUP);
-                Gson gson = new Gson();
-                Map<String, Object> jsonResponse = gson.fromJson(jsonString, Map.class);
-                Map<String, Object> hubGenomes = (Map<String, Object>) jsonResponse.get("ucscGenomes");
-                ucscGenomeIDs = hubGenomes.keySet();
-            } catch (IOException e) {
-                log.error("Error loading UCSC genome IDs", e);
-            }
-        }
-        return ucscGenomeIDs;
-    }
-
-    private static String getContentsAsJSON(String url, String backupURL) throws IOException {
-        String jsonString = null;
-        try {
-            jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(url));
-        } catch (IOException e) {
-            log.error("Failed to load JSON from " + url + ". Trying backup URL");
-            jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(backupURL));
-        }
-        return jsonString;
     }
 
 }

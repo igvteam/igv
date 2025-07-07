@@ -29,14 +29,15 @@
 
 package org.broad.igv.ui.commandbar;
 
-import org.broad.igv.feature.genome.DotGenomeUtils;
-import org.broad.igv.logging.*;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.DotGenomeUtils;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.genome.GenomeDescriptor;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
@@ -57,7 +58,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
     public static final String LOCAL_SEQUENCE_CHAR = "\u002A";
     private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 
-    private List<GenomeListItem> allListItems;
+    private List<GenomeDescriptor> allListItems;
 
     private boolean haveLocalSequence = false;
 
@@ -72,9 +73,9 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
     private void initData() {
 
-        allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeListItems());
+        allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeTableRecords());
 
-        for (GenomeListItem item : allListItems) {
+        for (GenomeDescriptor item : allListItems) {
             if (DotGenomeUtils.getLocalFasta(item.getId()) != null) {
                 haveLocalSequence = true;
                 break;
@@ -88,10 +89,10 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
     private void buildList() {
         String currentId = GenomeManager.getInstance().getGenomeId();
-        List<GenomeListItem> filteredList = allListItems.stream()
+        List<GenomeDescriptor> filteredList = allListItems.stream()
                 .filter((item) -> !item.getId().equals(currentId))
                 .collect(Collectors.toList());
-        genomeList.setListData(filteredList.toArray(new GenomeListItem[0]));
+        genomeList.setListData(filteredList.toArray(new GenomeDescriptor[0]));
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -101,7 +102,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
     private void saveButtonActionPerformed(ActionEvent event) {
 
         Runnable runnable = () -> {
-            List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
+            List<GenomeDescriptor> selectedValuesList = genomeList.getSelectedValuesList();
             if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
 
                 // Remove from the dropdown list
@@ -117,7 +118,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
                 // If the last genome selected (DEFAULT_GENOME) was removed reset the key
                 String lastGenomeKey = PreferencesManager.getPreferences().get(Constants.DEFAULT_GENOME);
-                for (GenomeListItem item : selectedValuesList) {
+                for (GenomeDescriptor item : selectedValuesList) {
                     if (lastGenomeKey.equals(item.getId())) {
                         PreferencesManager.getPreferences().remove(Constants.DEFAULT_GENOME);
                         break;
@@ -136,7 +137,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
 
     private void removeSelected() {
-        List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
+        List<GenomeDescriptor> selectedValuesList = genomeList.getSelectedValuesList();
         allListItems.removeAll(selectedValuesList);
         buildList();
     }
@@ -158,7 +159,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
             JLabel comp = new JLabel(value.toString());
 
-            GenomeListItem item = (GenomeListItem) value;
+            GenomeDescriptor item = (GenomeDescriptor) value;
             String displayableName = item.getDisplayableName();
 
             comp.setToolTipText(item.getPath());
@@ -301,7 +302,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
     private JTextArea label1;
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
-    private JList<GenomeListItem> genomeList;
+    private JList<GenomeDescriptor> genomeList;
     private JLabel label2;
     private JPanel panel1;
     private JPanel addRemBar;

@@ -9,8 +9,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.broad.igv.logging.*;
+
 public class HttpMappings {
 
+    private static Logger log = LogManager.getLogger(HttpMappings.class);
     private static Map<String, String> mappedURLCache = new HashMap<>();
 
     static {
@@ -35,7 +38,7 @@ public class HttpMappings {
      */
     public static String mapURL(String urlString) throws MalformedURLException {
 
-        // Check explicit mappings first
+        // Check cache to avoid unnecessary lookups
         if (mappedURLCache.containsKey(urlString)) {
             return mappedURLCache.get(urlString);
         }
@@ -55,26 +58,25 @@ public class HttpMappings {
     private static void loadMappings() {
 
         try {
-            URL fileUrl = new URL("https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/url_mappings.tsv"); // Replace with the actual URL of the file
-            InputStream inputStream = HttpUtils.getInstance().openConnectionStream(fileUrl);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("#") || line.trim().isEmpty()) continue; // Skip comment lines
-                String[] columns = line.split("\t");
-                if (columns.length == 2) {
-                    String key = columns[0].trim();
-                    // For Amazon S3 URLs use the items path
-                    if (key.startsWith("s3://") || key.contains("amazonaws.com")) {
-                        key = getAmazonKey(key);
+            URL fileUrl = new URL("https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/url_mappings.tsv");
+            try (InputStream inputStream = fileUrl.openStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("#") || line.trim().isEmpty()) continue; // Skip comment lines
+                    String[] columns = line.split("\t");
+                    if (columns.length == 2) {
+                        String key = columns[0].trim();
+                        // For Amazon S3 URLs use the item's path.  Important because S3 urls can be in global or regional form.
+                        if (key.startsWith("s3://") || key.contains("amazonaws.com")) {
+                            key = getAmazonKey(key);
+                        }
+                        urlMappings.put(key, columns[1].trim());
                     }
-                    urlMappings.put(key, columns[1].trim());
                 }
             }
-            reader.close();
         } catch (IOException e) {
-            System.err.println("Error loading mappings from URL: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error loading URL mappings", e);
         }
     }
 

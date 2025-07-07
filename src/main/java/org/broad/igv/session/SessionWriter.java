@@ -26,7 +26,6 @@
 package org.broad.igv.session;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -38,19 +37,16 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;

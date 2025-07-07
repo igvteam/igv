@@ -39,7 +39,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
@@ -56,6 +55,7 @@ import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeDescriptor;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.ResourceLocator;
@@ -74,7 +74,6 @@ import java.util.stream.Stream;
  */
 public class GenomeManager {
 
-    public static final String UPDATE_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.";
     public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  " +
             "You can change these selections later using the 'Genomes > Select Genome Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
@@ -87,7 +86,7 @@ public class GenomeManager {
 
 
     /**
-     * Map from genomeID -> GenomeListItem
+     * Map from genomeID -> GenomeTableRecord
      * ID comparison will be case insensitive
      */
 
@@ -137,7 +136,7 @@ public class GenomeManager {
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             genomePath = genomeId;
         } else {
-            GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
+            GenomeDescriptor item = getGenomeTableRecord(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
                 return false;
@@ -191,8 +190,8 @@ public class GenomeManager {
             }
 
             // Add an entry to the pulldown
-            GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
-            GenomeListManager.getInstance().addGenomeItem(genomeListItem);
+            GenomeDescriptor GenomeTableRecord = new GenomeDescriptor(newGenome.getDisplayName(), genomePath, newGenome.getId());
+            GenomeListManager.getInstance().addGenomeItem(GenomeTableRecord);
 
             setCurrentGenome(newGenome);
 
@@ -311,7 +310,8 @@ public class GenomeManager {
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
                         trackConfigs.stream().map(t -> t.url).toList();
 
-                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, UPDATE_ANNOTATIONS_MESSAGE);
+                String message = "Select defaul tannoations for " + config.getName();
+                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, message);
                 if (selectedConfigs == null) {
                     return;
                 }
@@ -385,9 +385,9 @@ public class GenomeManager {
      *
      * @param removedValuesList
      */
-    public void deleteDownloadedGenomes(List<GenomeListItem> removedValuesList) throws IOException {
+    public void deleteDownloadedGenomes(List<GenomeDescriptor> removedValuesList) throws IOException {
 
-        for (GenomeListItem item : removedValuesList) {
+        for (GenomeDescriptor item : removedValuesList) {
 
             String loc = item.getPath();
             File genomeFile = new File(loc);
@@ -428,6 +428,25 @@ public class GenomeManager {
                 }
             }
         }
+    }
+
+
+    /**
+     * Searches through currently loaded GenomeTableRecords and returns
+     * that with a matching ID. If not found, searches server and
+     * user defined lists
+     *
+     * @param genomeId
+     * @return
+     */
+    public GenomeDescriptor getGenomeTableRecord(String genomeId) {
+
+        GenomeDescriptor matchingItem = GenomeListManager.getInstance().getGenomeTableRecord(genomeId);
+        if (matchingItem == null) {
+            // If genome archive was not found, search hosted genomes
+            matchingItem = HostedGenomes.getGenomeTableRecord(genomeId);
+        }
+        return matchingItem;
     }
 
     // Setter provided for unit tests

@@ -46,6 +46,7 @@ import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
@@ -66,7 +67,7 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class RulerPanel extends JPanel {
 
-    public static final Color INSERTION_MARKER_ZOOMEDOUT = new Color(64, 64, 64, 50);
+
     private static Logger log = LogManager.getLogger(RulerPanel.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
@@ -84,8 +85,10 @@ public class RulerPanel extends JPanel {
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
 
-    private Color expandedColor = Color.BLUE;
-    private Color collapsedColor = Color.BLACK;
+    private Color expandedInsertionColor = Color.BLUE;
+    private Color collapsedInsertionColor = Color.BLACK;
+    private Color zoomedoutInsertionColor =   ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
+
 
     boolean dragging = false;
     int dragStart;
@@ -113,8 +116,10 @@ public class RulerPanel extends JPanel {
 
         if(darkMode) {
             setBackground(UIManager.getColor("Panel.background"));
-            expandedColor = Color.CYAN;
-            collapsedColor = Color.WHITE;
+
+            expandedInsertionColor = Color.CYAN;
+            collapsedInsertionColor = Color.WHITE;
+
         }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
@@ -335,7 +340,9 @@ public class RulerPanel extends JPanel {
             Polygon p;
             Color c;
             if (expanded != null && insertionMarker.position == expanded.position) {
-                c = expandedColor;
+
+                c = expandedInsertionColor;
+
                 x0 = frame.getScreenPosition(insertionMarker.position);
                 x1 = (int) ((insertionMarker.position + insertionMarker.size - frame.origin) / frame.getScale());
                 p = new Polygon(
@@ -358,7 +365,9 @@ public class RulerPanel extends JPanel {
                 double expandedInsertionWidth = insertionMarker.size / frame.getScale();
 
                 if (expandedInsertionWidth > 5) {
-                    c = collapsedColor;
+
+                    c = collapsedInsertionColor;
+
                     String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
                     Rectangle clickArea = p.getBounds();
                     clickArea.y -= 2;
@@ -368,7 +377,7 @@ public class RulerPanel extends JPanel {
                         IGV.getInstance().repaint();
                     }));
                 } else {
-                    c = INSERTION_MARKER_ZOOMEDOUT;
+                    c = zoomedoutInsertionColor;
                 }
             }
 

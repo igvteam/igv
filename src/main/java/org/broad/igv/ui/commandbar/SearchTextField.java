@@ -2,7 +2,6 @@ package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
 import htsjdk.tribble.NamedFeature;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
