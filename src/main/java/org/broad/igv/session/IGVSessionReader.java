@@ -33,7 +33,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
@@ -53,7 +53,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
@@ -228,7 +227,7 @@ public class IGVSessionReader implements SessionReader {
             GenomeManager.getInstance().restoreGenomeTracks(GenomeManager.getInstance().getCurrentGenome());
         } else {
             try {
-                GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(genomeId);
+                GenomeDescriptor item = GenomeManager.getInstance().getGenomeTableRecord(genomeId);
                 genomePath = (item != null) ? item.getPath() : getAbsolutePath(genomeId, sessionPath);
                 GenomeManager.getInstance().loadGenome(genomePath);
             } catch (IOException e) {

@@ -29,7 +29,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,10 +37,10 @@ import java.util.List;
 public class GenomeTableModel extends AbstractTableModel {
 
     private String[] columnHeadings;
-    private List<GenomeTableRecord> records;
+    private List<GenomeDescriptor> records;
     private final TableRowSorter<GenomeTableModel> sorter;
 
-    public GenomeTableModel(List<String> headings, List<GenomeTableRecord> records) {
+    public GenomeTableModel(List<String> headings, List<GenomeDescriptor> records) {
 
         this.records = records;
 
@@ -85,13 +84,13 @@ public class GenomeTableModel extends AbstractTableModel {
             return null;
         }
 
-        GenomeTableRecord record = records.get(rowIndex);
+        GenomeDescriptor record = records.get(rowIndex);
             String att = columnHeadings[columnIndex];
             return record.getAttributeValue(att);
 
     }
 
-    public List<GenomeTableRecord> getRecords() {
+    public List<GenomeDescriptor> getRecords() {
         return records;
     }
 }
