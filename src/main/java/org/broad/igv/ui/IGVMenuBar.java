@@ -105,11 +105,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
-    /**
-     * We store this as a field because we alter it if
-     * we can't access genome server list
-     */
-    private JMenuItem loadGenomeFromServerMenuItem;
 
     private JMenuItem reloadSessionItem;
     private JMenuItem recentFilesMenu;
@@ -148,17 +143,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         if (Globals.IS_MAC) {
             DesktopIntegration.setAboutHandler(this);
             DesktopIntegration.setQuitHandler();
-        }
-    }
-
-
-    public void notifyGenomeServerReachable(boolean reachable) {
-        if (loadGenomeFromServerMenuItem != null) {
-            UIUtilities.invokeOnEventThread(() -> {
-                loadGenomeFromServerMenuItem.setEnabled(reachable);
-                String tooltip = reachable ? LOAD_GENOME_SERVER_TOOLTIP : CANNOT_LOAD_GENOME_SERVER_TOOLTIP;
-                loadGenomeFromServerMenuItem.setToolTipText(tooltip);
-            });
         }
     }
 
@@ -321,10 +305,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         MenuAction menuAction;
 
-        menu.add(new JSeparator());
-
-        // Load menu items
-
         // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
@@ -377,7 +357,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu menu = new JMenu("Genomes");
 
         // Hosted & Genark
-        MenuAction genArkAction = new GenomeSelectionAction("Load Genome ...", 0, igv);
+        MenuAction genArkAction = new GenomeSelectionAction("Load Genome from Host ...", 0, igv);
         menu.add(MenuAndToolbarUtils.createMenuItem(genArkAction));
 
         // Load genome json file
@@ -442,7 +422,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private void updateTracksMenu(Genome genome) {
 
 
-        MenuAction menuAction = null;
+        MenuAction menuAction;
         tracksMenu.removeAll();
 
         if (genome == null) {
@@ -765,7 +745,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                     HubRegistry.setSelectedHubs(selectedHubs);
                     updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
                     updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
-                    hubsMenu.setPopupMenuVisible(true);
                 }
             });
             hubsMenu.add(addHubItem);
@@ -1293,7 +1272,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private JMenuItem createTrackHubItem(HubDescriptor trackHub, String id) {
         MenuAction menuAction;
-        menuAction = new SelectHubTracksAction(/*"Hub: " + */trackHub.getShortLabel(), trackHub, id);
+        menuAction = new SelectHubTracksAction(/*"Hub: " + */trackHub.getShortLabel() + "... ", trackHub, id);
         menuAction.setToolTipText(trackHub.getLongLabel());
         JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         selectHubTracksItem.setToolTipText(trackHub.getLongLabel());

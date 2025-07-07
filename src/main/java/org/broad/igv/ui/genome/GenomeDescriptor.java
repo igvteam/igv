@@ -23,69 +23,67 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.feature.genome;
+package org.broad.igv.ui.genome;
 
-import java.util.Objects;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * A container for specific genome information which can be used to
- * manage loaded genomes.
+ * @author jrobinso
+ *         Date: 10/31/13
+ *         Time: 10:11 PM
  */
-public class GenomeListItem {
+public class GenomeDescriptor {
 
-    private String displayableName;
-    private String path;
-    private String id;
+    String id;
+    String path;
+    String displayableName;
 
+    Map<String, String> attributes;
+
+    public GenomeDescriptor(String displayableName, String path, String id, Map<String, String> attributes) {
+        this.id = id;
+        this.path = path;
+        this.displayableName = displayableName;
+        this.attributes = attributes;
+    }
 
     /**
+     * Alternate constructor for legacy genome list format.
+     *
      * @param displayableName The name that can be shown to a user.
      * @param path            The location of the genome archive, can be a file path or URL
      * @param id              The id of the genome.
      */
-    public GenomeListItem(String displayableName, String path, String id) {
-        this.displayableName = displayableName;
-        this.path = path;
+    public GenomeDescriptor(String displayableName, String path, String id) {
         this.id = id;
+        this.path = path;
+        this.displayableName = displayableName;
+        attributes = new HashMap<>();
+        attributes.put("common name", displayableName);
+        attributes.put("url", path);
+        attributes.put("assembly", id);
     }
 
-    public static GenomeListItem fromString(String str) {
-        String[] tokens = str.split("\t");
-        GenomeListItem item = new GenomeListItem(tokens[1], tokens[2], tokens[0]);
-        return item;
+    public String getAttributeValue(String name) {
+        return attributes.get(name);
     }
 
-    public String getDisplayableName() {
-        return displayableName;
-    }
 
     public String getId() {
         return id;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public String getPath() {
         return path;
     }
 
-    @Override
+    public String getDisplayableName() {
+        return displayableName;
+    }
+
     public String toString() {
-        return getDisplayableName();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GenomeListItem item = (GenomeListItem) o;
-        return Objects.equals(displayableName, item.displayableName) && Objects.equals(path, item.path) && Objects.equals(id, item.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(displayableName, path, id);
+        return displayableName;
     }
 }

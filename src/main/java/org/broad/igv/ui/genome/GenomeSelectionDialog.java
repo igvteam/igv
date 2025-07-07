@@ -34,7 +34,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.feature.genome.GenomeDownloadUtils;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.feature.genome.load.HubGenomeLoader;
@@ -82,17 +81,17 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     ButtonGroup downloadAnnotationsGroup;
     private JRadioButton downloadAnnotationsRB;
     private JRadioButton remoteAnnotationsRB;
-    private List<GenomeListItem> allListItems;
+    private List<GenomeDescriptor> allListItems;
     private DefaultListModel genomeListModel;
 
     private GenomeTableModel model;
     private boolean canceled;
 
-    public GenomeSelectionDialog(Frame owner, GenomeTableModel model, boolean includeDownloadButtons) {
+    public GenomeSelectionDialog(Frame owner, GenomeTableModel model) {
         super(owner);
         this.model = model;
         setModal(true);
-        initComponents(includeDownloadButtons);
+        initComponents();
         init(model);
     }
 
@@ -149,7 +148,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         return canceled;
     }
 
-    private GenomeTableRecord getSelectedRecord() {
+    private GenomeDescriptor getSelectedRecord() {
         int idx = table.getSelectedRow();
         if (idx < 0) {
             return null;
@@ -159,7 +158,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         }
     }
 
-    private void initComponents(boolean includeDownloadButtons) {
+    private void initComponents() {
 
         //======== this ========
         setModal(true);
@@ -245,11 +244,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
         downloadAnnotationsPanel.add(remoteAnnotationsRB);
         p1.add(downloadAnnotationsPanel);
         p1.setBackground(Color.RED);
-
-        if (includeDownloadButtons) {
-            contentPanel.add(p1);
-        }
-
+        contentPanel.add(p1);
 
         outerPanel.add(contentPanel, BorderLayout.CENTER);
 
@@ -291,7 +286,7 @@ public class GenomeSelectionDialog extends org.broad.igv.ui.IGVDialog {
     private void loadButtonActionPerformed(ActionEvent evt) {
         canceled = false;
         try {
-            GenomeTableRecord rec = getSelectedRecord();
+            GenomeDescriptor rec = getSelectedRecord();
 
             if (rec != null) {
 
