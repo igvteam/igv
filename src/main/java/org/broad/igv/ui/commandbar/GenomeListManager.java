@@ -88,23 +88,23 @@ public class GenomeListManager {
     /**
      * Add an item to the selectable genomes map and record in preferences.
      *
-     * @param GenomeTableRecord
+     * @param genomeDescriptor
      */
-    public void addGenomeItem(GenomeDescriptor GenomeTableRecord) {
+    public void addGenomeItem(GenomeDescriptor genomeDescriptor) {
 
-        if (genomeItemMap.values().stream().anyMatch(item -> GenomeTableRecord.equals(item))) {
+        if (genomeItemMap.values().stream().anyMatch(item -> genomeDescriptor.equals(item))) {
             return;
         }
 
-        genomeItemMap.put(GenomeTableRecord.getId(), GenomeTableRecord);
+        genomeItemMap.put(genomeDescriptor.getId(), genomeDescriptor);
 
-        if (FileUtils.isRemote(GenomeTableRecord.getPath()) ||
+        if (FileUtils.isRemote(genomeDescriptor.getPath()) ||
                 !DirectoryManager.getGenomeCacheDirectory().
-                        equals(new File(GenomeTableRecord.getPath()).getParentFile())) {
+                        equals(new File(genomeDescriptor.getPath()).getParentFile())) {
             if (remoteGenomesMap == null) {
                 remoteGenomesMap = new HashMap<>();
             }
-            remoteGenomesMap.put(GenomeTableRecord.getId(), GenomeTableRecord);
+            remoteGenomesMap.put(genomeDescriptor.getId(), genomeDescriptor);
             exportRemoteGenomesList();
         }
 
