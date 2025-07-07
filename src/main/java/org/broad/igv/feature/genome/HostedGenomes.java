@@ -32,13 +32,13 @@ public class HostedGenomes {
     };
 
 
-    private static List<GenomeDescriptor> records;
+    private static CopyOnWriteArrayList<GenomeDescriptor> records;
 
     private static Map<String, GenomeDescriptor> hostedGenomesMap = null;
 
     public static List<GenomeDescriptor> getRecords() {
         if (records == null) {
-            records = readRecords();
+            records = new CopyOnWriteArrayList<>(readRecords());
         }
         return records;
     }
