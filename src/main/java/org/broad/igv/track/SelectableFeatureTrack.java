@@ -46,11 +46,12 @@ public class SelectableFeatureTrack extends FeatureTrack {
     protected Set<IExon> selectedExons = new HashSet<IExon>();
 
     public SelectableFeatureTrack() {
+        this.renderer = new SelectableFeatureRenderer();
     }
 
     public SelectableFeatureTrack(FeatureTrack geneTrack) {
         super(geneTrack);
-        this.setRenderer(new SelectableFeatureRenderer());
+        this.renderer = new SelectableFeatureRenderer();
     }
 
     @Override
