@@ -1311,14 +1311,15 @@ public class IGV implements IGVEventObserver {
         }
 
         ResourceLocator locator = track.getResourceLocator();
-        final String format = locator.getFormat();
-        if (locator.getPanelName() != null) {
+        if(locator == null) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        } else if (locator.getPanelName() != null) {
             return getTrackPanel(locator.getPanelName());
-        } else if ("alist".equals(format)) {
+        } else if ("alist".equals(locator.getFormat())) {
             return getVcfBamPanel();
         } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(format)) {
+        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else if (track instanceof VariantTrack && ((VariantTrack) track).getAllSamples().size() > 10) {
