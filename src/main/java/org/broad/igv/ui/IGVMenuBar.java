@@ -161,7 +161,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(tracksMenu);
         hubsMenu = new JMenu("Hubs");
         menus.add(hubsMenu);
-        menus.add(createSessionsMenu());
+        //menus.add(createSessionsMenu());
         menus.add(createViewMenu());
         menus.add(createRegionsMenu());
         menus.add(createToolsMenu());
@@ -255,6 +255,50 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         final JMenu menu = new JMenu("File");
 
         MenuAction menuAction;
+
+        // Session menu items
+        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
+        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
+        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
+        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
+        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        menu.add(saveSessionItem);
+
+        menu.add(new JSeparator());
+
+        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
+        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        reloadSessionItem.setEnabled(false);
+        menu.add(reloadSessionItem);
+
+        menu.add(new JSeparator());
+
+        autosaveMenu = new AutosaveMenu();
+        menu.add(autosaveMenu);
+
+        JSeparator recentSessionsSep = new JSeparator();
+        recentSessionsSep.setVisible(false);
+        menu.add(recentSessionsSep);
+        menu.add(new JSeparator());
+
+        //Add dynamic list of recent sessions
+        menu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
+                menu,
+                recentSessionsSep,
+                IGV.getInstance().getRecentSessionList(),
+                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
+        );
 
         // ***** Snapshots
         // Snapshot Application
