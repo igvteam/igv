@@ -178,13 +178,13 @@ public class EncodeTrackChooserFactory {
             String url = null;
             switch (type) {
                 case SIGNALS_CHIP:
-                    url = root + "signals.chip.txt";
+                    url = root + "signals.chip.txt.gz";
                     break;
                 case SIGNALS_OTHER:
-                    url = root + "signals.other.txt";
+                    url = root + "signals.other.txt.gz";
                     break;
                 case OTHER:
-                    url = root + "other.txt";
+                    url = root + "other.txt.gz";
                     break;
             }
             if (url == null) {
