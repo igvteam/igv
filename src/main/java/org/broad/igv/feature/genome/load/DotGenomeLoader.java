@@ -65,7 +65,6 @@ public class DotGenomeLoader extends GenomeLoader {
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
                 geneFeatureTrack.setTrackType(TrackType.GENE);
-                geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {
                     geneFeatureTrack.setProperties(parser.getTrackProperties());

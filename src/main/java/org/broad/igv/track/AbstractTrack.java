@@ -72,7 +72,7 @@ public abstract class AbstractTrack implements Track {
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     protected final boolean darkMode;
 
-    Color DEFAULT_COLOR;
+    private Color defaultColor;
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
@@ -119,7 +119,7 @@ public abstract class AbstractTrack implements Track {
 
     public AbstractTrack() {
         this.darkMode = Globals.isDarkMode();
-        DEFAULT_COLOR = darkMode ? Color.CYAN : Color.blue.darker();
+        defaultColor = darkMode ? Color.CYAN : Color.blue.darker();
     }
 
     public AbstractTrack(
@@ -277,7 +277,7 @@ public abstract class AbstractTrack implements Track {
 
 
     public Color getColor() {
-        return posColor == null ? DEFAULT_COLOR : posColor;
+        return posColor == null ? defaultColor : posColor;
     }
 
     public Color getExplicitColor() {

@@ -58,6 +58,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 import static org.broad.igv.prefs.Constants.SAM_ALLELE_THRESHOLD;
 import static org.broad.igv.prefs.Constants.SAM_CLIPPING_THRESHOLD;
@@ -134,7 +135,7 @@ public class AlignmentRenderer {
     private static ColorTable zmwColors;
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
-    public static HashMap<Character, Color> nucleotideColors;
+    public static NucleotideColors nucleotideColors;
 
     final private static ColorByTagValueList colorByTagValueList = new ColorByTagValueList();
     final private static FlowIndelRendering flowIndelRendering = new FlowIndelRendering();
@@ -238,29 +239,7 @@ public class AlignmentRenderer {
     }
 
     private static void setNucleotideColors() {
-
-        IGVPreferences prefs = PreferencesManager.getPreferences();
-
-        nucleotideColors = new HashMap<>();
-
-        Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
-        Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
-        Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
-        Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), new Color(209, 113, 5));
-        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
-
-        nucleotideColors.put('A', a);
-        nucleotideColors.put('a', a);
-        nucleotideColors.put('C', c);
-        nucleotideColors.put('c', c);
-        nucleotideColors.put('T', t);
-        nucleotideColors.put('t', t);
-        nucleotideColors.put('G', g);
-        nucleotideColors.put('g', g);
-        nucleotideColors.put('N', n);
-        nucleotideColors.put('n', n);
-        nucleotideColors.put('-', Color.lightGray);
-
+        nucleotideColors = new NucleotideColors();
     }
 
     static {
@@ -668,7 +647,7 @@ public class AlignmentRenderer {
                 }
 
                 // gap extensions
-                if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesGap(gap)) {
+                if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesGap(gap)) {
                     flowIndelRendering.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
@@ -706,7 +685,7 @@ public class AlignmentRenderer {
 
             // Check if block is in visible rectangle
             if (blockPxEnd < 0) {
-                if(blockIx + 1 < blocks.length) {
+                if (blockIx + 1 < blocks.length) {
                     blockChromStart = blocks[blockIx + 1].getStart(); // start position for the next block
                 }
                 continue;
@@ -758,7 +737,7 @@ public class AlignmentRenderer {
                     else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
-                if(renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
+                if (renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
                     final Graphics2D tg = (Graphics2D) g.create();
 
                     final TexturePaint tp = getDuplicateTexture(tg.getColor());
@@ -766,7 +745,7 @@ public class AlignmentRenderer {
                     tg.setPaint(tp);
                     tg.fill(blockShape);
                     tg.dispose();
-                }  else {
+                } else {
                     g.fill(blockShape);
                 }
 
@@ -940,7 +919,7 @@ public class AlignmentRenderer {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         ig.setColor(purple);
-                        if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(aBlock) ) {
+                        if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(aBlock)) {
                             flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
                         } else {
                             ig.fillRect(x, y, 2, h);
@@ -1106,7 +1085,7 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(insertionBlock) ) {
+            if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(insertionBlock)) {
                 flowIndelRendering.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
             } else {
                 g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
@@ -1477,5 +1456,42 @@ public class AlignmentRenderer {
 
         return type;
     }
+}
 
+class NucleotideColors {
+
+    public final Map<Character, Color> nucleotideColors = new HashMap<>();
+
+    public NucleotideColors() {
+
+        IGVPreferences prefs = PreferencesManager.getPreferences();
+        Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
+        Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
+        Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
+        Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), new Color(209, 113, 5));
+        Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
+
+        if (Globals.isDarkMode()) {
+            if (!prefs.hasExplicitValue(SAM_COLOR_G)) g = g.darker().darker();
+            if (!prefs.hasExplicitValue(SAM_COLOR_C)) c = c.brighter().brighter();
+        }
+        nucleotideColors.put('A', a);
+        nucleotideColors.put('a', a);
+        nucleotideColors.put('C', c);
+        nucleotideColors.put('c', c);
+        nucleotideColors.put('T', t);
+        nucleotideColors.put('t', t);
+        nucleotideColors.put('G', g);
+        nucleotideColors.put('g', g);
+        nucleotideColors.put('N', n);
+        nucleotideColors.put('n', n);
+        nucleotideColors.put('-', Color.black);
+    }
+
+    public Color get(char nucleotide) {
+        if (nucleotide == 'N') {
+            System.out.println();
+        }
+        return nucleotideColors.getOrDefault(nucleotide, Color.black);
+    }
 }

@@ -754,7 +754,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         // If still no color use defaults
         if (color == null) {
-            // TODO -- hack, generalize this
             if (track.getTrackType() == TrackType.CNV) {
                 color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
             } else {

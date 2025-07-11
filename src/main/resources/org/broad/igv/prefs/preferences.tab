@@ -287,15 +287,12 @@ TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50
 TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
-
 ## JBrowse Circular View Integration  **EXPERIMENTAL FEATURE**
 CIRC_VIEW_ENABLED	Enable CircView	boolean	FALSE
 CIRC_VIEW_HOST	CircView host (usually localhost)	string	localhost
 CIRC_VIEW_PORT	CircView port	integer	60152
 
-
 ##
-
 
 #Hidden
 
@@ -320,11 +317,7 @@ SAM.SORT_OPTION	NUCLEOTIDE
 SAM.COLOR_BY	UNEXPECTED_PAIR
 SAM.SHOW_GROUP_SEPARATOR	TRUE
 SAM.REDUCED_MEMORY_MODE	FALSE
-SAM.COLOR.A	0,255,0
-SAM.COLOR.C	0,0,255
-SAM.COLOR.G	209,113,5
-SAM.COLOR.N	182,182,182
-SAM.COLOR.T	255,0,0
+
 SAM.GROUP_ALL	FALSE
 SAM.INVERT_SORT	FALSE
 
