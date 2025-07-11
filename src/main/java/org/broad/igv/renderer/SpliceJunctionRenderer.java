@@ -69,7 +69,7 @@
      public SpliceJunctionRenderer() {
          if (Globals.isDarkMode()) {
              // Use brighter colors in dark mode
-             ARC_COLOR_NEG = ColorUtilities.modifyAlpha(Color.BLUE, 140);
+             ARC_COLOR_NEG = ColorUtilities.modifyAlpha(Color.CYAN, 140);
              ARC_COLOR_POS = ColorUtilities.modifyAlpha(Color.RED, 140);
              ARC_COLOR_HIGHLIGHT_NEG = Color.BLUE;
              ARC_COLOR_HIGHLIGHT_POS = Color.RED;
