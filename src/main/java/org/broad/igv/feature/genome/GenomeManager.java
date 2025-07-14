@@ -54,7 +54,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.*;
