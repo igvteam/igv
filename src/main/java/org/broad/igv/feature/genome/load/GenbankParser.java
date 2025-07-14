@@ -139,6 +139,26 @@ public class GenbankParser {
     }
 
 
+    public String getAccession() throws IOException {
+        if (accession == null) {
+            try (BufferedReader reader = ParsingUtils.openBufferedReader(path)) {
+                String line;
+                while ((line = reader.readLine()) != null && !line.startsWith("FEATURES")) {
+                    if (line.startsWith("ACCESSION")) {
+                        String[] tokens = Globals.whitespacePattern.split(line);
+                        if (tokens.length >= 2) {
+                            accession = tokens[1].trim();
+                        } else {
+                            log.warn("Genbank file missing ACCESSION number.");
+                        }
+                    }
+                }
+            }
+            accession = accession != null ? accession : (new File(path)).getName(); // Default to file name if no accession found
+        }
+        return accession;
+    }
+
     /**
      * Read the locus line
      * LOCUS       NT_030059             105338 bp    DNA     linear   CON 28-OCT-2010
@@ -266,8 +286,8 @@ public class GenbankParser {
                 break;
             }
 
-            if(nextLine.length() < 6) {
-                if(errorCount < 10) {
+            if (nextLine.length() < 6) {
+                if (errorCount < 10) {
                     log.error("Unexpected line in genbank file (skipping): " + nextLine);
                 }
                 errorCount++;
@@ -378,10 +398,6 @@ public class GenbankParser {
             exons.add(r);
         }
         return exons;
-    }
-
-    public String getAccession() {
-        return accession;
     }
 
     public byte[] getSequence() {

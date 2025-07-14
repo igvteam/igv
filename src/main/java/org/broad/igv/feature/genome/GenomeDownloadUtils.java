@@ -8,10 +8,8 @@ import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -14,7 +14,7 @@ import org.broad.igv.ucsc.hub.TrackConfigContainer;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ucsc.hub.TrackSelectionDialog;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 

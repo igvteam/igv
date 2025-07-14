@@ -5,6 +5,7 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
