@@ -256,7 +256,7 @@ public class GenomeListManager {
 
                             GenomeListItem hostedItem = HostedGenomes.getGenomeListItem(id);
                             String fastaURL = properties.getProperty(GenomeDescriptor.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
-                            if (hostedItem != null && GenomeUtils.isDeprecated(fastaURL)) {
+                            if (hostedItem != null && fastaURL != null && GenomeUtils.isDeprecated(fastaURL)) {
                                 log.warn("Genome file " + file.getName() + " is deprecated. Using hosted genome instead.");
                                 genomeListItem = GenomeUtils.updateGenome(hostedItem);
                             }
