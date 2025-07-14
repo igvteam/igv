@@ -198,6 +198,10 @@ public class GenomeListManager {
 
                         GenomeConfig config = (new Gson()).fromJson(reader, GenomeConfig.class);
                         String id = config.id;
+                        if (id == null) {
+                            log.error("GenomeConfig ID is null for file: " + file.getAbsolutePath());
+                            continue;
+                        }
                         String name = config.getName();
                         GenomeListItem item = new GenomeListItem(name, file.getAbsolutePath(), id);
 
