@@ -78,21 +78,21 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
-            GenomeListItem GenomeTableRecord = (GenomeListItem) selItem;
+            GenomeListItem genomeListItem = (GenomeListItem) selItem;
 
             // If we haven't changed genomes do nothing
-            if (GenomeTableRecord.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
+            if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
                 return;
             }
 
             final Runnable runnable = () -> {
 
-                if (GenomeTableRecord != null && GenomeTableRecord.getPath() != null) {
+                if (genomeListItem != null && genomeListItem.getPath() != null) {
                     try {
-                        GenomeManager.getInstance().loadGenomeById(GenomeTableRecord.getId());
+                        GenomeManager.getInstance().loadGenome(genomeListItem.getPath());
                     } catch (Exception e) {
                         log.error(e);
-                        MessageUtils.showErrorMessage("The genome '" + GenomeTableRecord.getDisplayableName() +
+                        MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
                                 "' could not be read.", e);
                     }
                 }

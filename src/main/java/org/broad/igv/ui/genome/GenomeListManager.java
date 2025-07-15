@@ -1,17 +1,14 @@
 package org.broad.igv.ui.genome;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.genome.GenomeDownloadUtils;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.HostedGenomes;
-import org.broad.igv.feature.genome.load.*;
+import org.broad.igv.feature.genome.load.GenbankParser;
+import org.broad.igv.feature.genome.load.GenomeConfig;
+import org.broad.igv.feature.genome.load.GenomeDescriptor;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
@@ -22,9 +19,7 @@ import org.broad.igv.util.ParsingUtils;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 /**
  * Singleton class for managing the list of genomes presented in the command bar combo box.
@@ -158,7 +153,11 @@ public class GenomeListManager {
         remoteGenomesMap = null;
         downloadedGenomesMap = null;
         genomeItemMap.clear();
-        genomeItemMap.putAll(getRemoteGenomesMap());
+        try {
+            genomeItemMap.putAll(getRemoteGenomesMap());
+        } catch (IOException e) {
+            log.error("Error updating remote genomes map", e);
+        }
         genomeItemMap.putAll(getDownloadedGenomeMap());
         if (genomeItemMap.isEmpty()) {
             genomeItemMap.put(DEFAULT_GENOME.getId(), DEFAULT_GENOME);
@@ -310,16 +309,14 @@ public class GenomeListManager {
     }
 
     /**
-     * Return the list of remote genomes for the dropdown.
-     *
-     * Remote genomes include all user-loaded genomes not stored locally in the igv/genomes folder.  This
-     * does not include hosted genomes.
+     * Return the list of remote genomes for the dropdown.  Remote genomes are those that are not stored
+     * locally in the igv/genomes folder.
      *
      * @return LinkedHashSet<GenomeTableRecord>
      * @throws IOException
      * @see GenomeListItem
      */
-    public Map<String, GenomeListItem> getRemoteGenomesMap() {
+    public Map<String, GenomeListItem> getRemoteGenomesMap() throws IOException {
 
         if (remoteGenomesMap == null) {
 
@@ -327,69 +324,51 @@ public class GenomeListManager {
 
             remoteGenomesMap = new HashMap<>();
 
-            File listFile = new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename());
+            File[] listFiles = new File[] {
+                    new File(DirectoryManager.getGenomeCacheDirectory(), getRemoteGenomesFilename()),
+                    new File(DirectoryManager.getGenomeCacheDirectory(), "user-defined-genomes.txt")  // legacy file name
+            };
 
-            if (!listFile.exists()) {
-                // Try old filename
-                listFile = new File(DirectoryManager.getGenomeCacheDirectory(), "user-defined-genomes.txt");
-            }
+            for(File listFile : listFiles) {
 
-            if (listFile.exists()) {
+                if (listFile.exists()) {
 
-                BufferedReader reader = null;
+                    boolean mightBeProperties = false;
+                    try (BufferedReader reader = new BufferedReader(new FileReader(listFile))) {
+                        String nextLine;
+                        while ((nextLine = reader.readLine()) != null) {
+                            if (nextLine.startsWith("#") || nextLine.trim().isEmpty()) {
+                                mightBeProperties = true;
+                                continue;
+                            }
 
-                boolean mightBeProperties = false;
-                try {
-                    reader = new BufferedReader(new FileReader(listFile));
-                    String nextLine;
-                    while ((nextLine = reader.readLine()) != null) {
-                        if (nextLine.startsWith("#") || nextLine.trim().length() == 0) {
-                            mightBeProperties = true;
-                            continue;
-                        }
-
-                        // TODO: File should be called tsv maybe???
-                        String[] fields = nextLine.split("\t");
-                        if (fields.length < 3) {
-                            if (mightBeProperties && fields[0].contains("=")) {
+                            String[] fields = nextLine.split("\t");
+                            if (fields.length < 3 && mightBeProperties && fields[0].contains("=")) {
                                 fields = nextLine.split("\\\\t");
                                 if (fields.length < 3) {
                                     continue;
                                 }
-                                int idx = fields[0].indexOf("=");
-                                fields[0] = fields[0].substring(idx + 1);
+                                fields[0] = fields[0].substring(fields[0].indexOf("=") + 1);
+                            }
+
+                            // If the file is not remote and does not exist, skip and update the client genome list file
+                            String file = fields[1];
+                            if (!FileUtils.isRemote(file) && !FileUtils.resourceExists(file)) {
+                                updateClientGenomeListFile = true;
+                                continue;
+                            }
+
+                            try {
+                                GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
+                                remoteGenomesMap.put(item.getId(), item);
+                            } catch (Exception e) {
+                                log.error("Error updating remote genome list line: " + nextLine, e);
                             }
                         }
-
-                        String file = fields[1];
-                        // If a local file, see if it exists
-                        if (!FileUtils.isRemote(file) && !FileUtils.resourceExists(file)) {
-                            updateClientGenomeListFile = true;
-                            continue;
-                        }
-
-                        try {
-                            GenomeListItem item = new GenomeListItem(fields[0], file, fields[2]);
-                            remoteGenomesMap.put(item.getId(), item);
-                        } catch (Exception e) {
-                            log.error("Error updating user genome list line '" + nextLine + "'", e);
-                        }
                     }
-                } catch (FileNotFoundException e) {
-                    //We swallow this because the user may not have the file,
-                    //which doesn't really matter
-                    log.error(e);
-                } catch (IOException e) {
-                    log.error(e);
-                    throw new RuntimeException(e);
-                } finally {
-                    if (reader != null) try {
-                        reader.close();
-                    } catch (IOException e) {
+                    if (updateClientGenomeListFile) {
+                        exportRemoteGenomesList();
                     }
-                }
-                if (updateClientGenomeListFile) {
-                    exportRemoteGenomesList();
                 }
             }
         }

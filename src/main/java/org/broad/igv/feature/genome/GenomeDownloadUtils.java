@@ -40,7 +40,7 @@ public class GenomeDownloadUtils {
                 if (sequenceURL == null) {
                     sequenceURL = genomeConfig.fastaURL;
                 }
-                return isRemoteURL(sequenceURL) && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
+                return isRemoteURL(sequenceURL); // && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
 
             } catch (IOException e) {
                 log.error("Error fetching genome json " + genomePath);
@@ -93,20 +93,20 @@ public class GenomeDownloadUtils {
         } else if (config.fastaURL != null) {
 
             String[] fastaFields = {"fastaURL", "indexURL", "gziIndexURL", "compressedIndexURL"};
-            downloadAndUpdateConfig(downloadSequence, fastaFields, config, dataDirectory, relativeDataDirectory);
+            downloadAndUpdateConfig(downloadSequence, fastaFields, config, dataDirectory, relativeDataDirectory, true);
 
         } else {
             throw new RuntimeException("Sequence for genome " + config.getName() + " is not downloadable.");
         }
 
         String[] annotationFields = {"chromAliasBbURL", "cytobandURL", "cytobandBbURL", "aliasURL", "chromSizesURL"};
-        downloadAndUpdateConfig(downloadAnnotations, annotationFields, config, dataDirectory, relativeDataDirectory);
+        downloadAndUpdateConfig(downloadAnnotations, annotationFields, config, dataDirectory, relativeDataDirectory, false);
 
         List<TrackConfig> trackConfigs = config.getTrackConfigs();
         if (trackConfigs != null) {
             String[] trackFields = {"url", "indexURL", "trixURL"};
             for (TrackConfig trackConfig : trackConfigs) {
-                downloadAndUpdateConfig(downloadAnnotations, trackFields, trackConfig, dataDirectory, relativeDataDirectory);
+                downloadAndUpdateConfig(downloadAnnotations, trackFields, trackConfig, dataDirectory, relativeDataDirectory, false);
             }
 
         }
@@ -114,9 +114,15 @@ public class GenomeDownloadUtils {
         return saveLocalGenome(config);
     }
 
-    private static void downloadAndUpdateConfig(boolean downloadData, String[] fields, Object config, File dataDirectory, String relativeDataDirectory) {
+    private static void downloadAndUpdateConfig(
+            boolean downloadData,
+            String[] fields,
+            Object config,
+            File dataDirectory,
+            String relativeDataDirectory,
+            boolean useLocalCache) {
         URL url;
-        File localFile;
+        File localFile = null;
         for (String f : fields) {
             try {
                 Field field = config.getClass().getDeclaredField(f);
@@ -126,10 +132,10 @@ public class GenomeDownloadUtils {
                     url = new URL(urlField.toString());
                     if (downloadData) {
                         localFile = download(url, dataDirectory);
-                    } else {
+                    } else if (useLocalCache) {
                         localFile = constructLocalFile(url, dataDirectory);   // It might be there from previous downloads
                     }
-                    if (localFile.exists()) {
+                    if (localFile != null && localFile.exists()) {
                         field.set(config, relativeDataDirectory + localFile.getName());
                     }
                 }
@@ -148,9 +154,6 @@ public class GenomeDownloadUtils {
      */
     public static File saveLocalGenome(GenomeConfig genomeConfig) throws IOException {
         String id = genomeConfig.id;
-        if (id == null) {
-            throw new IllegalArgumentException("Config ID is null. I can't work with this.");
-        }
         String sanitizedId = id.replaceAll("[^a-zA-Z0-9-_]", "_");
         File localFile = new File(DirectoryManager.getGenomeCacheDirectory(), sanitizedId + ".json");
         log.info("Saving " + localFile.getAbsolutePath());

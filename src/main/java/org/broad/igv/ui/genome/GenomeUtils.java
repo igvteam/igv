@@ -6,7 +6,6 @@ import org.broad.igv.feature.genome.load.JsonGenomeLoader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 public class GenomeUtils {
 
