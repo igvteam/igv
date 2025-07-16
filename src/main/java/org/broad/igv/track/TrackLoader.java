@@ -199,7 +199,7 @@ public class TrackLoader {
                 loadEwigIBFFile(locator, newTracks, genome);
             } else if (format.equals("bw") || format.equals("bb") || format.equals("bigwig") ||
                     format.equals("bigbed") || format.equals("biggenepred") || format.equals("bigrepmsk")) {
-                loadBWFile(locator, newTracks, genome);
+                loadBBFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
@@ -807,7 +807,7 @@ public class TrackLoader {
 
     }
 
-    public void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    public void loadBBFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         String trackName = locator.getTrackName();
         String trackId = locator.getPath();
@@ -821,7 +821,15 @@ public class TrackLoader {
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
             BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
-            track = new FeatureTrack(locator, trackId, trackName, featureSource);
+            switch(reader.getFeatureType()) {
+                case INTERACT:
+                    track = new InteractionTrack(locator,featureSource);
+                    break;
+                default:
+                    track = new FeatureTrack(locator, trackId, trackName, featureSource);
+            }
+
+
 
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());

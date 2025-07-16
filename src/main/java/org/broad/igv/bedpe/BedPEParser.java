@@ -1,5 +1,6 @@
 package org.broad.igv.bedpe;
 
+import org.broad.igv.feature.Strand;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
@@ -131,9 +132,20 @@ public class BedPEParser {
                     }
 
                     if (tokens.length > 8) {
+
+                        int extraFieldsStart = 8;
+                        if(tokens[8].trim().equals("+") || tokens[8].trim().equals("-")) {
+                            feature.strand1 = tokens[8].trim().equals("+") ? Strand.POSITIVE : Strand.NEGATIVE;
+                            extraFieldsStart = 9;
+                        }
+                        if(tokens[9].trim().equals("+") || tokens[9].trim().equals("-")) {
+                            feature.strand2 = tokens[9].trim().equals("+") ? Strand.POSITIVE : Strand.NEGATIVE;
+                            extraFieldsStart = 10;
+                        }
+
                         Map<String, String> attributes = new LinkedHashMap<>();
 
-                        for (int i = 8; i < tokens.length; i++) {
+                        for (int i = extraFieldsStart; i < tokens.length; i++) {
 
                             String t = tokens[i];
                             String c = columns != null && columns.length > i ? columns[i] : String.valueOf(i);

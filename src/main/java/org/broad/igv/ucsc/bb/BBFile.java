@@ -3,6 +3,7 @@ package org.broad.igv.ucsc.bb;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.ChromAlias;
@@ -10,9 +11,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
+import org.broad.igv.ucsc.bb.codecs.*;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
-import org.broad.igv.ucsc.bb.codecs.BBCodec;
-import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
@@ -83,7 +83,7 @@ import java.util.*;
  */
 public class BBFile {
 
-    enum Type {BIGWIG, BIGBED}
+    public enum Type {BIGWIG, BIGBED}
 
     static public final int BBFILE_HEADER_SIZE = 64;
     static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
@@ -101,6 +101,7 @@ public class BBFile {
     private BBCodec bedCodec;
     private String path;
     private Type type;
+    private FeatureType featureType;
     private BBHeader header = null;
     private BBZoomHeader[] zoomHeaders;
     private ByteOrder byteOrder;
@@ -129,6 +130,28 @@ public class BBFile {
 
     public Type getType() {
         return type;
+    }
+
+    public FeatureType getFeatureType() {
+        if (featureType == null) {
+            if (isBigWigFile()) {
+                featureType = FeatureType.WIG;
+            } else if (isBigBedFile()) {
+                String as = getAutoSQL();
+                if (as != null) {
+                    BBUtils.ASTable astable = BBUtils.parseAutosql(autosql);
+                    if (astable != null && "bigRmskBed".equals(astable.name)) {
+                        featureType = FeatureType.RMSK;
+                    } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
+                        featureType = FeatureType.INTERACT;
+                    }
+                }
+                if (featureType == null) {
+                    featureType = FeatureType.BED;
+                }
+            }
+        }
+        return featureType;
     }
 
     public BBHeader getHeader() {

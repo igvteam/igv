@@ -2,6 +2,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Cytoband;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ucsc.bb.BBFeatureSource;
 import org.broad.igv.ucsc.bb.BBFile;
 
@@ -22,9 +23,9 @@ public class CytobandSourceBB implements CytobandSource {
     @Override
     public List<Cytoband> getCytobands(String chr) throws IOException {
         List<Cytoband> cytobands = new ArrayList<>();
-        Iterator<BasicFeature> features = featureSource.getFeatures(chr, 0, Integer.MAX_VALUE);
+        Iterator<IGVFeature> features = featureSource.getFeatures(chr, 0, Integer.MAX_VALUE);
         while (features.hasNext()) {
-            BasicFeature f = features.next();
+            IGVFeature f = features.next();
             cytobands.add(new Cytoband(f.getChr(), f.getStart(), f.getEnd(), f.getName(), f.getAttribute("gieStain")));
         }
         return cytobands;

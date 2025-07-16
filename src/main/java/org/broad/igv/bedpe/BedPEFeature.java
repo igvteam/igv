@@ -1,9 +1,13 @@
 package org.broad.igv.bedpe;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -14,10 +18,13 @@ public class BedPEFeature implements BedPE {
     protected String chr1;
     protected int start1;
     protected int end1;
+    protected Strand strand1 = Strand.NONE; // Default to NONE, can be set later
 
     protected String chr2;
     protected int start2;
     protected int end2;
+    protected Strand strand2 = Strand.NONE; // Default to NONE, can be set later
+
     protected String name;
     protected String scoreString = "";
     protected float score;
@@ -162,4 +169,5 @@ public class BedPEFeature implements BedPE {
     public String getName() {
         return name;
     }
+
 }

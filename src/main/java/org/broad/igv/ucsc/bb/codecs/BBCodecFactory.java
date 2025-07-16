@@ -11,6 +11,8 @@ public class BBCodecFactory {
 
         if (astable != null && "bigRmskBed".equals(astable.name)) {
             return new BBRmskCodec(standardFieldCount, astable);
+        } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
+            return new BBInteractCodec(standardFieldCount, astable);
         } else {
             return new BBBedCodec(standardFieldCount, astable);
         }

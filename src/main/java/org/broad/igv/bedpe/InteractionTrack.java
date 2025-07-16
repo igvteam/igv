@@ -155,7 +155,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         try {
             String chr = context.getReferenceFrame().getChrName();
 
-
             // TODO Convert iterator to list.  This is very wasteful, but neccessary due to the feature source interface.
             List<BedPE> features = new ArrayList<>();
             Iterator<BedPE> iter = featureSource.getFeatures(chr, (int) context.getOrigin(), (int) context.getEndLocation());
@@ -233,7 +232,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
         IGVPopupMenu menu = new IGVPopupMenu();
-
 
         // Experimental JBrowse.
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
