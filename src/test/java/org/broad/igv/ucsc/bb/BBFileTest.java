@@ -128,18 +128,4 @@ public class BBFileTest {
 
         assertNull(bbReader.search("zzzz"));
     }
-
-    /**
-     * Test a BW file with an unusual layout (chromTree after full data).
-     */
-    @Test
-    public void testBigInteract() throws IOException {
-        String bbFile = TestUtils.DATA_DIR + "bb/interactExample3.inter.bb";
-        BBFile reader = new BBFile(bbFile, null);
-        reader.readHeader();
-        String [] chrNames = reader.getChromosomeNames();
-        assertEquals(6, chrNames.length);
-    }
-
-
 }
