@@ -34,6 +34,8 @@ import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 
@@ -42,6 +44,8 @@ import java.util.*;
 
 
 public class BBDataSource extends AbstractDataSource implements DataSource {
+
+    private static Logger log = LogManager.getLogger(BBDataSource.class);
 
     private final Genome genome;
     Collection<WindowFunction> availableWindowFunctions =
@@ -61,77 +65,8 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
         this.reader = reader;
         this.genome = genome;
         this.wholeGenomeScores = new HashMap<>();
-        initMinMax();
     }
 
-    /**
-     * Set the "min" and "max" from total summary data.
-     */
-    private void initMinMax() {
-
-        BBTotalSummary totalSummary = reader.getTotalSummary();
-        if (totalSummary == null) {
-            dataMin = 0;
-            dataMax = 100;
-        } else {
-            dataMin = totalSummary.minVal;
-            if (totalSummary.basesCovered < 100) {
-                dataMin = Math.min(0, totalSummary.minVal);
-                dataMax = totalSummary.maxVal;
-            } else if (totalSummary.minVal < 0) {
-                dataMax = Math.min(totalSummary.maxVal, 3 * totalSummary.stddev);
-                dataMin = Math.max(totalSummary.minVal, -dataMax);
-            } else {
-                dataMin = 0;
-                dataMax = Math.min(totalSummary.maxVal, totalSummary.mean + 2 * totalSummary.stddev);
-            }
-        }
-    }
-
-    /**
-     * Set the "min" and "max" from 1MB resolutiond data.  Read a maximum of 10,000 points for this
-     */
-//    private void initMinMax2() {
-//
-//        final int oneMB = 1000000;
-//        final BBZoomHeader zoomLevelHeader = zoomLevelForScale(oneMB);
-//
-//        int nValues = 0;
-//        double[] values = new double[10000];
-//
-//        if (zoomLevelHeader == null) {
-//            List<String> chrNames = reader.getChromosomeNames();
-//            for (String chr : chrNames) {
-//                BigWigIterator iter = reader.getBigWigIterator(chr, 0, chr, Integer.MAX_VALUE, false);
-//                while (iter.hasNext()) {
-//                    WigItem item = iter.next();
-//                    values[nValues++] = item.getWigValue();
-//                    if (nValues >= 10000) break;
-//                }
-//            }
-//        } else {
-//
-//            int z = zoomLevelHeader.getZoomLevel();
-//            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(z);
-//            if (zlIter.hasNext()) {
-//                while (zlIter.hasNext()) {
-//                    ZoomDataRecord rec = zlIter.next();
-//                    values[nValues++] = (rec.getMeanVal());
-//                    if (nValues >= 10000) {
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (nValues > 0) {
-//            dataMin = StatUtils.percentile(values, 0, nValues, 10);
-//            dataMax = StatUtils.percentile(values, 0, nValues, 90);
-//        } else {
-//            dataMin = 0;
-//            dataMax = 100;
-//        }
-//    }
     public double getDataMax() {
         return dataMax;
     }
@@ -145,9 +80,12 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
 
         try {
             long rTreeOffset = reader.getHeader().fullIndexOffset;
-            List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
-
             Integer chrIdx = reader.getIdForChr(chr);
+            if (chrIdx == null) {
+                return null;
+            }
+            List<byte[]> chunks = this.reader.getLeafChunks(chrIdx, start, chrIdx, end, rTreeOffset);
+
 
             List<LocusScore> features = new ArrayList<>();
             for (byte[] c : chunks) {
@@ -171,7 +109,6 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
         }
 
     }
-
 
     /**
      * Return bigwig "zoom data" if available for the resolution encoded by "zoom"
@@ -209,11 +146,14 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 return null;
             } else {
                 long rTreeOffset = zlHeader.indexOffset;
-                int chrIdx = reader.getIdForChr(chr);
-                List<byte[]> chunks = this.reader.getLeafChunks(chr, start, chr, end, rTreeOffset);
+                Integer chrIdx = reader.getIdForChr(chr);
+                if (chrIdx == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                List<byte[]> chunks = this.reader.getLeafChunks(chrIdx, start, chrIdx, end, rTreeOffset);
                 List<LocusScore> features = new ArrayList<>();
-                for (byte[] c : chunks) {
-                    reader.decodeZoomData(c, chrIdx, start, end, windowFunction, features);
+                for (byte[] chunk : chunks) {
+                    reader.decodeZoomData(chr, chunk, chrIdx, start, end, windowFunction, features);
                 }
                 return features;
             }
@@ -254,9 +194,26 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     int screenWidth = 1000;  // nominal
                     double scale = genome.getWGLength() / screenWidth;
 
-                    int maxChromId = reader.getChromosomeNames().length - 1;
-                    String firstChr = reader.getChrForId(0);
-                    String lastChr = reader.getChrForId(maxChromId);
+                    List<String> longChromosomeNames = genome.getLongChromosomeNames();
+                    if (longChromosomeNames.isEmpty()) {
+                        return null;
+                    }
+
+                    // Find the min and max chromosome ids for whole genome view
+                    int minID = Integer.MAX_VALUE;
+                    int maxID = -1;
+                    for (String chr : longChromosomeNames) {
+                        Integer id = reader.getIdForChr(chr);
+                        if (id == null) {
+                            continue;
+                        }
+                        if (id < minID) {
+                            minID = id;
+                        }
+                        if (id > maxID) {
+                            maxID = id;
+                        }
+                    }
 
                     ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
                     wholeGenomeScores.put(windowFunction, scores);
@@ -267,11 +224,11 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                     Set<String> wgChrNames = new HashSet<>(genome.getLongChromosomeNames());
 
                     long rTreeOffset = lowestResHeader.indexOffset;
-                    List<byte[]> chunks = this.reader.getLeafChunks(firstChr, 0, lastChr, Integer.MAX_VALUE, rTreeOffset);
+                    List<byte[]> chunks = this.reader.getLeafChunks(minID, 0, maxID, Integer.MAX_VALUE, rTreeOffset);
 
                     List<LocusScore> features = new ArrayList<>();
-                    for (byte[] c : chunks) {
-                        reader.decodeZoomData(c, -1, -1, -1, windowFunction, features);
+                    for (byte[] chunk : chunks) {
+                        reader.decodeZoomData(null, chunk, -1, -1, -1, windowFunction, features);
                     }
 
                     for (LocusScore s : features) {
@@ -291,7 +248,8 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                 return null;
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error getting whole genome scores", e);
+            return null;
         }
     }
 

@@ -31,6 +31,7 @@ package org.broad.igv.ui.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
 
@@ -143,7 +144,11 @@ public class UIUtilities {
      * @param runnable
      */
     public static void invokeOnEventThread(Runnable runnable) {
-        SwingUtilities.invokeLater(runnable);
+        if(Globals.isBatch()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     /**
@@ -155,14 +160,13 @@ public class UIUtilities {
      * @param runnable
      */
     public static void invokeAndWaitOnEventThread(Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (SwingUtilities.isEventDispatchThread() || Globals.isBatch()) {
             runnable.run();
         } else {
             try {
                 SwingUtilities.invokeAndWait(runnable);
             } catch (InterruptedException | InvocationTargetException e) {
                 log.error("Error invoking runnable", e);
-                UIUtilities.invokeOnEventThread(runnable);
             }
         }
     }

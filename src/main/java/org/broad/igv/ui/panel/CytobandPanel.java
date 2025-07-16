@@ -59,6 +59,7 @@ import java.util.List;
 public class CytobandPanel extends JPanel {
 
     private static int bandHeight = 10;
+    private final boolean darkMode;
     private boolean isDragging = false;
 
     /**
@@ -76,12 +77,11 @@ public class CytobandPanel extends JPanel {
     public CytobandPanel(ReferenceFrame frame, boolean mouseable) {
 
         this.frame = frame;
-
+        this.darkMode = Globals.isDarkMode();
         if (mouseable) {
             initMouseAdapter();
         }
-        cytobandRenderer = (new CytobandRenderer());
-
+        cytobandRenderer = (new CytobandRenderer(darkMode));
     }
 
 
@@ -89,6 +89,10 @@ public class CytobandPanel extends JPanel {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+
+        if(darkMode){
+            setBackground(UIManager.getColor("Panel.background"));
+        }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

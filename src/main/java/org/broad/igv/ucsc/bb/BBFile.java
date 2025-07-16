@@ -1,6 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureType;
@@ -8,6 +9,8 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
@@ -15,11 +18,17 @@ import org.broad.igv.ucsc.bb.codecs.*;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
+import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /* bigWig/bigBed file structure:
  *     fixedWidthHeader
@@ -83,7 +92,11 @@ import java.util.*;
  */
 public class BBFile {
 
+
     public enum Type {BIGWIG, BIGBED}
+
+    static Logger log = LogManager.getLogger(BBFile.class);
+
 
     static public final int BBFILE_HEADER_SIZE = 64;
     static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
@@ -92,7 +105,6 @@ public class BBFile {
     private Trix trix;
     private String autosql;
     private ChromTree chromTree;
-    private String[] chrNames;
     private double featureDensity;
     private Map<String, String> chrAliasTable;
     private BBTotalSummary totalSummary;
@@ -106,6 +118,7 @@ public class BBFile {
     private BBZoomHeader[] zoomHeaders;
     private ByteOrder byteOrder;
     private Genome genome;
+    private byte[] _preloadBytes;
 
     public BBFile(String path, Genome genome) throws IOException {
         this.path = path;
@@ -113,6 +126,12 @@ public class BBFile {
         this.chrAliasTable = new HashMap<>();
         this.rTreeCache = new HashMap<>();
         init();
+    }
+
+    public void preload() throws IOException {
+        if (FileUtils.isRemote(path)) {
+            this._preloadBytes = HttpUtils.getInstance().getContentsAsBytes(new URL(this.path), null);
+        }
     }
 
     public BBFile(String path, Genome genome, String trixPath) throws IOException {
@@ -124,8 +143,8 @@ public class BBFile {
         this.header = readHeader();
     }
 
-    public BBTotalSummary getTotalSummary() {
-        return totalSummary;
+    public int getChromosomeCount() {
+        return (int) chromTree.getItemCount();
     }
 
     public Type getType() {
@@ -161,6 +180,7 @@ public class BBFile {
     public Genome getGenome() {
         return genome;
     }
+
     public boolean isBigWigFile() {
         return type == Type.BIGWIG;
     }
@@ -172,19 +192,16 @@ public class BBFile {
     public double getFeatureDensity() {
         return featureDensity;
     }
+
     public String getAutoSQL() {
         return autosql;
-    }
-
-    public String[] getChromosomeNames() {
-        return chrNames;
     }
 
     BBHeader readHeader() throws IOException {
 
         // The common header
         ByteOrder order = ByteOrder.LITTLE_ENDIAN;
-        UnsignedByteBuffer buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+        UnsignedByteBuffer buffer = loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
         long magic = buffer.getUInt();
         if (magic == BIGWIG_MAGIC) {
             this.type = Type.BIGWIG;
@@ -193,7 +210,7 @@ public class BBFile {
         } else {
             //Try big endian order
             order = ByteOrder.BIG_ENDIAN;
-            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
+            buffer = loadBinaryBuffer(this.path, order, 0, BBFILE_HEADER_SIZE);
             magic = buffer.getUInt();
             if (magic == BIGWIG_MAGIC) {
                 this.type = Type.BIGWIG;
@@ -217,26 +234,27 @@ public class BBFile {
         header.totalSummaryOffset = buffer.getLong();
         header.uncompressBuffSize = buffer.getInt();
         header.extensionOffset = buffer.getLong();
+        this.header = header;
 
         // Zoom headers, autosql, and total summary if present
         int size = (int) (header.totalSummaryOffset > 0 ?
                 header.totalSummaryOffset - BBFILE_HEADER_SIZE + 40 :
                 Math.min(header.fullDataOffset, header.chromTreeOffset) - BBFILE_HEADER_SIZE);
 
-        buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, size);
+        buffer = loadBinaryBuffer(this.path, order, BBFILE_HEADER_SIZE, size);
 
         // Zoom headers -- immediately follows the common header
         this.zoomHeaders = new BBZoomHeader[header.nZoomLevels];
         for (int i = 0; i < header.nZoomLevels; ++i) {
             BBZoomHeader zlh = new BBZoomHeader();
-            zlh.reductionLevel = buffer.getInt();
+            zlh.reductionLevel = buffer.getUInt();
             zlh.reserved = buffer.getInt();
             zlh.dataOffset = buffer.getLong();
             zlh.indexOffset = buffer.getLong();
             this.zoomHeaders[i] = zlh;
         }
         // Sort in order of decreasing reduction level (increasing resolution
-        Arrays.sort(zoomHeaders, (o1, o2) -> o2.reductionLevel - o1.reductionLevel);
+        Arrays.sort(zoomHeaders, (o1, o2) -> (int) (o2.reductionLevel - o1.reductionLevel));
 
         // Autosql -- spec implies this follows the zoom headers
         final int startOffset = BBFILE_HEADER_SIZE;
@@ -251,26 +269,17 @@ public class BBFile {
             this.totalSummary = BBTotalSummary.parseSummary(buffer);
         }
 
-        // Chromosome tree -- we know the start offset but not the size.  But we can try to estimate it.
-        int chromtreeBufferSize =  header.fullDataOffset > header.chromTreeOffset ?
-                (int) Math.min(10000, header.fullDataOffset - header.chromTreeOffset) :
-                10000;
-
-        buffer = UnsignedByteBufferDynamic.loadBinaryBuffer(this.path, order, header.chromTreeOffset, chromtreeBufferSize);
-        this.chromTree = ChromTree.parseTree(buffer, header.chromTreeOffset, this.genome);
-        this.chrNames = this.chromTree.names();
-
+        // Chromosome tree
+        this.chromTree = new ChromTree(this.path, this.header.chromTreeOffset);
 
         if (type == Type.BIGBED) {
             //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
-            buffer = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
+            buffer = loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
             header.dataCount = buffer.getInt();
-            this.featureDensity = ((double) header.dataCount) / chromTree.sumLengths;
+            this.featureDensity = ((double) header.dataCount) / this.chromTree.estimateGenomeSize();
 
             bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
         }
-
-        this.header = header;
 
         //extension
         if (header.extensionOffset > 0) {
@@ -284,7 +293,7 @@ public class BBFile {
 
     void loadExtendedHeader(long offset) throws IOException {
 
-        UnsignedByteBuffer binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
+        UnsignedByteBuffer binaryParser = loadBinaryBuffer(this.path, byteOrder, offset, BBFILE_EXTENDED_HEADER_HEADER_SIZE);
 
         int extensionSize = binaryParser.getUShort();
         int extraIndexCount = binaryParser.getUShort();
@@ -292,7 +301,7 @@ public class BBFile {
         if (extraIndexCount == 0) return;
 
         int sz = extraIndexCount * (2 + 2 + 8 + 4 + 10 * (2 + 2));
-        binaryParser = UnsignedByteBufferImpl.loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
+        binaryParser = loadBinaryBuffer(this.path, byteOrder, extraIndexListOffset, sz);
 
         // const type = []
         // const fieldCount = []
@@ -325,17 +334,10 @@ public class BBFile {
         this.header.extraIndexOffsets = indexOffset;
     }
 
-    List<byte[]> getLeafChunks(String chr1, int bpStart, String chr2, int bpEnd, long treeOffset) throws IOException {
+    List<byte[]> getLeafChunks(int chrIdx1, int bpStart, int chrIdx2, int bpEnd, long treeOffset) throws IOException {
 
         if (this.header == null) {
             this.header = this.readHeader();
-        }
-
-        Integer chrIdx1 = this.getIdForChr(chr1);
-        Integer chrIdx2 = this.getIdForChr(chr2);
-
-        if (chrIdx1 == null || chrIdx2 == null) {
-            return Collections.EMPTY_LIST;
         }
 
         // Load the R Tree and fine leaf items
@@ -359,18 +361,15 @@ public class BBFile {
             int size = (int) (end - start);
             int uncompressBufSize = this.header.uncompressBuffSize;
 
-            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path)) {
-                byte[] buffer = new byte[size];
-                is.seek(start);
-                is.readFully(buffer);
+            byte[] buffer = getBytes(start, size);
 
-                for (RPTree.Item item : leafItems) {
-                    int offset = (int) (item.dataOffset - start);
-                    int end_ = (int) (offset + item.dataSize);
-                    byte[] itemBuffer = leafItems.size() == 1 ? buffer : Arrays.copyOfRange(buffer, offset, end_);
-                    leafChunks.add(itemBuffer);
-                }
+            for (RPTree.Item item : leafItems) {
+                int offset = (int) (item.dataOffset - start);
+                int end_ = (int) (offset + item.dataSize);
+                byte[] itemBuffer = leafItems.size() == 1 ? buffer : Arrays.copyOfRange(buffer, offset, end_);
+                leafChunks.add(itemBuffer);
             }
+
         }
 
         return leafChunks;
@@ -410,10 +409,6 @@ public class BBFile {
         return chrIdx;
     }
 
-    String getChrForId(int chrIdx) {
-        return chromTree.getNameForId(chrIdx);
-    }
-
     /**
      * Return the zoom header that most closely matches the given resolution.  Resolution is in BP / Pixel.
      *
@@ -426,7 +421,9 @@ public class BBFile {
     }
 
     BBZoomHeader zoomLevelForScale(double bpPerPixel, int tolerance) {
-        BBZoomHeader level = null;
+        if(this.zoomHeaders.length == 0) {
+            return null;
+        }
         for (BBZoomHeader zl : this.zoomHeaders) {
             if (zl.reductionLevel < bpPerPixel) {
                 return zl;
@@ -451,6 +448,7 @@ public class BBFile {
      * @returns {Promise<void>}
      */
 
+
     public IGVFeature search(String term) throws IOException {
 
         if (this.header == null) {
@@ -474,31 +472,26 @@ public class BBFile {
         if (region != null) {
             long start = region[0];
             int size = (int) region[1];
-            try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(this.path)) {
-                byte[] buffer = new byte[size];
-                is.seek(start);
-                is.readFully(buffer);
-                List<IGVFeature> features = decodeFeatures(buffer, -1, -1, -1);
+            byte[] buffer = this.getBytes(start, size);
+            List<IGVFeature> features = decodeFeatures(null, buffer, -1, -1, -1);
 
-                // Filter features to those matching term
-                final String searchTerm = term;
 
-                IGVFeature largest = features.stream().filter(f -> {
-                    return f.getName().equalsIgnoreCase(searchTerm) || f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
-                }).reduce((f1, f2) -> {
-                    int l1 = f1.getEnd() - f1.getStart();
-                    int l2 = f2.getEnd() - f2.getStart();
-                    return l1 > l2 ? f1 : f2;
-                }).get();
+            // Filter features to those matching term
+            final String searchTerm = term;
+            return features.stream().filter(f -> {
+                return f.getName().equalsIgnoreCase(searchTerm) ||
+                        f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
+            }).collect(Collectors.toList());
 
-                return largest;
-            }
         }
         return null;
     }
 
-    List<IGVFeature> decodeFeatures(byte[] buffer, int chrIdx, int start, int end) {
+
+    List<IGVFeature> decodeFeatures(String chr, byte[] buffer, int chrIdx, int start, int end) {
+
         List<IGVFeature> features = new ArrayList<>();
+
         byte[] uncompressed;
         if (this.header.uncompressBuffSize > 0) {
             uncompressed = (new CompressionUtils()).decompress(buffer, this.header.uncompressBuffSize);
@@ -520,15 +513,23 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            String chr = getChrForId(chromId);
-            final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
-            final IGVFeature feature = bedCodec.decode(bedData);
-            features.add(feature);
+
+            // When decoding features from a search the chromosome name is not known until the feature is decoded.
+            // Try to get the chromosome name from the id.
+            if (chr == null) {
+                chr = this.chromTree.getNameForId(chromId);
+            }
+            if (chr != null) {
+                final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
+                final IGVFeature feature = bedCodec.decode(bedData);
+                features.add(feature);
+            }
+
         }
         return features;
     }
 
-    List<LocusScore> decodeZoomData(byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
+    List<LocusScore> decodeZoomData(String chr, byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
 
         byte[] uncompressed;
         if (header.uncompressBuffSize > 0) {
@@ -554,26 +555,30 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            String chr = getChrForId(chromId);
-
-            float value;
-            switch (windowFunction) {
-                case min:
-                    value = minVal;
-                    break;
-                case max:
-                    value = maxVal;
-                    break;
-                case mean:
-                    value = sumData / validCount;
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported window function: " + windowFunction);
-
+            if (chr == null) {
+                chr = this.chromTree.getNameForId(chromId);
             }
 
-            final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
-            features.add(feature);
+            if (chr != null) {
+                float value;
+                switch (windowFunction) {
+                    case min:
+                        value = minVal;
+                        break;
+                    case max:
+                        value = maxVal;
+                        break;
+                    case mean:
+                        value = sumData / validCount;
+                        break;
+                    default:
+                        throw new RuntimeException("Unsupported window function: " + windowFunction);
+
+                }
+
+                final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
+                features.add(feature);
+            }
         }
         return features;
     }
@@ -653,7 +658,7 @@ public class BBFile {
             // For now take the first match, we don't support multiple results
             for (BPTree bpTree : searchTrees) {
                 if (bpTree != null) {
-                    long[] result = bpTree.search(term);
+                    long[] result = bpTree.searchLongLong(term);
                     if (result != null) {
                         return result;
                     }
@@ -675,8 +680,85 @@ public class BBFile {
             }
         }
         return this._searchTrees;
-
     }
 
+    UnsignedByteBuffer loadBinaryBuffer(String path, ByteOrder order, long start, int size) throws IOException {
+        byte[] bytes = getBytes(start, size);
+        return UnsignedByteBufferImpl.wrap(bytes, byteOrder);
+    }
+
+    private byte[] getBytes(long start, int size) throws IOException {
+
+        if (_preloadBytes != null) {
+            return Arrays.copyOfRange(_preloadBytes, (int) start, (int) start + size);
+        } else {
+            SeekableStream is = null;
+            try {
+                is = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
+                byte[] bytes = new byte[size];
+                is.seek(start);
+                is.readFully(bytes);
+                return bytes;
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        log.error("Error closing stream for " + path, e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Method computes bigwig "totalSummary" statistics for comparison with values in file header.  The purpose is to
+     * validate interpretation of file header values.   "sumOfSquares" is literally the sum of squares of the data,
+     * not sum of the differences wrt the mean.  The bigwig specification is not clear on this point.   It states that
+     * "the standard deviation can be easily computed", but its not clear how.
+     *
+     * From Jim Kent https://github.com/ucscGenomeBrowser/kent/blob/7d0bd2b7d089f94c9a8260c417246d4dbfce2523/src/lib/bbiWrite.c#L515
+     * void bbiAddRangeToSummary(bits32 chromId, bits32 chromSize, bits32 start, bits32 end,
+     * 	                         double val, int reduction, struct bbiSummary **pOutList)
+     *       int size = end - start;
+     *       double sum = size * val;
+     *       double sumSquares = sum * val;
+     *
+     *
+     * @throws IOException
+     */
+    public void computeStats() throws IOException {
+
+        long rTreeOffset = getHeader().fullIndexOffset;
+        double sum = 0;
+        long basesCovered = 0;
+        double sumSquares = 0;
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+        for (int idx = 0; idx < getChromosomeCount(); idx++) {
+            List<byte[]> chunks = this.getLeafChunks(idx, 0, idx, Integer.MAX_VALUE, rTreeOffset);
+            for (byte[] c : chunks) {
+                List<LocusScore> features = new ArrayList<>();
+                decodeWigData(c, idx, 0, Integer.MAX_VALUE, features);
+                for (LocusScore score : features) {
+
+                    min = Math.min(min, score.getScore());
+                    max = Math.max(max, score.getScore());
+                    final float val = score.getScore() * (score.getEnd() - score.getStart());
+                    sum += val;
+                    sumSquares += (score.getScore() * val);
+                    basesCovered += score.getEnd() - score.getStart();
+                }
+            }
+        }
+        System.out.println(totalSummary.printString());
+        double mean = sum / basesCovered;
+        System.out.println("basesCovered: " + basesCovered);
+        System.out.println("min: " + min);
+        System.out.println("max: " + max);
+        System.out.println("sum: " + sum);
+        System.out.println("sumSquares: " + sumSquares);
+        System.out.println("mean: " + mean);
+    }
 
 }

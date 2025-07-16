@@ -36,7 +36,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.AlignmentTrackEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.ColorScaleFactory;
@@ -121,6 +120,33 @@ public class IGVPreferences {
         return val == null ? defaultValue : val;
     }
 
+    /**
+     * Return preference as explicitly set in prefs.properties.  If no value is set return null.
+     * @param key
+     * @return
+     */
+    public String getExplicitValue(String key) {
+        key = key.trim();
+        String val = userPreferences.get(key);
+        if (val == null && parent != null) {
+            val = parent.userPreferences.get(key);
+        }
+        return val;
+    }
+
+    /**
+     * Return the default preference value as set in org.broad.igv.prefs.preferences.tab
+     * @param key
+     * @return
+     */
+    public String getDefault(String key) {
+        key = key.trim();
+        String val = defaults.get(key);
+        if (val == null && parent != null) {
+            val = parent.defaults.get(key);
+        }
+        return val;
+    }
 
     /**
      * Return the preference as a boolean value.
@@ -313,8 +339,8 @@ public class IGVPreferences {
     }
 
     private void checkForRestartChanges(Map<String, String> updatedPreferenceMap) {
-        for(String key : RESTART_KEYS) {
-            if(updatedPreferenceMap.containsKey(key)) {
+        for (String key : RESTART_KEYS) {
+            if (updatedPreferenceMap.containsKey(key)) {
                 MessageUtils.showMessage("Preference changes will take effect after restart.");
                 return;
             }
@@ -323,7 +349,7 @@ public class IGVPreferences {
 
     private void checkForGoogleMenuChange(Map<String, String> updatedPreferenceMap) {
 
-        if(updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
+        if (updatedPreferenceMap.containsKey(ENABLE_GOOGLE_MENU) && IGV.hasInstance()) {
             try {
                 IGVMenuBar.getInstance().enableGoogleMenu(getAsBoolean(ENABLE_GOOGLE_MENU));
             } catch (IOException e) {
@@ -443,6 +469,10 @@ public class IGVPreferences {
 
     public String getGenomeListURL() {
         return get(GENOMES_SERVER_URL);
+    }
+
+    public String getBackupGenomeListURL() {
+        return get(BACKUP_GENOMES_SERVER_URL);
     }
 
     public String getProvisioningURL() {
@@ -915,17 +945,6 @@ public class IGVPreferences {
         remove(PROXY_TYPE);
         remove(PROXY_WHITELIST);
         HttpUtils.getInstance().updateProxySettings();
-    }
-
-    public static String generateGenomeIdString(Collection<GenomeListItem> genomeListItems) {
-        String genomeString = "";
-
-        for (GenomeListItem serverItem : genomeListItems) {
-            genomeString += serverItem.getId() + Globals.HISTORY_DELIMITER;
-        }
-
-        genomeString = genomeString.substring(0, genomeString.length() - 1);
-        return genomeString;
     }
 
     /**

@@ -54,7 +54,9 @@ public class IconFactory {
         CLOSE,
         PLUS,
         MINUS,
-        INFO
+        INFO,
+        CHECKBOX,
+        CHECKBOX_UNCHECKED,
     }
 
     private Map<IconID, ImageIcon> icons;
@@ -71,6 +73,8 @@ public class IconFactory {
     private IconFactory() {
 
         icons = new HashMap();
+        icons.put(IconID.CHECKBOX, createImageIcon("/images/checkbox16.png", "checked"));
+        icons.put(IconID.CHECKBOX_UNCHECKED, createImageIcon("/images/checkboxUn16.png", "un-checked"));
         icons.put(IconID.DRAG_AND_DROP,
                 createImageIcon("/images/dragNdrop.png", "drag and drop"));
         icons.put(IconID.ZOOM,

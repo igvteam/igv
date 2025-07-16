@@ -39,6 +39,7 @@ final public class Constants {
     public static final String AUTOLOAD_LAST_AUTOSAVE = "AUTOLOAD_LAST_AUTOSAVE";
     public static final String AUTOSAVE_FREQUENCY = "AUTOSAVE_FREQUENCY";
     public static final String AUTOSAVES_TO_KEEP = "AUTOSAVES_TO_KEEP";
+    public static final String USER_THEME = "USER_THEME";
 
     //
     public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";
@@ -53,10 +54,12 @@ final public class Constants {
 
 
     public static final String GENOMES_SERVER_URL = "IGV.genome.sequence.dir";
+    public static final String BACKUP_GENOMES_SERVER_URL = "IGV.backup.genome.sequence.dir";
     public static final String BLAT_URL = "BLAT_URL";
     public static final String BLAT_SERVER_TYPE = "BLAT_SERVER_TYPE";
     public static final String EXTVIEW_URL = "EXTVIEW_URL";
     public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
+    public static final String AUXILLARY_HUBS_URL = "AUXILLARY_HUBS_URL";
 
     public static final String CRAM_CACHE_SEQUENCES = "CRAM.CACHE_SEQUENCES";
     public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";

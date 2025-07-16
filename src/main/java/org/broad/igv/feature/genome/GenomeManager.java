@@ -39,7 +39,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.load.*;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
@@ -48,10 +47,15 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.ucsc.hub.Hub;
+import org.broad.igv.ucsc.hub.HubParser;
+import org.broad.igv.ucsc.hub.TrackSelectionDialog;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.ResourceLocator;
@@ -62,15 +66,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.broad.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
 
 /**
  * @author jrobinso
  */
 public class GenomeManager {
 
+    public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  " +
+            "You can change these selections later using the 'Genomes > Select Genome Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeManager theInstance;
@@ -81,7 +86,7 @@ public class GenomeManager {
 
 
     /**
-     * Map from genomeID -> GenomeListItem
+     * Map from genomeID -> GenomeTableRecord
      * ID comparison will be case insensitive
      */
 
@@ -131,7 +136,7 @@ public class GenomeManager {
         if (org.broad.igv.util.ParsingUtils.fileExists(genomeId)) {
             genomePath = genomeId;
         } else {
-            GenomeListItem item = genomeListManager.getGenomeListItem(genomeId);
+            GenomeListItem item = getGenomeTableRecord(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("Could not locate genome with ID: " + genomeId);
                 return false;
@@ -158,12 +163,10 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
+                IGVMenuBar.getInstance().disableTracksMenu();
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
-
-            // Clear Feature DB
-            FeatureDB.clearFeatures();
 
             Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
 
@@ -200,6 +203,7 @@ public class GenomeManager {
             if (IGV.hasInstance()) {
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
+                IGVMenuBar.getInstance().enableTracksMenu();
             }
         }
     }
@@ -239,14 +243,12 @@ public class GenomeManager {
         IGV.getInstance().setSequenceTrack();
 
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
-        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Can be null
+        FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Used for .genome and .gbk formats.  Otherwise null
         if (geneFeatureTrack != null) {
-            PanelName panelName = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                    PanelName.DATA_PANEL : PanelName.FEATURE_PANEL;
             geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
             geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
-            IGV.getInstance().addTracks(Arrays.asList(geneFeatureTrack), panelName);
+            IGV.getInstance().addTrack(geneFeatureTrack, PanelName.ANNOTATION_PANEL.getName());
         }
 
         List<ResourceLocator> resources = genome.getAnnotationResources();
@@ -254,8 +256,11 @@ public class GenomeManager {
         if (resources != null) {
             for (ResourceLocator locator : resources) {
                 try {
-                    List<Track> tracks = IGV.getInstance().load(locator);
-                    annotationTracks.addAll(tracks);
+                    if(locator != null) {
+                        locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
+                        List<Track> tracks = IGV.getInstance().load(locator);
+                        annotationTracks.addAll(tracks);
+                    }
                 } catch (DataLoadException e) {
                     log.error("Error loading genome annotations", e);
                 }
@@ -266,48 +271,114 @@ public class GenomeManager {
             IGV.getInstance().addTracks(annotationTracks);
             for (Track track : annotationTracks) {
                 ResourceLocator locator = track.getResourceLocator();
-                String fn = "";
-                if (locator != null) {
-                    fn = locator.getPath();
-                    int lastSlashIdx = fn.lastIndexOf("/");
-                    if (lastSlashIdx < 0) {
-                        lastSlashIdx = fn.lastIndexOf("\\");
+                if(locator != null) {
+                    String fn = "";
+                    if (locator != null) {
+                        fn = locator.getPath();
+                        int lastSlashIdx = fn.lastIndexOf("/");
+                        if (lastSlashIdx < 0) {
+                            lastSlashIdx = fn.lastIndexOf("\\");
+                        }
+                        if (lastSlashIdx > 0) {
+                            fn = fn.substring(lastSlashIdx + 1);
+                        }
                     }
-                    if (lastSlashIdx > 0) {
-                        fn = fn.substring(lastSlashIdx + 1);
-                    }
+                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
+                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
+                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
                 }
-                track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
             }
         }
 
         IGV.getInstance().revalidateTrackPanels();
     }
 
+    /**
+     * Update the annotation tracks for the current genome.  This will prompt the user to select tracks from the
+     * genomes default hub.  The selected tracks will be saved in the genome config file, and loaded.  Deselected
+     * tracks will be removed.
+     *
+     * @throws IOException
+     */
+    public void updateAnnotations() throws IOException {
+        if (currentGenome != null) {
+            GenomeConfig config = currentGenome.getConfig();
 
-    public File downloadGenome(GenomeListItem item, boolean downloadSequence, boolean downloadAnnotations) {
+            if (config != null) {
 
-        try {
+                final List<TrackConfig> trackConfigs = config.getTrackConfigs();
+                List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
+                        trackConfigs.stream().map(t -> t.url).toList();
 
-            if (item.getPath().endsWith(".genome")) {
-                File genomeFile = DotGenomeUtils.getDotGenomeFile(item.getPath());  // Will be downloaded if remote -- neccessary to unzip
-                return genomeFile;
-            } else {
-                JsonGenomeLoader loader = new JsonGenomeLoader(item.getPath());
-                GenomeConfig config = loader.loadGenomeConfig();
-                File downloadedGenome = GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
-                return downloadedGenome;
+                String message = "Select defaul tannoations for " + config.getName();
+                List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, message);
+                if (selectedConfigs == null) {
+                    return;
+                }
+
+                config.setTracks(selectedConfigs);
+                GenomeDownloadUtils.saveLocalGenome(config);
+
+                Set<String> selectedTrackPaths = selectedConfigs.stream().map(t -> t.url).collect(Collectors.toSet());
+
+                // Unload deselected tracks
+                Set<String> pathsToRemove = new HashSet<>();
+                for (String p : currentAnnotationPaths) {
+                    if (!selectedTrackPaths.contains(p)) {
+                        pathsToRemove.add(p);
+                    }
+                }
+                IGV.getInstance().deleteTracksByPath(pathsToRemove);
+
+                // Load selected tracks.Filter out tracks already loaded
+                Set<String> loadedTrackPaths = IGV.getInstance().getAllTracks().stream()
+                        .filter(t -> t.getResourceLocator() != null)
+                        .map(t -> t.getResourceLocator().getPath())
+                        .collect(Collectors.toSet());
+                List<TrackConfig> tracksToLoad = selectedConfigs.stream()
+                        .filter(trackConfig -> !loadedTrackPaths.contains(trackConfig.url))
+                        .collect(Collectors.toList());
+
+                List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
+                for (ResourceLocator locator : locators) {
+                    locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
+                }
+
+                IGV.getInstance().loadTracks(locators);
             }
-
-        } catch (Exception e) {
-            MessageUtils.showMessage("Error downloading genome: " + e.getMessage());
-            log.error("Error downloading genome " + item.getDisplayableName());
-            return null;
         }
     }
 
+    /**
+     * Prompt the user to select annotation tracks from the genome's default hub.
+     *
+     * @param config
+     * @return
+     * @throws IOException
+     */
+
+    public static List<TrackConfig> selectAnnotationTracks(GenomeConfig config, String message) throws IOException {
+
+        String annotationHub = config.getHubs().get(0);  // IGV convention
+        Hub hub = HubParser.loadHub(annotationHub);
+
+        Set<String> currentSelections = config.getTrackConfigs() == null ? Collections.emptySet() :
+                config.getTrackConfigs().stream()
+                        .map(trackConfig -> trackConfig.url)
+                        .collect(Collectors.toSet());
+        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
+        try {
+            UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
+            if (dlg.isCanceled()) {
+                return null;
+            } else {
+                return dlg.getSelectedConfigs();
+            }
+        } catch (Exception e) {
+            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
+            return null;
+        }
+    }
 
     /**
      * Delete the specified genome files
@@ -357,6 +428,25 @@ public class GenomeManager {
                 }
             }
         }
+    }
+
+
+    /**
+     * Searches through currently loaded GenomeTableRecords and returns
+     * that with a matching ID. If not found, searches server and
+     * user defined lists
+     *
+     * @param genomeId
+     * @return
+     */
+    public GenomeListItem getGenomeTableRecord(String genomeId) {
+
+        GenomeListItem matchingItem = GenomeListManager.getInstance().getGenomeTableRecord(genomeId);
+        if (matchingItem == null) {
+            // If genome archive was not found, search hosted genomes
+            matchingItem = HostedGenomes.getGenomeListItem(genomeId);
+        }
+        return matchingItem;
     }
 
     // Setter provided for unit tests

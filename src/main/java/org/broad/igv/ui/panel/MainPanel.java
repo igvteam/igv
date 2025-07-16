@@ -26,6 +26,7 @@
 package org.broad.igv.ui.panel;
 
 import com.jidesoft.swing.JideSplitPane;
+import org.broad.igv.Globals;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
@@ -37,6 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -502,6 +504,12 @@ public class MainPanel extends JPanel implements Paintable {
 //        }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        if(Globals.isDarkMode()) {
+            setBackground(UIManager.getColor("Panel.background"));
+        }
+    }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 

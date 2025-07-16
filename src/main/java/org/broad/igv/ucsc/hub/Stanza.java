@@ -7,14 +7,18 @@ import java.util.*;
 class Stanza {
 
     private static Set<String> parentOverrideProperties = new HashSet<>(Arrays.asList("visibility", "priority", "group"));
+    private static final Set<String> nonInheritableProperties = new HashSet<>(Arrays.asList(
+            "track", "type", "shortLabel", "longLabel", "bigDataUrl",
+            "parent", "superTrack", "priority", "compositeTrack", "view", "compositeContainer"
+    ));
+
     final String type;
     final String name;
-    Stanza parent;
+    private Stanza parent;
     Map<String, String> properties;
 
 
     Stanza(String type, String name) {
-
         this.type = type;
         this.name = name;
         this.properties = new HashMap<>();
@@ -32,21 +36,22 @@ class Stanza {
         return name;
     }
 
-    void setProperty(String key, String value) {
-        this.properties.put(key, value);
-    }
-
     String getOwnProperty(String key) {
         return this.properties.get(key);
     }
 
-    String getProperty(String key) {
+    boolean hasOwnProperty(String key) {
+        return getProperty(key) != null;
+    }
 
-        if (parentOverrideProperties.contains(key) && this.parent != null && this.parent.hasProperty(key)) {
+    String getProperty(String key) {
+        if (this.properties.containsKey("noInherit")) {
+            return this.getOwnProperty(key);
+        } else if (parentOverrideProperties.contains(key) && this.parent != null && this.parent.hasProperty(key)) {
             return this.parent.getProperty(key);
         } else if (this.properties.containsKey(key)) {
             return this.properties.get(key);
-        } else if (this.parent != null) {
+        } else if (this.parent != null && !this.nonInheritableProperties.contains(key)) {
             return this.parent.getProperty(key);
         } else {
             return null;
@@ -54,17 +59,11 @@ class Stanza {
     }
 
     boolean hasProperty(String key) {
-        if (this.properties.containsKey(key)) {
-            return true;
-        } else if (this.parent != null) {
-            return this.parent.hasProperty(key);
-        } else {
-            return false;
-        }
+        return getProperty(key) != null;
     }
 
     String format() {
-        String type = this.getProperty("type");
+        String type = this.getOwnProperty("type");
         if (type != null) {
             // Trim extra bed qualifiers (e.g. bigBed + 4)
             return firstWord(type);
@@ -77,6 +76,19 @@ class Stanza {
     }
 
     public void setParent(Stanza parent) {
+        if (parent == this) {
+            throw new IllegalArgumentException("Stanza cannot be its own parent");
+        }
         this.parent = parent;
     }
+
+    public Stanza getAncestor() {
+        if (parent != null) {
+            return parent.getAncestor();
+        } else {
+            return this;
+        }
+    }
+
+
 }

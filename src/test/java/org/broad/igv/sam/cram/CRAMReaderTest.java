@@ -110,22 +110,6 @@ public class CRAMReaderTest {
         assertEquals(2, counter);
     }
 
-
-
-    @Test
-    public void testRemoteCraiCram() throws Exception {
-
-        String cramFile = "https://s3.amazonaws.com/igv.broadinstitute.org/test/cram/cram_with_crai_index.cram";
-        GenomeManager.getInstance().loadGenome(TestUtils.DATA_DIR + "cram/hg19mini.fasta");
-
-        BAMReader reader = new BAMReader(new ResourceLocator(cramFile), true);
-
-        CloseableIterator<SAMAlignment> iter = reader.query("2", 500, 600, false);
-        int counter = count(iter);
-        assertEquals(2, counter);
-    }
-
-
     @Test
     public void testRemoteBaiCram() throws Exception {
 

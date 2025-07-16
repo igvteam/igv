@@ -307,7 +307,7 @@ public interface Track extends Persistable {
         return false;
     }
 
-    default NamedFeature search(String token) {
+    default List<NamedFeature> search(String token) {
         return null;
     }
 

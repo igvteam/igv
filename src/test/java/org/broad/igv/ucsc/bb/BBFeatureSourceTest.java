@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class BBFeatureSourceTest {
 
     @Test
-    public void testbed9_2 () throws IOException {
+    public void testbed9_2() throws IOException {
         String path = TestUtils.DATA_DIR + "bb/myBigBed2.bb";
         String chr = "chr7";
         int start = 0;
@@ -30,7 +30,7 @@ public class BBFeatureSourceTest {
         Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
 
         List<BasicFeature> features = new ArrayList<>();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             features.add(iter.next());
         }
 
@@ -44,20 +44,48 @@ public class BBFeatureSourceTest {
     }
 
     @Test
-    public void testChromAlias () throws IOException {
+    public void testbed9_2_prelod() throws IOException {
+        String path = TestUtils.DATA_DIR + "bb/myBigBed2.bb";
+        String chr = "chr7";
+        int start = 0;
+        int end = Integer.MAX_VALUE;
+
+        Genome genome = null;
+        BBFile reader = new BBFile(path, genome);
+        reader.preload();
+        BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
+
+        Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
+
+        List<BasicFeature> features = new ArrayList<>();
+        while (iter.hasNext()) {
+            features.add(iter.next());
+        }
+
+        assertEquals(3339, features.size());   // Verified in iPad app
+
+        //chr7	773975	792642	uc003sjb.2	0	+	776710	791816	0,255,0	HEATR2	Q86Y56-3
+        BasicFeature f = features.get(20);
+        assertEquals(f.getStart(), 773975);
+        assertEquals(f.getAttribute("geneSymbol"), "HEATR2");
+        assertEquals(f.getAttribute("spID"), "Q86Y56-3");
+    }
+
+    @Test
+    public void testChromAlias() throws IOException {
         String path = TestUtils.DATA_DIR + "bb/myBigBed2.bb";
         String chr = "7";
         int start = 0;
         int end = Integer.MAX_VALUE;
 
         Genome genome = TestUtils.mockNCBIGenome();
-        BBFile reader =  new BBFile(path, genome);
+        BBFile reader = new BBFile(path, genome);
         BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
 
         Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
 
         List<BasicFeature> features = new ArrayList<>();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             features.add(iter.next());
         }
 
@@ -84,7 +112,34 @@ public class BBFeatureSourceTest {
         int end = 42182827;
 
 
-       Iterator<BasicFeature> iter =  bbSource.getFeatures(chr, start, end);
+        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        int count = 0;
+        while (iter.hasNext()) {
+            BasicFeature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertTrue(f.getStart() <= end && f.getEnd() >= start);
+            count++;
+        }
+        assertEquals("Feature count", 225, count);
+
+    }
+
+    @Test
+    public void testBigBed_preload() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/chr21.refseq.bb";
+        BBFile bbReader = new BBFile(path, null);
+        bbReader.preload();
+        assertTrue(bbReader.getType() == BBFile.Type.BIGBED);
+
+        BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
+
+        String chr = "chr21";
+        int start = 26490012;
+        int end = 42182827;
+
+
+        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
             BasicFeature f = iter.next();
@@ -110,15 +165,12 @@ public class BBFeatureSourceTest {
         assertTrue(bbReader.getType() == BBFile.Type.BIGBED);
 
         BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
-        String [] chrNames = bbReader.getChromosomeNames();
 
         int count = 0;
-        for(String chr : chrNames) {
-            Iterator<BasicFeature> iter = bbSource.getFeatures(chr, 0, Integer.MAX_VALUE);
-            while (iter.hasNext()) {
-                iter.next();
-                count++;
-            }
+        Iterator<BasicFeature> iter = bbSource.getFeatures("chr21", 0, Integer.MAX_VALUE);
+        while (iter.hasNext()) {
+            iter.next();
+            count++;
         }
         assertEquals("Feature count", bbReader.getHeader().dataCount, count);
 
@@ -132,7 +184,7 @@ public class BBFeatureSourceTest {
 
         String path = "https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/bbi/GCA_009914755.4_T2T-CHM13v2.0.catLiftOffGenesV1/catLiftOffGenesV1.bb";
 
-        BBFile bbReader = new BBFile(path,null);
+        BBFile bbReader = new BBFile(path, null);
         BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
 
         String chr = "chr21";
@@ -247,7 +299,6 @@ public class BBFeatureSourceTest {
         }
         assertTrue(count > 0);
     }
-
 
 
 }

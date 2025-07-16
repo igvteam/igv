@@ -35,6 +35,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
+import org.broad.igv.util.HttpMappings;
 import org.broad.igv.util.HttpUtils;
 
 
@@ -53,8 +54,6 @@ import java.util.zip.GZIPInputStream;
 public class OAuthUtils {
 
     private static Logger log = LogManager.getLogger(OAuthUtils.class);
-
-    private static final String PROPERTIES_URL = "https://s3.amazonaws.com/igv.org.app/desktop_google";
 
     private static OAuthUtils theInstance;
 
@@ -169,9 +168,6 @@ public class OAuthUtils {
 
 
     private String loadAsString(String urlOrPath) throws IOException {
-        if (HttpUtils.isRemoteURL(urlOrPath)) {
-            urlOrPath = HttpUtils.mapURL(urlOrPath);
-        }
         InputStream is = null;
         try {
             is = openInputStream(urlOrPath);

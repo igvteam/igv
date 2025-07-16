@@ -25,6 +25,7 @@
 
 package org.broad.igv.feature.aa;
 
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
@@ -47,7 +48,7 @@ public class CodonTest extends AbstractHeadlessTest {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        egfr = (BasicFeature) FeatureDB.getFeature("egfr");
+        egfr = (BasicFeature) genome.getFeatureDB().getFeature("egfr");
     }
 
     @Test @Ignore("Fails unless tests are run in separate JVMs")
@@ -65,7 +66,7 @@ public class CodonTest extends AbstractHeadlessTest {
         String exp_string = "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQV";
         char[] expected = exp_string.toCharArray();
 
-        BasicFeature KRAS = (BasicFeature) FeatureDB.getFeature("KRAS");
+        BasicFeature KRAS = (BasicFeature) genome.getFeatureDB().getFeature("KRAS");
         tstGetCodon(KRAS, expected);
     }
 
@@ -89,8 +90,8 @@ public class CodonTest extends AbstractHeadlessTest {
         //valid for these ids:
         //NM_003661, NM_145343, NM_001136540
 
-        List<IGVNamedFeature> featuresList = FeatureDB.getFeaturesList(geneName, 50, false);
-        for (IGVNamedFeature feat : featuresList) {
+        List<NamedFeature> featuresList = genome.getFeatureDB().getFeaturesList(geneName, 50, false);
+        for (NamedFeature feat : featuresList) {
             BasicFeature bf = (BasicFeature) feat;
             System.out.println(bf.getIdentifier());
             Codon c = bf.getCodon(genome, bf.getChr(),  proteinPos);

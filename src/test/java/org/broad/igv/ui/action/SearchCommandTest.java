@@ -25,8 +25,10 @@
 
 package org.broad.igv.ui.action;
 
+import htsjdk.tribble.NamedFeature;
 import junit.framework.AssertionFailedError;
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.ChromAliasSource;
 import org.broad.igv.feature.genome.Genome;
@@ -38,6 +40,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
+import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 
@@ -250,6 +253,96 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         for (String s : errors) {
             //System.out.println(s);
             assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
+        }
+    }
+
+
+    @Test
+    public void testMutationSearch() throws Exception {
+
+        String name = "EGFR";
+        // EGFR starts with proteins MRPSG
+        String[] symbols = new String[]{"M", "R", "P", "S", "G"};
+        //All of these should be possible with a SNP from the EGFR sequence
+        String[] muts = new String[]{"I", "R", "P", "P", "R"};
+        Map<Integer, BasicFeature> matches;
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        for (int ii = 0; ii < symbols.length; ii++) {
+            matches = SearchCommand.getMutationAA(possibles, ii + 1, symbols[ii], muts[ii], genome);
+            assertEquals(1, matches.size());
+            for (int pos : matches.keySet()) {
+                assertEquals(name, matches.get(pos).getName());
+            }
+        }
+
+        name = "EGFLAM";
+        int exp_start = 38439399;
+        possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        matches = SearchCommand.getMutationAA(possibles, 2, "H", "H", genome);
+        assertEquals(1, matches.size());
+        for (int geneloc : matches.keySet()) {
+            assertEquals(exp_start, matches.get(geneloc).getStart());
+        }
+
+        String[] others = new String[]{"I", "M", "T"};
+        for (String c : others) {
+            matches = SearchCommand.getMutationAA(possibles, 2, "H", c, genome);
+            assertEquals(0, matches.size());
+        }
+    }
+
+    @Test
+    public void testMutationSearchNegStrand() throws Exception {
+        String name = "KRAS";
+        int exp_start = 25249446;
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 100, false);
+        Map<Integer, BasicFeature> matches =SearchCommand.getMutationAA(possibles, 1, "M", "I", genome);
+        assertEquals(1, matches.size());
+        for (int geneloc : matches.keySet()) {
+            assertEquals(exp_start, matches.get(geneloc).getStart());
+        }
+
+    }
+
+    @Test
+    public void testMutationSearchFail() throws Exception {
+        String name = "EGFR";
+        String[] symbols = "R,P,S,G,M".split(",");
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        for (int ii = 0; ii < symbols.length; ii++) {
+            Map<Integer, BasicFeature>  matches = SearchCommand.getMutationAA(possibles, ii + 1, symbols[ii], "M", genome);
+            assertEquals(0, matches.size());
+        }
+    }
+
+    @Test
+    public void testMutationSearchNT() throws Exception {
+        String name = "EGFR";
+        String[] bps = new String[]{"A", "T", "G"};
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        for (int ii = 0; ii < bps.length; ii++) {
+            Map<Integer, BasicFeature> matches = SearchCommand.getMutationNT(possibles, ii + 1, bps[ii], genome);
+            assertEquals(1, matches.size());
+        }
+    }
+
+    @Test
+    public void testMutationSearchNTNegStrand() throws Exception {
+        String name = "KRAS";
+        String[] bps = new String[]{"A", "T", "G"};
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+
+        for (int ii = 0; ii < bps.length; ii++) {
+            Map<Integer, BasicFeature> matches = SearchCommand.getMutationNT(possibles, ii + 1, bps[ii], genome);
+            assertEquals(1, matches.size());
+        }
+
+        //Exon 3 of KRAS, starting at amino acid 56
+        int startNT = (56 - 1) * 3;
+        char[] bps2 = "CTCGACACAGCAGGT".toCharArray();
+        for (int ii = 0; ii < bps2.length; ii++) {
+            Map<Integer, BasicFeature> matches = SearchCommand.getMutationNT(possibles, ii + startNT + 1, String.valueOf(bps2[ii]), genome);
+            assertEquals(1, matches.size());
         }
     }
 }

@@ -58,8 +58,8 @@ public class BaseModificationCountsTest {
     @Test
     public void incrementCounts2() throws IOException {
 
-        String bamfile = "https://www.dropbox.com/s/q32hk7tvsejryjt/HG002_chr11_119076212_119102218_2.bam";
-        String indexFile = "https://www.dropbox.com/s/ax1ljny7ja5fdcu/HG002_chr11_119076212_119102218_2.bam.bai";
+        String bamfile = TestUtils.REMOTE_DATA_DIR + "test/bam/basemods/HG002_chr11_119076212_119102218_2.bam";
+        String indexFile = TestUtils.REMOTE_DATA_DIR +"test/bam/basemods/HG002_chr11_119076212_119102218_2.bam.bai";
         String chr = "chr11";
         int start = 119094722;
         int end = 119094724;

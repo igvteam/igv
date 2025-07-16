@@ -35,7 +35,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -51,7 +51,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -144,7 +143,7 @@ public class CommandExecutor {
                 }
                 String id = GenomeManager.getInstance().getCurrentGenome().getId();
                 if (id != null) {
-                    GenomeListItem item = GenomeListManager.getInstance().getGenomeListItem(id);
+                    GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(id);
                     if (item != null) {
                         result = item.getPath();
                     }
@@ -784,6 +783,7 @@ public class CommandExecutor {
                         rl.setName(names.get(fi));
                     } else if (isDataURL) {
                         rl.setName("Data");
+                        rl.setDataURL(true);
                     }
                     if (indexFiles != null) {
                         rl.setIndexPath(indexFiles.get(fi));

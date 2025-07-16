@@ -25,6 +25,8 @@
 
 package org.broad.igv.ui;
 
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.sanityinc.jargs.CmdLineParser;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
@@ -35,11 +37,13 @@ import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.igv.util.stream.IGVUrlHelperFactory;
+import com.formdev.flatlaf.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -113,7 +117,7 @@ public class Main {
             open(frame, igvArgs);
         };
 
-        SwingUtilities.invokeLater(runnable);
+        UIUtilities.invokeOnEventThread(runnable);
 
     }
 
@@ -302,8 +306,54 @@ public class Main {
     private static void initializeLookAndFeel() {
 
         try {
-            String lnf = UIManager.getSystemLookAndFeelClassName();
-            UIManager.setLookAndFeel(lnf);
+            String lnfselect = PreferencesManager.getPreferences().get(USER_THEME);
+            UIManager.LookAndFeelInfo[] looks = UIManager.getInstalledLookAndFeels();
+            String cross = UIManager.getCrossPlatformLookAndFeelClassName();
+            switch (lnfselect) {
+                case "SYSTEM":
+                    if (!Globals.IS_LINUX)
+                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    else
+                        UIManager.setLookAndFeel(cross);
+                    break;
+                case "CROSS":
+                    UIManager.setLookAndFeel(cross);
+                    break;
+                case "FLATLIGHT":
+                    if (Globals.IS_MAC)
+                        UIManager.setLookAndFeel(new FlatMacLightLaf());
+                    else
+                        UIManager.setLookAndFeel(new FlatLightLaf());
+                    break;
+                case "FLATDARK":
+                    if (Globals.IS_MAC)
+                        UIManager.setLookAndFeel(new FlatMacDarkLaf());
+                    else
+                        UIManager.setLookAndFeel(new FlatDarkLaf());
+                    break;
+                case "FLATINTELLIJ":
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                    break;
+                case "FLATINTELLIJDARK":
+                    UIManager.setLookAndFeel(new FlatDarculaLaf());
+                    break;
+                case "NIMBUS":
+                case "METAL":
+                    boolean found = false;
+                    for (UIManager.LookAndFeelInfo info : looks) {
+                        if (info.getName().toUpperCase().contains(lnfselect)) {
+                            UIManager.setLookAndFeel(info.getClassName());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(found) {
+                        break;
+                    }
+                default:
+                    UIManager.setLookAndFeel(cross);
+                    break;
+            }
 
         } catch (Exception e) {
             log.error("Error setting look and feel", e);
@@ -326,7 +376,6 @@ public class Main {
 
         if (Globals.IS_LINUX) {
             try {
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                 UIManager.put("JideSplitPane.dividerSize", 5);
                 UIManager.put("JideSplitPaneDivider.background", Color.darkGray);
 

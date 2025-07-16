@@ -33,7 +33,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromAliasDefaults;
 import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.commandbar.GenomeListManager;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.track.Track;
@@ -42,7 +42,6 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.junit.Assert;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import java.awt.*;
 import java.io.*;
@@ -69,6 +68,7 @@ public class TestUtils {
     public static final String TEST_UNIQUE_RUN_BASE = System.currentTimeMillis() + "_" + Math.random();
     private static final String TESTPREFS_PROPERTIES = "testprefs_" + TEST_UNIQUE_RUN_BASE + ".properties";
     public static final String DATA_DIR = "test/data/";
+    public static final String REMOTE_DATA_DIR = "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/";
     public static final String TMP_OUTPUT_DIR = DATA_DIR + "out/" + TEST_UNIQUE_RUN_BASE + "/";
 
     static {

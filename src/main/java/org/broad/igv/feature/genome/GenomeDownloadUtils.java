@@ -8,10 +8,8 @@ import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.commandbar.GenomeListManager;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,47 +31,51 @@ public class GenomeDownloadUtils {
         return path.endsWith(".json");
     }
 
-    public static boolean isSequenceDownloadable(String path) {
-        if (path != null && path.endsWith(".json")) {
+    public static boolean isSequenceDownloadable(String genomePath) {
+        if (genomePath != null && genomePath.endsWith(".json")) {
             try {
-                String jsonString = FileUtils.getContents(path);
+                String jsonString = FileUtils.getContents(genomePath);
                 GenomeConfig genomeConfig = GenomeConfig.fromJson(jsonString);
-                String sequenceURL = genomeConfig.getTwoBitURL();
+                String sequenceURL = genomeConfig.twoBitURL;
                 if (sequenceURL == null) {
-                    sequenceURL = genomeConfig.getFastaURL();
+                    sequenceURL = genomeConfig.fastaURL;
                 }
                 return isRemoteURL(sequenceURL) && !disallowedBuckets.stream().anyMatch(sequenceURL::contains);
 
             } catch (IOException e) {
-                log.error("Error fetching genome json " + path);
+                log.error("Error fetching genome json " + genomePath);
             }
         }
         return false;
 
     }
 
-    public static File downloadGenome(GenomeConfig c, boolean downloadSequence, boolean downloadAnnotations) throws IOException {
+    public static File downloadGenome(GenomeConfig genomeConfig, boolean downloadSequence, boolean downloadAnnotations) throws IOException {
 
-        GenomeConfig config = c.copy();
+        GenomeConfig config = genomeConfig.copy();
 
         // Create a directory for the data files (sequence and annotations)
         final File genomeDirectory = DirectoryManager.getGenomeCacheDirectory();
-        File dataDirectory = new File(genomeDirectory, config.getId());
-        if (dataDirectory.exists()) {
-            if (!dataDirectory.isDirectory()) {
-                throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
-            }
-        } else {
-            if (!dataDirectory.mkdir()) {
-                throw new RuntimeException("Error downloading genome.  Could not create directory: " + dataDirectory.getAbsolutePath());
+        File dataDirectory = null;
+
+        if(downloadSequence || downloadAnnotations) {
+            dataDirectory = new File(genomeDirectory, config.id);
+            if (dataDirectory.exists()) {
+                if (!dataDirectory.isDirectory()) {
+                    throw new RuntimeException("Error downloading genome. " + dataDirectory.getAbsolutePath() + " exists and is not a directory.");
+                }
+            } else {
+                if (!dataDirectory.mkdir()) {
+                    throw new RuntimeException("Error downloading genome.  Could not create directory: " + dataDirectory.getAbsolutePath());
+                }
             }
         }
 
-        String relativeDataDirectory = config.getId() + "/";
+        String relativeDataDirectory = config.id + "/";
 
-        if (config.getTwoBitURL() != null) {
+        if (config.twoBitURL != null) {
 
-            URL url = new URL(config.getTwoBitURL());
+            URL url = new URL(config.twoBitURL);
             File localFile;
             if (downloadSequence) {
                 localFile = download(url, dataDirectory);
@@ -81,14 +83,14 @@ public class GenomeDownloadUtils {
                 localFile = constructLocalFile(url, dataDirectory);  // It might be there from previous downloads
             }
             if (localFile.exists()) {
-                config.setTwoBitURL(relativeDataDirectory + localFile.getName());
+                config.twoBitURL =(relativeDataDirectory + localFile.getName());
                 // Null out urls not needed for .2bit sequences.
-                config.setFastaURL(null);
-                config.setIndexURL(null);
-                config.setGziIndexURL(null);
-                config.setTwoBitBptURL(null);  // Not needed for local .2bit files
+                config.fastaURL = (null);
+                config.indexURL = (null);
+                config.gziIndexURL = (null);
+                config.twoBitBptURL =(null);  // Not needed for local .2bit files
             }
-        } else if (config.getFastaURL() != null) {
+        } else if (config.fastaURL != null) {
 
             String[] fastaFields = {"fastaURL", "indexURL", "gziIndexURL", "compressedIndexURL"};
             downloadAndUpdateConfig(downloadSequence, fastaFields, config, dataDirectory, relativeDataDirectory);
@@ -109,10 +111,7 @@ public class GenomeDownloadUtils {
 
         }
 
-        File localGenomeFile = new File(genomeDirectory, config.getId() + ".json");
-        saveLocalGenome(config, localGenomeFile);
-        return localGenomeFile;
-
+        return saveLocalGenome(config);
     }
 
     private static void downloadAndUpdateConfig(boolean downloadData, String[] fields, Object config, File dataDirectory, String relativeDataDirectory) {
@@ -140,14 +139,27 @@ public class GenomeDownloadUtils {
         }
     }
 
-    private static void saveLocalGenome(GenomeConfig genomeConfig, File localFile) throws IOException {
+    /**
+     * Save the genome definition as a json file in the genome directory.
+     *
+     * @param genomeConfig
+     * @return
+     * @throws IOException
+     */
+    public static File saveLocalGenome(GenomeConfig genomeConfig) throws IOException {
+        String id = genomeConfig.id;
+        if (id == null) {
+            throw new IllegalArgumentException("Config ID is null. I can't work with this.");
+        }
+        String sanitizedId = id.replaceAll("[^a-zA-Z0-9-_]", "_");
+        File localFile = new File(DirectoryManager.getGenomeCacheDirectory(), sanitizedId + ".json");
         log.info("Saving " + localFile.getAbsolutePath());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(localFile))) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(genomeConfig, writer);
         }
+        return localFile;
     }
-
 
     public static File constructLocalFile(URL url, File directory) {
         String path = url.getPath();

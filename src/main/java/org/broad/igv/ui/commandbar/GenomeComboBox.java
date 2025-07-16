@@ -1,9 +1,11 @@
 package org.broad.igv.ui.commandbar;
 
-import org.broad.igv.logging.*;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
@@ -13,7 +15,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Vector;
 
 /**
  * Created by jrobinso on 7/6/17.
@@ -63,18 +68,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
         Vector<GenomeListItem> vector = new Vector<>(genomes);
         vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
-        vector.add(GenomeListItem.DOWNLOAD_ITEM);
         return new DefaultComboBoxModel(vector);
-    }
-
-    public boolean hasItem(Object item) {
-        int c = this.getItemCount();
-        for (int i = 0; i < c; i++) {
-            if (item.equals(this.getItemAt(i))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     class GenomeBoxActionListener implements ActionListener {
@@ -84,28 +78,22 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
             if (!(selItem instanceof GenomeListItem)) {
                 return;
             }
-            GenomeListItem genomeListItem = (GenomeListItem) selItem;
+            GenomeListItem GenomeTableRecord = (GenomeListItem) selItem;
 
             // If we haven't changed genomes do nothing
-            if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
+            if (GenomeTableRecord.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
                 return;
             }
 
             final Runnable runnable = () -> {
 
-                if (genomeListItem != null && genomeListItem.getPath() != null) {
-
-                    if (genomeListItem == GenomeListItem.DOWNLOAD_ITEM) {
-                        HostedGenomeSelectionDialog.downloadHostedGenome();
-                    } else {
-
-                        try {
-                            GenomeManager.getInstance().loadGenomeById(genomeListItem.getId());
-                        } catch (Exception e) {
-                            log.error(e);
-                            MessageUtils.showErrorMessage("The genome '" + genomeListItem.getDisplayableName() +
-                                    "' could not be read.", e);
-                        }
+                if (GenomeTableRecord != null && GenomeTableRecord.getPath() != null) {
+                    try {
+                        GenomeManager.getInstance().loadGenomeById(GenomeTableRecord.getId());
+                    } catch (Exception e) {
+                        log.error(e);
+                        MessageUtils.showErrorMessage("The genome '" + GenomeTableRecord.getDisplayableName() +
+                                "' could not be read.", e);
                     }
                 }
             };

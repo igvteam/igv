@@ -1,0 +1,67 @@
+hub test
+shortLabel Supertrack test
+longLabel Supertrack test
+useOneFile on
+
+genome hg38
+
+track CompRoadmapbySample
+superTrack on
+shortLabel By Sample
+longLabel Roadmap data by sample
+group roadmap
+visibility dense
+priority 12
+
+track CompRoadmap_HUES64
+compositeTrack on
+parent CompRoadmapbySample
+shortLabel HUES64
+longLabel HUES64 tracks
+group roadmap
+subGroup1 view Views ALN=Alignments COV=Coverage
+subGroup2 assayType Assay_Type ChIP-seq=ChIP-seq polyA_plus_RNA-seq=polyA_plus_RNA-seq WGBS=WGBS
+dimensions dimensionX=assayType
+sortOrder assayType=+
+dividers assayType
+dragAndDrop on
+priority 1
+visibility dense
+type bed 3
+
+	track CompRoadmap_HUES64ViewCOV
+	shortLabel Coverage
+	view COV
+	maxHeightPixels 64:32:16
+	parent CompRoadmap_HUES64
+	visibility dense
+
+		track ENCFF002FAZ_HUES64_ChIP-seq_bySample
+		bigDataUrl https://www.encodeproject.org/files/ENCFF002FAZ/@@download/ENCFF002FAZ.bigBed
+		shortLabel ENCFF002FAZ
+		longLabel ENCFF002FAZ HUES64 ChIP-seq
+		parent CompRoadmap_HUES64ViewCOV off
+		subGroups view=COV assayType=ChIP-seq
+		type bigBed
+		noInherit on
+		maxHeightPixels 64:32:16
+		color 33,97,11
+		autoScale on
+		priority 1
+		metadata Sample=HUES64 OutputType=peaks Assay=ChIP-seq genome=hg38
+		viewLimits 0.0:30.0
+
+		track ENCFF021OWW_HUES64_ChIP-seq_bySample
+		bigDataUrl https://www.encodeproject.org/files/ENCFF021OWW/@@download/ENCFF021OWW.bigWig
+		shortLabel ENCFF021OWW
+		longLabel ENCFF021OWW HUES64 ChIP-seq
+		parent CompRoadmap_HUES64ViewCOV off
+		subGroups view=COV assayType=ChIP-seq
+		type bigWig
+		noInherit on
+		maxHeightPixels 64:32:16
+		color 180,0,0
+		autoScale on
+		priority 1
+		metadata Sample=HUES64 OutputType=fold_change_over_control Assay=ChIP-seq genome=hg38
+		viewLimits 0.0:30.0

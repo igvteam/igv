@@ -25,6 +25,7 @@
 
 package org.broad.igv.tools.converters;
 
+import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.GFFCodec;
@@ -45,7 +46,7 @@ import static junit.framework.Assert.assertTrue;
  * @author Jim Robinson
  * @date 2/15/12
  */
-public class GFFtoBedTest {
+public class GFFtoBedTest extends AbstractHeadlessTest {
 
 
     @Test
@@ -67,7 +68,7 @@ public class GFFtoBedTest {
             gffReader = new BufferedReader(new FileReader(inputFile));
             GFFParser parser = new GFFParser();
             GFFCodec.Version version = inputFile.getPath().endsWith(".gff3") ? GFFCodec.Version.GFF3 : GFFCodec.Version.GFF2;
-            GFFCodec codec = new GFFCodec(version, null);
+            GFFCodec codec = new GFFCodec(version, null, null);
             List<Feature> gffFeatures = parser.loadFeatures(gffReader, genome, codec);
 
             bedReader = new BufferedReader(new FileReader(outputFile));

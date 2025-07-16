@@ -1060,7 +1060,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public NamedFeature search(String token) {
+    public List<NamedFeature> search(String token) {
         return source.search(token);
     }
 

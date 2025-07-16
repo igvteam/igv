@@ -90,12 +90,15 @@ import org.broad.igv.variant.util.PedigreeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import static org.broad.igv.prefs.Constants.*;
+import static org.broad.igv.track.AttributeManager.GROUP_AUTOSCALE;
 
 /**
  * User: jrobinso
@@ -126,8 +129,18 @@ public class TrackLoader {
 
             // Bed format has some specific subtypes, which are determined by examining the file contents
             if ("bed".equals(format)) {
+                String tmp;
                 try {
-                    String tmp = FileFormatUtils.determineFormat(locator.getPath());
+
+                    if (locator.isDataUrl()) {
+                        String dataURL = locator.getPath();
+                        int commaIndex = dataURL.indexOf(',');
+                        String contents = URLDecoder.decode(dataURL.substring(commaIndex + 1), StandardCharsets.UTF_8);
+                        tmp = FileFormatUtils.determineFormat(contents.getBytes());
+                    } else {
+                        tmp = FileFormatUtils.determineFormat(locator.getPath());
+                    }
+
                     if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
@@ -167,7 +180,7 @@ public class TrackLoader {
                 loadVCFListFile(locator, newTracks, genome);
             } else if (format.equals("trio")) {
                 loadTrioData(locator);
-            } else if (format.equals("gct") || format.equals("res") || format.equals("tab")) {
+            } else if (format.equals("gct")) {
                 loadGctFile(locator, newTracks, genome);
             } else if (format.equals("gbk") || format.equals("gb")) {
                 loadGbkFile(locator, newTracks, genome);
@@ -275,7 +288,6 @@ public class TrackLoader {
                     tp = new TrackProperties();
                     ParsingUtils.parseTrackLine(trackLine, tp);
                 }
-
                 for (Track track : newTracks) {
                     if (locator.getFeatureInfoURL() != null) {
                         track.setFeatureInfoURL(locator.getFeatureInfoURL());
@@ -291,6 +303,9 @@ public class TrackLoader {
                     }
                     if (locator.getSampleId() != null) {
                         track.setSampleId(locator.getSampleId());
+                    }
+                    if(locator.getAutoscaleGroup()!=null){
+                        track.setAttributeValue(GROUP_AUTOSCALE, locator.getAutoscaleGroup());
                     }
                 }
             }

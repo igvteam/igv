@@ -29,6 +29,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.aa.*;
@@ -78,6 +79,11 @@ public class SequenceRenderer {
         Color t = ColorUtilities.stringToColor(prefs.get(COLOR_T), Color.red);
         Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), new Color(209, 113, 5));
         Color n = ColorUtilities.stringToColor(prefs.get(COLOR_N), Color.gray);
+
+        if(Globals.isDarkMode() && !prefs.hasExplicitValue(COLOR_C)) {
+            // If the user has not set a color for C, use a lighter blue in dark mode
+            c = new Color(0, 150, 255);
+        }
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);

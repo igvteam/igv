@@ -16,6 +16,9 @@ public class ChromAlias {
     public ChromAlias(String chr) {
         this.chr = chr;
         this.aliases = new HashMap<>();
+        String defaultAlias = chr.startsWith("chr") ? chr.substring(3) : "chr" + chr;
+        aliases.put("**DEFAULT**", defaultAlias);
+
     }
 
     public String getChr() {

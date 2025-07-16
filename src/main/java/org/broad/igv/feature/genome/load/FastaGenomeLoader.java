@@ -38,11 +38,11 @@ public class FastaGenomeLoader extends GenomeLoader {
         }
 
 
-        config.setId(id);
+        config.id = (id);
         config.setName(name);
 
         if (genomePath.endsWith(".2bit")) {
-            config.setTwoBitURL(genomePath);
+            config.twoBitURL =(genomePath);
 
         } else {
             String fastaPath;
@@ -60,8 +60,8 @@ public class FastaGenomeLoader extends GenomeLoader {
                 FastaUtils.createIndexFile(fastaPath, fastaIndexPath);
             }
 
-            config.setFastaURL(fastaPath);
-            config.setIndexURL(fastaIndexPath);
+            config.fastaURL = (fastaPath);
+            config.indexURL = (fastaIndexPath);
         }
 
         return new Genome(config);

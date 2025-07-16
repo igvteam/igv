@@ -64,7 +64,7 @@ public class ExonTest extends AbstractHeadlessTest {
         int[] genomicOffsets = new int[]{0, 1, 2, 3, 4, 5};
         int[] expAANumbers = new int[]{1, 1, 1, 2, 2, 2};
 
-        BasicFeature egfr = (BasicFeature) FeatureDB.getFeature(geneId);
+        BasicFeature egfr = (BasicFeature) genome.getFeatureDB().getFeature(geneId);
         if (exonNum < 0) {
             exonNum = egfr.getExonCount() + exonNum;
         }
@@ -88,7 +88,7 @@ public class ExonTest extends AbstractHeadlessTest {
         String geneId = "LANCL2";
         int exonNum = 1;
 
-        BasicFeature lancl = (BasicFeature) FeatureDB.getFeature(geneId);
+        BasicFeature lancl = (BasicFeature) genome.getFeatureDB().getFeature(geneId);
         Exon testExon = lancl.getExons().get(exonNum);
         Exon prevExon = lancl.getExons().get(exonNum-1);
         Exon nextExon = lancl.getExons().get(exonNum+1);

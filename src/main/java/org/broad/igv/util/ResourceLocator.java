@@ -129,16 +129,18 @@ public class ResourceLocator {
      */
     private Map<String, String> metadata;
     private boolean indexed;
-    private boolean dataURL;
+
 
     /**
      * True if this is an htsget resource
      */
     private boolean htsget;
-
+    private boolean dataURL;
     private Integer visibilityWindow;
     private String trixURL;
     private String panelName;
+    private String autoscaleGroup;
+    private String[] filterTypes;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -176,6 +178,43 @@ public class ResourceLocator {
         }
 
         return locators;
+    }
+
+
+    /**
+     * Create a ResourceLocator from a TrackConfig object.  This is used to create
+     * a ResourceLocator for a track hub track.
+     *
+     * @param trackConfig
+     * @return
+     */
+
+    public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
+        String trackPath = trackConfig.url;
+        ResourceLocator res = new ResourceLocator(trackPath);
+        res.setName(trackConfig.name);
+        res.setIndexPath(trackConfig.indexURL);
+        res.setFormat(trackConfig.format);
+        res.setVisibilityWindow(trackConfig.visibilityWindow);
+        res.setPanelName(trackConfig.panelName);
+        res.setTrixURL(trackConfig.trixURL);
+        res.setFeatureInfoURL(trackConfig.infoURL);
+        res.setIndexed(trackConfig.indexed != null ? trackConfig.indexed : false);
+        res.setLabelField(trackConfig.labelField);
+        res.setDescription(trackConfig.description);
+        res.setAutoscaleGroup(trackConfig.autoscaleGroup);
+        res.setTrackProperties(new TrackProperties(trackConfig));
+        res.setFilterTypes(trackConfig.filterTypes);
+        return res;
+
+    }
+
+    private void setFilterTypes(String[] filterTypes) {
+        this.filterTypes = filterTypes;
+    }
+
+    public String[] getFilterTypes() {
+        return filterTypes;
     }
 
     /**
@@ -634,76 +673,6 @@ public class ResourceLocator {
         this.metadata = metadata;
     }
 
-    public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
-        String trackPath = trackConfig.getUrl();
-        ResourceLocator res = new ResourceLocator(trackPath);
-        res.setName(trackConfig.getName());
-        res.setIndexPath(trackConfig.getIndexURL());
-        res.setFormat(trackConfig.getFormat());
-        Integer vw = trackConfig.getVisibilityWindow();
-        if (vw != null) {
-            res.setVisibilityWindow(vw);
-        }
-        if(trackConfig.getPanelName() != null) {
-            res.setPanelName(trackConfig.getPanelName());
-        }
-        if (trackConfig.getTrixURL() != null) {
-            res.setTrixURL(trackConfig.getTrixURL());
-        }
-
-        res.setFeatureInfoURL(trackConfig.getInfoURL());
-        Boolean indexed = trackConfig.getIndexed();
-        if (indexed != null) {
-            res.setIndexed(indexed);
-        }
-
-        // Track properties
-        TrackProperties properties = new TrackProperties();
-        String color = trackConfig.getColor();
-        if (color != null) {
-            try {
-                properties.setColor(ColorUtilities.stringToColor(color.toString()));
-            } catch (Exception e) {
-                log.error("Error parsing color string: " + color, e);
-            }
-        }
-        String altColor = trackConfig.getAltColor();
-        if (altColor != null) {
-            try {
-                properties.setAltColor(ColorUtilities.stringToColor(altColor.toString()));
-            } catch (Exception e) {
-                log.error("Error parsing color string: " + altColor, e);
-            }
-        }
-        String displayMode = trackConfig.getDisplayMode();
-        if (displayMode != null) {
-            try {
-                Track.DisplayMode dp = Track.DisplayMode.valueOf(stripQuotes(displayMode.toString()));
-                properties.setDisplayMode(dp);
-            } catch (Exception e) {
-                log.error("Error parsing displayMode " + displayMode, e);
-            }
-        }
-        Integer vizwindow = trackConfig.getVisibilityWindow();
-        if (vizwindow != null) {
-            properties.setFeatureVisibilityWindow(vizwindow);
-        } else {
-            // If not explicitly set, assume whole chromosome viz window for annotations
-            properties.setFeatureVisibilityWindow(-1);
-        }
-
-        if (trackConfig.getMin() != null) {
-            properties.setMinValue(trackConfig.getMin());
-        }
-        if (trackConfig.getMax() != null) {
-            properties.setMaxValue(trackConfig.getMax());
-        }
-        res.setTrackProperties(properties);
-
-        return res;
-
-    }
-
     public String getPanelName() {
         return panelName;
     }
@@ -712,6 +681,21 @@ public class ResourceLocator {
         this.panelName = panelName;
     }
 
+    public void setDataURL(boolean dataURL) {
+        this.dataURL = dataURL;
+    }
+
+    public boolean isDataUrl() {
+        return dataURL;
+    }
+
+    public void setAutoscaleGroup(String autoscaleGroup) {
+        this.autoscaleGroup = autoscaleGroup;
+    }
+
+    public String getAutoscaleGroup() {
+        return autoscaleGroup;
+    }
 
     /**
      * FOR LOAD FROM SERVER

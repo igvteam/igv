@@ -1,0 +1,56 @@
+track RoadmapbySample
+superTrack on
+shortLabel Sample Summary
+longLabel Sample Summary
+group our_roadmap
+priority 14
+visibility dense
+
+
+	track CRoadmap_adipocyte
+	container multiWig
+	parent RoadmapbySample
+	shortLabel adipocyte Summary
+	longLabel Roadmap Epigenome adipocyte Summary
+	type bigWig 0 30
+	configurable on
+	visibility dense
+	maxHeightPixels 150:30:11
+	aggregate transparentOverlay
+	showSubtrackColorOnUi on
+	autoScale on
+	windowingFunction mean
+	priority 1
+	viewLimits 0.0:30.0
+
+
+		track ENCFF017DQP_H3K36me3_sampleSummary
+		bigDataUrl https://www.encodeproject.org/files/ENCFF017DQP/@@download/ENCFF017DQP.bigWig
+		shortLabel ENCFF017DQP_H3K36me3
+		longLabel ENCFF017DQP H3K36me3
+		parent CRoadmap_adipocyte off
+		subGroups view=COV sampleType=adipocyteassayType=adipocyte
+		type bigWig 0 30
+		noInherit on
+		maxHeightPixels 64:32:16
+		color 33,97,11
+		autoScale on
+		priority 1
+		metadata Sample=adipocyte OutputType=fold_change_over_control Assay=ChIP-seq genome=hg38
+		viewLimits 0.0:30.0
+
+
+		track ENCFF020CKV_H3K9ac_sampleSummary
+		bigDataUrl https://www.encodeproject.org/files/ENCFF020CKV/@@download/ENCFF020CKV.bigWig
+		shortLabel ENCFF020CKV_H3K9ac
+		longLabel ENCFF020CKV H3K9ac
+		parent CRoadmap_adipocyte off
+		subGroups view=COV sampleType=adipocyteassayType=adipocyte
+		type bigWig 0 30
+		noInherit on
+		maxHeightPixels 64:32:16
+		color 46,92,0
+		autoScale on
+		priority 1
+		metadata Sample=adipocyte OutputType=signal_p-value Assay=ChIP-seq genome=hg38
+		viewLimits 0.0:30.0

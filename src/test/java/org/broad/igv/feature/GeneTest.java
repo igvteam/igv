@@ -67,8 +67,8 @@ public class GeneTest extends AbstractHeadlessTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
-        egfr = (BasicFeature) FeatureDB.getFeature("egfr");
-        GTPBP6 = (BasicFeature) FeatureDB.getFeature("GTPBP6");
+        egfr = (BasicFeature) genome.getFeatureDB().getFeature("egfr");
+        GTPBP6 = (BasicFeature) genome.getFeatureDB().getFeature("GTPBP6");
 
     }
 

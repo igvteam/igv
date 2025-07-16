@@ -69,9 +69,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
     private static Logger log = LogManager.getLogger(GFFCodec.class);
 
 
-    static HashSet<String> ignoredTypes = new HashSet();
-
-
+    HashSet<String> ignoredTypes = new HashSet();
     private TrackProperties trackProperties = null;
     private CI.CIHashSet featuresToHide = new CI.CIHashSet();
     private FeatureFileHeader header;
@@ -85,17 +83,23 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         GFF2, GFF3, GTF;
     }
 
-    public GFFCodec(Genome genome) {
+    public GFFCodec(Genome genome, String [] filterTypes) {
         super(Feature.class);
-        // Assume GFF2 until shown otherwise
+        // Assume GFF2 until shown otherwise.  This might get overriden during reading.
         helper = new GFF2Helper();
         this.genome = genome;
+        if(filterTypes != null) {
+            this.ignoredTypes.addAll (Arrays.asList(filterTypes));
+        }
     }
 
-    public GFFCodec(Version version, Genome genome) {
+    public GFFCodec(Version version, Genome genome, String[] filterTypes) {
         super(Feature.class);
         this.genome = genome;
         this.version = version;
+        if(filterTypes != null) {
+            this.ignoredTypes.addAll (Arrays.asList(filterTypes));
+        }
         if (version == Version.GFF3) {
             helper = new GFF3Helper();
         } else {
@@ -283,7 +287,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         }
 
         if (featuresToHide.contains(featureType)) {
-            if (IGV.hasInstance()) FeatureDB.addFeature(f, genome);
+            if (IGV.hasInstance()) genome.getFeatureDB().addFeature(f, genome);
             return null;
         }
 
@@ -335,8 +339,8 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
 
     public static class GFF2Helper implements Helper {
 
-        //TODO Almost identical
-        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "gene_name", "primary_name", "systematic_id", "transcript_id"};
+        static String[] DEFAULT_NAME_FIELDS = {"alias", "gene", "ID", "Locus", "locus", "Name", "name", "gene_name",
+                "primary_name", "systematic_id", "transcript_id", "gene_id"};
         static List<String> idFields = new ArrayList<String>(Arrays.asList(DEFAULT_NAME_FIELDS));
 
         static {

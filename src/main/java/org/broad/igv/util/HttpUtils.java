@@ -153,7 +153,7 @@ public class HttpUtils {
     String getCachedTokenFor(URL url) {
 
         Iterator<Pair<Pattern, String>> iter = accessTokens.descendingIterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             Pair<Pattern, String> next = iter.next();
             Matcher matcher = next.getFirst().matcher(url.getHost());
             if (matcher.find()) {
@@ -176,6 +176,9 @@ public class HttpUtils {
      * @throws MalformedURLException
      */
     public static URL createURL(String urlString) throws MalformedURLException {
+
+        urlString = HttpMappings.mapURL(urlString.trim());
+
         if (AmazonUtils.isAwsS3Path(urlString)) {
             try {
                 urlString = AmazonUtils.translateAmazonCloudURL(urlString);
@@ -183,72 +186,13 @@ public class HttpUtils {
                 log.error("Error translating amazon cloud URL: " + urlString, e);
                 throw new RuntimeException(e);
             }
-        } else {
-            urlString = mapURL(urlString.trim());
         }
+
         return new URL(urlString);
-    }
-
-    /**
-     * Map a URL, for example from a deprecated host or non-http scheme, to a stable newer form. Sort of a pre-request
-     * redirect.  This should be used to map to a stable, long-term URL, not to for example time-limited signed URLs.
-     *
-     * @param urlString
-     * @return
-     * @throws MalformedURLException
-     */
-    public static String mapURL(String urlString) throws MalformedURLException {
-
-        // Check explicit mappings first
-        if (urlMappings.containsKey(urlString)) {
-            return urlMappings.get(urlString);
-        }
-
-        if (urlString.startsWith("htsget://")) {
-            urlString = urlString.replace("htsget://", "https://");
-        } else if (urlString.startsWith("gs://")) {
-            urlString = GoogleUtils.translateGoogleCloudURL(urlString);
-        }
-
-        if (GoogleUtils.isGoogleURL(urlString)) {
-            if (urlString.indexOf("alt=media") < 0) {
-                urlString = URLUtils.addParameter(urlString, "alt=media");
-            }
-        }
-        String host = URLUtils.getHost(urlString);
-        if (host.equals("igv.broadinstitute.org")) {
-            urlString = urlString.replace("igv.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
-        } else if (host.equals("igvdata.broadinstitute.org")) {
-            urlString = urlString.replace("igvdata.broadinstitute.org", "s3.amazonaws.com/igv.broadinstitute.org");
-        } else if (host.equals("dn7ywbm9isq8j.cloudfront.net")) {
-            urlString = urlString.replace("dn7ywbm9isq8j.cloudfront.net", "s3.amazonaws.com/igv.broadinstitute.org");
-        } else if (host.equals("www.broadinstitute.org")) {
-            urlString = urlString.replace("www.broadinstitute.org/igvdata", "data.broadinstitute.org/igvdata");
-        } else if (host.equals("www.dropbox.com")) {
-            urlString = urlString.replace("//www.dropbox.com", "//dl.dropboxusercontent.com");
-        } else if (host.equals("drive.google.com")) {
-            urlString = GoogleUtils.driveDownloadURL(urlString);
-        } else if (host.equals("igv.genepattern.org")) {
-            urlString = urlString.replace("//igv.genepattern.org", "//igv-genepattern-org.s3.amazonaws.com");
-        }
-
-        // data.broadinstitute.org requires https
-        urlString = urlString.replace("http://data.broadinstitute.org", "https://data.broadinstitute.org");
-
-        return urlString;
     }
 
     public static boolean isRemoteURL(String string) {
         return FileUtils.isRemote(string);
-    }
-
-    /**
-     * Provided to support unit testing (force disable byte range requests)
-     *
-     * @return
-     */
-    public static void disableByteRange(boolean b) {
-        BYTE_RANGE_DISABLED = b;
     }
 
     /**
@@ -262,7 +206,6 @@ public class HttpUtils {
     public String getContentsAsString(URL url) throws IOException {
         return getContentsAsString(url, null);
     }
-
 
     public String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
         byte[] bytes = this.getContentsAsBytes(url, headers);
@@ -283,7 +226,6 @@ public class HttpUtils {
         }
     }
 
-
     public String getContentsAsJSON(URL url) throws IOException {
 
         InputStream is = null;
@@ -292,7 +234,7 @@ public class HttpUtils {
         HttpURLConnection conn = openConnection(url, reqProperties);
         try {
             is = conn.getInputStream();
-            return readContents(is);
+            return ParsingUtils.readContentsFromStream(is);
 
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
@@ -316,6 +258,7 @@ public class HttpUtils {
 
         log.debug("Raw POST request: " + postData.toString());
 
+        url = new URL(HttpMappings.mapURL(url.toExternalForm()));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -325,7 +268,6 @@ public class HttpUtils {
         StringBuilder response = new StringBuilder();
         System.out.println(conn.getResponseMessage());
         Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
 
         for (int c; (c = in.read()) >= 0; ) {
             response.append((char) c);
@@ -346,18 +288,9 @@ public class HttpUtils {
      */
     public InputStream openConnectionStream(URL url) throws IOException {
 
-        url = new URL(mapURL(url.toExternalForm()));
-
         log.debug("Opening connection stream to  " + url);
         if (url.getProtocol().toLowerCase().equals("ftp")) {
-            String userInfo = url.getUserInfo();
-            String host = url.getHost();
-            String file = url.getPath();
-            FTPClient ftp = FTPUtils.connect(host, userInfo, new UserPasswordInputImpl());
-            ftp.pasv();
-            ftp.retr(file);
-            return new FTPStream(ftp);
-
+            throw new IOException("FTP protoco is not supported");
         } else {
             return openConnectionStream(url, null);
         }
@@ -546,59 +479,6 @@ public class HttpUtils {
 
     }
 
-
-    /**
-     * Calls {@link #downloadFile(String, java.io.File, Frame, String)}
-     * with {@code dialogsParent = null, title = null}
-     *
-     * @param url
-     * @param outputFile
-     * @return RunnableResult
-     * @throws IOException
-     */
-    public RunnableResult downloadFile(String url, File outputFile) throws IOException {
-        URLDownloader downloader = downloadFile(url, outputFile, null, null);
-        return downloader.getResult();
-    }
-
-    /**
-     * @param url
-     * @param outputFile
-     * @param dialogsParent Parent of dialog to show progress. If null, none shown
-     * @return URLDownloader used to perform download
-     * @throws IOException
-     */
-    public URLDownloader downloadFile(String url, File outputFile, Frame dialogsParent, String dialogTitle) throws IOException {
-        final URLDownloader urlDownloader = new URLDownloader(url, outputFile);
-        boolean showProgressDialog = dialogsParent != null;
-        if (!showProgressDialog) {
-            urlDownloader.run();
-            return urlDownloader;
-        } else {
-            javax.swing.ProgressMonitor monitor = new javax.swing.ProgressMonitor(IGV.getInstance().getMainPanel(), "Downloading " + outputFile.getName(), "", 0, 100);
-            urlDownloader.setMonitor(monitor);
-            ActionListener buttonListener = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    urlDownloader.cancel(true);
-                }
-            };
-            //  String permText = "Downloading " + url;
-            //  String title = dialogTitle != null ? dialogTitle : permText;
-            //  CancellableProgressDialog dialog = CancellableProgressDialog.showCancellableProgressDialog(dialogsParent, title, buttonListener, false, monitor);
-            //  dialog.setPermText(permText);
-
-            //  Dimension dms = new Dimension(600, 150);
-            //  dialog.setPreferredSize(dms);
-            //  dialog.setSize(dms);
-            //  dialog.validate();
-
-            LongRunningTask.submit(urlDownloader);
-            return urlDownloader;
-        }
-    }
-
-
     /**
      * Code for disabling SSL certification
      */
@@ -628,12 +508,6 @@ public class HttpUtils {
         } catch (NoSuchAlgorithmException e) {
         } catch (KeyManagementException e) {
         }
-
-
-    }
-
-    private String readContents(InputStream is) throws IOException {
-        return ParsingUtils.readContentsFromStream(is);
     }
 
     public String readErrorStream(HttpURLConnection connection) throws IOException {
@@ -644,7 +518,7 @@ public class HttpUtils {
             if (inputStream == null) {
                 return null;
             }
-            return readContents(inputStream);
+            return ParsingUtils.readContentsFromStream(inputStream);
         } finally {
             if (inputStream != null) inputStream.close();
         }
@@ -656,7 +530,6 @@ public class HttpUtils {
         return openConnection(url, Collections.<String, String>emptyMap(), "DELETE");
     }
 
-    // Called by IGVSeekableHTTPStream.openInputStreamForRange
     public HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
@@ -676,6 +549,9 @@ public class HttpUtils {
      */
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
+
+        // Insure we have mapped deprecated URLs to new ones
+        url = new URL(HttpMappings.mapURL(url.toExternalForm()));
 
         // if we're already seen a redirect for this URL, use the updated one
         if (redirectCache.containsKey(url)) {
@@ -790,7 +666,7 @@ public class HttpUtils {
 
             if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
 
-                log.error("Range header removed by client or ignored by server for url: " + url.toString());
+                log.info("Range header removed by client or ignored by server for url: " + url.toString());
 
                 if (!SwingUtilities.isEventDispatchThread()) {
                     MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
@@ -1015,7 +891,7 @@ public class HttpUtils {
 
     /**
      * Add an http header string to be applied the the specified URLs.  Used to support command line specification
-     * of authentication headers
+     * of authentication headers.  In the case of mapped urls both the original and mapped URL hosts are added.
      *
      * @param headers
      * @param urls
@@ -1024,10 +900,10 @@ public class HttpUtils {
         for (String u : urls) {
             if (isRemoteURL(u)) {
                 try {
-                    URL url = new URL(mapURL(u));
+                    URL url = new URL(u);
                     headerMap.put(url.getHost(), headers);
-                    System.out.println("Added " + url.getHost() + " -> " + headers);
-
+                    url = new URL(HttpMappings.mapURL(u));
+                    headerMap.put(url.getHost(), headers);
                 } catch (MalformedURLException e) {
                     log.error("Error parsing URL " + u, e);
                 }
@@ -1224,18 +1100,5 @@ public class HttpUtils {
             return maxAge;
         }
     }
-
-    private static Map<String, String> urlMappings;
-
-    static {
-        // mutable map
-        urlMappings = new HashMap<>();
-        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta");
-        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta.fai", "https://igv.genepattern.org/genomes/seq/hg19/hg19.fasta.fai");
-        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt", "https://igv.genepattern.org/genomes/seq/hg19/cytoBand.txt");
-        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa");
-        urlMappings.put("https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai", "https://igv.genepattern.org/genomes/seq/hg38/hg38.fa.fai");
-    }
-
 
 }

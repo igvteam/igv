@@ -43,6 +43,7 @@ import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -74,13 +75,12 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     // Static -- property is shared by all instances
     private static ShapeType shapeType = ShapeType.TEXT;
 
-
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
-    private Color color = ARC_COLOR_POS;
+    private Color color;
 
     //central horizontal line color
-    Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
+    private Color colorCenterline;
 
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
@@ -100,6 +100,14 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * between window openings, don't care.
      */
     private Map<Feature, Boolean> drawFeatureAbove = null;
+
+    public SashimiJunctionRenderer() {
+        this.darkMode = Globals.isDarkMode();
+        this.color = darkMode ? ColorUtilities.modifyAlpha(Color.RED, 140) : ARC_COLOR_POS;
+        this.colorCenterline = darkMode ?
+                ColorUtilities.modifyAlpha(Color.WHITE, 100) :
+                new Color(0, 0, 0, 100);
+    }
 
     /**
      * If there are multiple arcs with the same start/end positions (e.g. different strands)
@@ -265,11 +273,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                         pixelYstart = getYOffset(coverageRectangle, coverageTrack.getDataRange(), getCoverage(junctionStart));
                         pixelYend = getYOffset(coverageRectangle, coverageTrack.getDataRange(), getCoverage(junctionEnd));
                     }
-//
-//                    System.out.println("{chr: 'chr12'" +
-//                            ", start: " + ((SpliceJunctionFeature) feature).getJunctionStart() +
-//                            ", end: " + ((SpliceJunctionFeature) feature).getJunctionEnd() +
-//                            ", value: " + ((SpliceJunctionFeature) feature).getJunctionDepth() + "},");
 
                     drawFeature(pixelYstart, pixelYend,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
@@ -279,7 +282,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             }
 
             //draw a central horizontal line
-            Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
+            Graphics2D g2D = context.getGraphic2DForColor(colorCenterline);
             g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
                     (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
 
@@ -296,8 +299,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      * @return
      */
     private int getCoverage(int genomePos) {
-//        Integer yOffset = yOffsetMap.get(genomePos);
-//        if(yOffset != null) return yOffset;
 
         if (dataManager == null) return 0;
         Collection<AlignmentInterval> intervals = dataManager.getLoadedIntervals();
@@ -318,7 +319,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     }
 
     private int getYOffset(Rectangle rect, DataRange range, int totalCount) {
-        //int pY = (int) rect.getMaxY() - 1;
+
         double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
         double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
         int height = (int) (tmp * rect.height);
@@ -413,11 +414,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         g2D.draw(arcPath);
 
         float midX = ((float) pixelJunctionStart + (float) pixelJunctionEnd) / 2;
-
-//        //TODO Format number
-//        Graphics2D strGraphics = context.getGraphic2DForColor(Color.black);
-//        strGraphics.drawString("" + depth, midX, arcPeakY);
-
         double actArcPeakY = arcBeginY + yPosModifier * Math.pow(0.5, 3) * (6) * arcHeight;
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 4;
         float depthProportionOfMax = Math.min(1, depth / maxDepth);
@@ -447,7 +443,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                 int h = rectHeight;
                 g2D.clearRect(intX, intY, w, h);
                 GraphicUtils.drawCenteredText(text, intX, intY, w, h, g2D);
-                //g2D.drawString(text, floatX , floatY);
 
                 break;
         }

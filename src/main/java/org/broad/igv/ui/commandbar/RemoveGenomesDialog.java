@@ -29,14 +29,16 @@
 
 package org.broad.igv.ui.commandbar;
 
-import org.broad.igv.feature.genome.DotGenomeUtils;
-import org.broad.igv.logging.*;
 import org.broad.igv.event.GenomeResetEvent;
 import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.DotGenomeUtils;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.ui.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 
@@ -72,7 +74,7 @@ public class RemoveGenomesDialog extends org.broad.igv.ui.IGVDialog  {
 
     private void initData() {
 
-        allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeListItems());
+        allListItems = new ArrayList<>(GenomeListManager.getInstance().getGenomeTableRecords());
 
         for (GenomeListItem item : allListItems) {
             if (DotGenomeUtils.getLocalFasta(item.getId()) != null) {

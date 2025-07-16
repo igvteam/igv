@@ -41,4 +41,24 @@ public class ChromAliasFileTest {
         assertEquals(chromAlias.get("ncbi"), "1");
         assertEquals(chromAlias.get("ucsc"), "chr1");
     }
+
+    @Test
+    public void testNameSets() throws IOException {
+
+        List<String> chrNames = new ArrayList<>();
+        for(int i=0; i<20; i++) {
+            chrNames.add("chr" + i);
+        }
+        chrNames.add("chrX");
+        chrNames.add("chrY");
+
+        ChromAliasFile chromAlias = new ChromAliasFile( TestUtils.DATA_DIR +  "genomes/chromAlias_with_namesets.txt", chrNames);
+        assertTrue(chromAlias.hasNameSets());
+
+        chromAlias = new ChromAliasFile( TestUtils.DATA_DIR +  "genomes/chromAlias_without_namesets.txt", chrNames);
+        assertFalse(chromAlias.hasNameSets());
+
+
+
+    }
 }

@@ -1,4 +1,4 @@
-snapshotDirectory $SCRIPT_DIR/snapshots/color_coverage_993
+snapshotDirectory $SCRIPT_DIR/snapshots
 new
 genome hg19
 preference SAM.SHOW_ALIGNMENT_TRACK false

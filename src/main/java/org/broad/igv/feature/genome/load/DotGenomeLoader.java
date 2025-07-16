@@ -40,7 +40,7 @@ public class DotGenomeLoader extends GenomeLoader {
     private static FeatureTrack createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
                                                 String annotationURL) {
 
-        FeatureDB.clearFeatures();
+        genome.getFeatureDB().clearFeatures();
         FeatureTrack geneFeatureTrack = null;
 
         if (reader != null) {
@@ -65,7 +65,6 @@ public class DotGenomeLoader extends GenomeLoader {
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
                 geneFeatureTrack.setTrackType(TrackType.GENE);
-                geneFeatureTrack.setColor(Color.BLUE.darker());
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {
                     geneFeatureTrack.setProperties(parser.getTrackProperties());
@@ -98,14 +97,14 @@ public class DotGenomeLoader extends GenomeLoader {
         if (sequencePath == null) {
             // TODO -- is this an error?
         } else {
-            config.setFastaURL(sequencePath);
-            config.setIndexURL(sequencePath + ".fai");
+            config.fastaURL = (sequencePath);
+            config.indexURL = (sequencePath + ".fai");
             if (sequencePath.endsWith(".gz")) {
-                config.setGziIndexURL(sequencePath + ".gzi");
+                config.gziIndexURL = (sequencePath + ".gzi");
             }
         }
 
-        config.setId(id);
+        config.id = (id);
         config.setName(displayName);
 
 
@@ -139,7 +138,6 @@ public class DotGenomeLoader extends GenomeLoader {
         }
 
         Genome   newGenome = new Genome(config);
-
 
         String geneFileName = genomeDescriptor.getGeneFileName();
         InputStream geneStream = null;

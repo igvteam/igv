@@ -596,7 +596,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
         if (loadedInterval == null) return;
 
-        Graphics2D g = context.getGraphic2DForColor(Color.black);
+        Graphics2D g = context.getGraphic2DForColor(darkMode ? Color.white : Color.black);
 
         List<DownsampledInterval> intervals = loadedInterval.getDownsampledIntervals();
         for (DownsampledInterval interval : intervals) {

@@ -79,11 +79,16 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     }
 
+    /**
+     * Get the set of base characters that are observed in this pileup.  This might characters other than 'a', 'c',
+     * 'g', 't', and 'n', such as ambiguity codes or '='.
+     * @return
+     */
+    public abstract Set<Byte> getBases();
 
     public int getStart() {
         return start;
     }
-
 
     public int getEnd() {
         return end;
@@ -128,7 +133,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         if (bisulfiteCounts != null) {
             bisulfiteCounts.incrementCounts(alignment);
         }
-        if(baseModificationCounts != null) {
+        if (baseModificationCounts != null) {
             baseModificationCounts.incrementCounts(alignment);
         }
 
@@ -192,12 +197,12 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         StringBuffer buf = new StringBuffer();
         int totalCount = getTotalCount(pos);
         buf.append("Total count: " + totalCount);
-        for (char c : nucleotides) {
-            int negCount = getNegCount(pos, (byte) c);
-            int posCount = getPosCount(pos, (byte) c);
+        for (byte b : getBases()) {
+            int negCount = getNegCount(pos, b);
+            int posCount = getPosCount(pos, b);
             int count = negCount + posCount;
-            int percent = (int) Math.round(((float) count) * 100 / totalCount);
-            char cU = Character.toUpperCase(c);
+            int percent = Math.round(((float) count) * 100 / totalCount);
+            char cU = Character.toUpperCase((char) b);
             buf.append("<br>" + cU + "      : " + count);
             if (count != 0) {
                 buf.append("  (" + percent + "%,     " + posCount + "+,   " + negCount + "- )");
@@ -235,7 +240,8 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
             if (ref > 0) {
                 if (ref < 96) ref += 32;  // a fast "toLowercase"
-                for (char c : nucleotides) {
+                for (byte c : getBases()) {
+                    if(c < 96) c += 32; // a fast "toLowercase"
                     if (c != ref && c != 'n') {
                         mismatchQualitySum += (qualityWeight ? getQuality(pos, (byte) c) : getCount(pos, (byte) c));
                     }
@@ -252,9 +258,9 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
         int end = start + width;
         int count = 0;
-        for(int i=start; i< end; i++) {
+        for (int i = start; i < end; i++) {
             int totalCoverad = getTotalCount(i) + getDelCount(i);
-            if(getDelCount(i) >= snpThreshold * totalCoverad) count++;
+            if (getDelCount(i) >= snpThreshold * totalCoverad) count++;
         }
         return count >= 0.5 * width;
     }

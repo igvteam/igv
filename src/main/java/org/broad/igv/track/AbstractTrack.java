@@ -63,13 +63,16 @@ import static org.broad.igv.prefs.Constants.*;
  */
 
 public abstract class AbstractTrack implements Track {
+
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
-    public static final Color DEFAULT_COLOR = Color.blue.darker();
+
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
     public static final int DEFAULT_HEIGHT = -1;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
+    protected final boolean darkMode;
 
+    private Color defaultColor;
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
@@ -79,7 +82,7 @@ public abstract class AbstractTrack implements Track {
     private boolean itemRGB = true;
 
     private boolean useScore;
-    protected boolean autoScale;
+    protected boolean autoScale = true;   // By default, can be overriden by track line
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
     private int fontSize;
@@ -115,12 +118,15 @@ public abstract class AbstractTrack implements Track {
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
 
     public AbstractTrack() {
+        this.darkMode = Globals.isDarkMode();
+        defaultColor = darkMode ? Color.CYAN : Color.blue.darker();
     }
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
             String id,
             String name) {
+        this();
         this.resourceLocator = dataResourceLocator;
         this.id = id;
         this.name = name;
@@ -136,8 +142,7 @@ public abstract class AbstractTrack implements Track {
 
         try {
             fontSize = PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error initializing font size. ", e);
         }
 
@@ -272,7 +277,7 @@ public abstract class AbstractTrack implements Track {
 
 
     public Color getColor() {
-        return posColor == null ? DEFAULT_COLOR : posColor;
+        return posColor == null ? defaultColor : posColor;
     }
 
     public Color getExplicitColor() {
@@ -594,8 +599,6 @@ public abstract class AbstractTrack implements Track {
         // If view limits are explicitly set turn off autoscale
         if (!Float.isNaN(viewLimitMin) && !Float.isNaN(viewLimitMax)) {
             this.setAutoScale(false);
-        } else {
-            this.setAutoScale(properties.isAutoScale());
         }
 
         // Color scale properties
@@ -856,7 +859,7 @@ public abstract class AbstractTrack implements Track {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<html>" + getName());
 
-        if(resourceLocator != null) {
+        if (resourceLocator != null) {
             Map<String, String> metadata = resourceLocator.getMetadata();
             if (metadata != null && metadata.size() > 0) {
                 for (Map.Entry<String, String> entry : metadata.entrySet()) {

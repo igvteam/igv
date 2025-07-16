@@ -25,6 +25,7 @@
 
 package org.broad.igv.track;
 
+import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
@@ -226,7 +227,7 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1, false);
         String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
         for (String alias : aliases) {
-            Feature feat = FeatureDB.getFeature(alias);
+            NamedFeature feat = genome.getFeatureDB().getFeature(alias);
             assertNotNull(feat);
         }
 

@@ -31,8 +31,5 @@ public class CytobandSourceBB implements CytobandSource {
         return cytobands;
     }
 
-    public String [] getChromosomeNames() {
-        return this.featureSource.getChromosomeNames();
-    }
 }
 

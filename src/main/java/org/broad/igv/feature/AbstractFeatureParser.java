@@ -176,10 +176,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             }
         }
 
-        // TODO -- why is this test here?  This will break igvtools processing of expression files
-        //if (IGV.hasInstance() || Globals.isTesting()) {
-        FeatureDB.addFeatures(features, genome);
-        //}
+        if(genome != null) {
+            genome.getFeatureDB().addFeatures(features, genome);
+        }
+
         return features;
     }
 

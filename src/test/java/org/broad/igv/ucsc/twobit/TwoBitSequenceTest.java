@@ -71,7 +71,7 @@ public class TwoBitSequenceTest {
         String url = TestUtils.DATA_DIR + "twobit/GCF_000002655.1.2bit";
 
         TwoBitIndex index = new TwoBitIndex(url, ByteOrder.LITTLE_ENDIAN, 8);
-        long[] offset = index.search("NC_007197.1");
+        long offset = index.searchForOffset("NC_007197.1");
 
         assertNotNull(offset);
     }

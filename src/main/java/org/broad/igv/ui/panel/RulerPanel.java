@@ -46,6 +46,7 @@ import org.broad.igv.sam.InsertionMarker;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
@@ -66,12 +67,13 @@ import static org.broad.igv.prefs.Constants.*;
  */
 public class RulerPanel extends JPanel {
 
-    public static final Color INSERTION_MARKER_ZOOMEDOUT = new Color(64, 64, 64, 50);
+
     private static Logger log = LogManager.getLogger(RulerPanel.class);
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     private static final int INSERTION_ROW_HEIGHT = 9;
+    private final boolean darkMode;
 
     // TODO -- get from preferences
     boolean drawSpan = true;
@@ -82,6 +84,10 @@ public class RulerPanel extends JPanel {
 
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
+
+    private Color expandedInsertionColor = Color.BLUE;
+    private Color collapsedInsertionColor = Color.BLACK;
+    private Color zoomedoutInsertionColor =   ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
 
     boolean dragging = false;
     int dragStart;
@@ -94,6 +100,7 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
+        this.darkMode = Globals.isDarkMode();
         init();
     }
 
@@ -105,6 +112,12 @@ public class RulerPanel extends JPanel {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+
+        if(darkMode) {
+            setBackground(UIManager.getColor("Panel.background"));
+            expandedInsertionColor = Color.CYAN;
+            collapsedInsertionColor = Color.WHITE;
+        }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -131,7 +144,7 @@ public class RulerPanel extends JPanel {
     private void render(Graphics g) {
 
         clickLinks.clear();
-        g.setColor(Color.black);
+        g.setColor(darkMode ? Color.white : Color.black);
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
         } else {
@@ -324,12 +337,13 @@ public class RulerPanel extends JPanel {
             Polygon p;
             Color c;
             if (expanded != null && insertionMarker.position == expanded.position) {
+                c = expandedInsertionColor;
                 x0 = frame.getScreenPosition(insertionMarker.position);
                 x1 = (int) ((insertionMarker.position + insertionMarker.size - frame.origin) / frame.getScale());
                 p = new Polygon(
                         new int[]{x0 - w, x1 + w, x1, x0},
                         new int[]{y, y, y + INSERTION_ROW_HEIGHT, y + INSERTION_ROW_HEIGHT}, 4);
-                c = Color.BLUE;
+
 
                 String tooltipText = "Click to collapse insertion";
                 clickLinks.add(new ClickLink(p, null, tooltipText, obj -> {
@@ -346,7 +360,7 @@ public class RulerPanel extends JPanel {
                 double expandedInsertionWidth = insertionMarker.size / frame.getScale();
 
                 if (expandedInsertionWidth > 5) {
-                    c = Color.BLACK;
+                    c = collapsedInsertionColor;
                     String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
                     Rectangle clickArea = p.getBounds();
                     clickArea.y -= 2;
@@ -356,7 +370,7 @@ public class RulerPanel extends JPanel {
                         IGV.getInstance().repaint();
                     }));
                 } else {
-                    c = INSERTION_MARKER_ZOOMEDOUT;
+                    c = zoomedoutInsertionColor;
                 }
             }
 

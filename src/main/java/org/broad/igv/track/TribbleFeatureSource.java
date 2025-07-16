@@ -39,10 +39,7 @@ import org.broad.igv.feature.tribble.reader.IGVComponentMethods;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.IndexCreatorDialog;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.*;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.variant.Variant;
 import org.broad.igv.variant.vcf.MateVariant;
@@ -89,18 +86,12 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         if (!locator.isDataURL()) {
             idxPath = locator.getIndexPath();
             if (idxPath != null && idxPath.length() > 0) {
-                if (FileUtils.isRemote(idxPath)) {
-                    idxPath = HttpUtils.mapURL(idxPath);
-                }
                 indexExists = true;
             } else {
                 String maybeIdxPath = ResourceLocator.indexFile(locator);
                 if (maybeIdxPath == null || maybeIdxPath.length() == 0) {
                     indexExists = false;
                 } else {
-                    if (FileUtils.isRemote(maybeIdxPath)) {
-                        maybeIdxPath = HttpUtils.mapURL(maybeIdxPath);
-                    }
                     if (FileUtils.resourceExists(maybeIdxPath)) {
                         indexExists = true;
                         idxPath = maybeIdxPath;
@@ -144,9 +135,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
         String path = locator.getPath();
-        if (FileUtils.isRemote(path)) {
-            path = HttpUtils.mapURL(path);
-        }
         return AbstractFeatureReader.getFeatureReader(path, null, codec, false);
     }
 
@@ -320,7 +308,9 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
 
                     List<Feature> featureList = featureMap.computeIfAbsent(igvChr, k -> new ArrayList<>());
                     featureList.add(f);
-                    if (f instanceof IGVNamedFeature named) FeatureDB.addFeature(named, genome);
+                    if (genome != null && f instanceof IGVNamedFeature named) {
+                        genome.getFeatureDB().addFeature(named, genome);
+                    }
 
                     if (this.isVCF && f instanceof Variant v) {
                         String chr2 = v.getAttributeAsString("CHR2");

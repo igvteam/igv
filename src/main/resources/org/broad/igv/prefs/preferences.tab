@@ -25,6 +25,25 @@ DEFAULT_FONT_SIZE	Default font size	integer	10
 SCALE_FONTS	Scale fonts. Useful for some high-resolution screens.  ** REQUIRES RESTART **	boolean	FALSE
 FONT_SCALE_FACTOR	Font scale factor	float	1
 ENABLE_ANTIALIASING	Enable anti-aliasing	boolean	TRUE
+USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLATINTELLIJ|FLATINTELLIJDARK|NIMBUS|METAL|CROSS	FLATLIGHT
+
+#Tracks
+IGV.chart.track.height	Default numeric track height (pixels)	integer	40
+IGV.track.height	Default feature track height (pixels)	integer	15
+CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
+CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
+CHART.COLOR_BORDERS	Color borders	boolean	TRUE
+CHART.DRAW_TRACK_NAME	Draw track label	boolean	FALSE
+CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
+CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
+TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
+EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
+
+##Color Scales
+-0.1, -1.5, 0.1, 1.5, negColor, neutralColor, posColor
+
+COLOR_SCALE_COPY_NUMBER	Segmented copy number	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
+COLOR_SCALE_GENE_EXPRESSION	Gene expression	colorscale	ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,0,255;255,255,255;255,0,0
 
 ##Nucleotide Colors
 COLOR.A	A	color	0,150,0
@@ -33,29 +52,20 @@ COLOR.T	T	color	255,0,0
 COLOR.G	G	color	209,113,5
 COLOR.N	n	color	128,128,128
 
-#Tracks
-IGV.chart.track.height	Default numeric track height (pixels)	integer	40
-IGV.track.height	Default feature track height (pixels)	integer	15
-TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
-EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
-NORMALIZE_COVERAGE	Normalize coverage data (.tdf files only)	boolean	FALSE
-##Heatmaps
-NO_DATA.COLOR	 No data	color	216,216,216
-NO_CALL.COLOR	 No call	color	150,150,150
-
 #Variants
 
 ##Variant Colors
-HOMREF.COLOR	Homozygous reference	color	235,235,235
+HOMREF.COLOR	Homozygous reference	color	200,200,200
 HOMVAR.COLOR	Homozygous variant	color	0,245,255
 HETVAR.COLOR	Heterozygous variant	color	0,0,255
-NOCALL.COLOR	No call	color	255,255,255
+NOCALL.COLOR	No call	color	230,230,230
 AF_REF.COLOR	Allele frequency - reference	color	0,0,220
 AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
 
 #Mutations
 info	Settings on this tab apply to TCGA  "maf" and "mut" files.
+
 ##Color Options
 COVER_OVERLAY_KEY	Color Mutations	boolean	TRUE
 MUTATION_INDEL_COLOR_KEY	Indel	color	0,200,0
@@ -72,16 +82,6 @@ MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 ##Coordinate System
 MUT_COORDS	Mut file coordinate convention. 0 = zero based half-open, 1 = one based fully closed.	select 0|1	0
 
-#Charts
-CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
-CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
-CHART.COLOR_BORDERS	Color borders	boolean	TRUE
-CHART.DRAW_TRACK_NAME	Draw track label	boolean	FALSE
-CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
-CHART.AUTOSCALE	Continuous autoscale	boolean	FALSE
-CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
-CN_FREQ.AMP_THRESHOLD	CN freq amplification threshold	float	0.1
-CN_FREQ.DEL_THRESHOLD	CN freq deletion threshold	float	-0.1
 
 #Alignments
 info	Default settings for alignment tracks.  A subset of these properties can be overriden for RNA and 3rd generation data.
@@ -272,8 +272,9 @@ PROXY.PW	Password	string	null
 PORT_ENABLED	Enable port	boolean	TRUE
 PORT_NUMBER	Port number	integer	60151
 ---
-IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes.tsv
-MASTER_RESOURCE_FILE_KEY	Data registry URL	string	https://igv.org/genomes/registry/$$_dataServerRegistry.txt
+IGV.genome.sequence.dir	Genome server URL	string	https://igv.org/genomes/genomes3.tsv
+
+MASTER_RESOURCE_FILE_KEY	Data registry URL	string	null
 ---
 PROVISIONING.URL	OAuth provisioning URL	string	null
 ---
@@ -286,19 +287,16 @@ TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
 TOOLTIP.RESHOW_DELAY	Tooltip reshow delay (ms)	integer	50
 TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
-
 ## JBrowse Circular View Integration  **EXPERIMENTAL FEATURE**
 CIRC_VIEW_ENABLED	Enable CircView	boolean	FALSE
 CIRC_VIEW_HOST	CircView host (usually localhost)	string	localhost
 CIRC_VIEW_PORT	CircView port	integer	60152
 
-
 ##
-
 
 #Hidden
 
-ENCODE_FILELIST_URL	https://s3.amazonaws.com/igv.org.app/encode/
+ENCODE_FILELIST_URL	https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/encode/
 
 PROVISIONING_URL_DEFAULT	https://igv.org/services/desktop_google
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE
@@ -319,11 +317,7 @@ SAM.SORT_OPTION	NUCLEOTIDE
 SAM.COLOR_BY	UNEXPECTED_PAIR
 SAM.SHOW_GROUP_SEPARATOR	TRUE
 SAM.REDUCED_MEMORY_MODE	FALSE
-SAM.COLOR.A	0,255,0
-SAM.COLOR.C	0,0,255
-SAM.COLOR.G	209,113,5
-SAM.COLOR.N	182,182,182
-SAM.COLOR.T	255,0,0
+
 SAM.GROUP_ALL	FALSE
 SAM.INVERT_SORT	FALSE
 
@@ -403,4 +397,9 @@ MUTATION_UNKNOWN_COLOR_KEY	Unknown	color	0,180,225
 
 OVERLAY_ATTRIBUTE_KEY	Linking ID	string	LINKING_ID
 
+NORMALIZE_COVERAGE	Normalize coverage data (.tdf files only)	boolean	FALSE
+NO_DATA.COLOR	 No data	color	216,216,216
+NO_CALL.COLOR	 No call	color	150,150,150
 
+AUXILLARY_HUBS_URL	Hub list URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/hubs/hubs.txt
+IGV.backup.genome.sequence.dir	Backup genome server URL	string	https://raw.githubusercontent.com/igvteam/igv-genomes/refs/heads/main/genomes.txt

@@ -29,9 +29,12 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.Globals;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.IGVFeature;
 import htsjdk.tribble.Feature;
+
+import java.awt.*;
 
 /**
  * @author jrobinso
@@ -43,7 +46,15 @@ public abstract class FeatureRenderer implements Renderer<IGVFeature> {
      */
     private static Logger log = LogManager.getLogger(FeatureRenderer.class);
 
+    protected boolean darkMode;
+    protected final Color fontColor;
+
     private Feature highlightFeature = null;
+
+    public FeatureRenderer() {
+        this.darkMode = Globals.isDarkMode();
+        this.fontColor = darkMode ? Color.WHITE : Color.BLACK;
+    }
 
     public Feature getHighlightFeature() {
         return highlightFeature;

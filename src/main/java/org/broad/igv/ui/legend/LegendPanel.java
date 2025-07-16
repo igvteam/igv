@@ -30,9 +30,6 @@
 */
 package org.broad.igv.ui.legend;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
@@ -42,7 +39,6 @@ import org.broad.igv.ui.util.IGVMouseInputAdapter;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -121,21 +117,7 @@ abstract public class LegendPanel extends JPanel {
 
     abstract protected void paintLegend(Graphics2D g);
 
-    /**
-     * Open the user preferences dialog
-     */
     abstract public void edit();
-
-    /*
-     * protected void setColorScheme(double minimum, double median, double maximum,
-     * Color minColor, Color medianColor, Color maxColor) {
-     * colorScheme =
-     * new ContinuousColorScale(minimum, maximum,
-     * minColor, medianColor, maxColor, median, median);
-     * }
-     */
-
-    // abstract protected LinkedHashMap<String, PreferenceDescriptor> addPreferences();
 
     abstract protected void reloadPreferences();
 

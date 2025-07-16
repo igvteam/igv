@@ -74,6 +74,7 @@ import java.util.*;
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(DataPanel.class);
+    private final boolean darkMode;
 
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;
@@ -84,6 +85,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
+        this.darkMode = Globals.isDarkMode();
         this.defaultTool = new PanTool(this);
         this.currentTool = defaultTool;
         this.frame = frame;
@@ -130,6 +132,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
+
+        if(darkMode){
+            setBackground(UIManager.getColor("Panel.background"));
+        }
+
         RenderContext context = null;
         try {
 

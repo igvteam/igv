@@ -18,6 +18,11 @@ label mRNA and EST
 priority 4
 defaultIsClosed 0
 
+name expression
+label Expression
+priority 4.1
+defaultIsClosed 0
+
 name regulation
 label Expression and Regulation
 priority 5

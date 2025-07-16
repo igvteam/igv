@@ -4,6 +4,7 @@ package org.broad.igv.ui.util.download;
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
@@ -110,7 +111,7 @@ public class Downloader implements Runnable {
                         this.canceled = true;
                         break;
                     } else {
-                        SwingUtilities.invokeLater(() -> {
+                        UIUtilities.invokeOnEventThread(() -> {
                             monitor.setProgress(percent);
                             monitor.setNote("" + (downloaded / 1000) + " of " + (contentLength / 1000) + " kb");
                         });
@@ -125,7 +126,7 @@ public class Downloader implements Runnable {
         } finally {
 
             if (monitor != null) {
-                SwingUtilities.invokeLater(() -> monitor.close());
+                UIUtilities.invokeOnEventThread(() -> monitor.close());
    //             monitor.close();
             }
 

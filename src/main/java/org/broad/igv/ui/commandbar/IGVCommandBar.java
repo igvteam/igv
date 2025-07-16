@@ -33,12 +33,12 @@ package org.broad.igv.ui.commandbar;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.event.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.History;
@@ -52,7 +52,6 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.IconFactory;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -63,7 +62,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 
 /**
  * @author jrobinso
@@ -154,7 +152,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         if (IGV.hasInstance()) {
 
-            if(GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome()) {
+            if (GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome) {
                 UIUtilities.invokeOnEventThread(() -> {
                     searchTextField.setText("");
                 });
@@ -221,9 +219,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        if (FrameManager.isGeneListMode()) {
-            IGV.getInstance().setGeneList(null);
-        }
+        IGV.getInstance().setGeneList(null);
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
             if (chrName != null && !chrName.equals(chromosomeComboBox.getSelectedItem())) {
@@ -260,8 +256,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
                 String chrName = FrameManager.getDefaultFrame().getChrName();
                 roiToggleButton.setEnabled(!Globals.CHR_ALL.equals(chrName));
                 zoomControl.setEnabled(!Globals.CHR_ALL.equals(chrName) && !FrameManager.isGeneListMode());
-                if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
-                    chromosomeComboBox.setSelectedItem(chrName);
+                String displayName = GenomeManager.getInstance().getCurrentGenome().getChromosomeDisplayName(chrName);
+                if (!displayName.equals(chromosomeComboBox.getSelectedItem())) {
+                    chromosomeComboBox.setSelectedItem(displayName);
                 }
             }
 
@@ -294,7 +291,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         if ((searchText != null) && (searchText.length() > 0)) {
             String homeChr = GenomeManager.getInstance().getCurrentGenome().getHomeChromosome();
-            if (searchText.equalsIgnoreCase("home")) {
+            if (searchText.equalsIgnoreCase(homeChr)) {
                 homeButtonActionPerformed(null);
             } else {
                 searchTextField.setText(searchText);
@@ -314,6 +311,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         JideBoxLayout layout = new JideBoxLayout(this, JideBoxLayout.X_AXIS);
 
         setLayout(layout);
+
+        boolean darkMode = Globals.isDarkMode();
 
         final String detailsPreference = PreferencesManager.getPreferences().get(Constants.DETAILS_BEHAVIOR_KEY);
         detailsBehavior = ShowDetailsBehavior.valueOf((detailsPreference.toUpperCase()));
@@ -422,7 +421,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         backButton = new JideButton();
         //backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //backButton.setBorder(toolButtonBorder);
-        backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/left-arrow.gif")));
+        backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/left-arrow.invert.gif" : "/images/left-arrow.gif")));
         backButton.setToolTipText("Go back");
         backButton.setMaximumSize(new java.awt.Dimension(32, 32));
         backButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -437,7 +437,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         forwardButton = new JideButton();
         //forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //forwardButton.setBorder(toolButtonBorder);
-        forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/right-arrow.gif")));
+        forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/right-arrow.invert.gif" : "/images/right-arrow.gif")));
         forwardButton.setToolTipText("Go forward");
         forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
         forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -487,7 +488,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         //fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //fitToWindowButton.setBorder(toolButtonBorder);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
-        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/collapseall.gif")));
+        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/collapseall.invert.gif" : "/images/collapseall.gif")));
         fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));

@@ -26,8 +26,10 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.logging.*;
+import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -41,7 +43,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
+public class IgvToolsGui extends org.broad.igv.ui.IGVDialog {
 
     private static Logger log = LogManager.getLogger(IgvToolsGui.class);
 
@@ -49,7 +51,8 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
         COUNT("Count"),
         SORT("Sort"),
         INDEX("Index"),
-        TILE("toTDF");
+        TO_TDF("toTDF"),
+        TO_BEDGRAPH("TDFtoBedGraph"),;
 
         private String displayName;
 
@@ -159,7 +162,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
     }
 
     private void updateTextArea(final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
                 outputText.append(text);
             }
@@ -279,7 +282,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
             extFactorField.setEnabled(false);
             disableWindowFunctions();
 
-        } else if (tool.equals(Tool.TILE)) {
+        } else if (tool.equals(Tool.TO_TDF) || tool.equals(Tool.TO_BEDGRAPH)) {
             inputField.setEnabled(true);
             inputButton.setEnabled(true);
             outputField.setEnabled(true);
@@ -390,8 +393,11 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                 case INDEX:
                     doIndex();
                     break;
-                case TILE:
+                case TO_TDF:
                     doTile();
+                    break;
+                case TO_BEDGRAPH:
+                    doBedgraph();
                     break;
             }
         } catch (PreprocessingException e) {
@@ -495,6 +501,28 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
         swingWorker.execute();
     }
 
+    private void doBedgraph() {
+
+        SwingWorker swingWorker = new IgvToolsSwingWorker() {
+
+            @Override
+            protected Object doInBackground() {
+                try {
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    String ifile = inputField.getText();
+                    String ofile = outputField.getText();
+                    runButton.setEnabled(false);
+                    TDFUtils.tdfToBedgraph(ifile, ofile);
+                } catch (Exception e) {
+                    showMessage("Error: " + e.getMessage());
+                }
+
+                return null;
+            }
+        };
+        swingWorker.execute();
+    }
+
     //    public static void doIndex(String ifile, int indexType, int binSize) throws IOException {
 
     private void doIndex() {
@@ -564,7 +592,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
      * @return
      */
     private File chooseFile() {
-       return FileDialogUtils.chooseFile("Select File: ", lastDirectory, FileDialogUtils.LOAD);
+        return FileDialogUtils.chooseFile("Select File: ", lastDirectory, FileDialogUtils.LOAD);
     }
 
     public static void main(String[] args) {
@@ -617,8 +645,11 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
         if (inputFieldText.length() > 0) {
             switch (tool) {
                 case COUNT:
-                case TILE:
+                case TO_TDF:
                     defaultOutputText = inputFieldText + ".tdf";
+                    break;
+                case TO_BEDGRAPH:
+                    defaultOutputText = inputFieldText + ".bedgraph";
                     break;
                 case SORT:
                     int ext = inputFieldText.lastIndexOf(".");
@@ -714,32 +745,32 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                     }
                 });
                 requiredPanel.add(toolCombo, new GridBagConstraints(2, 1, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- label1 ----
                 label1.setText("Command");
                 requiredPanel.add(label1, new GridBagConstraints(1, 1, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- label2 ----
                 label2.setText("Input File");
                 requiredPanel.add(label2, new GridBagConstraints(1, 2, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- outputLabel ----
                 outputLabel.setText("Output File");
                 requiredPanel.add(outputLabel, new GridBagConstraints(1, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- outputButton ----
                 outputButton.setText("Browse");
                 requiredPanel.add(outputButton, new GridBagConstraints(3, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- inputField ----
                 inputField.addFocusListener(new FocusAdapter() {
@@ -755,8 +786,8 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                     }
                 });
                 requiredPanel.add(inputField, new GridBagConstraints(2, 2, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- inputButton ----
                 inputButton.setText("Browse");
@@ -767,31 +798,31 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                     }
                 });
                 requiredPanel.add(inputButton, new GridBagConstraints(3, 2, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 requiredPanel.add(outputField, new GridBagConstraints(2, 3, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- genomeLabel ----
                 genomeLabel.setToolTipText("Either a genome ID (e.g. hg18) or the full path to a .genome file.");
                 genomeLabel.setText("Genome");
                 requiredPanel.add(genomeLabel, new GridBagConstraints(1, 4, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 requiredPanel.add(genomeField, new GridBagConstraints(2, 4, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- genomeButton ----
                 genomeButton.setText("Browse");
                 requiredPanel.add(genomeButton, new GridBagConstraints(3, 4, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(requiredPanel, new GridBagConstraints(1, 1, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== tilePanel ========
             {
@@ -804,15 +835,15 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                 zoomLabel.setToolTipText("<html>Specifies the maximum zoom level to precompute. The default value is 7.<br>To reduce file size at the expense of Iperformance this value can be reduced.");
                 zoomLabel.setText("Zoom Levels");
                 tilePanel.add(zoomLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- windowFunctionLabel ----
                 windowFunctionLabel.setToolTipText("Window functions to use for summarizing data. ");
                 windowFunctionLabel.setText("Window Functions");
                 tilePanel.add(windowFunctionLabel, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //======== windowFunctionPanel ========
                 {
@@ -856,65 +887,65 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                     windowFunctionPanel.add(a98CheckBox);
                 }
                 tilePanel.add(windowFunctionPanel, new GridBagConstraints(2, 2, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- probeLabel ----
                 probeLabel.setFont(probeLabel.getFont());
                 probeLabel.setToolTipText("<html>Specifies a \"bed\" file to be used to map probe identifiers to locations.  This option is useful <br>when preprocessing gct files.  The bed file should contain 4 columns: chr start end name\n<br>where name is the probe name in the gct file.");
                 probeLabel.setText("Probe to Loci Mapping");
                 tilePanel.add(probeLabel, new GridBagConstraints(1, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 tilePanel.add(probeField, new GridBagConstraints(2, 3, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- probeButton ----
                 probeButton.setText("Browse");
                 tilePanel.add(probeButton, new GridBagConstraints(3, 3, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- zoomCombo ----
                 zoomCombo.setEditable(false);
-                zoomCombo.setModel(new DefaultComboBoxModel(new String[] {
+                zoomCombo.setModel(new DefaultComboBoxModel(new String[]{
 
                 }));
                 tilePanel.add(zoomCombo, new GridBagConstraints(2, 1, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- windowSizeLabel ----
                 windowSizeLabel.setToolTipText("The window size over which coverage computed when using the count command.  Defaults to 25 bp.");
                 windowSizeLabel.setText("Window Size");
                 tilePanel.add(windowSizeLabel, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 tilePanel.add(windowSizeField, new GridBagConstraints(2, 4, 1, 1, 1.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- extFactorLabel ----
                 extFactorLabel.setText("Extension Factor");
                 extFactorLabel.setToolTipText("Extend read by this amount.  Set to average fragment size of library");
                 tilePanel.add(extFactorLabel, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 tilePanel.add(extFactorField, new GridBagConstraints(2, 5, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- pairsCB ----
                 pairsCB.setText("Count as Pairs");
                 pairsCB.setToolTipText("Count area between proper pairs as covered.");
                 tilePanel.add(pairsCB, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(tilePanel, new GridBagConstraints(1, 2, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== sortPanel ========
             {
@@ -925,31 +956,31 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                 tmpDirectoryLabel.setToolTipText("<html>Specify a temporary working directory.  For large input files this directory will be used to <br>store intermediate results of the sort. The default is the users temp directory.");
                 tmpDirectoryLabel.setText("Temp Directory");
                 sortPanel.add(tmpDirectoryLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- maxRecordsLabel ----
                 maxRecordsLabel.setToolTipText("<html>The maximum number of records to keep in memory during the sort.  The default value is <br>500000.  Increase this number if you receive \"too many open files\" errors.   Decrease it if you <br>experience \"out of memory\" errors.");
                 maxRecordsLabel.setText("Max Records");
                 sortPanel.add(maxRecordsLabel, new GridBagConstraints(1, 2, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.WEST, GridBagConstraints.NONE,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.WEST, GridBagConstraints.NONE,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- tempButton ----
                 tempButton.setText("Browse");
                 sortPanel.add(tempButton, new GridBagConstraints(4, 1, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 sortPanel.add(tmpDirectoryField, new GridBagConstraints(3, 1, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
                 sortPanel.add(maxRecordsField, new GridBagConstraints(3, 2, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(sortPanel, new GridBagConstraints(1, 3, 1, 1, 1.0, 1.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== buttonPanel ========
             {
@@ -958,18 +989,18 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                 //---- runButton ----
                 runButton.setText("Run");
                 buttonPanel.add(runButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
 
                 //---- closeButton ----
                 closeButton.setText("Close");
                 buttonPanel.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 1.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             mainPanel.add(buttonPanel, new GridBagConstraints(1, 4, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
 
             //======== OutputPanel ========
             {
@@ -990,7 +1021,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < OutputPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < OutputPanel.getComponentCount(); i++) {
                         Rectangle bounds = OutputPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1003,14 +1034,14 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
                 }
             }
             mainPanel.add(OutputPanel, new GridBagConstraints(1, 6, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
             mainPanel.add(separator1, new GridBagConstraints(1, 5, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 10, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 10, 0), 0, 0));
             mainPanel.add(progressBar, new GridBagConstraints(1, 7, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-                new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
+                    new Insets(0, 0, 0, 0), 0, 0));
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -1065,7 +1096,7 @@ public class IgvToolsGui extends org.broad.igv.ui.IGVDialog  {
     private JProgressBar progressBar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    private abstract class IgvToolsSwingWorker extends SwingWorker{
+    private abstract class IgvToolsSwingWorker extends SwingWorker {
 
         @Override
         protected void done() {

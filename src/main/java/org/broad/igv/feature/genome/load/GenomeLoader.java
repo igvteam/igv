@@ -75,7 +75,7 @@ abstract public class GenomeLoader {
      */
     public static FeatureTrack createGeneTrack(Genome genome, List<htsjdk.tribble.Feature> features) {
 
-        FeatureDB.clearFeatures();
+        genome.getFeatureDB().clearFeatures();
         FeatureTrack geneFeatureTrack = null;
         String name = "Annotations";
 

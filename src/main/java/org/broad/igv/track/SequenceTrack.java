@@ -216,8 +216,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void load(ReferenceFrame referenceFrame) {
 
-        String chr = referenceFrame.getChrName();
         final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        String chr = currentGenome.getCanonicalChrName(referenceFrame.getChrName());
 
         int start = (int) referenceFrame.getOrigin();
 
