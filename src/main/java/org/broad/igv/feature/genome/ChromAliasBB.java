@@ -47,15 +47,17 @@ public class ChromAliasBB extends ChromAliasSource {
      */
     public ChromAlias search(String alias) throws IOException {
         if (!this.aliasCache.containsKey(alias)) {
-            IGVFeature f =  this.reader.search(alias);
-            if (f != null) {
-                String chr = f.getChr();
-                ChromAlias aliasRecord = new ChromAlias(chr);
-                this.aliasCache.put(chr, aliasRecord);
-                for (String key : f.getAttributeKeys()){
-                    final String a = f.getAttribute(key);
-                    aliasRecord.put(key, a);
-                    this.aliasCache.put(a, aliasRecord);      // One entry for each alias
+            List<IGVFeature> results = this.reader.search(alias);
+            if (results != null) {
+                for (IGVFeature f : results) {
+                    String chr = f.getChr();
+                    ChromAlias aliasRecord = new ChromAlias(chr);
+                    this.aliasCache.put(chr, aliasRecord);
+                    for (String key : f.getAttributeKeys()) {
+                        final String a = f.getAttribute(key);
+                        aliasRecord.put(key, a);
+                        this.aliasCache.put(a, aliasRecord);      // One entry for each alias
+                    }
                 }
             }
         }

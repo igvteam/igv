@@ -449,7 +449,7 @@ public class BBFile {
      */
 
 
-    public IGVFeature search(String term) throws IOException {
+    public List<IGVFeature> search(String term) throws IOException {
 
         if (this.header == null) {
             this.readHeader();

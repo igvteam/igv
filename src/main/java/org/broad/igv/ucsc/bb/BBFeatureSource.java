@@ -113,7 +113,7 @@ public class BBFeatureSource implements FeatureSource {
     }
 
     @Override
-    public List<BasicFeature> search(String term) {
+    public List<IGVFeature> search(String term) {
         try {
             return reader.search(term);
         } catch (IOException e) {
