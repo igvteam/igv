@@ -1,4 +1,4 @@
-track type=interact name="interact Example Four" description="A inter-chr interact file" useScore=on maxHeightPixels=200:100:50
+track type=interact name="interact Example Four" description="An inter-chr interact file" useScore=on maxHeightPixels=200:100:50
 chr3	63702628	63705638	.	584	10	.	0	chr17	58878552	58880897	.	.	chr3	63702628	63705638	.	.
 chr3	63741418	63978511	.	350	6	.	0	chr3	63741418	63743120	.	.	chr3	63976338	63978511	.	.
 chr3	63807692	63850723	.	350	6	.	0	chr3	63807692	63812972	.	.	chr3	63845430	63850723	.	.
