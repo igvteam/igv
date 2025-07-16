@@ -121,7 +121,7 @@ public class BedPESource implements FeatureSource<BedPE> {
         List<BedPE> sampledFeatures = new ArrayList<>(MAX_WG_COUNT);
         for (int i = 0; i < nBins; i++) {
             List<BedPE> bfs = binnedFeatures[i];
-            sampledFeatures.addAll(Arrays.asList(new Downsampler<BedPEFeature>().sample(bfs.toArray(BedPEFeature[]::new), featuresPerBin)));
+            sampledFeatures.addAll(Arrays.asList(new Downsampler<BedPE>().sample(bfs.toArray(BedPE[]::new), featuresPerBin)));
         }
 
         // Be sure we keep the maximum feature
