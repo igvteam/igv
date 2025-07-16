@@ -1,7 +1,11 @@
 package org.broad.igv.ucsc.bb;
 
 import org.broad.igv.feature.BasicFeature;
+
+import org.broad.igv.feature.IGVFeature;
+
 import org.broad.igv.ucsc.BPTree;
+
 import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value;
@@ -86,12 +90,15 @@ public class BBFileTest {
 
         // There are 5 extra indexes, 1 for each alias
         String ncbiName = "3";
-        BasicFeature f1 = bbReader.search(ncbiName).get(0);
+
+        IGVFeature f1 = bbReader.search(ncbiName).get(0);
         assertNotNull(f1);
         assertEquals(ncbiName, f1.getAttribute("ncbi"));
 
         String ucscName = "chr2";
-        BasicFeature f2 = bbReader.search(ucscName).get(0);
+
+        IGVFeature f2 = bbReader.search(ucscName).get(0);
+
         assertEquals(ucscName, f2.getAttribute("ucsc"));
 
         assertNull(bbReader.search("zzzz"));
@@ -106,17 +113,19 @@ public class BBFileTest {
 
         // Search by name, which is the index parameter, does not require trix
         String name = "NP_389226.1";
-        BasicFeature f = bbReader.search(name).get(0);
+
+        IGVFeature f = bbReader.search(name).get(0);
+
         assertEquals(name, f.getName());
 
 
         // Search by alternate name,  does require trix
         String name2 = "ykoX";
-        BasicFeature f2 = bbReader.search(name2).get(0);
+
+        IGVFeature f2 = bbReader.search(name2).get(0);
+
         assertEquals(name, f2.getName());
 
         assertNull(bbReader.search("zzzz"));
     }
-
-
 }

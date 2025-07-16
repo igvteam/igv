@@ -214,27 +214,10 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
             return reader.query(seqName, start, end);
         }
 
-        /**
-         * Return coverage values overlapping the query interval.   At this time Tribble sources do not provide
-         * coverage values
-         *
-         * @param chr
-         * @param start
-         * @param end
-         * @param zoom
-         * @return
-         */
-        @Override
-        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-            return null;
-        }
-
-
         @Override
         protected Collection<String> getSequenceNames() {
             return reader.getSequenceNames();
         }
-
 
         /**
          * Estimate an appropriate feature window size.
@@ -356,11 +339,6 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
         @Override
         public boolean isIndexed() {
             return false;
-        }
-
-        @Override
-        public boolean isLoaded(ReferenceFrame frame) {
-            return true;
         }
 
         @Override

@@ -1,5 +1,6 @@
 package org.broad.igv.bedpe;
 
+import org.broad.igv.feature.Strand;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
@@ -21,22 +22,20 @@ public class BedPEParser {
 
     private static Logger log = LogManager.getLogger(BedPEParser.class);
 
-    enum DatasetType {TENX, CLUSTER, UNKNOWN}
-
-    public static Dataset parse(ResourceLocator locator, Genome genome) throws IOException {
+    public static List<BedPE> parse(ResourceLocator locator, Genome genome) throws IOException {
 
         int colorColumn = -1;
         int thicknessColumn = -1;
-        DatasetType type = DatasetType.UNKNOWN;
-        boolean parsedHeader = true;
 
         // Default column headers from BedPE spec.  Can be overriden
         String[] columns = {"chrom1", "start1", "stop1", "chrom2", "start2", "stop2", "name", "score", "strand1", "strand2"};
         boolean col7isNumeric = true;   // Until proven otherwise
 
         Map<String, Color> colorCache = new HashMap<>();
-        List<BedPEFeature> features = new ArrayList<>();
+        List<BedPE> features = new ArrayList<>();
         BufferedReader br = null;
+
+        Map<String, Integer> featureCounts = new HashMap<>();
 
         try {
             br = ParsingUtils.openBufferedReader(locator.getPath());
@@ -63,8 +62,6 @@ public class BedPEParser {
                     } catch (NumberFormatException e) {
                         log.error("Error parsing #column line.", e);
                     }
-                } else if (nextLine.trim().equals("#chrom1\tstart1\tstop1\tchrom2\tstart2\tstop2\tname\tqual\tstrand1\tstrand2\tfilters\tinfo")) {
-                    type = DatasetType.TENX;
                 }
 
                 if (nextLine.startsWith("#") || nextLine.startsWith("chr1\tx1\tx2")) {
@@ -112,6 +109,11 @@ public class BedPEParser {
 
                     BedPEFeature feature = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
 
+                    if(chr1.equals(chr2)) {
+                        Integer counts = featureCounts.containsKey(chr1) ? featureCounts.get(chr1) : 0;
+                        featureCounts.put(chr1, counts + 1);
+                    }
+
                     if (tokens.length > 6) {
                         feature.name = tokens[6];
                         col7isNumeric = col7isNumeric && isNumeric(tokens[6]);
@@ -123,16 +125,27 @@ public class BedPEParser {
                     if (tokens.length > 7) {
                         feature.scoreString = tokens[7];
                         try {
-                            feature.score = Double.parseDouble(tokens[7]);
+                            feature.score = Float.parseFloat(tokens[7]);
                         } catch (NumberFormatException e) {
                             feature.score = 0;
                         }
                     }
 
                     if (tokens.length > 8) {
+
+                        int extraFieldsStart = 8;
+                        if(tokens[8].trim().equals("+") || tokens[8].trim().equals("-")) {
+                            feature.strand1 = tokens[8].trim().equals("+") ? Strand.POSITIVE : Strand.NEGATIVE;
+                            extraFieldsStart = 9;
+                        }
+                        if(tokens[9].trim().equals("+") || tokens[9].trim().equals("-")) {
+                            feature.strand2 = tokens[9].trim().equals("+") ? Strand.POSITIVE : Strand.NEGATIVE;
+                            extraFieldsStart = 10;
+                        }
+
                         Map<String, String> attributes = new LinkedHashMap<>();
 
-                        for (int i = 8; i < tokens.length; i++) {
+                        for (int i = extraFieldsStart; i < tokens.length; i++) {
 
                             String t = tokens[i];
                             String c = columns != null && columns.length > i ? columns[i] : String.valueOf(i);
@@ -160,14 +173,18 @@ public class BedPEParser {
                             c = ColorUtilities.stringToColor(colorString);
                             colorCache.put(colorString, c);
                         }
-                        feature.color = c;
+                        feature.setColor(c);
                     }
 
                     if (thicknessColumn > 0 && tokens.length > thicknessColumn) {
-                        feature.thickness = Integer.parseInt(tokens[thicknessColumn]);
+                        feature.thickness = Math.max(1, (int) Float.parseFloat(tokens[thicknessColumn]));
                     }
 
                     // Skipping remaining fields for now
+                    if (!feature.getChr1().equals(feature.getChr2())) {
+                        // Add complement feature
+                        features.add(feature.getComplement());
+                    }
 
                     features.add(feature);
                 }
@@ -177,17 +194,17 @@ public class BedPEParser {
 
             // A hack to detect "interaction" bedpe files, which are not spec compliant.  Interaction score is column 7
             if (col7isNumeric) {
-                for (BedPEFeature f : features) {
-                    f.score = Double.parseDouble(f.name);
-                    f.scoreString = f.name;
-                    f.name = null;
-                }
-                if (type == DatasetType.UNKNOWN) {
-                    type = DatasetType.CLUSTER;   // A guess
+                for (BedPE bedpe : features) {
+                    if(bedpe instanceof BedPEFeature) {
+                        BedPEFeature f = (BedPEFeature) bedpe;
+                        f.score = Float.parseFloat(f.name);
+                        f.scoreString = f.name;
+                        f.name = null;
+                    }
                 }
             }
 
-            return new Dataset(type, features);
+            return  features;
         } finally {
             br.close();
         }
@@ -200,15 +217,5 @@ public class BedPEParser {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
-    public static class Dataset {
-
-        public DatasetType type;
-        public List<BedPEFeature> features;
-
-        public Dataset(DatasetType type, List<BedPEFeature> features) {
-            this.type = type;
-            this.features = features;
-        }
-    }
 
 }

@@ -27,10 +27,12 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
+import org.broad.igv.bedpe.BedPE;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,9 +44,6 @@ import java.util.List;
  */
 public interface FeatureSource<T extends Feature> {
 
-    default boolean isLoaded(ReferenceFrame frame) {
-        return false;
-    }
 
     /**
      * Return an iterator over all features that overlap the interval.  The coordinates are in the "UCSC" convention,
@@ -69,8 +68,9 @@ public interface FeatureSource<T extends Feature> {
      * @param zoom   the zoom level
      * @return
      */
-    List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom);
-
+    default List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+        return null;
+    }
 
     /**
      * The featureWindowSize is the genomic interval, in bases, at which the associated feature track should start

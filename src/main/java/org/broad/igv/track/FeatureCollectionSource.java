@@ -93,11 +93,6 @@ public class FeatureCollectionSource implements FeatureSource {
         return filteredFeatures;
     }
 
-    @Override
-    public boolean isLoaded(ReferenceFrame frame) {
-        return true;  // All features are loaded by definition
-    }
-
     public List<Feature> getFeatures(String chr) {
         return featureMap.get(chr);
     }

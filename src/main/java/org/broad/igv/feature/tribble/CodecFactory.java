@@ -34,6 +34,7 @@ import org.broad.igv.data.cufflinks.FPKMTrackingCodec;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.dsi.DSICodec;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.bedpe.InteractCodec;
 import org.broad.igv.gwas.EQTLCodec;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -140,6 +141,8 @@ public class CodecFactory {
                 return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED_EXT, genome);
             case "bedmethyl":
                 return new IGVBEDCodec(genome, FeatureType.BED_METHYL);
+//            case "interact":
+//                return new InteractCodec(genome, FeatureType.INTERACT);
 
             default:
                 if (MUTCodec.isMutationAnnotationFile(locator)) {

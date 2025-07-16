@@ -4,6 +4,8 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureType;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.ChromAlias;
 import org.broad.igv.feature.genome.Genome;
@@ -12,9 +14,8 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
+import org.broad.igv.ucsc.bb.codecs.*;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
-import org.broad.igv.ucsc.bb.codecs.BBCodec;
-import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
@@ -91,9 +92,11 @@ import java.util.stream.Collectors;
  */
 public class BBFile {
 
+
+    public enum Type {BIGWIG, BIGBED}
+
     static Logger log = LogManager.getLogger(BBFile.class);
 
-    enum Type {BIGWIG, BIGBED}
 
     static public final int BBFILE_HEADER_SIZE = 64;
     static public final long BIGWIG_MAGIC = 2291137574l; // BigWig Magic
@@ -110,6 +113,7 @@ public class BBFile {
     private BBCodec bedCodec;
     private String path;
     private Type type;
+    private FeatureType featureType;
     private BBHeader header = null;
     private BBZoomHeader[] zoomHeaders;
     private ByteOrder byteOrder;
@@ -145,6 +149,28 @@ public class BBFile {
 
     public Type getType() {
         return type;
+    }
+
+    public FeatureType getFeatureType() {
+        if (featureType == null) {
+            if (isBigWigFile()) {
+                featureType = FeatureType.WIG;
+            } else if (isBigBedFile()) {
+                String as = getAutoSQL();
+                if (as != null) {
+                    BBUtils.ASTable astable = BBUtils.parseAutosql(autosql);
+                    if (astable != null && "bigRmskBed".equals(astable.name)) {
+                        featureType = FeatureType.RMSK;
+                    } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
+                        featureType = FeatureType.INTERACT;
+                    }
+                }
+                if (featureType == null) {
+                    featureType = FeatureType.BED;
+                }
+            }
+        }
+        return featureType;
     }
 
     public BBHeader getHeader() {
@@ -422,7 +448,8 @@ public class BBFile {
      * @returns {Promise<void>}
      */
 
-    public List<BasicFeature> search(String term) throws IOException {
+
+    public List<IGVFeature> search(String term) throws IOException {
 
         if (this.header == null) {
             this.readHeader();
@@ -446,11 +473,11 @@ public class BBFile {
             long start = region[0];
             int size = (int) region[1];
             byte[] buffer = this.getBytes(start, size);
-            List<BasicFeature> features = decodeFeatures(null, buffer, -1, -1, -1);
+            List<IGVFeature> features = decodeFeatures(null, buffer, -1, -1, -1);
+
 
             // Filter features to those matching term
             final String searchTerm = term;
-
             return features.stream().filter(f -> {
                 return f.getName().equalsIgnoreCase(searchTerm) ||
                         f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
@@ -460,9 +487,11 @@ public class BBFile {
         return null;
     }
 
-    List<BasicFeature> decodeFeatures(String chr, byte[] buffer, int chrIdx, int start, int end) {
 
-        List<BasicFeature> features = new ArrayList<>();
+    List<IGVFeature> decodeFeatures(String chr, byte[] buffer, int chrIdx, int start, int end) {
+
+        List<IGVFeature> features = new ArrayList<>();
+
         byte[] uncompressed;
         if (this.header.uncompressBuffSize > 0) {
             uncompressed = (new CompressionUtils()).decompress(buffer, this.header.uncompressBuffSize);
@@ -484,6 +513,7 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
+
             // When decoding features from a search the chromosome name is not known until the feature is decoded.
             // Try to get the chromosome name from the id.
             if (chr == null) {
@@ -491,9 +521,10 @@ public class BBFile {
             }
             if (chr != null) {
                 final BedData bedData = new BedData(chr, chromStart, chromEnd, restOfFields);
-                final BasicFeature feature = bedCodec.decode(bedData);
+                final IGVFeature feature = bedCodec.decode(bedData);
                 features.add(feature);
             }
+
         }
         return features;
     }

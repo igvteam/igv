@@ -1,6 +1,13 @@
 package org.broad.igv.bedpe;
 
+import org.broad.igv.Globals;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.ui.color.ColorUtilities;
+
 import java.awt.*;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -8,21 +15,28 @@ import java.util.Map;
  */
 public class BedPEFeature implements BedPE {
 
-    public String chr1;
-    public int start1;
-    public int end1;
-    public String chr2;
-    public int start2;
-    public int end2;
-    String name;
-    String scoreString = "";
-    double score;
-    Color color;
-    int thickness = 1;
-    String type;
+    protected String chr1;
+    protected int start1;
+    protected int end1;
+    protected Strand strand1 = Strand.NONE; // Default to NONE, can be set later
+
+    protected String chr2;
+    protected int start2;
+    protected int end2;
+    protected Strand strand2 = Strand.NONE; // Default to NONE, can be set later
+
+    protected String name;
+    protected String scoreString = "";
+    protected float score;
+    protected Color color;
+    protected int thickness = 1;
+    protected String type;
     Map<String, String> attributes;
-    int row;
     BedPEShape shape;
+    private boolean isComplement = false;
+
+    public BedPEFeature() {
+    }
 
     public BedPEFeature(String chr1, int start1, int end1, String chr2, int start2, int end2) {
         this.chr1 = chr1;
@@ -33,15 +47,17 @@ public class BedPEFeature implements BedPE {
         this.end2 = end2;
     }
 
-    public BedPEFeature get() {
-        return this;
+    public BedPEFeature getComplement() {
+        BedPEFeature complement = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
+        complement.isComplement = true;
+        return complement;
     }
 
     public String getChr() {
-        if(isSameChr()) {
+        if (isSameChr()) {
             return chr1;
         } else {
-            return null;
+            return isComplement ? chr2 : chr1;
         }
     }
 
@@ -54,30 +70,25 @@ public class BedPEFeature implements BedPE {
     }
 
     public double getMidStart() {
-        return Math.min ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
+        return Math.min((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
     public double getMidEnd() {
-        return Math.max ((start1 + end1) / 2.0, (start2 + end2) / 2.0);
+        return Math.max((start1 + end1) / 2.0, (start2 + end2) / 2.0);
     }
 
     @Override
-    public double getScore() {
+    public boolean isComplement() {
+        return this.isComplement;
+    }
+
+    @Override
+    public float getScore() {
         return score;
     }
 
     public boolean isSameChr() {
         return chr1.equals(chr2);
-    }
-
-    @Override
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    @Override
-    public int getRow() {
-        return row;
     }
 
     @Override
@@ -110,13 +121,13 @@ public class BedPEFeature implements BedPE {
 
         String locus1 = chr1 + ":" + start1 + "-" + end1;
         String locus2 = chr2 + ":" + start2 + "-" + end2;
-        if(name != null && name.length() > 0 && !name.equals(".")) {
+        if (name != null && name.length() > 0 && !name.equals(".")) {
             buf.append(name + "<br>");
         }
         buf.append(locus1);
         buf.append("<br>" + locus2);
         buf.append("<br>Score: " + score);
-        if(attributes != null) {
+        if (attributes != null) {
             buf.append("<br><hr>");
             for (Map.Entry<String, String> entry : attributes.entrySet()) {
                 buf.append("<br>" + entry.getKey() + ": " + entry.getValue());
@@ -126,8 +137,37 @@ public class BedPEFeature implements BedPE {
         return buf.toString();
     }
 
-    @Override
-    public double getCenterDistance() {
-        return Math.abs((start1 + end1) / 2.0 - (start2 + end2)  / 2.0);
+    public String getChr1() {
+        return chr1;
     }
+
+    public int getStart1() {
+        return start1;
+    }
+
+    public int getEnd1() {
+        return end1;
+    }
+
+    public String getChr2() {
+        return chr2;
+    }
+
+    public int getStart2() {
+        return start2;
+    }
+
+    public int getEnd2() {
+        return end2;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
 }

@@ -1,6 +1,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ucsc.bb.BBFile;
 
 import java.io.IOException;
@@ -46,9 +47,9 @@ public class ChromAliasBB extends ChromAliasSource {
      */
     public ChromAlias search(String alias) throws IOException {
         if (!this.aliasCache.containsKey(alias)) {
-            List<BasicFeature> results = this.reader.search(alias);
+            List<IGVFeature> results = this.reader.search(alias);
             if (results != null) {
-                for (BasicFeature f : results) {
+                for (IGVFeature f : results) {
                     String chr = f.getChr();
                     ChromAlias aliasRecord = new ChromAlias(chr);
                     this.aliasCache.put(chr, aliasRecord);

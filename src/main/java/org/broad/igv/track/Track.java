@@ -163,6 +163,8 @@ public interface Track extends Persistable {
 
     void setOverlayed(boolean overlayVisible);
 
+    void setTrackType(TrackType type);
+
     TrackType getTrackType();
 
     void setHeight(int preferredHeight);
@@ -293,6 +295,8 @@ public interface Track extends Persistable {
     default String getLabelField() {
         return null;
     }
+
+    default void setTrackLine(String trackLine) {}
 
     /**
      * Return true if the track can be searched for a feature by name.

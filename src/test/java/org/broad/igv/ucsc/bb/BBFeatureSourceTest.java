@@ -1,7 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.Ignore;
@@ -27,9 +27,9 @@ public class BBFeatureSourceTest {
         BBFile reader = new BBFile(path, genome);
         BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
 
-        Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bwSource.getFeatures(chr, start, end);
 
-        List<BasicFeature> features = new ArrayList<>();
+        List<IGVFeature> features = new ArrayList<>();
         while (iter.hasNext()) {
             features.add(iter.next());
         }
@@ -37,7 +37,7 @@ public class BBFeatureSourceTest {
         assertEquals(3339, features.size());   // Verified in iPad app
 
         //chr7	773975	792642	uc003sjb.2	0	+	776710	791816	0,255,0	HEATR2	Q86Y56-3
-        BasicFeature f = features.get(20);
+        IGVFeature f = features.get(20);
         assertEquals(f.getStart(), 773975);
         assertEquals(f.getAttribute("geneSymbol"), "HEATR2");
         assertEquals(f.getAttribute("spID"), "Q86Y56-3");
@@ -55,9 +55,9 @@ public class BBFeatureSourceTest {
         reader.preload();
         BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
 
-        Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bwSource.getFeatures(chr, start, end);
 
-        List<BasicFeature> features = new ArrayList<>();
+        List<IGVFeature> features = new ArrayList<>();
         while (iter.hasNext()) {
             features.add(iter.next());
         }
@@ -65,7 +65,7 @@ public class BBFeatureSourceTest {
         assertEquals(3339, features.size());   // Verified in iPad app
 
         //chr7	773975	792642	uc003sjb.2	0	+	776710	791816	0,255,0	HEATR2	Q86Y56-3
-        BasicFeature f = features.get(20);
+        IGVFeature f = features.get(20);
         assertEquals(f.getStart(), 773975);
         assertEquals(f.getAttribute("geneSymbol"), "HEATR2");
         assertEquals(f.getAttribute("spID"), "Q86Y56-3");
@@ -82,9 +82,9 @@ public class BBFeatureSourceTest {
         BBFile reader = new BBFile(path, genome);
         BBFeatureSource bwSource = new BBFeatureSource(reader, genome);
 
-        Iterator<BasicFeature> iter = bwSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bwSource.getFeatures(chr, start, end);
 
-        List<BasicFeature> features = new ArrayList<>();
+        List<IGVFeature> features = new ArrayList<>();
         while (iter.hasNext()) {
             features.add(iter.next());
         }
@@ -92,7 +92,7 @@ public class BBFeatureSourceTest {
         assertEquals(3339, features.size());   // Verified in iPad app
 
         //chr7	773975	792642	uc003sjb.2	0	+	776710	791816	0,255,0	HEATR2	Q86Y56-3
-        BasicFeature f = features.get(20);
+        IGVFeature f = features.get(20);
         assertEquals(f.getStart(), 773975);
         assertEquals(f.getAttribute("geneSymbol"), "HEATR2");
         assertEquals(f.getAttribute("spID"), "Q86Y56-3");
@@ -112,10 +112,10 @@ public class BBFeatureSourceTest {
         int end = 42182827;
 
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
-            BasicFeature f = iter.next();
+            IGVFeature f = iter.next();
             assertEquals(chr, f.getChr());
             assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
@@ -139,10 +139,10 @@ public class BBFeatureSourceTest {
         int end = 42182827;
 
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
-            BasicFeature f = iter.next();
+            IGVFeature f = iter.next();
             assertEquals(chr, f.getChr());
             assertTrue(f.getStart() <= end && f.getEnd() >= start);
             count++;
@@ -167,7 +167,7 @@ public class BBFeatureSourceTest {
         BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
 
         int count = 0;
-        Iterator<BasicFeature> iter = bbSource.getFeatures("chr21", 0, Integer.MAX_VALUE);
+        Iterator<IGVFeature> iter = bbSource.getFeatures("chr21", 0, Integer.MAX_VALUE);
         while (iter.hasNext()) {
             iter.next();
             count++;
@@ -191,7 +191,7 @@ public class BBFeatureSourceTest {
         int start = 26490012;
         int end = 42182827;
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
 
         int count = 0;
         while (iter.hasNext()) {
@@ -215,7 +215,7 @@ public class BBFeatureSourceTest {
         int start = 26490012;
         int end = 42182827;
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
 
         int count = 0;
         while (iter.hasNext()) {
@@ -239,7 +239,7 @@ public class BBFeatureSourceTest {
         int start = 63081504;
         int end = 64501215;
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
 
         int count = 0;
         while (iter.hasNext()) {
@@ -289,7 +289,7 @@ public class BBFeatureSourceTest {
         int start = 145481787;
         int end = 145482000;
 
-        Iterator<BasicFeature> iter = bbSource.getFeatures(chr, start, end);
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, start, end);
 
         int count = 0;
         while (iter.hasNext()) {

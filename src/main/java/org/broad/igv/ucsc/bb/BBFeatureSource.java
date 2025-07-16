@@ -27,6 +27,7 @@ package org.broad.igv.ucsc.bb;
 
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.logging.LogManager;
@@ -91,7 +92,7 @@ public class BBFeatureSource implements FeatureSource {
      * @return
      * @throws IOException
      */
-    public Iterator<BasicFeature> getFeatures(String chr, int start, int end) throws IOException {
+    public Iterator<IGVFeature> getFeatures(String chr, int start, int end) throws IOException {
 
         long rTreeOffset = reader.getHeader().fullIndexOffset;
         Integer chrIdx = reader.getIdForChr(chr);
@@ -107,16 +108,12 @@ public class BBFeatureSource implements FeatureSource {
         }
     }
 
-    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return null;
-    }
-
     public boolean isSearchable() {
         return reader.isSearchable();
     }
 
     @Override
-    public List<BasicFeature> search(String term) {
+    public List<IGVFeature> search(String term) {
         try {
             return reader.search(term);
         } catch (IOException e) {
@@ -125,16 +122,16 @@ public class BBFeatureSource implements FeatureSource {
         }
     }
 
-    static class FeatureIterator implements Iterator<BasicFeature> {
+    static class FeatureIterator implements Iterator<IGVFeature> {
 
-        List<BasicFeature> features;
+        List<IGVFeature> features;
         int idx;
         int start;
         int end;
 
-        BasicFeature next;
+        IGVFeature next;
 
-        public FeatureIterator(List<BasicFeature> features, int start, int end) {
+        public FeatureIterator(List<IGVFeature> features, int start, int end) {
             this.features = features;
             this.start = start;
             this.end = end;
@@ -163,8 +160,8 @@ public class BBFeatureSource implements FeatureSource {
         }
 
         @Override
-        public BasicFeature next() {
-            BasicFeature retValue = next;
+        public IGVFeature next() {
+            IGVFeature retValue = next;
             advance();
             return retValue;
         }
