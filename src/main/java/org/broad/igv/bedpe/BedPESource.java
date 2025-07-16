@@ -93,7 +93,7 @@ public class BedPESource implements FeatureSource<BedPE> {
     public static List<BedPE> downsampleFeatures(List<BedPE> features) {
 
         if (features.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         BedPE maxScoreFeature = features.stream()
