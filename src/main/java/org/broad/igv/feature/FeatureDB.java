@@ -43,27 +43,23 @@ import htsjdk.tribble.Feature;
 import java.util.*;
 
 /**
- * This is a placeholder class for a true "feature database" wrapper.  Its purpose
- * is to return a feature given a name.  Used to support the "search" box.
+ * Used to support the "search" box.
  *
  * @author jrobinso
  */
 public class FeatureDB {
 
     private static Logger log = LogManager.getLogger(FeatureDB.class);
-    /**
-     * Map for all features other than genes.
-     */
-    //private static Map<String, IGVNamedFeature> featureMap = new HashMap(10000);
-    private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
-    private static final int MAX_DUPLICATE_COUNT = 20;
+
+    private Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<>());
+    private final int MAX_DUPLICATE_COUNT = 20;
     private final Genome genome;
 
     public FeatureDB(Genome genome) {
         this.genome = genome;
     }
-    
-    public  void addFeature(NamedFeature feature, Genome genome) {
+
+    public void addFeature(NamedFeature feature, Genome genome) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
@@ -87,7 +83,7 @@ public class FeatureDB {
         }
     }
 
-    private  void addByAttributes(IGVFeature igvFeature, Genome genome) {
+    private void addByAttributes(IGVFeature igvFeature, Genome genome) {
         List<String> attributeKeys = igvFeature.getAttributeKeys();
         for (String key : attributeKeys) {
             String value = igvFeature.getAttribute(key);
@@ -106,7 +102,7 @@ public class FeatureDB {
      * @param genome  The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
-     void put(String name, NamedFeature feature, Genome genome) {
+    void put(String name, NamedFeature feature, Genome genome) {
 
         String key = name.toUpperCase();
         if (!Globals.isHeadless()) {
@@ -172,11 +168,11 @@ public class FeatureDB {
      */
 
 
-    public  void addFeature(String name, IGVNamedFeature feature, Genome genome) {
+    public void addFeature(String name, IGVNamedFeature feature, Genome genome) {
         put(name.toUpperCase(), feature, genome);
     }
-    
-    public  void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
+
+    public void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
         for (htsjdk.tribble.Feature feature : features) {
             if (feature instanceof IGVFeature)
                 addFeature((IGVFeature) feature, genome);
@@ -184,18 +180,18 @@ public class FeatureDB {
     }
 
 
-    public  void clearFeatures() {
+    public void clearFeatures() {
         featureMap.clear();
     }
 
-     int size() {
+    int size() {
         return featureMap.size();
     }
 
     /**
      * Return a feature with the given name.
      */
-    public  NamedFeature getFeature(String name) {
+    public NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();
         List<NamedFeature> features = featureMap.get(nm);
 
@@ -222,7 +218,7 @@ public class FeatureDB {
      *             string will be found.
      * @return
      */
-     Map<String, List<NamedFeature>> getFeaturesMap(String name) {
+    Map<String, List<NamedFeature>> getFeaturesMap(String name) {
         String nm = name.trim().toUpperCase();
         SortedMap<String, List<NamedFeature>> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
@@ -237,7 +233,7 @@ public class FeatureDB {
      * @return
      * @see #getFeaturesList(String, int, boolean)
      */
-    public  List<NamedFeature> getFeaturesList(String name, int limit) {
+    public List<NamedFeature> getFeaturesList(String name, int limit) {
         return getFeaturesList(name, limit, true);
     }
 
@@ -250,7 +246,7 @@ public class FeatureDB {
      * @param longestOnly Whether to take only the longest feature for each name
      * @return
      */
-    public  List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
+    public List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
 
         //Note: We are iterating over submap, this needs
         //to be synchronized over the main map.
@@ -286,7 +282,7 @@ public class FeatureDB {
      * @return Map from genome position to features found. Feature name
      * must be exact, but there can be multiple features with the same name
      */
-    public static Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
+    public Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
                                                            String mutAA, Genome currentGenome) {
         String nm = name.toUpperCase();
 
@@ -341,7 +337,7 @@ public class FeatureDB {
      * @param currentGenome The genome in which to search
      * @return
      */
-    public static Map<Integer, BasicFeature> getMutationNT(String name, int startPosition, String refNT, Genome currentGenome) {
+    public Map<Integer, BasicFeature> getMutationNT(String name, int startPosition, String refNT, Genome currentGenome) {
         String nm = name.toUpperCase();
         if (!Globals.isHeadless() && currentGenome == null) {
             currentGenome = GenomeManager.getInstance().getCurrentGenome();
