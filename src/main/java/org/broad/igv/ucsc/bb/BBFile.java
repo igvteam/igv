@@ -479,9 +479,18 @@ public class BBFile {
             }
 
             // Filter features to those matching term
-            return features.stream()
+            List<IGVFeature> results =  features.stream()
                     .filter(f -> matchingNames.contains(f.getName().toLowerCase()))
                     .toList();
+
+            // If not exact name matches try attributes
+            if (results.isEmpty()) {
+                results = features.stream()
+                        .filter(f -> f.getAttributes() != null && f.getAttributes().values().stream()
+                                .anyMatch(v -> v.toLowerCase().contains(termLower)))
+                        .toList();
+            }
+            return results;
         }
         return null;
     }
