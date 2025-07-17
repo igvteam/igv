@@ -1,19 +1,21 @@
-package org.broad.igv.util;
+package org.broad.igv.feature;
 
-import java.util.List;
 import java.util.Map;
 
 public class FormatUtils {
 
     private static final int MAX_CHARS_PER_LINE = 200;
 
-    public static void printHtml(Map<String, String> map, StringBuffer buffer, int max) {
+    public static void printAttributes(Map<String, String> map, StringBuffer buffer, int max) {
 
         if (map == null || map.isEmpty()) return;
 
         int count = 0;
         buffer.append("<br>");
         for (Map.Entry<String, String> entry : map.entrySet()) {
+
+            if(entry.getKey().startsWith("_")) continue;
+
             String value = entry.getValue();
 
             buffer.append("<b>" + entry.getKey() + "</b>");
@@ -50,10 +52,4 @@ public class FormatUtils {
         return result;
     }
 
-
-    public static void main(String [] args) {
-        for(int i = 0; i < 256; i++) {
-            System.out.println("" + i + '\t' + ((byte) i));
-        }
-    }
 }

@@ -33,7 +33,6 @@ import org.broad.igv.feature.aa.AminoAcidSequence;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.util.FormatUtils;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -190,7 +189,7 @@ public class Mutation implements IGVFeature {
             buf.append("Type: ");
             buf.append(mutationType);
             if (attributes != null) {
-                FormatUtils.printHtml(attributes, buf, 100);
+                FormatUtils.printAttributes(attributes, buf, 100);
             }
 
             if (getOMAName() != null) {

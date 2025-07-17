@@ -26,7 +26,6 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.FormatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +80,7 @@ public class GFFFeature extends BasicFeature {
     public void mergeAttributes(BasicFeature mrnaPart) {
         StringBuffer buf = new StringBuffer();
         buf.append("<br><b>type:</b>&nbsp;" + mrnaPart.getType());
-        FormatUtils.printHtml(mrnaPart.getAttributes(), buf, 100);
+        FormatUtils.printAttributes(mrnaPart.getAttributes(), buf, 100);
         componentAttributes.add(buf.toString());
     }
 }

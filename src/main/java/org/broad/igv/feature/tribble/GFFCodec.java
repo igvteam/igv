@@ -29,14 +29,13 @@ import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.SequenceOntology;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.FormatUtils;
+import org.broad.igv.feature.FormatUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.collections.CI;
@@ -316,7 +315,7 @@ public class GFFCodec extends AsciiFeatureCodec<Feature> {
         buf.setLength(0);
         buf.append(type);
         buf.append("<br>");
-        FormatUtils.printHtml(attributes, buf, 100);
+        FormatUtils.printAttributes(attributes, buf, 100);
         return buf.toString();
     }
 

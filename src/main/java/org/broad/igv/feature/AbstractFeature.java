@@ -29,7 +29,6 @@ package org.broad.igv.feature;
 
 import org.broad.igv.logging.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.FormatUtils;
 import htsjdk.tribble.Feature;
 
 import java.awt.*;
@@ -246,7 +245,7 @@ abstract public class AbstractFeature implements IGVFeature {
         StringBuffer buf = new StringBuffer();
         // 100 attributes is the maximum visible on a typical screen
         int max = IGV.getInstance().isShowDetailsOnClick() ? 10000 : 100;
-        FormatUtils.printHtml(attributes, buf, max);
+        FormatUtils.printAttributes(attributes, buf, max);
         return buf.toString();
 
     }
