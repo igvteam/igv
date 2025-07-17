@@ -421,7 +421,7 @@ public class BBFile {
     }
 
     BBZoomHeader zoomLevelForScale(double bpPerPixel, int tolerance) {
-        if(this.zoomHeaders.length == 0) {
+        if (this.zoomHeaders.length == 0) {
             return null;
         }
         for (BBZoomHeader zl : this.zoomHeaders) {
@@ -449,22 +449,13 @@ public class BBFile {
      */
 
 
-    public List<IGVFeature> search(String term) throws IOException {
+    public List<IGVFeature> search(final String term) throws IOException {
 
         if (this.header == null) {
             this.readHeader();
         }
         if (this.header.extraIndexCount == 0) {
             return null;
-        }
-
-        if (this.trix != null) {
-            String termLower = term.toLowerCase();
-            Map<String, String[]> results = trix.search(termLower);
-            if (results != null && results.containsKey(termLower)) {
-                String[] exactMatches = results.get(termLower);
-                if (exactMatches.length > 0) term = exactMatches[0];
-            }
         }
 
 
@@ -475,14 +466,22 @@ public class BBFile {
             byte[] buffer = this.getBytes(start, size);
             List<IGVFeature> features = decodeFeatures(null, buffer, -1, -1, -1);
 
+            Set<String> matchingNames = new HashSet<>();
+            String termLower = term.toLowerCase();
+            matchingNames.add(termLower);
+            if (this.trix != null) {
+                Map<String, String[]> results = trix.search(termLower);
+                if (results != null && results.containsKey(termLower)) {
+                    matchingNames.addAll(Arrays.stream(results.get(termLower))
+                            .map(String::toLowerCase)
+                            .toList());
+                }
+            }
 
             // Filter features to those matching term
-            final String searchTerm = term;
-            return features.stream().filter(f -> {
-                return f.getName().equalsIgnoreCase(searchTerm) ||
-                        f.getAttributes().values().stream().anyMatch(v -> v.equalsIgnoreCase(searchTerm));
-            }).collect(Collectors.toList());
-
+            return features.stream()
+                    .filter(f -> matchingNames.contains(f.getName().toLowerCase()))
+                    .toList();
         }
         return null;
     }
