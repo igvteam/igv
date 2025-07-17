@@ -27,7 +27,6 @@ package org.broad.igv.track;
 
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -188,7 +187,6 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     private List<Track> tstLoadFi(String filepath, Integer expected_tracks, boolean makeIndex) throws Exception {
-        Genome genome = TestUtils.loadGenome();
         return tstLoadFi(filepath, expected_tracks, genome, makeIndex);
     }
 
@@ -223,11 +221,11 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testBEDLoadsAliases() throws Exception {
+    public void testSearchBED() throws Exception {
         tstLoadFi(TestUtils.DATA_DIR + "bed/canFam2_alias.bed", 1, false);
-        String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
-        for (String alias : aliases) {
-            NamedFeature feat = genome.getFeatureDB().getFeature(alias);
+        String[] featureNames = new String[]{"AAAA", "BBB", "CCC"};
+        for (String name : featureNames) {
+            NamedFeature feat = genome.getFeatureDB().getFeature(name);
             assertNotNull(feat);
         }
 
