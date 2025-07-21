@@ -882,7 +882,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         } else {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
+            
             if (feature != null) {
+                if(PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX))
+                {
+                    feature = feature.trimSimplexTails();
+                }
                 return feature.getAlignmentValueString(position, mouseX, renderOptions);
             }
         }
@@ -1248,6 +1253,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Boolean showMismatches;
         private Boolean indelQualColoring;
         private Boolean indelQualUsesMin;
+        private Boolean indelQualSbx;
+        private Boolean tailQualSbx;
+        private Boolean hideTailSbx;
         private Boolean insertQualColoring;
         Boolean computeIsizes;
         private Double minInsertSizePercentile;
@@ -1447,6 +1455,18 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
         public boolean isIndelQualUsesMin() {
             return indelQualUsesMin == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_USES_MIN) : indelQualUsesMin;
+        }
+        
+        public boolean isIndelQualSbx() {
+            return indelQualSbx == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_SBX) : indelQualSbx;
+        }
+
+        public boolean isTailQualSbx() {
+            return tailQualSbx == null ? getPreferences().getAsBoolean(SAM_TAIL_QUAL_SBX) : tailQualSbx;
+        }
+
+        public boolean isHideTailSbx() {
+            return hideTailSbx == null ? getPreferences().getAsBoolean(SAM_HIDE_TAIL_SBX) : hideTailSbx;
         }
 
         public boolean isInsertQualColoring() {

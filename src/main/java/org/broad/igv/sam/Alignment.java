@@ -69,6 +69,10 @@ public interface Alignment extends LocusScore {
     AlignmentBlock[] getAlignmentBlocks();
 
     AlignmentBlock[] getInsertions();
+    
+    default Alignment trimSimplexTails() {
+        return this;
+    }
 
     /**
      * @return the CIGAR string of the alignment if present, otherwise "*", should not return null
