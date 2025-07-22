@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public interface Track extends Persistable {
+public interface Track extends Persistable, AttributeSupplier {
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, FULL
@@ -87,6 +87,10 @@ public interface Track extends Persistable {
      */
     default boolean isFilterable() {
         return true;
+    }
+
+    default String getAttribute(String name, String key) {
+        return getAttributeValue(key);
     }
 
 

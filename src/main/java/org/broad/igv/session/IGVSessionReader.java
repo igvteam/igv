@@ -50,8 +50,6 @@ import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.SpliceJunctionTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -89,7 +87,7 @@ public class IGVSessionReader implements SessionReader {
     private Collection<ResourceLocator> dataFiles;
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Flag indicating if "Panel" sections are present
-    private TrackFilter filter;  // There is a single TrackFilter object per session, usually null
+    private Filter filter;  // There is a single TrackFilter object per session, usually null
 
     /**
      * List of combined data source tracks.  Processing of combined data sources has to be deferred until all tracks
@@ -692,7 +690,7 @@ public class IGVSessionReader implements SessionReader {
         String showAllTracks = getAttribute(element, SessionAttribute.FILTER_SHOW_ALL_TRACKS);
 
         String filterName = getAttribute(element, SessionAttribute.NAME);
-        filter = new TrackFilter(filterName, null);
+        filter = new Filter(filterName, null);
 
         NodeList elements = element.getChildNodes();
         process(session, elements, sessionPath);
@@ -727,7 +725,7 @@ public class IGVSessionReader implements SessionReader {
 
         Operator opEnum = CollUtils.findValueOf(Operator.class, operator);
         BooleanOperator boolEnum = BooleanOperator.valueOf(booleanOperator.toUpperCase());
-        TrackFilterElement trackFilterElement = new TrackFilterElement(filter, item,
+        FilterElement trackFilterElement = new FilterElement(filter, item,
                 opEnum, value, boolEnum);
         filter.add(trackFilterElement);
 

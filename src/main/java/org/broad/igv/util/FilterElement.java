@@ -29,15 +29,16 @@
  */
 package org.broad.igv.util;
 
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.collections.CollUtils;
 
 /**
  * @author eflakes
  */
-abstract public class FilterElement {
+public class FilterElement {
 
-    public static enum Operator implements CollUtils.Valued {
+    public enum Operator implements CollUtils.Valued {
 
         EQUAL("is equal to"),
         NOT_EQUAL("is not equal to"),
@@ -60,7 +61,7 @@ abstract public class FilterElement {
         }
     }
 
-    public static enum BooleanOperator {
+    public enum BooleanOperator {
 
         AND("AND"),
         OR("OR");
@@ -269,5 +270,19 @@ abstract public class FilterElement {
      *                       being chained to this one (null if no previous FilterElement);
      * @return
      */
-    abstract public boolean evaluate(Track track, Boolean previousResult);
+    public boolean evaluate(Track track, Boolean previousResult) {
+
+        String attributeKey = getSelectedItem();
+        String attribute = track.getAttributeValue(attributeKey);
+
+        return test(attribute, previousResult);
+    }
+
+    public boolean evaluateSample(String sample, Boolean previousResult) {
+
+        String attributeKey = getSelectedItem();
+        String attribute = AttributeManager.getInstance().getAttribute(sample, attributeKey);
+
+        return test(attribute, previousResult);
+    }
 }

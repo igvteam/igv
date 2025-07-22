@@ -31,6 +31,7 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.track.Track;
+import org.broad.igv.util.Filter;
 import org.broad.igv.util.FilterElement;
 
 import javax.swing.*;
@@ -46,12 +47,12 @@ public class TrackFilterPane extends javax.swing.JPanel {
 
     private final int vgap;
     private boolean matchAll = true;
-    private TrackFilter filter;
+    private Filter filter;
     protected List<String> itemList;
     protected String itemListLabel;
     private Component[] filterComponentBackup;
 
-    public TrackFilterPane(List<String> items, String itemListLabel, TrackFilter filter) {
+    public TrackFilterPane(List<String> items, String itemListLabel, Filter filter) {
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(500, 100));
@@ -89,21 +90,13 @@ public class TrackFilterPane extends javax.swing.JPanel {
         }
     }
 
-    public TrackFilter createNewFilter() {
+    public Filter createNewFilter() {
         String name = "";
-        return new TrackFilter(name, null);
+        return new Filter(name, null);
     }
 
-    public TrackFilter getFilter() {
+    public Filter getFilter() {
         return filter;
-    }
-
-    public void clearTracks() {
-        getFilter().clearTracks();
-    }
-
-    public void addTracks(List<Track> tracks) {
-        getFilter().addTracks(tracks);
     }
 
     public FilterComponent createFilterComponent(TrackFilterPane filterPane,

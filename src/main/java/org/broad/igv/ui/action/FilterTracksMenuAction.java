@@ -29,10 +29,11 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.TrackFilterEvent;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterPane;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -106,9 +107,6 @@ public class FilterTracksMenuAction extends MenuAction {
             }
         }
 
-        trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGV.getInstance().getAllTracks());
-
         Integer response = showFilterTrackDialog(igv.getMainFrame(), trackFilterPane, "Filter Tracks");
 
         if (response == null) {
@@ -162,6 +160,7 @@ public class FilterTracksMenuAction extends MenuAction {
         ButtonGroup booleanButtonGroup = new ButtonGroup();
         booleanButtonGroup.add(matchAllCheckBox);
         booleanButtonGroup.add(matchAnyCheckBox);
+        booleanButtonGroup.add(showAllTracksFilterCheckBox);
 
         showAllTracksFilterCheckBox.setText("Show All Tracks");
         matchAllCheckBox.setText("Match all of the following");
@@ -263,19 +262,18 @@ public class FilterTracksMenuAction extends MenuAction {
 
         boolean showAllTracks = showAllTracksFilterCheckBox.isSelected();
         if (showAllTracks) {
-
             List<Track> tracks = IGV.getInstance().getAllTracks();
+            IGV.getInstance().getSession().setFilter(null);
             for (Track track : tracks) {
                 track.setVisible(true);
             }
-
+            IGVEventBus.getInstance().post(new TrackFilterEvent(null));
         } else {
-            TrackFilter filter = trackFilterPane.getFilter();
+            Filter filter = trackFilterPane.getFilter();
             IGV.getInstance().getSession().setFilter(filter);
-            // Evaluate the filter elements
             filter.evaluate();
+            IGVEventBus.getInstance().post(new TrackFilterEvent(filter));
         }
-
     }
 
     public void resetTrackFilter() {

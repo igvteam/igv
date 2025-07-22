@@ -50,12 +50,12 @@ public class TrackFilterComponent extends FilterComponent {
         super(filterPane, text, items, element);
     }
 
-    public TrackFilterElement createFilterElement(Filter filter, String selectedItem,
+    public FilterElement createFilterElement(Filter filter, String selectedItem,
                                                   Operator comparisonOperator, String value, BooleanOperator booleanOperator) {
 
-        TrackFilterElement filterElement =
-                new TrackFilterElement(
-                        (TrackFilter) filter,
+        FilterElement filterElement =
+                new FilterElement(
+                        filter,
                         selectedItem,
                         comparisonOperator,
                         value,

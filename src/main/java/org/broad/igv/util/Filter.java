@@ -30,6 +30,10 @@
 
 package org.broad.igv.util;
 
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.variant.VariantTrack;
+
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,7 +41,7 @@ import java.util.List;
 /**
  * @author eflakes
  */
-abstract public class Filter {
+public class Filter {
 
     private String name;
     private LinkedHashSet<FilterElement> elements =
@@ -85,7 +89,58 @@ abstract public class Filter {
      *
      * @return
      */
-    abstract protected void evaluate();
+    public void evaluate() {
+
+
+        boolean filterEnabled = isEnabled();
+
+        for (Track track : IGV.getInstance().getAllTracks()) {
+
+            // Must start as null which means no previous results
+            Boolean result = null;
+
+            // If filter is not enabled just show all tracks
+            if (!filterEnabled) {
+                track.setVisible(!filterEnabled);
+                continue;
+            }
+
+            if (track.isFilterable()) {
+
+                // Evaluate tracks
+                Iterator iterator = getFilterElements();
+                while (iterator.hasNext()) {
+
+                    FilterElement element = (FilterElement) iterator.next();
+                    result = element.evaluate(track, result);
+                }
+                track.setVisible(result);
+            }
+        }
+    }
+
+    public List<String> evaluateSamples(List<String> sampleNames) {
+
+        List<String> filteredSamples = new java.util.ArrayList<>();
+
+        for (String sampleName : sampleNames) {
+
+            // Must start as null which means no previous results
+            Boolean result = null;
+
+            // Evaluate tracks
+            Iterator iterator = getFilterElements();
+            while (iterator.hasNext()) {
+
+                FilterElement element = (FilterElement) iterator.next();
+                result = element.evaluateSample(sampleName, result);
+            }
+            if(result) {
+                filteredSamples.add(sampleName);
+            }
+        }
+        return filteredSamples;
+    }
 
     public String getName() {
         return name;

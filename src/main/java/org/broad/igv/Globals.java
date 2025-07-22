@@ -46,9 +46,6 @@ public class Globals {
     public static final String DEFAULT_GENOME = "hg38";
 
     public static final String CHR_ALL = "All";
-    public static final String TRACK_NAME_ATTRIBUTE = "NAME";
-    public static final String TRACK_DATA_FILE_ATTRIBUTE = "DATA FILE";
-    public static final String TRACK_DATA_TYPE_ATTRIBUTE = "DATA TYPE";
 
     private static boolean headless = false;
     private static boolean suppressMessages = false;

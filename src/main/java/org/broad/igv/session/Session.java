@@ -39,12 +39,11 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.sam.InsertionManager;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.Filter;
 import org.broad.igv.util.ObservableForObject;
 
 import java.util.*;
@@ -69,7 +68,7 @@ public class Session implements IGVEventObserver {
     public boolean expandInsertions = false; //false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
-    private TrackFilter filter;
+    private Filter filter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
@@ -304,11 +303,11 @@ public class Session implements IGVEventObserver {
         return locus;
     }
 
-    public TrackFilter getFilter() {
+    public Filter getFilter() {
         return filter;
     }
 
-    public void setFilter(TrackFilter filter) {
+    public void setFilter(Filter filter) {
         this.filter = filter;
     }
 
@@ -444,13 +443,8 @@ public class Session implements IGVEventObserver {
      * @return
      */
     public Set<String> getHiddenAttributes() {
-        if (hiddenAttributes == null) {
-            return (PreferencesManager.getPreferences().getAsBoolean(SHOW_DEFAULT_TRACK_ATTRIBUTES))  ?
-                    Collections.emptySet() :
-                    new HashSet<>(AttributeManager.defaultTrackAttributes);
-        } else {
             return hiddenAttributes;
-        }
+
     }
 
     public void setHiddenAttributes(Set<String> attributes) {

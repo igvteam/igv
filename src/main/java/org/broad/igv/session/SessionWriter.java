@@ -35,14 +35,10 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
+import org.broad.igv.util.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -182,7 +178,7 @@ public class SessionWriter {
 
 
     private void writeFilters(Session session, Element globalElement, Document document) {
-        TrackFilter trackFilter = session.getFilter();
+        Filter trackFilter = session.getFilter();
         if (trackFilter != null) {
 
             Element filter = document.createElement(SessionElement.FILTER);
@@ -208,7 +204,7 @@ public class SessionWriter {
             Iterator iterator = session.getFilter().getFilterElements();
             while (iterator.hasNext()) {
 
-                TrackFilterElement trackFilterElement = (TrackFilterElement) iterator.next();
+                FilterElement trackFilterElement = (FilterElement) iterator.next();
 
                 Element filterElementElement =
                         document.createElement(SessionElement.FILTER_ELEMENT);

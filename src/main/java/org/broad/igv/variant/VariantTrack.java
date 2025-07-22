@@ -31,10 +31,7 @@ package org.broad.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.variantcontext.GenotypeType;
 import org.broad.igv.Globals;
-import org.broad.igv.event.IGVEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.event.TrackGroupEvent;
+import org.broad.igv.event.*;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
@@ -128,21 +125,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     List<String> allSamples;
 
-    /**
-     * Boolean indicating if samples are grouped.
-     */
-    private boolean grouped;
-
-    /**
-     * The id of the group used to group samples.
-     */
-    private String groupByAttribute;
+    List<String> filteredSamples;
 
     /**
      * Map of group -> samples.  Each entry defines a group, the key is the group name and the value the list of
      * samples in the group.
      */
-    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap<String, List<String>>();
+    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap<>();
 
 
     /**
@@ -220,9 +209,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 ColorMode.ALLELE_FRACTION;
 
         this.allSamples = samples;
+        this.filteredSamples = new ArrayList<>(samples);
 
-        // this handles the new attribute grouping mechanism:
-        setupGroupsFromAttributes();
+        groupByAttribute();
 
         setDisplayMode(DisplayMode.EXPANDED);
 
@@ -270,7 +259,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         IGVEventBus.getInstance().subscribe(TrackGroupEvent.class, this);
+        IGVEventBus.getInstance().subscribe(TrackFilterEvent.class, this);
 
+    }
+
+    @Override
+    public boolean isFilterable() {
+        return false;
     }
 
     private boolean defaultShowGenotypes() {
@@ -328,45 +323,33 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * Set groups from global sample information attributes.
      */
-    private void setupGroupsFromAttributes() {
-        // setup groups according to the attribute used for sorting (loaded from a sample information file):
+    private void groupByAttribute() {
 
         AttributeManager manager = AttributeManager.getInstance();
-        String newGroupByAttribute = !IGV.hasInstance() ? null : IGV.getInstance().getGroupByAttribute();
-
-        // The first equality handles the case where both are null
-        if ((newGroupByAttribute == groupByAttribute) ||
-                (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
-            // Nothing to do
-            return;
-        }
-
+        String groupByAttribute = !IGV.hasInstance() ? null : IGV.getInstance().getGroupByAttribute();
 
         samplesByGroups.clear();
-
-        groupByAttribute = newGroupByAttribute;
-
         if (groupByAttribute == null) {
-            grouped = false;
             return;
         }
 
-        if (allSamples != null) {
-            for (String sample : allSamples) {
+        if (filteredSamples != null) {
+            for (String sample : filteredSamples) {
 
-                String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
+                String sampleGroup = manager.getAttribute(sample, groupByAttribute);
+                if (sampleGroup == null) {
+                    sampleGroup = "";
+                }
+                sampleGroup = sampleGroup.trim();
 
                 List<String> sampleList = samplesByGroups.get(sampleGroup);
                 if (sampleList == null) {
-                    sampleList = new ArrayList<String>();
+                    sampleList = new ArrayList<>();
                     samplesByGroups.put(sampleGroup, sampleList);
                 }
                 sampleList.add(sample);
             }
         }
-
-        grouped = samplesByGroups.size() > 1;
-        groupByAttribute = newGroupByAttribute;
     }
 
     /**
@@ -375,8 +358,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @param comparator the comparator to sort by
      */
     public void sortSamples(Comparator<String> comparator) {
-        if (allSamples != null) {
-            Collections.sort(allSamples, comparator);
+        if (filteredSamples != null) {
+            Collections.sort(filteredSamples, comparator);
             for (List<String> samples : samplesByGroups.values()) {
                 Collections.sort(samples, comparator);
             }
@@ -601,7 +584,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         Rectangle tmpRect = new Rectangle(overallSampleRect);
         tmpRect.height = getGenotypeBandHeight();
-        if (grouped) {
+        if (samplesByGroups.size() > 1) {
             for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
                 for (String sample : entry.getValue()) {
                     if (overallSampleRect.intersects(visibleRectangle)) {
@@ -613,7 +596,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         } else {
 
-            for (String sample : allSamples) {
+            for (String sample : filteredSamples) {
 
                 if (tmpRect.intersects(visibleRectangle)) {
                     renderer.renderGenotypeBandSNP(variant, context, tmpRect, x, w, sample, genotypeColorMode, hideFiltered);
@@ -647,7 +630,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
             drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
 
-            if (grouped) {
+            if (samplesByGroups.size() > 1) {
                 g2D.setColor(Color.black);
                 int y = trackRectangle.y + getVariantsHeight();
                 for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
@@ -739,14 +722,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         drawBackground(g2D, rect, visibleRectangle, BackgroundType.ATTRIBUTE);
 
-        if (grouped) {
+        if (samplesByGroups.size() > 1) {
             for (List<String> sampleList : samplesByGroups.values()) {
                 renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, sampleList, mouseRegions);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
             }
         } else {
-            renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, allSamples, mouseRegions);
+            renderAttributeBand(g2D, bandRectangle, visibleRectangle, attributeNames, filteredSamples, mouseRegions);
 
         }
 
@@ -821,7 +804,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
 
-        if (grouped) {
+        if (samplesByGroups.size() > 1) {
             for (Map.Entry<String, List<String>> sampleGroup : samplesByGroups.entrySet()) {
                 int y0 = bandRectangle.y;
 
@@ -843,15 +826,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
 
         } else {
-            colorBand(g2D, bandRectangle, visibleRectangle, textRectangle, allSamples, type);
+            colorBand(g2D, bandRectangle, visibleRectangle, textRectangle, filteredSamples, type);
         }
         g2D.setFont(oldFont);
     }
 
 
     private void colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
-                              Rectangle textRectangle, List<String> sampleList,
-                              BackgroundType type) {
+                           Rectangle textRectangle, List<String> sampleList,
+                           BackgroundType type) {
 
         boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
 
@@ -1180,10 +1163,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         selectedVariant = null;
     }
 
-    public List<String> getAllSamples() {
-        return allSamples;
-    }
-
     public int getSquishedHeight() {
         return squishedHeight;
     }
@@ -1195,7 +1174,20 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     @Override
     public void receiveEvent(IGVEvent event) {
         if (event instanceof TrackGroupEvent) {
-            setupGroupsFromAttributes();
+            groupByAttribute();
+        } else if (event instanceof TrackFilterEvent) {
+            TrackFilterEvent trackFilterEvent = (TrackFilterEvent) event;
+            Filter filter = trackFilterEvent.getFilter();
+            this.filter(filter);
+            groupByAttribute();   // Re-group samples by attribute after filtering.  A no-op if samples are not grouped.
+        }
+    }
+
+    private void filter(Filter filter) {
+        if(filter == null)  {
+            this.filteredSamples = new ArrayList(allSamples);
+        } else {
+            this.filteredSamples = filter.evaluateSamples(allSamples);
         }
     }
 

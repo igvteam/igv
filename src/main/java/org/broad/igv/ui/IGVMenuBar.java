@@ -69,6 +69,7 @@ import org.broad.igv.encode.EncodeTrackChooserFactory;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -110,6 +111,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu tracksMenu;
+    private List<JComponent> tracksMenuAttributeComponents;
     private JMenu hubsMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -157,11 +159,32 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         menus.add(createFileMenu());
         menus.add(createGenomesMenu());
+
         tracksMenu = new JMenu("Tracks");
+        tracksMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                // Set visibility of trackMenuAttributeComponents based on attribute names
+                boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
+                for (JComponent comp : tracksMenuAttributeComponents) {
+                    comp.setVisible(hasAttributes);
+                }
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
         menus.add(tracksMenu);
+
+
         hubsMenu = new JMenu("Hubs");
         menus.add(hubsMenu);
-        //menus.add(createSessionsMenu());
+        menus.add(createSessionsMenu());
         menus.add(createViewMenu());
         menus.add(createRegionsMenu());
         menus.add(createToolsMenu());
@@ -256,49 +279,49 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         MenuAction menuAction;
 
-        // Session menu items
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
-        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
-        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
-        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
-        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        menu.add(saveSessionItem);
-
-        menu.add(new JSeparator());
-
-        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        reloadSessionItem.setEnabled(false);
-        menu.add(reloadSessionItem);
-
-        menu.add(new JSeparator());
-
-        autosaveMenu = new AutosaveMenu();
-        menu.add(autosaveMenu);
-
-        JSeparator recentSessionsSep = new JSeparator();
-        recentSessionsSep.setVisible(false);
-        menu.add(recentSessionsSep);
-        menu.add(new JSeparator());
-
-        //Add dynamic list of recent sessions
-        menu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
-                menu,
-                recentSessionsSep,
-                IGV.getInstance().getRecentSessionList(),
-                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
-        );
+        // Session menu items  -- Currently in Sessions menu
+//        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
+//        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
+//        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
+//        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
+//        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
+//        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+//        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//
+//        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
+//        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
+//        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+//        menu.add(saveSessionItem);
+//
+//        menu.add(new JSeparator());
+//
+//        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
+//        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+//        reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+//        reloadSessionItem.setEnabled(false);
+//        menu.add(reloadSessionItem);
+//
+//        menu.add(new JSeparator());
+//
+//        autosaveMenu = new AutosaveMenu();
+//        menu.add(autosaveMenu);
+//
+//        JSeparator recentSessionsSep = new JSeparator();
+//        recentSessionsSep.setVisible(false);
+//        menu.add(recentSessionsSep);
+//        menu.add(new JSeparator());
+//
+//        //Add dynamic list of recent sessions
+//        menu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
+//                menu,
+//                recentSessionsSep,
+//                IGV.getInstance().getRecentSessionList(),
+//                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
+//        );
 
         // ***** Snapshots
         // Snapshot Application
@@ -536,28 +559,36 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         tracksMenu.addSeparator();
 
+        tracksMenuAttributeComponents = new ArrayList<>();
         // Sort Tracks
         menuAction = new SortTracksMenuAction("Sort Tracks by Attribute...", KeyEvent.VK_S, IGV.getInstance());
         menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        JMenuItem sortTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        tracksMenu.add(sortTracksMenuItem);
+        tracksMenuAttributeComponents.add(sortTracksMenuItem);
 
         // Group Tracks
         menuAction = new GroupTracksMenuAction("Group Tracks by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        tracksMenu.add(groupTracksMenuItem);
+        tracksMenuAttributeComponents.add(groupTracksMenuItem);
 
         // Filter Tracks
         filterTracksAction = new FilterTracksMenuAction("Filter Tracks by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
+        JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
+        tracksMenu.add(filterTracksMenuItem);
+        tracksMenuAttributeComponents.add(filterTracksMenuItem);
+
 
         // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+//        menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
+//        menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
+//        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        // Export track names and attributes -- if > 1 i sselected export those, otherwise export all
+        // Export track names and attributes -- if > 1 is selected export those, otherwise export all
         JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
         exportNames.addActionListener(e12 -> {
             Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
@@ -584,6 +615,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Set track height
         menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
+
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
     }
 
