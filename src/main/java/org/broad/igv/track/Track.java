@@ -135,6 +135,16 @@ public interface Track extends Persistable, AttributeSupplier {
 
     String getSample();
 
+    /**
+     * Return true if the track has has subtracks (samples).  Currently this is true only for
+     * a VariantTrack with genotypes.  This is used for filtering.
+     *
+     * @return
+     */
+    default boolean hasSamples() {
+        return false;
+    }
+
     void setFeatureInfoURL(String featureInfoURL);
 
     ResourceLocator getResourceLocator();

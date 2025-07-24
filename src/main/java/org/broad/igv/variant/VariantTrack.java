@@ -418,6 +418,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return allSamples == null ? 0 : allSamples.size();
     }
 
+    public boolean hasSamples() {
+        return sampleCount() > 0;
+    }
+
     /**
      * Return the height of the variant section only (no samples/genotypes)
      *
@@ -1184,7 +1188,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private void filter(Filter filter) {
-        if(filter == null)  {
+        if(filter == null || filter.isShowAll())  {
             this.filteredSamples = new ArrayList(allSamples);
         } else {
             this.filteredSamples = filter.evaluateSamples(allSamples);

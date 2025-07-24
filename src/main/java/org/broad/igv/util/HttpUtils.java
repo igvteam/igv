@@ -668,10 +668,6 @@ public class HttpUtils {
 
                 log.info("Range header removed by client or ignored by server for url: " + url.toString());
 
-                if (!SwingUtilities.isEventDispatchThread()) {
-                    MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
-                }
-
                 byteRangeTestMap.put(url.getHost(), false);
                 String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
                 int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;

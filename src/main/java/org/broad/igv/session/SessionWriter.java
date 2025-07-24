@@ -183,11 +183,7 @@ public class SessionWriter {
 
             Element filter = document.createElement(SessionElement.FILTER);
 
-            filter.setAttribute(SessionAttribute.NAME, trackFilter.getName());
-
-            if (IGV.getInstance().isFilterMatchAll()) {
-                filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
-            } else if (!IGV.getInstance().isFilterMatchAll()) {
+            if (!IGV.getInstance().isFilterMatchAll()) {
                 filter.setAttribute(SessionAttribute.FILTER_MATCH, "any");
             } else {    // Defaults to match all
                 filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
@@ -209,15 +205,13 @@ public class SessionWriter {
                 Element filterElementElement =
                         document.createElement(SessionElement.FILTER_ELEMENT);
                 filterElementElement.setAttribute(SessionAttribute.ITEM,
-                        trackFilterElement.getSelectedItem());
+                        trackFilterElement.getAttributeKey());
                 filterElementElement.setAttribute(
                         SessionAttribute.OPERATOR,
                         trackFilterElement.getComparisonOperator().getValue());
                 filterElementElement.setAttribute(SessionAttribute.VALUE,
                         trackFilterElement.getValue());
-                filterElementElement.setAttribute(
-                        SessionAttribute.BOOLEAN_OPERATOR,
-                        trackFilterElement.getBooleanOperator().getValue());
+
                 filter.appendChild(filterElementElement);
             }
         }

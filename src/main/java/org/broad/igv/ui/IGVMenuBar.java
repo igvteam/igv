@@ -167,7 +167,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 // Set visibility of trackMenuAttributeComponents based on attribute names
                 boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
                 for (JComponent comp : tracksMenuAttributeComponents) {
-                    comp.setVisible(hasAttributes);
+                    comp.setEnabled(hasAttributes);
                 }
             }
 
@@ -1182,40 +1182,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
     public void resetSessionActions() {
-        if (filterTracksAction != null) {
-            filterTracksAction.resetTrackFilter();
-        }
-    }
-
-
-    public void setFilterMatchAll(boolean value) {
-        if (filterTracksAction != null) {
-            filterTracksAction.setFilterMatchAll(value);
-        }
-
-    }
-
-    public boolean isFilterMatchAll() {
-        if (filterTracksAction != null) {
-            return filterTracksAction.isFilterMatchAll();
-        }
-
-        return false;
-    }
-
-    public void setFilterShowAllTracks(boolean value) {
-        if (filterTracksAction != null) {
-            filterTracksAction.setFilterShowAllTracks(value);
-        }
-
-    }
-
-    public boolean isFilterShowAllTracks() {
-        if (filterTracksAction != null) {
-            return filterTracksAction.getShowAllTracksFilterCheckBox().isSelected();
-        }
-
-        return false;
+//        if (filterTracksAction != null) {
+//            filterTracksAction.resetTrackFilter();
+//        }
     }
 
     final public void doExitApplication() {

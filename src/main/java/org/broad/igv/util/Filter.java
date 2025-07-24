@@ -43,17 +43,51 @@ import java.util.List;
  */
 public class Filter {
 
-    private String name;
-    private LinkedHashSet<FilterElement> elements =
-            new LinkedHashSet<FilterElement>();
+    private LinkedHashSet<FilterElement> elements;
     private boolean isEnabled = true;
 
-    public Filter(String name, List<? extends FilterElement> elements) {
-        this.name = name;
+    boolean showAll = false; // If true, all tracks are shown regardless of filter
+    boolean matchAll = true; // If true, all elements must match for the track to be visible. If flase, any element match will make the track visible.
 
+
+    public Filter() {
+        this.elements = new LinkedHashSet<>();
+    }
+
+    public Filter(boolean showAll, boolean matchAll, List<FilterElement> elements) {
+        this();
+        this.showAll = showAll;
+        this.matchAll = matchAll;
         if (elements != null) {
             this.elements.addAll(elements);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Filter[");
+        sb.append("enabled=").append(isEnabled);
+        sb.append(", showAll=").append(showAll);
+        sb.append(", matchAll=").append(matchAll);
+        sb.append(", elements=[");
+        for (FilterElement element : elements) {
+            sb.append(element.toString()).append(", ");
+        }
+        if (!elements.isEmpty()) {
+            sb.setLength(sb.length() - 2); // Remove trailing comma and space
+        }
+        sb.append("]");
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public boolean isMatchAll() {
+        return matchAll;
+    }
+
+    public boolean isShowAll() {
+        return showAll;
     }
 
     public void removeAll() {
@@ -96,23 +130,23 @@ public class Filter {
 
         for (Track track : IGV.getInstance().getAllTracks()) {
 
-            // Must start as null which means no previous results
-            Boolean result = null;
-
-            // If filter is not enabled just show all tracks
-            if (!filterEnabled) {
-                track.setVisible(!filterEnabled);
+            // If filter is not enabled or has no elements just show all tracks
+            if (!filterEnabled || elements.isEmpty()) {
+                track.setVisible(true);
                 continue;
             }
 
             if (track.isFilterable()) {
-
-                // Evaluate tracks
-                Iterator iterator = getFilterElements();
-                while (iterator.hasNext()) {
-
-                    FilterElement element = (FilterElement) iterator.next();
-                    result = element.evaluate(track, result);
+                boolean result = matchAll ? true : false;
+                for (FilterElement element : elements) {
+                    boolean elementResult = element.evaluate(track);
+                    if (matchAll && !elementResult) {
+                        result = false; // If matchAll and any element does not match, the track is not visible
+                        break;
+                    } else if (!matchAll && elementResult) {
+                        result = true; // If matchAny and any element matches, the track is visible
+                        break;
+                    }
                 }
                 track.setVisible(result);
             }
@@ -125,24 +159,22 @@ public class Filter {
 
         for (String sampleName : sampleNames) {
 
-            // Must start as null which means no previous results
-            Boolean result = null;
-
-            // Evaluate tracks
-            Iterator iterator = getFilterElements();
-            while (iterator.hasNext()) {
-
-                FilterElement element = (FilterElement) iterator.next();
-                result = element.evaluateSample(sampleName, result);
+            boolean result = matchAll ? true : false;
+            for (FilterElement element : elements) {
+                boolean elementResult =  element.evaluateSample(sampleName);
+                if (matchAll && !elementResult) {
+                    result = false; // If matchAll and any element does not match, the track is not visible
+                    break;
+                } else if (!matchAll && elementResult) {
+                    result = true; // If matchAny and any element matches, the track is visible
+                    break;
+                }
             }
-            if(result) {
+            if (result) {
                 filteredSamples.add(sampleName);
             }
         }
         return filteredSamples;
     }
 
-    public String getName() {
-        return name;
-    }
 }

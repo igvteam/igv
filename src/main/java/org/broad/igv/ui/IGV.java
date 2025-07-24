@@ -863,21 +863,15 @@ public class IGV implements IGVEventObserver {
 
     }
 
-    public void setFilterMatchAll(boolean value) {
-        menuBar.setFilterMatchAll(value);
-    }
 
     public boolean isFilterMatchAll() {
-        return menuBar.isFilterMatchAll();
-    }
-
-    public void setFilterShowAllTracks(boolean value) {
-        menuBar.setFilterShowAllTracks(value);
-
+        Filter filter = session.getFilter();
+        return filter != null && filter.isMatchAll();
     }
 
     public boolean isFilterShowAllTracks() {
-        return menuBar.isFilterShowAllTracks();
+        Filter filter = session.getFilter();
+        return filter != null && filter.isShowAll();
     }
 
     /**

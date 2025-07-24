@@ -25,9 +25,6 @@
 
 package org.broad.igv.ui;
 
-import com.jidesoft.swing.JideButton;
-import org.broad.igv.ui.TrackFilterPane;
-import org.broad.igv.util.Filter;
 import org.broad.igv.util.FilterElement;
 import org.broad.igv.util.FilterElement.BooleanOperator;
 import org.broad.igv.util.FilterElement.Operator;
@@ -38,13 +35,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract public class FilterComponent extends javax.swing.JPanel {
+public class FilterComponent extends javax.swing.JPanel {
 
-    private FilterElement filterElement;
-    private TrackFilterPane filterPane;
 
-    public FilterComponent(TrackFilterPane filterPane, String text, List<String> items,
-                           FilterElement element) {
+    private TrackFilterDialog filterPane;
+
+    private javax.swing.JComboBox comparisonOperatorComboBox;
+    private javax.swing.JComboBox itemComboBox;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton moreButton;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JTextField valueTextField;
+
+
+    public FilterComponent(TrackFilterDialog filterPane, List<String> items, FilterElement element) {
 
         initComponents();
 
@@ -70,30 +74,14 @@ abstract public class FilterComponent extends javax.swing.JPanel {
                 new javax.swing.DefaultComboBoxModel(textForOperators.toArray()));
 
 
-        // If a FilterElement was passed use it otherwise create a default one
+        // Initialize the UI with the FilterElement if present
         if (element != null) {
-            filterElement = element;
-            itemComboBox.setSelectedItem(filterElement.getSelectedItem());
-            valueTextField.setText(filterElement.getValue());
-        } else {
-
-            String selectedItem = (String) itemComboBox.getSelectedItem();
-            FilterElement.Operator selectedOperator =
-                    getOperatorForText((String) comparisonOperatorComboBox.getSelectedItem());
-
-            filterElement =
-                    createFilterElement(filterPane.getFilter(),
-                            selectedItem,
-                            selectedOperator,
-                            null,
-                            null);
+            itemComboBox.setSelectedItem(element.getAttributeKey());
+            valueTextField.setText(element.getValue());
         }
 
-        filterPane.getFilter().add(filterElement);
     }
 
-    abstract public FilterElement createFilterElement(Filter filter, String item,
-                                                      Operator comparisonOperator, String value, BooleanOperator booleanOperator);
 
     /**
      * Helper method to convert the string representation of an operator
@@ -115,36 +103,18 @@ abstract public class FilterComponent extends javax.swing.JPanel {
         return selected;
     }
 
-    public FilterElement getFilterElement() {
-        return filterElement;
-    }
-
-    public String getItem() {
-        return (String) itemComboBox.getSelectedItem();
-    }
-
-    public String getComparisonOperator() {
-        return (String) comparisonOperatorComboBox.getSelectedItem();
-    }
-
-    public String getExpectedValue() {
-        return valueTextField.getText();
-    }
-
     /**
      * Save the UI content into a non-UI version of the FilterElement
      */
-    public void save() {
+    public FilterElement getFilterElement(boolean matchAll) {
+        String attributeKey = itemComboBox.getSelectedItem().toString();
+        Operator operator = getOperatorForText((String) comparisonOperatorComboBox.getSelectedItem());
+        String expectedValue = valueTextField.getText();
+        return new FilterElement(attributeKey, operator, expectedValue);
+    }
 
-        // Item
-        filterElement.setSelectedItem(getItem());
-
-        // Comparison operator
-        Operator operator = getOperatorForText(getComparisonOperator());
-        filterElement.setComparisonOperator(operator);
-
-        // Value
-        filterElement.setExpectedValue(getExpectedValue());
+    public boolean isComplete() {
+        return valueTextField.getText() != null && !valueTextField.getText().isEmpty();
     }
 
     public void displayMoreButton(boolean value) {
@@ -164,10 +134,6 @@ abstract public class FilterComponent extends javax.swing.JPanel {
             // Remove the visible filter element
             filterPane.remove(this);
 
-            // Remove the non-visual element
-            filterPane.getFilter().remove(getFilterElement());
-
-            filterPane.adjustMoreAndBooleanButtonVisibility();
             filterPane.repaint();
 
             // Resize window to fit the components left
@@ -175,24 +141,18 @@ abstract public class FilterComponent extends javax.swing.JPanel {
         }
     }
 
-    /**
-     * This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+
     private void initComponents() {
 
-        booleanButtonGroup = new javax.swing.ButtonGroup();
+
         jPanel1 = new javax.swing.JPanel();
+
         itemComboBox = new javax.swing.JComboBox();
         comparisonOperatorComboBox = new javax.swing.JComboBox();
         valueTextField = new javax.swing.JTextField();
-        moreButton = new JideButton();
-        removeButton = new JideButton();
+        moreButton = new JButton();
+        removeButton = new JButton();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(530, 40));
         setPreferredSize(new java.awt.Dimension(700, 40));
         setRequestFocusEnabled(false);
@@ -204,104 +164,47 @@ abstract public class FilterComponent extends javax.swing.JPanel {
 
         itemComboBox.setMinimumSize(new java.awt.Dimension(50, 27));
         itemComboBox.setPreferredSize(new java.awt.Dimension(150, 27));
-        itemComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                itemComboBoxActionPerformed(evt);
-            }
-        });
-        itemComboBox.addHierarchyBoundsListener(new java.awt.event.HierarchyBoundsListener() {
-            public void ancestorMoved(java.awt.event.HierarchyEvent evt) {
-                itemComboBoxAncestorMoved(evt);
-            }
 
-            public void ancestorResized(java.awt.event.HierarchyEvent evt) {
-            }
-        });
+
         jPanel1.add(itemComboBox);
 
         comparisonOperatorComboBox.setActionCommand("comparisonOperatorComboBoxChanged");
         comparisonOperatorComboBox.setMinimumSize(new java.awt.Dimension(50, 27));
         comparisonOperatorComboBox.setPreferredSize(new java.awt.Dimension(150, 27));
-        comparisonOperatorComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comparisonOperatorComboBoxActionPerformed(evt);
-            }
-        });
+
         jPanel1.add(comparisonOperatorComboBox);
 
         valueTextField.setMaximumSize(new java.awt.Dimension(32767, 20));
         valueTextField.setMinimumSize(new java.awt.Dimension(50, 27));
         valueTextField.setPreferredSize(new java.awt.Dimension(150, 27));
-        valueTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                valueTextFieldActionPerformed(evt);
-            }
-        });
+
         jPanel1.add(valueTextField);
 
         add(jPanel1);
-
-        moreButton.setFont(new java.awt.Font("Arial", 0, 14));
-        moreButton.setText("+");
-        moreButton.setContentAreaFilled(false);
-        moreButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        moreButton.setPreferredSize(new java.awt.Dimension(45, 27));
-        moreButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                moreButtonActionPerformed(evt);
-            }
-        });
-        add(moreButton);
 
         removeButton.setFont(new java.awt.Font("Arial", 0, 14));
         removeButton.setText("-");
         removeButton.setContentAreaFilled(false);
         removeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         removeButton.setPreferredSize(new java.awt.Dimension(45, 27));
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
+        removeButton.addActionListener(evt -> remove());
+
         add(removeButton);
-    }// </editor-fold>//GEN-END:initComponents
+        moreButton.setFont(new java.awt.Font("Arial", 0, 14));
+        moreButton.setText("+");
+        moreButton.setContentAreaFilled(false);
+        moreButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        moreButton.setPreferredSize(new java.awt.Dimension(45, 27));
+        moreButton.addActionListener(evt -> moreButtonActionPerformed(evt));
+        add(moreButton);
 
-    private void valueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextFieldActionPerformed
 
-    }//GEN-LAST:event_valueTextFieldActionPerformed
+    }
 
-    private void comparisonOperatorComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comparisonOperatorComboBoxActionPerformed
-
-    }//GEN-LAST:event_comparisonOperatorComboBoxActionPerformed
-
-    private void itemComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemComboBoxActionPerformed
-
-    }//GEN-LAST:event_itemComboBoxActionPerformed
-
-    private void itemComboBoxAncestorMoved(java.awt.event.HierarchyEvent evt) {//GEN-FIRST:event_itemComboBoxAncestorMoved
-        // TODO add your handling code here:
-    }//GEN-LAST:event_itemComboBoxAncestorMoved
-
-    private void moreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moreButtonActionPerformed
-
+    private void moreButtonActionPerformed(java.awt.event.ActionEvent evt) {
         if (filterPane.more()) {
             displayMoreButton(false);
             invalidate();
         }
-    }//GEN-LAST:event_moreButtonActionPerformed
-
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        // TODO add your handling code here:
-        remove();
-    }//GEN-LAST:event_removeButtonActionPerformed
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup booleanButtonGroup;
-    private javax.swing.JComboBox comparisonOperatorComboBox;
-    private javax.swing.JComboBox itemComboBox;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton moreButton;
-    private javax.swing.JButton removeButton;
-    private javax.swing.JTextField valueTextField;
-    // End of variables declaration//GEN-END:variables
+    }
 }

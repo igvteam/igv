@@ -51,11 +51,9 @@ public class FilterElement {
         DOES_NOT_CONTAIN("does not contain");
 
         String value;
-
         Operator(String value) {
             this.value = value;
         }
-
         public String getValue() {
             return value;
         }
@@ -67,19 +65,16 @@ public class FilterElement {
         OR("OR");
 
         String value;
-
         BooleanOperator(String value) {
             this.value = value;
         }
-
         public String getValue() {
             return value;
         }
     }
 
-    private Filter filter;
 
-    private String selectedItem;
+    private String attributeKey;
 
     private Operator comparisonOperator = Operator.EQUAL;
 
@@ -87,13 +82,11 @@ public class FilterElement {
 
     private BooleanOperator booleanOperator = BooleanOperator.AND;
 
-    public FilterElement(Filter filter, String item, Operator comparisonOperator,
-                         String expectedValue, BooleanOperator booleanOperator) {
+    public FilterElement(String attributeKey, Operator comparisonOperator,
+                         String expectedValue) {
 
-        this.filter = filter;
-
-        if (item != null) {
-            this.selectedItem = item.trim();
+        if (attributeKey != null) {
+            this.attributeKey = attributeKey.trim();
         }
 
         if (comparisonOperator != null) {
@@ -103,14 +96,18 @@ public class FilterElement {
         if (expectedValue != null) {
             this.expectedValue = new String(expectedValue).toUpperCase().trim();
         }
-
-        if (booleanOperator != null) {
-            this.booleanOperator = booleanOperator;
-        }
-
     }
 
-    public boolean test(String comparableItem, Boolean previousResult) {
+    @Override
+        public String toString() {
+            return "FilterElement{" +
+                    "attributeKey='" + attributeKey + '\'' +
+                    ", comparisonOperator=" + comparisonOperator +
+                    ", expectedValue='" + expectedValue +
+                    '}';
+        }
+
+    public boolean test(String attributeValue) {
 
         boolean result = false;
 
@@ -120,24 +117,24 @@ public class FilterElement {
             expectedValue = "";
         }
 
-        if (comparableItem == null) {
-            comparableItem = "";
+        if (attributeValue == null) {
+            attributeValue = "";
         }
 
         // convert case
-        comparableItem = comparableItem.toUpperCase().trim();
+        attributeValue = attributeValue.toUpperCase().trim();
 
-        boolean isComparableNumeric = isNumber(comparableItem);
+        boolean isComparableNumeric = isNumber(attributeValue);
         boolean isExpectedValueNumeric = isNumber(expectedValue);
 
         int comparison = 0;
         if (isComparableNumeric && isExpectedValueNumeric) {
 
             // Compare as numbers
-            Double number1 = Double.parseDouble(comparableItem);
+            Double number1 = Double.parseDouble(attributeValue);
             Double number2 = Double.parseDouble(expectedValue);
             comparison = number1.compareTo(number2);
-        } else if (isExpectedValueNumeric && comparableItem.equals("")) {
+        } else if (isExpectedValueNumeric && attributeValue.equals("")) {
             // Null (blank) arguments are treated as < all other numbers when
             // comparing numercally
             Double number1 = Double.MIN_VALUE;
@@ -147,7 +144,7 @@ public class FilterElement {
         } else {
 
             // Compare as strings
-            comparison = (comparableItem).compareTo(expectedValue);
+            comparison = attributeValue.compareTo(expectedValue);
         }
 
         if (comparisonOperator.equals(Operator.EQUAL)) {
@@ -163,63 +160,26 @@ public class FilterElement {
         } else if (comparisonOperator.equals(Operator.LESS_THAN_OR_EQUAL)) {
             result = (comparison <= 0);
         } else if (comparisonOperator.equals(Operator.CONTAINS)) {
-            result = (comparableItem.indexOf(expectedValue) != -1);
+            result = (attributeValue.indexOf(expectedValue) != -1);
         } else if (comparisonOperator.equals(Operator.DOES_NOT_CONTAIN)) {
-            result = (comparableItem.indexOf(expectedValue) == -1);
+            result = (attributeValue.indexOf(expectedValue) == -1);
         } else if (comparisonOperator.equals(Operator.STARTS_WITH)) {
-            result = (comparableItem.startsWith(expectedValue));
-        }
-
-        // If we have previous result we need to test against them
-        if (previousResult != null) {
-
-            // And/Or new result to previous result
-            if (booleanOperator.equals(BooleanOperator.OR)) {
-                result = (result || previousResult);
-            } else {
-                result = (result && previousResult);
-            }
+            result = (attributeValue.startsWith(expectedValue));
         }
 
         return result;
-    }
-
-    public void setBooleanOperator(BooleanOperator booleanOperator) {
-        this.booleanOperator = booleanOperator;
-    }
-
-    public void setComparisonOperator(Operator comparisonOperator) {
-        this.comparisonOperator = comparisonOperator;
-    }
-
-    public void setSelectedItem(String item) {
-        this.selectedItem = item;
-    }
-
-    public void setExpectedValue(String expectedValue) {
-        if (expectedValue != null) {
-            this.expectedValue = new String(expectedValue).toUpperCase();
-        }
-    }
-
-    public BooleanOperator getBooleanOperator() {
-        return booleanOperator;
     }
 
     public Operator getComparisonOperator() {
         return comparisonOperator;
     }
 
-    public String getSelectedItem() {
-        return selectedItem;
+    public String getAttributeKey() {
+        return attributeKey;
     }
 
     public String getValue() {
         return expectedValue;
-    }
-
-    public Filter getFilter() {
-        return filter;
     }
 
     public boolean isNumber(String string) {
@@ -265,24 +225,19 @@ public class FilterElement {
         return true;
     }
 
-    /**
-     * @param previousResult Result of the previous FilterElement that is
-     *                       being chained to this one (null if no previous FilterElement);
-     * @return
-     */
-    public boolean evaluate(Track track, Boolean previousResult) {
 
-        String attributeKey = getSelectedItem();
+    public boolean evaluate(Track track) {
+
+        String attributeKey = getAttributeKey();
         String attribute = track.getAttributeValue(attributeKey);
-
-        return test(attribute, previousResult);
+        return test(attribute);
     }
 
-    public boolean evaluateSample(String sample, Boolean previousResult) {
+    public boolean evaluateSample(String sample) {
 
-        String attributeKey = getSelectedItem();
+        String attributeKey = getAttributeKey();
         String attribute = AttributeManager.getInstance().getAttribute(sample, attributeKey);
 
-        return test(attribute, previousResult);
+        return test(attribute);
     }
 }
