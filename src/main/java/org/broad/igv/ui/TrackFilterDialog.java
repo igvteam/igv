@@ -141,7 +141,7 @@ public class TrackFilterDialog extends JDialog {
      */
     public boolean more() {
 
-        add(new FilterComponent(this, attributeKeys, null));
+        trackFilterPane.add(new FilterComponent(this, attributeKeys, null));
 
         // Update prefered size
         int h = 0;
