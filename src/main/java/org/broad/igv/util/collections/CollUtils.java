@@ -93,7 +93,7 @@ public class CollUtils {
         return null;
     }
 
-    interface Valued {
+    public interface Valued {
         String getValue();
     }
 }
