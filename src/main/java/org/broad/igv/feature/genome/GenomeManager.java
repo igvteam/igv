@@ -245,9 +245,6 @@ public class GenomeManager {
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Used for .genome and .gbk formats.  Otherwise null
         if (geneFeatureTrack != null) {
-            geneFeatureTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, geneFeatureTrack.getName());
-            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-            geneFeatureTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, geneFeatureTrack.getTrackType().toString());
             IGV.getInstance().addTrack(geneFeatureTrack, PanelName.ANNOTATION_PANEL.getName());
         }
 
@@ -283,9 +280,6 @@ public class GenomeManager {
                             fn = fn.substring(lastSlashIdx + 1);
                         }
                     }
-                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
                 }
             }
         }

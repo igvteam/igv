@@ -50,8 +50,6 @@ import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.SpliceJunctionTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -89,7 +87,6 @@ public class IGVSessionReader implements SessionReader {
     private Collection<ResourceLocator> dataFiles;
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Flag indicating if "Panel" sections are present
-    private TrackFilter filter;  // There is a single TrackFilter object per session, usually null
 
     /**
      * List of combined data source tracks.  Processing of combined data sources has to be deferred until all tracks
@@ -97,7 +94,8 @@ public class IGVSessionReader implements SessionReader {
      */
     private final List<Pair<CombinedDataTrack, Element>> combinedDataSourceTracks = new ArrayList<>();
 
-    private Set<Track> allocatedToPanel = new LinkedHashSet<>();;  // List of tracks allocated to panels, if Panel elements are present.
+    private Set<Track> allocatedToPanel = new LinkedHashSet<>();
+    ;  // List of tracks allocated to panels, if Panel elements are present.
 
     /**
      * Map of id -> track, for second pass through when tracks reference each other
@@ -107,12 +105,6 @@ public class IGVSessionReader implements SessionReader {
     private final Set<String> erroredResources = Collections.synchronizedSet(new HashSet<>());
 
     private boolean hasTrackElments;
-
-    static {
-        attributeSynonymMap.put("DATA FILE", "DATA SET");
-        attributeSynonymMap.put("TRACK NAME", "NAME");
-    }
-
 
     public IGVSessionReader(IGV igv) {
         this.igv = igv;
@@ -159,7 +151,7 @@ public class IGVSessionReader implements SessionReader {
         List<Track> unallocatedTracks = new ArrayList<>();
         for (List<Track> tracks : allTracks.values()) {
             for (Track t : tracks) {
-                if (allocatedToPanel == null ||!allocatedToPanel.contains(t)) {
+                if (allocatedToPanel == null || !allocatedToPanel.contains(t)) {
                     unallocatedTracks.add(t);
                 }
             }
@@ -307,8 +299,6 @@ public class IGVSessionReader implements SessionReader {
             processGeneList(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER)) {
             processFilter(session, (Element) element, sessionPath);
-        } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER_ELEMENT)) {
-            processFilterElement(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALES)) {
             processColorScales(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALE)) {
@@ -692,47 +682,34 @@ public class IGVSessionReader implements SessionReader {
         String showAllTracks = getAttribute(element, SessionAttribute.FILTER_SHOW_ALL_TRACKS);
 
         String filterName = getAttribute(element, SessionAttribute.NAME);
-        filter = new TrackFilter(filterName, null);
+        boolean matchAll = "all".equalsIgnoreCase(match);
+        boolean showAll = "true".equalsIgnoreCase(showAllTracks);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
 
-        // Save the filter
+        List<FilterElement> filterElements = new ArrayList();
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node childNode = elements.item(i);
+            if (childNode.getNodeName().equalsIgnoreCase(SessionElement.FILTER_ELEMENT)) {
+                filterElements.add(processFilterElement((Element) childNode));
+            } else {
+                // Unrecognized child element
+                log.warn("Unrecognized child element in <Filter>: " + childNode.getNodeName());
+            }
+        }
+
+        Filter filter = new Filter(showAll, matchAll,  filterElements);
         session.setFilter(filter);
 
-        // Update UI elements -- the matchAll and showAll state is kept in the UI, not the Filter object.  This seems wrong.  TODO
-        if ("all".equalsIgnoreCase(match)) {
-            igv.setFilterMatchAll(true);
-        } else if ("any".equalsIgnoreCase(match)) {
-            igv.setFilterMatchAll(false);
-        }
-        if ("true".equalsIgnoreCase(showAllTracks)) {
-            igv.setFilterShowAllTracks(true);
-        } else {
-            igv.setFilterShowAllTracks(false);
-        }
     }
 
-    private void processFilterElement(Session session, Element element,
-                                      String sessionPath) {
-
-        if (filter == null) {
-            throw new RuntimeException("Filter elements defined before filter");
-        }
+    private FilterElement processFilterElement(Element element) {
 
         String item = getAttribute(element, SessionAttribute.ITEM);
         String operator = getAttribute(element, SessionAttribute.OPERATOR);
         String value = getAttribute(element, SessionAttribute.VALUE);
-        String booleanOperator = getAttribute(element, SessionAttribute.BOOLEAN_OPERATOR);
-
         Operator opEnum = CollUtils.findValueOf(Operator.class, operator);
-        BooleanOperator boolEnum = BooleanOperator.valueOf(booleanOperator.toUpperCase());
-        TrackFilterElement trackFilterElement = new TrackFilterElement(filter, item,
-                opEnum, value, boolEnum);
-        filter.add(trackFilterElement);
-
-        NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        return new FilterElement(item, opEnum, value);
     }
 
     /**

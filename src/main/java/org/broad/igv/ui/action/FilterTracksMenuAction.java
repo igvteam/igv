@@ -29,20 +29,16 @@
  */
 package org.broad.igv.ui.action;
 
+import org.broad.igv.event.IGVEventBus;
+import org.broad.igv.event.TrackFilterEvent;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.TrackFilterPane;
+import org.broad.igv.ui.TrackFilterDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.Filter;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
@@ -53,13 +49,6 @@ public class FilterTracksMenuAction extends MenuAction {
     //static Logger log = LogManager.getLogger(FilterTracksMenuAction.class);
     IGV igv;
 
-    private JCheckBox showAllTracksFilterCheckBox = new JCheckBox();
-
-    private JCheckBox matchAllCheckBox = new JCheckBox();
-
-    private JCheckBox matchAnyCheckBox = new JCheckBox();
-
-    private TrackFilterPane trackFilterPane;
 
     public FilterTracksMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
@@ -68,14 +57,6 @@ public class FilterTracksMenuAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        doFilterTracks();
-    }
-
-    private void doFilterTracks() {
-
-        boolean previousDisableFilterState = showAllTracksFilterCheckBox.isSelected();
-
-        boolean previousMatchAllState = matchAllCheckBox.isSelected();
 
         List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeNames();
 
@@ -90,221 +71,35 @@ public class FilterTracksMenuAction extends MenuAction {
                 return;
             }
 
-        if (trackFilterPane == null) {
-            trackFilterPane = new TrackFilterPane(uniqueAttributeKeys, "Show tracks whose attribute",
-                    igv.getSession().getFilter());
+        Filter filter = IGV.getInstance().getSession().getFilter();
+        TrackFilterDialog dialog = new TrackFilterDialog(igv.getMainFrame(), "Filter Tracks", filter);
+        dialog.setVisible(true);
 
-        } else {
-
-            trackFilterPane.setItems(uniqueAttributeKeys);
-
-            // Backup the initial state for restores
-            trackFilterPane.backup();
-            Filter filter = trackFilterPane.getFilter();
-            if (filter == null || filter.isEmpty()) {
-                trackFilterPane.more();
-            }
-        }
-
-        trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGV.getInstance().getAllTracks());
-
-        Integer response = showFilterTrackDialog(igv.getMainFrame(), trackFilterPane, "Filter Tracks");
-
-        if (response == null) {
-            return;
-        }
-
-        if (response.intValue() == JOptionPane.CANCEL_OPTION) {
-
-            // Restore previous filter state
-            boolean disableFilterState = showAllTracksFilterCheckBox.isSelected();
-            if (disableFilterState != previousDisableFilterState) {
-                showAllTracksFilterCheckBox.setSelected(previousDisableFilterState);
-            }
-
-            // Restore previous boolean match state
-            boolean matchAllState = matchAllCheckBox.isSelected();
-            if (matchAllState != previousMatchAllState) {
-                matchAllCheckBox.setSelected(previousMatchAllState);
-                matchAnyCheckBox.setSelected(!previousMatchAllState);
-            }
-            // Reset state
-            trackFilterPane.restore();
-            return;
-        } else if (response.intValue() == JOptionPane.OK_OPTION) {
-
-            filterTracks(trackFilterPane);
+        if (!dialog.isCancelled()) {
+            filter = dialog.getFilter();
+            filterTracks(filter);
             igv.repaint();
         }
 
     }
 
-    private Integer showFilterTrackDialog(Frame parent,
-                                          final TrackFilterPane trackFilterPane,
-                                          String title) {
 
-        JScrollPane scrollPane = new JScrollPane(trackFilterPane);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        int optionType = JOptionPane.OK_CANCEL_OPTION;
-        int messageType = JOptionPane.PLAIN_MESSAGE;
+    private void filterTracks(Filter filter) {
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        JPanel filterHeaderPanel = new JPanel();
-        filterHeaderPanel.setBackground(Color.WHITE);
-        filterHeaderPanel.setLayout(new GridLayout(0, 1));
-        filterHeaderPanel.add(new JLabel("For attributes that:"));
-
-        ButtonGroup booleanButtonGroup = new ButtonGroup();
-        booleanButtonGroup.add(matchAllCheckBox);
-        booleanButtonGroup.add(matchAnyCheckBox);
-
-        showAllTracksFilterCheckBox.setText("Show All Tracks");
-        matchAllCheckBox.setText("Match all of the following");
-        matchAnyCheckBox.setText("Match any of the following");
-        boolean matchAll = trackFilterPane.getMatchAll();
-        if (matchAll) {
-            matchAllCheckBox.setSelected(true);
-        } else {
-            matchAnyCheckBox.setSelected(true);
-        }
-
-        matchAllCheckBox.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                trackFilterPane.setMatchAll(true);
-            }
-        });
-        matchAnyCheckBox.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                trackFilterPane.setMatchAll(false);
-            }
-        });
-
-        JPanel controls = new JPanel();
-        FlowLayout layoutManager = new FlowLayout();
-        layoutManager.setAlignment(FlowLayout.LEFT);
-        controls.setLayout(layoutManager);
-        controls.add(matchAllCheckBox);
-        controls.add(matchAnyCheckBox);
-        controls.add(showAllTracksFilterCheckBox);
-        controls.setBackground(Color.WHITE);
-        controls.setOpaque(true);
-        filterHeaderPanel.add(controls);
-
-        panel.setOpaque(true);
-        panel.add(filterHeaderPanel, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        final JOptionPane optionPane = new JOptionPane(panel, messageType, optionType);
-        optionPane.setPreferredSize(new Dimension(700, 500));
-        optionPane.setOpaque(true);
-        optionPane.setBackground(Color.WHITE);
-        optionPane.addPropertyChangeListener(
-                JOptionPane.VALUE_PROPERTY,
-                new PropertyChangeListener() {
-
-                    public void propertyChange(PropertyChangeEvent e) {
-
-                        Object value = e.getNewValue();
-                        if (value instanceof Integer) {
-
-                            int option = (Integer) value;
-                            if (option == JOptionPane.OK_OPTION) {
-
-                                if (trackFilterPane.isFilterValid()) {
-                                    trackFilterPane.applyFilterMatching();
-                                    trackFilterPane.save();
-                                }
-                            }
-                        }
-                    }
-                });
-
-        JDialog dialog = optionPane.createDialog(parent, title);
-        dialog.setResizable(true);
-        dialog.setBackground(Color.WHITE);
-        dialog.getContentPane().setBackground(Color.WHITE);
-
-        Component[] children = optionPane.getComponents();
-        if (children != null) {
-            for (Component child : children) {
-                child.setBackground(Color.WHITE);
-            }
-
-        }
-
-        dialog.pack();
-        dialog.setVisible(true);
-
-        Object selectedValue = optionPane.getValue();
-        if (selectedValue == null) {
-            return JOptionPane.CANCEL_OPTION;
-        } else if (((Integer) selectedValue).intValue() == JOptionPane.OK_OPTION) {
-            if (!trackFilterPane.isFilterValid() &&
-                    !showAllTracksFilterCheckBox.isSelected()) {
-                JOptionPane.showMessageDialog(
-                        parent,
-                        "Some of the filter values are missing." +
-                                "\nPlease enter all value before pressing ok.");
-
-                selectedValue = null;
-            }
-        }
-        return ((Integer) selectedValue);
-    }
-
-    private void filterTracks(TrackFilterPane trackFilterPane) {
-
-        boolean showAllTracks = showAllTracksFilterCheckBox.isSelected();
-        if (showAllTracks) {
-
+        if (filter == null) {
             List<Track> tracks = IGV.getInstance().getAllTracks();
+            IGV.getInstance().getSession().setFilter(null);
             for (Track track : tracks) {
                 track.setVisible(true);
             }
-
+            IGVEventBus.getInstance().post(new TrackFilterEvent(null));
         } else {
-            TrackFilter filter = trackFilterPane.getFilter();
             IGV.getInstance().getSession().setFilter(filter);
-            // Evaluate the filter elements
             filter.evaluate();
-        }
 
-    }
-
-    public void resetTrackFilter() {
-        trackFilterPane = null;
-        IGV.getInstance().getSession().setFilter(null);
-        setFilterShowAllTracks(false);
-    }
-
-    public void setFilterShowAllTracks(boolean value) {
-        if (showAllTracksFilterCheckBox != null) {
-            UIUtilities.invokeAndWaitOnEventThread(() -> showAllTracksFilterCheckBox.setSelected(value));
+            IGVEventBus.getInstance().post(new TrackFilterEvent(filter));
         }
     }
 
-    public JCheckBox getShowAllTracksFilterCheckBox() {
-        return showAllTracksFilterCheckBox;
-    }
-
-
-    public void setFilterMatchAll(boolean value) {
-        if (trackFilterPane != null) {
-            trackFilterPane.setMatchAll(value);
-        }
-    }
-
-    public boolean isFilterMatchAll() {
-        if (trackFilterPane != null) {
-            return trackFilterPane.getMatchAll();
-        }
-        return false;
-    }
 }

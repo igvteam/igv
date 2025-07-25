@@ -45,7 +45,6 @@ import org.broad.igv.ui.color.ColorPalette;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.color.PaletteColorTable;
-import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
@@ -54,7 +53,6 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -62,11 +60,9 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class AttributeManager {
+public class AttributeManager implements AttributeSupplier {
 
     public static final String GROUP_AUTOSCALE = "AUTOSCALE GROUP";
-    public static List<String> defaultTrackAttributes = Arrays.asList(Globals.TRACK_NAME_ATTRIBUTE,
-            Globals.TRACK_DATA_FILE_ATTRIBUTE, Globals.TRACK_DATA_TYPE_ATTRIBUTE);
     private static Logger log = LogManager.getLogger(AttributeManager.class);
 
     private static AttributeManager singleton;
@@ -126,11 +122,6 @@ public class AttributeManager {
 
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
-
-        // The default attributes
-        addAttributeName("NAME");
-        addAttributeName("DATA TYPE");
-        addAttributeName("DATA FILE");
     }
 
     static synchronized public AttributeManager getInstance() {
@@ -152,6 +143,7 @@ public class AttributeManager {
     /**
      * Return the attribute value for the given track (trackName) and key.
      */
+    @Override
     public String getAttribute(String trackName, String attributeName) {
         Map<String, String> attributes = attributeMap.get(trackName);
         String key = attributeName.toUpperCase();
@@ -208,12 +200,6 @@ public class AttributeManager {
     public void clearAllAttributes() {
         attributeMap.clear();
         attributeNames.clear();
-
-        // The default attributes
-        addAttributeName("NAME");
-        addAttributeName("DATA TYPE");
-        addAttributeName("DATA FILE");
-
         uniqueAttributeValues.clear();
         //hiddenAttributes.clear();
         loadedResources = new HashSet();
@@ -230,13 +216,6 @@ public class AttributeManager {
 
         if (attributeValue == null || attributeValue.equals("")) {
             return;
-        }
-
-        // Add the 3 "special" attributes to ensure they are the first columns
-        if (attributeNames.isEmpty()) {
-            addAttributeName("NAME");
-            addAttributeName("DATA TYPE");
-            addAttributeName("DATA FILE");
         }
 
         addAttributeName(attributeName);

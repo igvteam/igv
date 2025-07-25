@@ -863,21 +863,15 @@ public class IGV implements IGVEventObserver {
 
     }
 
-    public void setFilterMatchAll(boolean value) {
-        menuBar.setFilterMatchAll(value);
-    }
 
     public boolean isFilterMatchAll() {
-        return menuBar.isFilterMatchAll();
-    }
-
-    public void setFilterShowAllTracks(boolean value) {
-        menuBar.setFilterShowAllTracks(value);
-
+        Filter filter = session.getFilter();
+        return filter != null && filter.isMatchAll();
     }
 
     public boolean isFilterShowAllTracks() {
-        return menuBar.isFilterShowAllTracks();
+        Filter filter = session.getFilter();
+        return filter != null && filter.isShowAll();
     }
 
     /**
@@ -1259,9 +1253,6 @@ public class IGV implements IGVEventObserver {
                     if (lastSlashIdx > 0) {
                         fn = fn.substring(lastSlashIdx + 1);
                     }
-                    track.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, track.getName());
-                    track.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, fn);
-                    track.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, track.getTrackType().toString());
 
                     TrackProperties properties = locator.getTrackProperties();
                     if (properties != null) {
@@ -1322,7 +1313,7 @@ public class IGV implements IGVEventObserver {
         } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
-        } else if (track instanceof VariantTrack && ((VariantTrack) track).getAllSamples().size() > 10) {
+        } else if (track instanceof VariantTrack && ((VariantTrack) track).sampleCount() > 10) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return addDataPanel(newPanelName).getTrackPanel();
         } else {
@@ -1818,8 +1809,6 @@ public class IGV implements IGVEventObserver {
     public void setGroupByAttribute(String attributeName) {
         session.setGroupByAttribute(attributeName);
         resetGroups();
-        // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent());
     }
 
 
@@ -1828,6 +1817,8 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
+        // Some tracks need to respond to changes in grouping, fire notification event
+        IGVEventBus.getInstance().post(new TrackGroupEvent());
     }
 
 
