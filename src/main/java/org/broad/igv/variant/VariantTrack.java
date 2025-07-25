@@ -1189,7 +1189,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     private void filter(Filter filter) {
         if(filter == null || filter.isShowAll())  {
-            this.filteredSamples = new ArrayList(allSamples);
+            this.filteredSamples = new ArrayList<>(allSamples);
         } else {
             this.filteredSamples = filter.evaluateSamples(allSamples);
         }
