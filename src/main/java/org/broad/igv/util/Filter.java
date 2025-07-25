@@ -137,7 +137,7 @@ public class Filter {
             }
 
             if (track.isFilterable()) {
-                boolean result = matchAll ? true : false;
+                boolean result = matchAll;
                 for (FilterElement element : elements) {
                     boolean elementResult = element.evaluate(track);
                     if (matchAll && !elementResult) {
