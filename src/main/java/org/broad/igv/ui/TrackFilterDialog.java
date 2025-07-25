@@ -92,7 +92,6 @@ public class TrackFilterDialog extends JDialog {
 
         trackFilterPane = new JPanel();
         trackFilterPane.setLayout(new FlowLayout(FlowLayout.LEFT));
-        trackFilterPane.setBackground(Color.cyan);
 
         scrollPane = new JScrollPane(trackFilterPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -161,7 +160,6 @@ public class TrackFilterDialog extends JDialog {
         int h = 0;
         int w = 0;
         for (Component c : trackFilterPane.getComponents()) {
-            c.setBackground(Color.yellow);
             h += c.getHeight() + 2*vgap;
             w = c.getWidth();
         }
