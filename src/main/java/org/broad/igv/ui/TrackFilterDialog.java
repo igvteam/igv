@@ -7,8 +7,6 @@ import org.broad.igv.util.FilterElement;
 import javax.swing.*;
 import java.awt.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +14,7 @@ import java.util.List;
 public class TrackFilterDialog extends JDialog {
 
     JPanel trackFilterPane;
+    JScrollPane scrollPane;
 
     private JCheckBox showAllTracksFilterCheckBox;
     private JCheckBox matchAllCheckBox;
@@ -30,7 +29,7 @@ public class TrackFilterDialog extends JDialog {
         setLocationRelativeTo(owner);
         setResizable(true);
         init(filter);
-        setSize(800, 600);
+        setSize(700, 600);
     }
 
     private void init(Filter filter) {
@@ -41,25 +40,24 @@ public class TrackFilterDialog extends JDialog {
 
         setLayout(new BorderLayout());
 
-
         JPanel filterHeaderPanel = new JPanel();
         filterHeaderPanel.setLayout(new GridLayout(0, 1));
 
         showAllTracksFilterCheckBox = new JCheckBox("Show all tracks");
         showAllTracksFilterCheckBox.setSelected(filter.isShowAll());
-        matchAllCheckBox = new JCheckBox("Match all of the following");
-        matchAnyCheckBox = new JCheckBox("Match any of the following");
+        showAllTracksFilterCheckBox.addActionListener(e -> {
+            matchAllCheckBox.setEnabled(!showAllTracksFilterCheckBox.isSelected());
+            matchAnyCheckBox.setEnabled(!showAllTracksFilterCheckBox.isSelected());
+        });
+        filterHeaderPanel.add(showAllTracksFilterCheckBox);
+
+        matchAllCheckBox = new JCheckBox("match all of the following");
+        matchAnyCheckBox = new JCheckBox("match any of the following");
         matchAllCheckBox.setSelected(filter.isMatchAll());
         matchAnyCheckBox.setSelected(!filter.isMatchAll());
         ButtonGroup booleanButtonGroup = new ButtonGroup();
         booleanButtonGroup.add(matchAllCheckBox);
         booleanButtonGroup.add(matchAnyCheckBox);
-
-        showAllTracksFilterCheckBox.addActionListener(e -> {
-            matchAllCheckBox.setEnabled(showAllTracksFilterCheckBox.isSelected());
-            matchAnyCheckBox.setEnabled(showAllTracksFilterCheckBox.isSelected());
-        });
-        filterHeaderPanel.add(showAllTracksFilterCheckBox);
 
 
         if (filter.isShowAll()) {
@@ -77,39 +75,42 @@ public class TrackFilterDialog extends JDialog {
         controls.add(new JLabel("Show tracks that: "));
         controls.add(matchAllCheckBox);
         controls.add(matchAnyCheckBox);
+
+        controls.add(Box.createHorizontalStrut(10));
+        JButton addButton = new JButton("+");
+        addButton.addActionListener(e -> {
+            addComponent();
+        });
+        controls.add(addButton);
+
         filterHeaderPanel.add(controls);
+
         add(filterHeaderPanel, BorderLayout.NORTH);
 
         List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeNames();
         this.attributeKeys = uniqueAttributeKeys;
 
         trackFilterPane = new JPanel();
-        trackFilterPane.setLayout(new FlowLayout(FlowLayout.LEFT, 0, vgap));
+        trackFilterPane.setLayout(new FlowLayout(FlowLayout.LEFT));
+        trackFilterPane.setBackground(Color.cyan);
 
-        JScrollPane scrollPane = new JScrollPane(trackFilterPane);
+        scrollPane = new JScrollPane(trackFilterPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        //scrollPane.setPreferredSize(new Dimension(700, 500));
 
-        FilterComponent filterComponent = null;
-        Iterator iterator = filter.getFilterElements();
-        while (iterator.hasNext()) {
-            FilterElement element = (FilterElement) iterator.next();
-            filterComponent = new FilterComponent(this, uniqueAttributeKeys, element);
-            filterComponent.displayMoreButton(false);
-            trackFilterPane.add(filterComponent);
-        }
-
-        // If there are no filters, add a blank one
-        if (filterComponent == null) {
-            filterComponent = new FilterComponent(this, uniqueAttributeKeys, null);
-            filterComponent.displayMoreButton(true);
-            trackFilterPane.add(filterComponent);
+        if(filter.getFilterElements().hasNext()) {
+            Iterator iterator = filter.getFilterElements();
+            while (iterator.hasNext()) {
+                FilterElement element = (FilterElement) iterator.next();
+                trackFilterPane.add(new FilterComponent(this, uniqueAttributeKeys, element));
+            }
         } else {
-            filterComponent.displayMoreButton(true);
+        // If there are no filters, add a blank one
+            trackFilterPane.add(new FilterComponent(this, uniqueAttributeKeys, null));
         }
 
         add(scrollPane, BorderLayout.CENTER);
-
 
         // Button bar with OK and Cancel buttons
         JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -133,25 +134,44 @@ public class TrackFilterDialog extends JDialog {
 
         add(buttonBar, BorderLayout.SOUTH);
 
-
     }
 
     /**
      * Add another filter
      */
-    public boolean more() {
+    public void addComponent() {
 
         trackFilterPane.add(new FilterComponent(this, attributeKeys, null));
-
-        // Update prefered size
-        int h = 0;
-        for (Component c : getComponents()) {
-            h += c.getHeight() + 2 * vgap;
-        }
-        setPreferredSize(new Dimension(getWidth(), h));
-
-        return true;
+        resizeFilterPane();
     }
+
+    public void removeComponent(FilterComponent filterComponent) {
+
+        if (trackFilterPane.getComponents().length < 2) {
+            // Can not leave less than one filter element on the screen
+            return;
+        }
+
+        trackFilterPane.remove(filterComponent);
+        resizeFilterPane();
+
+    }
+
+    private void resizeFilterPane() {
+        int h = 0;
+        int w = 0;
+        for (Component c : trackFilterPane.getComponents()) {
+            c.setBackground(Color.yellow);
+            h += c.getHeight() + 2*vgap;
+            w = c.getWidth();
+        }
+        trackFilterPane.setPreferredSize(new Dimension(w, h));
+        scrollPane.getViewport().revalidate();
+
+    }
+
+
+
 
     public boolean isCancelled() {
         return cancelled;
