@@ -159,7 +159,7 @@ public class Filter {
 
         for (String sampleName : sampleNames) {
 
-            boolean result = matchAll ? true : false;
+            boolean result = matchAll;
             for (FilterElement element : elements) {
                 boolean elementResult =  element.evaluateSample(sampleName);
                 if (matchAll && !elementResult) {
