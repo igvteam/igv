@@ -233,7 +233,7 @@ public class ResourceLocator {
     private void resolveGoogleDrive(String path) {
 
         JSONObject fileInfo = GoogleUtils.getDriveFileInfo(path);
-        this.name = fileInfo.optString("name");
+        this.name = fileInfo.optString("name", null);
         this.format = deriveFormat(this.name);
     }
 
