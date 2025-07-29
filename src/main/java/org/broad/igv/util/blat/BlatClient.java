@@ -117,7 +117,7 @@ public class BlatClient {
                     JSONArray row = arr.getJSONArray(j);
                     String[] tokens = new String[row.length()];
                     for (int i = 0; i < row.length(); i++) {
-                        String tmp = row.getString(i);
+                        String tmp = row.get(i).toString();
                         tokens[i] = StringUtils.stripQuotes(tmp);
                     }
                     results.add(tokens);
