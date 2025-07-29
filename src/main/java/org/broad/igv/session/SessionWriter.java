@@ -178,7 +178,7 @@ public class SessionWriter {
 
 
     private void writeFilters(Session session, Element globalElement, Document document) {
-        Filter trackFilter = session.getFilter();
+        TrackFilter trackFilter = session.getFilter();
         if (trackFilter != null) {
 
             Element filter = document.createElement(SessionElement.FILTER);

@@ -89,10 +89,6 @@ public interface Track extends Persistable, AttributeSupplier {
         return true;
     }
 
-    default String getAttribute(String name, String key) {
-        return getAttributeValue(key);
-    }
-
 
     /**
      * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
@@ -162,6 +158,11 @@ public interface Track extends Persistable, AttributeSupplier {
     void removeAttribute(String key);
 
     String getAttributeValue(String attributeKey);
+
+    // Interface needed for tracks that contain multiple sub-tracks (samples).
+    default String getAttribute(String name, String key) {
+        return getAttributeValue(key);
+    }
 
     void setVisible(boolean isVisible);
 

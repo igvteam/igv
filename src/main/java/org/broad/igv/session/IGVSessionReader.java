@@ -57,7 +57,6 @@ import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.panel.TrackPanelScrollPane;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.broad.igv.util.FilterElement.BooleanOperator;
 import org.broad.igv.util.FilterElement.Operator;
 import org.broad.igv.util.collections.CollUtils;
 import org.broad.igv.variant.VariantTrack;
@@ -692,14 +691,11 @@ public class IGVSessionReader implements SessionReader {
             Node childNode = elements.item(i);
             if (childNode.getNodeName().equalsIgnoreCase(SessionElement.FILTER_ELEMENT)) {
                 filterElements.add(processFilterElement((Element) childNode));
-            } else {
-                // Unrecognized child element
-                log.warn("Unrecognized child element in <Filter>: " + childNode.getNodeName());
             }
         }
 
-        Filter filter = new Filter(showAll, matchAll,  filterElements);
-        session.setFilter(filter);
+        TrackFilter trackFilter = new TrackFilter(showAll, matchAll,  filterElements);
+        session.setFilter(trackFilter);
 
     }
 

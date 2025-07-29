@@ -1181,17 +1181,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             groupByAttribute();
         } else if (event instanceof TrackFilterEvent) {
             TrackFilterEvent trackFilterEvent = (TrackFilterEvent) event;
-            Filter filter = trackFilterEvent.getFilter();
-            this.filter(filter);
+            TrackFilter trackFilter = trackFilterEvent.getFilter();
+            this.filter(trackFilter);
             groupByAttribute();   // Re-group samples by attribute after filtering.  A no-op if samples are not grouped.
         }
     }
 
-    private void filter(Filter filter) {
-        if(filter == null || filter.isShowAll())  {
+    private void filter(TrackFilter trackFilter) {
+        if(trackFilter == null || trackFilter.isShowAll())  {
             this.filteredSamples = new ArrayList<>(allSamples);
         } else {
-            this.filteredSamples = filter.evaluateSamples(allSamples);
+            this.filteredSamples = trackFilter.evaluateSamples(allSamples);
         }
     }
 

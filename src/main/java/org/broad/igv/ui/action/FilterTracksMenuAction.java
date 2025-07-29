@@ -36,7 +36,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilterDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Filter;
+import org.broad.igv.util.TrackFilter;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -71,13 +71,13 @@ public class FilterTracksMenuAction extends MenuAction {
                 return;
             }
 
-        Filter filter = IGV.getInstance().getSession().getFilter();
-        TrackFilterDialog dialog = new TrackFilterDialog(igv.getMainFrame(), "Filter Tracks", filter);
+        TrackFilter trackFilter = IGV.getInstance().getSession().getFilter();
+        TrackFilterDialog dialog = new TrackFilterDialog(igv.getMainFrame(), "Filter Tracks", trackFilter);
         dialog.setVisible(true);
 
         if (!dialog.isCancelled()) {
-            filter = dialog.getFilter();
-            filterTracks(filter);
+            trackFilter = dialog.getFilter();
+            filterTracks(trackFilter);
             igv.repaint();
         }
 
@@ -85,9 +85,9 @@ public class FilterTracksMenuAction extends MenuAction {
 
 
 
-    private void filterTracks(Filter filter) {
+    private void filterTracks(TrackFilter trackFilter) {
 
-        if (filter == null) {
+        if (trackFilter == null) {
             List<Track> tracks = IGV.getInstance().getAllTracks();
             IGV.getInstance().getSession().setFilter(null);
             for (Track track : tracks) {
@@ -95,10 +95,10 @@ public class FilterTracksMenuAction extends MenuAction {
             }
             IGVEventBus.getInstance().post(new TrackFilterEvent(null));
         } else {
-            IGV.getInstance().getSession().setFilter(filter);
-            filter.evaluate();
+            IGV.getInstance().getSession().setFilter(trackFilter);
+            trackFilter.evaluate();
 
-            IGVEventBus.getInstance().post(new TrackFilterEvent(filter));
+            IGVEventBus.getInstance().post(new TrackFilterEvent(trackFilter));
         }
     }
 

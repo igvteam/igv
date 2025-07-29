@@ -1,16 +1,16 @@
 package org.broad.igv.event;
 
-import org.broad.igv.util.Filter;
+import org.broad.igv.util.TrackFilter;
 
 public final class TrackFilterEvent implements IGVEvent {
 
-    private Filter filter;
+    private TrackFilter trackFilter;
 
-    public TrackFilterEvent(Filter filter) {
-        this.filter = filter;
+    public TrackFilterEvent(TrackFilter trackFilter) {
+        this.trackFilter = trackFilter;
     }
 
-    public Filter getFilter() {
-        return filter;
+    public TrackFilter getFilter() {
+        return trackFilter;
     }
 }

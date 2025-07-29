@@ -32,7 +32,6 @@ package org.broad.igv.util;
 
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.variant.VariantTrack;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -41,7 +40,7 @@ import java.util.List;
 /**
  * @author eflakes
  */
-public class Filter {
+public class TrackFilter {
 
     private LinkedHashSet<FilterElement> elements;
     private boolean isEnabled = true;
@@ -50,11 +49,11 @@ public class Filter {
     boolean matchAll = true; // If true, all elements must match for the track to be visible. If flase, any element match will make the track visible.
 
 
-    public Filter() {
+    public TrackFilter() {
         this.elements = new LinkedHashSet<>();
     }
 
-    public Filter(boolean showAll, boolean matchAll, List<FilterElement> elements) {
+    public TrackFilter(boolean showAll, boolean matchAll, List<FilterElement> elements) {
         this();
         this.showAll = showAll;
         this.matchAll = matchAll;

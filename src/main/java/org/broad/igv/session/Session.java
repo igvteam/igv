@@ -43,7 +43,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.Filter;
+import org.broad.igv.util.TrackFilter;
 import org.broad.igv.util.ObservableForObject;
 
 import java.util.*;
@@ -68,7 +68,7 @@ public class Session implements IGVEventObserver {
     public boolean expandInsertions = false; //false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
-    private Filter filter;
+    private TrackFilter trackFilter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
@@ -303,12 +303,12 @@ public class Session implements IGVEventObserver {
         return locus;
     }
 
-    public Filter getFilter() {
-        return filter;
+    public TrackFilter getFilter() {
+        return trackFilter;
     }
 
-    public void setFilter(Filter filter) {
-        this.filter = filter;
+    public void setFilter(TrackFilter trackFilter) {
+        this.trackFilter = trackFilter;
     }
 
     public String getGroupTracksBy() {
