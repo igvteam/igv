@@ -17,8 +17,7 @@ package org.broad.igv.util;
  *  limitations under the License.
  */
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
@@ -40,18 +39,15 @@ public class JWTParser {
      * @param jwt REQUIRED: valid JSON Web Token as String.
      * @return header as a JSONObject.
      */
-    static JsonObject getHeader(String jwt) {
+    static JSONObject getHeader(String jwt) {
         try {
             validateJWT(jwt);
-            JsonParser parser = new JsonParser();
-            Decoder dec= Base64.getDecoder();
+            Decoder dec = Base64.getDecoder();
 
             final byte[] sectionDecoded = dec.decode(jwt.split("\\.")[HEADER]);
             final String jwtSection = new String(sectionDecoded, "UTF-8");
 
-            JsonObject jwtSection_obj = parser.parse(jwtSection).getAsJsonObject();
-
-            return jwtSection_obj;
+            return new JSONObject(jwtSection);
         } catch (final UnsupportedEncodingException e) {
             throw new InvalidParameterException(e.getMessage());
         } catch (final Exception e) {
@@ -65,16 +61,14 @@ public class JWTParser {
      * @param jwt REQUIRED: valid JSON Web Token as String.
      * @return payload as a JSONObject.
      */
-    public static JsonObject getPayload(String jwt) {
+    public static JSONObject getPayload(String jwt) {
         try {
             validateJWT(jwt);
-            JsonParser parser = new JsonParser();
-            Decoder dec= Base64.getDecoder();
+            Decoder dec = Base64.getDecoder();
             final String payload = jwt.split("\\.")[PAYLOAD];
             final byte[] sectionDecoded = dec.decode(payload);
             final String jwtSection = new String(sectionDecoded, "UTF-8");
-            JsonObject jwtSection_obj = parser.parse(jwtSection).getAsJsonObject();
-            return jwtSection_obj;
+            return new JSONObject(jwtSection);
         } catch (final UnsupportedEncodingException e) {
             throw new InvalidParameterException(e.getMessage());
         } catch (final Exception e) {
@@ -91,7 +85,7 @@ public class JWTParser {
     public static String getSignature(String jwt) {
         try {
             validateJWT(jwt);
-            Decoder dec= Base64.getDecoder();
+            Decoder dec = Base64.getDecoder();
             final byte[] sectionDecoded = dec.decode(jwt.split("\\.")[SIGNATURE]);
             return new String(sectionDecoded, "UTF-8");
         } catch (final Exception e) {
@@ -108,8 +102,8 @@ public class JWTParser {
      */
     static String getClaim(String jwt, String claim) {
         try {
-            final JsonObject payload = getPayload(jwt);
-            final Object claimValue = payload.get(claim);
+            final JSONObject payload = getPayload(jwt);
+            final Object claimValue = payload.opt(claim);
 
             if (claimValue != null) {
                 return claimValue.toString();

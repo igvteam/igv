@@ -29,14 +29,9 @@
  */
 package org.broad.igv.feature.aa;
 
-import com.google.common.collect.Table;
-import com.google.common.collect.TreeBasedTable;
-import com.google.gson.*;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
-import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -67,10 +62,6 @@ public class AminoAcidManager {
 
     private AminoAcidManager() {
         initAANameMap();
-        try {
-        } catch (JsonParseException e) {
-            log.error(e);
-        }
     }
 
     public static AminoAcidManager getInstance() {

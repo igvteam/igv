@@ -1,6 +1,5 @@
 package org.broad.igv.ui.genome;
 
-import com.google.gson.Gson;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeResetEvent;
@@ -195,7 +194,15 @@ public class GenomeListManager {
 
                     try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 
-                        GenomeConfig config = (new Gson()).fromJson(reader, GenomeConfig.class);
+                        // Parse the contents of the json file using org.json
+                        StringBuilder jsonContent = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            jsonContent.append(line);
+                        }
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(jsonContent.toString());
+                        GenomeConfig config =  GenomeConfig.fromJson(jsonObject.toString());
+
                         String id = config.id;
                         if (id == null) {
                             log.error("GenomeConfig ID is null for file: " + file.getAbsolutePath());

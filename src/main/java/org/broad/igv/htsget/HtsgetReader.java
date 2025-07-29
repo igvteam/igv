@@ -1,6 +1,5 @@
 package org.broad.igv.htsget;
 
-import com.google.gson.*;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
@@ -35,8 +34,7 @@ class HtsgetReader {
     byte[] readHeader() throws IOException {
         URL headerURL = HtsgetUtils.addQueryString(this.url, "class=header&format=" + this.format);
         String ticketString = HttpUtils.getInstance().getContentsAsJSON(headerURL);
-        JsonParser parser = new JsonParser();
-        JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
+        org.json.JSONObject ticket = new org.json.JSONObject(ticketString);
         return loadURLs(ticket);
     }
 
@@ -44,31 +42,29 @@ class HtsgetReader {
         final String queryString = "format=" + this.format + "&referenceName=" + chr + "&start=" + start + "&end=" + end;
         URL queryURL = HtsgetUtils.addQueryString(this.url, queryString);
         String ticketString = HttpUtils.getInstance().getContentsAsJSON(queryURL);
-        JsonParser parser = new JsonParser();
-        JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
+        org.json.JSONObject ticket = new org.json.JSONObject(ticketString);
         return loadURLs(ticket);
     }
 
-    private byte[] loadURLs(JsonObject ticket) throws IOException {
+    private byte[] loadURLs(org.json.JSONObject ticket) throws IOException {
 
-        JsonObject container = ticket.getAsJsonObject("htsget");
-        JsonArray urls = container.get("urls").getAsJsonArray();
-        Iterator<JsonElement> iter = urls.iterator();
+        org.json.JSONObject container = ticket.getJSONObject("htsget");
+        org.json.JSONArray urls = container.getJSONArray("urls");
         byte[] bytes = null;
-        while (iter.hasNext()) {
+        for (int i = 0; i < urls.length(); i++) {
 
-            JsonObject next = iter.next().getAsJsonObject();
-            String urlString = next.get("url").getAsString();
+            org.json.JSONObject next = urls.getJSONObject(i);
+            String urlString = next.getString("url");
             if (urlString.startsWith("data:")) {
                 throw new RuntimeException("Data URLs are not currently supported");
             }
 
             URL url = new URL(urlString);
             Map<String, String> headers = new HashMap<>();
-            JsonObject headerObj = next.getAsJsonObject("headers");
-            if (headerObj != null) {
+            if (next.has("headers")) {
+                org.json.JSONObject headerObj = next.getJSONObject("headers");
                 for (String key : headerObj.keySet()) {
-                    headers.put(key, headerObj.get(key).getAsString());
+                    headers.put(key, headerObj.getString(key));
                 }
             }
 

@@ -1,7 +1,5 @@
 package org.broad.igv.feature.genome;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.feature.genome.load.TrackConfig;
@@ -10,6 +8,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.download.Downloader;
 import org.broad.igv.util.FileUtils;
+import org.json.JSONObject;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -58,7 +57,7 @@ public class GenomeDownloadUtils {
         final File genomeDirectory = DirectoryManager.getGenomeCacheDirectory();
         File dataDirectory = null;
 
-        if(downloadSequence || downloadAnnotations) {
+        if (downloadSequence || downloadAnnotations) {
             dataDirectory = new File(genomeDirectory, config.id);
             if (dataDirectory.exists()) {
                 if (!dataDirectory.isDirectory()) {
@@ -83,12 +82,12 @@ public class GenomeDownloadUtils {
                 localFile = constructLocalFile(url, dataDirectory);  // It might be there from previous downloads
             }
             if (localFile.exists()) {
-                config.twoBitURL =(relativeDataDirectory + localFile.getName());
+                config.twoBitURL = (relativeDataDirectory + localFile.getName());
                 // Null out urls not needed for .2bit sequences.
                 config.fastaURL = (null);
                 config.indexURL = (null);
                 config.gziIndexURL = (null);
-                config.twoBitBptURL =(null);  // Not needed for local .2bit files
+                config.twoBitBptURL = (null);  // Not needed for local .2bit files
             }
         } else if (config.fastaURL != null) {
 
@@ -158,8 +157,8 @@ public class GenomeDownloadUtils {
         File localFile = new File(DirectoryManager.getGenomeCacheDirectory(), sanitizedId + ".json");
         log.info("Saving " + localFile.getAbsolutePath());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(localFile))) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            gson.toJson(genomeConfig, writer);
+            JSONObject jsonObject = genomeConfig.toJSON();
+            writer.write(jsonObject.toString(4)); // Pretty print with 4-space indentation
         }
         return localFile;
     }

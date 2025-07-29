@@ -1,15 +1,10 @@
 package org.broad.igv.ucsc;
 
-import com.google.gson.Gson;
-import htsjdk.tribble.NamedFeature;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.HttpUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +19,6 @@ import java.util.stream.Collectors;
  * This class is not thread safe.  It is not intended to be used in a multi-threaded environment.
  */
 public class SearchAPI {
-
 
 
     public static List<Locus> search(String searchTerm, String genome) throws IOException {
@@ -51,8 +45,8 @@ public class SearchAPI {
     private static List<String> searchUCSC(String searchTerm, String genome) throws IOException {
         String url = "https://api.genome.ucsc.edu/search?search=" + searchTerm + "&genome=" + genome;
         String response = HttpUtils.getInstance().getContentsAsString(new URL(url));
-        Gson gson = new Gson();
-        return reduceSearchResults(gson.fromJson(response, Map.class), searchTerm);
+        org.json.JSONObject json = new org.json.JSONObject(response);
+        return reduceSearchResults(json.toMap(), searchTerm);
     }
 
     public static List<String> reduceSearchResults(Map<String, Object> searchResults, String searchTerm) {

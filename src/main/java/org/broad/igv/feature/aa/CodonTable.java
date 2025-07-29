@@ -1,18 +1,6 @@
 package org.broad.igv.feature.aa;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Table;
-import com.google.common.collect.TreeBasedTable;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-import org.broad.igv.util.ParsingUtils;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 /**
@@ -61,31 +49,31 @@ public class CodonTable {
         this.codonMap = Collections.unmodifiableMap(codonMap);
     }
 
-     static CodonTable createFromJSON(String sourcePath, JsonObject jsonObject) throws JsonParseException {
-        int id = jsonObject.get("id").getAsInt();
+static CodonTable createFromJSON(String sourcePath, org.json.JSONObject jsonObject) {
+                int id = jsonObject.getInt("id");
 
-        JsonArray jsonnames = jsonObject.get("name").getAsJsonArray();
-        List<String> names = new ArrayList<String>(jsonnames.size());
-        for (int nn = 0; nn < jsonnames.size(); nn++) {
-            names.add(jsonnames.get(nn).getAsString());
-        }
+                org.json.JSONArray jsonnames = jsonObject.getJSONArray("name");
+                List<String> names = new ArrayList<>(jsonnames.length());
+                for (int nn = 0; nn < jsonnames.length(); nn++) {
+                    names.add(jsonnames.getString(nn));
+                }
 
-        //Data is written as several long strings which line up
-        String aas = jsonObject.get("ncbieaa").getAsString();
-        String startString = jsonObject.get("sncbieaa").getAsString();
+                // Data is written as several long strings which line up
+                String aas = jsonObject.getString("ncbieaa");
+                String startString = jsonObject.getString("sncbieaa");
 
-        CodonTable codonTable = build(sourcePath, id, names, aas, startString);
-        if (jsonObject.has("altStartCodons")) {
-            JsonArray a = jsonObject.get("altStartCodons").getAsJsonArray();
-            Set<String> altStartCodons = new HashSet<>();
-            for (int i = 0; i < a.size(); i++) {
-                altStartCodons.add(a.get(i).getAsString());
+                CodonTable codonTable = build(sourcePath, id, names, aas, startString);
+                if (jsonObject.has("altStartCodons")) {
+                    org.json.JSONArray a = jsonObject.getJSONArray("altStartCodons");
+                    Set<String> altStartCodons = new HashSet<>();
+                    for (int i = 0; i < a.length(); i++) {
+                        altStartCodons.add(a.getString(i));
+                    }
+                    codonTable.altStartCodons = altStartCodons;
+                }
+
+                return codonTable;
             }
-            codonTable.altStartCodons = altStartCodons;
-        }
-
-        return codonTable;
-    }
 
     private static CodonTable build(String sourcePath, int id, List<String> names, String aas, String startString) {
 

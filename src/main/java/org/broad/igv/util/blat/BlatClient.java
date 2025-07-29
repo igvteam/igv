@@ -25,7 +25,7 @@
 
 package org.broad.igv.util.blat;
 
-import com.google.gson.*;
+import org.json.*;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.PSLRecord;
 import org.broad.igv.feature.Strand;
@@ -39,6 +39,7 @@ import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
@@ -107,18 +108,16 @@ public class BlatClient {
                 } else {
                     jsonString = RuntimeUtils.exec(urlpref);
                 }
-
-                JsonObject obj = (new JsonParser()).parse(jsonString).getAsJsonObject();
+                JSONObject obj = new org.json.JSONObject(jsonString);
 
                 // Collect PSL lines, stripping quotes from individual tokens in the process.
-                JsonArray arr = obj.get("blat").getAsJsonArray();
-                Iterator<JsonElement> iter = arr.iterator();
+                JSONArray arr = obj.getJSONArray("blat");
                 List<String[]> results = new ArrayList<>();
-                while (iter.hasNext()) {
-                    JsonArray row = iter.next().getAsJsonArray();
-                    String[] tokens = new String[row.size()];
-                    for (int i = 0; i < row.size(); i++) {
-                        String tmp = row.get(i).getAsString();
+                for (int j = 0; j < arr.length(); j++) {
+                    JSONArray row = arr.getJSONArray(j);
+                    String[] tokens = new String[row.length()];
+                    for (int i = 0; i < row.length(); i++) {
+                        String tmp = row.getString(i);
                         tokens[i] = StringUtils.stripQuotes(tmp);
                     }
                     results.add(tokens);
@@ -132,7 +131,7 @@ public class BlatClient {
                 }
 
                 return features;
-            } catch (JsonSyntaxException e) {
+            } catch (JSONException e) {
                 // This might be an html page, extract body text.
                 String error = htmlToString(jsonString);
                 throw new BlatException(error);
@@ -149,7 +148,7 @@ public class BlatClient {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
             String db = genome.getBlatDB();
             if (db == null) {
-                    db = genome.getId();
+                db = genome.getId();
             }
 
             List<PSLRecord> features = blat(db, userSeq);
