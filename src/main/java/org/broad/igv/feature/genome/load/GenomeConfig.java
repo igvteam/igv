@@ -98,8 +98,8 @@ public class GenomeConfig implements Cloneable {
 
         config.hubs = new ArrayList<>();
         if (jsonObj.has("hubs")) {
-            for (Object hub : jsonObj.getJSONArray("hubs")) {
-                config.hubs.add(hub.toString());
+            for (int i = 0; i < jsonObj.getJSONArray("hubs").length(); i++) {
+                config.hubs.add(jsonObj.getJSONArray("hubs").getString(i));
             }
         }
         if (jsonObj.has("tracks")) {
