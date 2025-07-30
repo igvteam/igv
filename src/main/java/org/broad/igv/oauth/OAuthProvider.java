@@ -214,11 +214,10 @@ public class OAuthProvider {
         try {
 
             String res = HttpUtils.getInstance().doPost(url, params);
-            org.json.JSONObject jsonResponse = new org.json.JSONObject(res);
-
-            accessToken = jsonResponse.getString("access_token");
-            refreshToken = jsonResponse.getString("refresh_token");
-            expirationTime = System.currentTimeMillis() + jsonResponse.getInt("expires_in") * 1000;
+            response = new JSONObject(res);
+            accessToken = response.getString("access_token");
+            refreshToken = response.getString("refresh_token");
+            expirationTime = System.currentTimeMillis() + response.getInt("expires_in") * 1000;
             // Populate this class with user profile attributes
             if (response.has("id_token")) {
                 JSONObject payload = JWTParser.getPayload(response.getString("id_token"));
@@ -265,16 +264,15 @@ public class OAuthProvider {
         URL url = HttpUtils.createURL(tokenEndpoint);
 
         String responseString = HttpUtils.getInstance().doPost(url, params);
-        org.json.JSONObject jsonResponse = new org.json.JSONObject(responseString);
+        response = new JSONObject(responseString);
 
-        if (jsonResponse.has("access_token")) {
-            accessToken = jsonResponse.getString("access_token");
-            if (jsonResponse.has("refresh_token")) {
-                refreshToken = jsonResponse.getString("refresh_token");
+        if (response.has("access_token")) {
+            accessToken = response.getString("access_token");
+            if (response.has("refresh_token")) {
+                refreshToken = response.getString("refresh_token");
             }
-            expirationTime = System.currentTimeMillis() + jsonResponse.getInt("expires_in") * 1000;
+            expirationTime = System.currentTimeMillis() + response.getInt("expires_in") * 1000;
         } else {
-            response = jsonResponse;
             // Refresh token has failed, reauthorize from scratch
             logout();
             try {
