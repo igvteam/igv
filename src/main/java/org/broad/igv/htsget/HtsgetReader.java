@@ -1,11 +1,12 @@
 package org.broad.igv.htsget;
 
 import org.broad.igv.util.HttpUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -42,18 +43,18 @@ class HtsgetReader {
         final String queryString = "format=" + this.format + "&referenceName=" + chr + "&start=" + start + "&end=" + end;
         URL queryURL = HtsgetUtils.addQueryString(this.url, queryString);
         String ticketString = HttpUtils.getInstance().getContentsAsJSON(queryURL);
-        org.json.JSONObject ticket = new org.json.JSONObject(ticketString);
+        JSONObject ticket = new JSONObject(ticketString);
         return loadURLs(ticket);
     }
 
-    private byte[] loadURLs(org.json.JSONObject ticket) throws IOException {
+    private byte[] loadURLs(JSONObject ticket) throws IOException {
 
-        org.json.JSONObject container = ticket.getJSONObject("htsget");
-        org.json.JSONArray urls = container.getJSONArray("urls");
+        JSONObject container = ticket.getJSONObject("htsget");
+        JSONArray urls = container.getJSONArray("urls");
         byte[] bytes = null;
         for (int i = 0; i < urls.length(); i++) {
 
-            org.json.JSONObject next = urls.getJSONObject(i);
+            JSONObject next = urls.getJSONObject(i);
             String urlString = next.getString("url");
             if (urlString.startsWith("data:")) {
                 throw new RuntimeException("Data URLs are not currently supported");
@@ -62,7 +63,7 @@ class HtsgetReader {
             URL url = new URL(urlString);
             Map<String, String> headers = new HashMap<>();
             if (next.has("headers")) {
-                org.json.JSONObject headerObj = next.getJSONObject("headers");
+                JSONObject headerObj = next.getJSONObject("headers");
                 for (String key : headerObj.keySet()) {
                     headers.put(key, headerObj.getString(key));
                 }
