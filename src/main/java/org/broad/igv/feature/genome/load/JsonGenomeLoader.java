@@ -1,19 +1,10 @@
 package org.broad.igv.feature.genome.load;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import htsjdk.tribble.CloseableTribbleIterator;
-import htsjdk.tribble.Feature;
-import htsjdk.tribble.FeatureReader;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.IGVNamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -112,14 +103,20 @@ public class JsonGenomeLoader extends GenomeLoader {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(genomePath);
-            JsonParser parser = new JsonParser();
-            JsonObject json = parser.parse(reader).getAsJsonObject();
-            String id = json.get("id").getAsString();
-            String name = json.get("name").getAsString();
-            String fastaPath = json.get("fastaURL").getAsString();
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            org.json.JSONObject json = new org.json.JSONObject(sb.toString());
+            String id = json.optString("id");
+            String name = json.optString("name");
+            String fastaPath = json.optString("fastaURL");
             return new GenomeDescriptor(id, name, fastaPath);
         } finally {
-            reader.close();
+            if (reader != null) {
+                reader.close();
+            }
         }
     }
 

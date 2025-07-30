@@ -1,10 +1,5 @@
 package org.broad.igv.oauth;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.logging.*;
 import org.broad.igv.batch.CommandListener;
@@ -16,6 +11,8 @@ import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.GoogleUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.JWTParser;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import software.amazon.awssdk.services.sts.model.Credentials;
 
 import java.awt.*;
@@ -51,16 +48,16 @@ public class OAuthProvider {
     private String currentUserName;
     private String currentUserID;
     private String currentUserEmail;
-    private JsonObject response;
+    private JSONObject response;
 
 
-    public OAuthProvider(JsonObject obj) throws IOException {
+    public OAuthProvider(JSONObject obj) throws IOException {
 
         state = UUID.randomUUID().toString(); // "RFC6749: An opaque value used by the client to maintain state"
 
         // For backward compatibility
         if (obj.has("installed") && !obj.has("client_id")) {
-            obj = obj.get("installed").getAsJsonObject();
+            obj = obj.getJSONObject("installed");
         }
 
         // Mandatory attributes, fail hard if not present
@@ -71,21 +68,21 @@ public class OAuthProvider {
                     "authorization_endpoint/auth_uri, or token_endpoint/token_uri.");
         }
 
-        clientId = obj.get("client_id").getAsString();
+        clientId = obj.getString("client_id");
         authEndpoint = obj.has("auth_uri") ?
-                obj.get("auth_uri").getAsString() :
-                obj.get("authorization_endpoint").getAsString();
+                obj.getString("auth_uri") :
+                obj.getString("authorization_endpoint");
         tokenEndpoint = obj.has("token_uri") ?
-                obj.get("token_uri").getAsString() :
-                obj.get("token_endpoint").getAsString();
-        clientSecret = obj.has("client_secret") ? obj.get("client_secret").getAsString() : null;
+                obj.getString("token_uri") :
+                obj.getString("token_endpoint");
+        clientSecret = obj.has("client_secret") ? obj.getString("client_secret") : null;
 
         // Optional attributes
         if (obj.has("auth_provider")) {
-            authProvider = obj.get("auth_provider").getAsString();
+            authProvider = obj.getString("auth_provider");
         }
         if (obj.has("scope")) {
-            scope = obj.get("scope").getAsString();
+            scope = obj.getString("scope");
         } else if (isGoogle()) {
             String gsScope = "https://www.googleapis.com/auth/devstorage.read_only";
             String emailScope = "https://www.googleapis.com/auth/userinfo.email";
@@ -93,28 +90,28 @@ public class OAuthProvider {
 
         }
         appIdURI = obj.has("app_id_uri") ?    // Microsoft Azure.
-                obj.get("app_id_uri").getAsString() :
-                obj.has("resource") ? obj.get("resource").getAsString() : null;
+                obj.getString("app_id_uri") :
+                obj.has("resource") ? obj.getString("resource") : null;
 
         if (obj.has("hosts")) {
             // hosts element may be an array or a single string - put in hosts array either way
-            JsonElement hostsElement = obj.get("hosts");
-            if (hostsElement.isJsonArray()) {
-                JsonArray hostsArrJson = hostsElement.getAsJsonArray();
-                hosts = new String[hostsArrJson.size()];
-                for (int i = 0; i < hostsArrJson.size(); i++)
-                    hosts[i] = hostsArrJson.get(i).getAsString();
+            Object hostsObj = obj.get("hosts");
+            if (hostsObj instanceof JSONArray) {
+                JSONArray hostsArrJson = (JSONArray) hostsObj;
+                hosts = new String[hostsArrJson.length()];
+                for (int i = 0; i < hostsArrJson.length(); i++)
+                    hosts[i] = hostsArrJson.getString(i);
             } else {
                 hosts = new String[1];
-                hosts[0] = hostsElement.getAsString();
+                hosts[0] = obj.getString("hosts");
             }
         }
 
         if (obj.has("redirect_uris")) {
-            JsonArray urisArray = obj.get("redirect_uris").getAsJsonArray();
-            redirectURI = urisArray.get(0).getAsString();
+            JSONArray urisArray = obj.getJSONArray("redirect_uris");
+            redirectURI = urisArray.getString(0);
         } else if (obj.has("redirect_uri")) {
-            redirectURI = obj.get("redirect_uri").getAsString();
+            redirectURI = obj.getString("redirect_uri");
         } else {
             String portNumber = PreferencesManager.getPreferences().getPortNumber();
             redirectURI = "http://localhost:" + portNumber + "/oauthCallback";
@@ -132,8 +129,8 @@ public class OAuthProvider {
         }
 
         // Deprecated properties -- for backward compatibility
-        findString = obj.has("find_string") ? obj.get("find_string").getAsString() : null;
-        replaceString = obj.has("replace_string") ? obj.get("replace_string").getAsString() : null;
+        findString = obj.has("find_string") ? obj.getString("find_string") : null;
+        replaceString = obj.has("replace_string") ? obj.getString("replace_string") : null;
     }
 
     public String getState() {
@@ -217,16 +214,13 @@ public class OAuthProvider {
         try {
 
             String res = HttpUtils.getInstance().doPost(url, params);
-            JsonParser parser = new JsonParser();
-
-            response = parser.parse(res).getAsJsonObject();
-            accessToken = response.get("access_token").getAsString();
-            refreshToken = response.get("refresh_token").getAsString();
-            expirationTime = System.currentTimeMillis() + response.get("expires_in").getAsInt() * 1000;
-
+            response = new JSONObject(res);
+            accessToken = response.getString("access_token");
+            refreshToken = response.getString("refresh_token");
+            expirationTime = System.currentTimeMillis() + response.getInt("expires_in") * 1000;
             // Populate this class with user profile attributes
             if (response.has("id_token")) {
-                JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+                JSONObject payload = JWTParser.getPayload(response.getString("id_token"));
                 fetchUserProfile(payload);
             }
 
@@ -270,16 +264,14 @@ public class OAuthProvider {
         URL url = HttpUtils.createURL(tokenEndpoint);
 
         String responseString = HttpUtils.getInstance().doPost(url, params);
-        JsonParser parser = new JsonParser();
-        response = parser.parse(responseString).getAsJsonObject();
+        response = new JSONObject(responseString);
 
-        JsonPrimitive atprim = response.getAsJsonPrimitive("access_token");
-        if (atprim != null) {
-            accessToken = response.getAsJsonPrimitive("access_token").getAsString();
+        if (response.has("access_token")) {
+            accessToken = response.getString("access_token");
             if (response.has("refresh_token")) {
-                refreshToken = response.getAsJsonPrimitive("refresh_token").getAsString();
+                refreshToken = response.getString("refresh_token");
             }
-            expirationTime = System.currentTimeMillis() + response.getAsJsonPrimitive("expires_in").getAsInt() * 1000;
+            expirationTime = System.currentTimeMillis() + response.getInt("expires_in") * 1000;
         } else {
             // Refresh token has failed, reauthorize from scratch
             logout();
@@ -298,14 +290,14 @@ public class OAuthProvider {
      *
      * @throws IOException
      */
-    public JsonObject fetchUserProfile(JsonObject jwt_payload) {
+    public JSONObject fetchUserProfile(JSONObject jwt_payload) {
         try {
-            currentUserName = jwt_payload.has("name") ? jwt_payload.get("name").getAsString() : null;
+            currentUserName = jwt_payload.has("name") ? jwt_payload.getString("name") : null;
             if (currentUserName == null && jwt_payload.has("cognito:username")) {
-                currentUserName = jwt_payload.get("cognito:username").getAsString();
+                currentUserName = jwt_payload.getString("cognito:username");
             }
-            currentUserEmail = jwt_payload.has("email") ? jwt_payload.get("email").getAsString() : null;
-            currentUserID = jwt_payload.has("id") ? jwt_payload.get("id").getAsString() : null;
+            currentUserEmail = jwt_payload.has("email") ? jwt_payload.getString("email") : null;
+            currentUserID = jwt_payload.has("id") ? jwt_payload.getString("id") : null;
 
             return jwt_payload;
         } catch (Throwable exception) {
@@ -360,12 +352,11 @@ public class OAuthProvider {
         IGVEventBus.getInstance().post(new AuthStateEvent(false, this.authProvider, null));
     }
 
-    public JsonObject getAuthorizationResponse() {
+    public JSONObject getAuthorizationResponse() {
 
         if (response == null) {
             // Go back to auth flow, not auth'd yet
             checkLogin();
-            response = getResponse();
         }
         return response;
     }
@@ -423,10 +414,6 @@ public class OAuthProvider {
         return this.authEndpoint.contains("accounts.google.com");
     }
 
-    public JsonObject getResponse() {
-        return response;
-    }
-
     public void setAuthProvider(String authProvider) {
         this.authProvider = authProvider;
     }
@@ -436,7 +423,8 @@ public class OAuthProvider {
     }
 
     // Assuming that if this event is called, we are indeed autz/authn'd
-    public record AuthStateEvent(boolean authenticated, String authProvider, String userName) implements IGVEvent {}
+    public record AuthStateEvent(boolean authenticated, String authProvider, String userName) implements IGVEvent {
+    }
 }
 
 

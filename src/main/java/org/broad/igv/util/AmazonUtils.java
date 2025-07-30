@@ -1,6 +1,5 @@
 package org.broad.igv.util;
 
-import com.google.gson.JsonObject;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.aws.IGVS3Object;
 import org.broad.igv.oauth.OAuthProvider;
@@ -10,6 +9,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGVMenuBar;
+import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
@@ -60,19 +60,19 @@ public class AmazonUtils {
 
     private static Map<String, String> presignedToS3Map = new HashMap<>();
 
-    private static JsonObject CognitoConfig;
+    private static JSONObject CognitoConfig;
     private static S3Presigner s3Presigner;
     private static String endpointURL = "UNKNOWN";
 
-    public static void setCognitoConfig(JsonObject json) {
+    public static void setCognitoConfig(JSONObject json) {
         CognitoConfig = json;
-        awsCredentialsPresent = CognitoConfig.get("auth_provider").getAsString().contains("Amazon");
+        awsCredentialsPresent = CognitoConfig.getString("auth_provider").contains("Amazon");
         if (IGVMenuBar.getInstance() != null) {
             IGVMenuBar.getInstance().updateAWSMenu();
         }
     }
 
-    public static JsonObject GetCognitoConfig() {
+    public static JSONObject GetCognitoConfig() {
         return CognitoConfig;
     }
 
@@ -88,7 +88,7 @@ public class AmazonUtils {
         if (awsCredentialsPresent == null) {
             if (GetCognitoConfig() != null) {
                 try {
-                    if (GetCognitoConfig().get("auth_provider").getAsString().contains("Amazon")) {
+                    if (GetCognitoConfig().getString("auth_provider").contains("Amazon")) {
                         log.info("AWS configuration found. AWS support enabled.");
                         awsCredentialsPresent = true;
                     } else {
@@ -121,7 +121,7 @@ public class AmazonUtils {
 
         if (AWSREGION == null) {
             if (GetCognitoConfig() != null) {
-                AWSREGION = Region.of(GetCognitoConfig().get("aws_region").getAsString());
+                AWSREGION = Region.of(GetCognitoConfig().getString("aws_region"));
             } else {
                 // TODO -- find region in default place
                 try {
@@ -150,28 +150,28 @@ public class AmazonUtils {
             log.debug("fetch credentials");
             OAuthProvider provider = OAuthUtils.getInstance().getAWSProvider();
 
-            JsonObject response = provider.getAuthorizationResponse();
+            JSONObject response = provider.getAuthorizationResponse();
 
             setCredentialsFromOauthResponse(response);
         }
         return cognitoAWSCredentials;
     }
 
-    private static void setCredentialsFromOauthResponse(JsonObject response) {
+    private static void setCredentialsFromOauthResponse(JSONObject response) {
 
-        JsonObject igv_oauth_conf = GetCognitoConfig();
+        JSONObject igv_oauth_conf = GetCognitoConfig();
 
-        JsonObject payload = JWTParser.getPayload(response.get("id_token").getAsString());
+        JSONObject payload = JWTParser.getPayload(response.getString("id_token"));
 
         log.debug("JWT payload id token: " + payload);
 
         // Collect necessary information from federated IdP for Authentication purposes
-        String idTokenStr = response.get("id_token").getAsString();
-        String idProvider = payload.get("iss").toString().replace("https://", "")
+        String idTokenStr = response.getString("id_token");
+        String idProvider = payload.getString("iss").replace("https://", "")
                 .replace("\"", "");
-        String email = payload.get("email").getAsString();
-        String federatedPoolId = igv_oauth_conf.get("aws_cognito_fed_pool_id").getAsString();
-        String cognitoRoleARN = igv_oauth_conf.get("aws_cognito_role_arn").getAsString();
+        String email = payload.getString("email");
+        String federatedPoolId = igv_oauth_conf.getString("aws_cognito_fed_pool_id");
+        String cognitoRoleARN = igv_oauth_conf.getString("aws_cognito_role_arn");
 
         HashMap<String, String> logins = new HashMap<>();
         logins.put(idProvider, idTokenStr);
@@ -615,7 +615,7 @@ public class AmazonUtils {
 
             // oauth config
             if (GetCognitoConfig() != null && GetCognitoConfig().has("endpoint_url")) {
-                endpointURL = GetCognitoConfig().get("endpoint_url").getAsString();
+                endpointURL = GetCognitoConfig().getString("endpoint_url");
                 if (endpointURL != null) {
                     return endpointURL;
                 }

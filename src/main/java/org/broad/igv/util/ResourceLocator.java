@@ -25,14 +25,12 @@
 
 package org.broad.igv.util;
 
-import com.google.gson.JsonObject;
 import htsjdk.tribble.Tribble;
 import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
-import org.broad.igv.ui.color.ColorUtilities;
+import org.json.JSONObject;
 
 import java.awt.*;
 import java.io.File;
@@ -42,7 +40,6 @@ import java.util.List;
 import java.util.*;
 
 import static org.broad.igv.feature.tribble.CodecFactory.ucscSNP;
-import static org.broad.igv.util.StringUtils.stripQuotes;
 
 //import java.awt.*;
 
@@ -235,8 +232,8 @@ public class ResourceLocator {
 
     private void resolveGoogleDrive(String path) {
 
-        JsonObject fileInfo = GoogleUtils.getDriveFileInfo(path);
-        this.name = fileInfo.get("name").getAsString();
+        JSONObject fileInfo = GoogleUtils.getDriveFileInfo(path);
+        this.name = fileInfo.optString("name", null);
         this.format = deriveFormat(this.name);
     }
 

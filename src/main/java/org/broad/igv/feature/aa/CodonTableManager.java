@@ -29,7 +29,6 @@
  */
 package org.broad.igv.feature.aa;
 
-import com.google.gson.*;
 import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ParsingUtils;
@@ -93,7 +92,7 @@ public class CodonTableManager {
             loadCodonTables(DEFAULT_CODON_TABLE_PATH);
         } catch (IOException e) {
             handleExceptionLoading(e);
-        } catch (JsonParseException e) {
+        } catch (Exception e) {
             log.error(e);
         }
     }
@@ -133,7 +132,7 @@ public class CodonTableManager {
             return currentCodonTable;
         } else {
             CodonTableMap map = genomeChromoTable.get(genomeID);
-            if(map == null) {
+            if (map == null) {
                 return defaultCodonTable;
             } else {
                 Integer tableID = map.getTableIdForChr(chr);
@@ -180,7 +179,7 @@ public class CodonTableManager {
      * @param codonTablesPath
      * @return
      */
-    synchronized void loadCodonTables(String codonTablesPath) throws IOException, JsonParseException {
+    synchronized void loadCodonTables(String codonTablesPath) throws IOException {
 
         LinkedHashMap<Integer, CodonTable> newCodonTables = new LinkedHashMap<>(20);
 
@@ -190,15 +189,22 @@ public class CodonTableManager {
         }
 
         if (codonTablesPath.endsWith(".json")) {
-            JsonObject allData = readJSONFromStream(is);
-            int defaultId = -1;
-            defaultId = allData.get("defaultid").getAsInt();
-            JsonArray codonArray = allData.get("Genetic-code-table").getAsJsonArray();
-            if (codonArray.size() == 0) {
-                throw new JsonParseException("JSON File has empty array for Genetic-code-table");
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
             }
-            for (int ca = 0; ca < codonArray.size(); ca++) {
-                CodonTable curTable = CodonTable.createFromJSON(codonTablesPath, codonArray.get(ca).getAsJsonObject());
+            org.json.JSONObject allData = new org.json.JSONObject(sb.toString());
+            int defaultId = allData.getInt("defaultid");
+            org.json.JSONArray codonArray = allData.getJSONArray("Genetic-code-table");
+            if (codonArray.length() == 0) {
+                throw new RuntimeException("JSON File has empty array for Genetic-code-table");
+            }
+            for (int ca = 0; ca < codonArray.length(); ca++) {
+                org.json.JSONObject codonObj = codonArray.getJSONObject(ca);
+                CodonTable curTable = CodonTable.createFromJSON(codonTablesPath, codonObj);
                 newCodonTables.put(curTable.getId(), curTable);
                 if (defaultCodonTable == null || curTable.getId() == defaultId) {
                     defaultCodonTable = curTable;
@@ -214,21 +220,15 @@ public class CodonTableManager {
         is.close();
     }
 
-    private void loadDefaultTranslationTables() throws JsonParseException {
+    private void loadDefaultTranslationTables() throws org.json.JSONException {
         InputStream is = CodonTableManager.class.getResourceAsStream(DEFAULT_TRANS_TABLE_PATH);
-        JsonObject allData = readJSONFromStream(is);
-        JsonArray organisms = allData.get("organisms").getAsJsonArray();
-        for (int ind = 0; ind < organisms.size(); ind++) {
-            JsonObject obj = organisms.get(ind).getAsJsonObject();
-            String genomeId = obj.get("genomeId").getAsString();
+        org.json.JSONObject allData = new org.json.JSONObject(new java.util.Scanner(is).useDelimiter("\\A").next());
+        org.json.JSONArray organisms = allData.getJSONArray("organisms");
+        for (int ind = 0; ind < organisms.length(); ind++) {
+            org.json.JSONObject obj = organisms.getJSONObject(ind);
+            String genomeId = obj.getString("genomeId");
             genomeChromoTable.put(genomeId, new CodonTableMap(obj));
         }
-    }
-
-    private static JsonObject readJSONFromStream(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        JsonParser parser = new JsonParser();
-        return parser.parse(reader).getAsJsonObject();
     }
 
     public CodonTable getDefaultCodonTable() {
@@ -255,18 +255,19 @@ public class CodonTableManager {
         Integer defaultID;
         Map<String, Integer> chromosomeIDs;
 
-        CodonTableMap(JsonObject obj) {
-            genomeID = obj.get("genomeId").getAsString();
+        CodonTableMap(org.json.JSONObject obj) {
+            genomeID = obj.getString("genomeId");
             chromosomeIDs = new HashMap<>();
 
-            JsonObject chromosomes = obj.get("chromosomes").getAsJsonObject();
-            defaultID = chromosomes.get("default").getAsInt();
-            Iterator<Map.Entry<String, JsonElement>> iterator = chromosomes.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, JsonElement> entry = iterator.next();
-                String chromoName = entry.getKey();
-                int id = entry.getValue().getAsInt();
-                chromosomeIDs.put(chromoName, id);
+            org.json.JSONObject chromosomes = obj.getJSONObject("chromosomes");
+            defaultID = chromosomes.getInt("default");
+            Iterator<String> keys = chromosomes.keys();
+            while (keys.hasNext()) {
+                String chromoName = keys.next();
+                if (!chromoName.equals("default")) {
+                    int id = chromosomes.getInt(chromoName);
+                    chromosomeIDs.put(chromoName, id);
+                }
             }
         }
 

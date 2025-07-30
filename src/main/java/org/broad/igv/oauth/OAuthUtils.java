@@ -25,9 +25,6 @@
 
 package org.broad.igv.oauth;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.prefs.Constants;
@@ -37,13 +34,14 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.AmazonUtils;
 import org.broad.igv.util.HttpMappings;
 import org.broad.igv.util.HttpUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -119,7 +117,7 @@ public class OAuthUtils {
         return awsProvider;
     }
 
-    public OAuthProvider getGoogleProvider()  {
+    public OAuthProvider getGoogleProvider() {
         if (googleProvider == null) {
             try {
                 log.info("Loading Google oAuth properties");
@@ -143,10 +141,9 @@ public class OAuthUtils {
      */
     private OAuthProvider loadDefaultOauthProperties() throws IOException {
         String propertiesURL = PreferencesManager.getPreferences().get(Constants.PROVISIONING_URL_DEFAULT);
-        if(propertiesURL != null && propertiesURL.length() > 0) {
+        if (propertiesURL != null && propertiesURL.length() > 0) {
             String json = loadAsString(propertiesURL);
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(json).getAsJsonObject();
+            JSONObject obj = new JSONObject(json);
             return parseProviderObject(obj);
         } else {
             return null;
@@ -190,24 +187,23 @@ public class OAuthUtils {
      * @throws IOException
      */
     private void parseProviderJson(String json) throws IOException {
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(json);
-        if (element.isJsonArray()) {
-            Iterator<JsonElement> iter = element.getAsJsonArray().iterator();
-            while (iter.hasNext()) {
-                parseProviderObject(iter.next().getAsJsonObject());
-            }
-        } else {
-            parseProviderObject(element.getAsJsonObject());
-        }
 
+        try {
+            JSONArray jsonArray = new org.json.JSONArray(json);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                parseProviderObject(jsonArray.getJSONObject(i));
+            }
+        } catch (org.json.JSONException e) {
+            JSONObject jsonObject = new org.json.JSONObject(json);
+            parseProviderObject(jsonObject);
+        }
     }
 
-    private OAuthProvider parseProviderObject(JsonObject obj) throws IOException {
+    private OAuthProvider parseProviderObject(JSONObject obj) throws IOException {
         OAuthProvider p = new OAuthProvider(obj);
         providerCache.put(p.getState(), p);
         if ((obj.has("auth_provider")
-                && obj.get("auth_provider").getAsString().equals("Amazon")) ||
+                && obj.getString("auth_provider").equals("Amazon")) ||
                 obj.has("aws_region")) {
             awsProvider = p;
             AmazonUtils.setCognitoConfig(obj);

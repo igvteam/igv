@@ -1,6 +1,5 @@
 package org.broad.igv.ucsc.hub;
 
-import com.google.gson.Gson;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -172,32 +171,34 @@ public class HubRegistry {
 
         List<HubDescriptor> hubDescriptors = new ArrayList<>();
 
-        Map<String, Object> jsonResponse = null;
-        Gson gson = new Gson();
+        org.json.JSONObject jsonResponse = null;
         try {
             URL url = new URL(apiUrl);
             String jsonString = HttpUtils.getInstance().getContentsAsJSON(url);
-            jsonResponse = gson.fromJson(jsonString, Map.class);
+            jsonResponse = new org.json.JSONObject(jsonString);
 
         } catch (Exception e) {
             log.error("Failed to public hub list from " + apiUrl, e);
             try {
                 String jsonString = HttpUtils.getInstance().getContentsAsJSON(new URL(BACKUP_HUBS_URL));
-                jsonResponse = gson.fromJson(jsonString, Map.class);
+                jsonResponse = new org.json.JSONObject(jsonString);
             } catch (IOException ex) {
                 log.error("Failed to load public hub list from " + BACKUP_HUBS_URL, e);
             }
         }
 
         if (jsonResponse != null) {
-            Object hubObj = jsonResponse.get("publicHubs");
-            for (Map<String, Object> hub : (List<Map<String, Object>>) hubObj) {
-                String hubUrl = hub.get("hubUrl").toString();
-                String shortLabel = hub.get("shortLabel").toString();
-                String longLabel = hub.get("longLabel").toString();
-                String dbList = hub.get("dbList").toString();
-                String descriptionUrl = hub.get("descriptionUrl").toString();
-                hubDescriptors.add(new HubDescriptor(hubUrl, shortLabel, longLabel, dbList, descriptionUrl));
+            org.json.JSONArray hubArray = jsonResponse.optJSONArray("publicHubs");
+            if (hubArray != null) {
+                for (int i = 0; i < hubArray.length(); i++) {
+                    org.json.JSONObject hub = hubArray.getJSONObject(i);
+                    String hubUrl = hub.optString("hubUrl");
+                    String shortLabel = hub.optString("shortLabel");
+                    String longLabel = hub.optString("longLabel");
+                    String dbList = hub.optString("dbList");
+                    String descriptionUrl = hub.optString("descriptionUrl");
+                    hubDescriptors.add(new HubDescriptor(hubUrl, shortLabel, longLabel, dbList, descriptionUrl));
+                }
             }
         }
 

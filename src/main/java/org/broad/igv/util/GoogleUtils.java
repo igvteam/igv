@@ -1,10 +1,9 @@
 package org.broad.igv.util;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.broad.igv.logging.*;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.util.MessageUtils;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -130,15 +129,14 @@ public class GoogleUtils {
     }
 
 
-    public static JsonObject getDriveFileInfo(String googleDriveURL) {
+    public static JSONObject getDriveFileInfo(String googleDriveURL) {
 
         try {
             String id = getGoogleDriveFileID(googleDriveURL);
             String endPoint = "https://www.googleapis.com/drive/v3/files/" + id + "?supportsTeamDrives=true";
 
             String json = HttpUtils.getInstance().getContentsAsJSON(new URL(endPoint));
-            JsonParser parser = new JsonParser();
-            JsonObject obj = parser.parse(json).getAsJsonObject();
+            org.json.JSONObject obj = new org.json.JSONObject(json);
             return obj;
 
         } catch (IOException e) {

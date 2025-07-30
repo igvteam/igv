@@ -92,13 +92,9 @@ module org.igv {
     exports slider;
     exports com.sanityinc.jargs;
 
-    opens org.broad.igv.feature.genome.load to com.google.gson;
-    opens org.broad.igv.feature to com.google.gson;
-
     requires com.google.common;
     requires org.apache.commons.compress;
     requires commons.math3;
-    requires com.google.gson;
     requires htsjdk;
     requires java.datatransfer;
     requires java.desktop;
@@ -116,6 +112,7 @@ module org.igv {
     requires batik.dom;
     requires AbsoluteLayout.RELEASE110;
     requires com.formdev.flatlaf;
+    requires org.json;
 
     // AWS
     requires software.amazon.awssdk.core;

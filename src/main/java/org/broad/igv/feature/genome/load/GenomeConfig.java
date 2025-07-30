@@ -1,10 +1,10 @@
 package org.broad.igv.feature.genome.load;
 
-import com.google.gson.Gson;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.genome.Sequence;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.json.JSONObject;
 
 import java.util.*;
 
@@ -64,8 +64,97 @@ public class GenomeConfig implements Cloneable {
         if (json.contains("chromosomeOrder")) {
             json = fixChromosomeOrder(json);
         }
-        GenomeConfig config = (new Gson()).fromJson(json, GenomeConfig.class);
+        GenomeConfig config = new GenomeConfig();
+        JSONObject jsonObj = new JSONObject(json);
+        config.id = jsonObj.optString("id");
+        config.name = jsonObj.optString("name", null);
+        config.fastaURL = jsonObj.optString("fastaURL", null);
+        config.indexURL = jsonObj.optString("indexURL", null);
+        config.gziIndexURL = jsonObj.optString("gziIndexURL", null);
+        config.compressedIndexURL = jsonObj.optString("compressedIndexURL", null);
+        config.twoBitURL = jsonObj.optString("twoBitURL", null);
+        config.twoBitBptURL = jsonObj.optString("twoBitBptURL", null);
+        config.nameSet = jsonObj.optString("nameSet", null);
+        config.defaultPos = jsonObj.optString("defaultPos", null);
+        config.description = jsonObj.optString("description", null);
+        config.blat = jsonObj.optString("blat", null);
+        config.chromAliasBbURL = jsonObj.optString("chromAliasBbURL", null);
+        config.chromSizesURL = jsonObj.optString("chromSizesURL", null);
+        config.infoURL = jsonObj.optString("infoURL", null);
+        config.cytobandURL = jsonObj.optString("cytobandURL", null);
+        config.cytobandBbURL = jsonObj.optString("cytobandBbURL", null);
+        config.ordered = jsonObj.has("ordered") ? jsonObj.optBoolean("ordered") : null;
+        config.blatDB = jsonObj.optString("blatDB", null);
+        config.ucscID = jsonObj.optString("ucscID", null);
+        config.aliasURL = jsonObj.optString("aliasURL", null);
+        config.accession = jsonObj.optString("accession", null);
+        config.taxId = jsonObj.optString("taxId", null);
+        config.organism = jsonObj.optString("organism", null);
+        config.scientificName = jsonObj.optString("scientificName", null);
+        config.chromosomeOrder = jsonObj.has("chromosomeOrder") ?
+                jsonObj.getJSONArray("chromosomeOrder").toList().toArray(new String[0]) : null;
+
+        config.wholeGenomeView = jsonObj.optBoolean("wholeGenomeView", true);
+
+        config.hubs = new ArrayList<>();
+        if (jsonObj.has("hubs")) {
+            for (int i = 0; i < jsonObj.getJSONArray("hubs").length(); i++) {
+                config.hubs.add(jsonObj.getJSONArray("hubs").getString(i));
+            }
+        }
+        if (jsonObj.has("tracks")) {
+            config.tracks = new ArrayList<>();
+            for (int i = 0; i < jsonObj.getJSONArray("tracks").length(); i++) {
+                JSONObject track = jsonObj.getJSONArray("tracks").getJSONObject(i);
+                config.tracks.add(TrackConfig.fromJSON(track.toString()));
+            }
+        }
+
         return config;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject jsonObj = new JSONObject();
+
+        if (id != null) jsonObj.put("id", id);
+        if (name != null) jsonObj.put("name", name);
+        if (fastaURL != null) jsonObj.put("fastaURL", fastaURL);
+        if (indexURL != null) jsonObj.put("indexURL", indexURL);
+        if (gziIndexURL != null) jsonObj.put("gziIndexURL", gziIndexURL);
+        if (compressedIndexURL != null) jsonObj.put("compressedIndexURL", compressedIndexURL);
+        if (twoBitURL != null) jsonObj.put("twoBitURL", twoBitURL);
+        if (twoBitBptURL != null) jsonObj.put("twoBitBptURL", twoBitBptURL);
+        if (nameSet != null) jsonObj.put("nameSet", nameSet);
+        if (defaultPos != null) jsonObj.put("defaultPos", defaultPos);
+        if (description != null) jsonObj.put("description", description);
+        if (blat != null) jsonObj.put("blat", blat);
+        if (chromAliasBbURL != null) jsonObj.put("chromAliasBbURL", chromAliasBbURL);
+        if (chromSizesURL != null) jsonObj.put("chromSizesURL", chromSizesURL);
+        if (infoURL != null) jsonObj.put("infoURL", infoURL);
+        if (cytobandURL != null) jsonObj.put("cytobandURL", cytobandURL);
+        if (cytobandBbURL != null) jsonObj.put("cytobandBbURL", cytobandBbURL);
+        if (ordered != null) jsonObj.put("ordered", ordered);
+        if (blatDB != null) jsonObj.put("blatDB", blatDB);
+        if (ucscID != null) jsonObj.put("ucscID", ucscID);
+        if (aliasURL != null) jsonObj.put("aliasURL", aliasURL);
+        if (accession != null) jsonObj.put("accession", accession);
+        if (taxId != null) jsonObj.put("taxId", taxId);
+        if (organism != null) jsonObj.put("organism", organism);
+        if (scientificName != null) jsonObj.put("scientificName", scientificName);
+        if (chromosomeOrder != null) jsonObj.put("chromosomeOrder", chromosomeOrder);
+        jsonObj.put("wholeGenomeView", wholeGenomeView);
+
+        if (hubs != null && !hubs.isEmpty()) jsonObj.put("hubs", hubs);
+
+        if (tracks != null && !tracks.isEmpty()) {
+            List<JSONObject> trackJsons = new ArrayList<>();
+            for (TrackConfig track : tracks) {
+                trackJsons.add(track.toJSON());
+            }
+            jsonObj.put("tracks", trackJsons);
+        }
+
+        return jsonObj;
     }
 
     public GenomeConfig() {
@@ -175,14 +264,14 @@ public class GenomeConfig implements Cloneable {
      * @return
      */
     private static String fixChromosomeOrder(String jsonString) {
-        Map obj = (new Gson()).fromJson(jsonString, Map.class);
-        Object chromosomeOrder = obj.get("chromosomeOrder");
+        JSONObject obj = new JSONObject(jsonString);
+        Object chromosomeOrder = obj.opt("chromosomeOrder");
         if (chromosomeOrder != null) {
             if (chromosomeOrder instanceof String) {
-                obj.put("chromosomeOrder", Arrays.stream(((String) chromosomeOrder).split(",")).map(c -> c.trim()).toArray());
+                obj.put("chromosomeOrder", Arrays.stream(((String) chromosomeOrder).split(",")).map(String::trim).toArray(String[]::new));
             }
         }
-        return (new Gson()).toJson(obj);
+        return obj.toString();
     }
 
     public void removeHub(String url) {
