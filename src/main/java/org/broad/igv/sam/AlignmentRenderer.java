@@ -32,6 +32,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -55,6 +56,7 @@ import org.broad.igv.util.ChromosomeColors;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -300,16 +302,35 @@ public class AlignmentRenderer {
         double locScale = context.getScale();
 
         Color defaultColor = track.getColor();
-        if ((alignments != null) && (alignments.size() > 0)) {
+        
+        List<Alignment> trimmedAlignments = new ArrayList<Alignment>();
+        if(PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX)) {
+
+            for(Alignment al : alignments) {
+                if(al instanceof SAMAlignment) {
+                    Alignment trimmed = al.trimSimplexTails();
+                    if(trimmed.getAlignmentStart() < trimmed.getAlignmentEnd()) {
+                        trimmedAlignments.add(trimmed);
+            }
+                }
+            }
+
+        }
+        else
+        {
+            trimmedAlignments.addAll(alignments);
+        }
+
+        if ((trimmedAlignments != null) && (trimmedAlignments.size() > 0)) {
 
             int lastPixelDrawn = -1;
 
-            for (Alignment alignment : alignments) {
+            for (Alignment alignment : trimmedAlignments) {
                 // Compute the start and end of the alignment in pixels
                 double pixelStart = ((alignment.getStart() - origin) / locScale);
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
-                // If any part of the feature fits in the track rectangle draw  it
+                // If any part of the feature fits in the track rectangle draw it
                 if (pixelEnd < rowRect.x || pixelStart > rowRect.getMaxX()) {
                     continue;
                 }
@@ -918,7 +939,19 @@ public class AlignmentRenderer {
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
-                        ig.setColor(purple);
+                        Color color = purple;
+                        boolean sbxFullDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() && 
+                                SbxUtils.isFullDiscordantInsertion(aBlock);
+                        if(sbxFullDiscordantInsertionRecolor) {
+                            color = SbxUtils.fullDiscordantInsertionColor;
+                        }
+                        else
+                        {
+                            boolean sbxDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() && 
+                                    SbxUtils.isDiscordantInsertion(alignment, aBlock);
+                            color = sbxDiscordantInsertionRecolor ? SbxUtils.discordantInsertionColor : purple;
+                        }
+                        ig.setColor(color);
                         if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(aBlock)) {
                             flowIndelRendering.renderSmallInsertion(alignment, aBlock, context, h, x, y, renderOptions);
                         } else {
@@ -930,6 +963,53 @@ public class AlignmentRenderer {
                         aBlock.setPixelRange(context.translateX + x - pxWing, context.translateX + x + 2 + pxWing);
                     }
                 }
+            }
+        }
+        
+        // draw simplex tails
+        if(renderOptions.isTailQualSbx() && !PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX))
+        {
+            int simplexTailLeftEnd = 0;
+            int alignmentLength = alignment.getEnd() - alignment.getStart();
+            for (; simplexTailLeftEnd < alignmentLength && (alignment.getPhred(alignment.getStart() + simplexTailLeftEnd) <= SAMAlignment.LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailLeftEnd) == 0); simplexTailLeftEnd++) {
+
+            }
+            int simplexTailRightStart = alignmentLength - 1;
+            for(; simplexTailRightStart >= 0 && (alignment.getPhred(alignment.getStart() + simplexTailRightStart) <= SAMAlignment.LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailRightStart) == 0); simplexTailRightStart--);
+            int[] tailStarts = new int[] {};
+            int[] tailEnds = new int[] {};
+            if(simplexTailLeftEnd > 0 && simplexTailRightStart < alignmentLength - 1 && simplexTailRightStart > 0)
+            {
+                tailStarts = new int[] {alignment.getStart(), alignment.getStart() + simplexTailRightStart + 1};
+                tailEnds = new int[] {simplexTailLeftEnd, alignmentLength};
+            }
+            else if(simplexTailLeftEnd != 0)
+            {
+                tailStarts = new int[] {alignment.getStart()};
+                tailEnds = new int[] {simplexTailLeftEnd};
+            }
+            else if(simplexTailRightStart < alignmentLength - 1)
+            {
+                tailStarts = new int[] {alignment.getStart() + simplexTailRightStart + 1};
+                tailEnds = new int[] {alignmentLength};
+            }
+            for(int i = 0; i<tailStarts.length; i++) {
+                int blockChromEnd1 = tailStarts[i];
+                int blockChromEnd2 = alignment.getStart() + tailEnds[i];
+                int blockPxStart = (int) Math.round((blockChromEnd1 - bpStart) / locScale);
+                int blockPxEnd = (int) Math.round((blockChromEnd2 - bpStart) / locScale);
+                gAlignment.setColor(new Color(0, 0, 0, 15));
+                gAlignment.fillRect(blockPxStart, y, blockPxEnd - blockPxStart, h);
+
+                Color tailColor = new Color(150, 50, 200, 20);
+
+                Graphics2D ig = context.getGraphics();
+                ig.setColor(tailColor);
+                ig.fillRect(blockPxStart, y, blockPxEnd - blockPxStart, h);
+
+                Graphics2D foo = context.getGraphics2D("INDEL_LABEL");
+                foo.setColor(tailColor);
+                foo.fillRect(blockPxStart, y, blockPxEnd - blockPxStart, h);
             }
         }
 
@@ -1081,7 +1161,20 @@ public class AlignmentRenderer {
                 pxRight = pxLeft + pxW;
 
         // Draw the label
-        g.setColor(isInsertion ? purple : Color.white);
+        Color alternateColor = purple;
+        boolean sbxFullDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() && 
+                SbxUtils.isFullDiscordantInsertion(insertionBlock);
+        if(sbxFullDiscordantInsertionRecolor) {
+            alternateColor = SbxUtils.fullDiscordantInsertionColor;
+        }
+        else
+        {
+            boolean sbxDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() && 
+                SbxUtils.isDiscordantInsertion(alignment, insertionBlock);
+            alternateColor = sbxDiscordantInsertionRecolor ? SbxUtils.discordantInsertionColor : purple;
+        }
+
+        g.setColor(isInsertion ? alternateColor : Color.white);
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
@@ -1094,7 +1187,7 @@ public class AlignmentRenderer {
         } // draw "wings" For insertions
 
         if (doesTextFit) {
-            g.setColor(isInsertion ? Color.white : purple);
+            g.setColor(isInsertion ? Color.white : alternateColor);
             GraphicUtils.drawCenteredText(labelText, pxLeft, pxTop, pxW, pxH, g);
         } // draw the text if it fits
 

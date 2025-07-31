@@ -119,6 +119,9 @@ final public class Constants {
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
     public static final String SAM_INDEL_QUAL_COLORING = "SAM.INDEL_QUAL_COLORING";
     public static final String SAM_INDEL_QUAL_USES_MIN = "SAM.INDEL_QUAL_USES_MIN";
+    public static final String SAM_TAIL_QUAL_SBX = "SAM.TAIL_QUAL_SBX";
+    public static final String SAM_INDEL_QUAL_SBX = "SAM.INDEL_QUAL_SBX";
+    public static final String SAM_HIDE_TAIL_SBX = "SAM.HIDE_TAIL_SBX";
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_INSERT_QUAL_COLORING = "SAM.INSERT_QUAL_COLORING";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
