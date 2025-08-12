@@ -867,10 +867,13 @@ public class Genome {
      * @param maxSize max size in bytes
      */
     private static boolean fileSizeIsOk(String path, long maxSize) throws IOException {
-        final long contentLength = FileUtils.isRemote(path)
-                ? HttpUtils.getInstance().getContentLength(new URL(path))
-                : Files.size(Paths.get(path));
-        return contentLength > 0 && contentLength <= maxSize;
+        if(FileUtils.isRemote(path)){
+            final long contentLength = HttpUtils.getInstance().getContentLength(new URL(path));
+            return contentLength > 0 && contentLength <= maxSize;
+        } else {
+            //no need to check file size for local files
+            return true;
+        }
     }
     
     
