@@ -56,6 +56,7 @@ import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
@@ -65,8 +66,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
@@ -156,8 +158,7 @@ public class Genome {
         // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wg view are disabled.
         List<Chromosome> chromosomeList = null;
         if (config.chromSizesURL != null) {
-            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.chromSizesURL));
-            if (contentLength > 0 && contentLength < 100000) {
+            if(fileSizeIsOk(config.chromSizesURL, 100_000)) {
                 chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
             }
         }
@@ -219,15 +220,12 @@ public class Genome {
             cytobandSource = new CytobandMap(config.getCytobands());    // Directly supplied, from .genome file
         } else if (config.cytobandBbURL != null) {
             // The cytoband BB file can be enormous if there are many chromosomes, and is usually not informative in that case
-            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.cytobandBbURL));
-            if (contentLength > 0 && contentLength < 1000000) {
+            if(fileSizeIsOk(config.cytobandBbURL, 1_000_000)) {
                 cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
             }
-
         }
         if (cytobandSource == null && config.cytobandURL != null) {
-            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.cytobandURL));
-            if (contentLength > 0 && contentLength < 100000) {
+            if(fileSizeIsOk(config.cytobandURL, 100_000)){
                 cytobandSource = new CytobandMap(config.cytobandURL);
             }
         }
@@ -236,10 +234,7 @@ public class Genome {
         if (config.aliasURL != null) {
             chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
         } else if (config.chromAliasBbURL != null) {
-
-            long contentLength = HttpUtils.getInstance().getContentLength(new URL(config.chromAliasBbURL));
-
-            if(contentLength > 0 && contentLength < 1000000) {
+            if(fileSizeIsOk(config.chromAliasBbURL, 1_000_000)) {
                 chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
                 if (chromosomeNames != null && !chromosomeNames.isEmpty()) {
                         ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
@@ -864,6 +859,21 @@ public class Genome {
 
     public FeatureDB getFeatureDB() {
         return featureDB;
+    }
+
+    /* check that a file is not empty or too large.
+     *
+     * @param path local file path or remote file URL
+     * @param maxSize max size in bytes
+     */
+    private static boolean fileSizeIsOk(String path, long maxSize) throws IOException {
+        if(FileUtils.isRemote(path)){
+            final long contentLength = HttpUtils.getInstance().getContentLength(new URL(path));
+            return contentLength > 0 && contentLength <= maxSize;
+        } else {
+            //no need to check file size for local files
+            return true;
+        }
     }
     
     
