@@ -638,14 +638,10 @@ public class Genome {
     }
 
     /**
-     * Return the reference base at the given position.  Can return null if reference sequence is unknown
-     *
-     * @param chr
-     * @param pos
-     * @return the reference base, or null if unknown
-     */
+     * Return the reference base at the given position.
+     * */
     public byte getReference(String chr, int pos) {
-        return sequence == null ? null : sequence.getBase(chr, pos);
+        return sequence.getBase(chr, pos);
     }
 
 
