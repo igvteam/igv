@@ -35,7 +35,6 @@ package org.broad.igv.feature.genome;
 
 
 import org.broad.igv.DirectoryManager;
-import org.broad.igv.Globals;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
@@ -222,7 +221,7 @@ public class GenomeManager {
             IGV.getInstance().resetFrames();
             IGV.getInstance().getSession().clearHistory();
 
-            if (newGenome != Genome.nullGenome()) {
+            if (newGenome != Genome.NULL_GENOME) {
                 // This should only occur on startup failure
                 PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
             }

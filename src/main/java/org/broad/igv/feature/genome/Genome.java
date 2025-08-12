@@ -66,7 +66,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
@@ -75,20 +74,29 @@ import java.util.stream.Collectors;
 public class Genome {
 
     private static final int MAX_WHOLE_GENOME_LONG = 100;
-    private static Logger log = LogManager.getLogger(Genome.class);
-    public static Genome nullGenome = null;
+    private static final Logger log = LogManager.getLogger(Genome.class);
+    public static final Genome NULL_GENOME = new Genome("None", List.of(new Chromosome(0, "", 0)));
 
-    private String id;
-    private String displayName;
+    // Map some common IGV genome IDs to UCSC equivalents.  Primarily for BLAT usage
+    private static final Map<String, String> ucsdIDMap = Map.of(
+            "1kg_ref", "hg18",
+            "1kg_v37", "hg19",
+            "b37", "hg19"
+    );
+
+    private final String id;
+    private final String displayName;
+
+    private final Map<String, Chromosome> chromosomeMap;
+    private final Map<String, Long> cumulativeOffsets = new HashMap<>();
+    private final Sequence sequence;
+    private final List<Hub> trackHubs;
+
+    private long nominalLength = -1;
     private List<String> chromosomeNames;
     private List<String> longChromosomeNames;
-    private Map<String, Chromosome> chromosomeMap;
-    private long totalLength = -1;
-    private long nominalLength = -1;
-    private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasCache = new HashMap<>();
     private ChromAliasSource chromAliasSource;
-    private Sequence sequence;
     private FeatureTrack geneTrack;
     private String species;
     private String ucscID;
@@ -101,16 +109,8 @@ public class Genome {
     private String defaultPos;
     private String nameSet;
     private Hub genomeHub;
-    private List<Hub> trackHubs;
     private GenomeConfig config;
     private FeatureDB featureDB;
-
-    public synchronized static Genome nullGenome() {
-        if (nullGenome == null) {
-            nullGenome = new Genome("None", Arrays.asList(new Chromosome(0, "", 0)));
-        }
-        return nullGenome;
-    }
 
     public Genome(GenomeConfig config) throws IOException {
         this.config = config;
@@ -121,11 +121,7 @@ public class Genome {
         featureDB = new FeatureDB(this);
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
-        if (config.ucscID == null) {
-            ucscID = ucsdIDMap.containsKey(id) ? ucsdIDMap.get(id) : id;
-        } else {
-            ucscID = config.ucscID;
-        }
+        ucscID = config.ucscID == null ? ucsdIDMap.getOrDefault(id, id) : config.ucscID;
         blatDB = (config.blatDB != null) ? config.blatDB : ucscID;
         defaultPos = config.defaultPos;
 
@@ -163,7 +159,7 @@ public class Genome {
         }
 
         if (chromosomeList == null) {
-            if (sequence != null && sequence.hasChromosomes()) {
+            if (sequence.hasChromosomes()) {
                 chromosomeList = sequence.getChromosomes();
             } else if (config.indexURL != null) {
                 try {
@@ -197,7 +193,7 @@ public class Genome {
                 }
             }
             // If whole genome chromosomes are not explicitly specified try to infer them.
-            if (this.longChromosomeNames == null && config.wholeGenomeView != false) {
+            if (this.longChromosomeNames == null && config.wholeGenomeView) {
                 this.longChromosomeNames = computeLongChromosomeNames();
             }
         } else {
@@ -275,7 +271,7 @@ public class Genome {
             // Set a "genomeHub", which by convention is the first
             // hub listed.
             if (trackHubs.size() > 0) {
-                genomeHub = trackHubs.iterator().next();
+                genomeHub = trackHubs.getFirst();
             }
         }
 
@@ -554,7 +550,7 @@ public class Genome {
         }
 
 
-        String c = wgChrNames.get(wgChrNames.size() - 1);
+        String c = wgChrNames.getLast();
         int bp = (int) (genomeKBP - cumOffset) * 1000;
         return new ChromosomeCoordinate(c, bp);
     }
@@ -678,7 +674,7 @@ public class Genome {
      * @return
      */
     public List<String> getLongChromosomeNames() {
-        return longChromosomeNames == null ? Collections.EMPTY_LIST : longChromosomeNames;
+        return longChromosomeNames == null ? Collections.emptyList() : longChromosomeNames;
     }
 
     public long getWGLength() {
@@ -726,16 +722,6 @@ public class Genome {
             }
         }
         return null;
-    }
-
-    // Map some common IGV genome IDs to UCSC equivalents.  Primarily for BLAT usage
-    private static Map<String, String> ucsdIDMap;
-
-    static {
-        ucsdIDMap = new HashMap<>();
-        ucsdIDMap.put("1kg_ref", "hg18");
-        ucsdIDMap.put("1kg_v37", "hg19");
-        ucsdIDMap.put("b37", "hg19");
     }
 
     public void setAnnotationResources(List<ResourceLocator> annotationResources) {
