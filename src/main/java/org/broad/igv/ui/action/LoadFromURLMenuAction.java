@@ -166,7 +166,9 @@ public class LoadFromURLMenuAction extends MenuAction {
                 final String indexUrl = indexes.get(i);
                 rl.setIndexPath(indexUrl);
             }
-            rl.setHtsget(isHtsGet);
+            if(isHtsGet) {
+                rl.setHtsget(true);  // Do not override setting if isHtsGet is false.  False means htsget status is unknown.
+            }
             locators.add(rl);
         }
         return locators;
