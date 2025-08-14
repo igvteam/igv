@@ -232,15 +232,18 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else {
+            } else if(!locator.isHtsget()){
 
-                // Try overriding format
                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
-                if (determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
-                    locator.setFormat(determinedFormat);
-                    return load(locator, genome);
+                if (determinedFormat != null) {
+                    if ("htsget".equals(determinedFormat)) {
+                        locator.setHtsget(true);
+                        return load(locator, genome);
+                    } else if (!determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
+                        locator.setFormat(determinedFormat);
+                        return load(locator, genome);
+                    }
                 }
-
 
                 // If the file is too large, give up
                 final int tenMB = 10000000;

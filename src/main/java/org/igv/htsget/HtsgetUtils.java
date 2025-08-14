@@ -47,6 +47,15 @@ public static Metadata getMetadata(final String url) throws IOException {
         return new URL(urlBase + separator + queryString);
     }
 
+    public static boolean isHtsget(byte[] response) {
+        try {
+            String content = new String(response);
+            return (content.startsWith("{") && content.contains("\"htsget\""));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static class Metadata {
         private final String url;
         private final String format;
