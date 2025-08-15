@@ -72,7 +72,7 @@ public class SbxUtils {
      * Returns true if one of the bases adjacent to the insertion block is discordant
      */
     public static boolean hasAdjacentDiscordantBase(Alignment alignment, AlignmentBlock aBlock) {
-        double position = aBlock.getStart(); // Genome position immediately after insertion
+        int position = (int)aBlock.getStart(); // Genome position immediately after insertion
         if(alignment.getBase(position) != 0 && alignment.getPhred(position) <= DISCORDANT_BASE_QUALITY_MAX) {
             return true;
         }
