@@ -54,7 +54,7 @@ public class SbxUtils {
                 return false;
             }
         }
-        double position = aBlock.getStart() - 1;
+        int position = aBlock.getStart() - 1;
         while (position >= 0 && alignment.getBase(position) == base) {
             position--;
         }
