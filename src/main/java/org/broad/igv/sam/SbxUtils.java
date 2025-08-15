@@ -55,11 +55,11 @@ public class SbxUtils {
             }
         }
         double position = aBlock.getStart() - 1;
-        while (alignment.getBase(position) == base) {
+        while (position >= 0 && alignment.getBase(position) == base) {
             position--;
         }
         position++;
-        while (alignment.getBase(position) == base) {
+        while (position < alignment.getReadSequence().length() && alignment.getBase(position) == base) {
             if (alignment.getPhred(position) <= DISCORDANT_BASE_QUALITY_MAX) {
                 return true;
             }

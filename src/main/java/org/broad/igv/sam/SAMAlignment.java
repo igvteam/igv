@@ -516,28 +516,29 @@ public class SAMAlignment implements Alignment {
                 if(consumesRef) {
                     if(curEnd <= start) {
                         res.setStart(res.getStart() + length);
-                        }
+                    }
                     else {
                         res.setEnd(res.getEnd() - length);  
                     }
                 }
                 continue;
              } else {
-                int truncated = Math.max(0, start - curStart) + Math.max(0, curEnd - end - 1);
-                int newLength = length - truncated;
+                int truncatedLeft = Math.max(0, start - curStart);
+                int truncatedRight = Math.max(0, curEnd - (end + 1));
+                int newLength = length - truncatedLeft - truncatedRight;
                 if(newLength > 0) {
                     newCigarString.append(newLength);
                     newCigarString.append(type);
                 }
                 if(consumesRef) {
-                    res.setStart(res.getStart() + Math.max(0, start - curStart));
-                    res.setEnd(res.getEnd() - Math.max(0, curEnd - end));  
+                    res.setStart(res.getStart() + truncatedLeft);
+                    res.setEnd(res.getEnd() - truncatedRight);
                 }
                 readStart = curEnd;
             }
         }
         res.record.setCigarString(newCigarString.toString());
-        res.record.setAlignmentStart(1+res.getStart());
+        res.record.setAlignmentStart(1 + res.getStart());
         res.createAlignmentBlocks();
         trimmed = res;
         return res;

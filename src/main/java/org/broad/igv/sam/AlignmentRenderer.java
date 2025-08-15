@@ -311,7 +311,7 @@ public class AlignmentRenderer {
                     Alignment trimmed = al.trimSimplexTails();
                     if(trimmed.getAlignmentStart() < trimmed.getAlignmentEnd()) {
                         trimmedAlignments.add(trimmed);
-            }
+                    }
                 }
             }
 
