@@ -75,6 +75,7 @@ public class SAMAlignment implements Alignment {
     public static final char ZERO_GAP = 'O';
     public static final char UNKNOWN = 0;
     public static final String REDUCE_READS_TAG = "RR";
+    public static final int LOW_BASEQ_TAIL_THRESHOLD = 30;
 
     private static final int READ_PAIRED_FLAG = 0x1;
     private static final int PROPER_PAIR_FLAG = 0x2;
@@ -88,6 +89,7 @@ public class SAMAlignment implements Alignment {
     private static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
     private static final int DUPLICATE_READ_FLAG = 0x400;
     private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
+    private SAMAlignment trimmed;
 
     private SAMReadGroupRecord readGroupRecord;
 
@@ -184,6 +186,51 @@ public class SAMAlignment implements Alignment {
         setPairStrands();
         createAlignmentBlocks();
     }
+    
+    public SAMAlignment(SAMRecord record, boolean skipBlocks) {
+
+        this.record = record;
+        this.flags = record.getFlags();
+
+        String refName = record.getReferenceName();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        this.chr = genome == null ? refName : genome.getCanonicalChrName(refName);
+
+        // SAMRecord is 1 based inclusive.  IGV is 0 based exclusive.
+        this.end = record.getAlignmentEnd();   // might be modified later for soft clipping
+        this.start = record.getAlignmentStart() - 1;   // might be modified later for soft clipping
+
+        if (record.getReadPairedFlag()) {
+            String mateReferenceName = record.getMateReferenceName();
+            String mateChr = genome == null ? mateReferenceName : genome.getCanonicalChrName(mateReferenceName);
+            this.setMate(new ReadMate(mateChr,
+                    record.getMateAlignmentStart() - 1,
+                    record.getMateNegativeStrandFlag(),
+                    record.getMateUnmappedFlag()));
+        }
+
+        SAMFileHeader header = record.getHeader();
+        if (header != null) {
+            String readGroup = (String) record.getAttribute("RG");
+            if (readGroup != null) {
+                this.readGroupRecord = header.getReadGroup(readGroup);
+
+            }
+        }
+
+        Object colorTag = record.getAttribute("YC");
+        if (colorTag != null) {
+            try {
+                ycColor = ColorUtilities.stringToColor(colorTag.toString(), null);
+            } catch (Exception e) {
+                log.error("Error interpreting color tag: " + colorTag, e);
+            }
+        }
+
+        setPairOrientation();
+        setPairStrands();
+        if(!skipBlocks) createAlignmentBlocks();
+    }   
 
     public SAMRecord getRecord() {
         return this.record;
@@ -415,6 +462,87 @@ public class SAMAlignment implements Alignment {
         }
         return baseModificationSets;
     }
+    
+    public SAMAlignment trimSimplexTails() {
+        if(trimmed != null) return trimmed;
+        SAMAlignment res = new SAMAlignment(record.deepCopy(), true);
+        String cigarString = record.getCigarString();
+        byte[] readBases = record.getReadBases();
+        byte[] readBaseQualities = record.getBaseQualities();
+        int start, end;
+        for(start = 0; start < readBases.length && (int)readBaseQualities[start] <= LOW_BASEQ_TAIL_THRESHOLD; start++);
+        for(end = readBases.length - 1; end >= 0 && (int)readBaseQualities[end] <= LOW_BASEQ_TAIL_THRESHOLD; end--);
+
+        if(start == 0 && end == readBases.length - 1)
+        {
+            res.createAlignmentBlocks();
+            trimmed = res;
+            return res;
+        }
+        else if(start > end) {
+            res.record.setReadBases(new byte[0]);
+            res.record.setBaseQualities(new byte[0]);
+            res.record.setCigarString("");
+            res.end = res.start;
+            res.createAlignmentBlocks();
+            trimmed = res;
+            return res;
+        }
+        byte[] newReadBases = new byte[end - start + 1], newBaseQuals = new byte[end - start + 1];
+        for(int i = 0; i<newReadBases.length; i++)
+        {
+            newReadBases[i] = readBases[start + i];
+            newBaseQuals[i] = readBaseQualities[start + i];
+        }
+        java.util.List<CigarOperator> operators = buildOperators(cigarString);
+        res.record.setReadBases(newReadBases);
+        res.record.setBaseQualities(newBaseQuals);
+
+        StringBuilder newCigarString = new StringBuilder();
+        int readStart = 0;
+        for(CigarOperator op : operators) {
+            int length = op.nBases;
+            char type = op.operator;
+            int curStart = readStart;
+            int curEnd = curStart;
+            boolean consumesQuery = type == INSERTION || type == MISMATCH || type == MATCH || type == PERFECT_MATCH || type == SOFT_CLIP;
+            boolean consumesRef = type == DELETION || type == MISMATCH || type == MATCH || type == PERFECT_MATCH || type == SKIPPED_REGION;
+            if(consumesQuery) {
+                curEnd += op.nBases;
+            }
+            if(curEnd <= start || curStart > end) {
+                // Operation fully in tail, so ignore
+                readStart = curEnd;
+                if(consumesRef) {
+                    if(curEnd <= start) {
+                        res.setStart(res.getStart() + length);
+                    }
+                    else {
+                        res.setEnd(res.getEnd() - length);  
+                    }
+                }
+                continue;
+             } else {
+                int truncatedLeft = Math.max(0, start - curStart);
+                int truncatedRight = Math.max(0, curEnd - (end + 1));
+                int newLength = length - truncatedLeft - truncatedRight;
+                if(newLength > 0) {
+                    newCigarString.append(newLength);
+                    newCigarString.append(type);
+                }
+                if(consumesRef) {
+                    res.setStart(res.getStart() + truncatedLeft);
+                    res.setEnd(res.getEnd() - truncatedRight);
+                }
+                readStart = curEnd;
+            }
+        }
+        res.record.setCigarString(newCigarString.toString());
+        res.record.setAlignmentStart(1 + res.getStart());
+        res.createAlignmentBlocks();
+        trimmed = res;
+        return res;
+    }
 
     public SMRTKinetics getSmrtKinetics() {
         if (smrtKinetics == null) {
@@ -488,6 +616,7 @@ public class SAMAlignment implements Alignment {
      */
     private void createAlignmentBlocks() {
 
+        gaps = null;
         String cigarString = record.getCigarString();
         byte[] readBases = record.getReadBases();
         byte[] readBaseQualities = record.getBaseQualities();
@@ -732,15 +861,20 @@ public class SAMAlignment implements Alignment {
                         continue;
                     }
                     ByteSubarray bases = block.getBases();
+                    ByteSubarray quals = block.getQualities();
                     if (bases == null) {
                         buf.append("Insertion: " + block.getLength() + " bases<br>");
                     } else {
                         if (bases.length < 50) {
                             buf.append("Insertion (" + bases.length + " bases): " + bases.getString() + "<br>");
+                            String qualString = SbxUtils.qualityString(quals.getString());
+                            buf.append("Qualities: " + qualString + "<br>");
                         } else {
                             int len = bases.length;
                             buf.append("Insertion (" + bases.length + " bases): " + new String(bases.copyOfRange(0, 25)) + "..." +
                                     new String(bases.copyOfRange(len - 25, len)) + "<br>");
+                            buf.append("Qualities: " + SbxUtils.qualityString(new String(quals.copyOfRange(0, 25))) + "..." + 
+                                    SbxUtils.qualityString(new String(quals.copyOfRange(len - 25,  len))) + "<br>");
                         }
 
                         // extended annotation?

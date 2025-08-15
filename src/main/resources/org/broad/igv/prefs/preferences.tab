@@ -170,6 +170,11 @@ SAM.INSERT_SIZE_THRESHOLD	Default maximum (bp)	float	1000
 SAM.INDEL_QUAL_COLORING	INDEL coloring enabled (ultima)	boolean	TRUE
 SAM.INDEL_QUAL_USES_MIN	INDEL coloring uses min quality (ultima)	boolean	FALSE
 
+##SBX Options
+SAM.INDEL_QUAL_SBX	INDEL coloring uses grey (SBX)	boolean	FALSE
+SAM.TAIL_QUAL_SBX	Low-quality tail coloring (SBX)	boolean	FALSE
+SAM.HIDE_TAIL_SBX	Hide low-quality tails (SBX)	boolean	FALSE
+
 #RNA	RNA
 info Settings below override defaults for RNA alignments.
 
