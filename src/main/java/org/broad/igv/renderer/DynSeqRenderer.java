@@ -1,6 +1,5 @@
 package org.broad.igv.renderer;
 
-import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -28,37 +27,30 @@ public class DynSeqRenderer extends XYPlotRenderer {
     @Override
     protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, RenderContext context) {
 
-        if (dx <= 1) {
+        int pixelsPerBP = (int) (1.0 / context.getReferenceFrame().getScale());
+
+        if (pixelsPerBP < 5) {
             context.getGraphic2DForColor(graphColor).drawLine(pX, baseY, pX, pY);
         } else {
-            if (pY > baseY) {
-                context.getGraphic2DForColor(graphColor).fillRect(pX, baseY, dx, pY - baseY);
-
-            } else {
-                context.getGraphic2DForColor(graphColor).fillRect(pX, pY, dx, baseY - pY);
-            }
+            renderDynSeq(context.getGraphics(), pixelsPerBP, pX, baseY, pY, 'C');
         }
         //}
     }
 
 
-    private void renderDynSeq(Graphics2D ctx, int x, int width, int y, int y0, int pixelHeight, char base) {
+    private void renderDynSeq(Graphics2D ctx, int dx, int pX, int baseY, int pY, char base) {
 
         // Calculate rectangle position and height based on the wig value
-        int rectY = y;
-        int rectHeight = pixelHeight;
+        int rectY = Math.min(baseY, pY);
+        int rectHeight = Math.abs(pY - baseY);
 
-        // Render each base in the sequence
-        double baseWidth = width;
-        boolean isNegative = false; //feature.getValue() < 0;
-        int baseX = x;
-
+        boolean isNegative = pY > baseY;
 
         // Get nucleotide color from browser's color scheme
         Color nucleotideColor = nucleotideColors.getOrDefault(base, Color.GRAY);
 
         // Draw the base as a letter-shaped glyph
-        drawLetterGlyph(ctx, base, baseX, rectY, (int) baseWidth, rectHeight, nucleotideColor, isNegative);
+        drawLetterGlyph(ctx, base, pX, rectY, (int) dx, rectHeight, nucleotideColor, isNegative);
 
 
         // Draw overflow indicators if needed
