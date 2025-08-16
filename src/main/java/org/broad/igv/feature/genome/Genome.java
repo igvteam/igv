@@ -159,7 +159,7 @@ public class Genome {
         }
 
         if (chromosomeList == null) {
-            if (sequence.hasChromosomes()) {
+            if (sequence != null && sequence.hasChromosomes()) {
                 chromosomeList = sequence.getChromosomes();
             } else if (config.indexURL != null) {
                 try {
@@ -198,7 +198,7 @@ public class Genome {
             }
         } else {
             // No chromosome list.  Try to fetch chromosome names from the sequence
-            if (this.chromosomeNames.isEmpty()) {
+            if (this.chromosomeNames.isEmpty() && sequence != null) {
                 this.chromosomeNames = sequence.getChromosomeNames();
             }
         }
@@ -641,7 +641,7 @@ public class Genome {
      * Return the reference base at the given position.
      * */
     public byte getReference(String chr, int pos) {
-        return sequence.getBase(chr, pos);
+        return sequence == null ? 0 : sequence.getBase(chr, pos);
     }
 
 
