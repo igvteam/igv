@@ -152,7 +152,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         if (IGV.hasInstance()) {
 
-            if (GenomeManager.getInstance().getCurrentGenome() == Genome.nullGenome) {
+            if (GenomeManager.getInstance().getCurrentGenome() == Genome.NULL_GENOME) {
                 UIUtilities.invokeOnEventThread(() -> {
                     searchTextField.setText("");
                 });
