@@ -1,8 +1,11 @@
 package org.broad.igv.htsget;
 
 import com.google.gson.*;
+import htsjdk.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipUtils;
 import org.broad.igv.util.HttpUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -37,7 +40,16 @@ class HtsgetReader {
         String ticketString = HttpUtils.getInstance().getContentsAsJSON(headerURL);
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
-        return loadURLs(ticket);
+
+        // The UMCCR htsget server returns a bgzipped header for VCF format. Arguably a server bug, but we handle it here by decompressing the header if necessary.
+
+        byte [] bytes =  loadURLs(ticket);
+        if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
+            BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
+            return bis.readAllBytes();
+        } else {
+            return bytes;
+        }
     }
 
     byte[] readData(String chr, int start, int end) throws IOException {

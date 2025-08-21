@@ -1,5 +1,6 @@
 package org.broad.igv.htsget;
 
+import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
@@ -13,6 +14,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.VCFWrapperCodec;
 import org.broad.igv.track.FeatureSource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -58,7 +60,16 @@ public class HtsgetVariantSource implements FeatureSource {
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
 
         String queryChr = chrAliasMap.containsKey(chr) ? chrAliasMap.get(chr) : chr;
-        String data = new String(htsgetReader.readData(queryChr, start + 1, end));
+
+        // The umccr htsget server returns bgzipped data for VCF format.  Arguably a server bug, but we
+        // can handle it here.
+        byte [] bytes = htsgetReader.readData(queryChr, start + 1, end);
+        if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
+            BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
+            bytes = bis.readAllBytes();
+        }
+
+        String data = new String(bytes);
         String[] lines = data.split("\\R");
 
         VCFWrapperCodec wrapperCodec = new VCFWrapperCodec(this.codec, this.genome);

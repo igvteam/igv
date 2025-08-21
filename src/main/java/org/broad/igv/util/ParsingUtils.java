@@ -145,7 +145,7 @@ public class ParsingUtils {
         }
     }
 
-    private static boolean isGzip(BufferedInputStream bis) throws IOException {
+    public static boolean isGzip(BufferedInputStream bis) throws IOException {
         bis.mark(2);
         byte[] signature = new byte[2];
         int read = bis.read(signature);
