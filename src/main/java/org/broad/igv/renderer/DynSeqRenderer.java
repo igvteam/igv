@@ -57,7 +57,6 @@ public class DynSeqRenderer extends XYPlotRenderer {
                 renderDynSeq(context.getGraphics(), pixelsPerBP, pX, baseY, pY, base);
             }
         }
-        //}
     }
 
 
