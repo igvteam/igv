@@ -58,8 +58,6 @@ public class HtsgetBAMReaderTest {
             count++;
         }
 
- //       System.out.println(alignmentList.size());
-
         assertTrue("No data retrieved", alignmentList.size() > 0);
     }
 
