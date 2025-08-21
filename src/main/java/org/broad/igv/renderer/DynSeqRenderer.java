@@ -44,7 +44,7 @@ public class DynSeqRenderer extends XYPlotRenderer {
         int pixelsPerBP = (int) (1.0 / context.getReferenceFrame().getScale());
 
         if (pixelsPerBP < 2) {
-            barChartRenderer.drawDataPoint(graphColor, dx, pX, pY, baseY, score, context);
+            barChartRenderer.drawDataPoint(graphColor, dx, pX, baseY, pY, score, context);
         } else {
             String chr = context.getChr();
             double origin = context.getReferenceFrame().getOrigin();
