@@ -49,7 +49,8 @@ public class RendererFactory {
         HEATMAP,
         MUTATION,
         SCATTER_PLOT,
-        LINE_PLOT
+        LINE_PLOT,
+        DYNSEQ
     }
 
     static Class defaultRendererClass = BarChartRenderer.class;
@@ -79,6 +80,8 @@ public class RendererFactory {
         } else if (typeName.equals(RendererType.LINE_PLOT.name()) ||
                 typeName.toUpperCase().equals("LINE")) {
             return LineplotRenderer.class;
+        } else if (typeName.equals(RendererType.DYNSEQ.name()))  {
+            return DynSeqRenderer.class;
         }
         return null;
 
@@ -108,6 +111,8 @@ public class RendererFactory {
             rendererType = RendererType.SCATTER_PLOT;
         } else if (rendererClass.equals(LineplotRenderer.class)) {
             rendererType = RendererType.LINE_PLOT;
+        } else if (rendererClass.equals(DynSeqRenderer.class)) {
+            rendererType = RendererType.DYNSEQ;
         }
         return rendererType;
     }

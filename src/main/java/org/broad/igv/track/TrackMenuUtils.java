@@ -231,9 +231,9 @@ public class TrackMenuUtils {
 
             // The "Points" renderer cannot be used with
 
-            final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot"};
+            final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot", "DynSeq"};
             final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
-                    PointsRenderer.class, LineplotRenderer.class
+                    PointsRenderer.class, LineplotRenderer.class, DynSeqRenderer.class
             };
 
             JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);

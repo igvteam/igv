@@ -33,6 +33,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -52,7 +53,7 @@ public class PointsRenderer extends XYPlotRenderer {
         this.pointsSize = pointsSize;
     }
 
-    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, RenderContext context) {
+    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, LocusScore score, RenderContext context) {
         if (context.getScale() < 4) {
             pointsSize = 4;
         } else {
