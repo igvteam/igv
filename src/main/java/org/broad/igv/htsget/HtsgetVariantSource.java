@@ -63,7 +63,7 @@ public class HtsgetVariantSource implements FeatureSource {
 
         // The umccr htsget server returns bgzipped data for VCF format.  Arguably a server bug, but we
         // can handle it here.
-        byte [] bytes = htsgetReader.readData(queryChr, start + 1, end);
+        byte[] bytes = htsgetReader.readData(queryChr, start + 1, end);
         if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
             BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
             bytes = bis.readAllBytes();
@@ -111,7 +111,16 @@ public class HtsgetVariantSource implements FeatureSource {
     public Object getHeader() {
         try {
             if (header == null) {
-                String headerText = new String(htsgetReader.readHeader());
+
+                // The UMCCR htsget server returns a bgzipped header for VCF format. Arguably a server bug,
+                // but we handle it here by decompressing the header if necessary.
+                byte[] bytes = htsgetReader.readHeader();
+                if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
+                    BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
+                    bytes = bis.readAllBytes();
+                }
+                String headerText = new String(bytes);
+
                 LineIterator iter = new LineIteratorImpl(new StringLineReader(headerText));
                 header = (VCFHeader) codec.readActualHeader(iter);
 
