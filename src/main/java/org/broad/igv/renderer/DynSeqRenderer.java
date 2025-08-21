@@ -80,7 +80,6 @@ public class DynSeqRenderer extends XYPlotRenderer {
 //            IGVGraphics.fillRect(ctx, x, 0, width, 3, overflowColor);
 //        } else if (feature.getValue() < dataRange.getMin()) {
 //            IGVGraphics.fillRect(ctx, x, pixelHeight - 2, width, 3, overflowColor);
-//        }
     }
 
 
