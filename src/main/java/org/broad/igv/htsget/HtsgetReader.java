@@ -41,7 +41,7 @@ class HtsgetReader {
         JsonParser parser = new JsonParser();
         JsonObject ticket = parser.parse(ticketString).getAsJsonObject();
 
-        // The UMCCR htsget server returns a bgzipped header for VCF format.  Arguably a server bug, but we
+        // The UMCCR htsget server returns a bgzipped header for VCF format. Arguably a server bug, but we handle it here by decompressing the header if necessary.
 
         byte [] bytes =  loadURLs(ticket);
         if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
