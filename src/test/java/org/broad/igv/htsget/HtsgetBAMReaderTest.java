@@ -31,10 +31,10 @@ public class HtsgetBAMReaderTest {
      *
      * @throws Exception
      */
-    @Test @Ignore
+    @Test
     public void testQueryAlignments() throws Exception {
 
-        String url = "https://htsget.demo.umccr.org/reads/org.umccr.demo.htsget-rs-data/bam/htsnexus_test_NA12878";
+        String url = "https://htsget.ga4gh-demo.org/reads/htsnexus_test_NA12878";
         String chr = "11";
         int start = 5020134;
         int end = 5020614;
@@ -57,8 +57,6 @@ public class HtsgetBAMReaderTest {
             }
             count++;
         }
-
- //       System.out.println(alignmentList.size());
 
         assertTrue("No data retrieved", alignmentList.size() > 0);
     }
