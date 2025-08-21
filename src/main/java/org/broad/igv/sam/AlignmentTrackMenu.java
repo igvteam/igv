@@ -72,7 +72,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         add(popupTitle);
 
         // Circular view items -- optional
-        if (PreferencesManager.getPreferences().getAsBoolean(CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+        if (CircularViewUtilities.ping()) {
             addSeparator();
             JMenuItem item = new JMenuItem("Add Discordant Pairs to Circular View");
             item.setEnabled(alignmentTrack.getDataManager().isPairedEnd());

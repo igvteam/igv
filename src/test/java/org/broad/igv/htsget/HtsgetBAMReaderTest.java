@@ -31,10 +31,10 @@ public class HtsgetBAMReaderTest {
      *
      * @throws Exception
      */
-    @Test @Ignore
+    @Test
     public void testQueryAlignments() throws Exception {
 
-        String url = "https://htsget.demo.umccr.org/reads/org.umccr.demo.htsget-rs-data/bam/htsnexus_test_NA12878";
+        String url = "https://htsget.ga4gh-demo.org/reads/htsnexus_test_NA12878";
         String chr = "11";
         int start = 5020134;
         int end = 5020614;
@@ -63,6 +63,37 @@ public class HtsgetBAMReaderTest {
         assertTrue("No data retrieved", alignmentList.size() > 0);
     }
 
+    @Test
+    public void testQueryAlignments2() throws Exception {
+
+        String url = "https://htsget-rs.umccr.workers.dev/reads/bam/mt.sorted";
+        String chr = "chrM";
+        int start = 4824;
+        int end = 10504;
+
+        ResourceLocator locator = new ResourceLocator(url);
+        locator.setHtsget(true);
+
+        BAMReader bamreader = new BAMReader(locator, false);
+        CloseableIterator<SAMAlignment> bamiter = bamreader.query(chr, start, end, true);
+
+        int count = 0;
+        List<Alignment> alignmentList = new ArrayList<>();
+        while (bamiter.hasNext()) {
+            Alignment bamrecord = bamiter.next();
+            if (bamrecord.getEnd() > start && bamrecord.getStart() < end &&
+                    bamrecord.isVendorFailedRead() == false &&
+                    bamrecord.isMapped()
+            ) {
+                alignmentList.add(bamrecord);
+            }
+            count++;
+        }
+
+        //       System.out.println(alignmentList.size());
+
+        assertTrue("No data retrieved", alignmentList.size() > 0);
+    }
 
 //    public static void main(String [] args) throws Exception {
 //        (new HtsgetBAMReaderTest()).testQueryAlignments();

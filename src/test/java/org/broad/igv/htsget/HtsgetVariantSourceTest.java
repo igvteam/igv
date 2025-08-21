@@ -10,13 +10,13 @@ import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
-@Ignore   // Problems with reference server?
+@Ignore
 public class HtsgetVariantSourceTest {
 
     @Test
     public void testGetHeader() throws Exception {
 
-        String url = "https://htsget.ga4gh.org/variants/giab.NA12878";
+        String url = "https://htsget.ga4gh-demo.org/variants/spec-v4.3";
         Genome genome = null;
         HtsgetUtils.Metadata metadata =  HtsgetUtils.getMetadata(url);
         HtsgetVariantSource source = new HtsgetVariantSource(metadata, genome);
