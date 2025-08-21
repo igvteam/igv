@@ -44,7 +44,7 @@ class HtsgetReader {
         // The UMCCR htsget server returns a bgzipped header for VCF format.  Arguably a server bug, but we
 
         byte [] bytes =  loadURLs(ticket);
-        if((bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B)) {
+        if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
             BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
             return bis.readAllBytes();
         } else {
