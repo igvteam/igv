@@ -32,14 +32,12 @@ package org.broad.igv.renderer;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -54,9 +52,11 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
     private double marginFraction = 0.2;
 
+    static DecimalFormat formatter = new DecimalFormat();
+
 
     protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY,
-                                 RenderContext context) {
+                                 LocusScore score, RenderContext context) {
         context.getGraphic2DForColor(graphColor).fillRect(pX, pY, dx, 2);
 
     }
@@ -137,16 +137,11 @@ public abstract class XYPlotRenderer extends DataRenderer {
                 }
 
                 Color color = (dataY >= baseValue) ? posColor : negColor;
-                drawDataPoint(color, (int) dx, (int) pX, baseY, pY, context);
+                drawDataPoint(color, (int) dx, (int) pX, baseY, pY, score, context);
 
             }
-
         }
-
-
     }
-
-    static DecimalFormat formatter = new DecimalFormat();
 
     /**
      * Method description
@@ -257,8 +252,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             IGVPreferences prefs = PreferencesManager.getPreferences();
 
             Color altColor = track.getAltColor();
-            Color borderColor = (prefs.getAsBoolean(CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()))
-                    ? track.getColor() : Color.lightGray;
+            final Color borderColor = getBorderColor(track, prefs, altColor);
             Graphics2D borderGraphics = context.getGraphic2DForColor(borderColor);
 
             // Draw the baseline -- todo, this is a wig track option?
@@ -294,16 +288,12 @@ public abstract class XYPlotRenderer extends DataRenderer {
                         adjustedRect.y + adjustedRect.height);
             }
         }
-        /*
-        (CHART_DRAW_TOP_BORDER));
-        prefs.setDrawBottomBorder(getBooleanPreference(CHART_DRAW_BOTTOM_BORDER));
-        prefs.setColorBorders(getBooleanPreference(CHART_COLOR_BORDERS));
-        prefs.setDrawAxis(getBooleanPreference(CHART_DRAW_Y_AXIS));
-        prefs.setDrawTrackName(getBooleanPreference(CHART_DRAW_TRACK_NAME));
-        prefs.setColorTrackName(getBooleanPreference(CHART_COLOR_TRACK_NAME));
-        prefs.setAutoscale(getBooleanPreference(CHART_AUTOSCALE));
-        prefs.setShowDataRange(getBooleanPreference(CHART_SHOW_DATA_RANGE));
-         */
+    }
+
+    protected Color getBorderColor(Track track, IGVPreferences prefs, Color altColor) {
+        Color borderColor = (prefs.getAsBoolean(CHART_COLOR_BORDERS) && altColor != null && altColor.equals(track.getColor()))
+                ? track.getColor() : Color.lightGray;
+        return borderColor;
     }
 
     /**

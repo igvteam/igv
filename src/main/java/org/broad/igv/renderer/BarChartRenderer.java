@@ -33,6 +33,7 @@
  */
 package org.broad.igv.renderer;
 
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 
 import java.awt.*;
@@ -51,7 +52,7 @@ public class BarChartRenderer extends XYPlotRenderer {
      * Render the data track as a bar chart.
      */
     @Override
-    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, RenderContext context) {
+    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, LocusScore score, RenderContext context) {
         //if (pY != baseY) {
         if (dx <= 1) {
             context.getGraphic2DForColor(graphColor).drawLine(pX, baseY, pX, pY);

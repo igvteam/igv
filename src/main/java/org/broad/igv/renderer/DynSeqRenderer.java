@@ -1,14 +1,23 @@
 package org.broad.igv.renderer;
 
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.broad.igv.prefs.Constants.CHART_COLOR_BORDERS;
+
 public class DynSeqRenderer extends XYPlotRenderer {
 
     static Map<Character, Map<String, String>> letterPaths = new HashMap<>();
+
+    BarChartRenderer barChartRenderer = new BarChartRenderer();
+
     Map<Character, Color> nucleotideColors = new HashMap<>();
 
 
@@ -21,18 +30,32 @@ public class DynSeqRenderer extends XYPlotRenderer {
         return "DynSeq";
     }
 
+    @Override
+    protected Color getBorderColor(Track track, IGVPreferences prefs, Color altColor) {
+        return Color.lightGray;
+    }
+
     /**
      * Render the data track as a bar chart.
      */
     @Override
-    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, RenderContext context) {
+    protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY, LocusScore score, RenderContext context) {
 
         int pixelsPerBP = (int) (1.0 / context.getReferenceFrame().getScale());
 
-        if (pixelsPerBP < 5) {
-            context.getGraphic2DForColor(graphColor).drawLine(pX, baseY, pX, pY);
+        if (pixelsPerBP < 2) {
+            barChartRenderer.drawDataPoint(graphColor, dx, pX, pY, baseY, score, context);
         } else {
-            renderDynSeq(context.getGraphics(), pixelsPerBP, pX, baseY, pY, 'C');
+            String chr = context.getChr();
+            double origin = context.getReferenceFrame().getOrigin();
+            double locScale = context.getReferenceFrame().getScale();
+            dx = (int) Math.ceil(1 / locScale) + 1;
+            byte [] seq = GenomeManager.getInstance().getCurrentGenome().getSequence(chr, score.getStart(), score.getEnd());
+            for(int pos = score.getStart(); pos < score.getEnd(); pos++) {
+                char base = (char) seq[pos - score.getStart()];
+                pX = (int) ((pos - origin) / locScale);
+                renderDynSeq(context.getGraphics(), pixelsPerBP, pX, baseY, pY, base);
+            }
         }
         //}
     }
@@ -120,7 +143,7 @@ public class DynSeqRenderer extends XYPlotRenderer {
             }
         }
 
-        ctx.draw(path);
+        ctx.fill(path);
     }
 
 
@@ -129,18 +152,22 @@ public class DynSeqRenderer extends XYPlotRenderer {
         aPaths.put("main", "M 0 100 L 33 0 L 66 0 L 100 100 L 75 100 L 66 75 L 33 75 L 25 100 L 0 100");
         aPaths.put("overlay", "M 41 55 L 50 25 L 58 55 L 41 55");
         letterPaths.put('A', aPaths);
+        letterPaths.put('a', aPaths);
 
         Map<String, String> cPaths = new HashMap<>();
         cPaths.put("main", "M 100 28 C 100 -13 0 -13 0 50 C 0 113 100 113 100 72 L 75 72 C 75 90 30 90 30 50 C 30 10 75 10 75 28 L 100 28");
         letterPaths.put('C', cPaths);
+        letterPaths.put('c', cPaths);
 
         Map<String, String> gPaths = new HashMap<>();
         gPaths.put("main", "M 100 28 C 100 -13 0 -13 0 50 C 0 113 100 113 100 72 L 100 48 L 55 48 L 55 72 L 75 72 C 75 90 30 90 30 50 C 30 10 75 5 75 28 L 100 28");
         letterPaths.put('G', gPaths);
+        letterPaths.put('g', gPaths);
 
         Map<String, String> tPaths = new HashMap<>();
         tPaths.put("main", "M 0 0 L 0 20 L 35 20 L 35 100 L 65 100 L 65 20 L 100 20 L 100 0 L 0 0");
         letterPaths.put('T', tPaths);
+        letterPaths.put('t', tPaths);
 
         Map<String, String> nPaths = new HashMap<>();
         nPaths.put("main", "M 0 100 L 0 0 L 20 0 L 80 75 L 80 0 L 100 0 L 100 100 L 80 100 L 20 25 L 20 100 L 0 100");
