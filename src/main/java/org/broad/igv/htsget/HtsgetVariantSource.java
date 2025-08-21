@@ -64,7 +64,7 @@ public class HtsgetVariantSource implements FeatureSource {
         // The umccr htsget server returns bgzipped data for VCF format.  Arguably a server bug, but we
         // can handle it here.
         byte [] bytes = htsgetReader.readData(queryChr, start + 1, end);
-        if((bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B)) {
+        if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
             BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
             bytes = bis.readAllBytes();
         }
