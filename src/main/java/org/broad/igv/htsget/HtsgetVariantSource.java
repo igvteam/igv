@@ -9,10 +9,12 @@ import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFContigHeaderLine;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.VCFWrapperCodec;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureSource;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,6 +26,8 @@ import java.util.*;
  *
  */
 public class HtsgetVariantSource implements FeatureSource {
+
+    private static Logger log = LogManager.getLogger(HtsgetVariantSource.class);
 
     HtsgetReader htsgetReader;
     VCFCodec codec;
@@ -43,16 +47,21 @@ public class HtsgetVariantSource implements FeatureSource {
 
     private void init(Genome genome) {
 
-        VCFHeader header = (VCFHeader) getHeader();
-        if (genome != null) {
-            List<VCFContigHeaderLine> contigsLines = header.getContigLines();
-            if (contigsLines != null) {
-                for (VCFContigHeaderLine l : contigsLines) {
-                    String vcfChr = l.getID();
-                    String genomeChr = genome.getCanonicalChrName(vcfChr);
-                    chrAliasMap.put(genomeChr, vcfChr);
+        try {
+            VCFHeader header = (VCFHeader) getHeader();
+            if (genome != null) {
+                List<VCFContigHeaderLine> contigsLines = header.getContigLines();
+                if (contigsLines != null) {
+                    for (VCFContigHeaderLine l : contigsLines) {
+                        String vcfChr = l.getID();
+                        String genomeChr = genome.getCanonicalChrName(vcfChr);
+                        chrAliasMap.put(genomeChr, vcfChr);
+                    }
                 }
             }
+        } catch (IOException e) {
+            log.error("Error initializing HtsgetVariantSource", e);
+            MessageUtils.showMessage("Error initializing HtsgetVariantSource: " + e.getMessage());
         }
     }
 
@@ -63,7 +72,7 @@ public class HtsgetVariantSource implements FeatureSource {
 
         // The umccr htsget server returns bgzipped data for VCF format.  Arguably a server bug, but we
         // can handle it here.
-        byte [] bytes = htsgetReader.readData(queryChr, start + 1, end);
+        byte[] bytes = htsgetReader.readData(queryChr, start + 1, end);
         if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
             BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
             bytes = bis.readAllBytes();
@@ -89,9 +98,7 @@ public class HtsgetVariantSource implements FeatureSource {
                     features.add(f);
                 }
             } catch (Exception e) {
-                // This can happen for the last feature if a partial record is returned in the query. Presumably
-                // the partial record is beyond the query region.  So not actually an error.
-                e.printStackTrace();
+                log.error("Error decoding VCF line: " + line, e);
             }
         }
         return features.iterator();
@@ -103,30 +110,27 @@ public class HtsgetVariantSource implements FeatureSource {
     }
 
     @Override
-    public Object getHeader() {
-        try {
-            if (header == null) {
+    public Object getHeader() throws IOException {
 
-                byte [] bytes =  htsgetReader.readHeader();
-                if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
-                    BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
-                    bytes =  bis.readAllBytes();
-                }
-                String headerText = new String(bytes);
+        if (header == null) {
 
-                LineIterator iter = new LineIteratorImpl(new StringLineReader(headerText));
-                header = (VCFHeader) codec.readActualHeader(iter);
-
-                // We need to parse the vcf version, its not in the header read by the codec. Perhaps an htsjdk bug?
-                String formatLine = headerText.split("\\R")[0];
-                VCFHeaderVersion version = VCFHeaderVersion.getHeaderVersion(formatLine);
-                codec.setVCFHeader(header, version);
+            byte[] bytes = htsgetReader.readHeader();
+            if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
+                BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
+                bytes = bis.readAllBytes();
             }
-            return header;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            String headerText = new String(bytes);
+
+            LineIterator iter = new LineIteratorImpl(new StringLineReader(headerText));
+            header = (VCFHeader) codec.readActualHeader(iter);
+
+            // We need to parse the vcf version, its not in the header read by the codec. Perhaps an htsjdk bug?
+            String formatLine = headerText.split("\\R")[0];
+            VCFHeaderVersion version = VCFHeaderVersion.getHeaderVersion(formatLine);
+            codec.setVCFHeader(header, version);
         }
+        return header;
+
     }
 }
 

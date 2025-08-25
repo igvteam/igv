@@ -366,7 +366,7 @@ public class TrackLoader {
         loadVCFWithSource(locator, src, newTracks);
     }
 
-    private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) {
+    private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) throws IOException {
         VCFHeader header = (VCFHeader) src.getHeader();
 
         // Test if the input VCF file contains methylation rate data:

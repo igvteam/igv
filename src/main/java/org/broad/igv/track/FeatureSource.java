@@ -90,7 +90,7 @@ public interface FeatureSource<T extends Feature> {
       // Do nothing by default
     };
 
-    default Object getHeader() {
+    default Object getHeader() throws IOException {
         return null;
     }
 

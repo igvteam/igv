@@ -68,7 +68,7 @@ public class GFFFeatureSource implements org.broad.igv.track.FeatureSource {
     }
 
     @Override
-    public Object getHeader() {
+    public Object getHeader() throws IOException {
         return this.wrappedSource.getHeader();
     }
 
