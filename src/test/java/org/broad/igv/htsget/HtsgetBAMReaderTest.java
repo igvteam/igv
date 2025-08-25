@@ -1,27 +1,16 @@
 package org.broad.igv.htsget;
 
 import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.tribble.Feature;
-import htsjdk.variant.vcf.VCFHeader;
-import junit.framework.Assert;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SAMAlignment;
-import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.BAMReader;
-import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class HtsgetBAMReaderTest {
 
@@ -51,36 +40,6 @@ public class HtsgetBAMReaderTest {
             Alignment bamrecord = bamiter.next();
             if (bamrecord.getEnd() > start && bamrecord.getStart() < end &&
                     bamrecord.isVendorFailedRead() == false &&
-                   bamrecord.isMapped()
-            ) {
-                alignmentList.add(bamrecord);
-            }
-            count++;
-        }
-
-        assertTrue("No data retrieved", alignmentList.size() > 0);
-    }
-
-    @Test
-    public void testQueryAlignments2() throws Exception {
-
-        String url = "https://htsget-rs.umccr.workers.dev/reads/bam/mt.sorted";
-        String chr = "chrM";
-        int start = 4824;
-        int end = 10504;
-
-        ResourceLocator locator = new ResourceLocator(url);
-        locator.setHtsget(true);
-
-        BAMReader bamreader = new BAMReader(locator, false);
-        CloseableIterator<SAMAlignment> bamiter = bamreader.query(chr, start, end, true);
-
-        int count = 0;
-        List<Alignment> alignmentList = new ArrayList<>();
-        while (bamiter.hasNext()) {
-            Alignment bamrecord = bamiter.next();
-            if (bamrecord.getEnd() > start && bamrecord.getStart() < end &&
-                    bamrecord.isVendorFailedRead() == false &&
                     bamrecord.isMapped()
             ) {
                 alignmentList.add(bamrecord);
@@ -88,10 +47,9 @@ public class HtsgetBAMReaderTest {
             count++;
         }
 
-        //       System.out.println(alignmentList.size());
-
         assertTrue("No data retrieved", alignmentList.size() > 0);
     }
+
 
 //    public static void main(String [] args) throws Exception {
 //        (new HtsgetBAMReaderTest()).testQueryAlignments();
