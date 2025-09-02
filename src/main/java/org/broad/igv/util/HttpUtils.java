@@ -26,13 +26,12 @@
 package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
-import htsjdk.samtools.util.ftp.FTPClient;
-import htsjdk.samtools.util.ftp.FTPStream;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.oauth.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -43,18 +42,15 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,8 +69,6 @@ public class HttpUtils {
 
     private static HttpUtils instance;
 
-    private Map<String, Boolean> byteRangeTestMap;
-
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
@@ -84,7 +78,6 @@ public class HttpUtils {
     private Map<String, Collection<String>> headerMap = new HashMap<>();
 
     // static provided to support unit testing
-    private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
     private Map<String, Long> contentLengthCache = new HashMap<>();
@@ -121,8 +114,6 @@ public class HttpUtils {
         } catch (Exception e) {
             log.warn("Couldn't set useSystemProxies=true");
         }
-
-        byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
     /**
@@ -302,11 +293,6 @@ public class HttpUtils {
 
         if (conn == null) {
             return null;
-        }
-
-        if ((requestProperties != null) && requestProperties.containsKey("Range") && conn.getResponseCode() != 206) {
-            String msg = "Warning: range requested, but response code = " + conn.getResponseCode();
-            log.error(msg);
         }
 
         try {
@@ -664,20 +650,23 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+            if (!isDropboxHost(url.getHost()) &&
+                    requestProperties != null &&
+                    requestProperties.containsKey("Range") &&
+                    code != 206 &&
+                    method.equals("GET")) {
 
-                log.info("Range header removed by client or ignored by server for url: " + url.toString());
+                log.warn("Range header removed by proxy or ignored by server for url: " + url);
 
-                byteRangeTestMap.put(url.getHost(), false);
-                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
-                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
-                requestProperties.remove("Range"); // < VERY IMPORTANT
-                URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
-                return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
-            }
-
-            if (log.isDebugEnabled()) {
-                //logHeaders(conn);
+                // Attempt to use a webservice to get the byte range if the content length is unknown or large
+                long contentLength = conn.getContentLengthLong();
+                if (contentLength < 0 || contentLength > 10000000) {
+                    String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                    int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                    requestProperties.remove("Range"); // < VERY IMPORTANT
+                    URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                    return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
+                }
             }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
@@ -851,39 +840,6 @@ public class HttpUtils {
         this.defaultUserName = null;
     }
 
-
-    /**
-     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
-     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
-     * by filters after the request is made by IGV.
-     *
-     * @return
-     */
-    public boolean useByteRange(URL url) throws IOException {
-
-        if (BYTE_RANGE_DISABLED) return false;
-
-        // We can test byte-range success for hosts we can reach.
-        synchronized (byteRangeTestMap) {
-            final String host = url.getHost();
-            if (byteRangeTestMap.containsKey(host)) {
-                return byteRangeTestMap.get(host);
-            } else {
-                return true;  // Let's be optimistic
-            }
-        }
-    }
-
-    public boolean testByteRange(URL url) throws IOException {
-        Map<String, String> params = new HashMap();
-        String byteRange = "bytes=" + 0 + "-" + 10;
-        params.put("Range", byteRange);
-        HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
-        int statusCode = conn.getResponseCode();
-        boolean byteRangeTestSuccess = (statusCode == 206);
-        readFully(conn.getInputStream(), new byte[10]);
-        return byteRangeTestSuccess;
-    }
 
     /**
      * Add an http header string to be applied the the specified URLs.  Used to support command line specification
