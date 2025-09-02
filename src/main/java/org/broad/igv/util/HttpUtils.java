@@ -247,17 +247,17 @@ public class HttpUtils {
         }
         byte[] postDataBytes = postData.toString().getBytes();
 
-        log.debug("Raw POST request: " + postData.toString());
+        log.debug("Raw POST request: " + postData);
 
         url = new URL(HttpMappings.mapURL(url.toExternalForm()));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("User-Agent", Globals.applicationString());
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         conn.setDoOutput(true);
         conn.getOutputStream().write(postDataBytes);
 
         StringBuilder response = new StringBuilder();
-        System.out.println(conn.getResponseMessage());
         Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 
         for (int c; (c = in.read()) >= 0; ) {
