@@ -73,8 +73,6 @@ public class HttpUtils {
 
     private static HttpUtils instance;
 
-    private Map<String, Boolean> byteRangeTestMap;
-
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
@@ -83,8 +81,6 @@ public class HttpUtils {
 
     private Map<String, Collection<String>> headerMap = new HashMap<>();
 
-    // static provided to support unit testing
-    private static boolean BYTE_RANGE_DISABLED = false;
     private Map<URL, Boolean> headURLCache = new HashMap<URL, Boolean>();
 
     private Map<String, Long> contentLengthCache = new HashMap<>();
@@ -121,8 +117,6 @@ public class HttpUtils {
         } catch (Exception e) {
             log.warn("Couldn't set useSystemProxies=true");
         }
-
-        byteRangeTestMap = Collections.synchronizedMap(new HashMap());
     }
 
     /**
@@ -243,15 +237,6 @@ public class HttpUtils {
     }
 
     /**
-     * Provided to support unit testing (force disable byte range requests)
-     *
-     * @return
-     */
-    public static void disableByteRange(boolean b) {
-        BYTE_RANGE_DISABLED = b;
-    }
-
-    /**
      * Return the contents of the url as a String.  This method should only be used for queries expected to return
      * a small amount of data.
      *
@@ -319,6 +304,7 @@ public class HttpUtils {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("User-Agent", Globals.applicationString());
         conn.setDoOutput(true);
         conn.getOutputStream().write(postDataBytes);
 
@@ -788,24 +774,23 @@ public class HttpUtils {
 
             int code = conn.getResponseCode();
 
-            if (!isDropboxHost(url.getHost()) && requestProperties != null && requestProperties.containsKey("Range") && code == 200 && method.equals("GET")) {
+            if (!isDropboxHost(url.getHost()) &&
+                    requestProperties != null &&
+                    requestProperties.containsKey("Range") &&
+                    code != 206 &&
+                    method.equals("GET")) {
 
-                log.error("Range header removed by client or ignored by server for url: " + url.toString());
+                log.warn("Range header removed by proxy or ignored by server for url: " + url);
 
-                if (!SwingUtilities.isEventDispatchThread()) {
-                    MessageUtils.showMessage("Warning: unsuccessful attempt to execute 'Range byte' request to host " + url.getHost());
+                // Attempt to use a webservice to get the byte range if the content length is unknown or large
+                long contentLength = conn.getContentLengthLong();
+                if (contentLength < 0 || contentLength > 10000000) {
+                    String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                    int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                    requestProperties.remove("Range"); // < VERY IMPORTANT
+                    URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                    return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
                 }
-
-                byteRangeTestMap.put(url.getHost(), false);
-                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
-                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
-                requestProperties.remove("Range"); // < VERY IMPORTANT
-                URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
-                return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
-            }
-
-            if (log.isDebugEnabled()) {
-                //logHeaders(conn);
             }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
@@ -977,40 +962,6 @@ public class HttpUtils {
     public void clearDefaultCredentials() {
         this.defaultPassword = null;
         this.defaultUserName = null;
-    }
-
-
-    /**
-     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
-     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
-     * by filters after the request is made by IGV.
-     *
-     * @return
-     */
-    public boolean useByteRange(URL url) throws IOException {
-
-        if (BYTE_RANGE_DISABLED) return false;
-
-        // We can test byte-range success for hosts we can reach.
-        synchronized (byteRangeTestMap) {
-            final String host = url.getHost();
-            if (byteRangeTestMap.containsKey(host)) {
-                return byteRangeTestMap.get(host);
-            } else {
-                return true;  // Let's be optimistic
-            }
-        }
-    }
-
-    public boolean testByteRange(URL url) throws IOException {
-        Map<String, String> params = new HashMap();
-        String byteRange = "bytes=" + 0 + "-" + 10;
-        params.put("Range", byteRange);
-        HttpURLConnection conn = HttpUtils.getInstance().openConnection(url, params);
-        int statusCode = conn.getResponseCode();
-        boolean byteRangeTestSuccess = (statusCode == 206);
-        readFully(conn.getInputStream(), new byte[10]);
-        return byteRangeTestSuccess;
     }
 
     /**

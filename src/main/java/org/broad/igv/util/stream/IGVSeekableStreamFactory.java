@@ -41,17 +41,19 @@ import java.net.URL;
 public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
 
     private static IGVSeekableStreamFactory instance;
-    static{
+
+    static {
         instance = new IGVSeekableStreamFactory();
     }
 
-    private IGVSeekableStreamFactory(){}
+    private IGVSeekableStreamFactory() {
+    }
 
-    public static IGVSeekableStreamFactory getInstance(){
+    public static IGVSeekableStreamFactory getInstance() {
         return instance;
     }
 
-    public SeekableStream getStreamFor(URL url) throws IOException{
+    public SeekableStream getStreamFor(URL url) throws IOException {
         return getStreamFor(url.toExternalForm());
     }
 
@@ -62,14 +64,9 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
         } else {
             path = mapPath(path);
             SeekableStream is = null;
-            if (FileUtils.isRemote(path) ) {
+            if (FileUtils.isRemote(path)) {
                 final URL url = HttpUtils.createURL(path);
-                boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
-                if (useByteRange) {
-                    is = new IGVSeekableHTTPStream(url);
-                } else {
-                    is = new SeekableServiceStream(url);
-                }
+                is = new IGVSeekableHTTPStream(url);
             } else if (path.toLowerCase().startsWith("ftp:")) {
                 final URL url = HttpUtils.createURL(path);
                 is = new IGVSeekableFTPStream(url);
@@ -80,16 +77,16 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
         }
     }
 
-    public SeekableStream getBufferedStream(SeekableStream stream){
+    public SeekableStream getBufferedStream(SeekableStream stream) {
         return getBufferedStream(stream, IGVSeekableBufferedStream.DEFAULT_BUFFER_SIZE);
     }
 
-    public SeekableStream getBufferedStream(SeekableStream stream, int bufferSize){
+    public SeekableStream getBufferedStream(SeekableStream stream, int bufferSize) {
         return new IGVSeekableBufferedStream(stream, bufferSize);
     }
 
     private String mapPath(String path) {
-        if(path.startsWith("ftp://ftp.ncbi.nlm.nih.gov/geo")) {
+        if (path.startsWith("ftp://ftp.ncbi.nlm.nih.gov/geo")) {
             return path.replace("ftp://ftp.ncbi.nlm.nih.gov/geo", "https://ftp.ncbi.nlm.nih.gov/geo");
         } else {
             return path;
