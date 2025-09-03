@@ -120,6 +120,23 @@ class HubTable extends JTable {
                 }
             }
         }
+        // Ensure row heights are updated after initialization
+//        for (int row = 0; row < getRowCount(); row++) {
+//            int maxPreferredHeight = getRowHeight(row);
+//            // Only check columns with multi-line renderers
+//            for (int col : new int[]{1, 3}) {
+//                TableCellRenderer renderer = getCellRenderer(row, col);
+//                Component comp = prepareRenderer(renderer, row, col);
+//                int preferredHeight = comp.getPreferredSize().height;
+//                System.out.println(preferredHeight);
+//                if (preferredHeight > maxPreferredHeight) {
+//                    maxPreferredHeight = preferredHeight;
+//                }
+//            }
+//            setRowHeight(row, maxPreferredHeight);
+//        }
+//        revalidate();
+//        repaint();
     }
 
     private static DefaultTableCellRenderer getMultiLineCellRenderer(int maxLength) {
@@ -144,7 +161,7 @@ class HubTable extends JTable {
                 textArea.setSize(columnWidth, Short.MAX_VALUE);
 
                 // Adjust row height to fit the content if neccessary
-                int preferredHeight = textArea.getPreferredSize().height;
+                int preferredHeight = textArea.getPreferredSize().height + 5;
                 if (preferredHeight > table.getRowHeight(row)) {
                     table.setRowHeight(row, preferredHeight);
                 }
