@@ -44,7 +44,7 @@ public class SeekableServiceStream extends SeekableStream {
 
     static Logger log = LogManager.getLogger(SeekableServiceStream.class);
 
-    public static final String WEBSERVICE_URL = "https://portals.broadinstitute.org/webservices/igv/range";
+    public static final String WEBSERVICE_URL = "https://igv.org/genomes/range.php";
 
     private long position = 0;
     private long contentLength = Long.MAX_VALUE;

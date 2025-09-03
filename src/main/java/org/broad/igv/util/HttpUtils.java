@@ -653,20 +653,20 @@ public class HttpUtils {
             if (!isDropboxHost(url.getHost()) &&
                     requestProperties != null &&
                     requestProperties.containsKey("Range") &&
-                    code != 206 &&
+                    code == 200 &&
                     method.equals("GET")) {
 
                 log.warn("Range header removed by proxy or ignored by server for url: " + url);
 
                 // Attempt to use a webservice to get the byte range if the content length is unknown or large
-                long contentLength = conn.getContentLengthLong();
-                if (contentLength < 0 || contentLength > 10000000) {
-                    String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
-                    int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
-                    requestProperties.remove("Range"); // < VERY IMPORTANT
-                    URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
-                    return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
-                }
+                // long contentLength = conn.getContentLengthLong();
+                // if (contentLength < 0 || contentLength > 0) {
+                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                requestProperties.remove("Range"); // < VERY IMPORTANT
+                URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
+                // }
             }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
