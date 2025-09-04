@@ -9,6 +9,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Container for base modification counts, which are stored as likelihoods (0-255) for each position.  Used for
+ * rendering coverage.
+ *
  * @author Jim Robinson
  * @date 2/6/12
  */
@@ -45,7 +48,8 @@ public class BaseModificationCounts {
      */
     public void incrementCounts(Alignment alignment) {
 
-        // Only works with block formats
+        // Only works with block formats, this includes sam, bam, and cram but excludes older simple formats like .aligned
+        // Those formats do not have base modification information.
         if (alignment.getAlignmentBlocks() == null) return;
 
         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();

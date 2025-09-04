@@ -456,7 +456,7 @@ public class SAMAlignment implements Alignment {
                 if (mm.toString().length() == 0) { // TODO -- more extensive validation?
                     baseModificationSets = Collections.EMPTY_LIST;
                 } else {
-                    baseModificationSets = BaseModificationUtils.getBaseModificationSets((String) mm, ml, sequence, isNegativeStrand());
+                    baseModificationSets = BaseModificationUtils.getBaseModificationSets(mm.toString(), ml, sequence, isNegativeStrand(), null);
                 }
             }
         }

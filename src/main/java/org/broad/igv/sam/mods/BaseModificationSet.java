@@ -5,6 +5,12 @@ import htsjdk.samtools.util.SequenceUtil;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A set of base modification likelihoods for a given base in a read
+ *
+ * @author jrobinso
+ * @date Jul 2024
+ */
 public class BaseModificationSet {
 
     char base;

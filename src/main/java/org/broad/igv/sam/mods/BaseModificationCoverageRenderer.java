@@ -37,11 +37,8 @@ public class BaseModificationCoverageRenderer {
 
             for (BaseModificationKey key : sortedKeys) {
 
-                try {
-                    if (filter != null && !filter.pass(key.modification, key.getCanonicalBase())) continue;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                if (filter != null && !filter.pass(key.modification, key.getCanonicalBase())) continue;
+
                 if (key.modification.startsWith("NONE_") && colorOption != ColorOption.BASE_MODIFICATION_2COLOR)
                     continue;
 
@@ -73,8 +70,5 @@ public class BaseModificationCoverageRenderer {
             }
         }
     }
-
-    static Map<String, Integer> modRankOrder;
-
-
+    
 }

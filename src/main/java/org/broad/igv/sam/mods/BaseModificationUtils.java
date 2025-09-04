@@ -5,11 +5,12 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.*;
+import org.broad.igv.sam.AlignmentUtils;
 
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BaseModificationUtils {
 
@@ -48,17 +49,19 @@ public class BaseModificationUtils {
 
 
     /**
-     * Parse the mm tag creating a base modification set for each modification listed.
+     * Parse the mm tag creating a base modification set for each modification listed.  Called for each alignment.
      *
-     * @param mm       MM tag value, string, examples
-     *                 C+m?,5,12,0; :   A single modification, 1 set is returned
-     *                 C+mh,5,12,0; :   Two modifications, 2 sets are returned
-     *                 C+m,5,12,0;C+h,5,12,0;   Two modifications, 2 sets are returned
-     * @param ml
-     * @param sequence
+     * @param mm               MM tag value, string, examples
+     *                         C+m?,5,12,0; :   A single modification, 1 set is returned
+     *                         C+mh,5,12,0; :   Two modifications, 2 sets are returned
+     *                         C+m,5,12,0;C+h,5,12,0;   Two modifications, 2 sets are returned
+     * @param ml               ML (likelihood) tag value, byte array, same length as number of modifications called in MM tag
+     * @param sequence         read sequence
+     * @param isNegativeStrand true if the read is mapped to the negative strand
+     * @param motif          If not null, a motif string, e.g. "CG", used to filter modifications to only those that occur in the motif
      * @return
      */
-    public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
+    public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand, String motif) {
 
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
