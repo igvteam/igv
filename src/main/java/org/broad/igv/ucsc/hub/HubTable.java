@@ -144,7 +144,7 @@ class HubTable extends JTable {
                 textArea.setSize(columnWidth, Short.MAX_VALUE);
 
                 // Adjust row height to fit the content if neccessary
-                int preferredHeight = textArea.getPreferredSize().height;
+                int preferredHeight = textArea.getPreferredSize().height + 5;
                 if (preferredHeight > table.getRowHeight(row)) {
                     table.setRowHeight(row, preferredHeight);
                 }

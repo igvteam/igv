@@ -68,7 +68,7 @@ public class SeekableServiceStreamTest extends TestCase {
     }
 
     /**
-     * Test reading past the end of the file.  The service should return fewer bytes, but not throw an exception.
+     * Test reading past the end of the file.  The service should return bytes up to end of the file.
      *
      * @throws Exception
      */

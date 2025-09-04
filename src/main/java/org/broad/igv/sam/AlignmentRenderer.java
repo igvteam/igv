@@ -1582,9 +1582,6 @@ class NucleotideColors {
     }
 
     public Color get(char nucleotide) {
-        if (nucleotide == 'N') {
-            System.out.println();
-        }
         return nucleotideColors.getOrDefault(nucleotide, Color.black);
     }
 }
