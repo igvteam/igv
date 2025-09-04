@@ -185,10 +185,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             public void menuCanceled(MenuEvent e) {
             }
         });
-        menus.add(tracksMenu);
 
         menus.add(createSessionsMenu());
         menus.add(createViewMenu());
+        menus.add(tracksMenu);
         menus.add(createRegionsMenu());
         menus.add(createToolsMenu());
         extrasMenu = createExtrasMenu();
