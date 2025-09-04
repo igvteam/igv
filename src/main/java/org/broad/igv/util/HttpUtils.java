@@ -777,7 +777,7 @@ public class HttpUtils {
             if (!isDropboxHost(url.getHost()) &&
                     requestProperties != null &&
                     requestProperties.containsKey("Range") &&
-                    code != 206 &&
+                    code == 200 &&
                     method.equals("GET")) {
 
                 log.warn("Range header removed by proxy or ignored by server for url: " + url);
