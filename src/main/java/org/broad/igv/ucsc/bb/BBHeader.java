@@ -16,5 +16,5 @@ public class BBHeader {
     public long extensionOffset;
     public int extraIndexCount = 0;
     public long[] extraIndexOffsets;
-    public int dataCount;
+    public long dataCount;
 }

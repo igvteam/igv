@@ -275,7 +275,7 @@ public class BBFile {
         if (type == Type.BIGBED) {
             //Total data count -- for bigbed this is the number of features, for bigwig it is number of sections
             buffer = loadBinaryBuffer(this.path, order, header.fullDataOffset, 4);
-            header.dataCount = buffer.getInt();
+            header.dataCount = buffer.getUInt();
             this.featureDensity = ((double) header.dataCount) / this.chromTree.estimateGenomeSize();
 
             bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
