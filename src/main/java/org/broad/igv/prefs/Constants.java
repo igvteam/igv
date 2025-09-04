@@ -217,11 +217,12 @@ final public class Constants {
     public static final String BASEMOD_NONE_G_COLOR = "BASEMOD.NONE_G_COLOR";
     public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
 
-
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
     public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
     public static final String BASEMOD_VALIDATE_BASE_COUNT = "BASEMOD.VALIDATE_BASE_COUNT";
+
+    public static final String BASEMOD_CYTOSINE_CONTEXT = "BASEMOD.CYTOSINE_CONTEXT";
 
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";

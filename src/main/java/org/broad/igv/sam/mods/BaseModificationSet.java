@@ -1,16 +1,11 @@
 package org.broad.igv.sam.mods;
 
 import htsjdk.samtools.util.SequenceUtil;
+import org.broad.igv.sam.AlignmentUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A set of base modification likelihoods for a given base in a read
- *
- * @author jrobinso
- * @date Jul 2024
- */
 public class BaseModificationSet {
 
     char base;
@@ -25,6 +20,18 @@ public class BaseModificationSet {
         this.strand = strand;
         this.likelihoods = likelihoods;
         this.canonicalBase = strand == '+' ? base : (char) SequenceUtil.complement((byte) base);
+    }
+
+    public static boolean contextMatches(byte[] sequence, int p, String context) {
+        if(context.length() > sequence.length - p) {
+            return false;
+        }
+        for(int i=0; i<context.length(); i++) {
+            if(!AlignmentUtils.compareBases(sequence[p + i], (byte) context.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public char getBase() {

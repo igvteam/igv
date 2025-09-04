@@ -5,12 +5,10 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.AlignmentUtils;
+import org.broad.igv.sam.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class BaseModificationUtils {
 
@@ -49,19 +47,17 @@ public class BaseModificationUtils {
 
 
     /**
-     * Parse the mm tag creating a base modification set for each modification listed.  Called for each alignment.
+     * Parse the mm tag creating a base modification set for each modification listed.
      *
-     * @param mm               MM tag value, string, examples
-     *                         C+m?,5,12,0; :   A single modification, 1 set is returned
-     *                         C+mh,5,12,0; :   Two modifications, 2 sets are returned
-     *                         C+m,5,12,0;C+h,5,12,0;   Two modifications, 2 sets are returned
-     * @param ml               ML (likelihood) tag value, byte array, same length as number of modifications called in MM tag
-     * @param sequence         read sequence
-     * @param isNegativeStrand true if the read is mapped to the negative strand
-     * @param motif          If not null, a motif string, e.g. "CG", used to filter modifications to only those that occur in the motif
+     * @param mm       MM tag value, string, examples
+     *                 C+m?,5,12,0; :   A single modification, 1 set is returned
+     *                 C+mh,5,12,0; :   Two modifications, 2 sets are returned
+     *                 C+m,5,12,0;C+h,5,12,0;   Two modifications, 2 sets are returned
+     * @param ml
+     * @param sequence
      * @return
      */
-    public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand, String motif) {
+    public static List<BaseModificationSet> getBaseModificationSets(String mm, byte[] ml, byte[] sequence, boolean isNegativeStrand) {
 
         if (isNegativeStrand) {
             sequence = AlignmentUtils.reverseComplementCopy(sequence);
@@ -86,6 +82,8 @@ public class BaseModificationUtils {
             } else {
                 skippedBasesCalled = PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_SKIPPED_BASES);
             }
+
+            String context = base == 'C' ? PreferencesManager.getPreferences().get(Constants.BASEMOD_CYTOSINE_CONTEXT) : null;
 
 
             if (tokens.length == 1) {
@@ -129,6 +127,13 @@ public class BaseModificationUtils {
                 while (p < sequence.length) {
 
                     if (base == 'N' || sequence[p] == base) {
+
+                        if (base == 'C' && context != null && !BaseModificationSet.contextMatches(sequence, p, context)) {
+                            // Context does not match, skip this base
+                            p++;
+                            continue;
+                        }
+
                         int position = isNegativeStrand ? sequence.length - 1 - p : p;
                         if (matchCount == skip) { // && idx < tokens.length) {
                             for (String modification : modifications) {
