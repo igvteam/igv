@@ -19,12 +19,12 @@ import org.broad.igv.track.SequenceTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
@@ -155,6 +155,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Third gen (primarily) items
         addSeparator();
         addThirdGenItems(clickedAlignment, e);
+
+        if(AlignmentTrack.ExperimentType.SBX == alignmentTrack.getExperimentType()) {
+            addSBXItems(clickedAlignment, e);
+        }
 
         // Display mode items
         addSeparator();
@@ -416,6 +420,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("Other", AlignmentTrack.ExperimentType.OTHER);
         mappings.put("RNA", AlignmentTrack.ExperimentType.RNA);
         mappings.put("3rd Gen", AlignmentTrack.ExperimentType.THIRD_GEN);
+        mappings.put("SBX", AlignmentTrack.ExperimentType.SBX);
         //mappings.put("Bisulfite", ExperimentType.BISULFITE);
         JMenu groupMenu = new JMenu("Experiment Type");
         ButtonGroup group = new ButtonGroup();
@@ -1202,6 +1207,39 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
         addShowDiagram(tce, clickedAlignment);
 
+    }
+
+    //SAM.INDEL_QUAL_SBX	INDEL coloring uses grey (SBX)	boolean	FALSE
+    //SAM.TAIL_QUAL_SBX	Low-quality tail coloring (SBX)	boolean	FALSE
+    //SAM.HIDE_TAIL_SBX	Hide low-quality tails (SBX)	boolean	FALSE
+
+    void addSBXItems(Alignment clickedAlignment, final TrackClickEvent tce) {
+
+        addSeparator();
+
+        final JMenuItem item = new JCheckBoxMenuItem("INDEL coloring uses grey (SBX)");
+        item.setSelected(renderOptions.isIndelQualSbx());
+        item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+            renderOptions.setIndelQualSbx(item.isSelected());
+            alignmentTrack.repaint();
+        }));
+        add(item);
+
+        final JMenuItem item2 = new JCheckBoxMenuItem("Low-quality tail coloring (SBX)");
+        item2.setSelected(renderOptions.isTailQualSbx());
+        item2.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+            renderOptions.setTailQualSbx(item2.isSelected());
+            alignmentTrack.repaint();
+        }));
+        add(item2);
+
+        final JMenuItem item3 = new JCheckBoxMenuItem("Hide low-quality tails (SBX)");
+        item3.setSelected(renderOptions.isHideTailSbx());
+        item3.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+            renderOptions.setHideTailSbx(item3.isSelected());
+            alignmentTrack.repaint();
+        }));
+        add(item3);
     }
 
     /**

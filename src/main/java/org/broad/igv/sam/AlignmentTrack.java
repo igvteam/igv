@@ -425,30 +425,34 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (type != experimentType) {
 
             experimentType = type;
+            boolean revalidate = false;
 
             boolean showJunction = getPreferences(type).getAsBoolean(Constants.SAM_SHOW_JUNCTION_TRACK);
             if (showJunction != spliceJunctionTrack.isVisible()) {
                 spliceJunctionTrack.setVisible(showJunction);
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().revalidateTrackPanels();
-                }
+                revalidate = true;
             }
 
             boolean showCoverage = getPreferences(type).getAsBoolean(SAM_SHOW_COV_TRACK);
             if (showCoverage != coverageTrack.isVisible()) {
                 coverageTrack.setVisible(showCoverage);
-                if (IGV.hasInstance()) {
-                    IGV.getInstance().revalidateTrackPanels();
-                }
+                revalidate = true;
             }
 
             boolean showAlignments = getPreferences(type).getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK);
             if (showAlignments != isVisible()) {
                 setVisible(showAlignments);
-                if (IGV.hasInstance()) {
+                revalidate = true;
+            }
+
+            if (IGV.hasInstance()) {
+                if (revalidate) {
                     IGV.getInstance().revalidateTrackPanels();
+                } else {
+                    this.repaint();
                 }
             }
+
             //ExperimentTypeChangeEvent event = new ExperimentTypeChangeEvent(this, experimentType);
             //IGVEventBus.getInstance().post(event);
         }
@@ -884,8 +888,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
             
             if (feature != null) {
-                if(PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX))
-                {
+                if(renderOptions.isHideTailSbx()) {
                     feature = feature.trimSimplexTails();
                 }
                 return feature.getAlignmentValueString(position, mouseX, renderOptions);
@@ -981,7 +984,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN, UNKOWN}
+    public enum ExperimentType {OTHER, RNA, BISULFITE, THIRD_GEN, SBX, UNKOWN}
 
 
     public boolean isRemoved() {
@@ -1456,22 +1459,34 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public boolean isIndelQualUsesMin() {
             return indelQualUsesMin == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_USES_MIN) : indelQualUsesMin;
         }
-        
+
+
+        // SBX Options
         public boolean isIndelQualSbx() {
-            return indelQualSbx == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_SBX) : indelQualSbx;
+            return ExperimentType.SBX == track.experimentType && (indelQualSbx == null ?  getPreferences().getAsBoolean(SAM_INDEL_QUAL_SBX) : indelQualSbx);
+        }
+
+        public void setTailQualSbx(Boolean tailQualSbx) {
+            this.tailQualSbx = tailQualSbx;
         }
 
         public boolean isTailQualSbx() {
-            return tailQualSbx == null ? getPreferences().getAsBoolean(SAM_TAIL_QUAL_SBX) : tailQualSbx;
+            return ExperimentType.SBX == track.experimentType && (tailQualSbx == null ? getPreferences().getAsBoolean(SAM_TAIL_QUAL_SBX) : tailQualSbx);
+        }
+
+        public void setHideTailSbx(Boolean hideTailSbx) {
+            this.hideTailSbx = hideTailSbx;
         }
 
         public boolean isHideTailSbx() {
-            return hideTailSbx == null ? getPreferences().getAsBoolean(SAM_HIDE_TAIL_SBX) : hideTailSbx;
+            return ExperimentType.SBX == track.experimentType && (hideTailSbx == null ? getPreferences().getAsBoolean(SAM_HIDE_TAIL_SBX) : hideTailSbx);
         }
 
-        public boolean isInsertQualColoring() {
-            return insertQualColoring == null ? getPreferences().getAsBoolean(SAM_INSERT_QUAL_COLORING) : insertQualColoring;
+        public void setIndelQualSbx(Boolean indelQualSbx) {
+            this.indelQualSbx = indelQualSbx;
         }
+        // End SBX options
+
         public boolean isComputeIsizes() {
             return computeIsizes == null ? getPreferences().getAsBoolean(SAM_COMPUTE_ISIZES) : computeIsizes;
         }

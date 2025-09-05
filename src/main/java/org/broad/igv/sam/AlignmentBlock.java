@@ -49,6 +49,10 @@ public interface AlignmentBlock {
 
     int getStart();
 
+    default boolean hasQualities() {
+        return false;
+    }
+
     byte getQuality(int offset);
 
     ByteSubarray getQualities();
