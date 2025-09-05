@@ -32,7 +32,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
@@ -43,12 +42,7 @@ import org.broad.igv.sam.smrt.SMRTKineticsRenderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.color.ColorPalette;
-import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.color.GreyscaleColorTable;
-import org.broad.igv.ui.color.HSLColorTable;
-import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.color.*;
 import org.broad.igv.ultima.render.ColorByTagValueList;
 import org.broad.igv.ultima.render.FlowIndelRendering;
 import org.broad.igv.util.ChromosomeColors;
@@ -61,18 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.broad.igv.prefs.Constants.SAM_ALLELE_THRESHOLD;
-import static org.broad.igv.prefs.Constants.SAM_CLIPPING_THRESHOLD;
-import static org.broad.igv.prefs.Constants.SAM_COLOR_A;
-import static org.broad.igv.prefs.Constants.SAM_COLOR_C;
-import static org.broad.igv.prefs.Constants.SAM_COLOR_G;
-import static org.broad.igv.prefs.Constants.SAM_COLOR_N;
-import static org.broad.igv.prefs.Constants.SAM_COLOR_T;
-import static org.broad.igv.prefs.Constants.SAM_FLAG_CLIPPING;
-import static org.broad.igv.prefs.Constants.SAM_FLAG_LARGE_INDELS;
-import static org.broad.igv.prefs.Constants.SAM_LARGE_INDELS_THRESHOLD;
-import static org.broad.igv.prefs.Constants.SAM_SHOW_CENTER_LINE;
-import static org.broad.igv.prefs.Constants.SAM_SHOW_CONNECTED_CHR_NAME;
+import static org.broad.igv.prefs.Constants.*;
 
 /**
  * @author jrobinso
@@ -323,23 +306,22 @@ public class AlignmentRenderer {
         double locScale = context.getScale();
 
         Color defaultColor = track.getColor();
-        
-        List<Alignment> trimmedAlignments = new ArrayList<Alignment>();
-        if(PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX)) {
 
-            for(Alignment al : alignments) {
-                if(al instanceof SAMAlignment) {
+        List<Alignment> trimmedAlignments;
+
+        if (renderOptions.isHideTailSbx()) {
+            trimmedAlignments = new ArrayList<Alignment>();
+            for (Alignment al : alignments) {
+                if (al instanceof SAMAlignment) {
                     Alignment trimmed = al.trimSimplexTails();
-                    if(trimmed.getAlignmentStart() < trimmed.getAlignmentEnd()) {
+                    if (trimmed.getAlignmentStart() < trimmed.getAlignmentEnd()) {
                         trimmedAlignments.add(trimmed);
                     }
                 }
             }
 
-        }
-        else
-        {
-            trimmedAlignments.addAll(alignments);
+        } else {
+            trimmedAlignments = alignments;
         }
 
         if ((trimmedAlignments != null) && (trimmedAlignments.size() > 0)) {
@@ -689,7 +671,7 @@ public class AlignmentRenderer {
                 }
 
                 // gap extensions
-                if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesGap(gap)) {
+                if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesGap(gap)) {
                     flowIndelRendering.renderDeletionGap(alignment, gap, y, h, gapPxStart, gapPxEnd - gapPxStart, context, renderOptions);
                 }
             }
@@ -727,7 +709,7 @@ public class AlignmentRenderer {
 
             // Check if block is in visible rectangle
             if (blockPxEnd < 0) {
-                if(blockIx + 1 < blocks.length) {
+                if (blockIx + 1 < blocks.length) {
                     blockChromStart = blocks[blockIx + 1].getStart(); // start position for the next block
                 }
                 continue;
@@ -779,7 +761,7 @@ public class AlignmentRenderer {
                     else if (block.getCigarOperator() == 'X') g = context.getGraphics2D("MISMATCH");
                 }
 
-                if(renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
+                if (renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.TEXTURE && alignment.isDuplicate()) {
                     final Graphics2D tg = (Graphics2D) g.create();
 
                     final TexturePaint tp = getDuplicateTexture(tg.getColor());
@@ -787,7 +769,7 @@ public class AlignmentRenderer {
                     tg.setPaint(tp);
                     tg.fill(blockShape);
                     tg.dispose();
-                }  else {
+                } else {
                     g.fill(blockShape);
                 }
 
@@ -961,14 +943,12 @@ public class AlignmentRenderer {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
                         Color color = purple;
-                        boolean sbxFullDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() && 
+                        boolean sbxFullDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() &&
                                 SbxUtils.isFullDiscordantInsertion(aBlock);
-                        if(sbxFullDiscordantInsertionRecolor) {
+                        if (sbxFullDiscordantInsertionRecolor) {
                             color = SbxUtils.fullDiscordantInsertionColor;
-                        }
-                        else
-                        {
-                            boolean sbxDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() && 
+                        } else {
+                            boolean sbxDiscordantInsertionRecolor = renderOptions.isIndelQualSbx() &&
                                     SbxUtils.isDiscordantInsertion(alignment, aBlock);
                             color = sbxDiscordantInsertionRecolor ? SbxUtils.discordantInsertionColor : purple;
                         }
@@ -986,35 +966,30 @@ public class AlignmentRenderer {
                 }
             }
         }
-        
+
         // draw simplex tails
-        if(renderOptions.isTailQualSbx() && !PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_HIDE_TAIL_SBX))
-        {
+        if (renderOptions.isTailQualSbx() && !renderOptions.isHideTailSbx()) {
             int simplexTailLeftEnd = 0;
             int alignmentLength = alignment.getEnd() - alignment.getStart();
-            for (; simplexTailLeftEnd < alignmentLength && (alignment.getPhred(alignment.getStart() + simplexTailLeftEnd) <= SAMAlignment.LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailLeftEnd) == 0); simplexTailLeftEnd++) {
+            for (; simplexTailLeftEnd < alignmentLength && (alignment.getPhred(alignment.getStart() + simplexTailLeftEnd) <= SAMAlignment.SBX_LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailLeftEnd) == 0); simplexTailLeftEnd++) {
 
             }
             int simplexTailRightStart = alignmentLength - 1;
-            for(; simplexTailRightStart >= 0 && (alignment.getPhred(alignment.getStart() + simplexTailRightStart) <= SAMAlignment.LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailRightStart) == 0); simplexTailRightStart--);
-            int[] tailStarts = new int[] {};
-            int[] tailEnds = new int[] {};
-            if(simplexTailLeftEnd > 0 && simplexTailRightStart < alignmentLength - 1 && simplexTailRightStart > 0)
-            {
-                tailStarts = new int[] {alignment.getStart(), alignment.getStart() + simplexTailRightStart + 1};
-                tailEnds = new int[] {simplexTailLeftEnd, alignmentLength};
+            for (; simplexTailRightStart >= 0 && (alignment.getPhred(alignment.getStart() + simplexTailRightStart) <= SAMAlignment.SBX_LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailRightStart) == 0); simplexTailRightStart--)
+                ;
+            int[] tailStarts = new int[]{};
+            int[] tailEnds = new int[]{};
+            if (simplexTailLeftEnd > 0 && simplexTailRightStart < alignmentLength - 1 && simplexTailRightStart > 0) {
+                tailStarts = new int[]{alignment.getStart(), alignment.getStart() + simplexTailRightStart + 1};
+                tailEnds = new int[]{simplexTailLeftEnd, alignmentLength};
+            } else if (simplexTailLeftEnd != 0) {
+                tailStarts = new int[]{alignment.getStart()};
+                tailEnds = new int[]{simplexTailLeftEnd};
+            } else if (simplexTailRightStart < alignmentLength - 1) {
+                tailStarts = new int[]{alignment.getStart() + simplexTailRightStart + 1};
+                tailEnds = new int[]{alignmentLength};
             }
-            else if(simplexTailLeftEnd != 0)
-            {
-                tailStarts = new int[] {alignment.getStart()};
-                tailEnds = new int[] {simplexTailLeftEnd};
-            }
-            else if(simplexTailRightStart < alignmentLength - 1)
-            {
-                tailStarts = new int[] {alignment.getStart() + simplexTailRightStart + 1};
-                tailEnds = new int[] {alignmentLength};
-            }
-            for(int i = 0; i<tailStarts.length; i++) {
+            for (int i = 0; i < tailStarts.length; i++) {
                 int blockChromEnd1 = tailStarts[i];
                 int blockChromEnd2 = alignment.getStart() + tailEnds[i];
                 int blockPxStart = (int) Math.round((blockChromEnd1 - bpStart) / locScale);
@@ -1183,15 +1158,13 @@ public class AlignmentRenderer {
 
         // Draw the label
         Color alternateColor = purple;
-        boolean sbxFullDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() && 
+        boolean sbxFullDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() &&
                 SbxUtils.isFullDiscordantInsertion(insertionBlock);
-        if(sbxFullDiscordantInsertionRecolor) {
+        if (sbxFullDiscordantInsertionRecolor) {
             alternateColor = SbxUtils.fullDiscordantInsertionColor;
-        }
-        else
-        {
-            boolean sbxDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() && 
-                SbxUtils.isDiscordantInsertion(alignment, insertionBlock);
+        } else {
+            boolean sbxDiscordantInsertionRecolor = track.renderOptions.isIndelQualSbx() &&
+                    SbxUtils.isDiscordantInsertion(alignment, insertionBlock);
             alternateColor = sbxDiscordantInsertionRecolor ? SbxUtils.discordantInsertionColor : purple;
         }
 
@@ -1199,7 +1172,7 @@ public class AlignmentRenderer {
         g.fillRect(pxLeft, pxTop, pxRight - pxLeft, pxH);
 
         if (isInsertion && pxH > 5) {
-            if ( flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(insertionBlock) ) {
+            if (flowIndelRendering.handlesAlignment(alignment) && flowIndelRendering.handlesBlock(insertionBlock)) {
                 flowIndelRendering.renderSmallInsertionWings(alignment, insertionBlock, context, pxH, pxTop, pxRight, pxLeft, track.renderOptions);
             } else {
                 g.fillRect(pxLeft - pxWing, pxTop, pxRight - pxLeft + 2 * pxWing, 2);
