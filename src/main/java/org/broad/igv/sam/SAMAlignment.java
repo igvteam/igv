@@ -75,7 +75,7 @@ public class SAMAlignment implements Alignment {
     public static final char ZERO_GAP = 'O';
     public static final char UNKNOWN = 0;
     public static final String REDUCE_READS_TAG = "RR";
-    public static final int LOW_BASEQ_TAIL_THRESHOLD = 30;
+    public static final int SBX_LOW_BASEQ_TAIL_THRESHOLD = 30;
 
     private static final int READ_PAIRED_FLAG = 0x1;
     private static final int PROPER_PAIR_FLAG = 0x2;
@@ -89,7 +89,8 @@ public class SAMAlignment implements Alignment {
     private static final int READ_FAILS_VENDOR_QUALITY_CHECK_FLAG = 0x200;
     private static final int DUPLICATE_READ_FLAG = 0x400;
     private static final int SUPPLEMENTARY_ALIGNMENT_FLAG = 0x800;
-    private SAMAlignment trimmed;
+
+    private SAMAlignment sbxTrimmed;
 
     private SAMReadGroupRecord readGroupRecord;
 
@@ -186,8 +187,14 @@ public class SAMAlignment implements Alignment {
         setPairStrands();
         createAlignmentBlocks();
     }
-    
-    public SAMAlignment(SAMRecord record, boolean skipBlocks) {
+
+    /**
+     * Private constructor used when trimming low quality tails from simplex reads.
+     *
+     * @param record
+     * @param skipBlocks
+     */
+    private SAMAlignment(SAMRecord record, boolean skipBlocks) {
 
         this.record = record;
         this.flags = record.getFlags();
@@ -464,19 +471,19 @@ public class SAMAlignment implements Alignment {
     }
     
     public SAMAlignment trimSimplexTails() {
-        if(trimmed != null) return trimmed;
+        if(sbxTrimmed != null) return sbxTrimmed;
         SAMAlignment res = new SAMAlignment(record.deepCopy(), true);
         String cigarString = record.getCigarString();
         byte[] readBases = record.getReadBases();
         byte[] readBaseQualities = record.getBaseQualities();
         int start, end;
-        for(start = 0; start < readBases.length && (int)readBaseQualities[start] <= LOW_BASEQ_TAIL_THRESHOLD; start++);
-        for(end = readBases.length - 1; end >= 0 && (int)readBaseQualities[end] <= LOW_BASEQ_TAIL_THRESHOLD; end--);
+        for(start = 0; start < readBases.length && (int)readBaseQualities[start] <= SBX_LOW_BASEQ_TAIL_THRESHOLD; start++);
+        for(end = readBases.length - 1; end >= 0 && (int)readBaseQualities[end] <= SBX_LOW_BASEQ_TAIL_THRESHOLD; end--);
 
         if(start == 0 && end == readBases.length - 1)
         {
             res.createAlignmentBlocks();
-            trimmed = res;
+            sbxTrimmed = res;
             return res;
         }
         else if(start > end) {
@@ -485,7 +492,7 @@ public class SAMAlignment implements Alignment {
             res.record.setCigarString("");
             res.end = res.start;
             res.createAlignmentBlocks();
-            trimmed = res;
+            sbxTrimmed = res;
             return res;
         }
         byte[] newReadBases = new byte[end - start + 1], newBaseQuals = new byte[end - start + 1];
@@ -540,7 +547,7 @@ public class SAMAlignment implements Alignment {
         res.record.setCigarString(newCigarString.toString());
         res.record.setAlignmentStart(1 + res.getStart());
         res.createAlignmentBlocks();
-        trimmed = res;
+        sbxTrimmed = res;
         return res;
     }
 

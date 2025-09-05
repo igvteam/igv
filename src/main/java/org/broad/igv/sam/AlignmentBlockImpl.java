@@ -125,6 +125,11 @@ public class AlignmentBlockImpl implements AlignmentBlock {
     }
 
     @Override
+    public boolean hasQualities() {
+        return qualities != null && qualities.length > 0;
+    }
+
+    @Override
     public byte getQuality(int offset) {
         return (qualities == null || offset >= qualities.length) ? (byte) 126 : qualities.getByte(offset);
     }
