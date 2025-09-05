@@ -1209,10 +1209,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     }
 
-    //SAM.INDEL_QUAL_SBX	INDEL coloring uses grey (SBX)	boolean	FALSE
-    //SAM.TAIL_QUAL_SBX	Low-quality tail coloring (SBX)	boolean	FALSE
-    //SAM.HIDE_TAIL_SBX	Hide low-quality tails (SBX)	boolean	FALSE
-
     void addSBXItems(Alignment clickedAlignment, final TrackClickEvent tce) {
 
         addSeparator();
