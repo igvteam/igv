@@ -31,6 +31,7 @@ import org.broad.igv.util.collections.DoubleArrayList;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by jrobinso on 12/20/16.
@@ -48,6 +49,7 @@ public class ReadStats {
     private int nCount = 0;
     private DoubleArrayList readLengths = new DoubleArrayList(10000);
     private DoubleArrayList refToReadRatios = new DoubleArrayList(10000);
+    private Set<Integer> qualityScores = new java.util.HashSet();
 
     public double medianReadLength = 0;
     public double readLengthStdDev = 0;
@@ -82,6 +84,14 @@ public class ReadStats {
 
             double cigarLength = alignment.getCigarString().length();
             averageCigarLength = averageCigarLength * (((double) readCount - 1) / readCount) + (cigarLength / readCount);
+        }
+
+        for(AlignmentBlock ab : alignment.getAlignmentBlocks()) {
+            if(ab.hasQualities()) {
+                for (int i = 0; i < ab.getLength(); i++) {
+                    qualityScores.add((int) ab.getQuality(i));
+                }
+            }
         }
     }
 
@@ -133,6 +143,12 @@ public class ReadStats {
     }
 
     public AlignmentTrack.ExperimentType inferType() {
+
+        // SBX determination does not require statistics.  Try this first.
+        if(qualityScores.size() > 0 && SbxUtils.isSBXAlignments(qualityScores)) {
+            return AlignmentTrack.ExperimentType.SBX;
+        }
+
         compute();
         if (readCount < 20) return AlignmentTrack.ExperimentType.UNKOWN; // Not enough reads
         if (medianRefToReadRatio > 5 || fracReadsWithNs > 0.01) {
