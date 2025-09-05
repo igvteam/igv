@@ -1225,7 +1225,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }));
         add(item);
 
-        final JMenuItem item2 = new JCheckBoxMenuItem("Low-quality tail coloring (SBX)");
+        final JMenuItem item2 = new JCheckBoxMenuItem("Simplex tail coloring (SBX)");
         item2.setSelected(renderOptions.isTailQualSbx());
         item2.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
             renderOptions.setTailQualSbx(item2.isSelected());
@@ -1233,7 +1233,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }));
         add(item2);
 
-        final JMenuItem item3 = new JCheckBoxMenuItem("Hide low-quality tails (SBX)");
+        final JMenuItem item3 = new JCheckBoxMenuItem("Hide simplex tails (SBX)");
         item3.setSelected(renderOptions.isHideTailSbx());
         item3.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
             renderOptions.setHideTailSbx(item3.isSelected());
