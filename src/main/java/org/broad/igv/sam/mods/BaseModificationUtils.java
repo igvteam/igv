@@ -7,7 +7,6 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.*;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -84,6 +83,8 @@ public class BaseModificationUtils {
                 skippedBasesCalled = PreferencesManager.getPreferences().getAsBoolean(Constants.BASEMOD_SKIPPED_BASES);
             }
 
+            String context = base == 'C' ? PreferencesManager.getPreferences().get(Constants.BASEMOD_CYTOSINE_CONTEXT) : null;
+
 
             if (tokens.length == 1) {
                 // Legal but not handled yet, indicates modification is not present.  Perhaps not relevant for visualization
@@ -126,6 +127,13 @@ public class BaseModificationUtils {
                 while (p < sequence.length) {
 
                     if (base == 'N' || sequence[p] == base) {
+
+                        if (base == 'C' && context != null && !BaseModificationSet.contextMatches(sequence, p, context)) {
+                            // Context does not match, skip this base
+                            p++;
+                            continue;
+                        }
+
                         int position = isNegativeStrand ? sequence.length - 1 - p : p;
                         if (matchCount == skip) { // && idx < tokens.length) {
                             for (String modification : modifications) {

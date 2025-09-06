@@ -257,8 +257,12 @@ BASEMOD.NONE_T_COLOR	T	color	0,0,255
 BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
+
 ##Validation
 BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
+
+##Context
+BASEMOD.CYTOSINE_CONTEXT	Cytosine context	string
 
 #Proxy
 PROXY.DISABLE_CHECK	Disable check for system proxy	boolean	FALSE
