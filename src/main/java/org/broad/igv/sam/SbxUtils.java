@@ -172,12 +172,8 @@ public class SbxUtils {
         }
 
         // Trim the read bases and qualities
-        byte[] newReadBases = new byte[end - start + 1];
-        byte[] newBaseQuals = new byte[end - start + 1];
-        for (int i = 0; i < newReadBases.length; i++) {
-            newReadBases[i] = readBases[start + i];
-            newBaseQuals[i] = readBaseQualities[start + i];
-        }
+        byte[] newReadBases = Arrays.copyOfRange(readBases, start, end + 1);
+        byte[] newBaseQuals = Arrays.copyOfRange(readBaseQualities, start, end + 1);
         record.setReadBases(newReadBases);
         record.setBaseQualities(newBaseQuals);
 
@@ -204,6 +200,10 @@ public class SbxUtils {
                 if (consumesRef) {
                     newAlignmentStart += length;
                 }
+                if (consumesQuery) {
+                    readStart = curEnd; // advance past trimmed query
+                }
+                continue;
             } else if (readStart > end) {
                 // All done
                 break;
