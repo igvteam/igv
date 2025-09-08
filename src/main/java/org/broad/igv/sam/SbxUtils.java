@@ -148,7 +148,6 @@ public class SbxUtils {
 
     public static Alignment trimSimplexTails(SAMAlignment parent) {
 
-        //SAMAlignment res = new SAMAlignment(record.deepCopy(), false);
         SAMRecord record = parent.getRecord().deepCopy();
         String cigarString = record.getCigarString();
         byte[] readBases = record.getReadBases();
