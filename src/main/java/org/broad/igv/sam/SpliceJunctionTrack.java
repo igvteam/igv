@@ -27,17 +27,18 @@
 package org.broad.igv.sam;
 
 import org.apache.commons.math3.stat.Frequency;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
+import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.sashimi.SashimiPlot;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -289,12 +290,12 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         }
         menu.addSeparator();
 
-        ArrayList<Track> tmp = new ArrayList();
-        tmp.add(this);
-        TrackMenuUtils.addStandardItems(menu, tmp, te);
+        TrackMenuUtils.addSharedItems(menu, Collections.singletonList(this));
 
         menu.addSeparator();
+        TrackMenuUtils.addDisplayModeItems(Collections.singletonList(this), menu);
 
+        menu.addSeparator();
         final JMenuItem setScaleItem = new JMenuItem("Set Maximum Depth");
         final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
 

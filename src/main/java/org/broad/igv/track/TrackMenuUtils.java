@@ -30,16 +30,17 @@ import com.google.common.collect.Lists;
 import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.bedpe.InteractionTrack;
-import org.broad.igv.logging.*;
-import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
-import org.broad.igv.data.CombinedDataSource;
+import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Range;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.*;
@@ -47,7 +48,10 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.SAMWriter;
-import org.broad.igv.ui.*;
+import org.broad.igv.ui.DataRangeDialog;
+import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.HeatmapScaleDialog;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
@@ -67,9 +71,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.List;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -169,7 +176,7 @@ public class TrackMenuUtils {
         boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
 
-        addSharedItems(menu, tracks, hasFeatureTracks, hasCoverageTracks);
+        addSharedItems(menu, tracks);
         menu.addSeparator();
         if (dataTracksOnly) {
             addDataItems(menu, tracks, hasCoverageTracks);
@@ -421,7 +428,7 @@ public class TrackMenuUtils {
 
                 featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
 
-                if (frame != null) {
+                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
                     Range r = frame.getCurrentRange();
                     featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
                 }
@@ -670,7 +677,7 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks, boolean hasCoverageTracks) {
+    public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks) {
 
         //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
         //trackSettingsHeading.setFont(boldFont);
@@ -919,7 +926,7 @@ public class TrackMenuUtils {
         modes.put("Expanded", Track.DisplayMode.EXPANDED);
         modes.put("Squished", Track.DisplayMode.SQUISHED);
 
-        if(tracks.stream().allMatch(t -> t.isAlignment())) {
+        if (tracks.stream().allMatch(t -> t.isAlignment())) {
             modes.put("Full", Track.DisplayMode.FULL);
         }
 

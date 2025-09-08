@@ -33,7 +33,6 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -201,7 +200,7 @@ public class CNFreqTrack extends AbstractTrack {
         menu.addSeparator();
 
         List<Track> selfAsList = Arrays.asList((Track) this);
-        TrackMenuUtils.addSharedItems(menu, selfAsList, false, false);
+        TrackMenuUtils.addSharedItems(menu, selfAsList);
 
         return menu;
     }
