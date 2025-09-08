@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class NullAlignment implements Alignment {
 
-    static NullAlignment instance = new NullAlignment();
+    static final NullAlignment instance = new NullAlignment();
 
     public static NullAlignment getInstance() {
         return instance;
