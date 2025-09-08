@@ -3,7 +3,9 @@ package org.broad.igv.sam;
 import htsjdk.samtools.SAMRecord;
 import org.broad.igv.sam.sbx.NullAlignment;
 
-import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -107,8 +109,8 @@ public class SbxUtils {
      */
     public static boolean isSBXAlignments(Set<Integer> qualityScores) {
 
-        Set<Integer> expectedScores1 = new HashSet<>(java.util.Arrays.asList(5, 22, 39));
-        Set<Integer> expectedScores2 = new HashSet<>(java.util.Arrays.asList(0, 18, 93));
+        Set<Integer> expectedScores1 = new HashSet<>(Arrays.asList(5, 22, 39));
+        Set<Integer> expectedScores2 = new HashSet<>(Arrays.asList(0, 18, 93));
 
         if (qualityScores.size() == 0 || (qualityScores.size() == 1 && qualityScores.contains(0))) {
             return false;  // All zero quality scores, this can happen in non-SBX files
@@ -180,7 +182,7 @@ public class SbxUtils {
         record.setBaseQualities(newBaseQuals);
 
         // Trim the CIGAR string
-        java.util.List<SAMAlignment.CigarOperator> operators = SAMAlignment.buildOperators(cigarString);
+        List<SAMAlignment.CigarOperator> operators = SAMAlignment.buildOperators(cigarString);
         StringBuilder newCigarString = new StringBuilder();
 
         int readStart = 0;
