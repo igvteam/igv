@@ -888,9 +888,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
             
             if (feature != null) {
-                if(renderOptions.isHideTailSbx()) {
-                    feature = feature.trimSimplexTails();
-                }
                 return feature.getAlignmentValueString(position, mouseX, renderOptions);
             }
         }

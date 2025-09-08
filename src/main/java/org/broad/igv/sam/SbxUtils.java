@@ -1,5 +1,8 @@
 package org.broad.igv.sam;
 
+import htsjdk.samtools.SAMRecord;
+import org.broad.igv.sam.sbx.NullAlignment;
+
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +11,7 @@ public class SbxUtils {
     public static final Color fullDiscordantInsertionColor = new Color(180, 180, 180);
     public static final Color discordantInsertionColor = new Color(140, 140, 140);
     public static final int DISCORDANT_BASE_QUALITY_MAX = 10; // Threshold for a base to be considered discordant
+    public static final int SBX_LOW_BASEQ_TAIL_THRESHOLD = 30;
 
     /*
      * Returns true if there is at least one discordant base within the insertion sequence
@@ -128,4 +132,119 @@ public class SbxUtils {
 
         return true;
     }
+
+    public static int[] trimTails(Alignment alignment) {
+        int simplexTailLeftEnd = 0;
+        int alignmentLength = alignment.getEnd() - alignment.getStart();
+        for (; simplexTailLeftEnd < alignmentLength && (alignment.getPhred(alignment.getStart() + simplexTailLeftEnd) <= SBX_LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailLeftEnd) == 0); simplexTailLeftEnd++) {
+
+        }
+        int simplexTailRightStart = alignmentLength - 1;
+        for (; simplexTailRightStart >= 0 && (alignment.getPhred(alignment.getStart() + simplexTailRightStart) <= SBX_LOW_BASEQ_TAIL_THRESHOLD || alignment.getBase(alignment.getStart() + simplexTailRightStart) == 0); simplexTailRightStart--)
+            ;
+
+        return new int[]{simplexTailLeftEnd, simplexTailRightStart};
+    }
+
+    public static Alignment trimSimplexTails(SAMAlignment parent) {
+
+        //SAMAlignment res = new SAMAlignment(record.deepCopy(), false);
+        SAMRecord record = parent.getRecord().deepCopy();
+        String cigarString = record.getCigarString();
+        byte[] readBases = record.getReadBases();
+        byte[] readBaseQualities = record.getBaseQualities();
+        int start = 0;
+        while (start < readBases.length && readBaseQualities[start] <= SBX_LOW_BASEQ_TAIL_THRESHOLD) {
+            start++;
+        }
+        int end = readBases.length - 1;
+        while (end >= 0 && readBaseQualities[end] <= SBX_LOW_BASEQ_TAIL_THRESHOLD) {
+            end--;
+        }
+
+        if (start == 0 && end == readBases.length - 1) {
+            // No trimming
+            return parent;
+        } else if (start > end) {
+            // Entire read trimmed
+            return NullAlignment.getInstance();
+        }
+
+        // Trim the read bases and qualities
+        byte[] newReadBases = new byte[end - start + 1];
+        byte[] newBaseQuals = new byte[end - start + 1];
+        for (int i = 0; i < newReadBases.length; i++) {
+            newReadBases[i] = readBases[start + i];
+            newBaseQuals[i] = readBaseQualities[start + i];
+        }
+        record.setReadBases(newReadBases);
+        record.setBaseQualities(newBaseQuals);
+
+        // Trim the CIGAR string
+        java.util.List<SAMAlignment.CigarOperator> operators = SAMAlignment.buildOperators(cigarString);
+        StringBuilder newCigarString = new StringBuilder();
+
+        int readStart = 0;
+        int newAlignmentStart = record.getAlignmentStart();
+
+        for (SAMAlignment.CigarOperator op : operators) {
+            int length = op.nBases;
+            char type = op.operator;
+            final boolean consumesQuery = isConsumesQuery(type);
+            final boolean consumesRef = isConsumesRef(type);
+
+            int curEnd = readStart;
+            if (consumesQuery) {
+                curEnd += length;
+            }
+
+            if (curEnd <= start) {
+                // Operation fully in left tail
+                if (consumesRef) {
+                    newAlignmentStart += length;
+                }
+            } else if (readStart > end) {
+                // All done
+                break;
+            } else if (readStart >= start && curEnd <= end + 1) {
+                // Operation fully retained
+                newCigarString.append(length).append(type);
+                readStart = curEnd;
+            } else {
+                // Operation partially retained
+                int truncatedLeft = Math.max(0, start - readStart);
+                int truncatedRight = Math.max(0, curEnd - (end + 1));
+                int newLength = length - truncatedLeft - truncatedRight;
+                if (newLength > 0) {
+                    newCigarString.append(newLength).append(type);
+                }
+                if (consumesRef) {
+                    newAlignmentStart += truncatedLeft;
+                }
+                readStart = curEnd;
+            }
+        }
+        record.setAlignmentStart(newAlignmentStart);
+        record.setCigarString(newCigarString.toString());
+        return new SAMAlignment(record);
+    }
+
+    private static boolean isConsumesRef(char type) {
+        boolean consumesRef = switch (type) {
+            case SAMAlignment.DELETION, SAMAlignment.MISMATCH, SAMAlignment.MATCH,
+                 SAMAlignment.PERFECT_MATCH, SAMAlignment.SKIPPED_REGION -> true;
+            default -> false;
+        };
+        return consumesRef;
+    }
+
+    private static boolean isConsumesQuery(char type) {
+        boolean consumesQuery = switch (type) {
+            case SAMAlignment.INSERTION, SAMAlignment.MISMATCH, SAMAlignment.MATCH,
+                 SAMAlignment.PERFECT_MATCH, SAMAlignment.SOFT_CLIP -> true;
+            default -> false;
+        };
+        return consumesQuery;
+    }
+
 }
