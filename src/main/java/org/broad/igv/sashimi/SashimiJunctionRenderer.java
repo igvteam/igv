@@ -28,11 +28,12 @@ package org.broad.igv.sashimi;
 //~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
@@ -48,8 +49,8 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static org.broad.igv.prefs.Constants.SASHIMI_SHOW_COVERAGE;
 
@@ -362,7 +363,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         int length = pixelJunctionEnd - pixelJunctionStart;
         int minArcHeight = (trackRectangle.height - 1) / 8;
         //We adjust the height slightly by length of junction, just so arcs don't overlap as much
-        int arcHeight = minArcHeight + (int) (Globals.log2(length));
+        int arcHeight = minArcHeight + (length > 0 ? (int) (Globals.log2(length)) : 0);
 
         int minY = (int) trackRectangle.getCenterY() + Math.min(pixelYStartOffset - arcHeight, pixelYEndOffset - arcHeight);
         //Check if arc goes too high. All arcs going below have the same height,
@@ -381,18 +382,6 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         int arcBeginY = (int) trackRectangle.getCenterY() + yPosModifier + (drawAbove ? pixelYStartOffset - 2 : 0);
         int arcEndY = (int) trackRectangle.getCenterY() + yPosModifier + (drawAbove ? pixelYEndOffset - 2 : 0);
 
-
-        //We use corners of a square as control points because why not
-        //The control point is never actually reached
-        int arcControlPeakY = arcBeginY + yPosModifier * arcHeight;
-
-
-        GeneralPath arcPath = new GeneralPath();
-        arcPath.moveTo(pixelJunctionStart, arcBeginY);
-        arcPath.curveTo(pixelJunctionStart, arcControlPeakY,
-                pixelJunctionEnd, arcControlPeakY,
-                pixelJunctionEnd, arcEndY);
-
         Graphics2D g2D = context.getGraphic2DForColor(color);
         g2D.setBackground(background);
 
@@ -410,7 +399,24 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         Stroke stroke = new BasicStroke((float) strokeSize);
         g2D.setStroke(stroke);
-        g2D.draw(arcPath);
+
+        if (pixelJunctionStart == pixelJunctionEnd) {
+            // Junction is less than a pixel wide, draw a vertical line.
+            int lineEndY = arcBeginY + yPosModifier * arcHeight;
+            g2D.drawLine(pixelJunctionStart, arcBeginY, pixelJunctionStart, lineEndY);
+        } else {
+            //We use corners of a square as control points because why not
+            //The control point is never actually reached
+            int arcControlPeakY = arcBeginY + yPosModifier * arcHeight;
+
+            GeneralPath arcPath = new GeneralPath();
+            arcPath.moveTo(pixelJunctionStart, arcBeginY);
+            arcPath.curveTo(pixelJunctionStart, arcControlPeakY,
+                    pixelJunctionEnd, arcControlPeakY,
+                    pixelJunctionEnd, arcEndY);
+            g2D.draw(arcPath);
+        }
+
 
         float midX = ((float) pixelJunctionStart + (float) pixelJunctionEnd) / 2;
 
@@ -420,8 +426,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         double actArcPeakY = arcBeginY + yPosModifier * Math.pow(0.5, 3) * (6) * arcHeight;
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 4;
-        float depthProportionOfMax = Math.min(1, depth / maxDepth);
-        float maxPossibleShapeHeight = maxPossibleArcHeight / 2;
+        float depthProportionOfMax = Math.min(1, (float) depth / maxDepth);
+        float maxPossibleShapeHeight = maxPossibleArcHeight / 2.0f;
         Shape shape = null;
 
         switch (shapeType) {
