@@ -2389,5 +2389,5 @@ public class IGV implements IGVEventObserver {
     }
 
     // Thread pool for loading data
-    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
+    public static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 }

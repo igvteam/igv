@@ -32,7 +32,10 @@ import org.broad.igv.event.ViewChange;
 import org.broad.igv.feature.IExon;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
-import org.broad.igv.sam.*;
+import org.broad.igv.sam.AlignmentDataManager;
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.CoverageTrack;
+import org.broad.igv.sam.SpliceJunctionTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorPalette;
@@ -45,11 +48,14 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.util.List;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -62,24 +68,14 @@ import java.util.stream.Collectors;
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private final SashimiContentPane sashimiContentPane;
+
+    private final SelectableFeatureTrack featureTrack;
+
     private List<SpliceJunctionTrack> spliceJunctionTracks;
 
     private ReferenceFrame referenceFrame;
 
     private IGVEventBus eventBus;
-
-    /**
-     * The minimum allowed origin of the frame. We set scrolling
-     * limits based on initialization
-     */
-    private final double minOrigin;
-
-    /**
-     * The maximum allow end of the frame. We set scrolling
-     * limits based on initialization
-     */
-    private final double maxEnd;
-
 
     private static final List<Color> plotColors;
 
@@ -98,10 +94,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         setBackground(Color.white);
 
         this.eventBus = new IGVEventBus();
-        this.referenceFrame = new ReferenceFrame(iframe, eventBus);
 
-        minOrigin = this.referenceFrame.getOrigin();
-        maxEnd = this.referenceFrame.getEnd();
+        this.referenceFrame = new ReferenceFrame(iframe, eventBus);
 
         int height = IGV.hasInstance() ? IGV.getInstance().getMainFrame().getHeight() : 800;
         setSize(referenceFrame.getWidthInPixels(), height);
@@ -117,8 +111,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
         sashimiPanel.setLayout(boxLayout);
 
-        // TODO ? Initialize minJunctionCoverage
-
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
 
         int colorInd = 0;
@@ -129,11 +121,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         for (AlignmentTrack alignmentTrack : alignmentTracks) {
 
-            //AlignmentDataManager oldDataManager = alignmentTrack.getDataManager();
             AlignmentDataManager dataManager = alignmentTrack.getDataManager();
 
             SpliceJunctionTrack spliceJunctionTrack =
                     new SpliceJunctionTrack(alignmentTrack.getResourceLocator(), alignmentTrack.getName(), dataManager, alignmentTrack, SpliceJunctionTrack.StrandOption.COMBINE);
+
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 
@@ -159,9 +151,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         Axis axis = createAxis(referenceFrame);
         sashimiPanel.add(axis);
 
-        SelectableFeatureTrack geneTrackClone = new SelectableFeatureTrack(geneTrack);
-        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(referenceFrame, geneTrackClone);
-        initGeneComponent(referenceFrame.getWidthInPixels(), geneComponent, geneTrackClone);
+        featureTrack = new SelectableFeatureTrack(geneTrack);
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(referenceFrame, featureTrack);
+        initGeneComponent(referenceFrame.getWidthInPixels(), geneComponent, featureTrack);
 
         JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
         scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -246,7 +238,23 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     @Override
     public void receiveEvent(IGVEvent event) {
-        repaint();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        if(!featureTrack.isReadyToPaint(referenceFrame)) {
+            futures.add(CompletableFuture.runAsync(() -> featureTrack.load(referenceFrame), IGV.threadExecutor));
+        }
+        for (SpliceJunctionTrack t : spliceJunctionTracks) {
+            if (!t.isReadyToPaint(referenceFrame)) {
+                futures.add(CompletableFuture.runAsync(() -> t.load(referenceFrame), IGV.threadExecutor));
+            }
+        }
+
+        if (futures.isEmpty()) {
+            repaint();
+        } else {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .whenCompleteAsync((value, throwable) -> repaint(), UIUtilities::invokeOnEventThread);
+        }
     }
 
     /**
@@ -285,22 +293,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             return new Dimension(100, track.getHeight());
         }
     }
-
-    /**
-     * Set the minimum junction coverage, per trac,k and is not persistent
-     * <p/>
-     * Our "Set Max Junction Coverage Range" just changes the view scaling, it doesn't
-     * filter anything, which is different behavior than the minimum. This might be confusing.
-     *
-     * @param trackComponent
-     * @param newMinJunctionCoverage
-     */
-    private void setMinJunctionCoverage(TrackComponent<SpliceJunctionTrack> trackComponent, int newMinJunctionCoverage) {
-
-        trackComponent.track.clear();
-        trackComponent.repaint();
-    }
-
 
     /**
      * Set the max coverage depth, which is a graphical scaling parameter for determining how
@@ -540,18 +532,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (currentTool.getLastMousePoint() == null) {
-                //This shouldn't happen, but does occasionally
-                return;
-            }
-            double diff = e.getX() - currentTool.getLastMousePoint().getX();
-            // diff > 0 means moving mouse to the right, which drags the frame towards the negative direction
-            boolean hitBounds = SashimiPlot.this.referenceFrame.getOrigin() <= minOrigin && diff > 0;
-            hitBounds |= SashimiPlot.this.referenceFrame.getEnd() >= maxEnd && diff < 0;
-            if (!hitBounds) {
-                currentTool.mouseDragged(e);
-                repaint();
-            }
+            currentTool.mouseDragged(e);
+            repaint();
         }
 
         @Override
