@@ -2289,30 +2289,30 @@ public class IGV implements IGVEventObserver {
                 // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is necessary that
                 // all data is loaded before any track is repainted.  Otherwise tracks be loaded and painted independently.
 
-                final CompletableFuture[] futureArray = futures.toArray(new CompletableFuture[futures.size()]);
-                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+             final CompletableFuture<?>[] futureArray = futures.toArray(new CompletableFuture[0]);
+                final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 isLoading = true;
-                CompletableFuture.allOf(futureArray).thenApplyAsync(future -> {
+
+                CompletableFuture.allOf(futureArray).whenCompleteAsync((ignored, ex) -> {
                     WaitCursorManager.removeWaitCursor(token);
-                    // Autoscale as required, check layouts (for scrollbar changes), and repaint.
-                    Autoscaler.autoscale(getAllTracks());
-                    UIUtilities.invokeOnEventThread(() -> {
-                        checkPanelLayouts();
-                        component.repaint();
-                        isLoading = false;
-                        if (pending != null) {
-                            Collection<? extends Track> tmp = pending;
-                            pending = null;
-                            repaint(tmp);
-                        }
-                    });
-                    return null;
-                }).exceptionally(ex -> {
-                    WaitCursorManager.removeWaitCursor(token);
-                    log.error("Error loading track data", ex);
                     isLoading = false;
-                    pending = null;
-                    return null;
+
+                    if (ex != null) {
+                        log.error("Error loading track data", ex);
+                        pending = null;
+                    } else {
+                        // Autoscale as required, check layouts (for scrollbar changes), and repaint.
+                        Autoscaler.autoscale(getAllTracks());
+                        UIUtilities.invokeOnEventThread(() -> {
+                            checkPanelLayouts();
+                            component.repaint();
+                            if (pending != null) {
+                                Collection<? extends Track> tmp = pending;
+                                pending = null;
+                                repaint(tmp);
+                            }
+                        });
+                    }
                 });
             }
         }
@@ -2342,5 +2342,5 @@ public class IGV implements IGVEventObserver {
     }
 
     // Thread pool for loading data
-    private static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
+    public static final ExecutorService threadExecutor = Executors.newFixedThreadPool(5);
 }
