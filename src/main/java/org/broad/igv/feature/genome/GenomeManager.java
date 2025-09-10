@@ -303,7 +303,7 @@ public class GenomeManager {
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
                         trackConfigs.stream().map(t -> t.url).toList();
 
-                String message = "Select defaul annotations for " + config.getName();
+                String message = "Select default annotations for " + config.getName();
                 List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, message);
                 if (selectedConfigs == null) {
                     return;

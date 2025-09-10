@@ -257,7 +257,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menuItems.add(createBlatMenuItem());
 
         // Combine data tracks
-        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks");
+        JMenuItem combineDataItem = new JMenuItem("Combine Data Tracks...");
         combineDataItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
