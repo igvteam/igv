@@ -162,7 +162,6 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
-                IGVMenuBar.getInstance().disableTracksMenu();
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
@@ -202,7 +201,6 @@ public class GenomeManager {
             if (IGV.hasInstance()) {
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
-                IGVMenuBar.getInstance().enableTracksMenu();
             }
         }
     }

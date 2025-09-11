@@ -111,7 +111,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenuItem reloadSessionItem;
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
-    private JMenu tracksMenu;
     private JMenu fileMenu;
     private List<JComponent> tracksMenuAttributeComponents;
     private JMenu hubsMenu;
@@ -165,36 +164,14 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         hubsMenu = new JMenu("Track Hubs");
         menus.add(hubsMenu);
-
-        tracksMenu = new JMenu("Tracks");
-        tracksMenu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                // Set visibility of trackMenuAttributeComponents based on attribute names
-                boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
-                for (JComponent comp : tracksMenuAttributeComponents) {
-                    comp.setEnabled(hasAttributes);
-                }
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-            }
-        });
-
-        menus.add(createSessionsMenu());
-        menus.add(createViewMenu());
-        menus.add(tracksMenu);
-        menus.add(createRegionsMenu());
-        menus.add(createToolsMenu());
-        extrasMenu = createExtrasMenu();
+        menus.add(createSampleInfoMenu("Sample Info"));
+        menus.add(createSessionsMenu("Sessions"));
+        menus.add(createViewMenu("View"));
+        menus.add(createRegionsMenu("Regions"));
+        menus.add(createToolsMenu("Tools"));
+        extrasMenu = createExtrasMenu("Extras");
         menus.add(extrasMenu);
 
-        updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
         updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
 
         // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
@@ -233,9 +210,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
      * Generate the "tools" menu.
      * Legacy pattern -- at one times tools could be loaded dynamically as plug-ins
      */
-    JMenu createToolsMenu() {
+    JMenu createToolsMenu(String name) {
 
-        JMenu menuItems = new JMenu("Tools");
+        JMenu menuItems = new JMenu(name);
 
         // batch script
         MenuAction menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, igv);
@@ -305,53 +282,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             fileMenu.add(loadTracksFromServerMenuItem);
         }
 
-        fileMenu.addSeparator();
-
-        // Session menu items  -- Currently in Sessions menu
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
-        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
-        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
-        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
-        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
-        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
-        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        fileMenu.add(saveSessionItem);
-
-        fileMenu.add(new JSeparator());
-
-        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        reloadSessionItem.setEnabled(false);
-        fileMenu.add(reloadSessionItem);
-
-        fileMenu.add(new JSeparator());
-
-        autosaveMenu = new AutosaveMenu();
-        fileMenu.add(autosaveMenu);
-
-        JSeparator recentSessionsSep = new JSeparator();
-        recentSessionsSep.setVisible(false);
-        fileMenu.add(recentSessionsSep);
-
-        //Add dynamic list of recent sessions
-        fileMenu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
-                fileMenu,
-                recentSessionsSep,
-                IGV.getInstance().getRecentSessionList(),
-                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
-        );
-
         // ***** Snapshots
-
         fileMenu.addSeparator();
 
         // Snapshot Application
@@ -396,9 +327,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return fileMenu;
     }
 
-    JMenu createSessionsMenu() {
+    JMenu createSessionsMenu(String name) {
 
-        final JMenu menu = new JMenu("Sessions");
+        final JMenu menu = new JMenu(name);
 
         MenuAction menuAction;
 
@@ -516,16 +447,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     }
 
 
-    private void updateTracksMenu(Genome genome) {
-
+    private JMenu createSampleInfoMenu(String name) {
 
         MenuAction menuAction;
-        tracksMenu.removeAll();
-
-        if (genome == null) {
-            return;
-        }
-
+         JMenu tracksMenu = new JMenu(name);
 
         tracksMenuAttributeComponents = new ArrayList<>();
         // Sort Tracks
@@ -567,27 +492,29 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         });
         tracksMenu.add(exportNames);
 
-        tracksMenu.add(new JSeparator());
+        tracksMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                // Set visibility of trackMenuAttributeComponents based on attribute names
+                boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
+                for (JComponent comp : tracksMenuAttributeComponents) {
+                    comp.setEnabled(hasAttributes);
+                }
+            }
 
-        // Reload tracks
-        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
-        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        tracksMenu.add(new JSeparator());
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
 
-        // Reset Tracks
-        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
 
-        // Set track height
-        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
-
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        return tracksMenu;
     }
 
-    private JMenu createViewMenu() {
+    private JMenu createViewMenu(String name) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
@@ -720,12 +647,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
         // Add to IGVPanel menu
-        MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
+        MenuAction dataMenuAction = new MenuAction(name, null, KeyEvent.VK_V);
         viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
         return viewMenu;
     }
 
-    private JMenu createRegionsMenu() {
+    private JMenu createRegionsMenu(String name) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
         MenuAction menuAction = null;
@@ -764,9 +691,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 //         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        MenuAction dataMenuAction = new MenuAction("Regions", null, KeyEvent.VK_V);
-        viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
-        return viewMenu;
+        MenuAction dataMenuAction = new MenuAction(name, null, KeyEvent.VK_V);
+        JMenu regionMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+        return regionMenu;
     }
 
     private void updateHubsMenu(Genome genome) {
@@ -787,7 +714,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 if (!hubSelectionDialog.isCanceled()) {
                     List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
                     HubRegistry.setSelectedHubs(selectedHubs);
-                    updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
                     updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
                 }
             });
@@ -913,7 +839,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return MenuAndToolbarUtils.createMenu(menuItems, helpMenuAction);
     }
 
-    private JMenu createExtrasMenu() {
+    private JMenu createExtrasMenu(String name) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
 
@@ -1001,7 +927,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        MenuAction extrasMenuAction = new MenuAction("Extras");
+        MenuAction extrasMenuAction = new MenuAction(name);
         JMenu menu = MenuAndToolbarUtils.createMenu(menuItems, extrasMenuAction);
 
 
@@ -1233,7 +1159,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         if (genome != null) {
             UIUtilities.invokeOnEventThread(() -> {
-                updateTracksMenu(genome);
                 updateHubsMenu(genome);
                 updateFileMenu(genome);
                 editAnnotationsItem.setEnabled(genome.getGenomeHub() != null);
@@ -1309,18 +1234,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             MessageUtils.showErrorMessage("Error writing to file", e);
             log.error(e);
         }
-    }
-
-    public void disableTracksMenu() {
-        tracksMenu.setEnabled(false);
-        hubsMenu.setEnabled(false);
-    }
-
-    public void enableTracksMenu() {
-        UIUtilities.invokeOnEventThread(() -> {
-            tracksMenu.setEnabled(true);
-            hubsMenu.setEnabled(true);
-        });
     }
 
 
