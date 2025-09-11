@@ -71,7 +71,29 @@ public class HubSelectionDialog extends JDialog {
         // Header message
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        JLabel headerMessage = new JLabel("Public track hubs from https://genome.ucsc.edu/goldenpath/help/api.html");
+
+        JLabel titleLabel = new JLabel("Public track hubs for genome: " + GenomeManager.getInstance().getCurrentGenome().getDisplayName());
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
+        headerPanel.add(titleLabel);
+        headerPanel.add(Box.createVerticalStrut(20));
+
+        JLabel headerMessage = new JLabel();
+        headerMessage.setText("<html>Hub list from <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>https://genome.ucsc.edu/cgi-bin/hgHubConnect</a></html>");
+        headerMessage.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        headerMessage.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new java.net.URI("https://genome.ucsc.edu/cgi-bin/hgHubConnect"));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(HubSelectionDialog.this,
+                            "Unable to open the web browser. Please visit:\nhttps://genome.ucsc.edu/cgi-bin/hgHubConnect",
+                            "Error Opening Browser",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
         headerPanel.add(headerMessage);
         outerPanel.add(headerPanel, BorderLayout.NORTH);
 

@@ -22,7 +22,7 @@ public class SearchTextField extends JTextField {
 
     public SearchTextField() {
 
-        setToolTipText("Enter a gene or locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
+        setToolTipText("Enter a gene or locus, e.g., EGFR, chr1, or chr1:100,000-200,000");
 
         addActionListener(actionevent -> {
             searchByLocus(getText());

@@ -162,7 +162,6 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
-                IGVMenuBar.getInstance().disableTracksMenu();
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
@@ -202,7 +201,6 @@ public class GenomeManager {
             if (IGV.hasInstance()) {
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
-                IGVMenuBar.getInstance().enableTracksMenu();
             }
         }
     }
@@ -303,7 +301,7 @@ public class GenomeManager {
                 List<String> currentAnnotationPaths = trackConfigs == null ? Collections.EMPTY_LIST :
                         trackConfigs.stream().map(t -> t.url).toList();
 
-                String message = "Select defaul tannoations for " + config.getName();
+                String message = "Select default annotations for " + config.getName();
                 List<TrackConfig> selectedConfigs = selectAnnotationTracks(config, message);
                 if (selectedConfigs == null) {
                     return;
