@@ -86,7 +86,11 @@ public class HubSelectionDialog extends JDialog {
                 try {
                     Desktop.getDesktop().browse(new java.net.URI("https://genome.ucsc.edu/cgi-bin/hgHubConnect"));
                 } catch (Exception ex) {
-                    // Handle exception if needed
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(HubSelectionDialog.this,
+                            "Unable to open the web browser. Please visit:\nhttps://genome.ucsc.edu/cgi-bin/hgHubConnect",
+                            "Error Opening Browser",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
