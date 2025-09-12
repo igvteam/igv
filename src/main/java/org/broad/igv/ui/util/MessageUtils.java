@@ -55,6 +55,11 @@ public class MessageUtils {
         Object value;
     }
 
+    public static class ValueCheckboxHolder {
+        public String value;
+        public boolean isChecked;
+    }
+
     /**
      * Log the exception and show {@code message} to the user
      *
@@ -176,6 +181,49 @@ public class MessageUtils {
             UIUtilities.invokeAndWaitOnEventThread(runnable);
 
             return (String) (returnValue.value);
+        }
+    }
+
+    public static ValueCheckboxHolder showInputDialog(String message, String defaultValue, String checkboxMessage) {
+        final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+
+        if (defaultValue != null && message.length() < defaultValue.length()) {
+            message = String.format("%-" + defaultValue.length() + "s", message);
+        }
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        JTextField textField = new JTextField(defaultValue);
+        panel.add(new JLabel(message));
+        panel.add(textField);
+
+        JCheckBox checkBox = null;
+        if (checkboxMessage != null && !checkboxMessage.isEmpty()) {
+            checkBox = new JCheckBox(checkboxMessage, true);
+            panel.add(checkBox);
+        }
+
+        final JCheckBox finalCheckBox = checkBox;
+        final ValueCheckboxHolder returnValue = new ValueCheckboxHolder();
+        if (SwingUtilities.isEventDispatchThread()) {
+            int result = JOptionPane.showConfirmDialog(parent, panel, "Enter content", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                returnValue.value = textField.getText();
+                returnValue.isChecked = finalCheckBox != null && finalCheckBox.isSelected();
+                return returnValue;
+            }
+            return null;
+        } else {
+            Runnable runnable = () -> {
+                int result = JOptionPane.showConfirmDialog(parent, panel, "Enter content", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    returnValue.value = textField.getText();
+                    returnValue.isChecked = finalCheckBox != null && finalCheckBox.isSelected();
+                }
+            };
+
+            UIUtilities.invokeAndWaitOnEventThread(runnable);
+
+            return returnValue;
         }
     }
 
