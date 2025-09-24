@@ -23,6 +23,10 @@ public class HttpMappings {
 
     static Map<String, String> urlMappings = new HashMap<>();
 
+    // Some special hosts
+    static String UCSC_HOST = "https://hgdownload.soe.ucsc.edu/";
+    static String UCSC_BACKUP_HOST = "https://genome-browser.s3.us-east-1.amazonaws.com";
+
     private HttpMappings() {
         // Prevent instantiation
     }

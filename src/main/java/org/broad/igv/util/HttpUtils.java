@@ -94,6 +94,7 @@ public class HttpUtils {
     // oauth tokens set from command line script
     Deque<Pair<Pattern, String>> accessTokens = new ArrayDeque<>();
 
+
     /**
      * @return the single instance
      */
@@ -525,7 +526,7 @@ public class HttpUtils {
     }
 
     /**
-     * The "real" connection method
+     * The "real" connection method.  All other openConnection methods funnel through this one.
      *
      * @param url
      * @param requestProperties
@@ -648,110 +649,125 @@ public class HttpUtils {
             return conn;
         } else {
 
-            int code = conn.getResponseCode();
+            // Actual connection happens here
+            try {
+                int code = conn.getResponseCode();
 
-            if (!isDropboxHost(url.getHost()) &&
-                    requestProperties != null &&
-                    requestProperties.containsKey("Range") &&
-                    code == 200 &&
-                    method.equals("GET")) {
+                if (!isDropboxHost(url.getHost()) &&
+                        requestProperties != null &&
+                        requestProperties.containsKey("Range") &&
+                        code == 200 &&
+                        method.equals("GET")) {
 
-                log.warn("Range header removed by proxy or ignored by server for url: " + url);
+                    log.warn("Range header removed by proxy or ignored by server for url: " + url);
 
-                // Attempt to use a webservice to get the byte range if the content length is unknown or large
-                // long contentLength = conn.getContentLengthLong();
-                // if (contentLength < 0 || contentLength > 0) {
-                String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
-                int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
-                requestProperties.remove("Range"); // < VERY IMPORTANT
-                URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
-                return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
-                // }
-            }
-
-            // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
-            // for example http -> https.
-            if (code >= 300 && code < 400) {
-                if (redirectCount > MAX_REDIRECTS) {
-                    throw new IOException("Too many redirects");
+                    // Attempt to use a webservice to get the byte range if the content length is unknown or large
+                    // long contentLength = conn.getContentLengthLong();
+                    // if (contentLength < 0 || contentLength > 0) {
+                    String[] positionString = requestProperties.get("Range").split("=")[1].split("-");
+                    int length = Integer.parseInt(positionString[1]) - Integer.parseInt(positionString[0]) + 1;
+                    requestProperties.remove("Range"); // < VERY IMPORTANT
+                    URL wsUrl = HttpUtils.createURL(WEBSERVICE_URL + "?file=" + url.toExternalForm() + "&position=" + positionString[0] + "&length=" + length);
+                    return openConnection(wsUrl, requestProperties, "GET", redirectCount, retries);
+                    // }
                 }
 
-                CachedRedirect cr = new CachedRedirect();
-                cr.url = new URL(conn.getHeaderField("Location"));
-                if (cr.url != null) {
-                    cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
-                    String s;
-                    if ((s = conn.getHeaderField("Cache-Control")) != null) {
+                // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
+                // for example http -> https.
+                if (code >= 300 && code < 400) {
+                    if (redirectCount > MAX_REDIRECTS) {
+                        throw new IOException("Too many redirects");
+                    }
 
-                        // cache-control takes priority
-                        CacheControl cc = null;
-                        try {
-                            cc = CacheControl.valueOf(s);
-                        } catch (IllegalArgumentException e) {
-                            // use default
-                        }
-                        if (cc != null) {
-                            if (cc.isNoCache()) {
-                                // set expires to null, preventing caching
-                                cr.expires = null;
-                            } else if (cc.getMaxAge() > 0) {
-                                cr.expires = ZonedDateTime.now().plusSeconds(cc.getMaxAge());
+                    CachedRedirect cr = new CachedRedirect();
+                    cr.url = new URL(conn.getHeaderField("Location"));
+                    if (cr.url != null) {
+                        cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
+                        String s;
+                        if ((s = conn.getHeaderField("Cache-Control")) != null) {
+
+                            // cache-control takes priority
+                            CacheControl cc = null;
+                            try {
+                                cc = CacheControl.valueOf(s);
+                            } catch (IllegalArgumentException e) {
+                                // use default
+                            }
+                            if (cc != null) {
+                                if (cc.isNoCache()) {
+                                    // set expires to null, preventing caching
+                                    cr.expires = null;
+                                } else if (cc.getMaxAge() > 0) {
+                                    cr.expires = ZonedDateTime.now().plusSeconds(cc.getMaxAge());
+                                }
+                            }
+                        } else if ((s = conn.getHeaderField("Expires")) != null) {
+                            // no cache-control header, so try "expires" next
+                            try {
+                                cr.expires = ZonedDateTime.parse(s);
+                            } catch (DateTimeParseException e) {
+                                // use default
                             }
                         }
-                    } else if ((s = conn.getHeaderField("Expires")) != null) {
-                        // no cache-control header, so try "expires" next
-                        try {
-                            cr.expires = ZonedDateTime.parse(s);
-                        } catch (DateTimeParseException e) {
-                            // use default
+                        if (cr.expires != null) {
+                            redirectCache.put(url, cr);
+                            log.debug("Redirecting to " + cr.url);
+                            return openConnection(HttpUtils.createURL(cr.url.toString()), requestProperties, method, ++redirectCount, retries);
                         }
                     }
-                    if (cr.expires != null) {
-                        redirectCache.put(url, cr);
-                        log.debug("Redirecting to " + cr.url);
-                        return openConnection(HttpUtils.createURL(cr.url.toString()), requestProperties, method, ++redirectCount, retries);
-                    }
                 }
-            }
 
-            // TODO -- handle other response codes.
-            else if (code >= 400) {
+                // TODO -- handle other response codes.
+                else if (code >= 400) {
 
-                String message;
+                    String message;
 
-                // TODO -- detect Google requestor pay failure
+                    // TODO -- detect Google requestor pay failure
 
-                if (code == 404) {
-                    message = "File not found: " + url.toString();
-                    throw new FileNotFoundException(message);
-                } else if (code == 401) {
-                    OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
-                    if (provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
-                        provider = OAuthUtils.getInstance().getGoogleProvider();
-                    }
-                    if (provider != null && retries == 0) {
-                        if (!provider.isLoggedIn()) {
-                            provider.checkLogin();
+                    if (code == 404) {
+                        message = "File not found: " + url.toString();
+                        throw new FileNotFoundException(message);
+                    } else if (code == 401) {
+                        OAuthProvider provider = OAuthUtils.getInstance().getProviderForURL(url);
+                        if (provider == null && GoogleUtils.isGoogleURL(url.toExternalForm())) {
+                            provider = OAuthUtils.getInstance().getGoogleProvider();
                         }
-                        return openConnection(url, requestProperties, method, redirectCount, ++retries);
-                    }
-                    message = "You must log in to access this file";
-                    throw new HttpResponseException(code, message, "");
-                } else if (code == 403) {
-                    message = "Access forbidden";
-                    throw new HttpResponseException(code, message, "");
-                } else if (code == 416) {
-                    throw new UnsatisfiableRangeException(conn.getResponseMessage());
-                } else {
-                    message = conn.getResponseMessage();
-                    String details = readErrorStream(conn);
+                        if (provider != null && retries == 0) {
+                            if (!provider.isLoggedIn()) {
+                                provider.checkLogin();
+                            }
+                            return openConnection(url, requestProperties, method, redirectCount, ++retries);
+                        }
+                        message = "You must log in to access this file";
+                        throw new HttpResponseException(code, message, "");
+                    } else if (code == 403) {
+                        message = "Access forbidden";
+                        throw new HttpResponseException(code, message, "");
+                    } else if (code == 416) {
+                        throw new UnsatisfiableRangeException(conn.getResponseMessage());
+                    } else {
+                        message = conn.getResponseMessage();
+                        String details = readErrorStream(conn);
 
-                    if (GoogleUtils.isGoogleURL(url.toExternalForm()) && details.contains("requester pays bucket")) {
-                        MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
-                    }
+                        if (GoogleUtils.isGoogleURL(url.toExternalForm()) && details.contains("requester pays bucket")) {
+                            MessageUtils.showMessage("<html>" + details + "<br>Use Google menu to set project.");
+                        }
 
-                    throw new HttpResponseException(code, message, details);
+                        throw new HttpResponseException(code, message, details);
+                    }
                 }
+            } catch (IOException e) {
+                if (url.getHost().equals(HttpMappings.UCSC_HOST)) {
+                    try {
+                        log.warn("Connection to " + url.getHost() + " failed, retrying with backup host");
+                        String newURL = url.toExternalForm().replaceFirst(HttpMappings.UCSC_HOST, HttpMappings.UCSC_BACKUP_HOST);
+                        return openConnection(new URL(newURL), requestProperties, method, redirectCount, retries);
+                    } catch (IOException e1) {
+                        log.error("Retry failed", e1);
+                        // Fall through and throw original exception
+                    }
+                }
+                throw new RuntimeException(e);
             }
         }
         return conn;
