@@ -782,7 +782,7 @@ public class HttpUtils {
                     // Fall through and throw original exception
                 }
             }
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
