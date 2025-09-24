@@ -546,8 +546,8 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
+        HttpURLConnection conn;
         try {
-            HttpURLConnection conn;
 
             // Insure we have mapped deprecated URLs to new ones
             url = new URL(HttpMappings.mapURL(url.toExternalForm()));
