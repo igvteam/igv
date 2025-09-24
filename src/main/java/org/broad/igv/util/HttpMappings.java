@@ -1,5 +1,9 @@
 package org.broad.igv.util;
 
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.PreferencesManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,8 +12,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.broad.igv.logging.*;
 
 public class HttpMappings {
 
@@ -23,10 +25,10 @@ public class HttpMappings {
 
     static Map<String, String> urlMappings = new HashMap<>();
 
+
     private HttpMappings() {
         // Prevent instantiation
     }
-
 
     /**
      * Map a URL, for example from a deprecated host or non-http scheme, to a stable newer form. Sort of a pre-request
