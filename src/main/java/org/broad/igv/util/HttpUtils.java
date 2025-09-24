@@ -65,9 +65,13 @@ import static org.broad.igv.util.stream.SeekableServiceStream.WEBSERVICE_URL;
  */
 public class HttpUtils {
 
+
     private static Logger log = LogManager.getLogger(HttpUtils.class);
 
     private static HttpUtils instance;
+
+    private final String UCSC_HOST;
+    private final String UCSC_BACKUP_HOST;
 
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
@@ -115,6 +119,11 @@ public class HttpUtils {
         } catch (Exception e) {
             log.warn("Couldn't set useSystemProxies=true");
         }
+
+        // Some special hosts   https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz
+        UCSC_HOST = PreferencesManager.getPreferences().get("UCSC_HOST");
+        UCSC_BACKUP_HOST = PreferencesManager.getPreferences().get("UCSC_BACKUP_HOST");
+
     }
 
     /**
@@ -537,120 +546,123 @@ public class HttpUtils {
     private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount, int retries) throws IOException {
 
-        // Insure we have mapped deprecated URLs to new ones
-        url = new URL(HttpMappings.mapURL(url.toExternalForm()));
+        try {
+            HttpURLConnection conn;
 
-        // if we're already seen a redirect for this URL, use the updated one
-        if (redirectCache.containsKey(url)) {
-            CachedRedirect cr = redirectCache.get(url);
-            if (ZonedDateTime.now().compareTo(cr.expires) < 0.0) {
-                // now() is before our expiration
-                log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url).url);
-                url = cr.url;
+            // Insure we have mapped deprecated URLs to new ones
+            url = new URL(HttpMappings.mapURL(url.toExternalForm()));
+
+            // if we're already seen a redirect for this URL, use the updated one
+            if (redirectCache.containsKey(url)) {
+                CachedRedirect cr = redirectCache.get(url);
+                if (ZonedDateTime.now().compareTo(cr.expires) < 0.0) {
+                    // now() is before our expiration
+                    log.debug("Found URL in redirection cache: " + url + " ->" + redirectCache.get(url).url);
+                    url = cr.url;
+                } else {
+                    log.debug("Removing expired URL from redirection cache: " + url);
+                    redirectCache.remove(url);
+                }
+            }
+
+
+            // If we have an explicitly set oauth token for this URL use it.  This is used by port and batch commands
+            // and will ovveride oAuth authentication check
+            String token = this.getCachedTokenFor(url);
+
+            if (token == null) {
+
+                // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
+                OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
+
+                if (oauthProvider != null) {
+                    //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
+                    if (!oauthProvider.isGoogle()) {
+                        oauthProvider.checkLogin();
+                    }
+                    token = oauthProvider.getAccessToken();
+
+                    if (oauthProvider.findString != null) {
+                        // A hack, supported for backward compatibility but not reccomended
+                        url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
+                    }
+                }
+            }
+
+            // If a presigned URL, check its validity and update if needed
+            if (AmazonUtils.isKnownPresignedURL(url.toExternalForm())) {
+                url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
+            }
+
+            // If an S3 url, obtain a signed https url
+            if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
+                url = new URL(AmazonUtils.translateAmazonCloudURL(url.toExternalForm()));
+            }
+
+            //Encode query string portions
+            url = StringUtils.encodeURLQueryString(url);
+            if (log.isTraceEnabled()) {
+                log.trace(url);
+            }
+
+            //Encode base portions. Right now just spaces, most common case
+            if (StringUtils.countChar(url.toExternalForm(), ' ') > 0) {
+                String newPath = url.toExternalForm().replaceAll(" ", "%20");
+                url = HttpUtils.createURL(newPath);
+            }
+
+            // If this is a Google URL and we have set a userProject ("requestor pays') use it.
+            if (GoogleUtils.isGoogleURL(url.toExternalForm()) &&
+                    GoogleUtils.getProjectID() != null &&
+                    GoogleUtils.getProjectID().length() > 0 &&
+                    !hasQueryParameter(url, "userProject")) {
+
+                url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
+            }
+
+            conn = openProxiedConnection(url);
+
+            if (!"HEAD".equals(method)) {
+                conn.setRequestProperty("Accept", "text/plain");
+            }
+
+            conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
+            conn.setReadTimeout(Globals.READ_TIMEOUT);
+            conn.setRequestMethod(method);
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            // we'll handle redirects manually, allowing us to cache the new URL
+            conn.setInstanceFollowRedirects(false);
+
+            if (requestProperties != null) {
+                for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
+                    conn.setRequestProperty(prop.getKey(), prop.getValue());
+                }
+            }
+
+            Collection<String> headers = headerMap.get(url.getHost());
+            if (headers != null) {
+                for (String h : headers) {
+                    String[] kv = h.split(":");
+                    if (kv.length == 2) {
+                        conn.setRequestProperty(kv[0], kv[1]);
+                    }
+                }
+            }
+
+            conn.setRequestProperty("User-Agent", Globals.applicationString());
+
+
+            // If we have an oauth token use it.
+            if (token != null) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
+
+            if (method.equals("PUT")) {
+                return conn;
             } else {
-                log.debug("Removing expired URL from redirection cache: " + url);
-                redirectCache.remove(url);
-            }
-        }
 
+                // Actual connection happens here
 
-        // If we have an explicitly set oauth token for this URL use it.  This is used by port and batch commands
-        // and will ovveride oAuth authentication check
-        String token = this.getCachedTokenFor(url);
-
-        if (token == null) {
-
-            // If the URL is protected via an oAuth provider fetch token, and optionally map url with find/replace string.
-            OAuthProvider oauthProvider = OAuthUtils.getInstance().getProviderForURL(url);
-
-            if (oauthProvider != null) {
-                //Google is skipped here as we don't yet know if the url is protected or not.  Login is invoked after 401 error
-                if (!oauthProvider.isGoogle()) {
-                    oauthProvider.checkLogin();
-                }
-                token = oauthProvider.getAccessToken();
-
-                if (oauthProvider.findString != null) {
-                    // A hack, supported for backward compatibility but not reccomended
-                    url = HttpUtils.createURL(url.toExternalForm().replaceFirst(oauthProvider.findString, oauthProvider.replaceString));
-                }
-            }
-        }
-
-        // If a presigned URL, check its validity and update if needed
-        if (AmazonUtils.isKnownPresignedURL(url.toExternalForm())) {
-            url = new URL(AmazonUtils.updatePresignedURL(url.toExternalForm()));
-        }
-
-        // If an S3 url, obtain a signed https url
-        if (AmazonUtils.isAwsS3Path(url.toExternalForm())) {
-            url = new URL(AmazonUtils.translateAmazonCloudURL(url.toExternalForm()));
-        }
-
-        //Encode query string portions
-        url = StringUtils.encodeURLQueryString(url);
-        if (log.isTraceEnabled()) {
-            log.trace(url);
-        }
-
-        //Encode base portions. Right now just spaces, most common case
-        if (StringUtils.countChar(url.toExternalForm(), ' ') > 0) {
-            String newPath = url.toExternalForm().replaceAll(" ", "%20");
-            url = HttpUtils.createURL(newPath);
-        }
-
-        // If this is a Google URL and we have set a userProject ("requestor pays') use it.
-        if (GoogleUtils.isGoogleURL(url.toExternalForm()) &&
-                GoogleUtils.getProjectID() != null &&
-                GoogleUtils.getProjectID().length() > 0 &&
-                !hasQueryParameter(url, "userProject")) {
-
-            url = addQueryParameter(url, "userProject", GoogleUtils.getProjectID());
-        }
-
-        HttpURLConnection conn = openProxiedConnection(url);
-
-        if (!"HEAD".equals(method)) {
-            conn.setRequestProperty("Accept", "text/plain");
-        }
-
-        conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
-        conn.setReadTimeout(Globals.READ_TIMEOUT);
-        conn.setRequestMethod(method);
-        conn.setRequestProperty("Connection", "Keep-Alive");
-        // we'll handle redirects manually, allowing us to cache the new URL
-        conn.setInstanceFollowRedirects(false);
-
-        if (requestProperties != null) {
-            for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
-                conn.setRequestProperty(prop.getKey(), prop.getValue());
-            }
-        }
-
-        Collection<String> headers = headerMap.get(url.getHost());
-        if (headers != null) {
-            for (String h : headers) {
-                String[] kv = h.split(":");
-                if (kv.length == 2) {
-                    conn.setRequestProperty(kv[0], kv[1]);
-                }
-            }
-        }
-
-        conn.setRequestProperty("User-Agent", Globals.applicationString());
-
-
-        // If we have an oauth token use it.
-        if (token != null) {
-            conn.setRequestProperty("Authorization", "Bearer " + token);
-        }
-
-        if (method.equals("PUT")) {
-            return conn;
-        } else {
-
-            // Actual connection happens here
-            try {
                 int code = conn.getResponseCode();
 
                 if (!isDropboxHost(url.getHost()) &&
@@ -756,21 +768,22 @@ public class HttpUtils {
                         throw new HttpResponseException(code, message, details);
                     }
                 }
-            } catch (IOException e) {
-                if (url.getHost().equals(HttpMappings.UCSC_HOST)) {
-                    try {
-                        log.warn("Connection to " + url.getHost() + " failed, retrying with backup host");
-                        String newURL = url.toExternalForm().replaceFirst(HttpMappings.UCSC_HOST, HttpMappings.UCSC_BACKUP_HOST);
-                        return openConnection(new URL(newURL), requestProperties, method, redirectCount, retries);
-                    } catch (IOException e1) {
-                        log.error("Retry failed", e1);
-                        // Fall through and throw original exception
-                    }
-                }
-                throw new RuntimeException(e);
             }
+            return conn;
+
+        } catch (IOException e) {
+            if (url.getHost().equals(UCSC_HOST)) {
+                try {
+                    log.warn("Connection to " + url.getHost() + " failed, retrying with backup host");
+                    String newURL = url.toExternalForm().replaceFirst(UCSC_HOST, UCSC_BACKUP_HOST);
+                    return openConnection(new URL(newURL), requestProperties, method, redirectCount, retries);
+                } catch (IOException e1) {
+                    log.error("Retry failed", e1);
+                    // Fall through and throw original exception
+                }
+            }
+            throw new RuntimeException(e);
         }
-        return conn;
     }
 
     public HttpURLConnection openProxiedConnection(URL url) throws IOException {
