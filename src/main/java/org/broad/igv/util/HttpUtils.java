@@ -401,7 +401,7 @@ public class HttpUtils {
                     try {
                         readErrorStream(conn);  // Consume content
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+
                     }
                 return false;
             } finally {
