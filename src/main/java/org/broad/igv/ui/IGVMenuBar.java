@@ -696,6 +696,11 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         return regionMenu;
     }
 
+    /**
+     * Update the Track Hubs menu.  The items presented depend on the current genome.
+     *
+     * @param genome
+     */
     private void updateHubsMenu(Genome genome) {
 
         if (genome == null) {
@@ -704,39 +709,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         hubsMenu.removeAll();
 
-        // Add UCSC public hubs item if available
-        List<HubDescriptor> hubs = HubRegistry.getAllHubs();
-        if (!hubs.isEmpty()) {
-            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
-            addHubItem.addActionListener(e -> {
-                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
-                hubSelectionDialog.setVisible(true);
-                if (!hubSelectionDialog.isCanceled()) {
-                    List<HubDescriptor> selectedHubs = hubSelectionDialog.getSelectedHubs();
-                    HubRegistry.setSelectedHubs(selectedHubs);
-                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
-                }
-            });
-            hubsMenu.add(addHubItem);
-        }
-
-        // Load hub from URL
-        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Selected UCSC public and user loaded hubs.  Selections are stored in preferences.
-        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
-        if (selectedHubs != null && selectedHubs.size() > 0) {
-            hubsMenu.addSeparator();
-            for (HubDescriptor hub : selectedHubs) {
-                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
-            }
-        }
-
-        // Track hubs
+        // Genome defined hubs -- these are curated, typically a single hub for annotations.
         if (genome.getTrackHubs().size() > 0) {
-            hubsMenu.addSeparator();
             for (Hub trackHub : genome.getTrackHubs()) {
                 hubsMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
             }
@@ -746,7 +720,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         String ucscId = genome.getUCSCId();
         if (EncodeTrackChooserFactory.genomeSupportedUCSC(ucscId) || EncodeTrackChooserFactory.genomeSupported(ucscId)) {
 
-            if (genome.getTrackHubs().size() == 0) {
+            if (hubsMenu.getItemCount() > 0) {
                 hubsMenu.addSeparator();  // Add if not added previously
             }
 
@@ -773,6 +747,35 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         }
 
+
+        // Add UCSC public hubs item if hubs are available for this genome
+        hubsMenu.addSeparator();
+        List<HubDescriptor> hubs = HubRegistry.getAllHubs();
+        if (!hubs.isEmpty()) {
+            JMenuItem addHubItem = new JMenuItem("Select Public Track Hubs from UCSC ...");
+            addHubItem.addActionListener(e -> {
+                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
+                hubSelectionDialog.setVisible(true);
+                if (!hubSelectionDialog.isCanceled()) {
+                    List<HubDescriptor> selected = hubSelectionDialog.getSelectedHubs();
+                    HubRegistry.setSelectedHubs(selected);
+                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
+                }
+            });
+            hubsMenu.add(addHubItem);
+        }
+
+        // Load hub from URL
+        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // User selected UCSC public and user loaded hubs.  Selections are stored in preferences.
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
+        if (selectedHubs != null && selectedHubs.size() > 0) {
+            for (HubDescriptor hub : selectedHubs) {
+                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
+            }
+        }
 
     }
 
