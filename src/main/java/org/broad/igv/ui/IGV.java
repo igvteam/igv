@@ -1260,7 +1260,6 @@ public class IGV implements IGVEventObserver {
                     }
                 }
             }
-            //revalidateTrackPanels();
             return newTracks;
         } finally {
             if (IGV.hasInstance()) {

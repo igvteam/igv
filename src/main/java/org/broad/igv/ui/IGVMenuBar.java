@@ -94,13 +94,11 @@ import static org.broad.igv.ui.UIConstants.*;
 public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(IGVMenuBar.class);
-    private static final String LOAD_GENOME_SERVER_TOOLTIP = "Select genomes available on the server to appear in menu.";
-    private static final String CANNOT_LOAD_GENOME_SERVER_TOOLTIP = "Could not reach genome server";
+
 
     private static IGVMenuBar instance;
 
     private JMenu extrasMenu;
-    private JMenu toolsMenu;
     private JMenu googleMenu;
     private JMenu AWSMenu;
     private AutosaveMenu autosaveMenu;
@@ -333,7 +331,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         MenuAction menuAction;
 
-        // Session menu items
         menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
         menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -450,7 +447,16 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
     private JMenu createSampleInfoMenu(String name) {
 
         MenuAction menuAction;
-         JMenu tracksMenu = new JMenu(name);
+        JMenu tracksMenu = new JMenu(name);
+
+        // Load menu items
+        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv);
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        tracksMenu.addSeparator();
 
         tracksMenuAttributeComponents = new ArrayList<>();
         // Sort Tracks

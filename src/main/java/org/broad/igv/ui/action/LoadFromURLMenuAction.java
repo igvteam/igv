@@ -30,9 +30,10 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.load.HubGenomeLoader;
-import org.broad.igv.logging.*;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.load.HubGenomeLoader;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ucsc.hub.Hub;
@@ -42,7 +43,8 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.util.LoadFromURLDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -84,7 +86,12 @@ public class LoadFromURLMenuAction extends MenuAction {
             LoadFromURLDialog dlg = new LoadFromURLDialog(IGV.getInstance().getMainFrame(), isHtsGet);
             dlg.setVisible(true);
             if (!dlg.isCanceled()) {
-                loadUrls(dlg.getFileURLs(), dlg.getIndexURLs(), isHtsGet);
+                List<String> urls = dlg.getFileURLs();
+                if (urls.size() == 1 && SessionReader.isSessionFile(urls.get(0))) {
+                    LongRunningTask.submit(() -> this.igv.loadSession(urls.get(0), null));
+                } else {
+                    loadUrls(urls, dlg.getIndexURLs(), isHtsGet);
+                }
             }
         } else if (command.equalsIgnoreCase(LOAD_SAMPLEINFO_FROM_URL)) {
             final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
@@ -93,7 +100,10 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (url != null && !url.trim().isBlank()) {
                 try {
                     ResourceLocator locator = new ResourceLocator(url.trim());
-                    LongRunningTask.submit(() -> AttributeManager.getInstance().loadSampleInfo(locator));
+                    LongRunningTask.submit(() -> {
+                        AttributeManager.getInstance().loadSampleInfo(locator);
+                       igv.revalidateTrackPanels();
+                    });
                 } catch (Exception ex) {
                     MessageUtils.showMessage("Error loading sample info: " + ex.getMessage());
                 }
@@ -207,7 +217,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 final String indexUrl = indexes.get(i);
                 rl.setIndexPath(indexUrl);
             }
-            if(isHtsGet) {
+            if (isHtsGet) {
                 rl.setHtsget(true);  // Do not override setting if isHtsGet is false.  False means htsget status is unknown.
             }
             locators.add(rl);
