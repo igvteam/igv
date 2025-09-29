@@ -343,7 +343,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        menuAction.setToolTipText(UIConstants.OPEN_SESSION_TOOLTIP);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
