@@ -31,7 +31,6 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.AttributeManager;
@@ -106,8 +105,11 @@ public class LoadFilesMenuAction extends MenuAction {
                     missingFiles.add(file);
                 } else {
                     String path = file.getAbsolutePath();
-                    if(this.type == Type.SAMPLE_INFO) {
-                        LongRunningTask.submit(() -> AttributeManager.getInstance().loadSampleInfo(new ResourceLocator(path)));
+                    if (this.type == Type.SAMPLE_INFO) {
+                        LongRunningTask.submit(() -> {
+                            AttributeManager.getInstance().loadSampleInfo(new ResourceLocator(path));
+                            igv.revalidateTrackPanels();
+                        });
                     } else if (SessionReader.isSessionFile(path)) {
                         LongRunningTask.submit(() -> this.igv.loadSession(path, null));
                     } else {

@@ -1,7 +1,6 @@
 package org.broad.igv.feature.genome.load;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.InMemorySequence;
 import org.broad.igv.feature.genome.Sequence;
@@ -55,7 +54,7 @@ public class GenbankLoader extends GenomeLoader {
         Genome genome =  new Genome(config);
 
         if (IGV.hasInstance() && !Globals.isHeadless()) {
-            genome.getFeatureDB().addFeatures(genbankParser.getFeatures(), genome);
+            genome.getFeatureDB().addFeatures(genbankParser.getFeatures());
             FeatureTrack geneFeatureTrack = createGeneTrack(genome, genbankParser.getFeatures());
             genome.setGeneTrack(geneFeatureTrack);
         }

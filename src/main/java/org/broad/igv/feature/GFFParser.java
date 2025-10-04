@@ -30,7 +30,6 @@ import org.broad.igv.logging.*;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.gff.GFFCombiner;
-import org.broad.igv.feature.gff.GFF3Combiner;
 import org.broad.igv.feature.gff.GFFFeatureSource;
 import org.broad.igv.feature.tribble.GFFCodec;
 import org.broad.igv.track.*;
@@ -95,7 +94,7 @@ public class GFFParser implements FeatureParser {
         List<Feature> iFeatures = combiner.combineFeatures();
 
         if(genome != null) {
-            genome.getFeatureDB().addFeatures(iFeatures, genome);
+            genome.getFeatureDB().addFeatures(iFeatures);
         }
 
         return iFeatures;

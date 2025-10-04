@@ -102,7 +102,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                     ResourceLocator locator = new ResourceLocator(url.trim());
                     LongRunningTask.submit(() -> {
                         AttributeManager.getInstance().loadSampleInfo(locator);
-                       igv.revalidateTrackPanels();
+                        igv.revalidateTrackPanels();
                     });
                 } catch (Exception ex) {
                     MessageUtils.showMessage("Error loading sample info: " + ex.getMessage());

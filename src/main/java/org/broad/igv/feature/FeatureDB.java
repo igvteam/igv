@@ -30,16 +30,8 @@ package org.broad.igv.feature;
 import com.jidesoft.utils.SortedList;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.aa.AminoAcidManager;
-import org.broad.igv.feature.aa.Codon;
-import org.broad.igv.feature.aa.CodonTable;
-import org.broad.igv.feature.aa.CodonTableManager;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.track.SequenceTrack;
 
 import java.util.*;
 
@@ -56,36 +48,36 @@ public class FeatureDB {
     private final Map<String, List<NamedFeature>> featureMap = new java.util.concurrent.ConcurrentHashMap<>();
     private final int MAX_DUPLICATE_COUNT = 20;
 
-    public void addFeature(NamedFeature feature, Genome genome) {
+    public void addFeature(NamedFeature feature) {
 
         final String name = feature.getName();
         if (name != null && name.length() > 0 && !name.equals(".")) {
-            put(name, feature, genome);
+            put(name, feature);
         }
         if (feature instanceof BasicFeature) {
             final BasicFeature igvFeature = (BasicFeature) feature;
             final String id = igvFeature.getIdentifier();
             if (id != null && id.length() > 0) {
-                put(id, feature, genome);
+                put(id, feature);
             }
 
-            addByAttributes(igvFeature, genome);
+            addByAttributes(igvFeature);
 
             List<Exon> exons = igvFeature.getExons();
             if (exons != null) {
                 for (Exon exon : exons) {
-                    addByAttributes(exon, genome);
+                    addByAttributes(exon);
                 }
             }
         }
     }
 
-    private void addByAttributes(IGVFeature igvFeature, Genome genome) {
+    private void addByAttributes(IGVFeature igvFeature) {
         List<String> attributeKeys = igvFeature.getAttributeKeys();
         for (String key : attributeKeys) {
             String value = igvFeature.getAttribute(key);
             if (value.length() < 50) {
-                put(value, igvFeature, genome);
+                put(value, igvFeature);
             }
         }
     }
@@ -96,10 +88,9 @@ public class FeatureDB {
      *
      * @param name
      * @param feature
-     * @param genome  The genome which these features belong to. Used for checking chromosomes
      * @return true if successfully added, false if not
      */
-    void put(String name, NamedFeature feature, Genome genome) {
+    void put(String name, NamedFeature feature) {
 
         String key = name.toUpperCase();
 
@@ -115,49 +106,16 @@ public class FeatureDB {
         }
     }
 
-    /*
-        String key = name.toUpperCase();
-
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
-            IGVNamedFeature currentFeature = featureMap.get(key);
-            if (currentFeature == null) {
-                featureMap.put(key, feature);
-            } else {
-                // If there are multiple features, prefer the one that is NOT on a "random" chromosome.
-                // This is a hack, but an important one for the human assemblies
-                String featureChr = feature.getChr().toLowerCase();
-                String currentFeatureChr = currentFeature.getChr();
-                if (featureChr.contains("random") || featureChr.contains("chrun") || featureChr.contains("hap")) {
-                    return;
-                } else if (currentFeatureChr.contains("random") || currentFeatureChr.contains("chrun") ||
-                        currentFeatureChr.contains("hap")) {
-                    featureMap.put(key, feature);
-                    return;
-                }
-
-                // If there are multiple features, use or keep the longest one
-                int w1 = currentFeature.getEnd() - currentFeature.getStart();
-                int w2 = feature.getEnd() - feature.getStart();
-                if (w2 > w1) {
-                    featureMap.put(key, feature);
-                }
-
-            }
-
-        }
-
-     */
 
 
-    public void addFeature(String name, IGVNamedFeature feature, Genome genome) {
-        put(name.toUpperCase(), feature, genome);
+    public void addFeature(String name, IGVNamedFeature feature) {
+        put(name.toUpperCase(), feature);
     }
 
-    public void addFeatures(List<htsjdk.tribble.Feature> features, Genome genome) {
+    public void addFeatures(List<htsjdk.tribble.Feature> features) {
         for (htsjdk.tribble.Feature feature : features) {
             if (feature instanceof IGVFeature)
-                addFeature((IGVFeature) feature, genome);
+                addFeature((IGVFeature) feature);
         }
     }
 
@@ -172,6 +130,7 @@ public class FeatureDB {
 
     /**
      * Return a feature with the given name.
+     * @deprecated -- use getFeature
      */
     public NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();
@@ -249,116 +208,6 @@ public class FeatureDB {
             }
             return features;
         }
-    }
-
-
-    /**
-     * Search for a feature with the given name, which has the specified aminoAcid
-     * at the specified (1-indexed) proteinPosition .
-     *
-     * @param name
-     * @param proteinPosition 1-indexed position along the feature in which the amino acid is found, in protein coordinates
-     * @param refAA           String symbolizing the desired amino acid
-     * @param mutAA           String symbolizing the mutated amino acid
-     * @param currentGenome
-     * @return Map from genome position to features found. Feature name
-     * must be exact, but there can be multiple features with the same name
-     */
-    public Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
-                                                    String mutAA, Genome currentGenome) {
-        String nm = name.toUpperCase();
-
-        if (!Globals.isHeadless() && currentGenome == null) {
-            currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        }
-
-        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
-        List<NamedFeature> possibles = featureMap.get(nm);
-
-        if (possibles != null) {
-            synchronized (featureMap) {
-                for (NamedFeature f : possibles) {
-                    if (!(f instanceof BasicFeature)) {
-                        continue;
-                    }
-
-                    BasicFeature bf = (BasicFeature) f;
-                    Codon c = bf.getCodon(currentGenome, bf.getChr(), proteinPosition);
-                    if (c == null) {
-                        continue;
-                    }
-                    if (c.getAminoAcid().equalsByName(refAA)) {
-
-                        CodonTable codonTable = CodonTableManager.getInstance().getCodonTableForChromosome(currentGenome.getId(), bf.getChr());
-                        if (codonTable != null) {
-                            Set<String> snps = AminoAcidManager.getInstance().getMappingSNPs(c.getSequence(),
-                                    AminoAcidManager.getAminoAcidByName(mutAA), codonTable);
-                            if (snps.size() >= 1) {
-                                results.put(c.getGenomePositions()[0], bf);
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-
-        return results;
-
-    }
-
-
-    /**
-     * Find features with a given name, which have refNT as the base pair at the specified position within the feature.
-     * refNT considered based on the read strand, so a negative strand feature with A at position 1 on the positive strand
-     * would be found only if refNT = T.
-     *
-     * @param name          Feature name
-     * @param startPosition 1-based location within the feature
-     * @param refNT         Nucleotide (A, G, C, T) of feature.
-     * @param currentGenome The genome in which to search
-     * @return
-     */
-    public Map<Integer, BasicFeature> getMutationNT(String name, int startPosition, String refNT, Genome currentGenome) {
-        String nm = name.toUpperCase();
-        if (!Globals.isHeadless() && currentGenome == null) {
-            currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        }
-
-        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
-        List<NamedFeature> possibles = featureMap.get(nm);
-        String tempNT;
-        String brefNT = refNT.toUpperCase();
-
-        if (possibles != null) {
-            synchronized (featureMap) {
-                for (NamedFeature f : possibles) {
-                    if (!(f instanceof BasicFeature)) {
-                        continue;
-                    }
-
-                    BasicFeature bf = (BasicFeature) f;
-
-                    int genomePosition = bf.featureToGenomePosition(new int[]{startPosition - 1})[0];
-                    if (genomePosition < 0) {
-                        continue;
-                    }
-                    final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
-                    if (nuclSequence == null) {
-                        continue;
-                    }
-                    tempNT = new String(nuclSequence);
-                    if (bf.getStrand() == Strand.NEGATIVE) {
-                        tempNT = SequenceTrack.getReverseComplement(tempNT);
-                    }
-
-                    if (tempNT.toUpperCase().equals(brefNT)) {
-                        results.put(genomePosition, bf);
-                    }
-                }
-            }
-        }
-        return results;
     }
 
     /**
