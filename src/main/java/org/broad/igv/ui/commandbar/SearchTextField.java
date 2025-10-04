@@ -2,6 +2,7 @@ package org.broad.igv.ui.commandbar;
 
 import com.jidesoft.hints.ListDataIntelliHints;
 import htsjdk.tribble.NamedFeature;
+import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -55,9 +56,9 @@ public class SearchTextField extends JTextField {
             if (text.length() <= 1) {
                 return false;
             } else {
-                //TODO Uncomment to use comprehensive feature search, note that it should support partial matches
-                //List<IGVNamedFeature> features = SearchCommand.comprehensiveFeatureSearch(text);
-                List<NamedFeature> features = GenomeManager.getInstance().getCurrentGenome().getFeatureDB().getFeaturesList(text, SearchCommand.SEARCH_LIMIT);
+
+                final FeatureDB featureDB = GenomeManager.getInstance().getCurrentGenome().getFeatureDB();
+                List<NamedFeature> features = featureDB.getFeaturesStartingWith(text, SearchCommand.SEARCH_LIMIT);
                 final List<SearchCommand.SearchResult> results = SearchCommand.getResults(features);
                 Object[] list = SearchCommand.getSelectionList(results, false);
                 if (list.length >= 1) {
