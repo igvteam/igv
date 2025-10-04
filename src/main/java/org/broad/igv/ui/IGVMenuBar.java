@@ -755,7 +755,9 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
 
         // Add UCSC public hubs item if hubs are available for this genome
-        hubsMenu.addSeparator();
+        if (hubsMenu.getItemCount() > 0) {
+            hubsMenu.addSeparator();
+        }
         List<HubDescriptor> hubs = HubRegistry.getAllHubs();
         if (!hubs.isEmpty()) {
             JMenuItem addHubItem = new JMenuItem("Select Public Track Hubs from UCSC ...");
