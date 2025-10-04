@@ -266,7 +266,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
         //All of these should be possible with a SNP from the EGFR sequence
         String[] muts = new String[]{"I", "R", "P", "P", "R"};
         Map<Integer, BasicFeature> matches;
-        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesMatching(name);
         for (int ii = 0; ii < symbols.length; ii++) {
             matches = SearchCommand.getMutationAA(possibles, ii + 1, symbols[ii], muts[ii], genome);
             assertEquals(1, matches.size());
@@ -277,7 +277,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
 
         name = "EGFLAM";
         int exp_start = 38439399;
-        possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        possibles = genome.getFeatureDB().getFeaturesMatching(name);
         matches = SearchCommand.getMutationAA(possibles, 2, "H", "H", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
@@ -295,7 +295,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testMutationSearchNegStrand() throws Exception {
         String name = "KRAS";
         int exp_start = 25249446;
-        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 100, false);
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesMatching(name);
         Map<Integer, BasicFeature> matches =SearchCommand.getMutationAA(possibles, 1, "M", "I", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
@@ -308,7 +308,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testMutationSearchFail() throws Exception {
         String name = "EGFR";
         String[] symbols = "R,P,S,G,M".split(",");
-        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesMatching(name);
         for (int ii = 0; ii < symbols.length; ii++) {
             Map<Integer, BasicFeature>  matches = SearchCommand.getMutationAA(possibles, ii + 1, symbols[ii], "M", genome);
             assertEquals(0, matches.size());
@@ -319,7 +319,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testMutationSearchNT() throws Exception {
         String name = "EGFR";
         String[] bps = new String[]{"A", "T", "G"};
-        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesMatching(name);
         for (int ii = 0; ii < bps.length; ii++) {
             Map<Integer, BasicFeature> matches = SearchCommand.getMutationNT(possibles, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
@@ -330,7 +330,7 @@ public class SearchCommandTest extends AbstractHeadlessTest {
     public void testMutationSearchNTNegStrand() throws Exception {
         String name = "KRAS";
         String[] bps = new String[]{"A", "T", "G"};
-        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesList(name, 10, false);
+        List<NamedFeature> possibles = genome.getFeatureDB().getFeaturesMatching(name);
 
         for (int ii = 0; ii < bps.length; ii++) {
             Map<Integer, BasicFeature> matches = SearchCommand.getMutationNT(possibles, ii + 1, bps[ii], genome);

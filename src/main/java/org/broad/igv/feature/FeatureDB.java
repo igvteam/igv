@@ -106,7 +106,6 @@ public class FeatureDB {
     }
 
 
-
     public void addFeature(String name, IGVNamedFeature feature) {
         put(name.toUpperCase(), feature);
     }
@@ -142,19 +141,18 @@ public class FeatureDB {
     }
 
     /**
-     * Get all features which match nm. Not necessarily
-     * an exact match. Current implementation will match anything
-     * for which name is at the beginning, including but not limited to
-     * exact matches.
-     * <p/>
-     * NOTE: "It is imperative that the user manually synchronize
-     * on [this sorted map] when iterating over any of its
-     * collection views, or the collections views of any of its
-     * subMap, headMap or tailMap views". See
-     * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Collections.html#synchronizedSortedMap%28java.util.SortedMap%29> here</a>
-     *
-     * @param name : Search string. Features which begin with this
-     *             string will be found.
+     * Return all features with an exact match to the given name.
+     */
+    public List<NamedFeature> getFeaturesMatching(String name) {
+        String nm = name.trim().toUpperCase();
+        return featureMap.get(nm);
+    }
+
+    /**
+     * Get all features which match nm. Not necessarily an exact match. Current implementation will match anything
+     * for which name is at the beginning.
+     * Note: This method is synchronized on featureMap
+     * @param name : Search string. Features which begin with this string will be found.
      * @return
      */
     Map<String, List<NamedFeature>> getFeaturesMap(String name) {
@@ -165,27 +163,16 @@ public class FeatureDB {
     }
 
     /**
-     * Shortcut to getFeaturesList(name, limit, true)
+     * Get a list of features which start with the provided name.  In the case of multiple features with the same
+     * name only one will be returned.  This is used for the text hints in the search box.  Value questionable.
      *
-     * @param name
-     * @param limit
-     * @return
-     * @see #getFeaturesList(String, int, boolean)
-     */
-    public List<NamedFeature> getFeaturesList(String name, int limit) {
-        return getFeaturesList(name, limit, true);
-    }
-
-    /**
-     * Get a list of features which start with the provided name.
      * Note that matches can be inexact
      *
      * @param name
      * @param limit
-     * @param longestOnly Whether to take only the longest feature for each name
      * @return
      */
-    public List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
+    public List<NamedFeature> getFeaturesStartingWith(String name, int limit) {
 
         //Note: We are iterating over submap, this needs
         //to be synchronized over the main map.
@@ -197,11 +184,7 @@ public class FeatureDB {
             int ii = 0;
             while (nameIter.hasNext() && ii < limit) {
                 List<NamedFeature> subFeats = resultMap.get(nameIter.next());
-                if (longestOnly) {
-                    features.add(subFeats.get(0));
-                } else {
-                    features.addAll(subFeats);
-                }
+                features.add(subFeats.get(0));
                 ii++;
             }
             return features;

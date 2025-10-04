@@ -27,7 +27,6 @@ package org.broad.igv.feature;
 
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.AbstractHeadlessTest;
-import org.broad.igv.ui.action.SearchCommand;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -87,10 +86,10 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureListSize() throws Exception {
-        List<NamedFeature> features = genome.getFeatureDB().getFeaturesList(CHECK_STR, 3);
+        List<NamedFeature> features = genome.getFeatureDB().getFeaturesStartingWith(CHECK_STR, 3);
         assertEquals(3, features.size());
 
-        features = genome.getFeatureDB().getFeaturesList(CHECK_STR, LARGE);
+        features = genome.getFeatureDB().getFeaturesStartingWith(CHECK_STR, LARGE);
         assertTrue(features.size() < LARGE);
         int expected = 50;
         assertEquals(expected, features.size());
@@ -98,7 +97,7 @@ public class FeatureDBTest extends AbstractHeadlessTest {
 
     @Test
     public void testFeatureList() throws Exception {
-        List<NamedFeature> features = genome.getFeatureDB().getFeaturesList(CHECK_STR, LARGE);
+        List<NamedFeature> features = genome.getFeatureDB().getFeaturesStartingWith(CHECK_STR, LARGE);
         for (NamedFeature f : features) {
             assertTrue(f.getName().startsWith(CHECK_STR));
             assertNotNull(genome.getFeatureDB().getFeature(f.getName()));

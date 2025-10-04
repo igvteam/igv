@@ -90,7 +90,7 @@ public class CodonTest extends AbstractHeadlessTest {
         //valid for these ids:
         //NM_003661, NM_145343, NM_001136540
 
-        List<NamedFeature> featuresList = genome.getFeatureDB().getFeaturesList(geneName, 50, false);
+        List<NamedFeature> featuresList = genome.getFeatureDB().getFeaturesMatching(geneName);
         for (NamedFeature feat : featuresList) {
             BasicFeature bf = (BasicFeature) feat;
             System.out.println(bf.getIdentifier());
