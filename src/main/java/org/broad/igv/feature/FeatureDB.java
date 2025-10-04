@@ -28,8 +28,8 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
+import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.aa.AminoAcidManager;
 import org.broad.igv.feature.aa.Codon;
@@ -37,8 +37,9 @@ import org.broad.igv.feature.aa.CodonTable;
 import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.SequenceTrack;
-import htsjdk.tribble.Feature;
 
 import java.util.*;
 
@@ -51,13 +52,9 @@ public class FeatureDB {
 
     private static Logger log = LogManager.getLogger(FeatureDB.class);
 
-    private Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<>());
+    // private final Map<String, List<NamedFeature>> featureMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, List<NamedFeature>> featureMap = new java.util.concurrent.ConcurrentHashMap<>();
     private final int MAX_DUPLICATE_COUNT = 20;
-    private final Genome genome;
-
-    public FeatureDB(Genome genome) {
-        this.genome = genome;
-    }
 
     public void addFeature(NamedFeature feature, Genome genome) {
 
@@ -105,29 +102,14 @@ public class FeatureDB {
     void put(String name, NamedFeature feature, Genome genome) {
 
         String key = name.toUpperCase();
-        if (!Globals.isHeadless()) {
-            Genome currentGenome = genome != null ? genome : GenomeManager.getInstance().getCurrentGenome();
-            if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
-                return;
-            }
-        }
 
-        synchronized (featureMap) {
-            List<NamedFeature> currentList = featureMap.get(key);
-            if (currentList == null) {
-                List<NamedFeature> newList = new SortedList<NamedFeature>(
-                        new ArrayList<>(), FeatureComparator.get(true));
-                boolean added = newList.add(feature);
-                if (added) {
-                    featureMap.put(key, newList);
-                }
-                return;
-            } else {
-                // Don't let list grow without bounds
-                if (currentList.size() > MAX_DUPLICATE_COUNT) {
-                    return;
-                }
+        // Use computeIfAbsent for safer and more efficient concurrent access
+        List<NamedFeature> currentList = featureMap.computeIfAbsent(key, k ->
+                new SortedList<>(new ArrayList<>(), FeatureComparator.get(true)));
 
+        // The list itself is not thread-safe, so synchronize on it during modification.
+        synchronized (currentList) {
+            if (currentList.size() < MAX_DUPLICATE_COUNT) {
                 currentList.add(feature);
             }
         }
@@ -283,7 +265,7 @@ public class FeatureDB {
      * must be exact, but there can be multiple features with the same name
      */
     public Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
-                                                           String mutAA, Genome currentGenome) {
+                                                    String mutAA, Genome currentGenome) {
         String nm = name.toUpperCase();
 
         if (!Globals.isHeadless() && currentGenome == null) {

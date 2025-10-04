@@ -359,30 +359,31 @@ public class HttpUtils {
      * @return
      * @throws IOException
      */
-    private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
+private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
 
-        // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
-        String urlString = url.toString();
-        boolean isAWS = urlString.contains("AWSAccessKeyId");
-        boolean tryHead =
-                isAWS == false && (headURLCache.containsKey(url) ? headURLCache.get(url) : true);
+    // Keep track of urls for which "HEAD" does not work (e.g. Amazon with signed urls).
+    String urlString = url.toString();
+    boolean isAWS = urlString.contains("AWSAccessKeyId");
+    boolean tryHead =
+            !isAWS && (headURLCache.getOrDefault(url, true));
 
-        if (tryHead) {
-            try {
-                HttpURLConnection conn = openConnection(url, null, "HEAD");
-                headURLCache.put(url, true);
-                return conn;
-            } catch (IOException e) {
-                if (e instanceof FileNotFoundException) {
-                    throw e;
-                }
-                log.debug("HEAD request failed for url: " + url.toExternalForm());
-                log.debug("Trying GET instead for url: " + url.toExternalForm());
-                headURLCache.put(url, false);
-            }
+    if (tryHead) {
+        try {
+            HttpURLConnection conn = openConnection(url, null, "HEAD");
+            headURLCache.put(url, true);
+            return conn;
+        } catch (IOException e) {
+            log.debug("HEAD request failed for url: " + url.toExternalForm());
+            log.debug("Trying GET with Range header instead for url: " + url.toExternalForm());
+            headURLCache.put(url, false);
         }
-        return openConnection(url, null, "GET");
     }
+
+    // Fallback to GET with a Range header to minimize data transfer
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Range", "bytes=0-0");
+    return openConnection(url, headers, "GET");
+}
 
     public String getHeaderField(URL url, String key) throws IOException {
         HttpURLConnection conn = openConnectionHeadOrGet(url);
@@ -772,18 +773,23 @@ public class HttpUtils {
             return conn;
 
         } catch (IOException e) {
-            if (url.getHost().equals(UCSC_HOST)) {
+            if (url.getHost().equals(UCSC_HOST) && !isIndex(url)) {   // never use backup for index files
                 try {
                     log.warn("Connection to " + url.getHost() + " failed, retrying with backup host");
                     String newURL = url.toExternalForm().replaceFirst(UCSC_HOST, UCSC_BACKUP_HOST);
                     return openConnection(new URL(newURL), requestProperties, method, redirectCount, retries);
                 } catch (IOException e1) {
-                    log.error("Retry failed", e1);
+                    // log.error("Retry failed", e1);
                     // Fall through and throw original exception
                 }
             }
             throw e;
         }
+    }
+
+    private static boolean isIndex(URL url) {
+        return url.getPath().endsWith(".tbi") || url.getPath().endsWith(".idx") || url.getPath().endsWith("idx.gz")
+                || url.getPath().endsWith(".csi");
     }
 
     public HttpURLConnection openProxiedConnection(URL url) throws IOException {

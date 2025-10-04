@@ -121,7 +121,7 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.nameSet != null ? config.nameSet : "ucsc";
         trackHubs = new ArrayList<>();
-        featureDB = new FeatureDB(this);
+        featureDB = new FeatureDB();
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         ucscID = config.ucscID == null ? ucsdIDMap.getOrDefault(id, id) : config.ucscID;
