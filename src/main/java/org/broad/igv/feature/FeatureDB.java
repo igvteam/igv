@@ -145,7 +145,8 @@ public class FeatureDB {
      */
     public List<NamedFeature> getFeaturesMatching(String name) {
         String nm = name.trim().toUpperCase();
-        return featureMap.get(nm);
+        List<NamedFeature> features = featureMap.get(nm);
+        return features != null ? features : Collections.emptyList();
     }
 
     /**
