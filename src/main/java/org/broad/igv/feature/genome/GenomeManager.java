@@ -74,7 +74,7 @@ import java.util.stream.Stream;
 public class GenomeManager {
 
     public static final String SELECT_ANNOTATIONS_MESSAGE = "Select default annotation tracks for this genome.  " +
-            "You can change these selections later using the 'Genomes > Select Genome Annotations...' menu.";
+            "You can change these selections later using the 'Genomes > Select Default Annotations...' menu.";
     private static Logger log = LogManager.getLogger(GenomeManager.class);
 
     private static GenomeManager theInstance;
