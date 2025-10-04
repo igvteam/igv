@@ -44,8 +44,7 @@ public class FeatureDB {
 
     private static Logger log = LogManager.getLogger(FeatureDB.class);
 
-    // private final Map<String, List<NamedFeature>> featureMap = Collections.synchronizedMap(new HashMap<>());
-    private final Map<String, List<NamedFeature>> featureMap = new java.util.concurrent.ConcurrentHashMap<>();
+    private Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<>());
     private final int MAX_DUPLICATE_COUNT = 20;
 
     public void addFeature(NamedFeature feature) {
