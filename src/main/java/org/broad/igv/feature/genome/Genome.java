@@ -66,8 +66,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -121,7 +119,7 @@ public class Genome {
         displayName = config.getName();
         nameSet = config.nameSet != null ? config.nameSet : "ucsc";
         trackHubs = new ArrayList<>();
-        featureDB = new FeatureDB(this);
+        featureDB = new FeatureDB();
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
         ucscID = config.ucscID == null ? ucsdIDMap.getOrDefault(id, id) : config.ucscID;
@@ -155,8 +153,11 @@ public class Genome {
         // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wg view are disabled.
         List<Chromosome> chromosomeList = null;
         if (config.chromSizesURL != null) {
-            if(fileSizeIsOk(config.chromSizesURL, 100_000)) {
+            if(fileSizeIsOk(config.chromSizesURL, 10_000_000)) {
+                long t0 = System.currentTimeMillis();
                 chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
+                long dt = System.currentTimeMillis() - t0;
+                System.out.println(dt);
             }
         }
 
@@ -771,7 +772,7 @@ public class Genome {
                 while (iter.hasNext()) {
                     Feature f = iter.next();
                     if (f instanceof NamedFeature) {
-                        genome.getFeatureDB().addFeature((NamedFeature) f, genome);
+                        genome.getFeatureDB().addFeature((NamedFeature) f);
                     }
                 }
             } catch (IOException e) {

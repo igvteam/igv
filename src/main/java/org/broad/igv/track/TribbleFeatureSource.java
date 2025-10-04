@@ -309,7 +309,7 @@ abstract public class TribbleFeatureSource implements org.broad.igv.track.Featur
                     List<Feature> featureList = featureMap.computeIfAbsent(igvChr, k -> new ArrayList<>());
                     featureList.add(f);
                     if (genome != null && f instanceof IGVNamedFeature named) {
-                        genome.getFeatureDB().addFeature(named, genome);
+                        genome.getFeatureDB().addFeature(named);
                     }
 
                     if (this.isVCF && f instanceof Variant v) {

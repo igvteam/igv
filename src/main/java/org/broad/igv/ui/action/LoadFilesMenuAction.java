@@ -29,13 +29,15 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.logging.*;
-import org.broad.igv.prefs.IGVPreferences;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.session.SessionReader;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.event.ActionEvent;
@@ -50,24 +52,33 @@ import java.util.stream.Collectors;
 public class LoadFilesMenuAction extends MenuAction {
 
     private static final Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
+
+
+    public enum Type {TRACK, SESSION, SAMPLE_INFO}
+
     private final IGV igv;
+    private final Type type;
 
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
+        this.type = Type.TRACK;
+    }
+
+    public LoadFilesMenuAction(String label, int mnemonic, IGV igv, Type type) {
+        super(label, null, mnemonic);
+        this.igv = igv;
+        this.type = type;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-                loadFiles(chooseTrackFiles());
+        loadFiles(chooseTrackFiles());
     }
 
     private File[] chooseTrackFiles() {
 
         File lastDirectoryFile = PreferencesManager.getPreferences().getLastTrackDirectory();
-
-        // Get Track Files
-        final IGVPreferences prefs = PreferencesManager.getPreferences();
 
         // Tracks.  Simulates multi-file select
         File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, null);
@@ -95,18 +106,17 @@ public class LoadFilesMenuAction extends MenuAction {
                     missingFiles.add(file);
                 } else {
                     String path = file.getAbsolutePath();
-                    if (SessionReader.isSessionFile(path)) {
-                        final String msg = "File " + path +
-                                " appears to be an IGV Session file - " +
-                                "please use the Open Session menu item " +
-                                "to load it.";
-                        log.error(msg);
-                        MessageUtils.showMessage(msg);
+                    if (this.type == Type.SAMPLE_INFO) {
+                        LongRunningTask.submit(() -> {
+                            AttributeManager.getInstance().loadSampleInfo(new ResourceLocator(path));
+                            igv.revalidateTrackPanels();
+                        });
+                    } else if (SessionReader.isSessionFile(path)) {
+                        LongRunningTask.submit(() -> this.igv.loadSession(path, null));
                     } else {
                         validFiles.add(file);
                     }
                 }
-
             }
 
             if (!missingFiles.isEmpty()) {
