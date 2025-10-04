@@ -450,7 +450,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         JMenu tracksMenu = new JMenu(name);
 
         // Load menu items
-        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv);
+        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
