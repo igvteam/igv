@@ -84,7 +84,7 @@ public class EmblFeatureTableParser implements FeatureParser {
 
                 newTracks.add(track);
 
-                genome.getFeatureDB().addFeatures(features, genome);
+                genome.getFeatureDB().addFeatures(features);
                 return newTracks;
             }
         } catch (IOException ex) {
