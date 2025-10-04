@@ -130,7 +130,6 @@ public class FeatureDB {
 
     /**
      * Return a feature with the given name.
-     * @deprecated -- use getFeature
      */
     public NamedFeature getFeature(String name) {
         String nm = name.trim().toUpperCase();

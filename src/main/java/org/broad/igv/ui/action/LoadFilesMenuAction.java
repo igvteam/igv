@@ -52,11 +52,12 @@ import java.util.stream.Collectors;
 public class LoadFilesMenuAction extends MenuAction {
 
     private static final Logger log = LogManager.getLogger(LoadFilesMenuAction.class);
-    private final Type type;
 
-    enum Type {TRACK, SESSION, SAMPLE_INFO}
+
+    public enum Type {TRACK, SESSION, SAMPLE_INFO}
 
     private final IGV igv;
+    private final Type type;
 
     public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
