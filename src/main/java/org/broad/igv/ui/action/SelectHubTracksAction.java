@@ -77,11 +77,12 @@ public class SelectHubTracksAction extends MenuAction {
                         selectAndLoadTracks(hub, genomeId);
                     } else {
                         boolean remove =  MessageUtils.confirm(hubDescriptor.getShortLabel() +
-                                " does not have any IGV supported tracks for " + genomeId + ". Remove from list?");
-                        if (remove) {
-                            HubRegistry.removeHub(hubDescriptor);
-                            IGVMenuBar.getInstance().updateMenus();
-                        }
+                                " does not have any IGV supported tracks for " + genomeId);
+                        // TODO -- remove this hub from the registry, its not clear how to do this persistently
+//                        if (remove) {
+//                            HubRegistry.removeSelectedHub(hubDescriptor);
+//                            IGVMenuBar.getInstance().updateMenus();
+//                        }
                     }
 
                 } catch (Exception e) {

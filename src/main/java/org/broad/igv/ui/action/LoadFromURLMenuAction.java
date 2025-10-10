@@ -59,7 +59,7 @@ import java.util.List;
 public class LoadFromURLMenuAction extends MenuAction {
 
     public static final String LOAD_TRACKS_FROM_URL = "Load Tracks from URL...";
-    public static final String LOAD_HUB_FROM_URL = "Load Track Hub from URL...";
+    public static final String LOAD_HUB_FROM_URL = "Add Track Hub from URL...";
     public static final String LOAD_SESSION_FROM_URL = "Load Session from URL...";
     public static final String LOAD_SAMPLEINFO_FROM_URL = "Load Sample Info from URL...";
 
@@ -180,7 +180,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfigs().get(0).getUcscID().equals(id))) {
                     HubGenomeLoader.loadAssemblyHub(hub);
                 } else if (genome != null) {
-                    SelectHubTracksAction.selectAndLoadTracks(hub, id);
+                    //SelectHubTracksAction.selectAndLoadTracks(hub, id);
                     HubRegistry.addUserHub(hub);
                     IGVMenuBar.getInstance().updateMenus(genome);
                 }

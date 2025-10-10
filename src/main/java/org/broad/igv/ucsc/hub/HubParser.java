@@ -94,32 +94,37 @@ public class HubParser {
      * @param hubUrls
      * @return
      */
-    public static List<Hub> loadHubs(String ucscId, List<String> hubUrls) {
+    public static List<Hub> loadHubs(List<String> hubUrls) {
 
-        List<Hub> trackHubs = new ArrayList<>();
-
-        List<CompletableFuture<Object>> futures = IntStream.range(0, hubUrls.size())
-                .parallel()
+        List<CompletableFuture<Hub>> futures = IntStream.range(0, hubUrls.size())
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> {
                     try {
-                        int order = i + 1;
                         final Hub hub = HubParser.loadHub(hubUrls.get(i));
-                        hub.setOrder(order);
-                        trackHubs.add(hub);
+                        hub.setOrder(i + 1);
+                        return hub;
                     } catch (Exception e) {
-                        log.error("Error loading hub " + hubUrls.get(i), e);
+                        // Throw a runtime exception to be caught later
+                        throw new RuntimeException("Error loading hub " + hubUrls.get(i), e);
                     }
-                    return null;
                 }))
                 .collect(Collectors.toList());
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        try {
-            combinedFuture.get(10, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error("Error loading hubs", e);
-        }
-        Collections.sort(trackHubs, (h1, h2) -> h1.getOrder() - h2.getOrder());
-        return trackHubs;
+
+        // Wait for all futures to complete and collect the results.
+        return futures.stream()
+                .map(future -> {
+                    try {
+                        // Set a timeout for each individual hub
+                        return future.get(10, TimeUnit.SECONDS);
+                    } catch (Exception e) {
+                        log.error("Error loading a hub", e);
+                        // Cancel the future if it times out or has an error
+                        future.cancel(true);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(Hub::getOrder))
+                .collect(Collectors.toList());
     }
 
     static List<Stanza> loadStanzas(String url) throws IOException {
@@ -236,7 +241,7 @@ public class HubParser {
     }
 
     private static String getDataURL(String url, String host, String baseURL) {
-        return FileUtils.isRemote(url)  ? url :
+        return FileUtils.isRemote(url) ? url :
                 url.startsWith("/") ? host + url : baseURL + url;
     }
 

@@ -264,7 +264,7 @@ public class Genome {
         }
 
         if (config.getHubs() != null) {
-            trackHubs.addAll(HubParser.loadHubs(config.getUcscID(), config.getHubs()));
+            trackHubs.addAll(HubParser.loadHubs(config.getHubs()));
             // Set a "genomeHub", which by convention is the first
             // hub listed.
             if (trackHubs.size() > 0) {
