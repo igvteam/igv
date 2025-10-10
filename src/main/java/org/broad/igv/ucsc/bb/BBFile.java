@@ -1,9 +1,7 @@
 package org.broad.igv.ucsc.bb;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.tribble.NamedFeature;
 import org.broad.igv.data.BasicScore;
-import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureType;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
@@ -14,21 +12,19 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ucsc.BPTree;
 import org.broad.igv.ucsc.Trix;
-import org.broad.igv.ucsc.bb.codecs.*;
+import org.broad.igv.ucsc.bb.codecs.BBCodec;
+import org.broad.igv.ucsc.bb.codecs.BBCodecFactory;
 import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /* bigWig/bigBed file structure:
  *     fixedWidthHeader
@@ -479,7 +475,7 @@ public class BBFile {
             }
 
             // Filter features to those matching term
-            List<IGVFeature> results =  features.stream()
+            List<IGVFeature> results = features.stream()
                     .filter(f -> matchingNames.contains(f.getName().toLowerCase()))
                     .toList();
 
@@ -546,6 +542,7 @@ public class BBFile {
             uncompressed = buffer;    // use uncompressed read buffer directly
         }
 
+        Set<Integer> unknownIds = new HashSet<>();
         UnsignedByteBufferImpl bb = UnsignedByteBufferImpl.wrap(uncompressed, byteOrder);
         while (bb.remaining() > 0) {
 
@@ -586,7 +583,12 @@ public class BBFile {
 
                 final LocusScore feature = new WigDatum(chr, chromStart, chromEnd, value);
                 features.add(feature);
+            } else if (!unknownIds.contains(chromId)) {
+                log.error("Could not find chromosome for id: " + chromId);
+                unknownIds.add(chromId);
             }
+
+
         }
         return features;
     }
