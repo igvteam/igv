@@ -277,6 +277,12 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             fileMenu.add(loadTracksFromServerMenuItem);
         }
 
+//        fileMenu.add(new JSeparator());
+//        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+//        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+//        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
         // ***** Snapshots
         fileMenu.addSeparator();
 
