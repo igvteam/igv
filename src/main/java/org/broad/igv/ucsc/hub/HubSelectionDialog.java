@@ -20,8 +20,6 @@ public class HubSelectionDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
 
-    private static Map<String, HubSelectionDialog> instances = new java.util.HashMap<>();
-
     List<HubDescriptor> hubDescriptors;
     private boolean canceled;
     private JTable table;
@@ -36,13 +34,13 @@ public class HubSelectionDialog extends JDialog {
             setLocationRelativeTo(owner);
         }
 
-
-        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubs();
-
-        final List<HubDescriptor> allSelectedHubs = HubRegistry.getAllSelectedHubs();
-
         // Filter track hubs to those supporting the superset of IGV loaded + UCSC DB genomes
         String genomeID = GenomeManager.getInstance().getCurrentGenome().getUCSCId();
+
+        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubsForGenome(genomeID);
+
+        final List<HubDescriptor> allSelectedHubs = HubRegistry.getSelectedHubsForGenome(genomeID);
+
         this.hubDescriptors = allHubDescriptors.stream()
                 .filter(hd -> hd.getDbList() != null && hd.getDbList().contains(genomeID))
                 .collect(Collectors.toList());
@@ -72,7 +70,7 @@ public class HubSelectionDialog extends JDialog {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-        JLabel titleLabel = new JLabel("Public track hubs for genome: " + GenomeManager.getInstance().getCurrentGenome().getDisplayName());
+        JLabel titleLabel = new JLabel("Track hubs for genome: " + GenomeManager.getInstance().getCurrentGenome().getDisplayName());
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createVerticalStrut(20));

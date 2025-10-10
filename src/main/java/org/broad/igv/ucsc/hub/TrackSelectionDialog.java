@@ -359,7 +359,7 @@ public class TrackSelectionDialog extends JDialog {
             }
             attributeNames.add("Name");
             attributeNames.add("Description");
-            attributeNames.add("Format");
+            //attributeNames.add("Format");
 
             Map<FileRecord, CollapsiblePanel.SelectionBox> recordSelectionBoxMap = new HashMap<>();
 
@@ -380,7 +380,7 @@ public class TrackSelectionDialog extends JDialog {
                         attributes.put("Group", panel.containerLabel());
                         attributes.put("Name", trackConfig.name);
                         attributes.put("Description", trackConfig.description);
-                        attributes.put("Format", trackConfig.format);
+                        //attributes.put("Format", trackConfig.format);
 
                         if (trackConfigAttributes != null) {
                             attributes.putAll(trackConfigAttributes);

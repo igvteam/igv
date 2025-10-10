@@ -191,11 +191,8 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(AWSMenu);
         //detecting the provider is slow, do it in another thread
         LongRunningTask.submit(this::updateAWSMenu);
-
-
+        
         menus.add(createHelpMenu());
-
-        // Experimental -- remove for production release
 
         return menus;
     }
@@ -726,11 +723,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         String ucscId = genome.getUCSCId();
         if (EncodeTrackChooserFactory.genomeSupportedUCSC(ucscId) || EncodeTrackChooserFactory.genomeSupported(ucscId)) {
 
-            if (hubsMenu.getItemCount() > 0) {
-                hubsMenu.addSeparator();  // Add if not added previously
-            }
-
-            // Post 2012 ENCODE menu
+            // ENCODE DCC hosted menu. These are the "new" ENCODE tracks, hosted on DCC servers, not UCSC.
             if (EncodeTrackChooserFactory.genomeSupported(ucscId)) {
                 JMenuItem chipItem = new JMenuItem();
                 chipItem.setAction(new BrowseEncodeAction("ENCODE ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
@@ -745,7 +738,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 hubsMenu.add(otherItem);
             }
 
-            // UCSC hosted ENCODE menu.
+            // UCSC hosted ENCODE menu (2012).
             if (EncodeTrackChooserFactory.genomeSupportedUCSC(ucscId)) {
                 JMenuItem encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
                         new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
@@ -753,14 +746,24 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
             }
         }
 
+        // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
+        if (selectedHubs != null && selectedHubs.size() > 0) {
+            hubsMenu.addSeparator();
+            for (HubDescriptor hub : selectedHubs) {
+                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
+            }
+        }
 
-        // Add UCSC public hubs item if hubs are available for this genome
+        // User hub load options
         if (hubsMenu.getItemCount() > 0) {
             hubsMenu.addSeparator();
         }
-        List<HubDescriptor> hubs = HubRegistry.getAllHubs();
+
+        // Add select item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
+        List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
         if (!hubs.isEmpty()) {
-            JMenuItem addHubItem = new JMenuItem("Select Public Track Hubs from UCSC ...");
+            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
             addHubItem.addActionListener(e -> {
                 final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
                 hubSelectionDialog.setVisible(true);
@@ -777,13 +780,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
         hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // User selected UCSC public and user loaded hubs.  Selections are stored in preferences.
-        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
-        if (selectedHubs != null && selectedHubs.size() > 0) {
-            for (HubDescriptor hub : selectedHubs) {
-                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
-            }
-        }
+
 
     }
 

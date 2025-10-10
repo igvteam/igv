@@ -67,8 +67,8 @@ public class Hub {
 
         return new HubDescriptor(
                 this.url,
-                this.hubStanza.getProperty("longLabel"),
                 this.hubStanza.getProperty("shortLabel"),
+                this.hubStanza.getProperty("longLabel"),
                 dbList,
                 this.hubStanza.getProperty("descriptionUrl")
         );
