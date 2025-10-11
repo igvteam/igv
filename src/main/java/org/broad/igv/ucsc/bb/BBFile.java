@@ -535,6 +535,7 @@ public class BBFile {
 
     List<LocusScore> decodeZoomData(String chr, byte[] buffer, int chrIdx, int start, int end, WindowFunction windowFunction, List<LocusScore> features) {
 
+        boolean decodeChr = chr == null;
         byte[] uncompressed;
         if (header.uncompressBuffSize > 0) {
             uncompressed = (new CompressionUtils()).decompress(buffer, header.uncompressBuffSize);
@@ -560,7 +561,7 @@ public class BBFile {
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
 
-            if (chr == null) {
+            if (decodeChr) {
                 chr = this.chromTree.getNameForId(chromId);
             }
 

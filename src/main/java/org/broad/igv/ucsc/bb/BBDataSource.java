@@ -231,8 +231,7 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
                         reader.decodeZoomData(null, chunk, -1, -1, -1, windowFunction, features);
                     }
 
-                    for (LocusScore s : features) {
-                        WigDatum rec = (WigDatum) s;   // Unfortunate, but this is java
+                    for (LocusScore rec : features) {
                         String chr = genome.getCanonicalChrName(rec.getChr());
                         if (wgChrNames.contains(chr)) {
                             int genomeStart = genome.getGenomeCoordinate(chr, rec.getStart());
