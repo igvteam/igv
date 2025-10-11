@@ -87,13 +87,11 @@ public class OauthListener implements Runnable {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             String inputLine = in.readLine();
-            System.out.println(inputLine);
 
             // Consume the remainder of the request, if any (typically request headers).   This is important to free the connection.
             String nextLine = in.readLine();
             while (nextLine != null && nextLine.length() > 0) {
                 nextLine = in.readLine();
-                System.out.println(nextLine);
             }
 
             String[] tokens = inputLine.split(" ");

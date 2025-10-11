@@ -157,7 +157,6 @@ public class Genome {
                 long t0 = System.currentTimeMillis();
                 chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
                 long dt = System.currentTimeMillis() - t0;
-                System.out.println(dt);
             }
         }
 

@@ -31,13 +31,13 @@ package org.broad.igv.ui.util;
 
 import org.broad.igv.Globals;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * @author James Robinson
@@ -47,12 +47,13 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog {
     boolean canceled = false;
     String fileURL;
     String indexURL;
+    JTextField fileField;
+    JTextField indexField;
 
     public LoadFromURLDialog(Frame owner, boolean isHtsget) {
-        super(owner, isHtsget ? "htsget URL": "Load from URL");
+        super(owner, isHtsget ? "htsget URL" : "Load from URL");
         initComponents(isHtsget);
     }
-
 
     private void okButtonActionPerformed(ActionEvent e) {
         canceled = false;
@@ -94,132 +95,87 @@ public class LoadFromURLDialog extends org.broad.igv.ui.IGVDialog {
     }
 
     private void initComponents(boolean isHtsget) {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
-        dialogPane = new JPanel();
-        contentPanel = new JPanel();
-        vSpacer2 = new JPanel(null);
-        label1 = new JLabel();
-        label2 = new JLabel();
-        fileField = new JTextField();
-        vSpacer1 = new JPanel(null);
-        vSpacer3 = new JPanel(null);
-        indexField = new JTextField();
-        label3 = new JLabel();
-        buttonBar = new JPanel();
-        okButton = new JButton();
-        cancelButton = new JButton();
+        // Panels
+        JPanel dialogPane = new JPanel(new BorderLayout(0, 12));
+        dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        JPanel buttonBar = new JPanel(new GridBagLayout());
+        buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
 
-        //======== this ========
-        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new BorderLayout());
+        // Components
+        fileField = new JTextField(50); // Set preferred width
+        indexField = new JTextField(50); // Set preferred width
+        JButton okButton = new JButton("OK");
+        JButton cancelButton = new JButton("Cancel");
 
-        //======== dialogPane ========
-        {
-            dialogPane.setLayout(new BorderLayout());
+        //======== Content Panel ========
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 0, 5, 5);
 
-            //======== contentPanel ========
-            {
-                contentPanel.setBorder(new EmptyBorder(10, 10, 5, 5));
-                contentPanel.setLayout(new GridBagLayout());
-                ((GridBagLayout) contentPanel.getLayout()).columnWidths = new int[]{0, 0, 0};
-                ((GridBagLayout) contentPanel.getLayout()).rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-                ((GridBagLayout) contentPanel.getLayout()).columnWeights = new double[]{0.0, 0.0, 1.0E-4};
-                ((GridBagLayout) contentPanel.getLayout()).rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0E-4};
-                contentPanel.add(vSpacer2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 10, 0), 0, 0));
+        // Row 0: File URL
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        contentPanel.add(new JLabel("File URL:"), gbc);
 
-                //---- label1 ----
-                label1.setText("File URL:");
-                contentPanel.add(label1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 10, 5), 0, 0));
-                fileField.setPreferredSize(new Dimension(720, 28));
-                fileField.setMinimumSize(new Dimension(720, 28));
-                //---- label2 ----
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        contentPanel.add(fileField, gbc);
 
-                contentPanel.add(fileField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 10, 0), 0, 0));
-                contentPanel.add(vSpacer1, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 10, 5), 0, 0));
-                contentPanel.add(vSpacer3, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 10, 5), 0, 0));
+        if (!isHtsget) {
+            // Row 1: Help Text
+            gbc.gridy = 1;
+            gbc.gridx = 0;
+            gbc.gridwidth = 2;
+            gbc.weightx = 0.0;
+            gbc.insets = new Insets(0, 0, 5, 0);
+            contentPanel.add(new JLabel("<html><i>Specify url to an index file. <b>Required for BAM and indexed files</b></i>"), gbc);
 
-                //---- indexField ----
-                if (!isHtsget) {
-                    label2.setText("Index URL:");
-                    contentPanel.add(label2, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 5), 0, 0));
+            // Row 2: Index URL
+            gbc.gridy = 2;
+            gbc.gridwidth = 1; // Reset gridwidth
+            gbc.gridx = 0;
+            gbc.weightx = 0.0;
+            gbc.insets = new Insets(0, 0, 0, 5);
+            contentPanel.add(new JLabel("Index URL:"), gbc);
 
-                    indexField.setPreferredSize(new Dimension(720, 28));
-                    indexField.setMinimumSize(new Dimension(720, 28));
-                    contentPanel.add(indexField, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 0, 0), 0, 0));
-
-
-                    //---- label3 ----
-                    label3.setText("<html><i>Specify url to an index file. <b>Required for BAM and indexed files</b></i>");
-                    contentPanel.add(label3, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0,
-                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                            new Insets(0, 0, 10, 0), 0, 0));
-                }
-            }
-            dialogPane.add(contentPanel, BorderLayout.CENTER);
-
-            //======== buttonBar ========
-            {
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
-
-                //---- okButton ----
-                okButton.setText("OK");
-                okButton.addActionListener(e -> okButtonActionPerformed(e));
-                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
-
-                //---- cancelButton ----
-                cancelButton.setText("Cancel");
-                cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
-                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
-            }
-            dialogPane.add(buttonBar, BorderLayout.SOUTH);
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
+            gbc.insets = new Insets(0, 0, 0, 0);
+            contentPanel.add(indexField, gbc);
         }
-        contentPane.add(dialogPane, BorderLayout.CENTER);
+
+        //======== Button Bar ========
+        GridBagConstraints gbcButtons = new GridBagConstraints();
+        gbcButtons.gridx = 0;
+        gbcButtons.weightx = 1.0; // Pushes buttons to the right
+        buttonBar.add(Box.createHorizontalGlue(), gbcButtons);
+
+        gbcButtons.gridx = 1;
+        gbcButtons.weightx = 0.0;
+        buttonBar.add(okButton, gbcButtons);
+
+        gbcButtons.gridx = 2;
+        buttonBar.add(cancelButton, gbcButtons);
+
+        //======== Assemble Dialog ========
+        dialogPane.add(contentPanel, BorderLayout.CENTER);
+        dialogPane.add(buttonBar, BorderLayout.SOUTH);
+        setContentPane(dialogPane);
+
+        // Action Listeners
+        okButton.addActionListener(this::okButtonActionPerformed);
+        cancelButton.addActionListener(this::cancelButtonActionPerformed);
+        fileField.addActionListener(this::okButtonActionPerformed);
+        indexField.addActionListener(this::okButtonActionPerformed);
+
+        // Final setup
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         pack();
         setLocationRelativeTo(getOwner());
-
-        // Make "enter" trigger the ok button
-        fileField.addActionListener(e -> okButtonActionPerformed(e));
-        indexField.addActionListener(e -> okButtonActionPerformed(e));
-        this.rootPane.setDefaultButton(okButton);
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
+        getRootPane().setDefaultButton(okButton);
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
-    private JPanel dialogPane;
-    private JPanel contentPanel;
-    private JPanel vSpacer2;
-    private JLabel label1;
-    private JLabel label2;
-    private JTextField fileField;
-    private JPanel vSpacer1;
-    private JPanel vSpacer3;
-    private JTextField indexField;
-    private JLabel label3;
-    private JPanel buttonBar;
-    private JButton okButton;
-    private JButton cancelButton;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

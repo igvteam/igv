@@ -298,7 +298,7 @@ public class CollapsiblePanel extends JPanel {
                 JLabel iconLabel = new JLabel(icon);
                 iconLabel.setToolTipText(infoLink);
                 iconLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                add(iconLabel, BorderLayout.CENTER);
+                //add(iconLabel, BorderLayout.CENTER);
                 iconLabel.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
@@ -311,8 +311,9 @@ public class CollapsiblePanel extends JPanel {
                 });
 
                 JPanel panel = new JPanel();
-                panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+                panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
                 panel.add(label);
+                panel.add(Box.createHorizontalStrut(5)); // 5-pixel gap
                 panel.add(iconLabel);
                 add(panel, BorderLayout.CENTER);
             }

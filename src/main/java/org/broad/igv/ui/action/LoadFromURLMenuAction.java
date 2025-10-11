@@ -95,7 +95,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             }
         } else if (command.equalsIgnoreCase(LOAD_SAMPLEINFO_FROM_URL)) {
             final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
-                    "Enter URL to sample info file", JOptionPane.QUESTION_MESSAGE);
+                    "Enter URL to sample info file", JOptionPane.PLAIN_MESSAGE);
 
             if (url != null && !url.trim().isBlank()) {
                 try {
@@ -112,7 +112,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         } else if ((command.equalsIgnoreCase(LOAD_SESSION_FROM_URL))) {
 
             final String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
-                    "Enter URL to .xml session file", JOptionPane.QUESTION_MESSAGE);
+                    "Enter URL to .xml session file", JOptionPane.PLAIN_MESSAGE);
 
             if (url != null && !url.trim().isBlank()) {
                 try {
@@ -124,14 +124,14 @@ public class LoadFromURLMenuAction extends MenuAction {
         } else if ((command.equalsIgnoreCase(LOAD_GENOME_FROM_URL))) {
 
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
-                    "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.QUESTION_MESSAGE);
+                    "Enter URL to .json, hub.txt, or FASTA file", JOptionPane.PLAIN_MESSAGE);
             if (url != null && !url.trim().isBlank()) {
                 loadGenomeFromUrl(url.trim());
             }
 
         } else if ((command.equalsIgnoreCase(LOAD_HUB_FROM_URL))) {
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
-                    "Enter URL to a  hub.txt file", JOptionPane.QUESTION_MESSAGE);
+                    "Enter URL to a  hub.txt file", JOptionPane.PLAIN_MESSAGE);
             if (url != null && !url.trim().isBlank()) {
                 loadTrackHub(url.trim());
             }

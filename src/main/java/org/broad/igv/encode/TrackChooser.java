@@ -44,10 +44,11 @@ import javax.swing.table.TableColumn;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -71,47 +72,11 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
     public TrackChooser(Frame owner, final List<String> headings, final List<FileRecord> rows, String title) {
         super(owner);
         setTitle(title);
+        setModal(true);
         this.model = new TrackChooserModel(headings, rows);
-        setModal(true);
-        initComponents(owner);
-        init(model);
+        initComponents(owner, model);
     }
 
-    private void init(final TrackChooserModel model) {
-        setModal(true);
-
-        table.setAutoCreateRowSorter(true);
-        table.setModel(model);
-        table.setRowSorter(model.getSorter());
-        try {
-            rowCountLabel.setText(numberFormatter.valueToString(table.getRowCount()) + " rows");
-        } catch (ParseException e) {
-            log.error("Error parsing row count", e);
-        }
-
-        table.setRowSelectionAllowed(false);
-        table.setColumnSelectionAllowed(false);
-
-        TableColumn selectColumn = table.getColumnModel().getColumn(0);
-        selectColumn.setPreferredWidth(25);
-        selectColumn.setMaxWidth(30);
-
-        filterTextField.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        updateFilter();
-                    }
-
-                    public void insertUpdate(DocumentEvent e) {
-                        updateFilter();
-                    }
-
-                    public void removeUpdate(DocumentEvent e) {
-                        updateFilter();
-                    }
-                });
-
-    }
 
     @Override
     public void setVisible(boolean b) {
@@ -159,7 +124,7 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
         return canceled;
     }
 
-    public List<FileRecord> getSelectedRecords()  {
+    public List<FileRecord> getSelectedRecords() {
         return model.getRecords().stream()
                 .filter(record -> record.isSelected())
                 .collect(Collectors.toUnmodifiableList());
@@ -244,9 +209,9 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
 
     }
 
-    private void initComponents(Frame owner) {
+    private JTable createTable(final TrackChooserModel model) {
 
-        // All this to have tool tip text!
+        // An anonymous class just to have tool tip text!
         table = new JTable() {
             @Override
             public String getToolTipText(MouseEvent e) {
@@ -273,6 +238,74 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
                 };
             }
         };
+
+        table.setAutoCreateRowSorter(true);
+        table.setModel(model);
+        table.setRowSorter(model.getSorter());
+        try {
+            rowCountLabel.setText(numberFormatter.valueToString(table.getRowCount()) + " rows");
+        } catch (ParseException e) {
+            log.error("Error parsing row count", e);
+        }
+
+        table.setRowSelectionAllowed(false);
+        table.setColumnSelectionAllowed(false);
+
+        TableColumn selectColumn = table.getColumnModel().getColumn(0);
+        selectColumn.setPreferredWidth(25);
+        selectColumn.setMaxWidth(30);
+
+        // Add a mouse listener to handle shift-click range selection
+        table.addMouseListener(new MouseAdapter() {
+            private int anchorRow = -1;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                JTable table = (JTable) e.getSource();
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int viewCol = table.columnAtPoint(e.getPoint());
+
+                // We are only interested in clicks on the checkbox column
+                if (viewCol != 0 || viewRow == -1) {
+                    return;
+                }
+
+                // Prevent the table's default listener from processing this event,
+                // as we are handling all selection changes ourselves.
+                e.consume();
+
+                TrackChooserModel model = (TrackChooserModel) table.getModel();
+                int modelRow = table.convertRowIndexToModel(viewRow);
+
+                if (e.isShiftDown() && anchorRow != -1) {
+                    int modelAnchorRow = table.convertRowIndexToModel(anchorRow);
+                    boolean isSelected = (Boolean) model.getValueAt(modelAnchorRow, 0);
+
+                    int startViewRow = Math.min(anchorRow, viewRow);
+                    int endViewRow = Math.max(anchorRow, viewRow);
+
+                    for (int i = startViewRow; i <= endViewRow; i++) {
+                        int r = table.convertRowIndexToModel(i);
+                        model.setValueAt(isSelected, r, 0);
+                    }
+                } else {
+                    // This is a normal click, not a shift-click.
+                    // Set the anchor for a future shift-click.
+                    anchorRow = viewRow;
+                    // Manually toggle the checkbox state.
+                    boolean isSelected = (Boolean) model.getValueAt(modelRow, 0);
+                    model.setValueAt(!isSelected, modelRow, 0);
+                }
+            }
+        });
+
+        return table;
+    }
+
+    private void initComponents(Frame owner, TrackChooserModel model) {
+
+        rowCountLabel = new JLabel();
+        table = createTable(model);
 
         //======== outer content pane ========
         Container contentPane = getContentPane();
@@ -301,9 +334,23 @@ public class TrackChooser extends org.broad.igv.ui.IGVDialog {
         filterPanel.add(filterLabel, JideBoxLayout.FIX);
         filterTextField = new JTextField();
         filterTextField.setToolTipText(filterToolTip);
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void insertUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+
+                    public void removeUpdate(DocumentEvent e) {
+                        updateFilter();
+                    }
+                });
         filterPanel.add(filterTextField, JideBoxLayout.VARY);
 
-        rowCountLabel = new JLabel();
+
         rowCountLabel.setHorizontalAlignment(JLabel.RIGHT);
         JPanel rowCountPanel = new JPanel();
         rowCountPanel.setLayout(new JideBoxLayout(rowCountPanel, JideBoxLayout.X_AXIS, 0));

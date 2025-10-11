@@ -76,7 +76,9 @@ public class HubSelectionDialog extends JDialog {
         headerPanel.add(Box.createVerticalStrut(20));
 
         JLabel headerMessage = new JLabel();
-        headerMessage.setText("<html>Hub list from <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>https://genome.ucsc.edu/cgi-bin/hgHubConnect</a></html>");
+        headerMessage.setText("<html>Hubs from the <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>" +
+                "UCSC Track Hub Registry</a>, and user entered urls. Check to add to the 'Track Hubs'" +
+                " menu, uncheck to remove.</html>");
         headerMessage.setCursor(new Cursor(Cursor.HAND_CURSOR));
         headerMessage.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
