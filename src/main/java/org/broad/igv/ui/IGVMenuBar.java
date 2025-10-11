@@ -487,9 +487,10 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // Rename tracks
         menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
         menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
+        JMenuItem renameTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        tracksMenu.add(renameTracksMenuItem);
+        tracksMenuAttributeComponents.add(renameTracksMenuItem);
+        
         // Export track names and attributes -- if > 1 is selected export those, otherwise export all
         JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
         exportNames.addActionListener(e12 -> {
