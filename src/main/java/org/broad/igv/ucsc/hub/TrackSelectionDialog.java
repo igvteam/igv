@@ -354,11 +354,11 @@ public class TrackSelectionDialog extends JDialog {
         searchButton.addActionListener(e -> {
 
             Set<String> attributeNames = new LinkedHashSet<>();
+            attributeNames.add("Name");
+            attributeNames.add("Description");
             if (panels.size() > 1) {
                 attributeNames.add("Group");
             }
-            attributeNames.add("Name");
-            attributeNames.add("Description");
             //attributeNames.add("Format");
 
             Map<FileRecord, CollapsiblePanel.SelectionBox> recordSelectionBoxMap = new HashMap<>();
