@@ -47,7 +47,7 @@ public class FreqDataTest extends AbstractHeadlessTest {
 
         String segfile = TestUtils.DATA_DIR + "seg/canFam2_hg18.seg";
 
-        SegmentedAsciiDataSet sd = SegmentFileParser.loadSegments(new ResourceLocator(segfile), genome);
+        SegmentedDataSet sd = SegmentFileParser.loadSegments(new ResourceLocator(segfile), genome);
 
         FreqData fd = new FreqData(sd, genome);
 

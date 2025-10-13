@@ -74,6 +74,7 @@ import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.seg.CNFreqTrack;
 import org.broad.igv.seg.FreqData;
+import org.broad.igv.seg.SegmentedDataSet;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ucsc.bb.BBDataSource;
@@ -1042,7 +1043,7 @@ public class TrackLoader {
     private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         // TODO - -handle remote resource
-        org.broad.igv.seg.SegmentedAsciiDataSet ds;
+        SegmentedDataSet ds;
         String path = locator.getPath().toLowerCase();
 
         //if (path.endsWith("seg.zip")) {
@@ -1064,7 +1065,7 @@ public class TrackLoader {
      * @param ds
      */
     private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome,
-                              org.broad.igv.seg.SegmentedAsciiDataSet ds) {
+                              SegmentedDataSet ds) {
         String path = locator.getPath();
 
         TrackProperties props = null;

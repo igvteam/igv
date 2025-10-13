@@ -1,28 +1,22 @@
 package org.broad.igv.seg;
 
-import htsjdk.tribble.Feature;
-import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.HeatmapRenderer;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class SegTrack extends AbstractTrack {
 
-    SegmentedAsciiDataSet dataset;
+    SegmentedDataSet dataset;
     String sampleName;
     Color color = Color.RED;
     Color altColor = Color.BLUE;
@@ -31,7 +25,7 @@ public class SegTrack extends AbstractTrack {
     Renderer renderer = new HeatmapRenderer();
 
 
-    public SegTrack(ResourceLocator locator, String id, String name, SegmentedAsciiDataSet dataset, Genome genome) {
+    public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
         super(locator, id, name);
         this.dataset = dataset;
         this.sampleNames = new ArrayList(dataset.getSampleNames());
@@ -40,7 +34,7 @@ public class SegTrack extends AbstractTrack {
         initScale(dataset);
     }
 
-    void initScale(SegmentedAsciiDataSet dataset) {
+    void initScale(SegmentedDataSet dataset) {
 
         float min = (float) dataset.getDataMin();
         float max = (float) dataset.getDataMax();

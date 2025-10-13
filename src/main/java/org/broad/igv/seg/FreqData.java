@@ -44,7 +44,7 @@ public class FreqData {
 
     private int binSize = DEFAULT_BIN_SIZE;    // 200 kb bin size;
 
-    private SegmentedAsciiDataSet dataset;
+    private SegmentedDataSet dataset;
     private int numberOfSamples;
     // private boolean logNormalized;
     private Map<String, List<LocusScore>> amp;
@@ -54,7 +54,7 @@ public class FreqData {
     private float ampThreshold;
     private float delThreshold;
 
-    public FreqData(SegmentedAsciiDataSet ds, Genome genome) {
+    public FreqData(SegmentedDataSet ds, Genome genome) {
 
         this.dataset = ds;
         this.sampleNames = ds.getSampleNames();

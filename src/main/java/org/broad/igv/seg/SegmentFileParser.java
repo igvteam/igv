@@ -61,7 +61,7 @@ public class SegmentFileParser {
      *
      * @return
      */
-    public static SegmentedAsciiDataSet loadSegments(ResourceLocator locator, Genome genome) {
+    public static SegmentedDataSet loadSegments(ResourceLocator locator, Genome genome) {
 
         int sampleColumn = 0;
         int chrColumn = 1;
@@ -70,7 +70,7 @@ public class SegmentFileParser {
         int dataColumn = 5;        // Default value
 
 
-        SegmentedAsciiDataSet dataset = new SegmentedAsciiDataSet(genome);
+        SegmentedDataSet dataset = new SegmentedDataSet(genome);
 
         boolean birdsuite = (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls"));
 
@@ -201,7 +201,7 @@ public class SegmentFileParser {
      * @param comment
      * @param dataset
      */
-    private static void parseComment(String comment, SegmentedAsciiDataSet dataset) {
+    private static void parseComment(String comment, SegmentedDataSet dataset) {
 
         String tmp = comment.substring(1, comment.length());
         if (tmp.startsWith("track")) {
