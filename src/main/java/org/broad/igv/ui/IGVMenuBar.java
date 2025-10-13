@@ -191,7 +191,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         menus.add(AWSMenu);
         //detecting the provider is slow, do it in another thread
         LongRunningTask.submit(this::updateAWSMenu);
-        
+
         menus.add(createHelpMenu());
 
         return menus;
@@ -713,27 +713,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
 
         hubsMenu.removeAll();
 
-        // Load hub from URL
-        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Add select item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
-        List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
-        if (!hubs.isEmpty()) {
-            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
-            addHubItem.addActionListener(e -> {
-                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
-                hubSelectionDialog.setVisible(true);
-                if (!hubSelectionDialog.isCanceled()) {
-                    List<HubDescriptor> selected = hubSelectionDialog.getSelectedHubs();
-                    HubRegistry.setSelectedHubs(selected);
-                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
-                }
-            });
-            hubsMenu.add(addHubItem);
-        }
-        hubsMenu.addSeparator();
-
 
         // Genome defined hubs -- these are curated, typically a single hub for annotations.
         if (genome.getTrackHubs().size() > 0) {
@@ -777,6 +756,32 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
                 hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }
         }
+
+        if (hubsMenu.getItemCount() > 0) {
+            hubsMenu.addSeparator();
+        }
+
+        // Add select item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
+        List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
+        if (!hubs.isEmpty()) {
+            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
+            addHubItem.addActionListener(e -> {
+                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
+                hubSelectionDialog.setVisible(true);
+                if (!hubSelectionDialog.isCanceled()) {
+                    List<HubDescriptor> selected = hubSelectionDialog.getSelectedHubs();
+                    HubRegistry.setSelectedHubs(selected);
+                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
+                }
+            });
+            hubsMenu.add(addHubItem);
+        }
+
+
+        // Load hub from URL
+        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
     }
 

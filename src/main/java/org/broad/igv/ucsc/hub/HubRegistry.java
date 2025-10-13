@@ -62,9 +62,10 @@ public class HubRegistry {
             Set<String> existingUrls = allHubDescriptors.stream()
                     .map(HubDescriptor::getUrl)
                     .collect(Collectors.toSet());
-            getSelectedHubs().stream()
+            List<HubDescriptor> hubsToAdd = getSelectedHubs().stream()
                     .filter(hub -> !existingUrls.contains(hub.getUrl()))
-                    .forEach(allHubDescriptors::add);
+                    .collect(Collectors.toList());
+            allHubDescriptors.addAll(0, hubsToAdd);
 
             // Build the map of hubs by genome
             allHubsMap = allHubDescriptors.stream()

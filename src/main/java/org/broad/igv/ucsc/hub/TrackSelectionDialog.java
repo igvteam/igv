@@ -37,6 +37,7 @@ public class TrackSelectionDialog extends JDialog {
     private boolean autoselectDefaults;
     private ArrayList<CollapsiblePanel> categoryPanels;
     private boolean canceled = true;
+    JTextPane messagePane;
 
     public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
@@ -52,10 +53,12 @@ public class TrackSelectionDialog extends JDialog {
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(genomeId);
-            dialog = new TrackSelectionDialog(hub, groups, autoselectDefaults, message, owner);
+            dialog = new TrackSelectionDialog(hub, groups, autoselectDefaults, owner);
             hubSelectionDialogs.put(hub, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
+
+        dialog.setMessage(message);
 
         return dialog;
     }
@@ -63,13 +66,12 @@ public class TrackSelectionDialog extends JDialog {
     private TrackSelectionDialog(Hub hub,
                                  List<TrackConfigContainer> trackConfigContainers,
                                  boolean autoselectDefaults,
-                                 String message,
                                  Frame owner) {
         super(owner);
         setModal(true);
         this.autoselectDefaults = autoselectDefaults;
         this.hub = hub;
-        init(trackConfigContainers, message);
+        init(trackConfigContainers);
         setLocationRelativeTo(owner);
     }
 
@@ -85,7 +87,36 @@ public class TrackSelectionDialog extends JDialog {
         }
     }
 
-    void init(List<TrackConfigContainer> trackConfigContainers, String message) {
+    public void setMessage(String message) {
+        if (messagePane != null) {
+            JPanel topPanel = (JPanel) messagePane.getParent();
+            boolean hasMessage = message != null && !message.isEmpty();
+
+            if (hasMessage) {
+                messagePane.setText(message);
+                if (topPanel == null) {
+                    // Find the top panel and add the message pane to it
+                    JPanel mainPanel = (JPanel) getRootPane().getContentPane().getComponent(0);
+                    topPanel = (JPanel) mainPanel.getComponent(0);
+                    topPanel.add(messagePane, 0);
+                }
+                messagePane.setVisible(true);
+
+            } else {
+                if (topPanel != null) {
+                    topPanel.remove(messagePane);
+                }
+                messagePane.setVisible(false);
+            }
+
+            if (topPanel != null) {
+                topPanel.revalidate();
+                topPanel.repaint();
+            }
+        }
+    }
+
+    void init(List<TrackConfigContainer> trackConfigContainers) {
 
         setTitle(this.hub.getLongLabel());
 
@@ -101,14 +132,12 @@ public class TrackSelectionDialog extends JDialog {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 
-        if (message != null) {
-            JTextPane messagePane = new JTextPane();
-            messagePane.setBorder(BorderFactory.createEmptyBorder(30, 5, 20, 5));
-            messagePane.setFont(FontManager.getFont(Font.BOLD, 16));
-            messagePane.setText(message);
-            messagePane.setEditable(false);
-            topPanel.add(messagePane);
-        }
+        messagePane = new JTextPane();
+        messagePane.setBorder(BorderFactory.createEmptyBorder(30, 5, 20, 5));
+        messagePane.setFont(FontManager.getFont(Font.BOLD, 16));
+        messagePane.setEditable(false);
+        messagePane.setVisible(false);
+        // The messagePane is now added dynamically in setMessage()
 
         topPanel.add(getLabeledHyperlink("Hub URL: ", hub.getUrl()));
         String descriptionURL = hub.getDescriptionURL();
@@ -209,7 +238,6 @@ public class TrackSelectionDialog extends JDialog {
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
-
     private JPanel getLabeledHyperlink(String label, String url) {
         JPanel hubURLPanel = new JPanel();
         ((FlowLayout) hubURLPanel.getLayout()).setAlignment(FlowLayout.LEFT);
@@ -445,7 +473,7 @@ public class TrackSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hs1");
 
-        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, true, null, null);
+        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, true, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 
