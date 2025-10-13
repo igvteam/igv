@@ -38,7 +38,10 @@ import org.broad.igv.DirectoryManager;
 import org.broad.igv.event.GenomeChangeEvent;
 import org.broad.igv.event.IGVEventBus;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.genome.load.*;
+import org.broad.igv.feature.genome.load.ChromAliasParser;
+import org.broad.igv.feature.genome.load.GenomeConfig;
+import org.broad.igv.feature.genome.load.GenomeLoader;
+import org.broad.igv.feature.genome.load.TrackConfig;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -53,18 +56,19 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.IGVMenuBar;
 import org.broad.igv.ui.PanelName;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.genome.GenomeListItem;
+import org.broad.igv.ui.genome.GenomeListManager;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -162,6 +166,7 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
+                IGVMenuBar.getInstance().setAllMenusEnabled(false);
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
@@ -199,6 +204,8 @@ public class GenomeManager {
             throw new RuntimeException("Server connection error", e);
         } finally {
             if (IGV.hasInstance()) {
+                IGVMenuBar.getInstance().updateMenus(currentGenome);
+                IGVMenuBar.getInstance().setAllMenusEnabled(true);
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
@@ -250,7 +257,7 @@ public class GenomeManager {
         if (resources != null) {
             for (ResourceLocator locator : resources) {
                 try {
-                    if(locator != null) {
+                    if (locator != null) {
                         locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
                         List<Track> tracks = IGV.getInstance().load(locator);
                         annotationTracks.addAll(tracks);
@@ -265,7 +272,7 @@ public class GenomeManager {
             IGV.getInstance().addTracks(annotationTracks);
             for (Track track : annotationTracks) {
                 ResourceLocator locator = track.getResourceLocator();
-                if(locator != null) {
+                if (locator != null) {
                     String fn = "";
                     if (locator != null) {
                         fn = locator.getPath();

@@ -91,7 +91,7 @@ import static org.broad.igv.ui.UIConstants.*;
  * @author jrobinso
  * @date Apr 4, 2011
  */
-public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
+public class IGVMenuBar extends JMenuBar  {
 
     private static Logger log = LogManager.getLogger(IGVMenuBar.class);
 
@@ -136,8 +136,6 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         for (AbstractButton menu : createMenus()) {
             add(menu);
         }
-
-        IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
 
         //This is for Macs, so showing the about dialog
         //from the command bar does what we want.
@@ -1151,23 +1149,38 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         instance = null;
     }
 
-
-    @Override
-    public void receiveEvent(final IGVEvent event) {
-
-        if (event instanceof GenomeChangeEvent) {
-            updateMenus(((GenomeChangeEvent) event).genome());
-        }
-    }
-
     public synchronized void updateMenus(Genome genome) {
-
         if (genome != null) {
             UIUtilities.invokeOnEventThread(() -> {
                 updateHubsMenu(genome);
                 updateFileMenu(genome);
                 editAnnotationsItem.setEnabled(genome.getGenomeHub() != null);
             });
+        }
+    }
+
+    /**
+     * Recursively enable or disable all menu items.
+     *
+     * @param enabled
+     */
+    public void setAllMenusEnabled(boolean enabled) {
+        for (int i = 0; i < getMenuCount(); i++) {
+            JMenu menu = getMenu(i);
+            if (menu != null) {
+                setMenuComponentsEnabled(menu, enabled);
+            }
+        }
+    }
+
+    private void setMenuComponentsEnabled(JMenu menu, boolean enabled) {
+        menu.setEnabled(enabled);
+        for (Component component : menu.getMenuComponents()) {
+            if (component instanceof JMenu) {
+                setMenuComponentsEnabled((JMenu) component, enabled);
+            } else {
+                component.setEnabled(enabled);
+            }
         }
     }
 
