@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv.seg;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
@@ -44,7 +44,7 @@ public class FreqData {
 
     private int binSize = DEFAULT_BIN_SIZE;    // 200 kb bin size;
 
-    private SegmentedDataSet dataset;
+    private SegmentedAsciiDataSet dataset;
     private int numberOfSamples;
     // private boolean logNormalized;
     private Map<String, List<LocusScore>> amp;
@@ -54,7 +54,7 @@ public class FreqData {
     private float ampThreshold;
     private float delThreshold;
 
-    public FreqData(SegmentedDataSet ds, Genome genome) {
+    public FreqData(SegmentedAsciiDataSet ds, Genome genome) {
 
         this.dataset = ds;
         this.sampleNames = ds.getSampleNames();

@@ -91,6 +91,7 @@ module org.igv {
     exports org.broad.igv.session.autosave;
     exports slider;
     exports com.sanityinc.jargs;
+    exports org.broad.igv.seg;
 
     requires com.google.common;
     requires org.apache.commons.compress;

@@ -33,6 +33,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.seg.CNFreqTrack;
 import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;

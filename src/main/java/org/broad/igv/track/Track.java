@@ -71,14 +71,18 @@ public interface Track extends Persistable, AttributeSupplier {
      * @param frame
      * @return
      */
-    boolean isReadyToPaint(ReferenceFrame frame);
+    default boolean isReadyToPaint(ReferenceFrame frame) {
+        return true;
+    }
 
     /**
-     * Load required resources ot paint the reference frame.
+     * Load required resources to paint the reference frame.
      *
      * @param frame
      */
-    void load(ReferenceFrame frame);
+    default void load(ReferenceFrame frame){
+        // do nothing
+    }
 
     /**
      * Return true if a track can be filtered by sample annotation.
@@ -105,7 +109,9 @@ public interface Track extends Persistable, AttributeSupplier {
      * @param context the render context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    void overlay(RenderContext context, Rectangle rect);
+    default void overlay(RenderContext context, Rectangle rect){
+        // do nothing, overlay is optional
+    }
 
     /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
@@ -127,7 +133,9 @@ public interface Track extends Persistable, AttributeSupplier {
 
     String getDisplayName();
 
-    String getTooltipText(int y);
+    default String getTooltipText(int y){
+        return getName();
+    }
 
     String getSample();
 

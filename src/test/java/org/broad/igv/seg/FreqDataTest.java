@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv.seg;
 
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -46,9 +47,10 @@ public class FreqDataTest extends AbstractHeadlessTest {
 
         String segfile = TestUtils.DATA_DIR + "seg/canFam2_hg18.seg";
 
-
-        SegmentedDataSet sd = new SegmentedAsciiDataSet(new ResourceLocator(segfile), genome);
+        SegmentedAsciiDataSet sd = SegmentFileParser.loadSegments(new ResourceLocator(segfile), genome);
 
         FreqData fd = new FreqData(sd, genome);
+
+        Assert.assertNotNull(fd);
     }
 }

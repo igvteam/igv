@@ -35,7 +35,6 @@ import org.broad.igv.data.*;
 import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -73,6 +72,8 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
+import org.broad.igv.seg.CNFreqTrack;
+import org.broad.igv.seg.FreqData;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ucsc.bb.BBDataSource;
@@ -1041,15 +1042,15 @@ public class TrackLoader {
     private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         // TODO - -handle remote resource
-        SegmentedDataSet ds;
+        org.broad.igv.seg.SegmentedAsciiDataSet ds;
         String path = locator.getPath().toLowerCase();
 
-        if (path.endsWith("seg.zip")) {
-            ds = new SegmentedBinaryDataSet(locator);
-        } else {
-            SegmentFileParser parser = new SegmentFileParser(locator);
-            ds = parser.loadSegments(locator, genome);
-        }
+        //if (path.endsWith("seg.zip")) {
+        //    ds = new SegmentedBinaryDataSet(locator);
+        //} else {
+         //   SegmentFileParser parser = new SegmentFileParser(locator);
+            ds = org.broad.igv.seg.SegmentFileParser.loadSegments(locator, genome);
+       // }
         loadSegTrack(locator, newTracks, genome, ds);
     }
 
@@ -1062,13 +1063,14 @@ public class TrackLoader {
      * @param genome
      * @param ds
      */
-    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
+    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome,
+                              org.broad.igv.seg.SegmentedAsciiDataSet ds) {
         String path = locator.getPath();
 
         TrackProperties props = null;
-        if (ds instanceof SegmentedAsciiDataSet) {
-            props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
-        }
+//        if (ds instanceof SegmentedAsciiDataSet) {
+//            props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
+//        }
 
         // The "freq" track.  TODO - make this optional
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
@@ -1086,10 +1088,11 @@ public class TrackLoader {
         }
 
 
-        for (String trackName : ds.getSampleNames()) {
-            String trackId = path + "_" + trackName;
-            SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+        //for (String trackName : ds.getSampleNames()) {
+            String trackId = path; // + "_" + trackName;
+            //SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
+            //DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            org.broad.igv.seg.SegTrack track = new org.broad.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
             track.setRenderer(new HeatmapRenderer());
             track.setTrackType(ds.getType());
 
@@ -1098,7 +1101,7 @@ public class TrackLoader {
             }
 
             newTracks.add(track);
-        }
+       // }
     }
 
     private void loadTrioData(ResourceLocator locator) throws IOException {

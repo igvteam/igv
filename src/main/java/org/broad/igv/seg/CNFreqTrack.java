@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.track;
+package org.broad.igv.seg;
 
-import org.broad.igv.data.seg.FreqData;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.prefs.Constants;
@@ -33,6 +32,7 @@ import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
