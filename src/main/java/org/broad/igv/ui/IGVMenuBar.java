@@ -751,7 +751,7 @@ public class IGVMenuBar extends JMenuBar implements IGVEventObserver {
         // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.
         List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
         if (selectedHubs != null && selectedHubs.size() > 0) {
-            //hubsMenu.addSeparator();
+            hubsMenu.addSeparator();
             for (HubDescriptor hub : selectedHubs) {
                 hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }

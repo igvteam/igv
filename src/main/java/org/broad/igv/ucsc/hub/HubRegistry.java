@@ -177,8 +177,6 @@ public class HubRegistry {
             } catch (IOException e) {
                 log.error("Error reading selected hubs from file", e);
             }
-        } else {
-            log.warn("Selected hubs file does not exist: " + file.getAbsolutePath());
         }
 
         return selectedHubDescriptors;

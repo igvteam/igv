@@ -4,7 +4,9 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,7 +17,7 @@ import java.util.Map;
 
 class HubTable extends JTable {
 
-    public static  Color ALT_BACKGROUND = new Color(245, 245, 245);
+    public static Color ALT_BACKGROUND = new Color(245, 245, 245);
     private final Map<Integer, Integer> rowHeights = new HashMap<>();
 
     public HubTable(HubTableModel model) {
@@ -64,12 +66,17 @@ class HubTable extends JTable {
         getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                ImageIcon icon = IconFactory.getInstance().getIcon(IconFactory.IconID.INFO);
-                JLabel label = new JLabel(icon);
-                label.setToolTipText(value.toString());
-                label.setOpaque(true);
-                label.setBackground(table.getBackground());
-                return label;
+
+                if (value != null) {
+                    ImageIcon icon = IconFactory.getInstance().getIcon(IconFactory.IconID.INFO);
+                    JLabel label = new JLabel(icon);
+                    label.setToolTipText(value.toString());
+                    label.setOpaque(true);
+                    label.setBackground(table.getBackground());
+                    return label;
+                } else {
+                    return new JLabel();
+                }
             }
         });
 
@@ -105,7 +112,7 @@ class HubTable extends JTable {
             }
         });
 
-        if(Globals.isDarkMode()) {
+        if (Globals.isDarkMode()) {
             setBackground(Color.DARK_GRAY);
             setForeground(Color.WHITE);
             setSelectionBackground(Color.GRAY);
@@ -127,7 +134,7 @@ class HubTable extends JTable {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 String v = value != null ? value.toString() : "";
-                if(v.length() > maxLength) {
+                if (v.length() > maxLength) {
                     v = v.substring(0, maxLength) + "...";
                 }
                 JTextArea textArea = new JTextArea(v);
