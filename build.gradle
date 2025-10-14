@@ -117,6 +117,7 @@ def xmlGraphicsVersion = '1.17'
 
 dependencies {
     implementation(
+
             fileTree(dir: 'lib', include: '*.jar'), // first search on disk (old behavior), then maven repos
             [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
             [group: 'commons-io', name: 'commons-io', version: '2.14.0'],
@@ -131,7 +132,7 @@ dependencies {
             [group: 'org.apache.xmlgraphics', name: 'batik-svggen', version: xmlGraphicsVersion],
             [group: 'org.apache.xmlgraphics', name: 'batik-codec', version: xmlGraphicsVersion],
             [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
-            [group: 'com.formdev', name: 'flatlaf', version: '3.5.4'],
+            [group: 'com.formdev', name: 'flatlaf', version: '3.5.4', classifier: 'no-natives'],
             [group: 'org.json', name: 'json', version: '20250517'],
 
             // Amazon deps
