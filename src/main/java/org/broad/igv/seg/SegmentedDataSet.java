@@ -39,6 +39,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.*;
@@ -86,8 +87,9 @@ public class SegmentedDataSet {
 
 
     }
-
-
+    /**
+     * Sort all segment lists.  This is done automatically after loading.
+     */
     public void sortLists() {
         for (Map.Entry<String, Map<String, List<LocusScore>>> sampleEntry : segments.entrySet()) {
             for (Map.Entry<String, List<LocusScore>> chrEntry : sampleEntry.getValue().entrySet()) {
@@ -96,7 +98,6 @@ public class SegmentedDataSet {
             }
         }
     }
-
 
     /**
      *
@@ -125,7 +126,6 @@ public class SegmentedDataSet {
         }
 
         chromosomes.add(chr);
-
     }
 
 
@@ -200,15 +200,15 @@ public class SegmentedDataSet {
     /**
      * Method description
      *
-     * @param heading
+     * @param sample
      * @return
      */
-    public List<LocusScore> getWholeGenomeScores(String heading) {
-        List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(heading);
+    public List<LocusScore> getWholeGenomeScores(String sample) {
+        List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(sample);
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             wholeGenomeScores = new ArrayList(1000);
             for (String chr : genome.getLongChromosomeNames()) {
-                List<LocusScore> chrSegments = getSegments(heading, chr);
+                List<LocusScore> chrSegments = getSegments(sample, chr);
                 if (chrSegments != null) {
                     int lastgEnd = -1;
                     for (LocusScore score : chrSegments) {
@@ -223,7 +223,7 @@ public class SegmentedDataSet {
                     }
                 }
             }
-            wholeGenomeScoresCache.put(heading, wholeGenomeScores);
+            wholeGenomeScoresCache.put(sample, wholeGenomeScores);
         }
         return wholeGenomeScores;
     }
@@ -256,6 +256,20 @@ public class SegmentedDataSet {
             trackProperties = new TrackProperties();
         }
         return trackProperties;
+    }
+
+    public LocusScore getSegmentAt(String sample, String chr, double position, ReferenceFrame frame) {
+
+        List<LocusScore> scores = getSegments(sample, chr);
+
+        if (scores == null) {
+            return null;
+        } else {
+            // give a 2 pixel window, otherwise very narrow features will be missed.
+            double bpPerPixel = frame.getScale();
+            int buffer = (int) (2 * bpPerPixel);    /* * */
+            return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
+        }
     }
 
 

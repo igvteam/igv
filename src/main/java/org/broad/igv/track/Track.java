@@ -41,10 +41,12 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TrackFilter;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -80,7 +82,7 @@ public interface Track extends Persistable, AttributeSupplier {
      *
      * @param frame
      */
-    default void load(ReferenceFrame frame){
+    default void load(ReferenceFrame frame) {
         // do nothing
     }
 
@@ -109,7 +111,7 @@ public interface Track extends Persistable, AttributeSupplier {
      * @param context the render context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    default void overlay(RenderContext context, Rectangle rect){
+    default void overlay(RenderContext context, Rectangle rect) {
         // do nothing, overlay is optional
     }
 
@@ -133,7 +135,7 @@ public interface Track extends Persistable, AttributeSupplier {
 
     String getDisplayName();
 
-    default String getTooltipText(int y){
+    default String getTooltipText(int y) {
         return getName();
     }
 
@@ -147,6 +149,18 @@ public interface Track extends Persistable, AttributeSupplier {
      */
     default boolean hasSamples() {
         return false;
+    }
+
+    default void sortSamplesByAttribute(Comparator<String> comparator) {
+        // no op, override in subclass if needed
+    }
+
+    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type)  {
+        // no op, override in subclass if needed
+    }
+
+    default void filterSamples(TrackFilter trackFilter){
+        // no op, override in subclass if needed
     }
 
     void setFeatureInfoURL(String featureInfoURL);
@@ -319,7 +333,8 @@ public interface Track extends Persistable, AttributeSupplier {
         return null;
     }
 
-    default void setTrackLine(String trackLine) {}
+    default void setTrackLine(String trackLine) {
+    }
 
     /**
      * Return true if the track can be searched for a feature by name.

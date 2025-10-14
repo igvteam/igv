@@ -70,9 +70,7 @@ public class RegionMenu extends JPopupMenu {
             JMenuItem item = new JMenuItem("Sort by amplification");
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-
                     IGV.getInstance().sortByRegionScore(roi, RegionScoreType.AMPLIFICATION, frame);
-
                 }
             });
             add(item);

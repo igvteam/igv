@@ -259,8 +259,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         IGVEventBus.getInstance().subscribe(TrackGroupEvent.class, this);
-        IGVEventBus.getInstance().subscribe(TrackFilterEvent.class, this);
-
     }
 
     @Override
@@ -357,7 +355,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      *
      * @param comparator the comparator to sort by
      */
-    public void sortSamples(Comparator<String> comparator) {
+    public void sortSamplesByAttribute(Comparator<String> comparator) {
         if (filteredSamples != null) {
             Collections.sort(filteredSamples, comparator);
             for (List<String> samples : samplesByGroups.values()) {
@@ -1175,24 +1173,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.squishedHeight = squishedHeight;
     }
 
-    @Override
-    public void receiveEvent(IGVEvent event) {
-        if (event instanceof TrackGroupEvent) {
-            groupByAttribute();
-        } else if (event instanceof TrackFilterEvent) {
-            TrackFilterEvent trackFilterEvent = (TrackFilterEvent) event;
-            TrackFilter trackFilter = trackFilterEvent.getFilter();
-            this.filter(trackFilter);
-            groupByAttribute();   // Re-group samples by attribute after filtering.  A no-op if samples are not grouped.
-        }
-    }
 
-    private void filter(TrackFilter trackFilter) {
+    @Override
+    public void filterSamples(TrackFilter trackFilter) {
         if(trackFilter == null || trackFilter.isShowAll())  {
             this.filteredSamples = new ArrayList<>(allSamples);
         } else {
             this.filteredSamples = trackFilter.evaluateSamples(allSamples);
         }
+        groupByAttribute();   // Re-group samples by attribute after filtering.  A no-op if samples are not grouped.
     }
 
     public boolean hasAlignmentFiles() {

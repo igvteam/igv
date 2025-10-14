@@ -1722,6 +1722,13 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
         }
+
+
+        // Sort samples within each track
+        for (Track t : getAllTracks()) {
+            t.sortSamplesByValue(region.getChr(), region.getStart(), region.getEnd(), type);
+        }
+
         repaint();
     }
 

@@ -85,7 +85,7 @@ public abstract class AbstractTrack implements Track {
     protected boolean autoScale = true;   // By default, can be overriden by track line
     private float viewLimitMin = Float.NaN;     // From UCSC track line
     private float viewLimitMax = Float.NaN;  // From UCSC track line
-    private int fontSize;
+    protected int fontSize;
     private boolean showDataRange = true;
 
     private int top;
