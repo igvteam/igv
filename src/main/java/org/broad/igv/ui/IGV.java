@@ -1823,6 +1823,11 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
+
+        for(Track t : getAllTracks()) {
+            t.groupSamplesByAttribute(session.getGroupByAttribute());
+        }
+
         // Some tracks need to respond to changes in grouping, fire notification event
         IGVEventBus.getInstance().post(new TrackGroupEvent());
     }

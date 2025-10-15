@@ -7,6 +7,7 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
@@ -26,17 +27,23 @@ public class SegTrack extends AbstractTrack {
     Color color = Color.RED;
     Color altColor = Color.BLUE;
     int sampleHeight = 15;
-    List<String> sampleNames;
+    int groupGap = 15;
+    List<SampleGroup> sampleGroups;
     Renderer renderer = new HeatmapRenderer();
 
 
     public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
         super(locator, id, name);
         this.dataset = dataset;
-        this.sampleNames = new ArrayList(dataset.getSampleNames());
+        List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+        this.sampleGroups = new ArrayList<>();
+        this.sampleGroups.add(new SampleGroup("", sampleNames));
         setDataRange(new DataRange(0, 1, 2));
         setTrackType(dataset.getType());
         initScale(dataset);
+
+        // Groups by global attribtue if it exists
+        groupSamplesByAttribute(null);
     }
 
     void initScale(SegmentedDataSet dataset) {
@@ -55,7 +62,11 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int getHeight() {
-        return sampleNames.size() * sampleHeight;
+        int nSamples = 0;
+        for (SampleGroup group : sampleGroups) {
+            nSamples += group.getSamples().size();
+        }
+        return nSamples * sampleHeight + (sampleGroups.size() - 1) * groupGap;
     }
 
     @Override
@@ -67,11 +78,14 @@ public class SegTrack extends AbstractTrack {
     public void render(RenderContext context, Rectangle rect) {
 
         int y = rect.y;
-        for (String s : sampleNames) {
-            Rectangle r = new Rectangle(rect.x, y, rect.width, sampleHeight);
-            List<LocusScore> scores = dataset.getSegments(s, context.getChr());
-            this.renderer.render(scores, context, r, this);
-            y += sampleHeight;
+        for (SampleGroup group : sampleGroups) {
+            for (String s : group.getSamples()) {
+                Rectangle r = new Rectangle(rect.x, y, rect.width, sampleHeight);
+                List<LocusScore> scores = dataset.getSegments(s, context.getChr());
+                this.renderer.render(scores, context, r, this);
+                y += sampleHeight;
+            }
+            y += groupGap; // Gap between groups
         }
     }
 
@@ -82,22 +96,25 @@ public class SegTrack extends AbstractTrack {
         final AttributeManager attributeManager = AttributeManager.getInstance();
 
         int y = trackRectangle.y;
-        for (String s : sampleNames) {
-            if (y + sampleHeight > trackRectangle.y && y < trackRectangle.y + trackRectangle.height) {
-                int x = trackRectangle.x;
-                for (String name : attributeNames) {
-                    final String key = name.toUpperCase();
-                    String attributeValue = attributeManager.getAttribute(s, key);
-                    if (attributeValue != null) {
-                        Rectangle rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
-                        graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
-                        graphics.fill(rect);
-                        mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+        for (SampleGroup group : sampleGroups) {
+            for (String s : group.getSamples()) {
+                if (y + sampleHeight > trackRectangle.y && y < trackRectangle.y + trackRectangle.height) {
+                    int x = trackRectangle.x;
+                    for (String name : attributeNames) {
+                        final String key = name.toUpperCase();
+                        String attributeValue = attributeManager.getAttribute(s, key);
+                        if (attributeValue != null) {
+                            Rectangle rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
+                            graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
+                            graphics.fill(rect);
+                            mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+                        }
+                        x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                     }
-                    x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                 }
+                y += sampleHeight;
             }
-            y += sampleHeight;
+            y += groupGap; // Gap
         }
     }
 
@@ -111,10 +128,13 @@ public class SegTrack extends AbstractTrack {
         g2D.setFont(font);
 
         int y = trackRectangle.y;
-        for (String s : sampleNames) {
-            Rectangle r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
-            GraphicUtils.drawWrappedText(s, r, g2D, false);
-            y += sampleHeight;
+        for (SampleGroup group : sampleGroups) {
+            for (String s : group.getSamples()) {
+                Rectangle r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
+                GraphicUtils.drawWrappedText(s, r, g2D, false);
+                y += sampleHeight;
+            }
+            y += groupGap; // Gap
         }
     }
 
@@ -129,8 +149,8 @@ public class SegTrack extends AbstractTrack {
      * @param comparator the comparator to sort by
      */
     public void sortSamplesByAttribute(Comparator<String> comparator) {
-        if (sampleNames != null) {
-            Collections.sort(sampleNames, comparator);
+        for (SampleGroup group : sampleGroups) {
+            Collections.sort(group.getSamples(), comparator);
         }
     }
 
@@ -164,25 +184,31 @@ public class SegTrack extends AbstractTrack {
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
         int trackY = mouseY - this.getY();
-        int sampleIdx = trackY / sampleHeight;
-        if (sampleIdx < 0 || sampleIdx >= sampleNames.size()) {
-            return null;
-        }
-        String sampleName = sampleNames.get(sampleIdx);
+        int y = 0;
+        for (SampleGroup group : sampleGroups) {
+            int groupPixelHeight = group.getSamples().size() * sampleHeight;
+            if (trackY >= y && trackY < y + groupPixelHeight) {
+                int sampleIndex = (trackY - y) / sampleHeight;
+                String sampleName = group.getSamples().get(sampleIndex);
+                StringBuffer buf = new StringBuffer();
+                LocusScore score = dataset.getSegmentAt(sampleName, chr, position, frame);
+                // If there is no value here, return null to signal no popup
+                if (score == null) {
+                    return null;
+                }
+                buf.append(sampleName + "<br>");
+                if ((getDataRange() != null) && (getRenderer() instanceof XYPlotRenderer)) {
+                    buf.append("Data scale: " + getDataRange().getMinimum() + " - " + getDataRange().getMaximum() + "<br>");
+                }
 
-        StringBuffer buf = new StringBuffer();
-        LocusScore score = dataset.getSegmentAt(sampleName, chr, position, frame);
-        // If there is no value here, return null to signal no popup
-        if (score == null) {
-            return null;
+                buf.append(score.getValueString(position, mouseX, getWindowFunction()));
+                return buf.toString();
+            } else if (trackY < y + groupPixelHeight + groupGap) {
+                return null; // In a gap
+            }
+            y += groupPixelHeight + groupGap;
         }
-        buf.append(sampleName + "<br>");
-        if ((getDataRange() != null) && (getRenderer() instanceof XYPlotRenderer)) {
-            buf.append("Data scale: " + getDataRange().getMinimum() + " - " + getDataRange().getMaximum() + "<br>");
-        }
-
-        buf.append(score.getValueString(position, mouseX, getWindowFunction()));
-        return buf.toString();
+        return null;
     }
 
     /**
@@ -203,55 +229,56 @@ public class SegTrack extends AbstractTrack {
             return;
         }
 
-        // Compute a value for each sample
-        Map<String, Float> sampleScores = new HashMap<>();
-        int n = 0;
-        for (String s : sampleNames) {
-            List<LocusScore> scores = dataset.getSegments(s, chr);
-            float regionScore = 0;
-            int intervalSum = 0;
-            boolean hasNan = false;
-            for (LocusScore score : scores) {
-                if ((score.getEnd() >= start) && (score.getStart() <= end)) {
-                    int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
-                    float value = score.getScore();
-                    //For sorting it makes sense to skip NaNs. Not sure about other contexts
-                    if (Float.isNaN(value)) {
-                        hasNan = true;
-                        continue;
+        for (SampleGroup group : sampleGroups) {
+            // Compute a value for each sample
+            Map<String, Float> sampleScores = new HashMap<>();
+            for (String s : group.getSamples()) {
+                List<LocusScore> scores = dataset.getSegments(s, chr);
+                float regionScore = 0;
+                int intervalSum = 0;
+                boolean hasNan = false;
+                for (LocusScore score : scores) {
+                    if ((score.getEnd() >= start) && (score.getStart() <= end)) {
+                        int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
+                        float value = score.getScore();
+                        //For sorting it makes sense to skip NaNs. Not sure about other contexts
+                        if (Float.isNaN(value)) {
+                            hasNan = true;
+                            continue;
+                        }
+                        regionScore += value * interval;
+                        intervalSum += interval;
                     }
-                    regionScore += value * interval;
-                    intervalSum += interval;
                 }
-            }
-            if (intervalSum <= 0) {
-                if (hasNan) {
-                    //If the only existing scores are NaN, the overall score should be NaN
-                    sampleScores.put(s, Float.NaN);
+                if (intervalSum <= 0) {
+                    if (hasNan) {
+                        //If the only existing scores are NaN, the overall score should be NaN
+                        sampleScores.put(s, Float.NaN);
+                    } else {
+                        // No scores in interval
+                        sampleScores.put(s, -Float.MAX_VALUE);
+                    }
                 } else {
-                    // No scores in interval
-                    sampleScores.put(s, -Float.MAX_VALUE);
+                    regionScore /= intervalSum;
+                    sampleScores.put(s, (type == RegionScoreType.DELETION) ? -regionScore : regionScore);
                 }
-            } else {
-                regionScore /= intervalSum;
-                sampleScores.put(s, (type == RegionScoreType.DELETION) ? -regionScore : regionScore);
             }
-        }
 
-        sampleNames.sort(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                Float v1 = sampleScores.get(o1);
-                Float v2 = sampleScores.get(o2);
-                // Put NaNs at the end
-                if (v1.isNaN()) {
-                    return (v2.isNaN()) ? 0 : 1;
-                } else if (v2.isNaN()) {
-                    return -1;
+            group.getSamples().sort(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    Float v1 = sampleScores.get(o1);
+                    Float v2 = sampleScores.get(o2);
+                    // Put NaNs at the end
+                    if (v1.isNaN()) {
+                        return (v2.isNaN()) ? 0 : 1;
+                    } else if (v2.isNaN()) {
+                        return -1;
+                    }
+                    return -Float.compare(v1, v2);
                 }
-                return -Float.compare(v1, v2);
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -265,11 +292,53 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public void filterSamples(TrackFilter trackFilter) {
-        if(trackFilter == null || trackFilter.isShowAll())  {
-            this.sampleNames = new ArrayList<>(dataset.getSampleNames());
+        if (trackFilter == null || trackFilter.isShowAll()) {
+            List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+            this.sampleGroups.clear();
+            this.sampleGroups.add(new SampleGroup("All Samples", sampleNames));
         } else {
-            this.sampleNames = trackFilter.evaluateSamples(dataset.getSampleNames());
+            List<String> filteredSamples = trackFilter.evaluateSamples(dataset.getSampleNames());
+            this.sampleGroups.clear();
+            this.sampleGroups.add(new SampleGroup("Filtered Samples", filteredSamples));
         }
+    }
+
+    @Override
+    public void groupSamplesByAttribute(String attributeKey) {
+
+        if(attributeKey == null && IGV.hasInstance()) {
+            attributeKey = IGV.getInstance().getGroupByAttribute();
+        }
+
+        this.sampleGroups.clear();
+
+        if (attributeKey == null) {
+            List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+            this.sampleGroups.add(new SampleGroup("", sampleNames));
+            repaint();
+        } else {
+            AttributeManager attributeManager = AttributeManager.getInstance();
+            Map<String, List<String>> groupMap = new LinkedHashMap<>();
+            for (String sample : dataset.getSampleNames()) {
+                String attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
+                if (attributeValue == null) {
+                    attributeValue = "";
+                }
+                List<String> samples = groupMap.get(attributeValue);
+                if (samples == null) {
+                    samples = new ArrayList<>();
+                    groupMap.put(attributeValue, samples);
+                }
+                samples.add(sample);
+            }
+
+            // Create groups
+            for (String key : groupMap.keySet()) {
+                sampleGroups.add(new SampleGroup(key, groupMap.get(key)));
+            }
+        }
+
+        repaint();
     }
 
 }

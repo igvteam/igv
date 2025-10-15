@@ -155,11 +155,11 @@ public interface Track extends Persistable, AttributeSupplier {
         // no op, override in subclass if needed
     }
 
-    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type)  {
+    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
         // no op, override in subclass if needed
     }
 
-    default void filterSamples(TrackFilter trackFilter){
+    default void filterSamples(TrackFilter trackFilter) {
         // no op, override in subclass if needed
     }
 
@@ -347,6 +347,10 @@ public interface Track extends Persistable, AttributeSupplier {
 
     default List<NamedFeature> search(String token) {
         return null;
+    }
+
+    default void groupSamplesByAttribute(String attributeKey) {
+        // no op, override in subclass if needed
     }
 
     default void repaint() {
