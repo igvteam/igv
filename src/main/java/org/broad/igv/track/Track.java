@@ -142,13 +142,12 @@ public interface Track extends Persistable, AttributeSupplier {
     String getSample();
 
     /**
-     * Return true if the track has has subtracks (samples).  Currently this is true only for
-     * a VariantTrack with genotypes.  This is used for filtering.
+     * Return the number of samples in this track.  For most tracks this will be 1.
      *
      * @return
      */
-    default boolean hasSamples() {
-        return false;
+    default int sampleCount() {
+        return 1;
     }
 
     default void sortSamplesByAttribute(Comparator<String> comparator) {

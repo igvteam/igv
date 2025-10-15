@@ -317,6 +317,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
 
+
     /**
      * Set groups from global sample information attributes.
      */
@@ -414,12 +415,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return null;
     }
 
+    @Override
     public int sampleCount() {
         return allSamples == null ? 0 : allSamples.size();
-    }
-
-    public boolean hasSamples() {
-        return sampleCount() > 0;
     }
 
     /**

@@ -189,29 +189,29 @@ public class TrackPanel extends IGVPanel {
         boolean success = true;
 
         int availableHeight = dataPanel.getVisibleHeight();
-        int visibleTrackCount = 0;
+        int visibleSampleCount = 0;
 
         // Process data tracks first
         Collection<TrackGroup> groups = dataPanel.getTrackGroups();
 
 
-        // Count visible tracks.
+        // Count visible sample.
         for (TrackGroup group : groups) {
             List<Track> tracks = group.getVisibleTracks();
             for (Track track : tracks) {
                 if (track.isVisible()) {
-                    ++visibleTrackCount;
+                    visibleSampleCount += track.sampleCount();
                 }
             }
         }
 
 
         // Auto resize the height of the visible tracks
-        if (visibleTrackCount > 0) {
+        if (visibleSampleCount > 0) {
             int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
             double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
 
-            double delta = adjustedAvailableHeight / visibleTrackCount;
+            double delta = adjustedAvailableHeight / visibleSampleCount;
 
             // Minimum track height is 1
             if (delta < 1) {
@@ -223,7 +223,7 @@ public class TrackPanel extends IGVPanel {
             for (TrackGroup group : groups) {
                 List<Track> tracks = group.getVisibleTracks();
                 for (Track track : tracks) {
-                    target += delta;
+                    target += delta * track.sampleCount();
                     int height = (int) (target - iTotal);
                     track.setHeight(height);
                     iTotal += height;

@@ -24,8 +24,6 @@ public class SegTrack extends AbstractTrack {
     private static Logger log = LogManager.getLogger(SegTrack.class);
 
     SegmentedDataSet dataset;
-    Color color = Color.RED;
-    Color altColor = Color.BLUE;
     int sampleHeight = 15;
     int groupGap = 15;
     List<SampleGroup> sampleGroups;
@@ -58,6 +56,23 @@ public class SegTrack extends AbstractTrack {
         }
 
         setDataRange(new DataRange(min, baseline, max));
+    }
+
+    @Override
+    public void setHeight(int height) {
+        if (height <= 0) {
+            return;
+        }
+        int nSamples = 0;
+        for (SampleGroup group : sampleGroups) {
+            nSamples += group.getSamples().size();
+        }
+        if (nSamples > 0) {
+            this.sampleHeight = (height - (sampleGroups.size() - 1) * groupGap) / nSamples;
+            if (this.sampleHeight < 1) {
+                this.sampleHeight = 1;
+            }
+        }
     }
 
     @Override
@@ -138,10 +153,6 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-    @Override
-    public boolean hasSamples() {
-        return super.hasSamples();
-    }
 
     /**
      * Sort samples.  Sort both the master list and groups, if any.
@@ -209,6 +220,15 @@ public class SegTrack extends AbstractTrack {
             y += groupPixelHeight + groupGap;
         }
         return null;
+    }
+
+    @Override
+    public int sampleCount() {
+        int count = 0;
+        for (SampleGroup group : sampleGroups) {
+            count += group.getSamples().size();
+        }
+        return count;
     }
 
     /**

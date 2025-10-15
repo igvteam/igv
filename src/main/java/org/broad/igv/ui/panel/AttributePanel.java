@@ -123,7 +123,6 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
             TrackPanel trackPanel = (TrackPanel) getParent();
             Collection<TrackGroup> groups = trackPanel.getGroups();
 
-
             if (!groups.isEmpty()) {
 
                 // int attributeColumnWidth = getAttributeColumnWidth();
