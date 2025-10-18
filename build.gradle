@@ -93,6 +93,7 @@ def xmlGraphicsVersion = '1.17'
 dependencies {
 
     implementation 'io.modelcontextprotocol.sdk:mcp-core:0.14.1'
+    implementation("io.modelcontextprotocol.sdk:mcp-json-jackson2:0.14.1")
 
     implementation(
 

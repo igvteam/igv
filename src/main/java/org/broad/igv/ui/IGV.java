@@ -50,6 +50,7 @@ import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.mcp.IGVMcpServer;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
@@ -2074,6 +2075,8 @@ public class IGV implements IGVEventObserver {
                     }
 
                 });
+
+                IGVMcpServer.start();
 
                 session.recordHistory();
             }

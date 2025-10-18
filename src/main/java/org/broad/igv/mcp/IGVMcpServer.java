@@ -1,0 +1,41 @@
+package org.broad.igv.mcp;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.server.McpServer;
+import io.modelcontextprotocol.server.McpSyncServer;
+import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
+
+
+public class IGVMcpServer {
+
+    static Logger log = LogManager.getLogger(IGVMcpServer.class);
+
+    public static void main(String[] args) {
+        start();
+    }
+
+    public static void start() {
+
+        log.info("Starting IGV MCP Server");
+
+        McpTools mcpTools = new McpTools();
+
+        StdioServerTransportProvider transportProvider = new StdioServerTransportProvider(
+                new JacksonMcpJsonMapper(new ObjectMapper())
+        );
+
+        McpSyncServer server = McpServer.sync(transportProvider)
+                .serverInfo("igv-mcp", "1.0.0")
+                .tool(mcpTools.loadFileTool(), mcpTools.loadFileHandler())
+                .build();
+
+        Thread shutdownHook = new Thread(() -> {
+            log.info("Shutting down IGV MCP Server ...");
+            server.close();
+        });
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
+}
