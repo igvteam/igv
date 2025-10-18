@@ -92,6 +92,7 @@ def xmlGraphicsVersion = '1.17'
 
 dependencies {
 
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
     implementation 'io.modelcontextprotocol.sdk:mcp-core:0.14.1'
     implementation("io.modelcontextprotocol.sdk:mcp-json-jackson2:0.14.1")
 

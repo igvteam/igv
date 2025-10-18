@@ -14,15 +14,14 @@ prefix="$(cd "$(dirname "$0")" && pwd)"
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-21" ]; then
-    echo echo "Using bundled JDK."
     JAVA_HOME="${prefix}/jdk-21"
     PATH=$JAVA_HOME/bin:$PATH
 else
-     echo "Using system JDK. IGV requires Java 21."
+    echo "Using system JDK. IGV requires Java 21." >&2
 fi
 
 # Report on Java version
-java -version
+java -version >&2
 
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then

@@ -1,0 +1,207 @@
+- name: new
+  description: Start a new session. This will clear all tracks.
+
+- name: saveSession
+  description: |
+    This command saves all aspects of the current IGV session including loaded tracks, their display settings, the current genome, visible region, and view configurations.
+    The session file (XML format) can be loaded later to restore the exact state.
+  arguments:
+    - name: filename
+      description: |
+        The path where the session file should be saved. It is strongly recommended to use a full absolute path. The file will be saved in XML format with a .xml extension (add .xml if not included).
+        Example: "/full/path/to/my_session.xml"
+
+- name: genome
+  description: Loads a genome by its identifier.
+  arguments:
+    - name: id
+      description: The identifier of the genome to load.
+
+- name: load
+  description: Loads a file from a given path or URL
+  arguments:
+    - name: path
+      description: |
+        A file path or URL.  IGV supports a variety of file formats including BAM, CRAM, VCF, BED, GTF, GFF,
+        WIG, BigWig, BEDPE, BigBed,Interact, BigInteract, BigGenePred, SEG, MAF, MUT, and more.  See the IGV 
+        documentation for a full list of supported formats.
+    - name: indexPath
+      description: A file path or URL to an index.  Required for some file types (e.g., BAM, CRAM) if the index is not 
+        located in the default location.
+      optional: true
+
+- name: goto
+  description: |
+    Navigate to a specified genomic locus. This can be a gene name or a genomic range.
+
+    Examples:
+    - myc
+    - chr1:1,000,000-2,000,000
+  arguments:
+    - name: locus
+      description: Genomic locus (e.g., MYC, or chr1:1000-2000)
+
+- name: collapse
+  description: Collapse the track to a compact representation.  Annotation tracks will be collapsed to a single line.
+
+- name: squish
+  description: Squish the track by reducing the height of each row.
+
+- name: expand
+  description: Expand the track by increasing the height of each row.
+
+- name: region
+  description: Define a region of interest.
+  arguments:
+    - name: chromosome
+      description: Chromosome name
+    - name: start
+      description: Start position
+    - name: end
+      description: End position
+
+- name: setColor
+  description: Set a color for the specified track.
+  arguments:
+    - name: color
+      description: The color in RGB format, e.g., '255,0,0' for red.
+    - name: trackName
+      description: The name of the track to set the color for. The name is the file name by default.
+      optional: true
+
+- name: group
+  description: Groups alignments by the specified property.
+  arguments:
+    - name: id
+      description: The identifier of the genome to load.
+      enumValues:
+        - value: ALIGNED_READ_LENGTH
+          description: Group by aligned read length
+        - value: BASE
+          description: Group by base at a position (requires tag_name_or_position)
+        - value: INSERTION
+          description: Group by insertion at position (requires tag_name_or_position)
+        - value: FIRST_OF_PAIR_STRAND
+          description: Group by strand of first read in pair
+        - value: HAPLOTYPE
+          description: Group by haplotype
+        - value: LIBRARY
+          description: Group by sequencing library
+        - value: MATE_CHROMOSOME
+          description: Group by mate chromosome
+        - value: MOVIE
+          description: Group by movie (PacBio)
+        - value: NONE
+          description: Remove grouping
+        - value: PAIR_ORIENTATION
+          description: Group by pair orientation (e.g., F1R2, F2R1)
+        - value: PHASE
+          description: Group by phase
+        - value: READ_GROUP
+          description: Group by read group
+        - value: READ_ORDER
+          description: Group by read order
+        - value: REFERENCE_CONCORDANCE
+          description: Group by reference concordance
+        - value: SAMPLE
+          description: Group by sample name
+        - value: STRAND
+          description: Group by read strand
+        - value: SUPPLEMENTARY
+          description: Group by supplementary alignment status
+        - value: TAG
+          description: Group by SAM tag value (requires tag_name_or_position)
+        - value: ZMW
+          description: Group by ZMW (PacBio)
+    - name: tag
+      description: Tag name
+      optional: true
+
+- name: sort
+  description: Sort alignments by the specified property.
+  arguments:
+    - name: id
+      description: The identifier of the genome to load.
+      enumValues:
+        - value: BASE
+          description: Sort by base at a position. Requires position
+        - value: FIRSTOFPAIRSTRAND
+          description: Sort by first-of-pair strand
+        - value: INSERTSIZE
+          description: Sort by insert size
+        - value: MATECHR
+          description: Sort by mate chromosome
+        - value: POSITION
+          description: Sort by alignment start position
+        - value: QUALITY
+          description: Sort by mapping quality
+        - value: READGROUP
+          description: Sort by read group
+        - value: READORDER
+          description: Sort by read order (as in file)
+        - value: READNAME
+          description: Sort by read name
+        - value: SAMPLE
+          description: Sort by sample
+        - value: STRAND
+          description: Sort by read strand
+        - value: ALIGNEDREADLENGTH
+          description: Sort by aligned read length
+        - value: AMPLIFICATION
+          description: Sort by amplification level
+        - value: DELETION
+          description: Sort by deletion level
+
+- name: position
+  description: Genomic position. For base sorting this is a single base, e.g., chr1:1000. For copy number sorting this can be a region, e.g., chr1:1000-2000.
+  arguments:
+    - name: locus
+      description: Genomic position (e.g., chr1:1000 or chr1:1000-2000)
+      optional: true
+
+- name: viewaspairs
+  description: Join alignments from paired-end reads into a single representation.
+
+- name: snapshot
+  description: This command saves the current IGV view as an image file. The image includes all visible tracks in the current genomic region. You can specify a filename or let IGV generate one automatically based on the current locus. The file format is determined by the filename extension (.png or .svg).
+  arguments:
+    - name: filename
+      description: The name of the file to save the snapshot to. If not provided, a default name based on the current locus will be used.
+      optional: true
+
+- name: setSequenceStrand
+  description: This command controls whether the positive (forward) or negative (reverse) strand sequence is displayed in IGV's sequence track. This affects the nucleotide sequence shown and, if enabled, the 3-frame translation. Note that this changes which strand's sequence is shown but does not reverse the left-to-right direction of the display.
+  arguments:
+    - name: strand
+      description: The strand to set for the sequence track.
+      enumValues:
+        - value: "+"
+          description: Positive strand
+        - value: "-"
+          description: Negative strand
+
+- name: setSequenceShowTranslation
+  description: |
+    This command toggles the display of amino acid translations in the sequence track.
+    When enabled, IGV shows the 3-frame translation of the DNA sequence, displaying the
+    amino acids that would be produced in each reading frame. This is useful for identifying
+    open reading frames, verifying coding sequences, and analyzing the impact of variants
+    on protein sequence.
+  arguments:
+    - name: showTranslation
+      description: Whether to show the 3-frame translation in the sequence track.
+      enumValues:
+        - value: "True"
+          description: Show translation
+        - value: "False"
+          description: Hide translation
+
+- name: snapshotDirectory
+  description: |
+    This command specifies the directory path where IGV will save images created with
+    the snapshot command. This must be set before taking snapshots if you want them
+    saved to a specific location. If not set, IGV uses a default location which may
+    vary by platform.
+  arguments:
+    - name: directoryPath
+      description: The path to the directory where snapshots will be saved.
