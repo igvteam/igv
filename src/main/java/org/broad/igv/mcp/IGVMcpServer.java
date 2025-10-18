@@ -27,9 +27,12 @@ public class IGVMcpServer {
                 new JacksonMcpJsonMapper(new ObjectMapper())
         );
 
+
+        McpTools.ToolDescriptor toolDescriptor = mcpTools.getFileTool();
+
         McpSyncServer server = McpServer.sync(transportProvider)
                 .serverInfo("igv-mcp", "1.0.0")
-                .tool(mcpTools.loadFileTool(), mcpTools.loadFileHandler())
+                .tool(toolDescriptor.tool(), toolDescriptor.handler())
                 .build();
 
         Thread shutdownHook = new Thread(() -> {
