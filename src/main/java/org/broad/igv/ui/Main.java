@@ -465,6 +465,7 @@ public class Main {
         private String name = null;
         public String igvDirectory = null;
         public Collection<String> httpHeader = null;
+        public boolean mcpMode = false;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -492,6 +493,7 @@ public class Main {
             CmdLineParser.Option versionOption = parser.addBooleanOption("version");
             CmdLineParser.Option helpOption = parser.addBooleanOption("help");
             CmdLineParser.Option headerOption = parser.addStringOption('H', "header");
+            CmdLineParser.Option mcpOption = parser.addBooleanOption("mcp");
 
 
             try {
@@ -511,6 +513,7 @@ public class Main {
             name = (String) parser.getOptionValue(nameOption);
             locusString = (String) parser.getOptionValue(locusOption);
             httpHeader = parser.getOptionValues(headerOption);
+            mcpMode = parser.getOptionValue(mcpOption) != null;
 
             String indexFilePath = (String) parser.getOptionValue(indexFileOption);
             if (indexFilePath != null) {
@@ -680,6 +683,10 @@ public class Main {
             return name;
         }
 
+        public boolean isMcpMode() {
+             return mcpMode;
+        }
+
         public Collection<String> getHttpHeader() {
             return httpHeader;
         }
@@ -699,6 +706,7 @@ public class Main {
             System.out.println("--locus, -l  Initial locus");
             System.out.println("--header, -H http header to include with all requests for list of data files");
             System.out.println("--igvDirectory Path to the local igv directory.  Defaults to <user home>/igv");
+            System.out.println("--mcp  Start IGV in model context protocol (MCP) mode");
             System.out.println("--version  Print the IGV version and exit");
             System.out.println("--help Print this output and exit");
         }

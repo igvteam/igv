@@ -2076,7 +2076,9 @@ public class IGV implements IGVEventObserver {
 
                 });
 
-                IGVMcpServer.start();
+                if(igvArgs.isMcpMode()) {
+                    IGVMcpServer.start();
+                }
 
                 session.recordHistory();
             }
