@@ -239,6 +239,8 @@ public class CommandExecutor {
                 result = this.overlay(args);
             } else if (cmd.equalsIgnoreCase("separate")) {
                 result = this.separate(param1);
+            } else if (cmd.equalsIgnoreCase("renameTrack")) {
+                result = this.renameTrack(param1, param2);
             } else {
                 result = "UNKOWN COMMAND: " + commandLine;
                 log.warn(result);
@@ -442,6 +444,24 @@ public class CommandExecutor {
             return "OK";
         } else {
             return "No track found matching " + trackName;
+        }
+    }
+
+    private String renameTrack(String currentName, String newName) {
+        if (currentName == null || newName == null) {
+            return "Error: Both current and new track names must be provided.";
+        }
+        currentName = currentName.replace("%20", " ");
+        newName = newName.replace("%20", " ");
+        List<Track> tracks = tracksMatchingName(currentName);
+        if (tracks.isEmpty()) {
+            return "Error: Track not found: " + currentName;
+        } else {
+            for (Track t : tracks) {
+                t.setName(newName);
+            }
+            igv.revalidateTrackPanels();
+            return "OK";
         }
     }
 

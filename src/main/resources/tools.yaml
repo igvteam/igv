@@ -39,9 +39,9 @@
 
 - name: genome
   description: |
-  
+    
     Loads a genome by its identifier or path.
-  
+    
     Use this tool when you need to:
     - Change the reference genome for your analysis
     - Load a custom genome not included in the default IGV list
@@ -64,7 +64,7 @@
 - name: load
   description: |
     Loads a file from a given path or URL
-  
+    
     Use this tool when you need to:
     - Load BAM or CRAM files to view aligned sequencing reads
     - Load VCF files to examine variant calls
@@ -88,7 +88,7 @@
           - Session: XML (IGV session files)
         
         Multiple files can be loaded in one command by separating paths with commas.
- 
+
 
     - name: indexPath
       description: A file path or URL to an index.  Required for some file types (e.g., BAM, CRAM) if the index is not
@@ -183,27 +183,19 @@
         This is optional; if not provided, the color will be set for all tracks.
       optional: true
 
-- name: setAltColor
+- name: renameTrack
   description: |
-    Sets the alternate color for negative values or negative strand features.
-
-    This command sets the "alt color" used in tracks to display negative values
-    (in wiggle/coverage tracks) or negative strand features (in some annotation tracks).
-    Having distinct colors for positive and negative values or strands helps visualize
-    directionality and strand-specific patterns in the data.
-
+    Renames a track.
 
   arguments:
-    - name: color
+    - name: currentName
       description: |
-        The color to set, specified in one of two formats:
-          - RGB format: "R,G,B" where each component is 0-255 (e.g., "255,0,0" for red)
-          - Hex format: "RRGGBB" in hexadecimal (e.g., "FF0000" for red)
-    - name: trackName
-      description: The name of the track to set the alt color for. The name is the file name by default.
-        This is optional; if not provided, the alt color will be set for all tracks.
-      optional: true
-
+        The current name of the track.
+        NOTE: If the current name contains spaces, replace them with %20.
+    - name: newName
+      description: |
+        The new name for the track.
+        NOTE: If the new name contains spaces, replace them with %20.
 
 - name: group
   description: |
@@ -360,7 +352,7 @@
 
   arguments:
     - name: filename
-      description: The name of the file to save the snapshot to. If not provided, a default name 
+      description: The name of the file to save the snapshot to. If not provided, a default name
         based on the current locus will be used.
       optional: true
 
@@ -443,3 +435,39 @@
           description: Show translation
         - value: "False"
           description: Hide translation
+
+- name: overlay
+  description: |
+    This command overlays two or more wig tracks. The tracks are distinguished by color.
+    Alpha shading is used to allow visualization of overlapping values.
+
+    Use this tool when you need to:
+    - Compare multiple signal tracks 
+    - Save vertical space by combining tracks
+  arguments:
+    - name: overlayTrackName
+      description: The name of the new combined overlay track.
+    - name: trackNames
+      description: |
+        A space separated list of the names of the tracks to overlay.  The names are the file names by default.
+        
+        Note: All tracks must of type wiggle (BigWig, TDF, WIG, BEDGRAPH).
+        Note: Spaces in track names must be replaced with %20
+
+- name: separate
+  description: |
+    This command separates an overlaid wig track into its component tracks.
+
+    Use this tool when you need to:
+    - Restore individual wig tracks from an overlay
+  arguments:
+    - name: overlayTrackName
+      description: The name of the overlay track to separate.
+
+- name: zoomin
+  description: |
+    Zooms in the view by a factor of 2.
+
+- name: zoomout
+  description: |
+    Zooms out the view by a factor of 2.
