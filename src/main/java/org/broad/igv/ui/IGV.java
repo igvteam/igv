@@ -383,7 +383,6 @@ public class IGV implements IGVEventObserver {
                 public void run() {
                     //Collect size statistics before loading
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
-
                     final MessageCollection messages = new MessageCollection();
                     for (final ResourceLocator locator : locators) {
 
@@ -416,6 +415,13 @@ public class IGV implements IGVEventObserver {
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
                     revalidateTrackPanels();
+
+                    // In batch mode this runnable is run synchronously on the main thread.
+                    // throw exception if there were any error messages to inform the client
+                    if(Globals.isBatch() && !messages.isEmpty()) {
+                        String allMessages = String.join("\n", messages.getMessages());
+                        throw new RuntimeException(allMessages);
+                    }
                 }
 
                 public String getName() {

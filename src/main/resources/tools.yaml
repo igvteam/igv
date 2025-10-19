@@ -108,6 +108,7 @@
     - View multiple regions simultaneously (split screen)
 
     Examples: "chr1:65,289,335-65,309,335", "BRCA1", "chrX:1000000"
+     
 
   arguments:
     - name: locus
@@ -118,6 +119,9 @@
           - Gene name: "BRCA1" (if gene annotations are loaded)
           - Multiple loci (space-separated): "chr1:100-200 chr2:300-400"
               Chromosome names should match the reference genome (e.g., "chr1" or "1").
+        Note: If locus argument is a single base, e.g. chr1:1000, IGV will center the view on that position and 
+              zoom in to base level with a 40bp window.
+
 
 - name: collapse
   description: |
@@ -410,7 +414,7 @@
 
 - name: setSequenceShowTranslation
   description: |
-    This command toggles the display of amino acid translations in the sequence track.
+    This command enables the display of amino acid translations in the sequence track.
     When enabled, IGV shows the 3-frame translation of the DNA sequence, displaying the
     amino acids that would be produced in each reading frame. This is useful for identifying
     open reading frames, verifying coding sequences, and analyzing the impact of variants
@@ -418,7 +422,6 @@
     
     Use this tool when you need to:
     - Identify open reading frames (ORFs) in genomic sequence
-    - Verify that coding sequences translate correctly
     - Analyze the effect of variants on amino acid sequence
     - Find potential start and stop codons
     - Examine frameshift mutations and their consequences
@@ -465,9 +468,7 @@
       description: The name of the overlay track to separate.
 
 - name: zoomin
-  description: |
-    Zooms in the view by a factor of 2.
+  description: Zooms in the view by a factor of 2.
 
 - name: zoomout
-  description: |
-    Zooms out the view by a factor of 2.
+  description: Zooms out the view by a factor of 2.

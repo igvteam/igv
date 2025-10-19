@@ -131,12 +131,18 @@ public class McpTools {
                     }
                     log.info("Executing tool: " + name + " with args: " + argString);
                     String command = (name + " " + argString).trim();
-                    String result = executor.execute(command);
-
-                    return McpSchema.CallToolResult.builder()
-                            .content(List.of(new McpSchema.TextContent(result)))
-                            .isError(false)
-                            .build();
+                    try {
+                        String result = executor.execute(command);
+                        boolean isError = !"OK".equalsIgnoreCase(result);
+                        return McpSchema.CallToolResult.builder()
+                                .content(List.of(new McpSchema.TextContent(result)))
+                                .isError(isError)
+                                .build();
+                    } catch (Exception e) {
+                        String errorMessage = "Error executing tool '" + name + "': " + e.getMessage();
+                        log.error(errorMessage, e);
+                        throw new RuntimeException(errorMessage, e);
+                    }
                 };
 
         return new ToolDescriptor(tool, handler);
