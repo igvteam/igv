@@ -31,7 +31,6 @@ plugins {
     id('java')
     id('maven-publish')
     id('application')
-    id("org.gradlex.extra-java-module-info") version("1.8")
 }
 
 repositories {
@@ -43,7 +42,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 application {
     mainClass = 'org.broad.igv.ui.Main'
-    mainModule = 'org.igv'
 }
 
 java {
@@ -61,9 +59,6 @@ sourceSets {
     }
 }
 
-extraJavaModuleInfo {
-    deriveAutomaticModuleNamesFromFileNames.set(true)
-}
 
 configurations {
     implementation {
