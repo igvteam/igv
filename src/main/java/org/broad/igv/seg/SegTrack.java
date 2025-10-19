@@ -21,19 +21,19 @@ import java.util.List;
 
 public class SegTrack extends AbstractTrack {
 
-    private static Logger log = LogManager.getLogger(SegTrack.class);
+    private static final Logger log = LogManager.getLogger(SegTrack.class);
 
     SegmentedDataSet dataset;
     int sampleHeight = 15;
     int groupGap = 15;
     List<SampleGroup> sampleGroups;
-    Renderer renderer = new HeatmapRenderer();
+    Renderer<LocusScore> renderer = new HeatmapRenderer();
 
 
     public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
         super(locator, id, name);
         this.dataset = dataset;
-        List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+        var sampleNames = new ArrayList<>(dataset.getSampleNames());
         this.sampleGroups = new ArrayList<>();
         this.sampleGroups.add(new SampleGroup("", sampleNames));
         setDataRange(new DataRange(0, 1, 2));
@@ -46,9 +46,9 @@ public class SegTrack extends AbstractTrack {
 
     void initScale(SegmentedDataSet dataset) {
 
-        float min = (float) dataset.getDataMin();
-        float max = (float) dataset.getDataMax();
-        float baseline = 0;
+        var min = (float) dataset.getDataMin();
+        var max = (float) dataset.getDataMax();
+        var baseline = 0;
 
         // If the range is all positive numbers set the min to zero
         if (min > 0) {
@@ -63,9 +63,9 @@ public class SegTrack extends AbstractTrack {
         if (height <= 0) {
             return;
         }
-        int nSamples = 0;
-        for (SampleGroup group : sampleGroups) {
-            nSamples += group.getSamples().size();
+        var nSamples = 0;
+        for (var group : sampleGroups) {
+            nSamples += group.samples().size();
         }
         if (nSamples > 0) {
             this.sampleHeight = (height - (sampleGroups.size() - 1) * groupGap) / nSamples;
@@ -77,26 +77,21 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int getHeight() {
-        int nSamples = 0;
-        for (SampleGroup group : sampleGroups) {
-            nSamples += group.getSamples().size();
+        var nSamples = 0;
+        for (var group : sampleGroups) {
+            nSamples += group.samples().size();
         }
         return nSamples * sampleHeight + (sampleGroups.size() - 1) * groupGap;
     }
 
     @Override
-    public boolean isReadyToPaint(ReferenceFrame frame) {
-        return true;
-    }
-
-    @Override
     public void render(RenderContext context, Rectangle rect) {
 
-        int y = rect.y;
-        for (SampleGroup group : sampleGroups) {
-            for (String s : group.getSamples()) {
-                Rectangle r = new Rectangle(rect.x, y, rect.width, sampleHeight);
-                List<LocusScore> scores = dataset.getSegments(s, context.getChr());
+        var y = rect.y;
+        for (var group : sampleGroups) {
+            for (String s : group.samples()) {
+                var r = new Rectangle(rect.x, y, rect.width, sampleHeight);
+                var scores = dataset.getSegments(s, context.getChr());
                 this.renderer.render(scores, context, r, this);
                 y += sampleHeight;
             }
@@ -108,18 +103,18 @@ public class SegTrack extends AbstractTrack {
     public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
-        final AttributeManager attributeManager = AttributeManager.getInstance();
+        final var attributeManager = AttributeManager.getInstance();
 
-        int y = trackRectangle.y;
-        for (SampleGroup group : sampleGroups) {
-            for (String s : group.getSamples()) {
+        var y = trackRectangle.y;
+        for (var group : sampleGroups) {
+            for (String s : group.samples()) {
                 if (y + sampleHeight > trackRectangle.y && y < trackRectangle.y + trackRectangle.height) {
-                    int x = trackRectangle.x;
-                    for (String name : attributeNames) {
-                        final String key = name.toUpperCase();
-                        String attributeValue = attributeManager.getAttribute(s, key);
+                    var x = trackRectangle.x;
+                    for (var name : attributeNames) {
+                        final var key = name.toUpperCase();
+                        var attributeValue = attributeManager.getAttribute(s, key);
                         if (attributeValue != null) {
-                            Rectangle rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
+                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
                             graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
                             graphics.fill(rect);
                             mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
@@ -137,15 +132,15 @@ public class SegTrack extends AbstractTrack {
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         // Calculate fontsize
-        int gap = Math.min(4, sampleHeight / 3);
-        int fs = Math.min(fontSize, sampleHeight - gap);
-        Font font = FontManager.getFont(fs);
+        var gap = Math.min(4, sampleHeight / 3);
+        var fs = Math.min(fontSize, sampleHeight - gap);
+        var font = FontManager.getFont(fs);
         g2D.setFont(font);
 
-        int y = trackRectangle.y;
-        for (SampleGroup group : sampleGroups) {
-            for (String s : group.getSamples()) {
-                Rectangle r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
+        var y = trackRectangle.y;
+        for (var group : sampleGroups) {
+            for (String s : group.samples()) {
+                var r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
                 GraphicUtils.drawWrappedText(s, r, g2D, false);
                 y += sampleHeight;
             }
@@ -160,24 +155,26 @@ public class SegTrack extends AbstractTrack {
      * @param comparator the comparator to sort by
      */
     public void sortSamplesByAttribute(Comparator<String> comparator) {
-        for (SampleGroup group : sampleGroups) {
-            Collections.sort(group.getSamples(), comparator);
+        for (var group : sampleGroups) {
+            group.samples().sort(comparator);
         }
     }
 
     @Override
     public void setRendererClass(Class rc) {
         try {
-            renderer = (DataRenderer) rc.getDeclaredConstructor().newInstance();
+            if (Renderer.class.isAssignableFrom(rc)) {
+                renderer = (Renderer<LocusScore>) rc.getDeclaredConstructor().newInstance();
+            }
         } catch (Exception ex) {
             log.error("Error instantiating renderer ", ex);
         }
     }
 
     public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(Arrays.asList(this), "Menu", te);
+        var menu = TrackMenuUtils.getPopupMenu(Collections.singletonList(this), "Menu", te);
         menu.addSeparator();
-        TrackMenuUtils.addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Arrays.asList(this));
+        TrackMenuUtils.addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this));
         return menu;
     }
 
@@ -185,31 +182,32 @@ public class SegTrack extends AbstractTrack {
      * Return a value string for the tooltip window at the given location, or null to signal there is no value
      * at that location
      *
-     * @param chr
-     * @param position
-     * @param mouseX
-     * @param mouseY Mouse position relative to the enclosing panel
-     * @param frame    @return
+     * @param chr      The chromosome
+     * @param position The genomic position
+     * @param mouseX   The mouse X coordinate
+     * @param mouseY   Mouse position relative to the enclosing panel
+     * @param frame    The reference frame
+     * @return A value string for the tooltip, or null.
      */
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        int trackY = mouseY - this.getY();
-        int y = 0;
-        for (SampleGroup group : sampleGroups) {
-            int groupPixelHeight = group.getSamples().size() * sampleHeight;
+        var trackY = mouseY - this.getY();
+        var y = 0;
+        for (var group : sampleGroups) {
+            var groupPixelHeight = group.samples().size() * sampleHeight;
             if (trackY >= y && trackY < y + groupPixelHeight) {
-                int sampleIndex = (trackY - y) / sampleHeight;
-                String sampleName = group.getSamples().get(sampleIndex);
-                StringBuffer buf = new StringBuffer();
-                LocusScore score = dataset.getSegmentAt(sampleName, chr, position, frame);
+                var sampleIndex = (trackY - y) / sampleHeight;
+                var sampleName = group.samples().get(sampleIndex);
+                var buf = new StringBuilder();
+                var score = dataset.getSegmentAt(sampleName, chr, position, frame);
                 // If there is no value here, return null to signal no popup
                 if (score == null) {
                     return null;
                 }
-                buf.append(sampleName + "<br>");
+                buf.append(sampleName).append("<br>");
                 if ((getDataRange() != null) && (getRenderer() instanceof XYPlotRenderer)) {
-                    buf.append("Data scale: " + getDataRange().getMinimum() + " - " + getDataRange().getMaximum() + "<br>");
+                    buf.append("Data scale: ").append(getDataRange().getMinimum()).append(" - ").append(getDataRange().getMaximum()).append("<br>");
                 }
 
                 buf.append(score.getValueString(position, mouseX, getWindowFunction()));
@@ -224,9 +222,9 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int sampleCount() {
-        int count = 0;
-        for (SampleGroup group : sampleGroups) {
-            count += group.getSamples().size();
+        var count = 0;
+        for (var group : sampleGroups) {
+            count += group.samples().size();
         }
         return count;
     }
@@ -236,11 +234,10 @@ public class SegTrack extends AbstractTrack {
      * are processed differently. Results are cached according to the provided frameName,
      * if provided. If not, a string is created based on the inputs.
      *
-     * @param chr
-     * @param start
-     * @param end
-     * @param type
-     * @return
+     * @param chr   The chromosome
+     * @param start The start of the genomic range
+     * @param end   The end of the genomic range
+     * @param type  The score type
      */
     @Override
     public void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
@@ -249,18 +246,18 @@ public class SegTrack extends AbstractTrack {
             return;
         }
 
-        for (SampleGroup group : sampleGroups) {
+        for (var group : sampleGroups) {
             // Compute a value for each sample
-            Map<String, Float> sampleScores = new HashMap<>();
-            for (String s : group.getSamples()) {
-                List<LocusScore> scores = dataset.getSegments(s, chr);
-                float regionScore = 0;
-                int intervalSum = 0;
-                boolean hasNan = false;
-                for (LocusScore score : scores) {
+            var sampleScores = new HashMap<String, Float>();
+            for (String s : group.samples()) {
+                var scores = dataset.getSegments(s, chr);
+                var regionScore = 0f;
+                var intervalSum = 0;
+                var hasNan = false;
+                for (var score : scores) {
                     if ((score.getEnd() >= start) && (score.getStart() <= end)) {
-                        int interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
-                        float value = score.getScore();
+                        var interval = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
+                        var value = score.getScore();
                         //For sorting it makes sense to skip NaNs. Not sure about other contexts
                         if (Float.isNaN(value)) {
                             hasNan = true;
@@ -284,26 +281,24 @@ public class SegTrack extends AbstractTrack {
                 }
             }
 
-            group.getSamples().sort(new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    Float v1 = sampleScores.get(o1);
-                    Float v2 = sampleScores.get(o2);
-                    // Put NaNs at the end
-                    if (v1.isNaN()) {
-                        return (v2.isNaN()) ? 0 : 1;
-                    } else if (v2.isNaN()) {
-                        return -1;
-                    }
-                    return -Float.compare(v1, v2);
+            group.samples().sort((o1, o2) -> {
+                var v1 = sampleScores.get(o1);
+                var v2 = sampleScores.get(o2);
+                // Put NaNs at the end
+                if (v1.isNaN()) {
+                    return (v2.isNaN()) ? 0 : 1;
+                } else if (v2.isNaN()) {
+                    return -1;
                 }
+                return -Float.compare(v1, v2);
             });
         }
     }
 
     /**
      * The track itself is not filterable, but samples are.
-     * @return
+     *
+     * @return false
      */
     @Override
     public boolean isFilterable() {
@@ -313,11 +308,11 @@ public class SegTrack extends AbstractTrack {
     @Override
     public void filterSamples(TrackFilter trackFilter) {
         if (trackFilter == null || trackFilter.isShowAll()) {
-            List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+            var sampleNames = new ArrayList<>(dataset.getSampleNames());
             this.sampleGroups.clear();
             this.sampleGroups.add(new SampleGroup("All Samples", sampleNames));
         } else {
-            List<String> filteredSamples = trackFilter.evaluateSamples(dataset.getSampleNames());
+            var filteredSamples = trackFilter.evaluateSamples(dataset.getSampleNames());
             this.sampleGroups.clear();
             this.sampleGroups.add(new SampleGroup("Filtered Samples", filteredSamples));
         }
@@ -333,27 +328,23 @@ public class SegTrack extends AbstractTrack {
         this.sampleGroups.clear();
 
         if (attributeKey == null) {
-            List<String> sampleNames = new ArrayList<>(dataset.getSampleNames());
+            var sampleNames = new ArrayList<>(dataset.getSampleNames());
             this.sampleGroups.add(new SampleGroup("", sampleNames));
             repaint();
         } else {
-            AttributeManager attributeManager = AttributeManager.getInstance();
-            Map<String, List<String>> groupMap = new LinkedHashMap<>();
-            for (String sample : dataset.getSampleNames()) {
-                String attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
+            var attributeManager = AttributeManager.getInstance();
+            var groupMap = new LinkedHashMap<String, List<String>>();
+            for (var sample : dataset.getSampleNames()) {
+                var attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
                 if (attributeValue == null) {
                     attributeValue = "";
                 }
-                List<String> samples = groupMap.get(attributeValue);
-                if (samples == null) {
-                    samples = new ArrayList<>();
-                    groupMap.put(attributeValue, samples);
-                }
+                var samples = groupMap.computeIfAbsent(attributeValue, k -> new ArrayList<>());
                 samples.add(sample);
             }
 
             // Create groups
-            for (String key : groupMap.keySet()) {
+            for (var key : groupMap.keySet()) {
                 sampleGroups.add(new SampleGroup(key, groupMap.get(key)));
             }
         }
