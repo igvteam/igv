@@ -1,57 +1,165 @@
 - name: new
-  description: Start a new session. This will clear all tracks.
+  description: |
+    This command resets IGV to a clean state by unloading all data tracks, similar to
+    starting IGV fresh. The default genome annotations (genes, etc.) are retained, but
+    all user-loaded tracks are removed. This is useful
+    for starting a new analysis or clearing out old data before loading new files.
+    
+    Use this tool when you need to:
+    - Start a fresh analysis without restarting IGV
+    - Clear all loaded data tracks to free memory
+    - Reset the view before loading a new set of files
+    - Clean up between batch processing jobs
+    - Remove all tracks while keeping the same reference genome
+
 
 - name: saveSession
   description: |
-    This command saves all aspects of the current IGV session including loaded tracks, their display settings, the current genome, visible region, and view configurations.
-    The session file (XML format) can be loaded later to restore the exact state.
+    This command saves all aspects of the current IGV session including loaded tracks, their display settings, the 
+    current genome, and visible region.  The session file (XML format) can be loaded later to restore the exact state.
+    
+    Use this tool when you need to:
+    - Save your work for later continuation
+    - Create reproducible analysis configurations
+    - Share IGV setups with collaborators
+    - Document the exact state of an analysis for publications
+    - Create template sessions for batch processing
+    - Backup current work before making major changes
+
+    Note: Session files contain paths to data files, not the data itself. Ensure
+    data files remain accessible at their original locations when loading the session.
+
   arguments:
     - name: filename
       description: |
-        The path where the session file should be saved. It is strongly recommended to use a full absolute path. The file will be saved in XML format with a .xml extension (add .xml if not included).
+        The path where the session file should be saved. It is strongly recommended to use a full absolute path. 
+        The file will be saved in XML format with a .xml extension (add .xml if not included).
+        
         Example: "/full/path/to/my_session.xml"
 
 - name: genome
-  description: Loads a genome by its identifier.
+  description: |
+  
+    Loads a genome by its identifier or path.
+  
+    Use this tool when you need to:
+    - Change the reference genome for your analysis
+    - Load a custom genome not included in the default IGV list
+    - Switch between different species' genomes
+    - Prepare IGV for loading data aligned to a specific genome build
+    - Load genomes from local files or remote URLs
+    
+    Note: Loading a new genome will unload all currently loaded data tracks.
+
   arguments:
-    - name: id
-      description: The identifier of the genome to load.
+    - name: idOrPath
+      description: |
+        The identifier (ID) of the genome to load, or a path.  In most cases the id is the UCSC name (e.g., hg19, hg38, mm10).
+        Custom genomes can also be loaded by ID they have been added to the IGV genome list.  Alterrnatively, a genome 
+        can be specified as local file path or URL to a genome json file, and indexed fasta file, or a two-bit file.
+
+
+        Common genome IDs: hg38, hg19, mm10, mm39, rn6, danRer11, dm6, ce11, sacCer3
 
 - name: load
-  description: Loads a file from a given path or URL
+  description: |
+    Loads a file from a given path or URL
+  
+    Use this tool when you need to:
+    - Load BAM or CRAM files to view aligned sequencing reads
+    - Load VCF files to examine variant calls
+    - Load BED files to view genomic regions or features
+    - Load BigWig files to view coverage or signal tracks
+    - Load multiple related files simultaneously
+    - Restore a previously saved IGV session
+    - Load files from remote URLs or cloud storage
+
   arguments:
     - name: path
       description: |
-        A file path or URL.  IGV supports a variety of file formats including BAM, CRAM, VCF, BED, GTF, GFF,
-        WIG, BigWig, BEDPE, BigBed,Interact, BigInteract, BigGenePred, SEG, MAF, MUT, and more.  See the IGV 
-        documentation for a full list of supported formats.
+        Full path or URL to the file to load. Supported formats include:
+          - Alignment: BAM, SAM, CRAM
+          - Variant: VCF
+          - Annotation: BED, GFF, GTF, BigBed, BigGenePred
+          - Coverage: BigWig, TDF, WIG
+          - Interaction: Interact, BigInteract, BEDPE
+          - Generic: IGV
+          - Copy Number: SEG, GISTIC
+          - Session: XML (IGV session files)
+        
+        Multiple files can be loaded in one command by separating paths with commas.
+ 
+
     - name: indexPath
-      description: A file path or URL to an index.  Required for some file types (e.g., BAM, CRAM) if the index is not 
+      description: A file path or URL to an index.  Required for some file types (e.g., BAM, CRAM) if the index is not
         located in the default location.
       optional: true
 
 - name: goto
   description: |
-    Navigate to a specified genomic locus. This can be a gene name or a genomic range.
+    Navigate to a specified genomic locus or loci. This can be a gene name, genomic range, or space delimited list.
 
-    Examples:
-    - myc
-    - chr1:1,000,000-2,000,000
+    Use this tool when you need to:
+    - Navigate to a specific genomic position or region
+    - Jump to a gene of interest by name
+    - View a particular variant location
+    - Examine a region identified in analysis results
+    - Navigate to coordinates from a BED file or variant call
+    - View multiple regions simultaneously (split screen)
+
+    Examples: "chr1:65,289,335-65,309,335", "BRCA1", "chrX:1000000"
+
   arguments:
     - name: locus
-      description: Genomic locus (e.g., MYC, or chr1:1000-2000)
+      description: |
+        The genomic location to navigate to. Can be specified in multiple formats:
+          - Single position: "chr1:1000000" or "chr1:1,000,000"
+          - Range: "chr1:1000000-2000000" or "chr1:1,000,000-2,000,000"
+          - Gene name: "BRCA1" (if gene annotations are loaded)
+          - Multiple loci (space-separated): "chr1:100-200 chr2:300-400"
+              Chromosome names should match the reference genome (e.g., "chr1" or "1").
 
 - name: collapse
-  description: Collapse the track to a compact representation.  Annotation tracks will be collapsed to a single line.
+  description: |
+    Collapse the track to a compact representation.  Annotation tracks will be collapsed to a single line.
+    Not all track types support collapsing; for those that do not, this command will have no effect.
+
+
+  arguments:
+    - name: trackName
+      description: The name of the track to collapse. The name is the file name by default.  This is optional; if not
+        provided, all tracks will be collapsed.
+      optional: true
 
 - name: squish
-  description: Squish the track by reducing the height of each row.
+  description: |
+    Squish the track by reducing the height of each row.
+    Not all track types support squishing; for those that do not, this command will have no effect.
+
+  arguments:
+    - name: trackName
+      description: The name of the track to squish. The name is the file name by default.  This is optional; if not
+        provided, all tracks will be squished.
+      optional: true
 
 - name: expand
-  description: Expand the track by increasing the height of each row.
+  description: |
+    Expand the track by increasing the height of each row.
+    Not all track types support expanding; for those that do not, this command will have no effect.
+
+  arguments:
+    - name: trackName
+      description: The name of the track to expand. The name is the file name by default.  This is optional; if not
+        provided, all tracks will be expanded.
+      optional: true
 
 - name: region
-  description: Define a region of interest.
+  description: |
+    Defines a region of interest bounded by two genomic positions.
+
+    This command marks a specific genomic region as a "region of interest" in IGV.
+    The region will be highlighted with a red bar under the genome ruler. 
+
   arguments:
     - name: chromosome
       description: Chromosome name
@@ -61,16 +169,59 @@
       description: End position
 
 - name: setColor
-  description: Set a color for the specified track.
+  description: |
+    Sets the primary display color for a track or all tracks
+
   arguments:
     - name: color
-      description: The color in RGB format, e.g., '255,0,0' for red.
+      description: |
+        The color to set, specified in one of two formats:
+          - RGB format: "R,G,B" where each component is 0-255 (e.g., "255,0,0" for red)
+          - Hex format: "RRGGBB" in hexadecimal (e.g., "FF0000" for red)
     - name: trackName
       description: The name of the track to set the color for. The name is the file name by default.
+        This is optional; if not provided, the color will be set for all tracks.
       optional: true
 
+- name: setAltColor
+  description: |
+    Sets the alternate color for negative values or negative strand features.
+
+    This command sets the "alt color" used in tracks to display negative values
+    (in wiggle/coverage tracks) or negative strand features (in some annotation tracks).
+    Having distinct colors for positive and negative values or strands helps visualize
+    directionality and strand-specific patterns in the data.
+
+
+  arguments:
+    - name: color
+      description: |
+        The color to set, specified in one of two formats:
+          - RGB format: "R,G,B" where each component is 0-255 (e.g., "255,0,0" for red)
+          - Hex format: "RRGGBB" in hexadecimal (e.g., "FF0000" for red)
+    - name: trackName
+      description: The name of the track to set the alt color for. The name is the file name by default.
+        This is optional; if not provided, the alt color will be set for all tracks.
+      optional: true
+
+
 - name: group
-  description: Groups alignments by the specified property.
+  description: |
+    Groups and organizes alignment reads by various properties.
+
+    This command organizes how reads are displayed in alignment tracks by grouping them
+    according to different properties. Grouped reads are visually separated, making it
+    easier to identify patterns and anomalies. Different grouping options are useful
+    for different types of analysis.
+    
+    Use this tool when you need to:
+      - Visualize strand-specific patterns in strand-seq data
+      - Identify chimeric or aberrant read pairs by PAIR_ORIENTATION
+      - Separate reads from different samples in a multiplexed BAM
+      - Analyze phase information in phased sequencing data
+      - Examine base-specific patterns at a particular position
+      - Group reads by custom SAM tags for specialized analysis
+
   arguments:
     - name: id
       description: The identifier of the genome to load.
@@ -118,7 +269,14 @@
       optional: true
 
 - name: sort
-  description: Sort alignments by the specified property.
+  description: |
+    Sorts reads in alignment tracks or features in segmented copy number tracks.
+
+    This command reorganizes how reads or segments are displayed by sorting them according
+    to various criteria. Sorting can reveal patterns that aren't visible in the default
+    order, such as clustering of mismatches, strand biases, or structural variants.
+    Different sort options are useful for different types of analysis.
+
   arguments:
     - name: id
       description: The identifier of the genome to load.
@@ -151,26 +309,104 @@
           description: Sort by amplification level
         - value: DELETION
           description: Sort by deletion level
-
-- name: position
-  description: Genomic position. For base sorting this is a single base, e.g., chr1:1000. For copy number sorting this can be a region, e.g., chr1:1000-2000.
-  arguments:
     - name: locus
-      description: Genomic position (e.g., chr1:1000 or chr1:1000-2000)
+      description: |
+        Optional locus for position-based sorting. Format:
+          - For alignments: "chr:position" (single position)
+          - For copy number: "chr:start-end" (range)
+        If omitted, uses the center of the current view for alignments
+        or the entire view for copy number segments.
       optional: true
+    - name: direction
+      description: |
+        direction: Optional sort direction:
+          - "reverse": Reverse the sort order
+          - If omitted: Standard ascending/descending order
+          Note: If direction is specified, locus must also be specified.
 
 - name: viewaspairs
-  description: Join alignments from paired-end reads into a single representation.
+  description: |
+    This command sets or unsets the "view as pairs" mode for alignment tracks in IGV.
+    When enabled, paired-end reads are displayed together as connected pairs,
+    making it easier to visualize their relationships and orientations.
+    
+    Use this tool when you need to:
+    - Visualize paired-end relationships in BAM files
+    - Identify discordant read pairs that may indicate structural variants
+    - Detect insertions, deletions, or rearrangements
+    - Analyze mate-pair or paired-end sequencing data
+    - Investigate abnormal insert sizes or orientations
+    - Verify proper pairing of reads in quality control
+  arguments:
+    - name: viewAsPairs
+      description: Whether to enable "view as pairs" mode.
+      enumValues:
+        - value: "True"
+          description: Enable view as pairs
+        - value: "False"
+          description: Disable view as pairs
 
 - name: snapshot
-  description: This command saves the current IGV view as an image file. The image includes all visible tracks in the current genomic region. You can specify a filename or let IGV generate one automatically based on the current locus. The file format is determined by the filename extension (.png or .svg).
+  description: |
+    Captures a snapshot image of the current IGV view.
+    
+    This command saves the current IGV view as an image file. You can specify a filename or let
+    IGV generate one automatically based on the current locus. The file format is
+    determined by the filename extension (.png or .svg).  
+    
+    Note: Set snapshot_directory first to control where images are saved. Set
+    max_panel_height to control how much vertical space is captured. The view should
+    be fully rendered before taking a snapshot (consider using set_sleep_interval).
+
   arguments:
     - name: filename
-      description: The name of the file to save the snapshot to. If not provided, a default name based on the current locus will be used.
+      description: The name of the file to save the snapshot to. If not provided, a default name 
+        based on the current locus will be used.
       optional: true
 
+
+- name: snapshotDirectory
+  description: |
+    This command specifies the directory path where IGV will save images created with
+    the snapshot command. This must be set before taking snapshots if you want them
+    saved to a specific location. If not set, IGV uses a default location which may
+    vary by platform.
+  arguments:
+    - name: directoryPath
+      description: The path to the directory where snapshots will be saved.
+
+- name: maxPanelHeight
+  description: |
+    This command sets the maximum height (in pixels) for each track panel when
+    capturing snapshots in IGV. This helps control the vertical size of the
+    resulting image, especially when many tracks are loaded.
+    
+    Use this tool when you need to:
+    - Limit the height of individual track panels in snapshot images
+    - Prevent excessively tall images when many tracks are displayed
+    - Ensure consistent image dimensions for presentations or publications
+    - Match snapshot output to screen view exactly (height=-1)
+
+  arguments:
+    - name: height
+      description: The maximum height in pixels for each track panel in snapshots.
+
 - name: setSequenceStrand
-  description: This command controls whether the positive (forward) or negative (reverse) strand sequence is displayed in IGV's sequence track. This affects the nucleotide sequence shown and, if enabled, the 3-frame translation. Note that this changes which strand's sequence is shown but does not reverse the left-to-right direction of the display.
+  description: |
+    Sets which DNA strand to display in the sequence track.
+
+    This command controls whether the positive (forward) or negative (reverse) strand
+    sequence is displayed in IGV's sequence track. This affects the nucleotide sequence
+    shown and, if enabled, the 3-frame translation. Note that this changes which strand's
+    sequence is shown but does not reverse the left-to-right direction of the display.
+    
+    Use this tool when you need to:
+      - View the sequence of genes on the negative strand
+      - Verify reverse complement sequences for primers or probes
+    
+    Note: This changes which strand's sequence is displayed but maintains the left-to-right
+    genomic coordinate direction. The negative strand will show the reverse complement.
+
   arguments:
     - name: strand
       description: The strand to set for the sequence track.
@@ -187,6 +423,18 @@
     amino acids that would be produced in each reading frame. This is useful for identifying
     open reading frames, verifying coding sequences, and analyzing the impact of variants
     on protein sequence.
+    
+    Use this tool when you need to:
+    - Identify open reading frames (ORFs) in genomic sequence
+    - Verify that coding sequences translate correctly
+    - Analyze the effect of variants on amino acid sequence
+    - Find potential start and stop codons
+    - Examine frameshift mutations and their consequences
+    - Validate gene annotations by checking translation
+
+    Note: The translation shown depends on the current strand setting (set with
+    set_sequence_strand). You must be zoomed in sufficiently to see sequence details.
+
   arguments:
     - name: showTranslation
       description: Whether to show the 3-frame translation in the sequence track.
@@ -195,13 +443,3 @@
           description: Show translation
         - value: "False"
           description: Hide translation
-
-- name: snapshotDirectory
-  description: |
-    This command specifies the directory path where IGV will save images created with
-    the snapshot command. This must be set before taking snapshots if you want them
-    saved to a specific location. If not set, IGV uses a default location which may
-    vary by platform.
-  arguments:
-    - name: directoryPath
-      description: The path to the directory where snapshots will be saved.
