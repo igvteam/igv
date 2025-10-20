@@ -353,7 +353,9 @@ public interface Track extends Persistable, AttributeSupplier {
     }
 
     default void repaint() {
-        IGV.getInstance().repaint(this);
+        if(IGV.hasInstance()) {
+            IGV.getInstance().repaint(this);
+        }
     }
 
 }
