@@ -45,7 +45,7 @@ public class SegTrack extends AbstractTrack {
         setTrackType(dataset.getType());
         initScale(dataset);
 
-        // Groups by global attribtue if it exists
+        // Groups by global attribute if it exists
         groupSamplesByAttribute(null);
     }
 
