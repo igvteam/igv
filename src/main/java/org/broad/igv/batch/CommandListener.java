@@ -26,10 +26,10 @@
 package org.broad.igv.batch;
 
 import biz.source_code.base64Coder.Base64Coder;
-import org.broad.igv.logging.LogManager;
-import org.broad.igv.logging.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.oauth.OAuthProvider;
 import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.Constants;
@@ -267,7 +267,10 @@ public class CommandListener implements Runnable {
                             finalOut.println(response);
                             finalOut.flush();
                         });
-
+                    } catch (Exception e) {
+                        String response = "ERROR processing command: " + e.getMessage();
+                        out.println(response);
+                        out.flush();
                     } finally {
                         Globals.setBatch(false);
                     }

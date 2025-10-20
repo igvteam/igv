@@ -261,7 +261,7 @@ public class CommandExecutor {
             }
             log.debug("Finished sleeping");
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e);
             result = "Error: " + e.getMessage();
         }
