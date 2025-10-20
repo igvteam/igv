@@ -47,6 +47,7 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.SpliceJunctionTrack;
+import org.broad.igv.seg.CNFreqTrack;
 import org.broad.igv.seg.SegTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
