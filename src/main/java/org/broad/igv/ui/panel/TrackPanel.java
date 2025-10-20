@@ -195,7 +195,7 @@ public class TrackPanel extends IGVPanel {
         Collection<TrackGroup> groups = dataPanel.getTrackGroups();
 
 
-        // Count visible sample.
+        // Count visible samples.
         for (TrackGroup group : groups) {
             List<Track> tracks = group.getVisibleTracks();
             for (Track track : tracks) {
