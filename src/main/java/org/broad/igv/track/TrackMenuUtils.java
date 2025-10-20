@@ -48,7 +48,6 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.SAMWriter;
-import org.broad.igv.seg.SegTrack;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.HeatmapScaleDialog;
