@@ -1045,12 +1045,11 @@ public class TrackLoader {
         SegmentedDataSet ds;
         String path = locator.getPath().toLowerCase();
 
-        //if (path.endsWith("seg.zip")) {
-        //    ds = new SegmentedBinaryDataSet(locator);
-        //} else {
-        //   SegmentFileParser parser = new SegmentFileParser(locator);
+        if (path.endsWith("seg.zip")) {
+            throw new DataLoadException("Binary seg (.seg.zip) files are no longer supported", locator.getPath());
+        }
+
         ds = org.broad.igv.seg.SegmentFileParser.loadSegments(locator, genome);
-        // }
         loadSegTrack(locator, newTracks, genome, ds);
     }
 
