@@ -33,7 +33,6 @@ package org.broad.igv.seg;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
-import org.broad.igv.data.seg.Segment;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;

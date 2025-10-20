@@ -5,6 +5,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.renderer.*;
+import org.broad.igv.session.RendererFactory;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -14,8 +15,12 @@ import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TrackFilter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.awt.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -350,6 +355,47 @@ public class SegTrack extends AbstractTrack {
         }
 
         repaint();
+    }
+
+    public void marshalXML(Document document, Element element) {
+        super.marshalXML(document, element);
+        if (renderer != null) {
+            var type = RendererFactory.getRenderType(renderer);
+            if (type != null) {
+                element.setAttribute("renderer", type.name());
+            }
+        }
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+        if (element.hasAttribute("renderer")) {
+
+            Class rendererClass = RendererFactory.getRendererClass(element.getAttribute("renderer"));
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
+        }
+    }
+
+    public static boolean isSegFile(String pathOrURL) {
+        String path;
+        try {
+            var url = new URL(pathOrURL);
+            path = url.getPath();
+        } catch (MalformedURLException e) {
+            // Not a valid URL, assume it's a file path
+            path = pathOrURL;
+        }
+        var lowerPath = path.toLowerCase();
+        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
     }
 
 }

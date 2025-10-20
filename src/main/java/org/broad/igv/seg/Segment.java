@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv.seg;
 
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.track.WindowFunction;

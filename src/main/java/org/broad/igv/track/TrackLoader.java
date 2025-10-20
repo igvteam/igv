@@ -306,7 +306,7 @@ public class TrackLoader {
                     if (locator.getSampleId() != null) {
                         track.setSampleId(locator.getSampleId());
                     }
-                    if(locator.getAutoscaleGroup()!=null){
+                    if (locator.getAutoscaleGroup() != null) {
                         track.setAttributeValue(GROUP_AUTOSCALE, locator.getAutoscaleGroup());
                     }
                 }
@@ -838,14 +838,13 @@ public class TrackLoader {
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
             BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
-            switch(reader.getFeatureType()) {
+            switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator,featureSource);
+                    track = new InteractionTrack(locator, featureSource);
                     break;
                 default:
                     track = new FeatureTrack(locator, trackId, trackName, featureSource);
             }
-
 
 
         } else {
@@ -1049,9 +1048,9 @@ public class TrackLoader {
         //if (path.endsWith("seg.zip")) {
         //    ds = new SegmentedBinaryDataSet(locator);
         //} else {
-         //   SegmentFileParser parser = new SegmentFileParser(locator);
-            ds = org.broad.igv.seg.SegmentFileParser.loadSegments(locator, genome);
-       // }
+        //   SegmentFileParser parser = new SegmentFileParser(locator);
+        ds = org.broad.igv.seg.SegmentFileParser.loadSegments(locator, genome);
+        // }
         loadSegTrack(locator, newTracks, genome, ds);
     }
 
@@ -1068,12 +1067,9 @@ public class TrackLoader {
                               SegmentedDataSet ds) {
         String path = locator.getPath();
 
-        TrackProperties props = null;
-//        if (ds instanceof SegmentedAsciiDataSet) {
-//            props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
-//        }
+        TrackProperties props = ds.getTrackProperties();
 
-        // The "freq" track.  TODO - make this optional
+        // The "freq" track.
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
@@ -1088,21 +1084,16 @@ public class TrackLoader {
             newTracks.add(freqTrack);
         }
 
+        String trackId = path + "_cn"; // + "_" + trackName;
+        org.broad.igv.seg.SegTrack track = new org.broad.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
+        track.setRenderer(new HeatmapRenderer());
+        track.setTrackType(ds.getType());
 
-        //for (String trackName : ds.getSampleNames()) {
-            String trackId = path; // + "_" + trackName;
-            //SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            //DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            org.broad.igv.seg.SegTrack track = new org.broad.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
-            track.setRenderer(new HeatmapRenderer());
-            track.setTrackType(ds.getType());
+        if (props != null) {
+            track.setProperties(props);
+        }
 
-            if (props != null) {
-                track.setProperties(props);
-            }
-
-            newTracks.add(track);
-       // }
+        newTracks.add(track);
     }
 
     private void loadTrioData(ResourceLocator locator) throws IOException {
