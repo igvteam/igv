@@ -1091,7 +1091,7 @@ public class IGVSessionReader implements SessionReader {
      * @throws java.lang.reflect.InvocationTargetException
      * @throws NoSuchMethodException
      */
-    private Track createTrack(String className, Element element) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    private Track createTrack(String className, Element element) {
 
         if (className.contains("BasePairTrack")) {
             return new BasePairTrack();
