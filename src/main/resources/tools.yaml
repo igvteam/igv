@@ -63,7 +63,8 @@
 
 - name: load
   description: |
-    Loads a file from a given path or URL
+    Loads a file from a given path or URL.  Note that IGV supports https://, http://, and gs:// protocols.  IGV does
+    not support ftp:// protocol
     
     Use this tool when you need to:
     - Load BAM or CRAM files to view aligned sequencing reads

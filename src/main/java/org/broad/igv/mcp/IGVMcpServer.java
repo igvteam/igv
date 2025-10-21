@@ -35,10 +35,9 @@ public class IGVMcpServer {
 
         var server = serverSpecification.build();
 
-        Thread shutdownHook = new Thread(() -> {
-            log.info("Shutting down IGV MCP Server ...");
-            server.close();
-        });
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            server.close();    // Ensure server is closed on JVM shutdown.  Probably not strictly necessary since stdio will close.
+            log.info("IGV MCP Server has shut down.");
+        }));
     }
 }
