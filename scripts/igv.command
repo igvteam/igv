@@ -21,26 +21,30 @@ else
 fi
 
 # Report on Java version
-java -version >&2
+java -version
+
+# Build classpath including all jars in lib (non-recursive)
+CP="${prefix}/lib/*"
 
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java --module-path="${prefix}/lib" -Xmx8g \
-        @"${prefix}/igv.args" \
+  java -Xmx8g \
+         @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
-        @"$HOME/.igv/java_arguments" \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        -cp "$CP" \
+        org.broad.igv.ui.Main "$@"
 else
-    java -showversion --module-path="${prefix}/lib" -Xmx8g \
+    java -showversion  -Xmx8g \
         @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        -cp "$CP" \
+        org.broad.igv.ui.Main "$@"
 fi
