@@ -35,7 +35,6 @@ import org.broad.igv.data.*;
 import org.broad.igv.data.cufflinks.*;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
-import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.basepair.BasePairTrack;
@@ -73,6 +72,9 @@ import org.broad.igv.sam.AlignmentDataManager;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
+import org.broad.igv.seg.CNFreqTrack;
+import org.broad.igv.seg.FreqData;
+import org.broad.igv.seg.SegmentedDataSet;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ucsc.bb.BBDataSource;
@@ -304,7 +306,7 @@ public class TrackLoader {
                     if (locator.getSampleId() != null) {
                         track.setSampleId(locator.getSampleId());
                     }
-                    if(locator.getAutoscaleGroup()!=null){
+                    if (locator.getAutoscaleGroup() != null) {
                         track.setAttributeValue(GROUP_AUTOSCALE, locator.getAutoscaleGroup());
                     }
                 }
@@ -836,14 +838,13 @@ public class TrackLoader {
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
             BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
-            switch(reader.getFeatureType()) {
+            switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator,featureSource);
+                    track = new InteractionTrack(locator, featureSource);
                     break;
                 default:
                     track = new FeatureTrack(locator, trackId, trackName, featureSource);
             }
-
 
 
         } else {
@@ -1045,11 +1046,10 @@ public class TrackLoader {
         String path = locator.getPath().toLowerCase();
 
         if (path.endsWith("seg.zip")) {
-            ds = new SegmentedBinaryDataSet(locator);
-        } else {
-            SegmentFileParser parser = new SegmentFileParser(locator);
-            ds = parser.loadSegments(locator, genome);
+            throw new DataLoadException("Binary seg (.seg.zip) files are no longer supported", locator.getPath());
         }
+
+        ds = org.broad.igv.seg.SegmentFileParser.loadSegments(locator, genome);
         loadSegTrack(locator, newTracks, genome, ds);
     }
 
@@ -1062,15 +1062,13 @@ public class TrackLoader {
      * @param genome
      * @param ds
      */
-    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome, SegmentedDataSet ds) {
+    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome,
+                              SegmentedDataSet ds) {
         String path = locator.getPath();
 
-        TrackProperties props = null;
-        if (ds instanceof SegmentedAsciiDataSet) {
-            props = ((SegmentedAsciiDataSet) ds).getTrackProperties();
-        }
+        TrackProperties props = ds.getTrackProperties();
 
-        // The "freq" track.  TODO - make this optional
+        // The "freq" track.
         if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
@@ -1085,20 +1083,16 @@ public class TrackLoader {
             newTracks.add(freqTrack);
         }
 
+        String trackId = path + "_cn"; // + "_" + trackName;
+        org.broad.igv.seg.SegTrack track = new org.broad.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
+        track.setRenderer(new HeatmapRenderer());
+        track.setTrackType(ds.getType());
 
-        for (String trackName : ds.getSampleNames()) {
-            String trackId = path + "_" + trackName;
-            SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setRenderer(new HeatmapRenderer());
-            track.setTrackType(ds.getType());
-
-            if (props != null) {
-                track.setProperties(props);
-            }
-
-            newTracks.add(track);
+        if (props != null) {
+            track.setProperties(props);
         }
+
+        newTracks.add(track);
     }
 
     private void loadTrioData(ResourceLocator locator) throws IOException {

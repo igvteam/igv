@@ -93,12 +93,13 @@ public class FilterTracksMenuAction extends MenuAction {
             for (Track track : tracks) {
                 track.setVisible(true);
             }
-            IGVEventBus.getInstance().post(new TrackFilterEvent(null));
         } else {
             IGV.getInstance().getSession().setFilter(trackFilter);
             trackFilter.evaluate();
+        }
 
-            IGVEventBus.getInstance().post(new TrackFilterEvent(trackFilter));
+        for(Track track : IGV.getInstance().getAllTracks()) {
+            track.filterSamples(trackFilter);
         }
     }
 

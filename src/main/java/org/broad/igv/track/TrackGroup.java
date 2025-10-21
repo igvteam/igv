@@ -232,12 +232,9 @@ public class TrackGroup {
                 // Step 2, sort "sortable" tracks
                 Collections.sort(tracks, comparator);
 
-                // Step 2.5, internal sort by sample attributes for variant tracks.  This is ugly but neccessary as
-                // variant tracks are implemented as monoliths, with sample rows internal to the track.
+                // Step 2.5, internal sort by sample attributes for variant tracks.
                 for (Track t : allTracks) {
-                    if (t instanceof org.broad.igv.variant.VariantTrack) {
-                        ((org.broad.igv.variant.VariantTrack) t).sortSamples(new SampleAttributeComparator(attributeNames, ascending));
-                    }
+                    t.sortSamplesByAttribute(new SampleAttributeComparator(attributeNames, ascending));
                 }
 
                 // Step 3, put non-sortable tracks back in original order
@@ -301,7 +298,6 @@ public class TrackGroup {
                 tracks.add(index, t);
             }
         }
-
     }
 
     /**

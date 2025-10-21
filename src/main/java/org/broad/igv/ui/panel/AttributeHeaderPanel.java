@@ -137,9 +137,8 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                 for (String key : keys) {
                     int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
                     x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
-                    String toDraw = key;
                     int stringOffset = 2;
-                    graphics2.drawString(toDraw, stringOffset, x);
+                    graphics2.drawString(key, stringOffset, x);
                 }
             } finally {
                 graphics2.dispose();

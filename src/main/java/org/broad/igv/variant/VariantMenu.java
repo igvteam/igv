@@ -242,7 +242,7 @@ public class VariantMenu extends IGVPopupMenu {
             item.addActionListener(evt -> {
                 GenotypeComparator compare = new GenotypeComparator(variant);
                 genotypeSortingDirection = !genotypeSortingDirection;
-                track.sortSamples(compare);
+                track.sortSamplesByAttribute(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -273,7 +273,7 @@ public class VariantMenu extends IGVPopupMenu {
                     }
                 };
                 sampleSortingDirection = !sampleSortingDirection;
-                track.sortSamples(compare);
+                track.sortSamplesByAttribute(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -286,7 +286,7 @@ public class VariantMenu extends IGVPopupMenu {
             item.addActionListener(evt -> {
                 DepthComparator compare = new DepthComparator(variant);
                 depthSortingDirection = !depthSortingDirection;
-                track.sortSamples(compare);
+                track.sortSamplesByAttribute(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
 
@@ -302,7 +302,7 @@ public class VariantMenu extends IGVPopupMenu {
                 item.addActionListener(evt -> {
                     QualityComparator compare = new QualityComparator(variant);
                     qualitySortingDirection = !qualitySortingDirection;
-                    track.sortSamples(compare);
+                    track.sortSamplesByAttribute(compare);
                     IGV.getInstance().getContentPane().repaint();
                 });
             } else {

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv.seg;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;

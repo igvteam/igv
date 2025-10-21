@@ -33,7 +33,6 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.basepair.BasePairTrack;
 import org.broad.igv.feature.dsi.DSITrack;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.sprite.ClusterTrack;
 import org.broad.igv.lists.GeneList;
@@ -48,9 +47,12 @@ import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.CoverageTrack;
 import org.broad.igv.sam.EWigTrack;
 import org.broad.igv.sam.SpliceJunctionTrack;
+import org.broad.igv.seg.CNFreqTrack;
+import org.broad.igv.seg.SegTrack;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
@@ -67,8 +69,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -104,6 +106,8 @@ public class IGVSessionReader implements SessionReader {
     private final Set<String> erroredResources = Collections.synchronizedSet(new HashSet<>());
 
     private boolean hasTrackElments;
+
+    private final List<String> segPaths = new ArrayList<>();
 
     public IGVSessionReader(IGV igv) {
         this.igv = igv;
@@ -373,11 +377,17 @@ public class IGVSessionReader implements SessionReader {
                     continue;
                 }
 
+                if (SegTrack.isSegFile(locator.getPath())) {
+                    // Legacy support for seg files which created a track per sample
+                    segPaths.add(locator.getPath());
+                }
+
                 Runnable runnable = () -> {
                     try {
                         // igv.load() loads and initializes tracks, but does not allocate them to panels.
                         List<Track> tracks = igv.load(locator);
                         for (Track track : tracks) {
+
                             if (track == null) {
                                 log.info("Null track for resource " + locator.getPath());
                                 continue;
@@ -388,14 +398,6 @@ public class IGVSessionReader implements SessionReader {
                                 log.info("Null track id for resource " + locator.getPath());
                                 continue;
                             }
-
-                            // id is often an absolute file path.  Use just the filename if unique
-//                            if (!FileUtils.isRemote(id)) {
-//                                String fn = (new File(id)).getName();
-//                                if (!allTracks.containsKey(fn)) {
-//                                    id = fn;
-//                                }
-//                            }
 
                             if (!allTracks.containsKey(id)) {
                                 allTracks.put(id, new ArrayList<>());
@@ -694,7 +696,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        TrackFilter trackFilter = new TrackFilter(showAll, matchAll,  filterElements);
+        TrackFilter trackFilter = new TrackFilter(showAll, matchAll, filterElements);
         session.setFilter(trackFilter);
 
     }
@@ -814,7 +816,20 @@ public class IGVSessionReader implements SessionReader {
 
     private List<Track> processTrack(Session session, Element element, String sessionPath) {
 
+
         String id = checkTrackId(getAttribute(element, SessionAttribute.ID));
+
+
+        // Fix for legacy sessions with seg files -- seg files created a track per sample, with ids like segPath_sampleID
+        // We'll take the first such track as representative of the now single copy number track
+        if(segPaths.size() > 0) {
+            final String originalId = id;
+            Optional<String> segPath = segPaths.stream().filter(p -> originalId.startsWith(p + "_")).findFirst();
+            if (segPath.isPresent()) {
+                id = segPath.get() + "_cn";      // Take first sample match as representative
+                segPaths.remove(segPath.get());   // Do this only once
+            }
+        }
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
         // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.
@@ -1076,7 +1091,7 @@ public class IGVSessionReader implements SessionReader {
      * @throws java.lang.reflect.InvocationTargetException
      * @throws NoSuchMethodException
      */
-    private Track createTrack(String className, Element element) throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    private Track createTrack(String className, Element element) {
 
         if (className.contains("BasePairTrack")) {
             return new BasePairTrack();
