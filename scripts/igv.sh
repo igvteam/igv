@@ -12,32 +12,36 @@ prefix="$(cd "$(dirname "$0")" && pwd)"
 
 # Check whether or not to use the bundled JDK
 if [ -d "${prefix}/jdk-21" ]; then
-    echo echo "Using bundled JDK."
     JAVA_HOME="${prefix}/jdk-21"
     PATH=$JAVA_HOME/bin:$PATH
 else
-    echo "Using system JDK. IGV requires Java 21."
+    echo "Using system JDK. IGV requires Java 21." >&2
 fi
 
 # Report on Java version
 java -version
 
+# Build classpath including all jars in lib (non-recursive)
+CP="${prefix}/lib/*"
+
 # Check if there is a user-specified Java arguments file
 if [ -e "$HOME/.igv/java_arguments" ]; then
-    java --module-path="${prefix}/lib" -Xmx8g \
+    java -Xmx8g \
         @"${prefix}/igv.args" \
         -Dsamjdk.snappy.disable=true \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
         @"$HOME/.igv/java_arguments" \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        -cp "$CP" \
+        org.broad.igv.ui.Main "$@"
 else
-    java --module-path="${prefix}/lib" -Xmx8g \
+    java -Xmx8g \
         @"${prefix}/igv.args" \
         -Dsamjdk.snappy.disable=true \
         -Dapple.laf.useScreenMenuBar=true \
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
-        --module=org.igv/org.broad.igv.ui.Main "$@"
+        -cp "$CP" \
+        org.broad.igv.ui.Main "$@"
 fi
