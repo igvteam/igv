@@ -1729,6 +1729,13 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
         }
+
+
+        // Sort samples within each track
+        for (Track t : getAllTracks()) {
+            t.sortSamplesByValue(region.getChr(), region.getStart(), region.getEnd(), type);
+        }
+
         repaint();
     }
 
@@ -1823,6 +1830,11 @@ public class IGV implements IGVEventObserver {
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
+
+        for(Track t : getAllTracks()) {
+            t.groupSamplesByAttribute(session.getGroupByAttribute());
+        }
+
         // Some tracks need to respond to changes in grouping, fire notification event
         IGVEventBus.getInstance().post(new TrackGroupEvent());
     }

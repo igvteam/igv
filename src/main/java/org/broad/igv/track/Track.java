@@ -41,10 +41,12 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TrackFilter;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -71,14 +73,18 @@ public interface Track extends Persistable, AttributeSupplier {
      * @param frame
      * @return
      */
-    boolean isReadyToPaint(ReferenceFrame frame);
+    default boolean isReadyToPaint(ReferenceFrame frame) {
+        return true;
+    }
 
     /**
-     * Load required resources ot paint the reference frame.
+     * Load required resources to paint the reference frame.
      *
      * @param frame
      */
-    void load(ReferenceFrame frame);
+    default void load(ReferenceFrame frame) {
+        // do nothing
+    }
 
     /**
      * Return true if a track can be filtered by sample annotation.
@@ -105,7 +111,9 @@ public interface Track extends Persistable, AttributeSupplier {
      * @param context the render context
      * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    void overlay(RenderContext context, Rectangle rect);
+    default void overlay(RenderContext context, Rectangle rect) {
+        // do nothing, overlay is optional
+    }
 
     /**
      * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
@@ -127,18 +135,31 @@ public interface Track extends Persistable, AttributeSupplier {
 
     String getDisplayName();
 
-    String getTooltipText(int y);
+    default String getTooltipText(int y) {
+        return getName();
+    }
 
     String getSample();
 
     /**
-     * Return true if the track has has subtracks (samples).  Currently this is true only for
-     * a VariantTrack with genotypes.  This is used for filtering.
+     * Return the number of samples in this track.  For most tracks this will be 1.
      *
      * @return
      */
-    default boolean hasSamples() {
-        return false;
+    default int sampleCount() {
+        return 1;
+    }
+
+    default void sortSamplesByAttribute(Comparator<String> comparator) {
+        // no op, override in subclass if needed
+    }
+
+    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
+        // no op, override in subclass if needed
+    }
+
+    default void filterSamples(TrackFilter trackFilter) {
+        // no op, override in subclass if needed
     }
 
     void setFeatureInfoURL(String featureInfoURL);
@@ -311,7 +332,8 @@ public interface Track extends Persistable, AttributeSupplier {
         return null;
     }
 
-    default void setTrackLine(String trackLine) {}
+    default void setTrackLine(String trackLine) {
+    }
 
     /**
      * Return true if the track can be searched for a feature by name.
@@ -326,8 +348,14 @@ public interface Track extends Persistable, AttributeSupplier {
         return null;
     }
 
+    default void groupSamplesByAttribute(String attributeKey) {
+        // no op, override in subclass if needed
+    }
+
     default void repaint() {
-        IGV.getInstance().repaint(this);
+        if(IGV.hasInstance()) {
+            IGV.getInstance().repaint(this);
+        }
     }
 
 }

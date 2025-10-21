@@ -66,6 +66,9 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
 import org.broad.igv.util.extview.ExtendViewClient;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -236,43 +239,8 @@ public class TrackMenuUtils {
 
         if (!hasCoverageTracks) {
 
-
-            // The "Points" renderer cannot be used with
-
-            final String[] labels = {"Heatmap", "Bar Chart", "Points", "Line Plot", "DynSeq"};
-            final Class[] renderers = {HeatmapRenderer.class, BarChartRenderer.class,
-                    PointsRenderer.class, LineplotRenderer.class, DynSeqRenderer.class
-            };
-
-            JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
-            rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-            menu.add(rendererHeading);
-
-            // Get existing selections
-            Set<Class> currentRenderers = new HashSet<Class>();
-            for (Track track : tracks) {
-                if (track.getRenderer() != null) {
-                    currentRenderers.add(track.getRenderer().getClass());
-                }
-            }
-
-            // Create renderer menu items
-            for (int i = 0; i < labels.length; i++) {
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(labels[i]);
-                final Class rendererClass = renderers[i];
-                if (currentRenderers.contains(rendererClass)) {
-                    item.setSelected(true);
-                }
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        changeRendererClass(tracks, rendererClass);
-                    }
-                });
-                menu.add(item);
-            }
+            addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot", "DynSeq"), tracks);
             menu.addSeparator();
-
 
             // Get intersection of all valid window functions for selected tracks
             Set<WindowFunction> avaibleWindowFunctions = new LinkedHashSet<>();
@@ -381,6 +349,40 @@ public class TrackMenuUtils {
                 menu.add(alphaItem);
 
             }
+        }
+    }
+
+    public static void addDataRendererItems(JPopupMenu menu, List<String> labels, Collection<Track> tracks) {
+
+        final Map<String, Class> rendererMap = new LinkedHashMap<>();
+        rendererMap.put("Heatmap", HeatmapRenderer.class);
+        rendererMap.put("Bar Chart", BarChartRenderer.class);
+        rendererMap.put("Points", PointsRenderer.class);
+        rendererMap.put("Line Plot", LineplotRenderer.class);
+        rendererMap.put("DynSeq", DynSeqRenderer.class);
+
+        JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
+        rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
+
+        menu.add(rendererHeading);
+
+        // Get existing selections
+        Set<Class> currentRenderers = new HashSet<Class>();
+        for (Track track : tracks) {
+            if (track.getRenderer() != null) {
+                currentRenderers.add(track.getRenderer().getClass());
+            }
+        }
+
+        // Create renderer menu items
+        for (String label : labels) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
+            final Class rendererClass = rendererMap.get(label);
+            if (currentRenderers.contains(rendererClass)) {
+                item.setSelected(true);
+            }
+            item.addActionListener(evt -> changeRendererClass(tracks, rendererClass));
+            menu.add(item);
         }
     }
 

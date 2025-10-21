@@ -1,0 +1,9 @@
+track type=bedGraph name="bedGraph"
+chr1	0	100	0
+chr1	100	200	1
+chr1	200	300	2
+chr1	300	400	3
+chr2	100	200	1
+chr2	200	300	2
+chr2	300	400	3
+chr2	400	500	4

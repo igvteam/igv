@@ -494,12 +494,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setToolTipText("Resize tracks to fit in window.");
-        fitToWindowButton.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                (new FitDataToWindowMenuAction(null, 0, IGV.getInstance())).actionPerformed(evt);
-            }
-        });
+        fitToWindowButton.addActionListener(evt ->
+                new FitDataToWindowMenuAction(null, 0, IGV.getInstance()).actionPerformed(evt)
+        );
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);

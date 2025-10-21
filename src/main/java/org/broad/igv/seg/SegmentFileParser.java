@@ -23,19 +23,20 @@
  * THE SOFTWARE.
  */
 
-package org.broad.igv.data.seg;
+package org.broad.igv.seg;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.logging.*;
+import htsjdk.tribble.readers.AsciiLineReader;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
 
 /**
  * Example
@@ -46,7 +47,7 @@ import htsjdk.tribble.readers.AsciiLineReader;
  *
  * @author jrobinso
  */
-public class SegmentFileParser implements SegFileParser {
+public class SegmentFileParser {
 
     enum Type {
         SEG, BIRDSUITE, NEXUS
@@ -54,36 +55,24 @@ public class SegmentFileParser implements SegFileParser {
 
     private static Logger log = LogManager.getLogger(SegmentFileParser.class);
 
-    boolean birdsuite = false;
-    int sampleColumn = 0;
-    int chrColumn = 1;
-    int startColumn = 2;
-    int endColumn = 3;
-    //int snpCountColumn = 4;    // Default value
-    int dataColumn = 5;        // Default value
-    ResourceLocator locator;
-
-    /**
-     * Constructs ...
-     *
-     * @param locator
-     */
-    public SegmentFileParser(ResourceLocator locator) {
-        this.locator = locator;
-        if (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls")) {
-            birdsuite = true;
-        }
-    }
-
 
     /**
      * Return a map of trackId -> segment datasource
      *
      * @return
      */
-    public SegmentedAsciiDataSet loadSegments(ResourceLocator locator, Genome genome) {
+    public static SegmentedDataSet loadSegments(ResourceLocator locator, Genome genome) {
 
-        SegmentedAsciiDataSet dataset = new SegmentedAsciiDataSet(genome);
+        int sampleColumn = 0;
+        int chrColumn = 1;
+        int startColumn = 2;
+        int endColumn = 3;
+        int dataColumn = 5;        // Default value
+
+
+        SegmentedDataSet dataset = new SegmentedDataSet(genome);
+
+        boolean birdsuite = (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls"));
 
         if (birdsuite) {
             dataset.setTrackType(TrackType.CNV);
@@ -212,7 +201,7 @@ public class SegmentFileParser implements SegFileParser {
      * @param comment
      * @param dataset
      */
-    private void parseComment(String comment, SegmentedAsciiDataSet dataset) {
+    private static void parseComment(String comment, SegmentedDataSet dataset) {
 
         String tmp = comment.substring(1, comment.length());
         if (tmp.startsWith("track")) {
