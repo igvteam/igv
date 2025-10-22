@@ -694,6 +694,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("library", AlignmentTrack.ColorOption.LIBRARY);
         mappings.put("movie", AlignmentTrack.ColorOption.MOVIE);
         mappings.put("ZMW", AlignmentTrack.ColorOption.ZMW);
+        mappings.put("split", AlignmentTrack.ColorOption.SPLIT);
 
         for (Map.Entry<String, AlignmentTrack.ColorOption> el : mappings.entrySet()) {
             JRadioButtonMenuItem mi = getColorMenuItem(el.getKey(), el.getValue());
