@@ -220,8 +220,8 @@
       - Group reads by custom SAM tags for specialized analysis
 
   arguments:
-    - name: id
-      description: The identifier of the genome to load.
+    - name: attribute
+      description: Alignment attribute to group by.
       enumValues:
         - value: ALIGNED_READ_LENGTH
           description: Group by aligned read length
@@ -275,8 +275,8 @@
     Different sort options are useful for different types of analysis.
 
   arguments:
-    - name: id
-      description: The identifier of the genome to load.
+    - name: attribute
+      description: Alignment attribute to sort by.
       enumValues:
         - value: BASE
           description: Sort by base at a position. Requires position
@@ -321,7 +321,7 @@
           - If omitted: Standard ascending/descending order
           Note: If direction is specified, locus must also be specified.
 
-- name: viewaspairs
+- name: viewAsPairs
   description: |
     This command sets or unsets the "view as pairs" mode for alignment tracks in IGV.
     When enabled, paired-end reads are displayed together as connected pairs,
@@ -386,6 +386,7 @@
 
   arguments:
     - name: height
+      type: Number
       description: The maximum height in pixels for each track panel in snapshots.
 
 - name: setSequenceStrand
