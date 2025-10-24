@@ -86,7 +86,6 @@ configurations {
 
         exclude group: 'xmlpull', module: 'xmlpull'
         exclude group: 'xpp3', module: 'xpp3_min'
-        exclude group: 'org.tukaani', module: 'xz'
 
         exclude group: 'org.apache.ant', module: 'ant'
         exclude group: 'org.apache.ant', module: 'ant-launcher'
