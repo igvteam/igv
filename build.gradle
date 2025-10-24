@@ -90,7 +90,6 @@ def xmlGraphicsVersion = '1.17'
 dependencies {
     implementation(
 
-            [group: 'org.tukaani', name: 'xz', version: '1.5'],
             [group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'],
             [group: 'commons-io', name: 'commons-io', version: '2.14.0'],
             [group: 'org.apache.commons', name: 'commons-compress', version: '1.26.0'],
