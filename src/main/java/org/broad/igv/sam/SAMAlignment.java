@@ -723,7 +723,7 @@ public class SAMAlignment implements Alignment {
     @Override
     public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
-        if(renderOptions.isHideTailSbx() && this.sbxTrimmed != null) {
+        if(renderOptions != null && renderOptions.isHideTailSbx() && this.sbxTrimmed != null) {
             return this.sbxTrimmed.getAlignmentValueString(position, mouseX, renderOptions);
         }
 
