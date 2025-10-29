@@ -48,7 +48,8 @@ public class TestClient {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             //testGOTO(out, in);
             //runBatchFile(out, in, "test/data/batch/test_commands.txt");
-            runBatchFile(out, in, "test/data/batch/load_bigwig.txt");
+            //runBatchFile(out, in, "test/data/batch/load_bigwig.txt");
+            getToolsYaml(out, in, null);
             manyLoci(out, in);
             snapshot(out, in);
 
@@ -66,6 +67,13 @@ public class TestClient {
         }
     }
 
+    private static void getToolsYaml(PrintWriter out, BufferedReader in, String inputFile) throws IOException {
+
+        out.println("toolsYaml");
+        String response = in.readLine();
+        System.out.println(response);
+
+    }
 
     private static void runBatchFile(PrintWriter out, BufferedReader in, String inputFile) throws IOException {
 

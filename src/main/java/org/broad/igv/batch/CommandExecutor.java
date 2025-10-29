@@ -58,8 +58,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.*;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -239,7 +238,10 @@ public class CommandExecutor {
                 result = this.overlay(args);
             } else if (cmd.equalsIgnoreCase("separate")) {
                 result = this.separate(param1);
-            } else {
+            } else if(cmd.equalsIgnoreCase("toolsYaml")) {
+                result = getToolsYaml();
+            } else
+            {
                 result = "UNKOWN COMMAND: " + commandLine;
                 log.warn(result);
                 return result;
@@ -1270,5 +1272,12 @@ public class CommandExecutor {
         }
     }
 
-
+    private static String getToolsYaml() {
+        try (InputStream is = CommandExecutor.class.getResourceAsStream("/tools.yaml");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
