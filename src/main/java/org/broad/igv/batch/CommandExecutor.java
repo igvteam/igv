@@ -35,7 +35,6 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -51,6 +50,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.OverlayTracksMenuAction;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.genome.GenomeListItem;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -61,8 +61,8 @@ import java.awt.*;
 import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommandExecutor {
@@ -238,10 +238,11 @@ public class CommandExecutor {
                 result = this.overlay(args);
             } else if (cmd.equalsIgnoreCase("separate")) {
                 result = this.separate(param1);
-            } else if(cmd.equalsIgnoreCase("toolsYaml")) {
+            } else if (cmd.equalsIgnoreCase("renameTrack")) {
+                result = this.renameTrack(param1, param2);
+            } else if (cmd.equalsIgnoreCase("toolsYaml")) {
                 result = getToolsYaml();
-            } else
-            {
+            } else {
                 result = "UNKOWN COMMAND: " + commandLine;
                 log.warn(result);
                 return result;
@@ -318,6 +319,25 @@ public class CommandExecutor {
         }
         return String.format("Error: Track %s not found", trackName);
     }
+
+    private String renameTrack(String currentName, String newName) {
+        if (currentName == null || newName == null) {
+            return "Error: Both current and new track names must be provided.";
+        }
+        currentName = currentName.replace("%20", " ");
+        newName = newName.replace("%20", " ");
+        List<Track> tracks = tracksMatchingName(currentName);
+        if (tracks.isEmpty()) {
+            return "Error: Track not found: " + currentName;
+        } else {
+            for (Track t : tracks) {
+                t.setName(newName);
+            }
+            igv.revalidateTrackPanels();
+            return "OK";
+        }
+    }
+
 
     static String parseTrackName(String param1) {
         return param1 == null ? null : StringUtils.stripQuotes(param1);
@@ -1275,7 +1295,7 @@ public class CommandExecutor {
     private static String getToolsYaml() {
         try (InputStream is = CommandExecutor.class.getResourceAsStream("/tools.yaml");
              BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-            return reader.lines().collect(Collectors.joining("\n"));
+            return reader.lines().collect(Collectors.joining("<br>"));
         } catch (Exception e) {
             return null;
         }

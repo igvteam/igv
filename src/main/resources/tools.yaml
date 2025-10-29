@@ -25,7 +25,7 @@
     - Document the exact state of an analysis for publications
     - Create template sessions for batch processing
     - Backup current work before making major changes
-
+    
     Note: Session files contain paths to data files, not the data itself. Ensure
     data files remain accessible at their original locations when loading the session.
 
@@ -57,8 +57,8 @@
         The identifier (ID) of the genome to load, or a path.  In most cases the id is the UCSC name (e.g., hg19, hg38, mm10).
         Custom genomes can also be loaded by ID they have been added to the IGV genome list.  Alterrnatively, a genome 
         can be specified as local file path or URL to a genome json file, and indexed fasta file, or a two-bit file.
-
-
+        
+        
         Common genome IDs: hg38, hg19, mm10, mm39, rn6, danRer11, dm6, ce11, sacCer3
 
 - name: load
@@ -99,7 +99,7 @@
 - name: goto
   description: |
     Navigate to a specified genomic locus or loci. This can be a gene name, genomic range, or space delimited list.
-
+    
     Use this tool when you need to:
     - Navigate to a specific genomic position or region
     - Jump to a gene of interest by name
@@ -107,9 +107,9 @@
     - Examine a region identified in analysis results
     - Navigate to coordinates from a BED file or variant call
     - View multiple regions simultaneously (split screen)
-
+    
     Examples: "chr1:65,289,335-65,309,335", "BRCA1", "chrX:1000000"
-     
+  
 
   arguments:
     - name: locus
@@ -160,7 +160,7 @@
 - name: region
   description: |
     Defines a region of interest bounded by two genomic positions.
-
+    
     This command marks a specific genomic region as a "region of interest" in IGV.
     The region will be highlighted with a red bar under the genome ruler. 
 
@@ -190,7 +190,7 @@
 - name: group
   description: |
     Groups and organizes alignment reads by various properties.
-
+    
     This command organizes how reads are displayed in alignment tracks by grouping them
     according to different properties. Grouped reads are visually separated, making it
     easier to identify patterns and anomalies. Different grouping options are useful
@@ -253,7 +253,7 @@
 - name: sort
   description: |
     Sorts reads in alignment tracks or features in segmented copy number tracks.
-
+    
     This command reorganizes how reads or segments are displayed by sorting them according
     to various criteria. Sorting can reveal patterns that aren't visible in the default
     order, such as clustering of mismatches, strand biases, or structural variants.
@@ -377,7 +377,7 @@
 - name: setSequenceStrand
   description: |
     Sets which DNA strand to display in the sequence track.
-
+    
     This command controls whether the positive (forward) or negative (reverse) strand
     sequence is displayed in IGV's sequence track. This affects the nucleotide sequence
     shown and, if enabled, the 3-frame translation. Note that this changes which strand's
@@ -413,7 +413,7 @@
     - Find potential start and stop codons
     - Examine frameshift mutations and their consequences
     - Validate gene annotations by checking translation
-
+    
     Note: The translation shown depends on the current strand setting (set with
     set_sequence_strand). You must be zoomed in sufficiently to see sequence details.
 
@@ -430,7 +430,7 @@
   description: |
     This command overlays two or more wig tracks. The tracks are distinguished by color.
     Alpha shading is used to allow visualization of overlapping values.
-
+    
     Use this tool when you need to:
     - Compare multiple signal tracks 
     - Save vertical space by combining tracks
@@ -447,7 +447,7 @@
 - name: separate
   description: |
     This command separates an overlaid wig track into its component tracks.
-
+    
     Use this tool when you need to:
     - Restore individual wig tracks from an overlay
   arguments:
@@ -459,3 +459,17 @@
 
 - name: zoomout
   description: Zooms out the view by a factor of 2.
+
+- name: renameTrack
+  description: |
+    Renames a track.
+
+  arguments:
+    - name: currentName
+      description: |
+        The current name of the track.
+        NOTE: If the current name contains spaces, replace them with %20.
+    - name: newName
+      description: |
+        The new name for the track.
+        NOTE: If the new name contains spaces, replace them with %20.
