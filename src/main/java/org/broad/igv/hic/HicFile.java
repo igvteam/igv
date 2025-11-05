@@ -567,10 +567,4 @@ public class HicFile {
         static final int FLOAT = 4;
     }
 
-    private static class ZlibUtils {
-        static byte[] decompress(byte[] in) {
-            return in; /* replace with actual decompression */
-        }
-    }
-
 }
