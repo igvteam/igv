@@ -3,24 +3,22 @@ package org.broad.igv.bedpe;
 import org.broad.igv.Globals;
 import org.broad.igv.event.IGVEvent;
 import org.broad.igv.event.IGVEventObserver;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.Range;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.*;
+import org.broad.igv.track.AbstractTrack;
+import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.TrackClickEvent;
+import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Downsampler;
-import org.broad.igv.util.FeatureCache;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,8 +26,8 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
@@ -39,7 +37,7 @@ import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
  */
 public class InteractionTrack extends AbstractTrack implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(InteractionTrack.class);
+    private static final Logger log = LogManager.getLogger(InteractionTrack.class);
 
 
     enum Direction {UP, DOWN}
@@ -48,10 +46,11 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
     enum ArcOption {ALL, ONE_END, BOTH_ENDS}
 
-    private FeatureSource<BedPE> featureSource;
+    private InteractionSource featureSource;
     private JCheckBoxMenuItem autoscaleCB;
     private JMenuItem maxScoreItem;
 
+    private boolean isHIC;
     InteractionTrack.Direction direction = UP; //DOWN;
     GraphType graphType;  // GraphType.block; //
     private ArcOption arcOption = ArcOption.ALL;
@@ -60,6 +59,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     double maxScore = -1;
     int gap = 5;
     boolean showBlocks = false;
+    boolean useScore = false;
+    float transparency = 1.0f;
     private Map<GraphType, BedPERenderer> renderers;
 
     transient Map<ReferenceFrame, List<BedPE>> lastRenderedFeatures = new HashMap<>();
@@ -67,10 +68,12 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     public InteractionTrack() {
     }
 
-    public InteractionTrack(ResourceLocator locator, FeatureSource<BedPE> src) {
+    public InteractionTrack(ResourceLocator locator, InteractionSource src) {
 
         super(locator);
+
         this.featureSource = src;
+
         setHeight(250, true);
         setColor(new Color(180, 25, 137));
 
@@ -79,18 +82,25 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         renderers.put(GraphType.PROPORTIONAL_ARC, new ProportionalArcRenderer(this));
         renderers.put(GraphType.BLOCK, new PEBlockRenderer(this));
 
-        String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
-        if (typeString != null) {
-            try {
-                graphType = GraphType.valueOf(typeString);
-            } catch (IllegalArgumentException e) {
-                log.error("Illegal graph type: " + typeString, e);
-                graphType = GraphType.NESTED_ARC; // default
-            }
+        this.isHIC = "hic".equals(locator.getFormat());
+        if (isHIC) {
+            graphType = GraphType.NESTED_ARC;
+            useScore = true;
+            transparency = 0.1f;
         } else {
-            graphType = GraphType.PROPORTIONAL_ARC;
-        }
 
+            String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
+            if (typeString != null) {
+                try {
+                    graphType = GraphType.valueOf(typeString);
+                } catch (IllegalArgumentException e) {
+                    log.error("Illegal graph type: " + typeString, e);
+                    graphType = GraphType.NESTED_ARC; // default
+                }
+            } else {
+                graphType = GraphType.PROPORTIONAL_ARC;
+            }
+        }
 
         String directionString = PreferencesManager.getPreferences().get(Constants.ARC_DIRECTION);
         if (directionString != null) {
@@ -107,7 +117,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         String blockString = PreferencesManager.getPreferences().get(Constants.ARC_BLOCKS);
         if (blockString != null) {
             try {
-                showBlocks = Boolean.valueOf(blockString);
+                showBlocks = Boolean.parseBoolean(blockString);
             } catch (IllegalArgumentException e) {
                 log.error("Illegal arc blocks option: " + blockString, e);
             }
@@ -155,14 +165,9 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         try {
             String chr = context.getReferenceFrame().getChrName();
 
-            // TODO Convert iterator to list.  This is very wasteful, but neccessary due to the feature source interface.
-            List<BedPE> features = new ArrayList<>();
-            Iterator<BedPE> iter = featureSource.getFeatures(chr, (int) context.getOrigin(), (int) context.getEndLocation());
-            while (iter.hasNext()) {
-                features.add(iter.next());
-            }
+            List<BedPE> features = featureSource.getFeatures(chr, (int) context.getOrigin(), (int) context.getEndLocation(), context.getScale(), "NONE");
 
-            if (features != null && features.size() > 0) {
+            if (features != null && !features.isEmpty()) {
 
                 if (graphType == GraphType.PROPORTIONAL_ARC) {
                     if (autoscale || maxScore <= 0) {
@@ -195,7 +200,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
      * @param arect
      */
     public void drawScale(RenderContext context, Rectangle arect) {
-        if (context.multiframe == false) {
+        if (!context.multiframe) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
             Font smallFont = FontManager.getFont(8);
@@ -234,12 +239,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         IGVPopupMenu menu = new IGVPopupMenu();
 
         // Experimental JBrowse.
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
+                CircularViewUtilities.ping() &&
+                !isHIC) {
             menu.addSeparator();
             JMenuItem item = new JMenuItem("Add Features to Circular View");
             item.addActionListener(e -> {
                 List<ReferenceFrame> frames = te.getFrame() != null ?
-                        Arrays.asList(te.getFrame()) :
+                        Collections.singletonList(te.getFrame()) :
                         FrameManager.getFrames();
                 List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
                 CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
@@ -259,47 +266,49 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         menu.add(item);
 
 
-        menu.addSeparator();
-        menu.add(new JLabel("<html><b>Graph Type</b>"));
-        //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
-        ButtonGroup group = new ButtonGroup();
-        Map<String, GraphType> modes = new LinkedHashMap<>(4);
-        modes.put("Nested Arcs", GraphType.NESTED_ARC);
-        modes.put("Proportional Arcs", GraphType.PROPORTIONAL_ARC);
-        //modes.put("Blocks", GraphType.BLOCK);
+        if (!this.isHIC) {
+            menu.addSeparator();
+            menu.add(new JLabel("<html><b>Graph Type</b>"));
+            //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
+            ButtonGroup group = new ButtonGroup();
+            Map<String, GraphType> modes = new LinkedHashMap<>(4);
+            modes.put("Nested Arcs", GraphType.NESTED_ARC);
+            modes.put("Proportional Arcs", GraphType.PROPORTIONAL_ARC);
+            //modes.put("Blocks", GraphType.BLOCK);
 
-        for (final Map.Entry<String, GraphType> entry : modes.entrySet()) {
-            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
-            mm.setSelected(InteractionTrack.this.graphType == entry.getValue());
-            mm.addActionListener(evt -> {
-                setGraphType(entry.getValue());
-                PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
-                autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
-                maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
-                repaint();
-            });
-            group.add(mm);
-            menu.add(mm);
-        }
+            for (final Map.Entry<String, GraphType> entry : modes.entrySet()) {
+                JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+                mm.setSelected(InteractionTrack.this.graphType == entry.getValue());
+                mm.addActionListener(evt -> {
+                    setGraphType(entry.getValue());
+                    PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
+                    autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+                    maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+                    repaint();
+                });
+                group.add(mm);
+                menu.add(mm);
+            }
 
-        menu.addSeparator();
-        menu.add(new JLabel("<html><b>Arcs</b>"));
-        ButtonGroup group2 = new ButtonGroup();
-        Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
-        modes2.put("All", ArcOption.ALL);
-        modes2.put("One End In View", ArcOption.ONE_END);
-        modes2.put("Both Ends In View", ArcOption.BOTH_ENDS);
-        //modes.put("Blocks", GraphType.BLOCK);
+            menu.addSeparator();
+            menu.add(new JLabel("<html><b>Arcs</b>"));
+            ButtonGroup group2 = new ButtonGroup();
+            Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
+            modes2.put("All", ArcOption.ALL);
+            modes2.put("One End In View", ArcOption.ONE_END);
+            modes2.put("Both Ends In View", ArcOption.BOTH_ENDS);
+            //modes.put("Blocks", GraphType.BLOCK);
 
-        for (final Map.Entry<String, ArcOption> entry : modes2.entrySet()) {
-            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
-            mm.setSelected(InteractionTrack.this.arcOption == entry.getValue());
-            mm.addActionListener(evt -> {
-                InteractionTrack.this.arcOption = (entry.getValue());
-                repaint();
-            });
-            group2.add(mm);
-            menu.add(mm);
+            for (final Map.Entry<String, ArcOption> entry : modes2.entrySet()) {
+                JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+                mm.setSelected(InteractionTrack.this.arcOption == entry.getValue());
+                mm.addActionListener(evt -> {
+                    InteractionTrack.this.arcOption = (entry.getValue());
+                    repaint();
+                });
+                group2.add(mm);
+                menu.add(mm);
+            }
         }
 
         menu.addSeparator();
@@ -312,38 +321,40 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(showBlocksCB);
 
-        menu.addSeparator();
-        autoscaleCB = new JCheckBoxMenuItem("Autoscale");
-        autoscaleCB.setSelected(autoscale);
-        autoscaleCB.addActionListener(e -> {
-            autoscale = autoscaleCB.isSelected();
-            repaint();
-        });
-        menu.add(autoscaleCB);
+        if (!isHIC) {
 
-        maxScoreItem = new JMenuItem("Set Max Score...");
-        maxScoreItem.addActionListener(e -> {
-            String maxScoreString = MessageUtils.showInputDialog("Enter maximum score:", String.valueOf(InteractionTrack.this.maxScore));
-            if (maxScoreString != null) {
-                try {
-                    double ms = Double.parseDouble(maxScoreString);
-                    if (ms > 0) {
-                        maxScore = ms;
-                        autoscale = false;
-                        repaint();
-                    } else {
-                        MessageUtils.showMessage("maximum score must be > 0");
+            menu.addSeparator();
+            autoscaleCB = new JCheckBoxMenuItem("Autoscale");
+            autoscaleCB.setSelected(autoscale);
+            autoscaleCB.addActionListener(e -> {
+                autoscale = autoscaleCB.isSelected();
+                repaint();
+            });
+            menu.add(autoscaleCB);
+
+            maxScoreItem = new JMenuItem("Set Max Score...");
+            maxScoreItem.addActionListener(e -> {
+                String maxScoreString = MessageUtils.showInputDialog("Enter maximum score:", String.valueOf(InteractionTrack.this.maxScore));
+                if (maxScoreString != null) {
+                    try {
+                        double ms = Double.parseDouble(maxScoreString);
+                        if (ms > 0) {
+                            maxScore = ms;
+                            autoscale = false;
+                            repaint();
+                        } else {
+                            MessageUtils.showMessage("maximum score must be > 0");
+                        }
+                    } catch (NumberFormatException e1) {
+                        MessageUtils.showMessage("maximum score must be a number");
                     }
-                } catch (NumberFormatException e1) {
-                    MessageUtils.showMessage("maximum score must be a number");
                 }
-            }
-        });
-        menu.add(maxScoreItem);
+            });
+            menu.add(maxScoreItem);
 
-        autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
-        maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
-
+            autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+            maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
+        }
 
         menu.addSeparator();
         item = new JMenuItem("Toggle Arc Orientation");
@@ -371,8 +382,36 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(item);
 
+
+        final JMenuItem transparencyItem = new JMenuItem("Set Transparency...");
+        transparencyItem.addActionListener(e -> {
+            final JSlider slider = new JSlider(1, 100, (int) (InteractionTrack.this.transparency * 100));
+            slider.setMajorTickSpacing(10);
+            slider.setPaintTicks(true);
+
+            // Create a label to show the current value
+            final JLabel valueLabel = new JLabel(String.format("%.2f", InteractionTrack.this.transparency));
+
+            slider.addChangeListener(changeEvent -> {
+                JSlider source = (JSlider) changeEvent.getSource();
+                float value = source.getValue() / 100.0f;
+                InteractionTrack.this.transparency = value;
+                valueLabel.setText(String.format("%.2f", value));
+                InteractionTrack.this.repaint();
+            });
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(slider, BorderLayout.CENTER);
+            panel.add(valueLabel, BorderLayout.SOUTH);
+
+            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+            JOptionPane.showMessageDialog(parent, panel, "Set Transparency for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+        });
+        menu.add(transparencyItem);
+
+
         menu.addSeparator();
-        menu.add(TrackMenuUtils.getChangeFeatureWindow(Arrays.asList(this)));
+        menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
 
 //        final JCheckBoxMenuItem cbItem = new JCheckBoxMenuItem("Hide Large Features");
 //        cbItem.setSelected(hideLargeFeatures);
@@ -408,22 +447,10 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         // Sort candidate features smallest to largest
         Comparator<BedPE> sorter = graphType == GraphType.PROPORTIONAL_ARC ?
-                (o1, o2) -> {
-                    double score1 = o1.getScore();
-                    double score2 = o2.getScore();
-                    if (score1 > score2) return 1;
-                    else if (score1 < score2) return -1;
-                    else return 0;
-                } :
-                (o1, o2) -> {
-                    double d1 = o1.getCenterDistance();
-                    double d2 = o2.getCenterDistance();
-                    if (d1 > d2) return 1;
-                    else if (d1 < d2) return -1;
-                    else return 0;
-                };
+                Comparator.comparingDouble(BedPE::getScore) :
+                Comparator.comparingDouble(BedPE::getCenterDistance);
 
-        Collections.sort(candidates, sorter);
+        candidates.sort(sorter);
 
         for (BedPE f : candidates) {
             BedPEShape s = f.getShape();
@@ -446,6 +473,9 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         element.setAttribute("arcOption", String.valueOf(arcOption));
         element.setAttribute("showBlocks", String.valueOf(showBlocks));
         element.setAttribute("autoscale", String.valueOf(autoscale));
+        if(transparency != 1.0f) {
+            element.setAttribute("transparency", String.valueOf(transparency));
+        }
         if (!autoscale) {
             element.setAttribute("maxScore", String.valueOf(maxScore));
         }
@@ -478,6 +508,9 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (element.hasAttribute("maxScore")) {
             this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
         }
+        if(element.hasAttribute("transparency")) {
+            this.transparency = Float.parseFloat(element.getAttribute("transparency"));
+        }
     }
 
 
@@ -486,11 +519,9 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
      */
     public List<? extends BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
 
-        Function<ReferenceFrame, List<? extends BedPE>> frameFeatures = (f) -> {
-            return lastRenderedFeatures.get(f);
-        };
+        Function<ReferenceFrame, List<? extends BedPE>> frameFeatures = f -> lastRenderedFeatures.get(f);
 
-        if (frames.size() == 0) {
+        if (frames.isEmpty()) {
             return Collections.emptyList();
         } else if (frames.size() == 1) {
             return frameFeatures.apply(frames.get(0));

@@ -1,8 +1,6 @@
 package org.broad.igv.bedpe;
 
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.Pair;
 
 import java.awt.*;
 import java.awt.geom.Arc2D;

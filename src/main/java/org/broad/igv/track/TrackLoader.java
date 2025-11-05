@@ -57,6 +57,7 @@ import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
+import org.broad.igv.hic.HicSource;
 import org.broad.igv.htsget.HtsgetUtils;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
@@ -94,10 +95,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.broad.igv.prefs.Constants.*;
 import static org.broad.igv.track.AttributeManager.GROUP_AUTOSCALE;
@@ -238,7 +236,7 @@ public class TrackLoader {
                 loadSMAPFile(locator, newTracks, genome);
             } else if (format.equals("dsi")) {
                 loadDSIFile(locator, newTracks, genome);
-            } else if (format.equals("bedpe") || format.equals("interact")) {
+            } else if (format.equals("bedpe") || format.equals("interact") || format.equals("hic")) {
                 loadBedPEFile(locator, newTracks, genome);
             } else if (format.equals("clusters")) {
                 loadClusterFile(locator, newTracks, genome);
@@ -436,11 +434,22 @@ public class TrackLoader {
 
 
     private void loadBedPEFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
-        List<BedPE> features = "interact".equals(locator.format) ?
-                InteractParser.parse(locator, genome) :
-                BedPEParser.parse(locator, genome);
-        BedPESource featureSource = new BedPESource(features, genome);
-        newTracks.add(new InteractionTrack(locator, featureSource));
+
+        String format = locator.getFormat();
+
+        InteractionSource source;
+        if("hic".equals(format)) {
+            source = new HicSource(locator.getPath(), Collections.EMPTY_MAP, genome);
+        } else {
+            List<BedPE> features = "interact".equals(format) ?
+                    InteractParser.parse(locator, genome) :
+                    BedPEParser.parse(locator, genome);
+            BedPESource featureSource = new BedPESource(features, genome);
+            source = new WrappedInteractionSource(featureSource);
+        }
+
+
+        newTracks.add(new InteractionTrack(locator, source));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -491,7 +500,7 @@ public class TrackLoader {
             // Create feature source and track
             AbstractTrack t =
                     "interact".equals(locator.format) ?
-                            new InteractionTrack(locator, src) :
+                            new InteractionTrack(locator, new WrappedInteractionSource(src)) :
                             new FeatureTrack(locator, src);
 
             //t.setRendererClass(BasicTribbleRenderer.class);
@@ -840,7 +849,7 @@ public class TrackLoader {
             BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
             switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator, featureSource);
+                    track = new InteractionTrack(locator, new WrappedInteractionSource(featureSource));
                     break;
                 default:
                     track = new FeatureTrack(locator, trackId, trackName, featureSource);
