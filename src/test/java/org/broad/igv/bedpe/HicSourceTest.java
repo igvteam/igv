@@ -18,7 +18,7 @@ public class HicSourceTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        src = new HicSource(testURL, Collections.EMPTY_MAP, null);
+        src = new HicSource(testURL, Collections.emptyMap(), null);
     }
 
 
