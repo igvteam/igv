@@ -87,6 +87,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             graphType = GraphType.NESTED_ARC;
             useScore = true;
             transparency = 0.1f;
+            this.setColor(Color.red);
         } else {
 
             String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
