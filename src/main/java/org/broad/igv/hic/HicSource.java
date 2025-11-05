@@ -41,6 +41,7 @@ package org.broad.igv.hic;
      /**
       * Get features for the given window.
       */
+     @Override
      public List<BedPE> getFeatures(String chr, int start, int end, double bpPerPixel, String normalization) throws IOException {
          hicFile.init();
 
