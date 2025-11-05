@@ -89,7 +89,6 @@ public class NormalizationVector {
                 return null;
             }
             ByteBuffer buf = ByteBuffer.wrap(byteArray);
-            buf.flip();
 
             double[] values = new double[n];
             for (int i = 0; i < n; i++) {
