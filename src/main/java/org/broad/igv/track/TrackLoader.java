@@ -439,7 +439,7 @@ public class TrackLoader {
 
         InteractionSource source;
         if("hic".equals(format)) {
-            source = new HicSource(locator.getPath(), Collections.EMPTY_MAP, genome);
+            source = new HicSource(locator.getPath(), Collections.emptyMap(), genome);
         } else {
             List<BedPE> features = "interact".equals(format) ?
                     InteractParser.parse(locator, genome) :
