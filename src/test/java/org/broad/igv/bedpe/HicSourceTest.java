@@ -24,7 +24,7 @@ public class HicSourceTest {
     public void testGetFeatures() throws IOException {
 
         var features = src.getFeatures("1", 0, 248956422, 156872.35160680528, "NONE", 5000);
-        assertEquals(50043, features.size());
+        assertEquals(5000, features.size());
     }
 
 
