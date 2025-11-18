@@ -631,7 +631,6 @@ public class HicFile {
      * Read a null-terminated string from the buffer
      * @param buffer
      * @return
-     * @throws IOException
      */
     private static String getString(ByteBuffer buffer) {
         ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
