@@ -20,7 +20,6 @@ public class HicSource implements InteractionSource {
     private final HicFile hicFile;
 
     private final int binThreshold = 5;
-    private final Map<String, RecordCacheEntry> recordCache = new HashMap<>();
 
     public HicSource(String path, Genome genome) throws IOException {
 
