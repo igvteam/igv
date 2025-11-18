@@ -54,7 +54,6 @@ public class HicFile {
     private int normVectorIndexSize;
     private Map<String, IndexEntry> masterIndex;
     private Map<String, Long> expectedValueVectors;
-    private Map<String, Object> attributes;
     private List<Chromosome> chromosomes = new ArrayList<>();
     private Map<String, Integer> chromosomeIndexMap = new HashMap<>();
     private List<Integer> bpResolutions = new ArrayList<>();
