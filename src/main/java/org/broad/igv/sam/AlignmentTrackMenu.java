@@ -425,29 +425,34 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         final ReferenceFrame frame = e.getFrame() != null ? e.getFrame() : FrameManager.getDefaultFrame();
         final int clickedPos = (int) frame.getChromosomePosition(me);
         final Alignment clickedAlignment = track.getAlignmentAt(e);
-        final byte clickedBase = clickedAlignment.getBase(clickedPos);
-        item.addActionListener(aEvt -> {
-            ValueCheckboxHolder valHolder = MessageUtils.showInputDialog("Enter base: ", String.valueOf(clickedPos + 1) + ":" + (char)(clickedBase), "clear other");
-            String val = (String)valHolder.value;
+        if (clickedAlignment == null) {
+            item.setEnabled(false);
+            item.setToolTipText("No alignment found at clicked position.");
+        } else {
+            final byte clickedBase = clickedAlignment.getBase(clickedPos);
+            item.addActionListener(aEvt -> {
+                ValueCheckboxHolder valHolder = MessageUtils.showInputDialog("Enter base: ", String.valueOf(clickedPos + 1) + ":" + (char)(clickedBase), "clear other");
+                String val = (String)valHolder.value;
     
-            if (valHolder.isChecked) {
-                alignmentTrack.getSelectedReadNames().clear();
-            }
-    
-            if (val != null && val.trim().length() > 0) {
-                String[] selected = val.split("\\s*:\\s*");
-                int selectedPos = Integer.parseInt(selected[0]) - 1;
-                byte selectedBase = selected[1].getBytes()[0];
-                AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-                List<Alignment> alList = interval.getAlignments();
-                for (final Alignment alignment : alList) {
-                    if (alignment.getBase(selectedPos) == selectedBase) {
-                        alignmentTrack.getSelectedReadNames().put(alignment.getReadName(), alignmentTrack.getReadNamePalette().get(alignment.getReadName()));
-                    }
+                if (valHolder.isChecked) {
+                    alignmentTrack.getSelectedReadNames().clear();
                 }
-                alignmentTrack.repaint();
-            }
-        });
+    
+                if (val != null && val.trim().length() > 0) {
+                    String[] selected = val.split("\\s*:\\s*");
+                    int selectedPos = Integer.parseInt(selected[0]) - 1;
+                    byte selectedBase = selected[1].getBytes()[0];
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                    List<Alignment> alList = interval.getAlignments();
+                    for (final Alignment alignment : alList) {
+                        if (alignment.getBase(selectedPos) == selectedBase) {
+                            alignmentTrack.getSelectedReadNames().put(alignment.getReadName(), alignmentTrack.getReadNamePalette().get(alignment.getReadName()));
+                        }
+                    }
+                    alignmentTrack.repaint();
+                }
+            });
+        }
         add(item);
     }
 
