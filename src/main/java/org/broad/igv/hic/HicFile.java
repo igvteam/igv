@@ -396,7 +396,7 @@ public class HicFile {
 
     public boolean hasNormalizationVector(String type, String chr, String unit, int binSize) {
 
-        int chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr.toString()), -1);
+        int chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr), -1);
 
         String key = getNormalizationVectorKey(type, chrIdx, unit, binSize);
         if (normVectorCache.containsKey(key)) {
