@@ -444,7 +444,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                         MessageUtils.showMessage("Base cannot be empty.");
                         return;
                     }
-                    int selectedPos = Integer.parseInt(selected[0]) - 1;
+                    if (selected.length != 2) {
+                        MessageUtils.showMessage("Invalid format. Expected format: position:base (e.g., 12345:A)");
+                        return;
+                    }
+                    int selectedPos;
+                    try {
+                        selectedPos = Integer.parseInt(selected[0]) - 1;
+                    } catch (NumberFormatException ex) {
+                        MessageUtils.showMessage("Invalid position. Expected a numeric value.");
+                        return;
+                    }
                     byte selectedBase = selected[1].getBytes()[0];
                     AlignmentInterval interval = dataManager.getLoadedInterval(frame);
                     if (interval == null) {
