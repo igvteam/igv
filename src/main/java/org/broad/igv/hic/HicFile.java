@@ -644,8 +644,20 @@ public class HicFile {
 
     public void setNVIString(String nviString) {
         String[] parts = nviString.split(",");
-        this.normVectorIndexPosition = Long.parseLong(parts[0]);
-        this.normVectorIndexSize = Integer.parseInt(parts[1]);
+        if (parts.length < 2) {
+            log.error("Invalid NVI string: " + nviString);
+            this.normVectorIndexPosition = -1;
+            this.normVectorIndexSize = -1;
+            return;
+        }
+        try {
+            this.normVectorIndexPosition = Long.parseLong(parts[0]);
+            this.normVectorIndexSize = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
+            log.error("Error parsing NVI string: " + nviString, e);
+            this.normVectorIndexPosition = -1;
+            this.normVectorIndexSize = -1;
+        }
     }
 
     record IndexEntry(long start, int size) {
