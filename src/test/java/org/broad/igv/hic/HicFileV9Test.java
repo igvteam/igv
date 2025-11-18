@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 
 public class HicFileV9Test {
 
-    static String testURL = "https://www.encodeproject.org/files/ENCFF053VBX/@@download/ENCFF053VBX.hic";;
+    static String testURL = "https://www.encodeproject.org/files/ENCFF053VBX/@@download/ENCFF053VBX.hic";
     static HicFile hicFile;
 
     @BeforeClass
