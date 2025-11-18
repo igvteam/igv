@@ -443,6 +443,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                     int selectedPos = Integer.parseInt(selected[0]) - 1;
                     byte selectedBase = selected[1].getBytes()[0];
                     AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                    if (interval == null) {
+                        MessageUtils.showMessage("No alignments loaded in the current region.");
+                        return;
+                    }
                     List<Alignment> alList = interval.getAlignments();
                     for (final Alignment alignment : alList) {
                         if (alignment.getBase(selectedPos) == selectedBase) {
