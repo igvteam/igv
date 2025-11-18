@@ -34,6 +34,7 @@ public class BedPEFeature implements BedPE {
     Map<String, String> attributes;
     BedPEShape shape;
     private boolean isComplement = false;
+    private double value;
 
     public BedPEFeature() {
     }
@@ -46,6 +47,17 @@ public class BedPEFeature implements BedPE {
         this.start2 = start2;
         this.end2 = end2;
     }
+
+    public BedPEFeature(String chr1, int start1, int end1, String chr2, int start2, int end2, float score) {
+        this.chr1 = chr1;
+        this.start1 = start1;
+        this.chr2 = chr2;
+        this.end1 = end1;
+        this.start2 = start2;
+        this.end2 = end2;
+        this.score = score;
+    }
+
 
     public BedPEFeature getComplement() {
         BedPEFeature complement = new BedPEFeature(chr1, start1, end1, chr2, start2, end2);
@@ -80,6 +92,12 @@ public class BedPEFeature implements BedPE {
     @Override
     public boolean isComplement() {
         return this.isComplement;
+    }
+
+
+
+    public void setScore(float score) {
+        this.score = score;
     }
 
     @Override
@@ -170,4 +188,11 @@ public class BedPEFeature implements BedPE {
         return name;
     }
 
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public void setAttribute(String count, double counts) {
+
+    }
 }

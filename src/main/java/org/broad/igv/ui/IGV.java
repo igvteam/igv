@@ -46,7 +46,8 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -80,8 +81,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -1214,7 +1215,7 @@ public class IGV implements IGVEventObserver {
     }
 
     public void addTrack(Track track) {
-       getPanelFor(track).addTrack(track);
+        getPanelFor(track).addTrack(track);
     }
 
     /**
@@ -1301,7 +1302,7 @@ public class IGV implements IGVEventObserver {
         }
 
         ResourceLocator locator = track.getResourceLocator();
-        if(locator == null) {
+        if (locator == null) {
             return getTrackPanel(DATA_PANEL_NAME);
         } else if (locator.getPanelName() != null) {
             return getTrackPanel(locator.getPanelName());
@@ -1824,7 +1825,7 @@ public class IGV implements IGVEventObserver {
             trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
         }
 
-        for(Track t : getAllTracks()) {
+        for (Track t : getAllTracks()) {
             t.groupSamplesByAttribute(session.getGroupByAttribute());
         }
 
@@ -2274,13 +2275,13 @@ public class IGV implements IGVEventObserver {
 
             if (isLoading) {
                 // Track data is being loaded, do a repaint with existing data and mark this request for future execution
-                UIUtilities.invokeOnEventThread(() -> contentPane.repaint());
+                UIUtilities.invokeOnEventThread(contentPane::repaint);
                 pending = trackList;
                 return;
             }
 
+            // Find tracks that need loading (not ready to paint)
             List<CompletableFuture<Void>> futures = new ArrayList<>();
-
             for (ReferenceFrame frame : FrameManager.getFrames()) {
                 for (Track track : trackList) {
                     if (!track.isReadyToPaint(frame)) {
@@ -2289,42 +2290,38 @@ public class IGV implements IGVEventObserver {
                 }
             }
 
-            if (futures.size() == 0) {
+            if (futures.isEmpty()) {
+                // All tracks are ready to paint
                 UIUtilities.invokeOnEventThread(() -> {
                     Autoscaler.autoscale(getAllTracks());
                     checkPanelLayouts();
                     component.repaint();
                 });
             } else {
-                // One or more tracks require loading before repaint.   Load all needed tracks, autoscale if needed, then
-                // repaint.  The autoscale step is key, since tracks can be grouped for autoscaling it is necessary that
-                // all data is loaded before any track is repainted.  Otherwise tracks be loaded and painted independently.
-
-             final CompletableFuture<?>[] futureArray = futures.toArray(new CompletableFuture[0]);
-                final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                // One or more tracks require loading before repaint.
                 isLoading = true;
+                final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
 
-                CompletableFuture.allOf(futureArray).whenCompleteAsync((ignored, ex) -> {
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenCompleteAsync((ignored, ex) -> {
                     WaitCursorManager.removeWaitCursor(token);
                     isLoading = false;
 
                     if (ex != null) {
                         log.error("Error loading track data", ex);
-                        pending = null;
-                    } else {
-                        // Autoscale as required, check layouts (for scrollbar changes), and repaint.
-                        Autoscaler.autoscale(getAllTracks());
-                        UIUtilities.invokeOnEventThread(() -> {
-                            checkPanelLayouts();
-                            component.repaint();
-                            if (pending != null) {
-                                Collection<? extends Track> tmp = pending;
-                                pending = null;
-                                repaint(tmp);
-                            }
-                        });
                     }
-                });
+
+                    // Autoscale as required, check layouts, and repaint.
+                    Autoscaler.autoscale(getAllTracks());
+                    UIUtilities.invokeOnEventThread(() -> {
+                        checkPanelLayouts();
+                        component.repaint();
+                        if (pending != null) {
+                            Collection<? extends Track> tmp = pending;
+                            pending = null;
+                            repaint(tmp);
+                        }
+                    });
+                }, SwingUtilities::invokeLater);
             }
         }
     }

@@ -13,7 +13,7 @@ import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 public class NestedArcRenderer implements BedPERenderer{
 
 
-    private Map<Color, Color> alphaColors = new HashMap<>();
+    private Map<String, Color> alphaColors = new HashMap<>();
 
     InteractionTrack track;
     double theta = Math.toRadians(45);
@@ -25,7 +25,11 @@ public class NestedArcRenderer implements BedPERenderer{
         this.track = track;
     }
 
-    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption) {
+    @Override
+    public void render(List<BedPE> features,
+                       RenderContext context,
+                       Rectangle trackRectangle,
+                       InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
 
@@ -90,9 +94,13 @@ public class NestedArcRenderer implements BedPERenderer{
                         }
 
 
-                        if (fcolor != null && w > trackRectangle.width) {
+                        if (fcolor != null && w > trackRectangle.width && !track.useScore) {
                             fcolor = getAlphaColor(fcolor, 0.1f);
+                        } else if (track.useScore) {
+                            float alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
+                            fcolor = getAlphaColor(fcolor, alpha);
                         }
+
                         if (fcolor != null) {
                             g.setColor(fcolor);
                         }
@@ -132,12 +140,15 @@ public class NestedArcRenderer implements BedPERenderer{
 
 
     private Color getAlphaColor(Color fcolor, float alpha) {
-        Color ac = alphaColors.get(fcolor);
+        // Use cached alpha color if possible.  Limit to 1000 levels.
+        int index = (int) (alpha * 1000);
+        String key = fcolor.getRGB() + "_" + index;
+        Color ac = alphaColors.get(key);
         if (ac == null) {
             float[] rgb = new float[3];
             rgb = fcolor.getRGBColorComponents(rgb);
-            ac = new Color(rgb[0], rgb[1], rgb[2], alpha);
-            alphaColors.put(fcolor, ac);
+            ac = new Color(rgb[0], rgb[1], rgb[2], index / 1000f);
+            alphaColors.put(key, ac);
         }
         return ac;
     }
