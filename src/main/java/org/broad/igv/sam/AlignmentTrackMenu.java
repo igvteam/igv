@@ -26,6 +26,7 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.MessageUtils.ValueCheckboxHolder;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -167,6 +168,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         // Select alignment items
         addSeparator();
         addSelectByNameItem(alignmentTrack, e);
+        addSelectByBaseAtPosition(alignmentTrack, e);
         addClearSelectionsMenuItem();
 
         // Copy items
@@ -408,10 +410,71 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         item.addActionListener(aEvt -> {
             String val = MessageUtils.showInputDialog("Enter read name: ", alignmentName);
             if (val != null && val.trim().length() > 0) {
-                alignmentTrack.getSelectedReadNames().put(val, alignmentTrack.getReadNamePalette().get(val));
+                String[] names = val.split("\\s*,\\s*");
+                for (String name : names) {
+                    if (!name.isEmpty()) {
+                        alignmentTrack.getSelectedReadNames().put(name, alignmentTrack.getReadNamePalette().get(name));
+                    }
+                }
                 alignmentTrack.repaint();
             }
         });
+        add(item);
+    }
+
+    void addSelectByBaseAtPosition(AlignmentTrack track, TrackClickEvent e) {
+        JMenuItem item = new JMenuItem("Select by base at position...");
+    
+        final MouseEvent me = e.getMouseEvent();
+        final ReferenceFrame frame = e.getFrame() != null ? e.getFrame() : FrameManager.getDefaultFrame();
+        final int clickedPos = (int) frame.getChromosomePosition(me);
+        final Alignment clickedAlignment = track.getAlignmentAt(e);
+        if (clickedAlignment == null) {
+            item.setEnabled(false);
+            item.setToolTipText("No alignment found at clicked position.");
+        } else {
+            final byte clickedBase = clickedAlignment.getBase(clickedPos);
+            item.addActionListener(aEvt -> {
+                ValueCheckboxHolder valHolder = MessageUtils.showInputDialog("Enter base: ", String.valueOf(clickedPos + 1) + ":" + (char)(clickedBase), "clear other");
+                String val = (String)valHolder.value;
+    
+                if (valHolder.isChecked) {
+                    alignmentTrack.getSelectedReadNames().clear();
+                }
+    
+                if (val != null && val.trim().length() > 0) {
+                    String[] selected = val.split("\\s*:\\s*");
+                    if (selected.length < 2 || selected[1].isEmpty()) {
+                        MessageUtils.showMessage("Base cannot be empty.");
+                        return;
+                    }
+                    if (selected.length != 2) {
+                        MessageUtils.showMessage("Invalid format. Expected format: position:base (e.g., 12345:A)");
+                        return;
+                    }
+                    int selectedPos;
+                    try {
+                        selectedPos = Integer.parseInt(selected[0]) - 1;
+                    } catch (NumberFormatException ex) {
+                        MessageUtils.showMessage("Invalid position. Expected a numeric value.");
+                        return;
+                    }
+                    byte selectedBase = selected[1].getBytes()[0];
+                    AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                    if (interval == null) {
+                        MessageUtils.showMessage("No alignments loaded in the current region.");
+                        return;
+                    }
+                    List<Alignment> alList = interval.getAlignments();
+                    for (final Alignment alignment : alList) {
+                        if (alignment.getBase(selectedPos) == selectedBase) {
+                            alignmentTrack.getSelectedReadNames().put(alignment.getReadName(), alignmentTrack.getReadNamePalette().get(alignment.getReadName()));
+                        }
+                    }
+                    alignmentTrack.repaint();
+                }
+            });
+        }
         add(item);
     }
 
