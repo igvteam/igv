@@ -238,6 +238,8 @@
           description: Group by reference concordance
         - value: SAMPLE
           description: Group by sample name
+        - value: SELECTED
+          description: Group by selected reads
         - value: STRAND
           description: Group by read strand
         - value: SUPPLEMENTARY

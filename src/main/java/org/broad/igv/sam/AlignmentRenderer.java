@@ -271,6 +271,9 @@ public class AlignmentRenderer {
 
         Graphics2D g6 = context.getGraphics2D("MISMATCH");
         g6.setColor(Color.RED);
+
+        Graphics2D g7 = context.getGraphics2D("THIN_STROKE");
+        g7.setStroke(new BasicStroke(1.0f));
     }
 
     /**
@@ -665,10 +668,11 @@ public class AlignmentRenderer {
         Graphics2D outlineGraphics = null;
         final HashMap<String, Color> selectedReadNames = this.track.getSelectedReadNames();
         final String readName = alignment.getReadName();
+        final boolean groupedBySelected = renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.SELECTED;
         if (selectedReadNames.containsKey(readName)) {
             Color c = selectedReadNames.get(readName);
             c = (c == null) ? Color.blue : c;
-            outlineGraphics = context.getGraphics2D("THICK_STROKE");
+            outlineGraphics = context.getGraphics2D(groupedBySelected ? "THIN_STROKE" : "THICK_STROKE");
             gAlignment.setColor(c);
         } else if (renderOptions.isFlagUnmappedPairs() && alignment.isPaired() && !alignment.getMate().isMapped()) {
             outlineGraphics = context.getGraphics2D("OUTLINE");
