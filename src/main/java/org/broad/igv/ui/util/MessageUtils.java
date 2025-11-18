@@ -55,8 +55,25 @@ public class MessageUtils {
         Object value;
     }
 
+    /**
+     * A simple data holder for returning both a string value and a checkbox state from dialogs or UI components.
+     * <p>
+     * This class is typically used when a dialog needs to return both a user-entered value and the state of a checkbox
+     * (for example, "Do not show this message again").
+     * </p>
+     * <ul>
+     *   <li>{@code value}: The string value entered or selected by the user. May be {@code null} if no value was provided.</li>
+     *   <li>{@code isChecked}: {@code true} if the checkbox was selected, {@code false} otherwise.</li>
+     * </ul>
+     */
     public static class ValueCheckboxHolder {
+        /**
+         * The value entered or selected by the user. May be {@code null} if no value was provided.
+         */
         public String value;
+        /**
+         * {@code true} if the checkbox was selected, {@code false} otherwise.
+         */
         public boolean isChecked;
     }
 
