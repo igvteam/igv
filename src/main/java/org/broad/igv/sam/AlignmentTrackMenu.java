@@ -157,7 +157,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addSeparator();
         addThirdGenItems(clickedAlignment, e);
 
-        if(AlignmentTrack.ExperimentType.SBX == alignmentTrack.getExperimentType()) {
+        if (AlignmentTrack.ExperimentType.SBX == alignmentTrack.getExperimentType()) {
             addSBXItems(clickedAlignment, e);
         }
 
@@ -423,11 +423,13 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     void addSelectByBaseAtPosition(AlignmentTrack track, TrackClickEvent e) {
-        JMenuItem item = new JMenuItem("Select by base at position...");
-    
+
         final MouseEvent me = e.getMouseEvent();
         final ReferenceFrame frame = e.getFrame() != null ? e.getFrame() : FrameManager.getDefaultFrame();
         final int clickedPos = (int) frame.getChromosomePosition(me);
+
+        JMenuItem item = new JMenuItem("Select by base at position (e.g " + (clickedPos + 1) + ":T) ...");
+
         final Alignment clickedAlignment = track.getAlignmentAt(e);
         if (clickedAlignment == null) {
             item.setEnabled(false);
@@ -435,20 +437,19 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         } else {
             final byte clickedBase = clickedAlignment.getBase(clickedPos);
             item.addActionListener(aEvt -> {
-                ValueCheckboxHolder valHolder = MessageUtils.showInputDialog("Enter base: ", String.valueOf(clickedPos + 1) + ":" + (char)(clickedBase), "clear other");
-                String val = (String)valHolder.value;
-    
+                ValueCheckboxHolder valHolder = MessageUtils.showInputDialog("Enter base: ", String.valueOf(clickedPos + 1) + ":" + (char) (clickedBase), "clear other");
+
+                if (valHolder == null) return;
+
+                String val = valHolder.value;
+
                 if (valHolder.isChecked) {
                     alignmentTrack.getSelectedReadNames().clear();
                 }
-    
+
                 if (val != null && val.trim().length() > 0) {
                     String[] selected = val.split("\\s*:\\s*");
-                    if (selected.length < 2 || selected[1].isEmpty()) {
-                        MessageUtils.showMessage("Base cannot be empty.");
-                        return;
-                    }
-                    if (selected.length != 2) {
+                    if (selected.length != 2 || selected[1].length() != 1) {
                         MessageUtils.showMessage("Invalid format. Expected format: position:base (e.g., 12345:A)");
                         return;
                     }
@@ -465,13 +466,25 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                         MessageUtils.showMessage("No alignments loaded in the current region.");
                         return;
                     }
-                    List<Alignment> alList = interval.getAlignments();
-                    for (final Alignment alignment : alList) {
-                        if (alignment.getBase(selectedPos) == selectedBase) {
-                            alignmentTrack.getSelectedReadNames().put(alignment.getReadName(), alignmentTrack.getReadNamePalette().get(alignment.getReadName()));
+                    // Run the search in a background thread to avoid freezing the UI
+                    new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() {
+                            List<Alignment> alList = interval.getAlignments();
+                            for (final Alignment alignment : alList) {
+                                // Check if the alignment covers the position before getting the base
+                                if (selectedPos >= alignment.getStart() && selectedPos < alignment.getEnd() && alignment.getBase(selectedPos) == selectedBase) {
+                                    alignmentTrack.getSelectedReadNames().put(alignment.getReadName(), alignmentTrack.getReadNamePalette().get(alignment.getReadName()));
+                                }
+                            }
+                            return null;
                         }
-                    }
-                    alignmentTrack.repaint();
+
+                        @Override
+                        protected void done() {
+                            alignmentTrack.repaint();
+                        }
+                    }.execute();
                 }
             });
         }
