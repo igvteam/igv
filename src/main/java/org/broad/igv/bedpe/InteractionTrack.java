@@ -19,6 +19,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,7 +29,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.broad.igv.bedpe.InteractionTrack.Direction.UP;
 
@@ -39,18 +39,30 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
     private static final Logger log = LogManager.getLogger(InteractionTrack.class);
 
-
     enum Direction {UP, DOWN}
 
     enum GraphType {BLOCK, NESTED_ARC, PROPORTIONAL_ARC}
 
     enum ArcOption {ALL, ONE_END, BOTH_ENDS}
 
+    static Map<String, String> normalizationLabels = new LinkedHashMap<>();
+    static {
+        normalizationLabels.put("NONE", "None");
+        normalizationLabels.put("VC", "Coverage");
+        normalizationLabels.put("VC_SQRT", "Coverage - Sqrt");
+        normalizationLabels.put("KR", "Balanced (Knight-Ruiz)");
+        normalizationLabels.put("INTER_VC", "Interchromosomal Coverage");
+        normalizationLabels.put("INTER_VC_SQRT", "Interchromosomal Coverage - Sqrt");
+        normalizationLabels.put("INTER_KR", "Interchromosomal Balanced");
+        normalizationLabels.put("GW_VC", "Genome-wide Coverage");
+        normalizationLabels.put("GW_VC_SQRT", "Genome-wide Coverage - Sqrt");
+        normalizationLabels.put("GW_KR", "Genome-wide Balanced");
+    }
+
     private InteractionSource featureSource;
     private JCheckBoxMenuItem autoscaleCB;
     private JMenuItem maxScoreItem;
 
-    private boolean isHIC;
     InteractionTrack.Direction direction = UP; //DOWN;
     GraphType graphType;  // GraphType.block; //
     private ArcOption arcOption = ArcOption.ALL;
@@ -60,10 +72,16 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     int gap = 5;
     boolean showBlocks = false;
     boolean useScore = false;
-    float transparency = 1.0f;
     private Map<GraphType, BedPERenderer> renderers;
 
+    private boolean isHIC;
+    float transparency = 1.0f;
+    String normalization = "NONE";
+    private int maxFeatureCount = 5000;
+
     transient Map<ReferenceFrame, List<BedPE>> lastRenderedFeatures = new HashMap<>();
+
+    transient Map<ReferenceFrame, LoadedInterval> loadedIntervalMap = new HashMap<>();
 
     public InteractionTrack() {
     }
@@ -140,12 +158,35 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        return true;
+
+        LoadedInterval interval = loadedIntervalMap.get(frame);
+        return interval != null && interval.contains(frame.getChrName(),
+                (int) frame.getOrigin(),
+                (int) frame.getEnd(),
+                (int) frame.getZoom(),
+                normalization);
     }
 
     @Override
     public void load(ReferenceFrame frame) {
-        // Nothing to do, this track is pre-loaded
+
+        String chr = frame.getChrName();
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd();
+        int zoom = frame.getZoom();
+
+        // Expand region by half width to enable panning without reloading
+        int w = (end - start) / 2;
+        start = Math.max(0, start - w);
+        end = end + w;
+
+        try {
+            List<BedPE> features = featureSource.getFeatures(chr, start, end, frame.getScale(), normalization, maxFeatureCount);
+            LoadedInterval interval = new LoadedInterval(chr, start, end, zoom, normalization, features);
+            loadedIntervalMap.put(frame, interval);
+        } catch (IOException e) {
+            log.error("Error loading features", e);
+        }
     }
 
 
@@ -166,7 +207,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         try {
             String chr = context.getReferenceFrame().getChrName();
 
-            List<BedPE> features = featureSource.getFeatures(chr, (int) context.getOrigin(), (int) context.getEndLocation(), context.getScale(), "NONE");
+            if (normalization != null && !normalization.equals("NONE") && !featureSource.hasNormalizationVector(normalization, chr, context.getScale())) {
+                normalization = "NONE";
+                String message = "Normalization '" + normalization + "' not available at this resolution. Switching normalization to 'NONE'.";
+                UIUtilities.invokeOnEventThread(() -> MessageUtils.showMessage(message));
+            }
+
+            final LoadedInterval interval = loadedIntervalMap.get(context.getReferenceFrame());
+            if (interval == null) {
+                return;
+            }
+            List<BedPE> features = interval.features();
 
             if (features != null && !features.isEmpty()) {
 
@@ -183,10 +234,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 renderers.get(GraphType.BLOCK).render(features, context, trackRectangle, this.arcOption);
             }
 
-            lastRenderedFeatures.put(context.getReferenceFrame(), features);
-
-        } catch (IOException e) {
-            log.error("Error fetching features. ", e);
         } finally {
             context.clearGraphicsCache();
             g2d.setClip(clip);
@@ -239,23 +286,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         IGVPopupMenu menu = new IGVPopupMenu();
 
-        // Experimental JBrowse.
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
-                CircularViewUtilities.ping() &&
-                !isHIC) {
-            menu.addSeparator();
-            JMenuItem item = new JMenuItem("Add Features to Circular View");
-            item.addActionListener(e -> {
-                List<ReferenceFrame> frames = te.getFrame() != null ?
-                        Collections.singletonList(te.getFrame()) :
-                        FrameManager.getFrames();
-                List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
-                CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
-            });
-            menu.add(item);
-            menu.addSeparator();
-        }
-
         menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
 
         JMenuItem item = new JMenuItem("Set Track Height...");
@@ -265,7 +295,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
-
 
         if (!this.isHIC) {
             menu.addSeparator();
@@ -323,7 +352,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         menu.add(showBlocksCB);
 
         if (!isHIC) {
-
             menu.addSeparator();
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
@@ -410,17 +438,75 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(transparencyItem);
 
+        if (isHIC) {
+            final JMenuItem maxFeatureCountItem = new JMenuItem("Set Max Feature Count...");
+            maxFeatureCountItem.addActionListener(e -> {
+                final JSlider slider = new JSlider(1000, 20000, InteractionTrack.this.maxFeatureCount);
+                slider.setMajorTickSpacing(5000);
+                slider.setPaintTicks(true);
 
-        menu.addSeparator();
-        menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
+                final JLabel valueLabel = new JLabel(String.valueOf(InteractionTrack.this.maxFeatureCount));
 
-//        final JCheckBoxMenuItem cbItem = new JCheckBoxMenuItem("Hide Large Features");
-//        cbItem.setSelected(hideLargeFeatures);
-//        cbItem.addActionListener(e -> {
-//            InteractionTrack.this.hideLargeFeatures = cbItem.isSelected();
-//            IGV.getInstance().repaint();
-//        });
-//
+                slider.addChangeListener(changeEvent -> {
+                    JSlider source = (JSlider) changeEvent.getSource();
+                    int value = source.getValue();
+                    InteractionTrack.this.maxFeatureCount = value;
+                    valueLabel.setText(String.valueOf(value));
+                    InteractionTrack.this.loadedIntervalMap.clear();
+                    InteractionTrack.this.repaint();
+                });
+
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.add(slider, BorderLayout.CENTER);
+                panel.add(valueLabel, BorderLayout.SOUTH);
+
+                final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+                JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+            });
+            menu.add(maxFeatureCountItem);
+        }
+
+        // Add normalization options for HiC tracks
+        if (isHIC) {
+            List<String> normalizationTypes = featureSource.getNormalizationTypes();
+            if (normalizationTypes != null && normalizationTypes.size() > 1) {
+                menu.addSeparator();
+                menu.add(new JLabel("<html><b>Normalization</b>"));
+                ButtonGroup normGroup = new ButtonGroup();
+                for (String type : normalizationTypes) {
+                    String label = normalizationLabels.getOrDefault(type, type);
+                    JRadioButtonMenuItem normItem = new JRadioButtonMenuItem(label);
+                    normItem.setSelected(type.equals(normalization));
+                    normItem.addActionListener(e -> {
+                        this.normalization = type;
+                        InteractionTrack.this.repaint();
+                    });
+                    normGroup.add(normItem);
+                    menu.add(normItem);
+                }
+            }
+
+        } else {
+            menu.addSeparator();
+            menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
+        }
+
+        // Experimental JBrowse.
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
+                CircularViewUtilities.ping() &&
+                !isHIC) {
+            menu.addSeparator();
+            JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
+            circViewItem.addActionListener(e -> {
+                List<ReferenceFrame> frames = te.getFrame() != null ?
+                        Collections.singletonList(te.getFrame()) :
+                        FrameManager.getFrames();
+                List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
+                CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
+            });
+            menu.add(circViewItem);
+            menu.addSeparator();
+        }
 
         return menu;
     }
@@ -436,7 +522,10 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         // Expand range a little bit -- this should be done in pixels
         double tolerance = frame.getScale() * 3;
 
-        List<BedPE> features = lastRenderedFeatures.get(frame);
+        LoadedInterval interval = loadedIntervalMap.get(frame);
+        if (interval == null) return "";
+
+        List<BedPE> features = interval.features();
         if (features == null) return "";
 
         List<BedPE> candidates = new ArrayList<>();
@@ -474,11 +563,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         element.setAttribute("arcOption", String.valueOf(arcOption));
         element.setAttribute("showBlocks", String.valueOf(showBlocks));
         element.setAttribute("autoscale", String.valueOf(autoscale));
-        if(transparency != 1.0f) {
+        if (transparency != 1.0f) {
             element.setAttribute("transparency", String.valueOf(transparency));
         }
         if (!autoscale) {
             element.setAttribute("maxScore", String.valueOf(maxScore));
+        }
+        if(this.isHIC) {
+            String nviString = ((HicSource) featureSource).getNVIString();
+            if(nviString != null)   {
+                element.setAttribute("nvi", nviString);
+            }
         }
 
     }
@@ -509,8 +604,12 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (element.hasAttribute("maxScore")) {
             this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
         }
-        if(element.hasAttribute("transparency")) {
+        if (element.hasAttribute("transparency")) {
             this.transparency = Float.parseFloat(element.getAttribute("transparency"));
+        }
+        if(element.hasAttribute("nvi"))   {
+            String nviString = element.getAttribute("nvi");
+            ((HicSource) featureSource).setNVIString(nviString);
         }
     }
 
@@ -518,18 +617,20 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     /**
      * Return features visible in the supplied frames
      */
-    public List<? extends BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
-
-        Function<ReferenceFrame, List<? extends BedPE>> frameFeatures = f -> lastRenderedFeatures.get(f);
+    /**
+     * Return features visible in the supplied frames
+     */
+    public List<BedPE> getVisibleFeatures(List<ReferenceFrame> frames) {
 
         if (frames.isEmpty()) {
             return Collections.emptyList();
-        } else if (frames.size() == 1) {
-            return frameFeatures.apply(frames.get(0));
         } else {
             List<BedPE> inView = new ArrayList<>();
             for (ReferenceFrame f : frames) {
-                inView.addAll(frameFeatures.apply(f));
+                LoadedInterval interval = loadedIntervalMap.get(f);
+                if (interval != null) {
+                    inView.addAll(interval.features());
+                }
             }
             return inView;
         }
@@ -538,10 +639,27 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     @Override
     public void receiveEvent(IGVEvent event) {
         if (event instanceof FrameManager.ChangeEvent) {
-            lastRenderedFeatures.clear();
+            Set<ReferenceFrame> frames = new HashSet<>(FrameManager.getFrames());
+
+            // Remove cached intervals for frames that are no longer present
+            loadedIntervalMap.keySet().removeIf(f -> !frames.contains(f));
         }
     }
 
 
-}
+    public static record LoadedInterval(String chr, int start, int end, int zoom, String normalization,
+                                        List<BedPE> features) {
 
+        String getKey() {
+            return chr + "_" + start + "_" + end + "_" + zoom + "_" + normalization;
+        }
+
+        boolean contains(String chr, int start, int end, int zoom, String normalization) {
+            return this.chr.equals(chr) &&
+                    this.start <= start &&
+                    this.end >= end &&
+                    (this.zoom == -1 || this.zoom == zoom) &&
+                    (this.normalization == null || this.normalization.equals(normalization));
+        }
+    }
+}

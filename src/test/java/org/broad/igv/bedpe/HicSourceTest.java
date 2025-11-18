@@ -1,11 +1,9 @@
 package org.broad.igv.bedpe;
 
-import org.broad.igv.hic.HicSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -18,14 +16,14 @@ public class HicSourceTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        src = new HicSource(testURL, Collections.emptyMap(), null);
+        src = new HicSource(testURL,null);
     }
 
 
     @Test
     public void testGetFeatures() throws IOException {
 
-        var features = src.getFeatures("1", 0, 248956422, 156872.35160680528, "NONE");
+        var features = src.getFeatures("1", 0, 248956422, 156872.35160680528, "NONE", 5000);
         assertEquals(50043, features.size());
     }
 

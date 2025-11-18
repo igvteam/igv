@@ -34,6 +34,7 @@ public class BedPEFeature implements BedPE {
     Map<String, String> attributes;
     BedPEShape shape;
     private boolean isComplement = false;
+    private double value;
 
     public BedPEFeature() {
     }
@@ -187,4 +188,11 @@ public class BedPEFeature implements BedPE {
         return name;
     }
 
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public void setAttribute(String count, double counts) {
+
+    }
 }

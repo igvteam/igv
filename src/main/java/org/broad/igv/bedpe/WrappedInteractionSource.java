@@ -17,7 +17,7 @@ public class WrappedInteractionSource implements  InteractionSource {
     }
 
     @Override
-    public List<BedPE> getFeatures(String chr, int start, int end, double bpPerPixel, String normalization) throws IOException {
+    public List<BedPE> getFeatures(String chr, int start, int end, double bpPerPixel, String normalization, int maxFeatureCount) throws IOException {
         Iterator<BedPE>  featureIterator = featureSource.getFeatures(chr, start, end);
         List<BedPE> list = new ArrayList<>();
         while (featureIterator != null && featureIterator.hasNext()) {

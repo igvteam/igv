@@ -57,7 +57,7 @@ import org.broad.igv.feature.tribble.TribbleIndexNotFoundException;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
-import org.broad.igv.hic.HicSource;
+import org.broad.igv.bedpe.HicSource;
 import org.broad.igv.htsget.HtsgetUtils;
 import org.broad.igv.htsget.HtsgetVariantSource;
 import org.broad.igv.lists.GeneList;
@@ -439,7 +439,7 @@ public class TrackLoader {
 
         InteractionSource source;
         if("hic".equals(format)) {
-            source = new HicSource(locator.getPath(), Collections.emptyMap(), genome);
+            source = new HicSource(locator.getPath(),  genome);
         } else {
             List<BedPE> features = "interact".equals(format) ?
                     InteractParser.parse(locator, genome) :

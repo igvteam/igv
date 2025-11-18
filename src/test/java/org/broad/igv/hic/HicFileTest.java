@@ -1,13 +1,12 @@
 package org.broad.igv.hic;
 
-import htsjdk.samtools.seekablestream.SeekableStream;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,8 +17,8 @@ public class HicFileTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Map<String, Object> params = new java.util.HashMap<>();
-        hicFile =  HicFile.create(testURL, params);
+        Genome genome = TestUtils.mockUCSCGenome();
+        hicFile = new HicFile(testURL, genome);
     }
 
 
@@ -31,48 +30,26 @@ public class HicFileTest {
 
     @Test
     public void getContactRecords() throws IOException {
-
         Region region1 = new Region("chr1", 0, 249000000);
         Region region2 = new Region("chr1", 0, 249000000);
         int binSize = 250000;
-        String norm = "NONE";
-        List<ContactRecord> records = hicFile.getContactRecords(norm, region1, region2, "BP", binSize, true);
+        List<ContactRecord> records = hicFile.getContactRecords(region1, region2, "BP", binSize, true);
         assertEquals(396963, records.size());
     }
 
     @Test
-    public void getBlocks() {
+    public void getNormalizationTypes() throws IOException {
+        List<String> normTypes = hicFile.getNormalizationTypes();
+        assertEquals(4, normTypes.size());
+        assertEquals("NONE", normTypes.get(0));
+        assertEquals("VC", normTypes.get(1));
+        assertEquals("VC_SQRT", normTypes.get(2));
+        assertEquals("KR", normTypes.get(3));
     }
 
     @Test
-    public void readBlock() {
-    }
-
-    @Test
-    public void hasNormalizationVector() {
-    }
-
-    @Test
-    public void getNormalizationVector() {
-    }
-
-    @Test
-    public void getNormVectorIndex() {
-    }
-
-    @Test
-    public void readNormVectorIndex() {
-    }
-
-    @Test
-    public void readNormExpectedValuesAndNormVectorIndex() {
-    }
-
-    @Test
-    public void skipExpectedValues() {
-    }
-
-    @Test
-    public void getNormalizationVectorKey() {
+    public void getNVI() {
+        String nvi = NVI.getNVI("https://4dn-open-data-public.s3.amazonaws.com/fourfront-webprod/wfoutput/e351f7cc-7a2c-4515-ae0b-3bb2f91c986a/4DNFIMIMLMD3.hic");
+        assertEquals("240094740,25900", nvi);
     }
 }

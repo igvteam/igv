@@ -34,16 +34,16 @@ public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
 
     int bufferSize;
     ByteOrder byteOrder;
-    String path;
+    SeekableStream seekableStream;
 
-    public static UnsignedByteBufferDynamic loadBinaryBuffer(String path, ByteOrder byteOrder, long offset, int size) throws IOException {
-        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(path, byteOrder, offset, size);
+    public static UnsignedByteBufferDynamic loadBinaryBuffer(SeekableStream seekableStream, ByteOrder byteOrder, long offset, int size) throws IOException {
+        UnsignedByteBufferDynamic b = new UnsignedByteBufferDynamic(seekableStream, byteOrder, offset, size);
         b.updateBuffer();
         return b;
     }
 
-    private UnsignedByteBufferDynamic(String path, ByteOrder byteOrder, long offset, int bufferSize) {
-        this.path = path;
+    private UnsignedByteBufferDynamic(SeekableStream seekableStream, ByteOrder byteOrder, long offset, int bufferSize) {
+        this.seekableStream = seekableStream;
         this.byteOrder = byteOrder;
         this.offset = offset;
         this.originalOffset = offset;
@@ -56,13 +56,13 @@ public class UnsignedByteBufferDynamic implements UnsignedByteBuffer {
     }
 
     private void updateBuffer() {
-        try (SeekableStream is = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
+        try {
             this.wrappedBuffer = ByteBuffer.allocate(bufferSize);
             this.wrappedBuffer.order(byteOrder);
             byte[] bytes = this.wrappedBuffer.array();
-            is.seek(offset);
+            seekableStream.seek(offset);
             try {
-                is.readFully(bytes);
+                seekableStream.readFully(bytes);
             } catch (EOFException e) {
                 // This can happen if near the end of the file and is o.k., in fact expected
             }

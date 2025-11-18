@@ -2,27 +2,47 @@ package org.broad.igv.hic;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.ucsc.twobit.UnsignedByteBuffer;
-import org.broad.igv.ucsc.twobit.UnsignedByteBufferImpl;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.collections.LRUCache;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 
 /**
- * Partial conversion of the JavaScript HicFile to Java.
- * - Expects a FileChannel positioned on the underlying .hic file.
- * - Relies on existing UnsignedByteBuffer, Matrix, ContactRecord, NormalizationVector, LRUCache classes.
+ * Representation of a .hic file, with methods to access contact recrods and normalization vectors.
  *
- * Note: Remote/file-provider abstractions, rate limiting, and browser-specific behavior are omitted.
- * This class provides synchronous IO methods (FileChannel reads). Methods retain original names but throw IOException.
+ * @author Jim Robinson
  */
 public class HicFile {
 
+    private static final Logger log = LogManager.getLogger(HicFile.class);
+
+    enum DataType {
+        FLOAT(4),
+        DOUBLE(8);
+
+        private final int byteSize;
+
+        DataType(int byteSize) {
+            this.byteSize = byteSize;
+        }
+
+        public int getByteSize() {
+            return byteSize;
+        }
+    }
+
     private final SeekableStream fileChannel;
     private final Map<String, Object> config;
+    private final String path;
+    private final Genome genome;
 
     private boolean initialized = false;
     private String magic;
@@ -31,7 +51,7 @@ public class HicFile {
 
     private String genomeId;
     private long normVectorIndexPosition;
-    private long normVectorIndexSize;
+    private int normVectorIndexSize;
     private Map<String, IndexEntry> masterIndex;
     private Map<String, Long> expectedValueVectors;
     private Map<String, Object> attributes;
@@ -47,24 +67,19 @@ public class HicFile {
     private List<String> normalizationTypes = new ArrayList<>(Collections.singletonList("NONE"));
     private Long normExpectedValueVectorsPosition;
 
-    public static HicFile create(String path) throws IOException {
-        return create(path, Collections.emptyMap());
+
+    public HicFile(String path, Genome genome) throws IOException {
+        this.path = path;
+        this.genome = genome;
+        this.fileChannel = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
+
+        // TODO -- support customization options here.  This is an igv.js artifact.
+        this.config = Collections.emptyMap();
+
+        init();
     }
 
-    public static HicFile create(String path, Map<String, Object> config) throws IOException {
-        SeekableStream stream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
-        HicFile hicFile = new HicFile(stream, config);
-        hicFile.init();
-        return hicFile;
-    }
-
-    public HicFile(SeekableStream fileChannel, Map<String, Object> config) {
-        this.fileChannel = fileChannel;
-        this.config = config != null ? config : Collections.emptyMap();
-
-    }
-
-    public synchronized void init() throws IOException {
+    private synchronized void init() throws IOException {
         if (initialized) return;
         readHeaderAndFooter();
         initialized = true;
@@ -74,13 +89,28 @@ public class HicFile {
         return this.version;
     }
 
+    public String getNVIString() {
+        if(this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
+            return this.normVectorIndexPosition + "," + this.normVectorIndexSize;
+        } else {
+            return null;
+        }
+    }
+
+    private static ByteBuffer wrap(byte[] data) {
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        return bb;
+    }
+
     private void readHeaderAndFooter() throws IOException {
+
         // Read initial fields magic, version, and footer position
         byte[] header = readBytes(0, 16);
         if (header == null || header.length == 0) throw new IOException("File content is empty");
 
-        UnsignedByteBuffer bp = UnsignedByteBufferImpl.wrap(header);
-        this.magic = bp.getString();
+        ByteBuffer bp = wrap(header);
+        this.magic = getString(bp);
         this.version = bp.getInt();
         if (this.version < 5) throw new IOException("Unsupported hic version: " + this.version);
         this.footerPosition = bp.getLong();
@@ -94,21 +124,35 @@ public class HicFile {
         }
         long remainingSize = bodyPosition - 16;
         byte[] body = readBytes(16, (int) remainingSize);
-        UnsignedByteBuffer bodyParser = UnsignedByteBufferImpl.wrap(body);
+        ByteBuffer bodyParser = wrap(body);
 
-        this.genomeId = bodyParser.getString();
+        this.genomeId = getString(bodyParser);  // This is not used, but could be useful for validation
 
+        // The normalization vector index position and size.
+        // This allows skipping reading expected values, which is expensive.
         if (this.version >= 9) {
             this.normVectorIndexPosition = bodyParser.getLong();
-            this.normVectorIndexSize = bodyParser.getLong();
+            this.normVectorIndexSize = (int) bodyParser.getLong();
+        } else {
+            // See if normVectorIndex is in table
+            String nviStr = NVI.getNVI(this.path);
+            if (nviStr != null) {
+                try {
+                    String[] parts = nviStr.split(",");
+                    this.normVectorIndexPosition = Long.parseLong(parts[0]);
+                    this.normVectorIndexSize = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing NVI string: " + nviStr, e);
+                }
+            }
         }
 
         // attributes
         this.attributes = new HashMap<>();
         int nAttributes = bodyParser.getInt();
         while (nAttributes-- > 0) {
-            String k = bodyParser.getString();
-            String v = bodyParser.getString();
+            String k = getString(bodyParser);
+            String v = getString(bodyParser);
             this.attributes.put(k, v);
         }
 
@@ -117,7 +161,7 @@ public class HicFile {
         this.chromosomeIndexMap = new HashMap<>();
         int nChrs = bodyParser.getInt();
         for (int i = 0; i < nChrs; i++) {
-            String name = bodyParser.getString();
+            String name = getString(bodyParser);
             long size = this.version < 9 ? bodyParser.getInt() : bodyParser.getLong();
             Chromosome chr = new Chromosome(i, name, (int) size);
             if ("all".equalsIgnoreCase(name)) {
@@ -133,8 +177,9 @@ public class HicFile {
             this.bpResolutions.add(bodyParser.getInt());
         }
 
-        // frag resolutions (optional)
-        if (Boolean.TRUE.equals(config.get("loadFragData"))) {
+        // frag resolutions --  For possible future use, this will never evaluate to true in IGV.
+        boolean loadFragData = false;
+        if (loadFragData) {
             int nFrag = bodyParser.getInt();
             for (int i = 0; i < nFrag; i++) {
                 this.fragResolutions.add(bodyParser.getInt());
@@ -143,29 +188,26 @@ public class HicFile {
 
         // build alias table
         for (String chrName : chromosomeIndexMap.keySet()) {
-            if (chrName.startsWith("chr")) chrAliasTable.put(chrName.substring(3), chrName);
-            else if ("MT".equals(chrName)) chrAliasTable.put("chrM", chrName);
-            else chrAliasTable.put("chr" + chrName, chrName);
+            String canonicalName = genome == null ? chrName : genome.getCanonicalChrName(chrName);
+            chrAliasTable.put(canonicalName, chrName);
         }
-
-        // meta (not stored in separate object here)
     }
 
     private void readFooter() throws IOException {
         int skip = this.version < 9 ? 8 : 12;
         byte[] data = readBytes(this.footerPosition, skip);
         if (data == null) return;
-        UnsignedByteBuffer bp = UnsignedByteBufferImpl.wrap(data);
+        ByteBuffer bp = wrap(data);
         long nBytes = this.version < 9 ? bp.getInt() : bp.getLong();
         int nEntries = bp.getInt();
 
         int miSize = nEntries * (100 + 64 + 32);
         byte[] miData = readBytes(this.footerPosition + skip, Math.min(miSize, (int) nBytes));
-        UnsignedByteBuffer miParser = UnsignedByteBufferImpl.wrap(miData);
+        ByteBuffer miParser = wrap(miData);
 
         this.masterIndex = new HashMap<>();
         while (nEntries-- > 0) {
-            String key = miParser.getString();
+            String key = getString(miParser);
             long pos = miParser.getLong();
             int size = miParser.getInt();
             masterIndex.put(key, new IndexEntry(pos, size));
@@ -178,7 +220,7 @@ public class HicFile {
         }
     }
 
-    public Matrix getMatrix(int chrIdx1, int chrIdx2) throws IOException {
+    private Matrix getMatrix(int chrIdx1, int chrIdx2) throws IOException {
         String key = Matrix.getKey(chrIdx1, chrIdx2);
         if (matrixCache.containsKey(key)) return matrixCache.get(key);
         Matrix m = readMatrix(chrIdx1, chrIdx2);
@@ -187,17 +229,20 @@ public class HicFile {
     }
 
     private Matrix readMatrix(int chrIdx1, int chrIdx2) throws IOException {
-        init();
+
         if (chrIdx1 > chrIdx2) {
             int tmp = chrIdx1;
             chrIdx1 = chrIdx2;
             chrIdx2 = tmp;
         }
+
         String key = Matrix.getKey(chrIdx1, chrIdx2);
         IndexEntry idx = masterIndex.get(key);
         if (idx == null) return null;
+
         byte[] data = readBytes(idx.start, idx.size);
         if (data == null) return null;
+
         // Matrix.parseMatrix expects byte[] and chromosome list
         return Matrix.parseMatrix(data, this.chromosomes);
     }
@@ -206,14 +251,11 @@ public class HicFile {
         return bpResolutions;
     }
 
-    public List<ContactRecord> getContactRecords(String normalization,
-                                                 Region region1,
+    public List<ContactRecord> getContactRecords(Region region1,
                                                  Region region2,
                                                  String units,
                                                  int binSize,
                                                  boolean allRecords) throws IOException {
-
-        init();
 
         int idx1 = chromosomeIndexMap.getOrDefault(getFileChrName(region1.chr()), -1);
         int idx2 = chromosomeIndexMap.getOrDefault(getFileChrName(region2.chr()), -1);
@@ -233,43 +275,13 @@ public class HicFile {
         double x2 = (double) region1.end() / binSize;
         double y1 = (double) region2.start() / binSize;
         double y2 = (double) region2.end() / binSize;
-        int nvX1 = (int) Math.floor(x1);
-        int nvX2 = (int) Math.ceil(x2);
-        int nvY1 = (int) Math.floor(y1);
-        int nvY2 = (int) Math.ceil(y2);
-
-        boolean isNorm = normalization != null && !"NONE".equals(normalization);
-        String chr1 = getFileChrName(region1.chr());
-        String chr2 = getFileChrName(region2.chr());
 
         for (Block block : blocks) {
             if (block == null) continue;
 
-            NormalizationVector nv1 = null;
-            NormalizationVector nv2 = null;
-            if (isNorm) {
-                nv1 = getNormalizationVector(normalization, chr1, units, binSize);
-                nv2 = chr1.equals(chr2) ? nv1 : getNormalizationVector(normalization, chr2, units, binSize);
-                if (nv1 == null || nv2 == null) {
-                    isNorm = false;
-                }
-            }
-
             for (ContactRecord rec : block.records) {
-                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2)) {
-                    if (isNorm) {
-                        int x = rec.bin1();
-                        int y = rec.bin2();
-                        double[] v1 = nv1.getValues(nvX1, nvX2);
-                        double[] v2 = nv2.getValues(nvY1, nvY2);
-                        double nvnv = v1[x - nvX1] * v2[y - nvY1];
-                        if (nvnv != 0 && !Double.isNaN(nvnv)) {
-                            double counts = rec.counts() / nvnv;
-                            contactRecords.add(new ContactRecord(x, y, counts));
-                        }
-                    } else {
-                        contactRecords.add(rec);
-                    }
+                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2)  && rec.counts() > 1) {
+                    contactRecords.add(rec);
                 }
             }
         }
@@ -277,7 +289,7 @@ public class HicFile {
         return contactRecords;
     }
 
-    public List<Block> getBlocks(Region region1, Region region2, String unit, int binSize) throws IOException {
+    private List<Block> getBlocks(Region region1, Region region2, String unit, int binSize) throws IOException {
         init();
         String chr1 = getFileChrName(region1.chr());
         String chr2 = getFileChrName(region2.chr());
@@ -289,7 +301,10 @@ public class HicFile {
         if (matrix == null) return Collections.emptyList();
 
         MatrixZoomData zd = matrix.getZoomData(binSize, unit);
-        if (zd == null) throw new IOException("No data available for resolution: " + binSize);
+        if (zd == null) {
+            log.info("No data available for resolution: " + binSize + " for chromosome pair: " + chr1 + ", " + chr2);
+            return Collections.emptyList();
+        }
 
         List<Integer> blockNumbers = zd.getBlockNumbers(region1, region2, this.version);
         List<Block> blocks = new ArrayList<>();
@@ -314,7 +329,7 @@ public class HicFile {
         return blocks;
     }
 
-    public Block readBlock(int blockNumber, MatrixZoomData zd) throws IOException {
+    private Block readBlock(int blockNumber, MatrixZoomData zd) throws IOException {
         StaticBlockIndex.BlockIndexEntry idx = zd.getBlockIndex().getBlockIndexEntry(blockNumber);
         if (idx == null) return null;
         byte[] data = readBytes(idx.filePosition, idx.size);
@@ -323,7 +338,7 @@ public class HicFile {
         // decompress
         byte[] plain = (new CompressionUtils()).decompress(data);
 
-        UnsignedByteBuffer parser = UnsignedByteBufferImpl.wrap(plain);
+        ByteBuffer parser = wrap(plain);
         int nRecords = parser.getInt();
         List<ContactRecord> records = new ArrayList<>();
 
@@ -331,7 +346,7 @@ public class HicFile {
             for (int i = 0; i < nRecords; i++) {
                 int binX = parser.getInt();
                 int binY = parser.getInt();
-                double counts = parser.getFloat();
+                float counts = parser.getFloat();
                 records.add(new ContactRecord(binX, binY, counts));
             }
         } else {
@@ -353,7 +368,7 @@ public class HicFile {
                     for (int j = 0; j < colCount; j++) {
                         int dx = useIntXPos ? parser.getInt() : parser.getShort();
                         int binX = binXOffset + dx;
-                        double counts = useFloatContact ? parser.getFloat() : parser.getShort();
+                        float counts = useFloatContact ? parser.getFloat() : parser.getShort();
                         records.add(new ContactRecord(binX, binY, counts));
                     }
                 }
@@ -366,8 +381,8 @@ public class HicFile {
                     int bin1 = binXOffset + col;
                     int bin2 = binYOffset + row;
                     if (useFloatContact) {
-                        double counts = parser.getFloat();
-                        if (!Double.isNaN(counts)) records.add(new ContactRecord(bin1, bin2, counts));
+                        float counts = parser.getFloat();
+                        if (!Float.isNaN(counts)) records.add(new ContactRecord(bin1, bin2, counts));
                     } else {
                         int counts = parser.getShort();
                         if (counts != Short_MIN_VALUE) records.add(new ContactRecord(bin1, bin2, counts));
@@ -381,63 +396,88 @@ public class HicFile {
         return new Block(blockNumber, zd, records, idx);
     }
 
-    public boolean hasNormalizationVector(String type, Object chr, String unit, int binSize) throws IOException {
-        init();
-        int chrIdx;
-        if (chr instanceof Integer) chrIdx = (Integer) chr;
-        else chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr.toString()), -1);
+    public boolean hasNormalizationVector(String type, String chr, String unit, int binSize) {
+
+        int chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr.toString()), -1);
+
         String key = getNormalizationVectorKey(type, chrIdx, unit, binSize);
-        Map<String, IndexEntry> nvi = getNormVectorIndex();
-        return nvi != null && nvi.containsKey(key);
+        if (normVectorCache.containsKey(key)) {
+            return true;
+        }
+
+        try {
+            Map<String, IndexEntry> nvi = getNormVectorIndex();
+            return nvi == null ? false : nvi.containsKey(key);
+        } catch (IOException e) {
+            log.error("Error reading norm vector index", e);
+            return false;
+        }
+
     }
 
-    public NormalizationVector getNormalizationVector(String type, Object chr, String unit, int binSize) throws IOException {
+    /**
+     * Look up and return the normalization vector for the given parameters.
+     * @param type
+     * @param chr
+     * @param unit
+     * @param binSize
+     * @return
+     * @throws IOException
+     */
+    public NormalizationVector getNormalizationVector(String type, String chr, String unit, int binSize) throws IOException {
         init();
-        int chrIdx;
-        if (chr instanceof Integer) chrIdx = (Integer) chr;
-        else chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr.toString()), -1);
+
+        int chrIdx = chromosomeIndexMap.getOrDefault(getFileChrName(chr), -1);
+
+
         String key = getNormalizationVectorKey(type, chrIdx, unit, binSize);
-        if (normVectorCache.containsKey(key)) return normVectorCache.get(key);
+        if (normVectorCache.containsKey(key)) {
+            return normVectorCache.get(key);
+        }
+
         Map<String, IndexEntry> nvi = getNormVectorIndex();
         if (nvi == null) return null;
+
         IndexEntry idx = nvi.get(key);
         if (idx == null) return null;
+
         byte[] header = readBytes(idx.start(), 8);
         if (header == null) return null;
-        UnsignedByteBuffer parser = UnsignedByteBufferImpl.wrap(header);
+
+        ByteBuffer parser = wrap(header);
         long nValues = this.version < 9 ? parser.getInt() : parser.getLong();
-        int dataType = this.version < 9 ? BinaryTypes.DOUBLE : BinaryTypes.FLOAT;
+        DataType dataType = this.version < 9 ? DataType.DOUBLE : DataType.FLOAT;
         long filePos = this.version < 9 ? idx.start() + 4 : idx.start() + 8;
         NormalizationVector nv = new NormalizationVector(fileChannel, filePos, (int) nValues, dataType);
         normVectorCache.put(key, nv);
         return nv;
     }
 
-    public Map<String, IndexEntry> getNormVectorIndex() throws IOException {
+    private Map<String, IndexEntry> getNormVectorIndex() throws IOException {
         if (this.version < 6) return null;
         if (this.normVectorIndex == null) {
-            // If config contains "nvi" string (start,size) use it
-            if (config.containsKey("nvi")) {
-                String nviStr = (String) config.get("nvi");
-                String[] parts = nviStr.split(",");
-                long start = Long.parseLong(parts[0]);
-                int size = Integer.parseInt(parts[1]);
-                readNormVectorIndex(new IndexEntry(start, size));
+
+            // If we know the norm vector index position and size, read it directly.
+            if (this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
+                readNormVectorIndex(new IndexEntry(this.normVectorIndexPosition, this.normVectorIndexSize));
             } else {
                 try {
+                    // The norm vector index is located after the expected value vectors.  We need to skip over those first.
+                    // This is in general slow, but works for all file versions.
                     readNormExpectedValuesAndNormVectorIndex();
                 } catch (IOException e) {
-                    // File may not contain norm vectors
+                    // File may not contain norm vectors.  This rare but not neccessarily an error.
+                    log.warn("Error reading norm vector index.  This could indicate normalization vectors are not present", e);
                 }
             }
         }
         return normVectorIndex;
     }
 
-    public void readNormVectorIndex(IndexEntry range) throws IOException {
+    private void readNormVectorIndex(IndexEntry range) throws IOException {
         init();
         byte[] data = readBytes(range.start, range.size);
-        UnsignedByteBuffer bp = UnsignedByteBufferImpl.wrap(data);
+        ByteBuffer bp = wrap(data);
         this.normVectorIndex = new HashMap<>();
         int nEntries = bp.getInt();
         while (nEntries-- > 0) {
@@ -445,67 +485,133 @@ public class HicFile {
         }
     }
 
-    public void readNormExpectedValuesAndNormVectorIndex() throws IOException {
+    private void readNormExpectedValuesAndNormVectorIndex() throws IOException {
+
         init();
-        if (this.normExpectedValueVectorsPosition == null) return;
+
+        if (this.normExpectedValueVectorsPosition == null) {
+            return;
+        }
         long nviStart = skipExpectedValues(this.normExpectedValueVectorsPosition);
-        byte[] header = readBytes(nviStart, 4);
-        if (header == null || header.length == 0) return;
-        UnsignedByteBuffer bp = UnsignedByteBufferImpl.wrap(header);
+
+        byte[] data = readBytes(nviStart, 4);
+        if (data == null || data.length == 0) {
+            // This is possible if the are no norm verctors.  Not common.
+            return;
+        }
+        ByteBuffer bp = wrap(data);
         int nEntries = bp.getInt();
         int sizeEstimate = nEntries * 30;
-        byte[] data = readBytes((int) (nviStart + 4), sizeEstimate);
+        data = readBytes(nviStart + 4, sizeEstimate);
+
+
         this.normVectorIndex = new HashMap<>();
-        // process entries (simplified iterative parsing)
-        UnsignedByteBuffer parser = UnsignedByteBufferImpl.wrap(data);
-        while (parser.remaining() > 0) {
+
+        // process entries
+        int byteCount = 4;
+        ByteBuffer parser = wrap(data);
+        while (nEntries-- > 0) {
+            if (parser.remaining() < 100) {
+                nEntries++;   // Reset counter as entry is not processed
+
+                byteCount += parser.position();
+                sizeEstimate = Math.max(1000, nEntries * 30);
+                data = readBytes(nviStart + byteCount, sizeEstimate);
+                parser = wrap(data);
+            }
             parseNormVectorEntry(parser);
+
         }
-        this.config.put("nvi", nviStart + "," + 4);
+
+
+        //   this.config.put("nvi", nviStart + "," + 4);
     }
 
-    public long skipExpectedValues(long start) throws IOException {
-        int versionLocal = this.version;
-        // Use a Buffered read style - simplified
-        byte[] header = readBytes(start, 4);
-        UnsignedByteBuffer bp = UnsignedByteBufferImpl.wrap(header);
-        int nEntries = bp.getInt();
-        if (nEntries == 0) return start + 4;
-        long p = start + 4;
+    private long skipExpectedValues(long start) throws IOException {
+
+        final int INT_SIZE = 4;
+        final int DOUBLE_SIZE = 8;
+        final int FLOAT_SIZE = 4;
+
+        byte[] data = readBytes(start, INT_SIZE);
+        if (data == null) {
+            return start;
+        }
+        ByteBuffer buffer = wrap(data);
+        int nEntries = buffer.getInt();
+
+        if (nEntries == 0) {
+            return start + INT_SIZE;
+        }
+
+        long currentPosition = start + INT_SIZE;
         for (int i = 0; i < nEntries; i++) {
-            byte[] small = readBytes(p, 500);
-            UnsignedByteBuffer sp = UnsignedByteBufferImpl.wrap(small);
-            String type = sp.getString();
-            String unit = sp.getString();
-            int binSize = sp.getInt();
-            long nValues = versionLocal < 9 ? sp.getInt() : sp.getLong();
-            long chunkSize = sp.position() + nValues * (versionLocal < 9 ? BinaryTypes.DOUBLE : BinaryTypes.FLOAT);
-            byte[] after = readBytes((int) (p + chunkSize), 4);
-            UnsignedByteBuffer ap = UnsignedByteBufferImpl.wrap(after);
-            int nChrScaleFactors = ap.getInt();
-            chunkSize += 4 + nChrScaleFactors * (4 + (versionLocal < 9 ? BinaryTypes.DOUBLE : BinaryTypes.FLOAT));
-            p += chunkSize;
+            // Read the header of the expected value record to determine its size
+            // The size is variable, so we read a reasonable chunk first
+            byte[] chunkHeader = readBytes(currentPosition, 500);
+            if (chunkHeader == null) {
+                throw new IOException("Unexpected end of file while reading expected values.");
+            }
+            ByteBuffer chunkBuffer = wrap(chunkHeader);
+
+            // Skip type and unit strings
+            getString(chunkBuffer); // type
+            getString(chunkBuffer); // unit
+            chunkBuffer.getInt();   // binSize
+
+            // Get # of values and compute size
+            long nValues = (version < 9) ? chunkBuffer.getInt() : chunkBuffer.getLong();
+            long valuesSize = nValues * ((version < 9) ? DOUBLE_SIZE : FLOAT_SIZE);
+
+            // Position after the values array
+            long posAfterValues = currentPosition + chunkBuffer.position() + valuesSize;
+
+            // Read nChrScaleFactors
+            byte[] scaleFactorsHeader = readBytes(posAfterValues, INT_SIZE);
+            if (scaleFactorsHeader == null) {
+                throw new IOException("Unexpected end of file while reading scale factors.");
+            }
+            ByteBuffer scaleFactorsBuffer = wrap(scaleFactorsHeader);
+            int nChrScaleFactors = scaleFactorsBuffer.getInt();
+
+            long scaleFactorsSize = (long) nChrScaleFactors * (INT_SIZE + ((version < 9) ? DOUBLE_SIZE : FLOAT_SIZE));
+
+            // The start of the next entry is the position after the current one.
+            currentPosition = posAfterValues + INT_SIZE + scaleFactorsSize;
         }
-        return p;
+
+        return currentPosition;
+
     }
 
-    private void parseNormVectorEntry(UnsignedByteBuffer parser) {
-        String type = parser.getString();
+    private void parseNormVectorEntry(ByteBuffer parser) {
+        String type = getString(parser);
         int chrIdx = parser.getInt();
-        String unit = parser.getString();
+        String unit = getString(parser);
         int binSize = parser.getInt();
         long filePosition = parser.getLong();
         long sizeInBytes = this.version < 9 ? parser.getInt() : parser.getLong();
         String key = getNormalizationVectorKey(type, chrIdx, unit, binSize);
-        if (!this.normalizationTypes.contains(type)) this.normalizationTypes.add(type);
+        if (!this.normalizationTypes.contains(type)) {
+            this.normalizationTypes.add(type);
+        }
         this.normVectorIndex.put(key, new IndexEntry(filePosition, (int) sizeInBytes));
     }
 
-    private String getFileChrName(String chrAlias) {
-        return chrAliasTable.getOrDefault(chrAlias, chrAlias);
+    private String getFileChrName(String chrName) {
+        return chrAliasTable.getOrDefault(chrName, chrName);
     }
 
-    public static String getNormalizationVectorKey(String type, int chrIdx, String unit, int resolution) {
+    public List<String> getNormalizationTypes() {
+        try {
+            getNormVectorIndex();   // Populate normalization types as a sid
+        } catch (IOException e) {
+            log.error("Error reading norm vector index", e);
+        }
+        return normalizationTypes;
+    }
+
+    private static String getNormalizationVectorKey(String type, int chrIdx, String unit, int resolution) {
         return type + "_" + chrIdx + "_" + unit + "_" + resolution;
     }
 
@@ -523,10 +629,31 @@ public class HicFile {
         return byteArray;
     }
 
-    private record IndexEntry(long start, int size) {
+    /**
+     * Read a null-terminated string from the buffer
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    private static String getString(ByteBuffer buffer) {
+        ByteArrayOutputStream bis = new ByteArrayOutputStream(1000);
+        int b;
+        while ((b = buffer.get()) != 0) {
+            bis.write((byte) b);
+        }
+        return new String(bis.toByteArray());
     }
 
-    public static class Block {
+    public void setNVIString(String nviString) {
+        String[] parts = nviString.split(",");
+        this.normVectorIndexPosition = Long.parseLong(parts[0]);
+        this.normVectorIndexSize = Integer.parseInt(parts[1]);
+    }
+
+    record IndexEntry(long start, int size) {
+    }
+
+    private static class Block {
         public final int blockNumber;
         public final MatrixZoomData zoomData;
         public final List<ContactRecord> records;
@@ -540,7 +667,7 @@ public class HicFile {
         }
     }
 
-    public static class BlockCache {
+    private static class BlockCache {
         private Integer resolution = null;
         private LRUCache<String, Block> map = new LRUCache<>(6);
 
@@ -559,12 +686,6 @@ public class HicFile {
         public boolean has(int resolution, String key) {
             return (this.resolution != null && this.resolution == resolution) && this.map.containsKey(key);
         }
-    }
-
-    // Placeholder utilities and classes used in this file (to be provided by project)
-    private static class BinaryTypes {
-        static final int DOUBLE = 8;
-        static final int FLOAT = 4;
     }
 
 }

@@ -14,17 +14,11 @@ import java.util.Arrays;
  */
 public class NormalizationVector {
 
-    public static final int DOUBLE = 8;
-    public static final int FLOAT = 4;
-    public static final int LONG = 8;
-    public static final int INT = 4;
 
     private final SeekableStream fileChannel;
     private final long filePosition;
     private final int nValues;
-    private final int dataType;
-
-    // optional metadata (may be null / 0 if not provided)
+    private final HicFile.DataType dataType;
     private final String type;
     private final int chrIdx;
     private final String unit;
@@ -44,11 +38,11 @@ public class NormalizationVector {
         }
     }
 
-    public NormalizationVector(SeekableStream fileChannel, long filePosition, int nValues, int dataType) {
+    public NormalizationVector(SeekableStream fileChannel, long filePosition, int nValues, HicFile.DataType dataType) {
         this(fileChannel, filePosition, nValues, dataType, null, 0, null, 0);
     }
 
-    public NormalizationVector(SeekableStream fileChannel, long filePosition, int nValues, int dataType,
+    public NormalizationVector(SeekableStream fileChannel, long filePosition, int nValues, HicFile.DataType dataType,
                                String type, int chrIdx, String unit, int resolution) {
         this.fileChannel = fileChannel;
         this.filePosition = filePosition;
@@ -65,17 +59,18 @@ public class NormalizationVector {
      * Return values in range [start, end) as a double[].
      * Returns null if the underlying read fails.
      */
-    public double[] getValues(int start, int end) throws IOException {
-        if (start < 0) start = 0;
-        if (end > nValues) end = nValues;
-        if (start >= end) return new double[0];
+    public double[] getValues(int startBin, int endBin) throws IOException {
 
-        if (cache == null || start < cache.start || end > cache.end) {
-            int adjustedStart = Math.max(0, start - 1000);
-            int adjustedEnd = Math.min(nValues, end + 1000);
+        if (startBin < 0) startBin = 0;
+        if (endBin > nValues) endBin = nValues;
+        if (startBin >= endBin) return new double[0];
+
+        if (cache == null || startBin < cache.start || endBin > cache.end) {
+            int adjustedStart = Math.max(0, startBin - 1000);
+            int adjustedEnd = Math.min(nValues, endBin + 1000);
             int n = adjustedEnd - adjustedStart;
-            long startPosition = filePosition + (long) adjustedStart * dataType;
-            int sizeInBytes = n * dataType;
+            long startPosition = filePosition + (long) adjustedStart * dataType.getByteSize();
+            int sizeInBytes = n * dataType.getByteSize();
 
             byte [] byteArray = new byte[sizeInBytes];
             int read = 0;
@@ -92,7 +87,7 @@ public class NormalizationVector {
 
             double[] values = new double[n];
             for (int i = 0; i < n; i++) {
-                if (dataType == DOUBLE) {
+                if (dataType == HicFile.DataType.DOUBLE) {
                     values[i] = buf.getDouble();
                 } else {
                     values[i] = buf.getFloat();
@@ -101,8 +96,8 @@ public class NormalizationVector {
             this.cache = new Cache(adjustedStart, adjustedEnd, values);
         }
 
-        int sliceStart = start - cache.start;
-        int sliceLength = end - start;
+        int sliceStart = startBin - cache.start;
+        int sliceLength = endBin - startBin;
         return Arrays.copyOfRange(cache.values, sliceStart, sliceStart + sliceLength);
     }
 
@@ -114,16 +109,4 @@ public class NormalizationVector {
         return type + "_" + chrIdx + "_" + unit + "_" + resolution;
     }
 
-    // getters for fields if needed
-    public long getFilePosition() {
-        return filePosition;
-    }
-
-    public int getNValues() {
-        return nValues;
-    }
-
-    public int getDataType() {
-        return dataType;
-    }
 }
