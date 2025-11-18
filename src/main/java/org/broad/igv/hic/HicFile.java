@@ -58,7 +58,6 @@ public class HicFile {
     private List<Chromosome> chromosomes = new ArrayList<>();
     private Map<String, Integer> chromosomeIndexMap = new HashMap<>();
     private List<Integer> bpResolutions = new ArrayList<>();
-    private List<Integer> fragResolutions = new ArrayList<>();
     private Map<String, String> chrAliasTable = new HashMap<>();
     private Map<String, IndexEntry> normVectorIndex;
     private LRUCache<String, NormalizationVector> normVectorCache = new LRUCache<>(10);
