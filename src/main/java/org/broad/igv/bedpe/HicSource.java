@@ -171,6 +171,7 @@ public class HicSource implements InteractionSource {
         return binSize;
     }
 
+    @Override
     public List<String> getNormalizationTypes() {
         return hicFile.getNormalizationTypes();
     }
