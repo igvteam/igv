@@ -440,6 +440,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     
                 if (val != null && val.trim().length() > 0) {
                     String[] selected = val.split("\\s*:\\s*");
+                    if (selected.length < 2 || selected[1].isEmpty()) {
+                        MessageUtils.showMessage("Base cannot be empty.");
+                        return;
+                    }
                     int selectedPos = Integer.parseInt(selected[0]) - 1;
                     byte selectedBase = selected[1].getBytes()[0];
                     AlignmentInterval interval = dataManager.getLoadedInterval(frame);
