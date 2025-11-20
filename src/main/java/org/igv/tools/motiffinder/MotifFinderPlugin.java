@@ -55,7 +55,9 @@ public class MotifFinderPlugin {
      */
     static List<Track> addTracksForPatterns(String[] pattern, String[] posTrackNames, String[] negTrackNames) {
         List<Track> trackList = generateTracksForPatterns(pattern, posTrackNames, negTrackNames);
-        IGV.getInstance().addTracks(trackList);
+        for (Track track : trackList) {
+            IGV.getInstance().addTrack(track, PanelName.ANNOTATION_PANEL.getName());
+        }
         return trackList;
     }
 
