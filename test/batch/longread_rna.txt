@@ -1,4 +1,4 @@
-snapshotDirectory /Users/jrobinso
+snapshotDirectory snapshots
 new
 genome hg38
 preference SQUISH_JUNCTION_TRACK=false
