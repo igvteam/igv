@@ -41,7 +41,9 @@ public class Logger {
 
     public void error(String message, Throwable e) {
         wrappedLogger.severe(message);
-        logThrowable(e);
+        if(e != null) {
+            logThrowable(e);
+        }
     }
 
     public void error(Throwable e) {
