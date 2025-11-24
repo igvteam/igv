@@ -539,6 +539,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 AlignmentTrack.GroupOption.MOVIE, AlignmentTrack.GroupOption.ZMW, AlignmentTrack.GroupOption.READ_ORDER,
                 AlignmentTrack.GroupOption.LINKED, AlignmentTrack.GroupOption.PHASE,
                 AlignmentTrack.GroupOption.MAPPING_QUALITY,
+                AlignmentTrack.GroupOption.SELECTED,
                 AlignmentTrack.GroupOption.DUPLICATE
         };
 

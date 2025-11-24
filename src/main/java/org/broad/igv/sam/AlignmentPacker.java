@@ -559,6 +559,7 @@ public class AlignmentPacker {
             }
             case MAPPING_QUALITY -> al.getMappingQuality();
             case DUPLICATE -> al.isDuplicate() ? "duplicate" : "non-duplicate";
+            case SELECTED -> renderOptions.getSelectedReadNames().containsKey(al.getReadName()) ? "SELECTED" : "";
         };
     }
 
