@@ -25,12 +25,14 @@
 
 package org.broad.igv;
 
-import org.broad.igv.logging.*;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 
 import javax.swing.*;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
@@ -108,6 +110,7 @@ public class Globals {
     public static boolean toolsMenuEnabled = false;
 
     public static String downloadURL = "https://software.broadinstitute.org/software/igv/download";
+
     static {
         Properties properties = new Properties();
         try {
@@ -147,7 +150,7 @@ public class Globals {
     }
 
     public static String applicationString() {
-        return "IGV Version " + VERSION + " "  + TIMESTAMP;
+        return "IGV Version " + VERSION + " " + TIMESTAMP;
     }
 
     public static String versionString() {
@@ -161,7 +164,6 @@ public class Globals {
     public static void setBatch(boolean batch) {
         Globals.batch = batch;
     }
-
 
     /**
      * Checks whether the current JVM is the minimum specified version

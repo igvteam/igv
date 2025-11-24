@@ -1,0 +1,9 @@
+snapshotDirectory snapshots
+new
+genome hg38
+preference SQUISH_JUNCTION_TRACK=false
+preference JUNCTION_TRACK_MIN_READS=1
+preference SHOW_JUNCTION_TRACK=true
+load https://downloads.pacbcloud.com/public/dataset/Kinnex-full-length-RNA/DATA-Revio-IDT-BrainUHRR/3-FLNC-mapped/flnc-bc01-brain-IDT-rep1.mapped.bam
+goto chr12:98,593,331-98,602,812
+snapshot longread_rna.png

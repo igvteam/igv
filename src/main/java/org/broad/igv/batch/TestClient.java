@@ -49,9 +49,10 @@ public class TestClient {
             //testGOTO(out, in);
             //runBatchFile(out, in, "test/data/batch/test_commands.txt");
             //runBatchFile(out, in, "test/data/batch/load_bigwig.txt");
-            getToolsYaml(out, in, null);
-            manyLoci(out, in);
-            snapshot(out, in);
+            sendCommand(out, in, "load https://krishna.gs.washington.edu/download/CADD/bigWig/v1.6/GRCh37/CADDv1.6_GRCh37_whole_genome_SNVs.bw");
+           // getToolsYaml(out, in, null);
+           // manyLoci(out, in);
+           // snapshot(out, in);
 
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
@@ -73,6 +74,13 @@ public class TestClient {
         String response = in.readLine();
         System.out.println(response);
 
+    }
+
+    private static void sendCommand(PrintWriter out, BufferedReader in, String command) throws IOException {
+        System.out.println("Executing Command: " + command);
+        out.println(command);
+        String response = in.readLine();
+        System.out.println("Response: " + response);
     }
 
     private static void runBatchFile(PrintWriter out, BufferedReader in, String inputFile) throws IOException {

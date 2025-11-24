@@ -407,8 +407,10 @@ public class IGV implements IGVEventObserver {
 
                     }
                     if (!messages.isEmpty()) {
-                        for (String message : messages.getMessages()) {
-                            MessageUtils.showMessage(message);
+                        if(Globals.isBatch()) {
+                            throw new DataLoadException(String.join("\n", messages.getMessages()));
+                        } else {
+                            MessageUtils.showErrorMessage(String.join("<br>", messages.getMessages()), null);
                         }
                     }
 
