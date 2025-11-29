@@ -1289,6 +1289,9 @@ public class CommandExecutor {
 
     private static String getToolsYaml() {
         try (InputStream is = CommandExecutor.class.getResourceAsStream("/tools.yaml")) {
+            if (is == null) {
+                return null;
+            }
             return new String(is.readAllBytes(), Charset.defaultCharset());
         } catch (Exception e) {
             return null;
