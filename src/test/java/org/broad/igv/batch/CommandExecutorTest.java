@@ -219,7 +219,7 @@ public class CommandExecutorTest extends AbstractHeadedTest {
         setCheckMaxDepth(50);
     }
 
-    private void setCheckMaxDepth(int maxDepth) {
+    private void setCheckMaxDepth(int maxDepth) throws Exception {
         String res = exec.execute("maxDepth " + maxDepth);
         assertFalse(res.contains("ERROR"));
         int newMaxDepth = PreferencesManager.getPreferences().getAsInt(Constants.SAM_SAMPLING_COUNT);
