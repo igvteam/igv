@@ -38,7 +38,6 @@ import com.google.common.collect.Lists;
 import com.jidesoft.swing.JideSplitPane;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.event.*;
@@ -163,7 +162,7 @@ public class IGV implements IGVEventObserver {
         return theInstance != null;
     }
 
-    @ForTesting
+    // For unit testing
     static void destroyInstance() {
         IGVMenuBar.destroyInstance();
         theInstance = null;

@@ -36,7 +36,6 @@ import org.broad.igv.feature.aa.CodonTable;
 import org.broad.igv.feature.aa.CodonTableManager;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -723,11 +722,6 @@ public class SearchCommand implements Runnable {
             return end;
         }
 
-        //May be null
-        @ForTesting
-        public NamedFeature getFeature() {
-            return feature;
-        }
     }
 
     /**

@@ -30,7 +30,6 @@
 package org.broad.igv.tools.motiffinder;
 
 import htsjdk.samtools.util.SequenceUtil;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ParsingUtils;
@@ -451,7 +450,7 @@ public class MotifFinderDialog extends org.broad.igv.ui.IGVDialog {
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    @ForTesting
+    // For testing
     void setPatternFieldText(String text) {
         this.patternField.setText(text);
     }
