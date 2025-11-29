@@ -255,6 +255,7 @@ public class CommandExecutor {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
             log.debug("Running garbage collection");
             System.gc();
+
         }
         log.debug("Finished execution: " + commandLine + "  sleeping ....");
         if (sleepInterval > 0) try {
@@ -1257,7 +1258,7 @@ public class CommandExecutor {
 
     }
 
-    //      STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY
+    //      STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, PAIR_ORIENTATION, MATE_CHROMOSOME, NONE, SUPPLEMENTARY, SELECTED
 
     private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {
         if (str == null || str.length() == 0) {
@@ -1274,6 +1275,8 @@ public class CommandExecutor {
             return AlignmentTrack.GroupOption.BASE_AT_POS;
         } else if (str.equalsIgnoreCase("insertion")) {
             return AlignmentTrack.GroupOption.INSERTION_AT_POS;
+        } else if (str.equalsIgnoreCase("selected")) {
+            return AlignmentTrack.GroupOption.SELECTED;
         } else {
             try {
                 return AlignmentTrack.GroupOption.valueOf(str.toUpperCase());
