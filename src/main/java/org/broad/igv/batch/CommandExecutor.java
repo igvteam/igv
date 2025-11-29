@@ -245,7 +245,7 @@ public class CommandExecutor {
         } else if (cmd.equalsIgnoreCase("toolsYaml")) {
             result = getToolsYaml();
         } else {
-            result = "UNKOWN COMMAND: " + commandLine;
+            result = "UNKNOWN COMMAND: " + commandLine;
             log.warn(result);
             return result;
         }
