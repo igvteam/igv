@@ -168,10 +168,10 @@ public class CommandExecutor {
         } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
             boolean showTranslation;
             try {
-                if (param1.equalsIgnoreCase("true") || param1.equalsIgnoreCase("false")) {
+                if (param1 != null && (param1.equalsIgnoreCase("true") || param1.equalsIgnoreCase("false"))) {
                     showTranslation = Boolean.valueOf(param1);
                 } else {
-                    return "ERROR: showTranslation value (" + param1 + ")is not 'true' or 'false'.";
+                    return "ERROR: showTranslation value (" + param1 + ") is not 'true' or 'false'.";
                 }
             } catch (IllegalArgumentException e) {
                 return e.getMessage();
