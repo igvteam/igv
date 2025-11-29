@@ -49,6 +49,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.HGVS;
 
 import java.io.IOException;
 import java.util.List;
@@ -122,6 +123,14 @@ public class SearchCommand implements Runnable {
         List<SearchResult> results = new ArrayList<>();
 
         searchString = searchString.replace("\"", "");
+
+        if(HGVS.isValidHGVS(searchString)) {
+            SearchResult hgvsResult = HGVS.search(searchString, genome);
+            if (hgvsResult != null) {
+                results.add(hgvsResult);
+                return results;
+            }
+        }
 
         // If the search string is space delimited see if it looks like a space delimited locus string (e.g. chr 100 200)
         String[] tokens = searchString.split("\\s+");
