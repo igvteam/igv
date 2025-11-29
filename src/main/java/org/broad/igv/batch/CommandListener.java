@@ -268,7 +268,7 @@ public class CommandListener implements Runnable {
                         String finalInputLine = inputLine;
                         PrintWriter finalOut = out;
                         UIUtilities.invokeAndWaitOnEventThread(() -> {
-                             String response;
+                            String response;
                             try {
                                 response = cmdExe.execute(finalInputLine);
                             } catch (Exception e) {
