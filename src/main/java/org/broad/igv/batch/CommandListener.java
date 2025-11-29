@@ -262,7 +262,7 @@ public class CommandListener implements Runnable {
 
                 } else {
                     // Port command -- executed on the event thread to force synchronization with the UI.
-                    // We do not want a responsive UI to be executing commands simultaneously with the port listener.
+                    // We do not want commands to execute concurrently with UI operations.
                     try {
                         Globals.setBatch(true);
                         String finalInputLine = inputLine;
