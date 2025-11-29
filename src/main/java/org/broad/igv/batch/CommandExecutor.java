@@ -58,7 +58,9 @@ import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.*;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -94,178 +96,174 @@ public class CommandExecutor {
     }
 
 
-    public String execute(String commandLine) {
+    public String execute(String commandLine) throws IOException {
 
         List<String> args = getArgs(StringUtils.breakQuotedString(commandLine, ' ').toArray(new String[]{}));
 
         String result = "OK";
 
         log.debug("Executing: " + commandLine);
-        try {
-            if (args.size() == 0) {
-                return result;
-            }
 
-            String cmd = args.get(0).toLowerCase();
-            String param1 = args.size() > 1 ? args.get(1) : null;
-            String param2 = args.size() > 2 ? args.get(2) : null;
-            String param3 = args.size() > 3 ? args.get(3) : null;
-            String param4 = args.size() > 4 ? args.get(4) : null;
-
-            if (cmd.equalsIgnoreCase("echo")) {
-                result = param1 != null ? param1 : cmd;
-            } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
-                result = goto1(args);
-            } else if (cmd.equalsIgnoreCase("addframes")) {
-                result = addFrames(args);
-            } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
-                boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
-                result = res ? "OK" : String.format("Error: Track %s not found", param1);
-            } else if (cmd.equalsIgnoreCase("scrolltotop")) {
-                this.igv.scrollToTop();
-                result = "OK";
-            } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
-                result = setSnapshotDirectory(param1);
-            } else if (cmd.equalsIgnoreCase("snapshot")) {
-                result = createSnapshot(param1, param2);
-            } else if (cmd.equalsIgnoreCase("savesession")) {
-                String filename = param1;
-                result = saveSession(filename);
-            } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
-                result = load(param1, args.size() > 2 ? args.subList(2, args.size()) : null);
-            } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
-                result = genome(param1);
-            } else if (cmd.equalsIgnoreCase("currentGenomePath")) {
-                result = "";
-                if (GenomeManager.getInstance().getCurrentGenome() == null) {
-                    return result;
-                }
-                String id = GenomeManager.getInstance().getCurrentGenome().getId();
-                if (id != null) {
-                    GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(id);
-                    if (item != null) {
-                        result = item.getPath();
-                    }
-                }
-                return result;
-            } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
-                igv.newSession();
-            } else if (cmd.equalsIgnoreCase("region")) {
-                defineRegion(param1, param2, param3, param4);
-            } else if (cmd.equalsIgnoreCase("sort")) {
-                result = sort(param1, param2, param3, param4);
-            } else if (cmd.equalsIgnoreCase("group")) {
-                result = group(param1, param2);
-            } else if (cmd.equalsIgnoreCase("colorBy")) {
-                result = colorBy(param1, param2);
-            } else if (cmd.equalsIgnoreCase("collapse")) {
-                String trackName = parseTrackName(param1);
-                setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
-            } else if (cmd.equalsIgnoreCase("setSequenceStrand")) {
-                setSequenceTrackStrand(Strand.fromString(param1));
-            } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
-                boolean showTranslation;
-                try {
-                    if (param1.equalsIgnoreCase("true") || param1.equalsIgnoreCase("false")) {
-                        showTranslation = Boolean.valueOf(param1);
-                    } else {
-                        return "ERROR: showTranslation value (" + param1 + ")is not 'true' or 'false'.";
-                    }
-                } catch (IllegalArgumentException e) {
-                    return e.getMessage();
-                }
-                setSequenceShowTranslation(showTranslation);
-            } else if (cmd.equalsIgnoreCase("expand")) {
-                String trackName = parseTrackName(param1);
-                setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
-            } else if (cmd.equalsIgnoreCase("squish")) {
-                String trackName = parseTrackName(param1);
-                setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
-            } else if (cmd.equalsIgnoreCase("remove")) {
-                String trackName = parseTrackName(param1);
-                result = removeTrack(trackName);
-            } else if (cmd.equalsIgnoreCase("tweakdivider")) {
-                igv.tweakPanelDivider();
-            } else if (cmd.equalsIgnoreCase("setDataRange")) {
-                result = this.setDataRange(param1, param2);
-            } else if (cmd.equalsIgnoreCase("setLogScale")) {
-                result = this.setLogScale(param1, param2);
-            } else if (cmd.equalsIgnoreCase("setColor")) {
-                result = this.setColor(param1, param2, false);
-            } else if (cmd.equalsIgnoreCase("setAltColor")) {
-                result = this.setColor(param1, param2, true);
-            } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
-                return setMaxPanelHeight(param1);
-            } else if (cmd.equalsIgnoreCase("tofront")) {
-                return UIUtilities.bringToFront();
-            } else if (cmd.equalsIgnoreCase("viewaspairs")) {
-                return setViewAsPairs(param1, param2);
-            } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
-                return this.setSamplingWindowSize(param1);
-            } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
-                return this.setSamplingReadCount(param1);
-            } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
-                return this.setSleepInterval(param1);
-            } else if (cmd.equalsIgnoreCase("setCredentials")) {
-                return this.setCredentials(param1, param2);
-            } else if (cmd.equalsIgnoreCase("clearCredentials")) {
-                return this.clearCredentials();
-            } else if (cmd.equals("preference")) {
-                return this.overridePreference(param1, param2);
-            } else if (cmd.equalsIgnoreCase("version")) {
-                return Globals.VERSION;
-            } else if (cmd.equals("exit")) {
-                System.exit(0);
-            } else if (cmd.equals("zoomin")) {
-                FrameManager.incrementZoom(1);
-            } else if (cmd.equals("zoomout")) {
-                FrameManager.incrementZoom(-1);
-            } else if ("oauth".equals(cmd) || cmd.equalsIgnoreCase("setaccesstoken")) {
-                HttpUtils.getInstance().setAccessToken(param1, param2);
-            } else if (cmd.equals("clearaccesstokens")) {
-                HttpUtils.getInstance().clearAccessTokens();
-            } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
-                result = sortByAttribute(args);
-            } else if (cmd.equalsIgnoreCase("fitTracks")) {
-                igv.fitTracksToPanel();
-            } else if (cmd.equalsIgnoreCase("showAttributes")) {
-                result = this.showAttributes(args);
-            } else if (cmd.equalsIgnoreCase("showDataRange")) {
-                result = this.setShowDataRange(param1, param2);
-            } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
-                result = this.setTrackHeight(param1, param2);
-            } else if (cmd.equalsIgnoreCase("overlay")) {
-                result = this.overlay(args);
-            } else if (cmd.equalsIgnoreCase("separate")) {
-                result = this.separate(param1);
-            } else if (cmd.equalsIgnoreCase("renameTrack")) {
-                result = this.renameTrack(param1, param2);
-            } else if (cmd.equalsIgnoreCase("toolsYaml")) {
-                result = getToolsYaml();
-            } else {
-                result = "UNKOWN COMMAND: " + commandLine;
-                log.warn(result);
-                return result;
-            }
-
-            igv.repaint();
-
-            if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
-                log.debug("Running garbage collection");
-                System.gc();
-            }
-            log.debug("Finished execution: " + commandLine + "  sleeping ....");
-            if (sleepInterval > 0) try {
-                Thread.sleep(sleepInterval);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            log.debug("Finished sleeping");
-
-        } catch (Exception e) {
-            log.error(e);
-            result = "Error: " + e.getMessage();
+        if (args.size() == 0) {
+            return result;
         }
+
+        String cmd = args.get(0).toLowerCase();
+        String param1 = args.size() > 1 ? args.get(1) : null;
+        String param2 = args.size() > 2 ? args.get(2) : null;
+        String param3 = args.size() > 3 ? args.get(3) : null;
+        String param4 = args.size() > 4 ? args.get(4) : null;
+
+        if (cmd.equalsIgnoreCase("echo")) {
+            result = param1 != null ? param1 : cmd;
+        } else if (cmd.equalsIgnoreCase("gotoimmediate") || cmd.equalsIgnoreCase("goto")) {
+            result = goto1(args);
+        } else if (cmd.equalsIgnoreCase("addframes")) {
+            result = addFrames(args);
+        } else if (cmd.equalsIgnoreCase("scrolltotrack") || cmd.equalsIgnoreCase("gototrack")) {
+            boolean res = this.igv.scrollToTrack(StringUtils.stripQuotes(param1));
+            result = res ? "OK" : String.format("Error: Track %s not found", param1);
+        } else if (cmd.equalsIgnoreCase("scrolltotop")) {
+            this.igv.scrollToTop();
+            result = "OK";
+        } else if (cmd.equalsIgnoreCase("snapshotdirectory")) {
+            result = setSnapshotDirectory(param1);
+        } else if (cmd.equalsIgnoreCase("snapshot")) {
+            result = createSnapshot(param1, param2);
+        } else if (cmd.equalsIgnoreCase("savesession")) {
+            String filename = param1;
+            result = saveSession(filename);
+        } else if ((cmd.equalsIgnoreCase("loadfile") || cmd.equalsIgnoreCase("load")) && param1 != null) {
+            result = load(param1, args.size() > 2 ? args.subList(2, args.size()) : null);
+        } else if (cmd.equalsIgnoreCase("genome") && args.size() > 1) {
+            result = genome(param1);
+        } else if (cmd.equalsIgnoreCase("currentGenomePath")) {
+            result = "";
+            if (GenomeManager.getInstance().getCurrentGenome() == null) {
+                return result;
+            }
+            String id = GenomeManager.getInstance().getCurrentGenome().getId();
+            if (id != null) {
+                GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(id);
+                if (item != null) {
+                    result = item.getPath();
+                }
+            }
+            return result;
+        } else if (cmd.equalsIgnoreCase("new") || cmd.equalsIgnoreCase("reset") || cmd.equalsIgnoreCase("clear")) {
+            igv.newSession();
+        } else if (cmd.equalsIgnoreCase("region")) {
+            defineRegion(param1, param2, param3, param4);
+        } else if (cmd.equalsIgnoreCase("sort")) {
+            result = sort(param1, param2, param3, param4);
+        } else if (cmd.equalsIgnoreCase("group")) {
+            result = group(param1, param2);
+        } else if (cmd.equalsIgnoreCase("colorBy")) {
+            result = colorBy(param1, param2);
+        } else if (cmd.equalsIgnoreCase("collapse")) {
+            String trackName = parseTrackName(param1);
+            setTrackDisplayMode(Track.DisplayMode.COLLAPSED, trackName);
+        } else if (cmd.equalsIgnoreCase("setSequenceStrand")) {
+            setSequenceTrackStrand(Strand.fromString(param1));
+        } else if (cmd.equalsIgnoreCase("setSequenceShowTranslation")) {
+            boolean showTranslation;
+            try {
+                if (param1.equalsIgnoreCase("true") || param1.equalsIgnoreCase("false")) {
+                    showTranslation = Boolean.valueOf(param1);
+                } else {
+                    return "ERROR: showTranslation value (" + param1 + ")is not 'true' or 'false'.";
+                }
+            } catch (IllegalArgumentException e) {
+                return e.getMessage();
+            }
+            setSequenceShowTranslation(showTranslation);
+        } else if (cmd.equalsIgnoreCase("expand")) {
+            String trackName = parseTrackName(param1);
+            setTrackDisplayMode(Track.DisplayMode.EXPANDED, trackName);
+        } else if (cmd.equalsIgnoreCase("squish")) {
+            String trackName = parseTrackName(param1);
+            setTrackDisplayMode(Track.DisplayMode.SQUISHED, trackName);
+        } else if (cmd.equalsIgnoreCase("remove")) {
+            String trackName = parseTrackName(param1);
+            result = removeTrack(trackName);
+        } else if (cmd.equalsIgnoreCase("tweakdivider")) {
+            igv.tweakPanelDivider();
+        } else if (cmd.equalsIgnoreCase("setDataRange")) {
+            result = this.setDataRange(param1, param2);
+        } else if (cmd.equalsIgnoreCase("setLogScale")) {
+            result = this.setLogScale(param1, param2);
+        } else if (cmd.equalsIgnoreCase("setColor")) {
+            result = this.setColor(param1, param2, false);
+        } else if (cmd.equalsIgnoreCase("setAltColor")) {
+            result = this.setColor(param1, param2, true);
+        } else if (cmd.equalsIgnoreCase("maxpanelheight") && param1 != null) {
+            return setMaxPanelHeight(param1);
+        } else if (cmd.equalsIgnoreCase("tofront")) {
+            return UIUtilities.bringToFront();
+        } else if (cmd.equalsIgnoreCase("viewaspairs")) {
+            return setViewAsPairs(param1, param2);
+        } else if (cmd.equalsIgnoreCase("samplingwindowsize")) {
+            return this.setSamplingWindowSize(param1);
+        } else if (cmd.equalsIgnoreCase("maxdepth") || (cmd.equalsIgnoreCase("samplingreadcount"))) {
+            return this.setSamplingReadCount(param1);
+        } else if (cmd.equalsIgnoreCase("setSleepInterval")) {
+            return this.setSleepInterval(param1);
+        } else if (cmd.equalsIgnoreCase("setCredentials")) {
+            return this.setCredentials(param1, param2);
+        } else if (cmd.equalsIgnoreCase("clearCredentials")) {
+            return this.clearCredentials();
+        } else if (cmd.equals("preference")) {
+            return this.overridePreference(param1, param2);
+        } else if (cmd.equalsIgnoreCase("version")) {
+            return Globals.VERSION;
+        } else if (cmd.equals("exit")) {
+            System.exit(0);
+        } else if (cmd.equals("zoomin")) {
+            FrameManager.incrementZoom(1);
+        } else if (cmd.equals("zoomout")) {
+            FrameManager.incrementZoom(-1);
+        } else if ("oauth".equals(cmd) || cmd.equalsIgnoreCase("setaccesstoken")) {
+            HttpUtils.getInstance().setAccessToken(param1, param2);
+        } else if (cmd.equals("clearaccesstokens")) {
+            HttpUtils.getInstance().clearAccessTokens();
+        } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
+            result = sortByAttribute(args);
+        } else if (cmd.equalsIgnoreCase("fitTracks")) {
+            igv.fitTracksToPanel();
+        } else if (cmd.equalsIgnoreCase("showAttributes")) {
+            result = this.showAttributes(args);
+        } else if (cmd.equalsIgnoreCase("showDataRange")) {
+            result = this.setShowDataRange(param1, param2);
+        } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
+            result = this.setTrackHeight(param1, param2);
+        } else if (cmd.equalsIgnoreCase("overlay")) {
+            result = this.overlay(args);
+        } else if (cmd.equalsIgnoreCase("separate")) {
+            result = this.separate(param1);
+        } else if (cmd.equalsIgnoreCase("renameTrack")) {
+            result = this.renameTrack(param1, param2);
+        } else if (cmd.equalsIgnoreCase("toolsYaml")) {
+            result = getToolsYaml();
+        } else {
+            result = "UNKOWN COMMAND: " + commandLine;
+            log.warn(result);
+            return result;
+        }
+
+        igv.repaint();
+
+        if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
+            log.debug("Running garbage collection");
+            System.gc();
+        }
+        log.debug("Finished execution: " + commandLine + "  sleeping ....");
+        if (sleepInterval > 0) try {
+            Thread.sleep(sleepInterval);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log.debug("Finished sleeping");
+
 
         log.debug(result);
 
@@ -822,12 +820,6 @@ public class CommandExecutor {
                         rl.setTrackLine(trackLine);
                     }
 
-                    if (!isDataURL && rl.isLocal()) {
-                        File file = new File(rl.getPath());
-                        if (!file.exists()) {
-                            return "Error: " + f + " does not exist.";
-                        }
-                    }
                     fileLocators.add(rl);
                 }
             }
@@ -1293,9 +1285,8 @@ public class CommandExecutor {
     }
 
     private static String getToolsYaml() {
-        try (InputStream is = CommandExecutor.class.getResourceAsStream("/tools.yaml");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-            return reader.lines().collect(Collectors.joining("<br>"));
+        try (InputStream is = CommandExecutor.class.getResourceAsStream("/tools.yaml")) {
+            return new String(is.readAllBytes(), Charset.defaultCharset());
         } catch (Exception e) {
             return null;
         }

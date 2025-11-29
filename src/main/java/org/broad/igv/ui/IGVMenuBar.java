@@ -852,14 +852,18 @@ public class IGVMenuBar extends JMenuBar  {
 
         JMenuItem memTest = new JMenuItem("Memory test");
         memTest.addActionListener(e -> {
-            CommandExecutor exe = new CommandExecutor(this.igv);
-            int count = 1;
-            int start = 0;
-            exe.execute("snapshotDirectory /Users/jrobinso/Downloads/tmp");
-            while (count++ < 10000) {
-                exe.execute("goto chr1:" + start + "-" + (start + 1000));
-                exe.execute("snapshot");
-                start += 1000;
+            try {
+                CommandExecutor exe = new CommandExecutor(this.igv);
+                int count = 1;
+                int start = 0;
+                exe.execute("snapshotDirectory /Users/jrobinso/Downloads/tmp");
+                while (count++ < 10000) {
+                    exe.execute("goto chr1:" + start + "-" + (start + 1000));
+                    exe.execute("snapshot");
+                    start += 1000;
+                }
+            } catch (IOException ex) {
+                log.error("Error executing command", ex);
             }
         });
         menuItems.add(memTest);

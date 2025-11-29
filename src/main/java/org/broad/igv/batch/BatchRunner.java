@@ -40,7 +40,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 
-public class BatchRunner implements NamedRunnable {
+public class BatchRunner  {
 
     private static Logger log = LogManager.getLogger(BatchRunner.class);
 
@@ -72,11 +72,11 @@ public class BatchRunner implements NamedRunnable {
         Globals.setBatch(isBatchMode);
     }
 
-    public void run() {
-        runWithDefaultGenome(null);
+    public void run() throws IOException {
+            runWithDefaultGenome(null);
     }
 
-    public void runWithDefaultGenome(String genomeId) {
+    public void runWithDefaultGenome(String genomeId) throws IOException {
 
         log.info("Executing batch script: " + inputFile);
         String inLine;
@@ -106,11 +106,7 @@ public class BatchRunner implements NamedRunnable {
                     firstCommand = false;
                 }
             }
-
-
-        } catch (IOException ioe) {
-            throw new DataLoadException(ioe.getMessage(), inputFile);
-        } finally {
+        }  finally {
             setIsBatchMode(false);
             SnapshotUtilities.resetMaxPanelHeight();
             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
@@ -118,7 +114,7 @@ public class BatchRunner implements NamedRunnable {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("Error closing reader", e);
                 }
             }
         }

@@ -30,6 +30,7 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
+import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,7 +58,11 @@ public class RunScriptMenuAction extends MenuAction {
             if (script != null && script.length > 0) {
                 for(File f : script) {
                     final BatchRunner bRun = new BatchRunner(f.getPath(), igv);
-                    bRun.run();
+                    try {
+                        bRun.run();
+                    } catch (Exception ex) {
+                        MessageUtils.showMessage(Level.ERROR, "Error running batch script: " + ex.getMessage());
+                    }
                 }
             }
         }
