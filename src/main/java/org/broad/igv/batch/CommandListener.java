@@ -50,18 +50,21 @@ import java.util.*;
 
 public class CommandListener implements Runnable {
 
-    public static final String OK = "OK";
+    private static Logger log = LogManager.getLogger(CommandListener.class);
 
-    // when the listener is successfully started, set this to true.
-    // set this back to false when the listener closes dwm08
-    private static boolean isListening = false;
+    public static final String OK = "OK";
 
     public static int currentListenerPort = -1;
 
-    private static Logger log = LogManager.getLogger(CommandListener.class);
-
     private static CommandListener listener;
     private static final String CRLF = "\r\n";
+    private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
+    private static final String HTTP_NO_RESPONSE = "HTTP/1.1 204 No Response";
+    private static final String CONNECTION_CLOSE = "Connection: close";
+    private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
+    private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
+    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers: access-control-allow-origin";
+
 
     private int port = -1;
     private ServerSocket serverSocket = null;
@@ -244,12 +247,13 @@ public class CommandListener implements Runnable {
                                 } else {
                                     // Process the request.
                                     result = processGet(command, params, cmdExe); // Send no response if result is "OK".
-                                    if ("OK".equals(result)) result = null;
+                                    if ("OK".equals(result)) {
+                                        // If no error send a no-response
+                                        result = null;
+                                    }
                                     sendTextResponse(out, result);
                                 }
                             }
-
-
                         }
                     }
                     // http sockets are used for one request only => return will close the socket
@@ -257,13 +261,20 @@ public class CommandListener implements Runnable {
 
 
                 } else {
-                    // Port command
+                    // Port command -- executed on the event thread to force synchronization with the UI.
+                    // We do not want commands to execute concurrently with UI operations.
                     try {
                         Globals.setBatch(true);
                         String finalInputLine = inputLine;
                         PrintWriter finalOut = out;
                         UIUtilities.invokeAndWaitOnEventThread(() -> {
-                            final String response = cmdExe.execute(finalInputLine);
+                            String response;
+                            try {
+                                response = cmdExe.execute(finalInputLine);
+                            } catch (Exception e) {
+                                log.error(e);
+                                response = "Error: " + e.getMessage();
+                            }
                             finalOut.println(response);
                             finalOut.flush();
                         });
@@ -302,14 +313,6 @@ public class CommandListener implements Runnable {
             }
         }
     }
-
-
-    private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
-    private static final String HTTP_NO_RESPONSE = "HTTP/1.1 204 No Response";
-    private static final String CONNECTION_CLOSE = "Connection: close";
-    private static final String NO_CACHE = "Cache-Control: no-cache, no-store";
-    private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin: *";
-    private static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers: access-control-allow-origin";
 
     private void sendTextResponse(PrintWriter out, String result) {
         sendHTTPResponse(out, result, "text/html", "GET");

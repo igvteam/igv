@@ -1,0 +1,2 @@
+# This path does not point to a valid file
+load foo/bar.bw

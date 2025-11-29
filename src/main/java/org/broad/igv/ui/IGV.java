@@ -49,6 +49,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.logging.Level;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
@@ -407,7 +408,7 @@ public class IGV implements IGVEventObserver {
 
                     }
                     if (!messages.isEmpty()) {
-                        if(Globals.isBatch()) {
+                        if (Globals.isBatch()) {
                             throw new DataLoadException(String.join("\n", messages.getMessages()));
                         } else {
                             MessageUtils.showErrorMessage(String.join("<br>", messages.getMessages()), null);
@@ -1911,16 +1912,19 @@ public class IGV implements IGVEventObserver {
             if (runningBatch) {
 
                 BatchRunner.setIsBatchMode(true);
-                try {
-                    UIUtilities.invokeAndWaitOnEventThread(() -> {
+
+                UIUtilities.invokeAndWaitOnEventThread(() -> {
+                    try {
                         String genomeId = preferences.getDefaultGenome();
                         BatchRunner batchRunner = (new BatchRunner(igvArgs.getBatchFile(), IGV.this));
                         batchRunner.runWithDefaultGenome(genomeId);
-                    });
-                } finally {
-                    BatchRunner.setIsBatchMode(false);
-                }
-
+                    } catch (IOException e) {
+                        BatchRunner.setIsBatchMode(false);
+                        MessageUtils.showMessage(Level.ERROR, "Error running batch script: " + e.getMessage());
+                    } finally {
+                        BatchRunner.setIsBatchMode(false);
+                    }
+                });
             } else {
                 // Check whether autosave is set to load and exists
                 boolean autosavePresent = false;
