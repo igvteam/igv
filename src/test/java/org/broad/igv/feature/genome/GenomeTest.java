@@ -115,7 +115,7 @@ public class GenomeTest extends AbstractHeadlessTest {
 
     @Test
     public void testManeTranscript() throws Exception {
-        String genomePath = TestUtils.DATA_DIR +"genomes/hg38.json";
+        String genomePath = TestUtils.DATA_DIR + "genomes/hg38.json";
         Genome genome = GenomeManager.getInstance().loadGenome(genomePath);
         String maneTranscriptId = "ENST00000269305.9";
         IGVFeature retrievedTranscript = genome.getManeTranscriptAt("chr17", 7676401);
