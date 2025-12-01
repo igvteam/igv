@@ -146,6 +146,8 @@ public class GenomeConfig implements Cloneable {
         if (organism != null) jsonObj.put("organism", organism);
         if (scientificName != null) jsonObj.put("scientificName", scientificName);
         if (chromosomeOrder != null) jsonObj.put("chromosomeOrder", chromosomeOrder);
+        if (maneBbURL != null) jsonObj.put("maneBbURL", maneBbURL);
+        if (maneTrixURL != null) jsonObj.put("maneTrixURL", maneTrixURL);
         jsonObj.put("wholeGenomeView", wholeGenomeView);
 
         if (hubs != null && !hubs.isEmpty()) jsonObj.put("hubs", hubs);
