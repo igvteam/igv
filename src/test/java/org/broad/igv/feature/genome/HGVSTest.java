@@ -110,14 +110,6 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertEquals("chr1", result.getChr());
         assertEquals(40257002, result.getStart() + 1);
 
-        // chr1	11981954	11981955	NM_014874.3(MFN2):c.-149-15T>G	0	+
-//        hgvs = "NM_014874.3:c.-149-15T>G";
-//        assertTrue(HGVS.isValidHGVS(hgvs));
-//        result = HGVS.search(hgvs, genome);
-//        assertEquals("chr1", result.getChr());
-//        assertEquals(11981954, result.getStart() + 1);
-
-
 //        chr1	40073531	40073535	NM_000310.3(PPT1):c.*526_*529delATCA	0	-
         hgvs = "ENST00000642050.2:c.*526_*529delATCA";
         assertTrue(HGVS.isValidHGVS(hgvs));
