@@ -27,15 +27,10 @@ package org.broad.igv.ui;
 
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
-import org.broad.igv.annotations.ForTesting;
 import org.broad.igv.aws.S3LoadDialog;
 import org.broad.igv.batch.CommandExecutor;
 import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.encode.EncodeTrackChooserFactory;
-import org.broad.igv.event.GenomeChangeEvent;
-import org.broad.igv.event.IGVEvent;
-import org.broad.igv.event.IGVEventBus;
-import org.broad.igv.event.IGVEventObserver;
 import org.broad.igv.feature.genome.ChromSizesUtils;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -1148,7 +1143,7 @@ public class IGVMenuBar extends JMenuBar  {
         }
     }
 
-    @ForTesting
+    // For unit testing
     static void destroyInstance() {
         instance = null;
     }

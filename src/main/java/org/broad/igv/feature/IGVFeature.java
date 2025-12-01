@@ -100,5 +100,5 @@ public interface IGVFeature extends LocusScore, IGVNamedFeature {
 
    default Map<String, String> getAttributes() {
         return Collections.emptyMap();
-   }
+    }
 }

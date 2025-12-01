@@ -26,7 +26,9 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.AbstractHeadlessTest;
+import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.load.GenomeConfig;
 import org.broad.igv.util.TestUtils;
@@ -109,6 +111,18 @@ public class GenomeTest extends AbstractHeadlessTest {
         Genome genome = new Genome(genomeConfig);
         assertNotNull(genome.getLongChromosomeNames());
         assertTrue("No 'Long' chromosome names found", genome.getLongChromosomeNames().size() > 0);
+    }
+
+    @Test
+    public void testManeTranscript() throws Exception {
+        String genomePath = TestUtils.DATA_DIR + "genomes/hg38.json";
+        Genome genome = GenomeManager.getInstance().loadGenome(genomePath);
+        String maneTranscriptId = "ENST00000269305.9";
+        IGVFeature retrievedTranscript = genome.getManeTranscriptAt("chr17", 7676401);
+        assertEquals(maneTranscriptId, retrievedTranscript.getName());
+
+        int cdPosition = ((BasicFeature) retrievedTranscript).genomeToCodingPosition(7676401 - 1) + 1;
+        assertEquals(77, cdPosition);
     }
 
     /**
