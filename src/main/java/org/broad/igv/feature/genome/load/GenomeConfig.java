@@ -47,6 +47,8 @@ public class GenomeConfig implements Cloneable {
     public String taxId;
     public String organism;
     public String scientificName;
+    public String maneBbURL;
+    public String maneTrixURL;
     public String[] chromosomeOrder;
 
     public boolean wholeGenomeView = true;
@@ -91,6 +93,8 @@ public class GenomeConfig implements Cloneable {
         config.taxId = jsonObj.optString("taxId", null);
         config.organism = jsonObj.optString("organism", null);
         config.scientificName = jsonObj.optString("scientificName", null);
+        config.maneBbURL = jsonObj.optString("maneBbURL", null);
+        config.maneTrixURL = jsonObj.optString("maneTrixURL", null);
         config.chromosomeOrder = jsonObj.has("chromosomeOrder") ?
                 jsonObj.getJSONArray("chromosomeOrder").toList().toArray(new String[0]) : null;
 

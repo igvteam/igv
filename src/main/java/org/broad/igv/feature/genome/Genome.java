@@ -43,6 +43,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -53,6 +54,8 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
+import org.broad.igv.ucsc.bb.BBFeatureSource;
+import org.broad.igv.ucsc.bb.BBFile;
 import org.broad.igv.ucsc.hub.Hub;
 import org.broad.igv.ucsc.hub.HubParser;
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
@@ -112,6 +115,7 @@ public class Genome {
     private Hub genomeHub;
     private GenomeConfig config;
     private FeatureDB featureDB;
+    private BBFeatureSource maneFeatureSource;
 
     public Genome(GenomeConfig config) throws IOException {
         this.config = config;
@@ -153,7 +157,7 @@ public class Genome {
         // for .2bit sequences a 'chromSizes" file is required.  If not supplied the chr pulldown and wg view are disabled.
         List<Chromosome> chromosomeList = null;
         if (config.chromSizesURL != null) {
-            if(fileSizeIsOk(config.chromSizesURL, 10_000_000)) {
+            if (fileSizeIsOk(config.chromSizesURL, 10_000_000)) {
                 long t0 = System.currentTimeMillis();
                 chromosomeList = ChromSizesParser.parse(config.chromSizesURL);
                 long dt = System.currentTimeMillis() - t0;
@@ -217,12 +221,12 @@ public class Genome {
             cytobandSource = new CytobandMap(config.getCytobands());    // Directly supplied, from .genome file
         } else if (config.cytobandBbURL != null) {
             // The cytoband BB file can be enormous if there are many chromosomes, and is usually not informative in that case
-            if(fileSizeIsOk(config.cytobandBbURL, 1_000_000)) {
+            if (fileSizeIsOk(config.cytobandBbURL, 1_000_000)) {
                 cytobandSource = new CytobandSourceBB(config.cytobandBbURL, this);
             }
         }
         if (cytobandSource == null && config.cytobandURL != null) {
-            if(fileSizeIsOk(config.cytobandURL, 100_000)){
+            if (fileSizeIsOk(config.cytobandURL, 100_000)) {
                 cytobandSource = new CytobandMap(config.cytobandURL);
             }
         }
@@ -231,17 +235,17 @@ public class Genome {
         if (config.aliasURL != null) {
             chromAliasSource = (new ChromAliasFile(config.aliasURL, chromosomeNames));
         } else if (config.chromAliasBbURL != null) {
-            if(fileSizeIsOk(config.chromAliasBbURL, 1_000_000)) {
+            if (fileSizeIsOk(config.chromAliasBbURL, 1_000_000)) {
                 chromAliasSource = (new ChromAliasBB(config.chromAliasBbURL, this));
                 if (chromosomeNames != null && !chromosomeNames.isEmpty()) {
-                        ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
+                    ((ChromAliasBB) chromAliasSource).preload(chromosomeNames);
                 }
             }
         }
 
         if (chromAliasSource == null) {
             nameSet = null;
-            if(chromosomeNames != null) {
+            if (chromosomeNames != null) {
                 chromAliasSource = (new ChromAliasDefaults(id, chromosomeNames));
             }
         }
@@ -844,13 +848,70 @@ public class Genome {
         return featureDB;
     }
 
+    /**
+     * Return the Mane transcript overlapping the given position, or null if none found.
+     *
+     * @param chr
+     * @param position
+     * @return
+     */
+    public IGVFeature getManeTranscriptAt(String chr, int position) {
+        if (maneFeatureSource == null && config.maneBbURL != null) {
+            loadManeFeatureSource();
+        }
+        if (maneFeatureSource != null) {
+            try {
+                Iterator<IGVFeature> features = maneFeatureSource.getFeatures(chr, position, position + 1);
+                while (features.hasNext()) {
+                    IGVFeature feature = features.next();
+                    if (feature.getStart() <= position && feature.getEnd() >= position) {
+                        return feature;
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error fetching MANE transcript", e);
+            }
+        }
+        return null;
+    }
+
+    public IGVFeature getManeFeature(String name) {
+        if (maneFeatureSource == null && config.maneBbURL != null) {
+            loadManeFeatureSource();
+        }
+        if (maneFeatureSource != null) {
+            List<IGVFeature> features = maneFeatureSource.search(name);
+            if (features != null && !features.isEmpty()) {
+                return features.get(0);
+            }
+        }
+        return null;
+    }
+
+
+    private void loadManeFeatureSource() {
+        if (config.maneBbURL != null) {
+            try {
+                BBFile bbfile;
+                if (config.maneTrixURL != null) {
+                    bbfile = new BBFile(config.maneBbURL, this, config.maneTrixURL);
+                } else {
+                    bbfile = new BBFile(config.maneBbURL, this);
+                }
+                maneFeatureSource = new BBFeatureSource(bbfile, this);
+            } catch (IOException e) {
+                log.error("Error loading MANE feature source", e);
+            }
+        }
+    }
+
     /* check that a file is not empty or too large.
      *
      * @param path local file path or remote file URL
      * @param maxSize max size in bytes
      */
     private static boolean fileSizeIsOk(String path, long maxSize) throws IOException {
-        if(FileUtils.isRemote(path)){
+        if (FileUtils.isRemote(path)) {
             final long contentLength = HttpUtils.getInstance().getContentLength(new URL(path));
             return contentLength > 0 && contentLength <= maxSize;
         } else {
@@ -858,6 +919,6 @@ public class Genome {
             return true;
         }
     }
-    
-    
+
+
 }

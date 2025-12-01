@@ -32,6 +32,8 @@ import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 
 import java.util.*;
 
@@ -146,6 +148,24 @@ public class FeatureDB {
     public List<NamedFeature> getFeaturesMatching(String name) {
         String nm = name.trim().toUpperCase();
         List<NamedFeature> features = featureMap.get(nm);
+
+        if (features == null || features.isEmpty()) {
+            features = new ArrayList<>();
+            List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
+            for (Track t : searchableTracks) {
+                List<NamedFeature> matches = t.search(name);
+                if (matches != null && matches.size() > 0) {
+                    // Add all matches to the return list
+                    features.addAll(matches);
+                    // Also cache all matches under the provided name for faster subsequent lookups
+                    for (NamedFeature match : matches) {
+                        put(nm, match);
+                    }
+                    break;  // Searching tracks can be expensive, so stop after first match
+                }
+            }
+        }
+
         return features != null ? features : Collections.emptyList();
     }
 

@@ -49,7 +49,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.HGVS;
+import org.broad.igv.feature.genome.HGVS;
 
 import java.io.IOException;
 import java.util.List;
@@ -306,22 +306,6 @@ public class SearchCommand implements Runnable {
 
         // Check featureDB first -- this is cheap
         matchingFeatures = genome.getFeatureDB().getFeaturesMatching(token);
-
-        // If no matches, check searchable tracks.  Break if we find a match on a main chromosome to avoid searching all tracks.
-        if (matchingFeatures == null || matchingFeatures.isEmpty()) {
-            matchingFeatures = new ArrayList<>();
-            List<Track> searchableTracks = IGV.getInstance().getAllTracks().stream().filter(Track::isSearchable).toList();
-            for (Track t : searchableTracks) {
-                List<NamedFeature> matches = t.search(token);
-                if (matches != null && matches.size() > 0) {
-                    matchingFeatures.addAll(matches);
-                    if (mainChromosomes.isEmpty() ||
-                            matches.stream().anyMatch(m -> mainChromosomes.contains(genome.getCanonicalChrName(m.getChr())))) {
-                        break;
-                    }
-                }
-            }
-        }
 
         if (matchingFeatures.isEmpty()) {
             // Try the webservice
