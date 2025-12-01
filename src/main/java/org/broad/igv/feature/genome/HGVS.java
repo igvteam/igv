@@ -4,6 +4,8 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.ui.action.SearchCommand;
 
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HGVS {
+
+    private static Logger log = LogManager.getLogger(HGVS.class);
 
     public static boolean isValidHGVS(String notation) {
         if (notation == null) return false;
@@ -259,15 +263,20 @@ public class HGVS {
     /**
      * Returns genomic HGVS notation: <RefSeqAccession>:g.<position>
      * Example: NC_000001.11:g.1234567
+     * 
+     * WORK IN PROGRESS
      */
     public static String getHGVSPosition(Genome genome, String chr, int position) {
+
         try {
             ChromAlias aliasRecord = genome.getAliasRecord(chr);
             String accession = null;
 
             if (aliasRecord != null) {
                 for (String alias : aliasRecord.values()) {
-                    if (alias.startsWith("NC_")) {
+                    if (alias.startsWith("NC_") || alias.startsWith("NT_") || alias.startsWith("NW_") ||
+                            alias.startsWith("NG_") || alias.startsWith("NM_") || alias.startsWith("NR_") ||
+                            alias.startsWith("NP_")) {
                         accession = alias;
                         break;
                     }
@@ -282,7 +291,8 @@ public class HGVS {
             // HGVS genomic coordinate is 1-based; assume input position is already 1-based
             return accession + ":g." + position;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error getting HGVS position", e);
+            return null;
         }
     }
 
