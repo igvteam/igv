@@ -4,7 +4,6 @@ package org.broad.igv.feature.genome;
 import htsjdk.tribble.NamedFeature;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
@@ -246,50 +245,16 @@ public class HGVS {
 
     private static BasicFeature getTranscript(Genome genome, String accession) {
 
-        NamedFeature feature = FeatureDB.getFeature(accession);
+        NamedFeature feature = genome.getManeFeature(accession);
 
-        if (!(feature instanceof BasicFeature)) {
-            return null;
+        if (feature == null) {
+            feature = FeatureDB.getFeature(accession);
         }
-        BasicFeature transcript = (BasicFeature) feature;
-        return transcript;
-    }
 
-    /**
-     * Returns genomic HGVS notation: <RefSeqAccession>:g.<position>
-     * Example: NC_000001.11:g.1234567
-     * 
-     * WORK IN PROGRESS
-     */
-    public static String getHGVSPosition(Genome genome, String chr, int position) {
-
-        try {
-            ChromAlias aliasRecord = genome.getAliasRecord(chr);
-            String accession = null;
-
-            if (aliasRecord != null) {
-                for (String alias : aliasRecord.values()) {
-                    if (alias.startsWith("NC_") || alias.startsWith("NT_") || alias.startsWith("NW_") ||
-                            alias.startsWith("NG_") || alias.startsWith("NM_") || alias.startsWith("NR_") ||
-                            alias.startsWith("NP_")) {
-                        accession = alias;
-                        break;
-                    }
-                }
-            }
-
-            // Fallback to provided chromosome if no RefSeq accession is found
-            if (accession == null || accession.isEmpty()) {
-                accession = chr;
-            }
-
-            // HGVS genomic coordinate is 1-based; assume input position is already 1-based
-            return accession + ":g." + position;
-        } catch (IOException e) {
-            log.error("Error getting HGVS position", e);
-            return null;
+        if (feature != null && feature instanceof BasicFeature) {
+            return (BasicFeature) feature;
         }
+        return null;
     }
-
 
 }

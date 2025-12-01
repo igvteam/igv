@@ -415,6 +415,15 @@ public class ReferenceFrame {
      * @param end
      */
     public void jumpTo(String chr, int start, int end) {
+
+        if (end - start < 40) {
+            int center = (start + end) / 2;
+            int widen = 20;
+            start = center - widen;
+            start = Math.max(0, start);
+            end = center + widen;
+        }
+
         Locus locus = new Locus(chr, start, end);
         this.jumpTo(locus);
     }
@@ -643,7 +652,7 @@ public class ReferenceFrame {
 
         Range range = getCurrentRange();
         final Genome genome = getGenome();
-        if(genome != null) {
+        if (genome != null) {
             String c = genome.getChromosomeDisplayName(range.getChr());
             return Locus.getFormattedLocusString(c, range.getStart(), range.getEnd());
         } else {

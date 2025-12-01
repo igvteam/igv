@@ -7,7 +7,6 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A static json-like object representing a genome configuration. Emulates the javascript equivalent.
@@ -53,6 +52,9 @@ public class GenomeConfig implements Cloneable {
     private String chromSizesURL;
 
     private List<TrackConfig> tracks;
+
+    private String maneBbURL;
+    private String maneTrixURL;
 
     private List<TrackConfig> annotations;  // Backward compatibility, synonym for tracks
 
@@ -327,4 +329,19 @@ public class GenomeConfig implements Cloneable {
         return (new Gson()).toJson(obj);
     }
 
+    public String getManeBbURL() {
+        return maneBbURL;
+    }
+
+    public void setManeBbURL(String maneBbURL) {
+        this.maneBbURL = maneBbURL;
+    }
+
+    public String getManeTrixURL() {
+        return maneTrixURL;
+    }
+
+    public void setManeTrixURL(String maneTrixURL) {
+        this.maneTrixURL = maneTrixURL;
+    }
 }

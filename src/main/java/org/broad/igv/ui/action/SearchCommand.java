@@ -30,6 +30,7 @@ package org.broad.igv.ui.action;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
+import org.broad.igv.feature.genome.HGVS;
 import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.annotations.ForTesting;
@@ -115,19 +116,17 @@ public class SearchCommand implements Runnable {
      */
     public List<SearchResult> runSearch(String searchString) {
 
-        // Check for special "liftover" syntax.  This allows searching based on coordinates from another genome
-        // (the "target" genome) if an associated liftover map is defined for the target genome.
-//        Liftover liftover = null;
-//        if (searchString.startsWith("!") && genome.getLiftoverMap() != null) {
-//            int idx = searchString.indexOf(' ');
-//            String genomeKey = searchString.substring(1, idx);
-//            liftover = genome.getLiftoverMap().get(genomeKey);
-//            if (liftover != null) {
-//                searchString = searchString.substring(idx + 1);
-//            }
-//        }
 
         List<SearchResult> results = new ArrayList<>();
+
+        // HGVS notation search
+        if(HGVS.isValidHGVS(searchString)){
+            SearchResult result = HGVS.search(searchString, genome);
+            if(result != null){
+                results.add(result);
+                return results;
+            }
+        }
 
         searchString = searchString.replace("\"", "");
 
@@ -156,23 +155,6 @@ public class SearchCommand implements Runnable {
                 results.add(result);
             }
         }
-
-
-        // If this is a liftover search map the results
-//        if (liftover != null) {
-//            List<SearchResult> mappedResults = new ArrayList<>();
-//            for (SearchResult result : results) {
-//                if (result.getType() == ResultType.LOCUS) {
-//                    List<Range> mapped = liftover.map(new Range(result.getChr(), result.getStart(), result.getEnd()));
-//                    for (Range m : mapped) {
-//                        mappedResults.add(new SearchResult(result.type, m.chr, m.start, m.end));
-//                    }
-//                } else {
-//                    // ??? Error
-//                }
-//            }
-//            results = mappedResults;
-//        }
 
         return results;
     }
