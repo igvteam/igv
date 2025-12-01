@@ -79,6 +79,44 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertFalse(HGVS.isValidHGVS("NC_000017.11:g.7579472C>"));
     }
 
+    @Test
+    public void testGenomeSearch() throws Exception {
+
+        String hgvs = "NC_000017.11:g.7579472C>G";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        SearchCommand.SearchResult result = HGVS.search(hgvs, genome);
+        assertEquals("chr17", result.getChr());
+        assertEquals(7579471, result.getStart());
+
+        hgvs = "NC_000017.11:g.7579472";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr17", result.getChr());
+        assertEquals(7579471, result.getStart());
+
+        // From UCSC tests
+        // chr1	11850845	11867218	NC_000001.11:g.11850846_11867218dup16373	0	+
+        hgvs = "NC_000001.11:g.11850846_11867218dup16373";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr1", result.getChr());
+        assertEquals(11850845, result.getStart());
+
+        // chr1	16782350	17359598	NC_000001.11:g.16782351_17359598del577248	0	+
+        hgvs = "NC_000001.11:g.16782351_17359598del577248";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr1", result.getChr());
+        assertEquals(16782350, result.getStart());
+
+        // chr1	35570363	35656664	NC_000001.11:g.35570364_35656664dup86301	0	+
+        hgvs = "NC_000001.11:g.35570364_35656664dup86301";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr1", result.getChr());
+        assertEquals(35570363, result.getStart());
+
+    }
 
     @Test
     public void testSearchInIntrons() throws Exception {

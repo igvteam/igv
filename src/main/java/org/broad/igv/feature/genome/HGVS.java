@@ -38,13 +38,14 @@ public class HGVS {
         String codingRange = codingBase + "(?:_" + codingBase + ")?"; // allow optional range X_Y
         String intronOffset = "(?:[+-]\\d+)?";
         String subst = "[A-Za-z]+>[A-Za-z]+";
-        String del = "del(?:[A-Za-z]+)?"; // allow delA, delAT, or just del
-        String ins = "ins[A-Za-z]+"; // require sequence for insertions
-        String dup = "dup";
-        String delins = "delins[A-Za-z]+";
+        String del = "del(?:[A-Za-z0-9]+)?"; // allow delA, delAT, del577248, or just del
+        String ins = "ins[A-Za-z0-9]+"; // allow sequence or size for insertions
+        String dup = "dup(?:[A-Za-z0-9]+)?"; // allow dup, dup with size like dup16373, or dupATG
+        String delins = "delins[A-Za-z0-9]+"; // allow sequence or size
         String fs = "fs\\*?\\d*"; // frameshift notation
         String variant = "(?:" + subst + "|" + delins + "|" + ins + "|" + del + "|" + dup + "|" + fs + ")?";
-        String genomic = "g\\.\\d+" + "(?:" + subst + "|" + delins + "|" + ins + "|" + del + "|" + dup + ")?"; // genomic doesn't use fs
+        String genomicRange = "\\d+(?:_\\d+)?"; // allow single position or range X_Y
+        String genomic = "g\\." + genomicRange + "(?:" + subst + "|" + delins + "|" + ins + "|" + del + "|" + dup + ")?"; // genomic doesn't use fs
         String coding = "c\\." + codingRange + intronOffset + variant;
         // Protein: optional AA prefix (1-3 letters or *), position, optional range, optional AA suffix or variant token
         String aa = "[A-Za-z*]{0,3}";
