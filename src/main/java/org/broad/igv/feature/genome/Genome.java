@@ -851,9 +851,9 @@ public class Genome {
     /**
      * Return the Mane transcript overlapping the given position, or null if none found.
      *
-     * @param chr
-     * @param position
-     * @return
+     * @param chr Chromosome name (e.g., "chr1", "chrX") in which to search for the transcript.
+     * @param position Genomic position (0-based coordinate) to check for overlap with a Mane transcript.
+     * @return The {@link IGVFeature} representing the Mane transcript overlapping the specified position, or {@code null} if none is found.
      */
     public IGVFeature getManeTranscriptAt(String chr, int position) {
         if (maneFeatureSource == null && config.maneBbURL != null) {
