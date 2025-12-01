@@ -43,6 +43,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -54,6 +55,10 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.Hub;
+
+import org.broad.igv.ucsc.bb.BBFeatureSource;
+import org.broad.igv.ucsc.bb.BBFile;
+
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
