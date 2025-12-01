@@ -39,6 +39,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.SequenceTrack;
 import htsjdk.tribble.Feature;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 
 import java.util.*;
 
@@ -208,19 +210,10 @@ public class FeatureDB {
     }
 
     /**
-     * Get all features which match nm. Not necessarily
-     * an exact match. Current implementation will match anything
-     * for which name is at the beginning, including but not limited to
-     * exact matches.
-     * <p/>
-     * NOTE: "It is imperative that the user manually synchronize
-     * on [this sorted map] when iterating over any of its
-     * collection views, or the collections views of any of its
-     * subMap, headMap or tailMap views". See
-     * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Collections.html#synchronizedSortedMap%28java.util.SortedMap%29> here</a>
-     *
-     * @param name : Search string. Features which begin with this
-     *             string will be found.
+     * Get all features which match nm. Not necessarily an exact match. Current implementation will match anything
+     * for which name is at the beginning.
+     * Note: This method is synchronized on featureMap
+     * @param name : Search string. Features which begin with this string will be found.
      * @return
      */
     static Map<String, List<IGVNamedFeature>> getFeaturesMap(String name) {

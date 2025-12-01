@@ -416,4 +416,81 @@ public class BasicFeature extends AbstractFeature {
         return genomePositions;
     }
 
+    public int genomeToCodingPosition(int genomePosition) {
+
+        List<Exon> exons = getExons();
+
+        if (exons != null) {
+
+            if (getStrand() == Strand.NONE) {
+                throw new IllegalStateException("Exon not on a strand");
+            }
+            boolean positive = getStrand() == Strand.POSITIVE;
+
+            /*
+             We loop over all exons, either from the beginning or the end.
+             Increment position only on coding regions.
+             */
+
+            int codingOffset = 0;
+
+            for (int exnum = 0; exnum < exons.size(); exnum++) {
+                Exon exon = positive ? exons.get(exnum) : exons.get(exons.size() - 1 - exnum);
+
+                if (exon.contains(genomePosition)) {
+                    int delta = positive
+                            ? genomePosition - exon.getCdStart()
+                            : exon.getCdEnd() - genomePosition - 1;
+                    return codingOffset + delta;
+                }
+
+                codingOffset += exon.getCodingLength();
+            }
+        }
+        return -1;
+    }
+
+
+    /**
+     * Translate a 1-based coding position to a 0-based genomic position.
+     *
+     * @param codingPosition 1-based coding position
+     * @return 0-based genomic position, or -1 if not found.
+     */
+
+    public int codingToGenomePosition(int codingPosition) {
+
+        if (codingPosition <= 0) {
+            return -1;
+        }
+        int cdna = codingPosition - 1;  // Convert to 0-based
+
+        List<Exon> exons = getExons();
+        if (exons == null) {
+            return -1;
+        }
+
+        if (getStrand() == Strand.NONE) {
+            throw new IllegalStateException("Cannot translate from coding position on an unstranded feature.");
+        }
+        boolean positive = getStrand() == Strand.POSITIVE;
+
+        int codingLength = 0;
+        for (int i = 0; i < exons.size(); i++) {
+            Exon exon = positive ? exons.get(i) : exons.get(exons.size() - 1 - i);
+            int exonCodingLength = exon.getCodingLength();
+            if (codingLength + exonCodingLength > cdna) {
+                int cdnaOffset = cdna - codingLength;
+                if (positive) {
+                    return exon.getCdStart() + cdnaOffset;
+                } else {
+                    return exon.getCdEnd() - 1 - cdnaOffset;
+                }
+            }
+            codingLength += exonCodingLength;
+        }
+
+        return -1;
+    }
+
 }

@@ -40,9 +40,7 @@ import htsjdk.tribble.FeatureReader;
 import htsjdk.tribble.NamedFeature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.Cytoband;
-import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -54,6 +52,10 @@ import org.broad.igv.logging.Logger;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ucsc.Hub;
+
+import org.broad.igv.ucsc.bb.BBFeatureSource;
+import org.broad.igv.ucsc.bb.BBFile;
+
 import org.broad.igv.ucsc.twobit.TwoBitSequence;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.liftover.Liftover;
@@ -97,6 +99,7 @@ public class Genome {
     private String defaultPos;
     private String nameSet;
     private  Hub hub;
+    private BBFeatureSource maneFeatureSource;
 
 
     public Genome(GenomeConfig config) throws IOException {
@@ -112,6 +115,7 @@ public class Genome {
         }
         blatDB = (config.getBlatDB() != null) ? config.getBlatDB() : ucscID;
         defaultPos = config.getDefaultPos();
+        this.config = config;
 
         // Load the sequence object.  Some configurations will specify both 2bit and fasta references.  The 2 bit
         // has preference but the fasta index might still be read for chromosome information.
@@ -802,6 +806,35 @@ public class Genome {
     public void setHub(Hub hub) {
         this.hub = hub;
     }
+
+
+    public NamedFeature getManeFeature(String name) {
+        if (maneFeatureSource == null && config.getManeBbURL() != null) {
+            loadManeFeatureSource();
+        }
+        if (maneFeatureSource != null) {
+            return maneFeatureSource.search(name);
+        }
+        return null;
+    }
+
+
+    private void loadManeFeatureSource() {
+        if (config.getManeBbURL() != null) {
+            try {
+                BBFile bbfile;
+                if (config.getManeTrixURL() != null) {
+                    bbfile = new BBFile(config.getManeBbURL(), this, config.getManeTrixURL());
+                } else {
+                    bbfile = new BBFile(config.getManeBbURL(), this);
+                }
+                maneFeatureSource = new BBFeatureSource(bbfile, this);
+            } catch (IOException e) {
+                log.error("Error loading MANE feature source", e);
+            }
+        }
+    }
+
 
     public synchronized static Genome nullGenome() {
         if(nullGenome == null) {
