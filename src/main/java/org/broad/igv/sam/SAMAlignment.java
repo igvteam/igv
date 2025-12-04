@@ -966,11 +966,13 @@ public class SAMAlignment implements Alignment {
                 if (referenceBase !=  base) {
                     String hgvsNotation = HGVS.createHGVSAnnotation(genome, chr, basePosition, referenceBase, base);
 
-                    String clinVarURL = ClinVar.getClinVarURL(hgvsNotation);
-                    if (clinVarURL != null) {
-                        buf.append("<a href=\"" + clinVarURL + "\">" + hgvsNotation + "</a>");
-                    } else {
-                        buf.append(hgvsNotation);
+                    if (hgvsNotation != null) {
+                        String clinVarURL = ClinVar.getClinVarURL(hgvsNotation);
+                        if (clinVarURL != null) {
+                            buf.append("<a href=\"" + clinVarURL + "\">" + hgvsNotation + "</a>");
+                        } else {
+                            buf.append(hgvsNotation);
+                        }
                     }
                 }
 
