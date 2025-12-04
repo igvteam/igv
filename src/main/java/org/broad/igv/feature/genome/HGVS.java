@@ -372,7 +372,7 @@ public class HGVS {
 
             if (transcript != null && transcript.getExons() != null) {
 
-                if(transcript.getStrand() == Strand.NEGATIVE) {
+                if (transcript.getStrand() == Strand.NEGATIVE) {
                     reference = SequenceUtil.complement(reference);
                     alternate = SequenceUtil.complement(alternate);
                 }
@@ -381,7 +381,7 @@ public class HGVS {
 
                 String transcriptName = transcript.getName();
                 for (String a : transcript.getAttributes().values()) {
-                    if(a.startsWith("NM_") || a.startsWith("NR_")) {
+                    if (a.startsWith("NM_") || a.startsWith("NR_")) {
                         transcriptName = a;
                         break;
                     }
@@ -424,7 +424,7 @@ public class HGVS {
                                 // Check if in 3' UTR
                                 else if ((positive && position >= lastCodingPos) || (!positive && position <= lastCodingPos)) {
                                     int distance = Math.abs(position - lastCodingPos) + 1;
-                                    positionString= transcriptName + ":c.*" + distance;
+                                    positionString = transcriptName + ":c.*" + distance;
                                 }
                             }
                         }
@@ -495,7 +495,7 @@ public class HGVS {
 
 
             // HGVS genomic coordinate is 1-based; position parameter is 0-based
-            return accession + ":g." + (position + 1)  + (char) reference + ">" + (char) alternate;
+            return accession + ":g." + (position + 1) + (char) reference + ">" + (char) alternate;
         } catch (IOException e) {
             log.error("Error getting HGVS position", e);
             return null;
