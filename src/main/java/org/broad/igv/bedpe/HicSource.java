@@ -42,7 +42,9 @@ public class HicSource implements InteractionSource {
             return Collections.emptyList();
         }
 
-        //compute values for thresholding
+        //Determine bin range and collect values to determine count threshold.  The count threshold is defined
+        // as the value at the maxFeatureCount position in the sorted list of values (excluding values from
+        // bins within binThreshold, which will be filtered).
         List<Float> values = new ArrayList<>();
         int binMin = Integer.MAX_VALUE;
         int binMax = 0;
@@ -234,19 +236,6 @@ public class HicSource implements InteractionSource {
 
     public void setNVIString(String nviString) {
         hicFile.setNVIString(nviString);
-    }
-
-
-    private static class RecordCacheEntry {
-        final int start;
-        final int end;
-        final List<ContactRecord> records;
-
-        RecordCacheEntry(int start, int end, List<ContactRecord> records) {
-            this.start = start;
-            this.end = end;
-            this.records = records;
-        }
     }
 
 }

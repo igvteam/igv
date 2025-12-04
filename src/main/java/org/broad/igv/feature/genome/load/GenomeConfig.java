@@ -6,7 +6,10 @@ import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * A static json-like object representing a genome configuration. Emulates the javascript equivalent.
@@ -49,6 +52,7 @@ public class GenomeConfig implements Cloneable {
     public String scientificName;
     public String maneBbURL;
     public String maneTrixURL;
+    public String rsdbURL;
     public String[] chromosomeOrder;
 
     public boolean wholeGenomeView = true;
@@ -95,6 +99,7 @@ public class GenomeConfig implements Cloneable {
         config.scientificName = jsonObj.optString("scientificName", null);
         config.maneBbURL = jsonObj.optString("maneBbURL", null);
         config.maneTrixURL = jsonObj.optString("maneTrixURL", null);
+        config.rsdbURL = jsonObj.optString("rsdbURL", null);
         config.chromosomeOrder = jsonObj.has("chromosomeOrder") ?
                 jsonObj.getJSONArray("chromosomeOrder").toList().toArray(new String[0]) : null;
 
@@ -148,6 +153,7 @@ public class GenomeConfig implements Cloneable {
         if (chromosomeOrder != null) jsonObj.put("chromosomeOrder", chromosomeOrder);
         if (maneBbURL != null) jsonObj.put("maneBbURL", maneBbURL);
         if (maneTrixURL != null) jsonObj.put("maneTrixURL", maneTrixURL);
+        if (rsdbURL != null) jsonObj.put("rsdbURL", rsdbURL);
         jsonObj.put("wholeGenomeView", wholeGenomeView);
 
         if (hubs != null && !hubs.isEmpty()) jsonObj.put("hubs", hubs);

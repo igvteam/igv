@@ -376,7 +376,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             if (interval != null && interval.contains(chr, (int) position, (int) position)) {
                 AlignmentCounts counts = interval.getCounts();
                 if (counts != null) {
-                    buf.append(counts.getValueStringAt((int) position));
+                    buf.append(counts.getValueStringAt(chr, (int) position));
                     final AlignmentTrack.ColorOption colorOption = alignmentTrack.getRenderOptions().getColorOption();
                     if (colorOption.isBaseMod() && counts.getModifiedBaseCounts() != null) {
                         buf.append("<br>");

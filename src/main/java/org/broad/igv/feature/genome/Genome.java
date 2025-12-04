@@ -40,10 +40,7 @@ import htsjdk.tribble.FeatureReader;
 import htsjdk.tribble.NamedFeature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.Cytoband;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.fasta.FastaBlockCompressedSequence;
 import org.broad.igv.feature.genome.fasta.FastaIndex;
 import org.broad.igv.feature.genome.fasta.FastaIndexedSequence;
@@ -116,6 +113,7 @@ public class Genome {
     private GenomeConfig config;
     private FeatureDB featureDB;
     private BBFeatureSource maneFeatureSource;
+    private BBFeatureSource rsDBFeatureSource;
 
     public Genome(GenomeConfig config) throws IOException {
         this.config = config;
@@ -851,11 +849,11 @@ public class Genome {
     /**
      * Return the Mane transcript overlapping the given position, or null if none found.
      *
-     * @param chr Chromosome name (e.g., "chr1", "chrX") in which to search for the transcript.
+     * @param chr      Chromosome name (e.g., "chr1", "chrX") in which to search for the transcript.
      * @param position Genomic position (0-based coordinate) to check for overlap with a Mane transcript.
      * @return The {@link IGVFeature} representing the Mane transcript overlapping the specified position, or {@code null} if none is found.
      */
-    public IGVFeature getManeTranscriptAt(String chr, int position) {
+    public BasicFeature getManeTranscriptAt(String chr, int position) {
         if (maneFeatureSource == null && config.maneBbURL != null) {
             loadManeFeatureSource();
         }
@@ -864,8 +862,8 @@ public class Genome {
                 Iterator<IGVFeature> features = maneFeatureSource.getFeatures(chr, position, position + 1);
                 while (features.hasNext()) {
                     IGVFeature feature = features.next();
-                    if (feature.getStart() <= position && feature.getEnd() >= position) {
-                        return feature;
+                    if (feature.getStart() <= position && feature.getEnd() >= position && feature instanceof BasicFeature) {
+                        return (BasicFeature) feature;
                     }
                 }
             } catch (IOException e) {
@@ -875,12 +873,32 @@ public class Genome {
         return null;
     }
 
-    public IGVFeature getManeFeature(String name) {
+    /**
+     * Return the Mane transcript with the given name, or null if not found.  We also check the refseq historical
+     * db if available for backward compatibility.  This is only available for hg38.
+     * @param name
+     * @return
+     */
+    public IGVFeature getManeTranscript(String name) {
         if (maneFeatureSource == null && config.maneBbURL != null) {
             loadManeFeatureSource();
         }
         if (maneFeatureSource != null) {
             List<IGVFeature> features = maneFeatureSource.search(name);
+            if (features != null && !features.isEmpty()) {
+                return features.get(0);
+            }
+        }
+        if (rsDBFeatureSource == null && config.rsdbURL != null) {
+            try {
+                BBFile bbfile = new BBFile(config.rsdbURL, this);
+                rsDBFeatureSource = new BBFeatureSource(bbfile, this);
+            } catch (IOException e) {
+                log.error("Error loading RS historical feature source", e);
+            }
+        }
+        if (rsDBFeatureSource != null) {
+            List<IGVFeature> features = rsDBFeatureSource.search(name);
             if (features != null && !features.isEmpty()) {
                 return features.get(0);
             }
