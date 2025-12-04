@@ -60,7 +60,7 @@ public interface AlignmentCounts extends Feature {
 
     int getMaxCount(int origin, int end);
 
-    String getValueStringAt(int pos);
+    String getValueStringAt(String chr, int pos);
 
     boolean isConsensusMismatch(int pos, byte ref, String chr, float snpThreshold);
 

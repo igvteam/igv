@@ -33,8 +33,10 @@ import htsjdk.samtools.*;
 import htsjdk.samtools.util.SequenceUtil;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.ClinVar;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.HGVS;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.Constants;
@@ -723,7 +725,7 @@ public class SAMAlignment implements Alignment {
     @Override
     public String getAlignmentValueString(double position, int mouseX, AlignmentTrack.RenderOptions renderOptions) {
 
-        if(renderOptions != null && renderOptions.isHideTailSbx() && this.sbxTrimmed != null) {
+        if (renderOptions != null && renderOptions.isHideTailSbx() && this.sbxTrimmed != null) {
             return this.sbxTrimmed.getAlignmentValueString(position, mouseX, renderOptions);
         }
 
@@ -952,15 +954,29 @@ public class SAMAlignment implements Alignment {
                 buf.append("<hr>");
                 int offset = basePosition - block.getStart();
                 byte base = block.getBase(offset);
+                byte referenceBase = (byte) Character.toUpperCase((char)genome.getReference(chr, basePosition));
 
                 if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClip() && genome != null) {
-                    base = genome.getReference(chr, basePosition);
-
+                    base = referenceBase;
                 }
 
                 byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality));
+                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
+                if (referenceBase !=  base) {
+                    String hgvsNotation = HGVS.createHGVSAnnotation(genome, chr, basePosition, referenceBase, base);
+
+                    if (hgvsNotation != null) {
+                        String clinVarURL = ClinVar.getClinVarURL(hgvsNotation);
+                        if (clinVarURL != null) {
+                            buf.append("<a href=\"" + clinVarURL + "\">" + hgvsNotation + "</a>");
+                        } else {
+                            buf.append(hgvsNotation);
+                        }
+                    }
+                }
+
+
                 if (FlowUtil.isFlow(this) && flowBlockAnnotator.handlesBlocks(block))
                     flowBlockAnnotator.appendBlockAttrAnnotation(this, block, offset, buf);
                 buf.append("<br>");

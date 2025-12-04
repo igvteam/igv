@@ -26,10 +26,14 @@
 package org.broad.igv.sam;
 
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.ClinVar;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.HGVS;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModificationCounts;
@@ -190,9 +194,12 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
     }
 
-    public String getValueStringAt(int pos) {
+    public String getValueStringAt(String chr, int pos) {
 
         if (pos < getStart() || pos >= getEnd()) return null;
+
+        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        byte referenceBase = (byte) Character.toUpperCase((char)genome.getReference(chr, pos));
 
         StringBuffer buf = new StringBuffer();
         int totalCount = getTotalCount(pos);
@@ -206,6 +213,16 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
             buf.append("<br>" + cU + "      : " + count);
             if (count != 0) {
                 buf.append("  (" + percent + "%,     " + posCount + "+,   " + negCount + "- )");
+                if (referenceBase != b) {
+                    buf.append("   ");
+                    String hgvsNotation = HGVS.createHGVSAnnotation(genome, chr, pos, referenceBase,  b);
+                    String clinVarURL = ClinVar.getClinVarURL(hgvsNotation);
+                    if (clinVarURL != null) {
+                        buf.append("<a href=\"" + clinVarURL + "\"><b>" + hgvsNotation + "</b></a>");
+                    } else {
+                        buf.append("<b>" + hgvsNotation + "</b>");
+                    }
+                }
             }
         }
         int delCount = getDelCount(pos);
@@ -241,7 +258,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
             if (ref > 0) {
                 if (ref < 96) ref += 32;  // a fast "toLowercase"
                 for (byte c : getBases()) {
-                    if(c < 96) c += 32; // a fast "toLowercase"
+                    if (c < 96) c += 32; // a fast "toLowercase"
                     if (c != ref && c != 'n') {
                         mismatchQualitySum += (qualityWeight ? getQuality(pos, (byte) c) : getCount(pos, (byte) c));
                     }

@@ -521,7 +521,7 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
-        public String getValueStringAt(int pos) {
+        public String getValueStringAt(String chr, int pos) {
             int idx = (pos - start) / bucketSize;
             return idx > 0 && idx < total.length ? String.valueOf((int) Math.round(total[idx])) : "";
         }

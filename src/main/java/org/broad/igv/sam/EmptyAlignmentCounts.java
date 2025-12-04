@@ -77,7 +77,7 @@ public class EmptyAlignmentCounts implements AlignmentCounts {
     }
 
     @Override
-    public String getValueStringAt(int pos) {
+    public String getValueStringAt(String chr, int pos) {
         return null;
     }
 
