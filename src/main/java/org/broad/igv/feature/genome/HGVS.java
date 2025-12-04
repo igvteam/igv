@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class HGVS {
 
-    private static Logger log = LogManager.getLogger(HGVS.class);
+    private static final Logger log = LogManager.getLogger(HGVS.class);
 
     public static boolean isValidHGVS(String notation) {
         if (notation == null) return false;
@@ -85,153 +85,110 @@ public class HGVS {
         }
         String positionPart = hgvs.substring(idx + 3); // skip ':g.' or ':c.' or ':n.' or ':p.'
 
-        if ("g".equals(type)) {
-            // Handle both single positions (123) and ranges (123_456)
-            Matcher matcher = Pattern.compile("^(\\d+)(?:_(\\d+))?").matcher(positionPart);
-            if (!matcher.find()) return null;
-            int start = Integer.parseInt(matcher.group(1));
-            String endGroup = matcher.group(2);
-            int end = endGroup != null ? Integer.parseInt(endGroup) : start;
-            String chr = genome.getCanonicalChrName(accession);
-            return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, chr, start - 1, end);
-        } else if ("p".equals(type)) {
-            // Protein position mapping: map codon(s) to genomic span.
-            final BasicFeature transcript = getTranscript(genome, accession);
-            if (transcript == null) return null;
+        switch (type) {
+            case "g": {
+                // Handle both single positions (123) and ranges (123_456)
+                Matcher matcher = Pattern.compile("^(\\d+)(?:_(\\d+))?").matcher(positionPart);
+                if (!matcher.find()) return null;
+                int start = Integer.parseInt(matcher.group(1));
+                String endGroup = matcher.group(2);
+                int end = endGroup != null ? Integer.parseInt(endGroup) : start;
+                String chr = genome.getCanonicalChrName(accession);
+                // UCSC style: 0-based start, half-open end. HGVS g. is 1-based inclusive.
+                return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, chr, start - 1, end);
+            }
+            case "p": {
+                // Protein position mapping: map codon(s) to genomic span.
+                final BasicFeature transcript = getTranscript(genome, accession);
+                if (transcript == null) return null;
 
-            // Strip trailing variant info after first non position pattern
-            String proteinPart = positionPart; // e.g. A123T, 123_125del, Gly123_Val125delins...
-            // Regex to capture first and optional second numeric protein positions
-            Matcher pm = Pattern.compile("^[A-Za-z*]{0,3}(\\d+)(?:_[A-Za-z*]{0,3}(\\d+))?").matcher(proteinPart);
-            if (!pm.find()) return null;
-            int p1 = Integer.parseInt(pm.group(1));
-            String p2Str = pm.group(2);
-            int p2 = p1;
-            if (p2Str != null) {
-                p2 = Integer.parseInt(p2Str);
-                // Strand: negative strand higher protein position => lower genomic coordinate, choose strand-aware start/end later
-            }
-            // Get codon(s)
-            var codon1 = transcript.getCodon(genome, transcript.getChr(), p1);
-            if (codon1 == null || !codon1.isGenomePositionsSet()) return null;
-            int start1 = Integer.MAX_VALUE;
-            int end1 = Integer.MIN_VALUE;
-            for (int gp : codon1.getGenomePositions()) {
-                start1 = Math.min(start1, gp);
-                end1 = Math.max(end1, gp);
-            }
-            int regionStart = start1;
-            int regionEnd = end1; // inclusive base
-            if (p2 != p1) {
-                var codon2 = transcript.getCodon(genome, transcript.getChr(), p2);
-                if (codon2 == null || !codon2.isGenomePositionsSet()) return null;
-                int start2 = Integer.MAX_VALUE;
-                int end2 = Integer.MIN_VALUE;
-                for (int gp : codon2.getGenomePositions()) {
-                    start2 = Math.min(start2, gp);
-                    end2 = Math.max(end2, gp);
+                // Regex to capture first and optional second numeric protein positions (skip AA labels)
+                Matcher pm = Pattern.compile("^[A-Za-z*]{0,3}(\\d+)(?:_[A-Za-z*]{0,3}(\\d+))?").matcher(positionPart);
+                if (!pm.find()) return null;
+                int p1 = Integer.parseInt(pm.group(1));
+                String p2Str = pm.group(2);
+                int p2 = p2Str != null ? Integer.parseInt(p2Str) : p1;
+                // Get codon(s)
+                var codon1 = transcript.getCodon(genome, transcript.getChr(), p1);
+                if (codon1 == null || !codon1.isGenomePositionsSet()) return null;
+                int start1 = Integer.MAX_VALUE;
+                int end1 = Integer.MIN_VALUE;
+                for (int gp : codon1.getGenomePositions()) {
+                    start1 = Math.min(start1, gp);
+                    end1 = Math.max(end1, gp);
                 }
-                if (transcript.getStrand() == Strand.POSITIVE) {
-                    regionStart = Math.min(start1, start2);
-                    regionEnd = Math.max(end1, end2);
-                } else {
-                    // Negative strand: lower genomic coordinate is further downstream; choose min for start
+                int regionStart = start1;
+                int regionEnd = end1; // inclusive base
+                if (p2 != p1) {
+                    var codon2 = transcript.getCodon(genome, transcript.getChr(), p2);
+                    if (codon2 == null || !codon2.isGenomePositionsSet()) return null;
+                    int start2 = Integer.MAX_VALUE;
+                    int end2 = Integer.MIN_VALUE;
+                    for (int gp : codon2.getGenomePositions()) {
+                        start2 = Math.min(start2, gp);
+                        end2 = Math.max(end2, gp);
+                    }
                     regionStart = Math.min(start1, start2);
                     regionEnd = Math.max(end1, end2);
                 }
+                // Convert inclusive end to half-open end for SearchResult (end position is 1-based exclusive)
+                int halfOpenEnd = regionEnd + 1;
+                return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), regionStart, halfOpenEnd);
             }
-            // Convert inclusive end to half-open end for SearchResult (end position is 1-based exclusive)
-            int halfOpenEnd = regionEnd + 1;
-            return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), regionStart, halfOpenEnd);
-        } else if ("n".equals(type)) {
-            // Non-coding transcript mapping: n.123 or n.-123 maps relative to transcript start
-            BasicFeature transcript = getTranscript(genome, accession);
-            if (transcript == null) return null;
+            case "n": {
+                // Non-coding transcript mapping: n.123 or n.-123 maps relative to transcript start
+                BasicFeature transcript = getTranscript(genome, accession);
+                if (transcript == null) return null;
 
-            // Parse signed position with optional range and intronic offset (e.g., n.123, n.123_456, n.-7080_-1781, n.123+5)
-            Matcher matcher = Pattern.compile("^(-?\\d+)(?:_(-?\\d+))?([+-]\\d+)?").matcher(positionPart);
-            if (!matcher.find()) return null;
+                // Parse signed position with optional range and intronic offset (e.g., n.123, n.123_456, n.-7080_-1781, n.123+5)
+                Matcher matcher = Pattern.compile("^(-?\\d+)(?:_(-?\\d+))?([+-]\\d+)?").matcher(positionPart);
+                if (!matcher.find()) return null;
 
-            int t1 = Integer.parseInt(matcher.group(1));
-            String t2Str = matcher.group(2);
+                int t1 = Integer.parseInt(matcher.group(1));
+                String t2Str = matcher.group(2);
 
-            // Determine transcript positions for both ends; if single, both are the same
-            int t2 = (t2Str != null) ? Integer.parseInt(t2Str) : t1;
+                // Determine transcript positions for both ends; if single, both are the same
+                int t2 = (t2Str != null) ? Integer.parseInt(t2Str) : t1;
 
-            // Map both transcript positions to genomic
-            int g1 = transcriptPositionToGenomicPosition(transcript, t1);
-            int g2 = transcriptPositionToGenomicPosition(transcript, t2);
-            if (g1 <= 0 || g2 <= 0) return null;
+                // Map both transcript positions to genomic
+                int g1 = transcriptPositionToGenomicPosition(transcript, t1);
+                int g2 = transcriptPositionToGenomicPosition(transcript, t2);
+                if (g1 <= 0 || g2 <= 0) return null;
 
-            // Apply intronic offset (if any) to BOTH endpoints, strand-aware
-            String offsetStr = matcher.group(3);
-            if (offsetStr != null) {
-                int offset = Integer.parseInt(offsetStr);
-                if (transcript.getStrand() == Strand.NEGATIVE) offset = -offset;
-                g1 += offset;
-                g2 += offset;
-            }
-
-            // Normalize to genomic span regardless of strand
-            int regionStart = Math.min(g1, g2);
-            int regionEndInclusive = Math.max(g1, g2);
-            int halfOpenEnd = regionEndInclusive + 1;
-            return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), regionStart, halfOpenEnd);
-        } else {
-
-            // Coding / UTR mapping
-            BasicFeature transcript = getTranscript(genome, accession);
-            if (transcript != null) {
-                // UTR 5' c.-N with optional range and intronic offset (e.g., c.-211_-215 or c.-211-1058C>G)
-                Matcher utr5Matcher = Pattern.compile("^-(\\d+)(?:_-(\\d+))?([+-]\\d+)?").matcher(positionPart);
-                if (utr5Matcher.find()) {
-                    int n1 = Integer.parseInt(utr5Matcher.group(1));
-                    String n2Str = utr5Matcher.group(2);
-                    Integer n2 = n2Str != null ? Integer.parseInt(n2Str) : null;
-                    int firstCodingGenomic = transcript.codingToGenomePosition(1);
-                    if (firstCodingGenomic > 0) {
-                        int g1 = transcript.getStrand() == Strand.POSITIVE ? (firstCodingGenomic - n1) : (firstCodingGenomic + n1);
-                        int g2 = g1;
-                        if (n2 != null) {
-                            g2 = transcript.getStrand() == Strand.POSITIVE ? (firstCodingGenomic - n2) : (firstCodingGenomic + n2);
-                        }
-                        // Apply intronic offset (single value) to both ends if present
-                        String offsetStr = utr5Matcher.group(3);
-                        if (offsetStr != null) {
-                            int offset = Integer.parseInt(offsetStr);
-                            if (transcript.getStrand() == Strand.NEGATIVE) offset = -offset;
-                            g1 += offset;
-                            g2 += offset;
-                        }
-                        int start = Math.min(g1, g2);
-                        int endInclusive = Math.max(g1, g2);
-                        return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start - 1, endInclusive + 1);
-                    }
-                    return null;
+                // Apply intronic offset (if any) to BOTH endpoints, strand-aware
+                String offsetStr = matcher.group(3);
+                if (offsetStr != null) {
+                    int offset = Integer.parseInt(offsetStr);
+                    if (transcript.getStrand() == Strand.NEGATIVE) offset = -offset;
+                    g1 += offset;
+                    g2 += offset;
                 }
 
-                // UTR 3' c.*N with optional range and intronic offset (e.g., c.*526_*529delATCA or c.*123+45)
-                Matcher utr3Matcher = Pattern.compile("^\\*(\\d+)(?:_\\*(\\d+))?([+-]\\d+)?").matcher(positionPart);
-                if (utr3Matcher.find()) {
-                    int n1 = Integer.parseInt(utr3Matcher.group(1));
-                    String n2Str = utr3Matcher.group(2);
-                    Integer n2 = n2Str != null ? Integer.parseInt(n2Str) : null;
-                    int codingLen = 0;
-                    if (transcript.getExons() != null) {
-                        for (var exon : transcript.getExons()) {
-                            codingLen += exon.getCodingLength();
-                        }
-                    }
-                    if (codingLen > 0) {
-                        int lastCodingGenomic = transcript.codingToGenomePosition(codingLen);
-                        if (lastCodingGenomic > 0) {
-                            int g1 = transcript.getStrand() == Strand.POSITIVE ? (lastCodingGenomic + n1) : (lastCodingGenomic - n1);
+                // Normalize to genomic span regardless of strand
+                int regionStart = Math.min(g1, g2);
+                int regionEndInclusive = Math.max(g1, g2);
+                int halfOpenEnd = regionEndInclusive + 1;
+                return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), regionStart, halfOpenEnd);
+            }
+            case "c": {
+                // Coding / UTR mapping
+                BasicFeature transcript = getTranscript(genome, accession);
+                if (transcript != null) {
+                    // UTR 5' c.-N with optional range and intronic offset (e.g., c.-211_-215 or c.-211-1058C>G)
+                    Matcher utr5Matcher = Pattern.compile("^-(\\d+)(?:_-(\\d+))?([+-]\\d+)?").matcher(positionPart);
+                    if (utr5Matcher.find()) {
+                        int n1 = Integer.parseInt(utr5Matcher.group(1));
+                        String n2Str = utr5Matcher.group(2);
+                        Integer n2 = n2Str != null ? Integer.parseInt(n2Str) : null;
+                        int firstCodingGenomic = transcript.codingToGenomePosition(1);
+                        if (firstCodingGenomic > 0) {
+                            int g1 = transcript.getStrand() == Strand.POSITIVE ? (firstCodingGenomic - n1) : (firstCodingGenomic + n1);
                             int g2 = g1;
                             if (n2 != null) {
-                                g2 = transcript.getStrand() == Strand.POSITIVE ? (lastCodingGenomic + n2) : (lastCodingGenomic - n2);
+                                g2 = transcript.getStrand() == Strand.POSITIVE ? (firstCodingGenomic - n2) : (firstCodingGenomic + n2);
                             }
                             // Apply intronic offset (single value) to both ends if present
-                            String offsetStr = utr3Matcher.group(3);
+                            String offsetStr = utr5Matcher.group(3);
                             if (offsetStr != null) {
                                 int offset = Integer.parseInt(offsetStr);
                                 if (transcript.getStrand() == Strand.NEGATIVE) offset = -offset;
@@ -240,44 +197,94 @@ public class HGVS {
                             }
                             int start = Math.min(g1, g2);
                             int endInclusive = Math.max(g1, g2);
-                            return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start - 1, endInclusive + 1);
+                            int endExclusive = endInclusive + 1;
+                            return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start, endExclusive);
+                        }
+                        return null;
+                    }
+
+                    // UTR 3' c.*N with optional range and intronic offset (e.g., c.*526_*529delATCA or c.*123+45)
+                    Matcher utr3Matcher = Pattern.compile("^\\*(\\d+)(?:_\\*(\\d+))?([+-]\\d+)?").matcher(positionPart);
+                    if (utr3Matcher.find()) {
+                        int n1 = Integer.parseInt(utr3Matcher.group(1));
+                        String n2Str = utr3Matcher.group(2);
+                        Integer n2 = n2Str != null ? Integer.parseInt(n2Str) : null;
+                        int codingLen = 0;
+                        if (transcript.getExons() != null) {
+                            for (var exon : transcript.getExons()) {
+                                codingLen += exon.getCodingLength();
+                            }
+                        }
+                        if (codingLen > 0) {
+                            int lastCodingGenomic = transcript.codingToGenomePosition(codingLen);
+                            if (lastCodingGenomic > 0) {
+                                int g1 = transcript.getStrand() == Strand.POSITIVE ? (lastCodingGenomic + n1) : (lastCodingGenomic - n1);
+                                int g2 = g1;
+                                if (n2 != null) {
+                                    g2 = transcript.getStrand() == Strand.POSITIVE ? (lastCodingGenomic + n2) : (lastCodingGenomic - n2);
+                                }
+                                // Apply intronic offset (single value) to both ends if present
+                                String offsetStr = utr3Matcher.group(3);
+                                if (offsetStr != null) {
+                                    int offset = Integer.parseInt(offsetStr);
+                                    if (transcript.getStrand() == Strand.NEGATIVE) offset = -offset;
+                                    g1 += offset;
+                                    g2 += offset;
+                                }
+                                int start = Math.min(g1, g2);
+                                int endInclusive = Math.max(g1, g2);
+                                int endExclusive = endInclusive + 1;
+                                return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start, endExclusive);
+                            }
+                        }
+                        return null;
+                    }
+
+                    // CDS position with optional range
+                    // First parse endpoints c.X(_Y)? ignoring intronic offsets
+                    Matcher cpos = Pattern.compile("^(\\d+)(?:_(\\d+))?").matcher(positionPart);
+                    if (!cpos.find()) return null;
+                    int c1 = Integer.parseInt(cpos.group(1));
+                    String c2Str = cpos.group(2);
+                    int c2 = c2Str != null ? Integer.parseInt(c2Str) : c1;
+
+                    // Map both coding positions to genomic
+                    int g1 = transcript.codingToGenomePosition(c1);
+                    int g2 = transcript.codingToGenomePosition(c2);
+                    if (g1 <= 0 || g2 <= 0) return null;
+
+                    // Now parse optional intronic offsets for each endpoint separately
+                    // Patterns like: 123+5 or 123-2 at the beginning, optionally followed by _ and second with offset
+                    Matcher offs = Pattern.compile("^(\\d+)([+-]\\d+)?(?:_(\\d+)([+-]\\d+)?)?").matcher(positionPart);
+                    if (offs.find()) {
+                        String off1Str = offs.group(2);
+                        String off2Str = offs.group(4);
+                        if (off1Str != null) {
+                            int off1 = Integer.parseInt(off1Str);
+                            if (transcript.getStrand() == Strand.NEGATIVE) off1 = -off1;
+                            g1 += off1;
+                        }
+                        if (off2Str != null) {
+                            int off2 = Integer.parseInt(off2Str);
+                            if (transcript.getStrand() == Strand.NEGATIVE) off2 = -off2;
+                            g2 += off2;
                         }
                     }
-                    return null;
+
+                    // If there is no explicit second coding position, ensure single-site locus
+                    if (c2Str == null) {
+                        g2 = g1;
+                    }
+
+                    int start = Math.min(g1, g2);
+                    int endInclusive = Math.max(g1, g2);
+                    int endExclusive = endInclusive + 1;
+                    return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start, endExclusive);
                 }
-
-                // CDS position with optional range and intronic offset (e.g., c.123_124insAT or c.505-2A>G)
-                // Capture optional intronic offsets for each endpoint: c.X(+/-N)?_(Y(+/-M)?)?
-                Matcher matcher = Pattern.compile("^(\\d+)(?:([+-]\\d+))?(?:_(\\d+)(?:([+-]\\d+))?)?(?:.*)?").matcher(positionPart);
-                if (!matcher.find()) return null;
-                int c1 = Integer.parseInt(matcher.group(1));
-                String off1Str = matcher.group(2);
-                String c2Str = matcher.group(3);
-                String off2Str = matcher.group(4);
-                int c2 = c2Str != null ? Integer.parseInt(c2Str) : c1;
-
-                // Map both coding positions to genomic
-                int g1 = transcript.codingToGenomePosition(c1);
-                int g2 = transcript.codingToGenomePosition(c2);
-                if (g1 <= 0 || g2 <= 0) return null;
-
-                // Apply intronic offsets, strand-aware, independently per endpoint if provided
-                if (off1Str != null) {
-                    int off1 = Integer.parseInt(off1Str);
-                    if (transcript.getStrand() == Strand.NEGATIVE) off1 = -off1;
-                    g1 += off1;
-                }
-                if (off2Str != null) {
-                    int off2 = Integer.parseInt(off2Str);
-                    if (transcript.getStrand() == Strand.NEGATIVE) off2 = -off2;
-                    g2 += off2;
-                }
-
-                int start = Math.min(g1, g2);
-                int endInclusive = Math.max(g1, g2);
-                return new SearchCommand.SearchResult(SearchCommand.ResultType.LOCUS, transcript.getChr(), start - 1, endInclusive + 1);
+                return null;
             }
-            return null;
+            default:
+                return null;
         }
     }
 
@@ -333,7 +340,7 @@ public class HGVS {
 
     private static BasicFeature getTranscript(Genome genome, String accession) {
 
-        NamedFeature feature = genome.getManeFeature(accession);
+        NamedFeature feature = genome.getManeTranscript(accession);
 
         if (feature == null) {
             feature = FeatureDB.getFeature(accession);
@@ -346,42 +353,5 @@ public class HGVS {
 
         return null;
     }
-
-    /**
-     * Returns genomic HGVS notation: <RefSeqAccession>:g.<position>
-     * Example: NC_000001.11:g.1234567
-     *
-     * WORK IN PROGRESS
-     */
-    public static String getHGVSPosition(Genome genome, String chr, int position) {
-
-        try {
-            ChromAlias aliasRecord = genome.getAliasRecord(chr);
-            String accession = null;
-
-            if (aliasRecord != null) {
-                for (String alias : aliasRecord.values()) {
-                    if (alias.startsWith("NC_") || alias.startsWith("NT_") || alias.startsWith("NW_") ||
-                            alias.startsWith("NG_") || alias.startsWith("NM_") || alias.startsWith("NR_") ||
-                            alias.startsWith("NP_")) {
-                        accession = alias;
-                        break;
-                    }
-                }
-            }
-
-            // Fallback to provided chromosome if no RefSeq accession is found
-            if (accession == null || accession.isEmpty()) {
-                accession = chr;
-            }
-
-            // HGVS genomic coordinate is 1-based; assume input position is already 1-based
-            return accession + ":g." + position;
-        } catch (IOException e) {
-            log.error("Error getting HGVS position", e);
-            return null;
-        }
-    }
-
 
 }

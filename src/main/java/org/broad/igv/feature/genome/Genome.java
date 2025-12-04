@@ -100,6 +100,7 @@ public class Genome {
     private String nameSet;
     private  Hub hub;
     private BBFeatureSource maneFeatureSource;
+    private BBFeatureSource rsDBFeatureSource;
 
 
     public Genome(GenomeConfig config) throws IOException {
@@ -807,13 +808,31 @@ public class Genome {
         this.hub = hub;
     }
 
-
-    public NamedFeature getManeFeature(String name) {
+    /**
+     * Return the Mane transcript with the given name, or null if not found.  We also check the refseq historical
+     * db if available for backward compatibility.  This is only available for hg38.
+     * @param name
+     * @return
+     */
+    public NamedFeature getManeTranscript(String name) {
         if (maneFeatureSource == null && config.getManeBbURL() != null) {
             loadManeFeatureSource();
         }
         if (maneFeatureSource != null) {
-            return maneFeatureSource.search(name);
+            NamedFeature feature =  maneFeatureSource.search(name);
+            if (feature != null)  return feature;
+        }
+        if (rsDBFeatureSource == null && config.rsdbURL != null) {
+            try {
+                BBFile bbfile = new BBFile(config.rsdbURL, this);
+                rsDBFeatureSource = new BBFeatureSource(bbfile, this);
+            } catch (IOException e) {
+                log.error("Error loading RS historical feature source", e);
+            }
+        }
+        if (rsDBFeatureSource != null) {
+            NamedFeature feature = rsDBFeatureSource.search(name);
+            if (feature != null)  return feature;
         }
         return null;
     }

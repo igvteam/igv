@@ -91,12 +91,6 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertEquals("chr17", result.getChr());
         assertEquals(7579471, result.getStart());
 
-        hgvs = "NC_000017.11:g.7579472";
-        assertTrue(HGVS.isValidHGVS(hgvs));
-        result = HGVS.search(hgvs, genome);
-        assertEquals("chr17", result.getChr());
-        assertEquals(7579471, result.getStart());
-
         // From UCSC tests
         // chr1	11850845	11867218	NC_000001.11:g.11850846_11867218dup16373	0	+
         hgvs = "NC_000001.11:g.11850846_11867218dup16373";
@@ -119,6 +113,12 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertEquals("chr1", result.getChr());
         assertEquals(35570363, result.getStart());
 
+        hgvs = "NM_000546.6(TP53):c.815T>G";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr17", result.getChr());
+        assertEquals(7673804, result.getStart());
+
     }
 
     @Test
@@ -130,13 +130,13 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertTrue(HGVS.isValidHGVS(hgvs));
         SearchCommand.SearchResult result = HGVS.search(hgvs, genome);
         assertEquals("chr1", result.getChr());
-        assertEquals(11256191, result.getStart() + 1);
+        assertEquals(11256193, result.getStart());
 
         hgvs = "NM_004958.4(MTOR):c.505-2A>G";
         assertTrue(HGVS.isValidHGVS(hgvs));
         result = HGVS.search(hgvs, genome);
         assertEquals("chr1", result.getChr());
-        assertEquals(11256191, result.getStart() + 1);
+        assertEquals(11256193, result.getStart());
 
 
         // chr1	11966984	11966985	NM_000302.3(PLOD1):c.1651-2delA	0	+
@@ -144,26 +144,40 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertTrue(HGVS.isValidHGVS(hgvs));
         result = HGVS.search(hgvs, genome);
         assertEquals("chr1", result.getChr());
-        assertEquals(11966984, result.getStart() + 1);
+        assertEquals(11966984, result.getStart());
 
         // chr1	40257002	40257003	NM_005857.4(ZMPSTE24):c.-211-1058C>G	0	+
         hgvs = "ENST00000372759.4:c.-211-1058C>G";
         assertTrue(HGVS.isValidHGVS(hgvs));
         result = HGVS.search(hgvs, genome);
         assertEquals("chr1", result.getChr());
-        assertEquals(40257002, result.getStart() + 1);
+        assertEquals(40257002, result.getStart());
 
 //        chr1	40073531	40073535	NM_000310.3(PPT1):c.*526_*529delATCA	0	-
         hgvs = "ENST00000642050.2:c.*526_*529delATCA";
         assertTrue(HGVS.isValidHGVS(hgvs));
         result = HGVS.search(hgvs, genome);
         assertEquals("chr1", result.getChr());
-        assertEquals(40073531, result.getStart() + 1);
+        assertEquals(40073531, result.getStart());
+    }
 
+    @Test
+    public void testHistoricalRefseq() throws Exception {
 
-//                chr1	11022736	11022737	NM_007375.3(TARDBP):c.*83T>C	0	+
-//                chr1	11846007	11846009	NM_006172.3(NPPA):c.456_*1delAA	0	-
-//                chr19	18786046	18786049	NM_000095.2(COMP):c.1405_1407GAC[7]	0	-
+        // Adapted from UCSC tests
+        // chr1	11256193	11256194	NM_004958.3(MTOR):c.505-2A>G	0	-
+        String hgvs = "NM_004958.3(MTOR):c.505-2A>G";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        SearchCommand.SearchResult result = HGVS.search(hgvs, genome);
+        assertEquals("chr1", result.getChr());
+        assertEquals(11256193, result.getStart());
+
+        // chr1	11966984	11966985	NM_000302.3(PLOD1):c.1651-2delA	0	+
+        hgvs = "NM_000302.3(PLOD1):c.1651-2delA";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        result = HGVS.search(hgvs, genome);
+        assertEquals("chr1", result.getChr());
+        assertEquals(11966984, result.getStart());
 
     }
 

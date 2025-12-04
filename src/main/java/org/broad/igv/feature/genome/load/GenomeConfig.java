@@ -55,6 +55,7 @@ public class GenomeConfig implements Cloneable {
 
     private String maneBbURL;
     private String maneTrixURL;
+    public String rsdbURL;
 
     private List<TrackConfig> annotations;  // Backward compatibility, synonym for tracks
 
@@ -343,5 +344,13 @@ public class GenomeConfig implements Cloneable {
 
     public void setManeTrixURL(String maneTrixURL) {
         this.maneTrixURL = maneTrixURL;
+    }
+
+    public String getRsdbURL() {
+        return rsdbURL;
+    }
+
+    public void setRsdbURL(String rsdbURL) {
+        this.rsdbURL = rsdbURL;
     }
 }
