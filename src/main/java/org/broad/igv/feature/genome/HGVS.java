@@ -380,7 +380,7 @@ public class HGVS {
                 String positionString = "";
 
                 String transcriptName = transcript.getName();
-                for(String a : transcript.getAttributes().values()) {
+                for (String a : transcript.getAttributes().values()) {
                     if(a.startsWith("NM_") || a.startsWith("NR_")) {
                         transcriptName = a;
                         break;
