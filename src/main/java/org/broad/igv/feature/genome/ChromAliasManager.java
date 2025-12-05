@@ -14,7 +14,7 @@ public class ChromAliasManager {
 
     private static Logger log = LogManager.getLogger(ChromAliasManager.class);
 
-    private Set<String> sequenceNames;
+    private Map<String, String> sequenceNames;
 
     private Genome genome;
 
@@ -25,33 +25,42 @@ public class ChromAliasManager {
      * @param genome        - Reference genome object.
      */
     public ChromAliasManager(Collection<String> sequenceNames, Genome genome) {
-        this.sequenceNames = new HashSet<>(sequenceNames);
+        this.sequenceNames = new HashMap<>();
+        for (String name : sequenceNames) {
+            this.sequenceNames.put(name.toLowerCase(), name);
+        }
         this.aliasCache = new HashMap<>();
         this.genome = genome;
     }
 
-    public String getAliasName(String seqName) {
+    /**
+     * Get the alias used by the owning feature source for the given chromosome name.
+     * @param chr
+     * @return
+     */
+    public String getAliasName(String chr) {
         if (genome == null) {
-            return seqName;   // A no-op manager, used in testing.
+            return chr;   // A no-op manager, used in testing.
         }
         try {
-            if (!aliasCache.containsKey(seqName)) {
-                ChromAlias aliasRecord = genome.getAliasRecord(seqName);
+            if (!aliasCache.containsKey(chr)) {
+                ChromAlias aliasRecord = genome.getAliasRecord(chr);
                 if (aliasRecord == null) {
-                    aliasCache.put(seqName, null);  // No know alias, record to prevent searching again
+                    aliasCache.put(chr, null);  // No know alias, record to prevent searching again
                 } else {
                     for (String alias : aliasRecord.values()) {
-                        if (sequenceNames.contains(alias)) {
-                            aliasCache.put(seqName, alias);
+                        final String lowerCase = alias.toLowerCase();
+                        if (sequenceNames.containsKey(lowerCase)) {
+                            aliasCache.put(chr, sequenceNames.get(lowerCase));
                         }
                     }
                 }
             }
-            String alias = aliasCache.get(seqName);
-            return alias != null ? alias : seqName;
+            String alias = aliasCache.get(chr);
+            return alias != null ? alias : chr;
         } catch (IOException e) {
             log.error("Error loading alias file ", e);
-            return seqName;
+            return chr;
         }
     }
 
