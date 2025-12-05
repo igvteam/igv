@@ -28,11 +28,12 @@ package org.broad.igv.util;
 import biz.source_code.base64Coder.Base64Coder;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPStream;
-import org.broad.igv.logging.*;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.oauth.OAuthUtils;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.oauth.OAuthProvider;
+import org.broad.igv.oauth.OAuthUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
@@ -43,7 +44,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,8 +53,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,7 +155,7 @@ public class HttpUtils {
     String getCachedTokenFor(URL url) {
 
         Iterator<Pair<Pattern, String>> iter = accessTokens.descendingIterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             Pair<Pattern, String> next = iter.next();
             Matcher matcher = next.getFirst().matcher(url.getHost());
             if (matcher.find()) {
@@ -385,6 +385,14 @@ public class HttpUtils {
             url = HttpUtils.createURL(urlString);
         } catch (MalformedURLException e) {
             return false;
+        }
+
+        // A hack for UCSC -- we know there are no "idx" indexes at UCSC
+        if ((urlString.endsWith(".idx") || urlString.endsWith(".idx.gz"))) {
+            String host = url.getHost();
+            if ((host.contains(UCSC_HOST) || host.contains(UCSC_BACKUP_HOST))) {
+                return false;
+            }
         }
 
         log.debug("Checking if resource is available: " + url);
