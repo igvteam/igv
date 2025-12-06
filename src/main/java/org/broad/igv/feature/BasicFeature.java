@@ -456,7 +456,7 @@ public class BasicFeature extends AbstractFeature {
 
 
     /**
-     * Translate a 1-based coding position to a 0-based genomic position.
+     * Translate a 1-based coding position to a 0-based genomic position.  Supports HGVS parsing
      *
      * @param codingPosition 1-based coding position
      * @return 0-based genomic position, or -1 if not found.

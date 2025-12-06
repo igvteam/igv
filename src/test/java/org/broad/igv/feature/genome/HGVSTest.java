@@ -111,9 +111,14 @@ public class HGVSTest extends AbstractHeadlessTest {
         assertEquals("chr1", result.getChr());
         assertEquals(35570363, result.getStart());
 
-        hgvs = "NM_000546.6(TP53):c.815T>G";
+    }
+
+    @Test
+    public void testCodingSearch() throws Exception {
+
+        String hgvs = "NM_000546.6(TP53):c.815T>G";
         assertTrue(HGVS.isValidHGVS(hgvs));
-        result = HGVS.search(hgvs, genome);
+        SearchCommand.SearchResult result = HGVS.search(hgvs, genome);
         assertEquals("chr17", result.getChr());
         assertEquals(7673804, result.getStart());
 

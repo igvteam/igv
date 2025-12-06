@@ -124,14 +124,6 @@ public class SearchCommand implements Runnable {
 
         searchString = searchString.replace("\"", "");
 
-        if(HGVS.isValidHGVS(searchString)) {
-            SearchResult hgvsResult = HGVS.search(searchString, genome);
-            if (hgvsResult != null) {
-                results.add(hgvsResult);
-                return results;
-            }
-        }
-
         // If the search string is space delimited see if it looks like a space delimited locus string (e.g. chr 100 200)
         String[] tokens = searchString.split("\\s+");
         if (tokens.length > 1 && tokens.length <= 3) {
@@ -293,6 +285,13 @@ public class SearchCommand implements Runnable {
      */
     private SearchResult searchFeatures(String token) {
 
+        if(HGVS.isValidHGVS(searchString)) {
+            SearchResult hgvsResult = HGVS.search(searchString, genome);
+            if (hgvsResult != null) {
+                return hgvsResult;
+            }
+        }
+
         Set<String> mainChromosomes = new HashSet<>(genome.getLongChromosomeNames());
 
         //Check if a full or partial locus string
@@ -301,11 +300,13 @@ public class SearchCommand implements Runnable {
             return result;
         }
 
-        // Search by feature name - try searchable tracks first
-        List<NamedFeature> matchingFeatures;
+        // Try genome "mane" source first.
+        IGVFeature maneTranscript = genome.getManeTranscript(token);
+        if(maneTranscript != null) {
+            return new SearchResult(maneTranscript);
+        }
 
-        // Check featureDB first -- this is cheap
-        matchingFeatures = genome.getFeatureDB().getFeaturesMatching(token);
+        List<NamedFeature> matchingFeatures = genome.getFeatureDB().getFeaturesMatching(token);
 
         if (matchingFeatures.isEmpty()) {
             // Try the webservice
