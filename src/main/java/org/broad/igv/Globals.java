@@ -87,7 +87,6 @@ public class Globals {
     public static String BUILD;
     public static String TIMESTAMP;
 
-
     final public static boolean IS_WINDOWS =
             System.getProperty("os.name").toLowerCase().startsWith("windows");
     final public static boolean IS_MAC =
@@ -98,6 +97,10 @@ public class Globals {
 
     final public static boolean IS_JWS =
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;
+
+
+    final public static boolean USE_CUSTOM_FILEDIALOG =
+            "true".equalsIgnoreCase(System.getenv("USE_CUSTOM_FILEDIALOG"));
 
     public static final String JAVA_VERSION_STRING = "java.version";
 

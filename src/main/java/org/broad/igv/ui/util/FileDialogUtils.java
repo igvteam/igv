@@ -29,6 +29,7 @@ import org.broad.igv.logging.*;
 import org.broad.igv.DirectoryManager;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.LsFileChooser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,13 +64,26 @@ public class FileDialogUtils {
     private static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter,
                                    int directoriesMode, int mode) {
 
+        File file = null;
         if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
         }
         // Strip off parent directory
         if (initialFile != null) initialFile = new File(initialFile.getName());
-        return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
 
+        if (Globals.USE_CUSTOM_FILEDIALOG) {
+            JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, JFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(false);
+            Frame parentFrame = getParentFrame();
+            int result = fileChooser.showOpenDialog(parentFrame);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                file = fileChooser.getSelectedFile();
+            }
+        } else {
+            file = chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
+        }
+        return file;
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
@@ -82,12 +96,23 @@ public class FileDialogUtils {
 
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
-
         File[] files = null;
-        FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
-        if (fd.isMultipleMode()) {
-            fd.setVisible(true);
-            files = fd.getFiles();
+        if (Globals.USE_CUSTOM_FILEDIALOG) {
+            JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(true);
+            Frame parentFrame = getParentFrame();
+            int result = fileChooser.showOpenDialog(parentFrame);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                files = fileChooser.getSelectedFiles();
+            }
+        } else {
+            // Use native dialog as default
+            FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
+            if (fd.isMultipleMode()) {
+                fd.setVisible(true);
+                files = fd.getFiles();
+            }
         }
         return files;
     }
@@ -169,7 +194,13 @@ public class FileDialogUtils {
      */
     private static JFileChooser getJFileChooser(String title, File initialDirectory, File initialFile,
                                                 final FilenameFilter filter, int directoryMode) {
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser;
+        if (Globals.USE_CUSTOM_FILEDIALOG) {
+            fileChooser = new LsFileChooser(initialDirectory);
+        } else {
+            fileChooser = new JFileChooser();
+        }
+
         if (initialDirectory != null) {
             fileChooser.setCurrentDirectory(initialDirectory);
         }
