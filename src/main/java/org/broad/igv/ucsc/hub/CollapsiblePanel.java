@@ -71,7 +71,7 @@ public class CollapsiblePanel extends JPanel {
 
         String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, " + selectionCount + " selected)";
 
-        boolean isOpen = isSelected || configContainer.defaultOpen;
+        boolean isOpen = isSelected || configContainer.defaultOpen || selectionBoxes.size() <= 100;
 
         this.content = trackPanel;
         this.openIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.MINUS);

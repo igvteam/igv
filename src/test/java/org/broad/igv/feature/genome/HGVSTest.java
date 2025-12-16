@@ -124,6 +124,17 @@ public class HGVSTest extends AbstractHeadlessTest {
 
     }
 
+    // Test case adapted from ClinVar entry
+    @Test
+    public void testClinvar() throws Exception {
+        String hgvs = "NC_000010.11:g.87863411C>G";
+        assertTrue(HGVS.isValidHGVS(hgvs));
+        SearchCommand.SearchResult result = HGVS.search(hgvs, genome);
+        assertEquals("chr10", result.getChr());
+        assertEquals(87863410, result.getStart());
+    }
+
+
     @Test
     public void testSearchInIntrons() throws Exception {
 
