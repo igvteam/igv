@@ -80,6 +80,9 @@ public class LsFileChooser extends JFileChooser {
                     " | Files: " + fileCount + " | Folders: " + dirCount);
         } catch (IOException | InterruptedException e) {
             log.error("Error scanning directory: " + dir.getAbsolutePath(), e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
