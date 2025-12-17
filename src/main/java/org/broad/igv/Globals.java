@@ -100,7 +100,7 @@ public class Globals {
 
 
     final public static boolean USE_CUSTOM_FILEDIALOG =
-            "true".equalsIgnoreCase(System.getenv("USE_CUSTOM_FILEDIALOG"));
+            "true".equalsIgnoreCase(System.getenv("USE_CUSTOM_FILEDIALOG")) && IS_LINUX;
 
     public static final String JAVA_VERSION_STRING = "java.version";
 
