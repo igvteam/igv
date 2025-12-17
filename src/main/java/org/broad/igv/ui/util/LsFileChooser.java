@@ -49,6 +49,8 @@ public class LsFileChooser extends JFileChooser {
 
     /**
      * Scans the given directory and logs the number of files and directories.
+     * <p>
+     * <b>Note:</b> Currently, logging is the only action performed by this method.
      *
      * @param dir The directory to scan.
      */
