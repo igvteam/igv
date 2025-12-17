@@ -8,7 +8,7 @@ Note this only used if environment variable USE_CUSTOM_FILEDIALOG is set to "tru
 
 Background: We are running IGV in an XPRA desktop session on a remote server.
 The filesystem has a directory mounted where the backend is a cloud object store (s3)
-Some of the folders have more than 3000 files/folders in them and the standard FielDialog either took
+Some of the folders have more than 3000 files/folders in them and the standard FileDialog either took
 hours to fetch the list of files/folders. At the same time we observed that running 'ls' on these folders
 was nearly instantaneous (a few seconds at most).
 */
