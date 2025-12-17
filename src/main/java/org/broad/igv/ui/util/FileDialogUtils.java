@@ -75,7 +75,15 @@ public class FileDialogUtils {
             JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, JFileChooser.FILES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
             Frame parentFrame = getParentFrame();
-            int result = fileChooser.showOpenDialog(parentFrame);
+            int result;
+            if (mode == LOAD) {
+                result = fileChooser.showOpenDialog(parentFrame);
+            } else if (mode == SAVE) {
+                result = fileChooser.showSaveDialog(parentFrame);
+            } else {
+                // Default to open dialog if mode is unrecognized
+                result = fileChooser.showOpenDialog(parentFrame);
+            }
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 file = fileChooser.getSelectedFile();
