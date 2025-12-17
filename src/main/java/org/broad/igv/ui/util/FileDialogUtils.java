@@ -72,7 +72,7 @@ public class FileDialogUtils {
         if (initialFile != null) initialFile = new File(initialFile.getName());
 
         if (Globals.USE_CUSTOM_FILEDIALOG) {
-            JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, JFileChooser.FILES_ONLY);
+            JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directoriesMode);
             fileChooser.setMultiSelectionEnabled(false);
             Frame parentFrame = getParentFrame();
             int result;
