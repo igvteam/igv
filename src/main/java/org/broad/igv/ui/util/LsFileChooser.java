@@ -8,7 +8,7 @@ Note this only used if environment variable USE_CUSTOM_FILEDIALOG is set to "tru
 
 Background: We are running IGV in an XPRA desktop session on a remote server.
 The filesystem has a directory mounted where the backend is a cloud object store (s3)
-Some of the folders have more than 3000 files/folders in them and the standard FielDialog either took
+Some of the folders have more than 3000 files/folders in them and the standard FileDialog either took
 hours to fetch the list of files/folders. At the same time we observed that running 'ls' on these folders
 was nearly instantaneous (a few seconds at most).
 */
@@ -49,6 +49,8 @@ public class LsFileChooser extends JFileChooser {
 
     /**
      * Scans the given directory and logs the number of files and directories.
+     * <p>
+     * <b>Note:</b> Currently, logging is the only action performed by this method.
      *
      * @param dir The directory to scan.
      */
@@ -79,7 +81,11 @@ public class LsFileChooser extends JFileChooser {
                     " | Files: " + fileCount + " | Folders: " + dirCount);
         } catch (IOException | InterruptedException e) {
             log.error("Error scanning directory: " + dir.getAbsolutePath(), e);
-        } finally {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        finally {
             if (process != null) {
                 process.destroy();
             }
