@@ -55,8 +55,9 @@ public class LsFileChooser extends JFileChooser {
     private void scanDirectory(File dir) {
         int fileCount = 0;
         int dirCount = 0;
+        Process process = null;
         try {
-            Process process = new ProcessBuilder("ls", "-1", dir.getAbsolutePath()).start();
+            process = new ProcessBuilder("ls", "-1", dir.getAbsolutePath()).start();
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream()))) {
                 String line;
@@ -78,6 +79,10 @@ public class LsFileChooser extends JFileChooser {
                     " | Files: " + fileCount + " | Folders: " + dirCount);
         } catch (IOException | InterruptedException e) {
             log.error("Error scanning directory: " + dir.getAbsolutePath(), e);
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
         }
     }
 }
