@@ -37,6 +37,8 @@ public class BaseModificationRenderer {
         BaseModficationFilter filter = renderOptions.getBasemodFilter();
         float threshold = renderOptions.getBasemodThreshold();
 
+        // Determine if we should leave a margin (same logic as AlignmentRenderer)
+        boolean leaveMargin = renderOptions.getTrack().getDisplayMode() != org.broad.igv.track.Track.DisplayMode.SQUISHED;
 
         int pY = (int) rowRect.getY();
         int dY = (int) rowRect.getHeight();
@@ -59,6 +61,7 @@ public class BaseModificationRenderer {
             int noModLh = 255;
             String modification = null;
             char canonicalBase = 0;
+            char modStrand = 0;
             for (BaseModificationSet bmSet : baseModificationSets) {
                 if (bmSet.containsPosition(i)) {
                     int lh = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
@@ -67,6 +70,7 @@ public class BaseModificationRenderer {
                         modification = bmSet.getModification();
                         canonicalBase = bmSet.getCanonicalBase();
                         maxLh = lh;
+                        modStrand = bmSet.getStrand();
                     }
                 }
             }
@@ -88,7 +92,27 @@ public class BaseModificationRenderer {
                         dX = 3;
                         pX--;
                     }
-                    g.fillRect(pX, pY, dX, Math.max(1, dY - 2));
+
+                    // Draw strand-specific half-height rectangles
+                    // Forward strand (+): upper half
+                    // Reverse strand (-): lower half
+                    int rectY = pY;
+                    int rectHeight = Math.max(1, dY - (leaveMargin ? 2 : 0));
+
+                    // Only split by strand if height is sufficient (at least 4 pixels)
+                    if (rectHeight >= 4 && modStrand != 0) {
+                        if (modStrand == '+') {
+                            // Forward strand: upper half (gets extra pixel if odd height)
+                            rectHeight = (rectHeight + 1) / 2;
+                        } else if (modStrand == '-') {
+                            // Reverse strand: lower half
+                            int halfHeight = (rectHeight + 1) / 2;
+                            rectY = pY + halfHeight;
+                            rectHeight = rectHeight - halfHeight;
+                        }
+                    }
+
+                    g.fillRect(pX, rectY, dX, rectHeight);
                 }
 
             }
