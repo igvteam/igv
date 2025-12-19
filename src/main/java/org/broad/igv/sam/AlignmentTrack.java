@@ -1311,6 +1311,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return baseQualityMax;
         }
 
+        public AlignmentTrack getTrack() {
+            return track;
+        }
+
         public HashMap<String, Color> getSelectedReadNames() {
             return this.track.getSelectedReadNames();
         }
