@@ -152,7 +152,7 @@ public class BaseRenderer {
                     if (colorOption.isBaseMod()) {
                         List<BaseModificationSet> baseModificationSets = alignment.getBaseModificationSets();
                         if (baseModificationSets != null) {
-                            BaseModificationRenderer.drawBlock(origin, locScale, rect, g, renderOptions, baseModificationSets, insertion);
+                            BaseModificationRenderer.drawBlock(origin, locScale, rect, g, renderOptions, baseModificationSets, insertion, alignment.isNegativeStrand());
                         }
                     }
                 }
