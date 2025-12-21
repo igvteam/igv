@@ -9,6 +9,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.jbrowse.CircularViewUtilities;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
+import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.mods.BaseModficationFilter;
 import org.broad.igv.sam.mods.BaseModificationKey;
@@ -244,7 +245,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 try {
                     List<SupplementaryAlignment> supplementaryAlignments = SupplementaryAlignment.parseFromSATag(saTag);
                     alignmentTrack.setSelectedAlignment(clickedAlignment);
-                    FrameManager.addNewLociToFrames(e.getFrame(), supplementaryAlignments, alignmentTrack.getSelectedReadNames().keySet());
+
+                    conditionallyGroupBySelected();
+
+                    FrameManager.addNewLociToFrames(e.getFrame(), supplementaryAlignments);
                 } catch (final Exception ex) {
                     MessageUtils.showMessage("Failed to handle SA tag: " + saTag + " due to " + ex.getMessage());
                     item.setEnabled(false);
@@ -661,7 +665,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mi.addActionListener(aEvt -> {
                 final SortOption option = el.getValue();
                 renderOptions.setSortOption(option);
-                alignmentTrack.sortAlignmentTracks(option, null, renderOptions.isInvertSorting());
+                sortAlignmentTracks(option, null, renderOptions.isInvertSorting());
             });
             sortMenu.add(mi);
         }
@@ -672,7 +676,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             if (tag != null && tag.trim().length() > 0) {
                 renderOptions.setSortByTag(tag);
                 renderOptions.setSortOption((SortOption.TAG));
-                alignmentTrack.sortAlignmentTracks(SortOption.TAG, tag, renderOptions.isInvertSorting());
+                sortAlignmentTracks(SortOption.TAG, tag, renderOptions.isInvertSorting());
             }
         });
         sortMenu.add(tagOption);
@@ -683,7 +687,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         invertGroupNameSortingOption.addActionListener(aEvt -> {
             final boolean updatedInvertSorting = !renderOptions.isInvertSorting();
             renderOptions.setInvertSorting(updatedInvertSorting);
-            alignmentTrack.sortAlignmentTracks(renderOptions.getSortOption(), renderOptions.getSortByTag(), updatedInvertSorting);
+            sortAlignmentTracks(renderOptions.getSortOption(), renderOptions.getSortByTag(), updatedInvertSorting);
         });
         sortMenu.add(invertGroupNameSortingOption);
         add(sortMenu);
@@ -877,9 +881,10 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     void addPackMenuItem() {
         // Change track height by attribute
-        JMenuItem item = new JMenuItem("Re-pack alignments");
+        JMenuItem item = new JMenuItem("Re-pack alignments (undo sort)");
         item.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
-            IGV.getInstance().packAlignmentTracks();
+            AlignmentTrackUtils.packAlignmentTracks();
+            renderOptions.setSortOption(SortOption.NONE);
             alignmentTrack.repaint();
         }));
 
@@ -948,6 +953,14 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         JMenuItem item = new JMenuItem("Clear selections");
         item.addActionListener(aEvt -> {
             alignmentTrack.getSelectedReadNames().clear();
+
+            // If grouped by selected clear grouping
+            AlignmentTrack.RenderOptions renderOptions = alignmentTrack.getRenderOptions();
+            if (renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.SELECTED) {
+                renderOptions.setGroupByOption(AlignmentTrack.GroupOption.NONE);
+                dataManager.packAlignments(renderOptions, alignmentTrack.getDisplayMode());
+            }
+
             alignmentTrack.repaint();
         });
         add(item);
@@ -1354,7 +1367,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 int newStart = (int) Math.max(0, (start + (alignment.getEnd() - alignment.getStart()) / 2 - range / 2));
                 int newEnd = newStart + (int) range;
                 frame.jumpTo(chr, newStart, newEnd);
-                AlignmentTrack.sortSelectedReadsToTheTop(alignmentTrack.getSelectedReadNames().keySet());
                 frame.recordHistory();
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
@@ -1365,17 +1377,32 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     /**
      * Split the screen so the current view and mate region are side by side.
-     * Need a better name for this method.
      */
     private void splitScreenMate(ReferenceFrame frame, Alignment alignment) {
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
                 alignmentTrack.setSelectedAlignment(alignment);
-                FrameManager.addNewLociToFrames(frame, List.of(mate), alignmentTrack.getSelectedReadNames().keySet());
+
+                conditionallyGroupBySelected();
+
+                FrameManager.addNewLociToFrames(frame, List.of(mate));
             } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
+        }
+    }
+
+    /**
+     * Conditionally group alignments by "selected". If another grouping is already active, we leave it alone.
+     * This is used by the the split-screen methods for paired and supplementary alignments to bring selected reads
+     * to the top.
+     */
+    private void conditionallyGroupBySelected() {
+        AlignmentTrack.RenderOptions renderOptions = alignmentTrack.getRenderOptions();
+        if (renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.NONE) {
+            renderOptions.setGroupByOption(AlignmentTrack.GroupOption.SELECTED);
+            dataManager.packAlignments(renderOptions, alignmentTrack.getDisplayMode());
         }
     }
 
@@ -1420,6 +1447,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         renderOptions.setLinkedReads(linkReads);
         alignmentTrack.packAlignments();
         alignmentTrack.repaint();
+    }
+
+
+    private void sortAlignmentTracks(SortOption option, String tag, boolean invertSort) {
+        AlignmentTrackUtils.sortAlignmentTracks(option, tag, invertSort);
+        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
+        for (IGVPreferences prefs : allPrefs) {
+            prefs.put(SAM_SORT_OPTION, option.toString());
+            prefs.put(SAM_SORT_BY_TAG, tag);
+            prefs.put(SAM_INVERT_SORT, invertSort);
+        }
     }
 
 

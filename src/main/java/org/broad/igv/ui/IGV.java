@@ -56,6 +56,7 @@ import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesEditor;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.AlignmentTrackUtils;
 import org.broad.igv.sam.InsertionSelectionEvent;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.*;
@@ -1345,74 +1346,6 @@ public class IGV implements IGVEventObserver {
                 "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
         return annotationFormats.contains(format);
     }
-
-
-    public void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
-        sortAlignmentTracks(option, null, tag, invertSort, null);
-    }
-
-    public void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort, Set<String> priorityRecords) {
-        List<AlignmentTrack> alignmentTracks = getAllTracks().stream()
-                .filter(track -> track instanceof AlignmentTrack)
-                .map(track -> (AlignmentTrack) track)
-                .peek(track -> track.sortRows(option, location, tag, invertSort, priorityRecords))
-                .collect(Collectors.toList());
-        this.repaint(alignmentTracks);
-    }
-
-    /**
-     * Group all alignment tracks by the specified option.
-     *
-     * @param option
-     * @api
-     */
-    public void groupAlignmentTracks(AlignmentTrack.GroupOption option, String tag, Range pos) {
-
-        List<Track> alignmentTracks = getAllTracks().stream()
-                .filter(track -> track instanceof AlignmentTrack)
-                .collect(Collectors.toList());
-        for (Track t : alignmentTracks) {
-            ((AlignmentTrack) t).groupAlignments(option, tag, pos);
-        }
-        this.repaint(alignmentTracks);
-    }
-
-    /**
-     * Group all alignment tracks by the specified option.
-     *
-     * @param option
-     * @api
-     */
-    public void colorAlignmentTracks(AlignmentTrack.ColorOption option, String tag) {
-
-        List<Track> alignmentTracks = getAllTracks().stream()
-                .filter(track -> track instanceof AlignmentTrack)
-                .collect(Collectors.toList());
-        for (Track t : alignmentTracks) {
-            final AlignmentTrack alignmentTrack = (AlignmentTrack) t;
-            alignmentTrack.setColorOption(option);
-            if (option == AlignmentTrack.ColorOption.BISULFITE && tag != null) {
-                try {
-                    AlignmentTrack.BisulfiteContext context = AlignmentTrack.BisulfiteContext.valueOf(tag);
-                    alignmentTrack.setBisulfiteContext(context);
-                } catch (IllegalArgumentException e) {
-                    log.error("Error setting bisulfite context for: " + tag, e);
-                }
-            } else if (tag != null) {
-                alignmentTrack.setColorByTag(tag);
-            }
-        }
-        this.repaint(alignmentTracks);
-    }
-
-    public void packAlignmentTracks() {
-        for (Track t : getAllTracks()) {
-            if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).packAlignments();
-            }
-        }
-    }
-
 
     /**
      * Reset the overlay tracks collection.  Currently the only overlayable track

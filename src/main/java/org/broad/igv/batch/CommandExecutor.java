@@ -42,6 +42,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.AlignmentTrackUtils;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -849,7 +850,7 @@ public class CommandExecutor {
 
                 if (sort != null) {
                     final SortOption sortOption = getAlignmentSortOption(sort);
-                    igv.sortAlignmentTracks(sortOption, sortTag, false);
+                    AlignmentTrackUtils.sortAlignmentTracks(sortOption, sortTag, false);
                 }
             }
 
@@ -1111,7 +1112,7 @@ public class CommandExecutor {
 
             boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
 
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort, null);
+            AlignmentTrackUtils.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort);
             return "OK";
         }
     }
@@ -1132,13 +1133,13 @@ public class CommandExecutor {
                 }
             }
         }
-        igv.groupAlignmentTracks(groupOption, tagArg, r);
+        AlignmentTrackUtils.groupAlignmentTracks(groupOption, tagArg, r);
         return "OK";
     }
 
     private String colorBy(String colorArg, String tagArg) {
         final AlignmentTrack.ColorOption colorOption = AlignmentTrack.ColorOption.valueOf(colorArg.toUpperCase());
-        igv.colorAlignmentTracks(colorOption, tagArg);
+        AlignmentTrackUtils.colorAlignmentTracks(colorOption, tagArg);
         return "OK";
     }
 

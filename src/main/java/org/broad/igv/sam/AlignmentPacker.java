@@ -172,7 +172,7 @@ public class AlignmentPacker {
             if (al.isMapped()) {
                 Alignment alignment = al;
 
-                // Pair alignments -- do not pair secondaryalignments
+                // Pair alignments -- do not pair secondary alignments
                 if (isPairedAlignments && isPairable(al)) {
                     String readName = al.getReadName();
                     PairedAlignment pair = pairs.get(readName);
@@ -185,11 +185,10 @@ public class AlignmentPacker {
                         pair.setSecondAlignment(al);
                         pairs.remove(readName);
                         continue;
-
                     }
                 }
 
-                // Allocate to bucket.
+                // Allocate to bucket.  There is a bucket for each base position in the range.
                 // Negative "bucketNumbers" can arise with soft clips at the left edge of the chromosome. Allocate
                 // these alignments to the first bucket.
                 int bucketNumber = Math.max(0, al.getStart() - curRangeStart);

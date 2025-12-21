@@ -167,25 +167,20 @@ public class ReferenceFrame {
 
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
-    }
-
-    public void changeGenome(Genome genome) {
-        setChromosomeName(genome.getHomeChromosome(), true);
+        final ViewChange event = ViewChange.LocusChangeResult(this, chrName, origin, getEnd(), false);
+        event.fromPanning = true;
+        eventBus.post(event);
     }
 
     public void changeChromosome(String chrName, boolean recordHistory) {
-        boolean changed = setChromosomeName(chrName, false);
-        // if (changed) {
-        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(chrName, recordHistory);
+        ViewChange resultEvent = ViewChange.ChromosomeChangeResult(this, chrName, recordHistory);
         eventBus.post(resultEvent);
         changeZoom(0);
-        // }
     }
 
     public void changeZoom(int newZoom) {
         doSetZoom(newZoom);
-        ViewChange result = ViewChange.LocusChangeResult(chrName, origin, getEnd(), false);
+        ViewChange result = ViewChange.LocusChangeResult(this, chrName, origin, getEnd(), false);
         eventBus.post(result);
     }
 
@@ -379,13 +374,13 @@ public class ReferenceFrame {
     public void shiftOriginPixels(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, getEnd(), false));
+        eventBus.post(ViewChange.LocusChangeResult(this, chrName, origin, getEnd(), false));
     }
 
     public void shiftOriginPixelsPanning(int delta) {
         double shiftBP = delta * getScale();
         setOrigin(shiftBP + origin);
-        eventBus.post(ViewChange.LocusChangeResultPanning(chrName, origin, getEnd(), false));
+        eventBus.post(ViewChange.LocusChangeResultPanning(this, chrName, origin, getEnd(), false));
     }
 
     public void centerOnLocation(String chr, double chrLocation) {
@@ -398,7 +393,7 @@ public class ReferenceFrame {
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
-        eventBus.post(ViewChange.LocusChangeResult(chrName, origin, chrLocation + windowWidth, false));
+        eventBus.post(ViewChange.LocusChangeResult(this, chrName, origin, chrLocation + windowWidth, false));
     }
 
     public boolean windowAtEnd() {
@@ -460,7 +455,7 @@ public class ReferenceFrame {
             log.debug("Scale = " + scale);
         }
 
-        eventBus.post(ViewChange.LocusChangeResult(chrName, start, end, false));
+        eventBus.post(ViewChange.LocusChangeResult(this, chrName, start, end, false));
     }
 
     public double getOrigin() {
