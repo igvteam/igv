@@ -1273,6 +1273,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private Integer smallIndelThreshold;
         private BaseModficationFilter basemodFilter;
         private Float basemodThreshold;
+        private Boolean basemodDistinguishStrands;
         private int baseQualityMin;
         private int baseQualityMax;
 
@@ -1628,6 +1629,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return basemodFilter;
         }
 
+        public void setBasemodFilter(BaseModficationFilter basemodFilter) {
+
+            this.basemodFilter = basemodFilter;
+        }
+
         public float getBasemodThreshold() {
             return basemodThreshold == null ? getPreferences().getAsFloat(BASEMOD_THRESHOLD) : basemodThreshold.floatValue();
         }
@@ -1636,10 +1642,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.basemodThreshold = basemodThreshold;
         }
 
-        public void setBasemodFilter(BaseModficationFilter basemodFilter) {
-
-            this.basemodFilter = basemodFilter;
+        public boolean getBasemodDistinguishStrands() {
+            return basemodDistinguishStrands == null ? getPreferences().getAsBoolean(BASEMOD_DISTINGUISH_STRANDS) : basemodDistinguishStrands;
         }
+
+        public void setBasemodDistinguishStrands(boolean basemodDistinguishStrands) {
+            this.basemodDistinguishStrands = basemodDistinguishStrands;
+        }
+
 
         @Override
         public void marshalXML(Document document, Element element) {

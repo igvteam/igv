@@ -219,6 +219,7 @@ final public class Constants {
     public static final String BASEMOD_NONE_N_COLOR = "BASEMOD.NONE_N_COLOR";
 
     public static final String BASEMOD_GROUP_BY_STRAND = "BASEMOD.GROUP_BY_STRAND";
+    public static final String BASEMOD_DISTINGUISH_STRANDS = "BASEMOD.DISTINGUISH_STRANDS";
     public static final String BASEMOD_SKIPPED_BASES = "BASEMOD.SKIPPED_BASES";
     public static final String SMRT_KINETICS_SHOW_OPTIONS = "SMRT_KINETICS.SHOW_OPTIONS";
     public static final String BASEMOD_VALIDATE_BASE_COUNT = "BASEMOD.VALIDATE_BASE_COUNT";
