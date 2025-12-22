@@ -284,12 +284,12 @@ public class Session implements IGVEventObserver {
     }
 
 
-    public String getLocusString() {
+    public String getCurrentLocus() {
         if (getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
             return Globals.CHR_ALL;
         }
         Range range = getReferenceFrame().getCurrentRange();
-        String startStr = String.valueOf(range.getStart());
+        String startStr = String.valueOf(range.getStart() + 1);
         String endStr = String.valueOf(range.getEnd());
         String position = range.getChr() + ":" + startStr + "-" + endStr;
         return position;
