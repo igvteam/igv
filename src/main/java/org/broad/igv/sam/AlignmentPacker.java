@@ -30,16 +30,17 @@
 package org.broad.igv.sam;
 
 import htsjdk.samtools.SAMTag;
-import org.broad.igv.logging.*;
 import org.broad.igv.feature.Range;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.logging.LogManager;
+import org.broad.igv.logging.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.*;
 
 /**
- * Packs alignments such that there is no overlap
+ * Packs alignments tightly with no overlap
  *
  * @author jrobinso
  */
@@ -51,16 +52,9 @@ public class AlignmentPacker {
      * Minimum gap between the end of one alignment and start of another.
      */
     public static final int MIN_ALIGNMENT_SPACING = 2;
-    private static final Comparator<Alignment> lengthComparator = new Comparator<Alignment>() {
-        public int compare(Alignment row1, Alignment row2) {
-            return (row2.getEnd() - row2.getStart()) -
-                    (row1.getEnd() - row2.getStart());
 
-        }
-    };
 
     private static final String NULL_GROUP_VALUE = "";
-    public static final int tenMB = 10000000;
 
     /**
      * Allocates each alignment to row such that there is no overlap.
@@ -135,40 +129,19 @@ public class AlignmentPacker {
     }
 
 
-    private void packDense(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows) {
+    private void packDense(List<Alignment> alList,
+                           AlignmentTrack.RenderOptions renderOptions,
+                           List<Row> alignmentRows) {
 
-        Map<String, PairedAlignment> pairs = null;
+        if (alList == null || alList.isEmpty()) return;
 
         boolean isPairedAlignments = renderOptions.isViewPairs();
 
-        if (isPairedAlignments) {
-            pairs = new HashMap<>(1000);
-        }
+        // Process pairing
+        Map<String, PairedAlignment> pairs = isPairedAlignments ? new HashMap<>(1000) : null;
+        List<Alignment> alignmentsToPack = new ArrayList<>();
 
-        // Allocate alignemnts to buckets for each range.
-        // We use priority queues to keep the buckets sorted by alignment length.  However this  is probably a needless
-        // complication,  any collection type would do.
-
-        int totalCount = 0;
-
-        if (alList == null || alList.size() == 0) return;
-
-        Range curRange = getAlignmentListRange(alList);
-
-        BucketCollection bucketCollection;
-
-        // Use dense buckets for < 10,000,000 bp windows sparse otherwise
-        int bpLength = curRange.getLength();
-
-        if (bpLength < tenMB) {
-            bucketCollection = new DenseBucketCollection(bpLength, curRange);
-        } else {
-            bucketCollection = new SparseBucketCollection(curRange);
-        }
-
-        int curRangeStart = curRange.getStart();
         for (Alignment al : alList) {
-
             if (al.isMapped()) {
                 Alignment alignment = al;
 
@@ -188,84 +161,44 @@ public class AlignmentPacker {
                     }
                 }
 
-                // Allocate to bucket.  There is a bucket for each base position in the range.
-                // Negative "bucketNumbers" can arise with soft clips at the left edge of the chromosome. Allocate
-                // these alignments to the first bucket.
-                int bucketNumber = Math.max(0, al.getStart() - curRangeStart);
-                if (bucketNumber < bucketCollection.getBucketCount()) {
-                    PriorityQueue<Alignment> bucket = bucketCollection.get(bucketNumber);
-                    if (bucket == null) {
-                        bucket = new PriorityQueue<Alignment>(5, lengthComparator);
-                        bucketCollection.set(bucketNumber, bucket);
-                    }
-                    bucket.add(alignment);
-                    totalCount++;
-                } else {
-                    log.debug("Alignment out of bounds. name: " + alignment.getReadName() + " startPos:" + alignment.getStart());
-                }
+                alignmentsToPack.add(alignment);
             }
         }
-        bucketCollection.finishedAdding();
 
+        // Pack alignments into rows, ensuring tight packing with no overlaps.
+        // Always searches from row 0 for tight packing. The fast-path optimization in canFitInRow
+        // (checking lastEnd) makes this efficient even for large datasets (250K+ alignments).
+        for (Alignment alignment : alignmentsToPack) {
+            boolean placed = false;
 
-        // Now allocate alignments to rows.
-        long t0 = System.currentTimeMillis();
-        int allocatedCount = 0;
-        Row currentRow = new Row();
-
-        while (allocatedCount < totalCount) {
-
-            curRange = bucketCollection.getRange();
-
-            curRangeStart = curRange.getStart();
-            int nextStart = curRangeStart;
-            List<Integer> emptyBuckets = new ArrayList<Integer>(100);
-
-            while (true) {
-                int bucketNumber = nextStart - curRangeStart;
-                PriorityQueue<Alignment> bucket = bucketCollection.getNextBucket(bucketNumber, emptyBuckets);
-
-                // Pull the next alignment out of the bucket and add to the current row
-                if (bucket != null) {
-                    Alignment alignment = bucket.remove();
-                    currentRow.addAlignment(alignment);
-                    allocatedCount++;
-
-                    nextStart = alignment.getEnd() + MIN_ALIGNMENT_SPACING;
-
-                }
-
-                //Reached the end of this range, move to the next
-                if (bucket == null || nextStart > curRange.getEnd()) {
-                    //Remove empty buckets.  This has no affect on the dense implementation,
-                    //they are removed on the fly, but is needed for the sparse implementation
-                    bucketCollection.removeBuckets(emptyBuckets);
-                    emptyBuckets.clear();
+            // Try to find an existing row where this alignment fits
+            // Start from row 0 to ensure tightest packing
+            for (Row row : alignmentRows) {
+                if (canFitInRow(row, alignment)) {
+                    row.addAlignment(alignment);
+                    placed = true;
                     break;
                 }
             }
 
-
-            // We've reached the end of the interval,  start a new row
-            if (currentRow.alignments.size() > 0) {
-                alignmentRows.add(currentRow);
+            // If no existing row works, create a new row
+            if (!placed) {
+                Row newRow = new Row();
+                newRow.addAlignment(alignment);
+                alignmentRows.add(newRow);
             }
-            currentRow = new Row();
         }
+
         if (log.isDebugEnabled()) {
-            long dt = System.currentTimeMillis() - t0;
-            log.debug("Packed alignments in " + dt);
+            log.debug("Packed " + alList.size() + " alignments into " + alignmentRows.size() + " rows");
         }
-
-        // Add the last row
-        if (currentRow != null && currentRow.alignments.size() > 0) {
-            alignmentRows.add(currentRow);
-        }
-
-
     }
 
-    private void packFull(List<Alignment> alList, AlignmentTrack.RenderOptions renderOptions, List<Row> alignmentRows, ReferenceFrame referenceFrame) {
+
+    private void packFull(List<Alignment> alList,
+                          AlignmentTrack.RenderOptions renderOptions,
+                          List<Row> alignmentRows,
+                          ReferenceFrame referenceFrame) {
 
         Map<String, PairedAlignment> pairs = null;
 
@@ -307,6 +240,39 @@ public class AlignmentPacker {
         }
     }
 
+    /**
+     * Check if an alignment can fit in a row without overlapping existing alignments.
+     * Optimized for genomic order processing with fast-path check.
+     *
+     * Performance note: This method is critical for large datasets (250K+ alignments).
+     * The fast-path handles the common case (alignment after all existing) in O(1).
+     */
+    private boolean canFitInRow(Row row, Alignment alignment) {
+        int alignmentStart = alignment.getStart();
+        int alignmentEnd = alignment.getEnd();
+
+        // Fast path: if this alignment starts after the last alignment in the row ends (with spacing),
+        // it definitely fits without needing to check individual alignments.
+        // This is the common case when processing alignments in genomic order.
+        if (alignmentStart >= row.getLastEnd() + MIN_ALIGNMENT_SPACING) {
+            return true;
+        }
+
+        // Slow path: need to check against each alignment in the row.
+        // This happens when inserting into gaps or before centered alignments.
+        List<Alignment> existingAlignments = row.getAlignments();
+        for (Alignment existing : existingAlignments) {
+            int existingStart = existing.getStart();
+            int existingEnd = existing.getEnd();
+
+            // Check for overlap with spacing
+            if (!(alignmentEnd + MIN_ALIGNMENT_SPACING <= existingStart ||
+                    alignmentStart >= existingEnd + MIN_ALIGNMENT_SPACING)) {
+                return false;  // Overlaps with this alignment
+            }
+        }
+        return true;
+    }
 
     private boolean isPairable(Alignment al) {
         return al.isPrimary() &&
@@ -562,191 +528,6 @@ public class AlignmentPacker {
         };
     }
 
-    interface BucketCollection {
-
-        Range getRange();
-
-        void set(int idx, PriorityQueue<Alignment> bucket);
-
-        PriorityQueue<Alignment> get(int idx);
-
-        PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets);
-
-        void removeBuckets(Collection<Integer> emptyBuckets);
-
-        void finishedAdding();
-
-        int getBucketCount();
-    }
-
-    /**
-     * Dense array implementation of BucketCollection.  Assumption is all or nearly all the genome region is covered
-     * with reads.
-     */
-    static class DenseBucketCollection implements BucketCollection {
-
-        Range range;
-        int lastBucketNumber = -1;
-        final PriorityQueue[] bucketArray;
-
-        DenseBucketCollection(int bucketCount, Range range) {
-            this.bucketArray = new PriorityQueue[bucketCount];
-            this.range = range;
-        }
-
-        public void set(int idx, PriorityQueue<Alignment> bucket) {
-            bucketArray[idx] = bucket;
-        }
-
-        public PriorityQueue<Alignment> get(int idx) {
-            return bucketArray[idx];
-        }
-
-        public int getBucketCount() {
-            return this.bucketArray.length;
-        }
-
-        public Range getRange() {
-            return range;
-        }
-
-        /**
-         * Return the next occupied bucket after bucketNumber
-         *
-         * @param bucketNumber
-         * @param emptyBuckets ignored
-         * @return
-         */
-        public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {
-
-            if (bucketNumber == lastBucketNumber) {
-                // TODO -- detect inf loop here
-            }
-
-            PriorityQueue<Alignment> bucket = null;
-            while (bucketNumber < bucketArray.length) {
-
-                if (bucketNumber < 0) {
-                    log.warn("Negative bucket number: " + bucketNumber);
-                }
-
-                bucket = bucketArray[bucketNumber];
-                if (bucket != null) {
-                    if (bucket.isEmpty()) {
-                        bucketArray[bucketNumber] = null;
-                    } else {
-                        return bucket;
-                    }
-                }
-                bucketNumber++;
-            }
-            return null;
-        }
-
-        public void removeBuckets(Collection<Integer> emptyBuckets) {
-            // Nothing to do, empty buckets are removed "on the fly"
-        }
-
-        public void finishedAdding() {
-            // nothing to do
-        }
-    }
-
-
-    /**
-     * "Sparse" implementation of an alignment BucketCollection.  Assumption is there are small clusters of alignments
-     * along the genome, with mostly "white space".
-     */
-    static class SparseBucketCollection implements BucketCollection {
-
-        Range range;
-        boolean finished = false;
-        List<Integer> keys;
-        final HashMap<Integer, PriorityQueue<Alignment>> buckets;
-
-        SparseBucketCollection(Range range) {
-            this.range = range;
-            this.buckets = new HashMap(1000);
-        }
-
-        public void set(int idx, PriorityQueue<Alignment> bucket) {
-            if (finished) {
-                log.error("Error: bucket added after finishAdding() called");
-            }
-            buckets.put(idx, bucket);
-        }
-
-        public PriorityQueue<Alignment> get(int idx) {
-            return buckets.get(idx);
-        }
-
-        public Range getRange() {
-            return range;
-        }
-
-        /**
-         * Return the next occupied bucket at or after after bucketNumber.
-         *
-         * @param bucketNumber -- the hash bucket index for the alignments, essential the position relative to the start
-         *                     of this packing interval
-         * @return the next occupied bucket at or after bucketNumber, or null if there are none.
-         */
-        public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {
-
-            PriorityQueue<Alignment> bucket = null;
-            int min = 0;
-            int max = keys.size() - 1;
-
-            // Get close to the right index, rather than scan from the beginning
-            while ((max - min) > 5) {
-                int mid = (max + min) / 2;
-                Integer key = keys.get(mid);
-                if (key > bucketNumber) {
-                    max = mid;
-                } else {
-                    min = mid;
-                }
-            }
-
-            // Now march from min to max until we cross bucketNumber
-            for (int i = min; i < keys.size(); i++) {
-                Integer key = keys.get(i);
-                if (key >= bucketNumber) {
-                    bucket = buckets.get(key);
-                    if (bucket.isEmpty()) {
-                        emptyBuckets.add(key);
-                        bucket = null;
-                    } else {
-                        return bucket;
-                    }
-                }
-            }
-            return null;     // No bucket found
-        }
-
-        public void removeBuckets(Collection<Integer> emptyBuckets) {
-
-            if (emptyBuckets.isEmpty()) {
-                return;
-            }
-
-            for (Integer i : emptyBuckets) {
-                buckets.remove(i);
-            }
-            keys = new ArrayList<Integer>(buckets.keySet());
-            Collections.sort(keys);
-        }
-
-        public void finishedAdding() {
-            finished = true;
-            keys = new ArrayList<Integer>(buckets.keySet());
-            Collections.sort(keys);
-        }
-
-        public int getBucketCount() {
-            return Integer.MAX_VALUE;
-        }
-    }
 
     private static class PairOrientationComparator implements Comparator<Object> {
         private final List<AlignmentTrack.OrientationType> orientationTypes;

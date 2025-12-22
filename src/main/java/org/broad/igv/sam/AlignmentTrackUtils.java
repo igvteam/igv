@@ -1,16 +1,16 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.feature.Range;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.UIUtilities;
 
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -98,5 +98,27 @@ public class AlignmentTrackUtils {
         for (AlignmentTrack t : IGV.getInstance().getAlignmentTracks()) {
             t.packAlignments();
         }
+    }
+
+    public static void sortAlignments(SortOption option,
+                                      String chr,
+                                      double location,
+                                      String tag,
+                                      boolean invertSort,
+                                      List<Alignment> alignments) {
+
+        final int center = (int) location;
+        byte referenceBase = getReference(chr, center);
+        Comparator<Alignment> alignmentComparator = option.getAlignmentComparator(center, tag, referenceBase);
+        if (invertSort) alignmentComparator = alignmentComparator.reversed();
+        alignments.sort(alignmentComparator);
+    }
+
+    private static byte getReference(String chr, int pos) {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (genome == null) {
+            return 0;
+        }
+        return genome.getReference(chr, pos);
     }
 }

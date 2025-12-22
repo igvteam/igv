@@ -123,7 +123,8 @@ public class AlignmentInterval extends Locus {
      *
      * @param option
      * @param location
-     * @param selectedReadNames
+     * @param tag
+     * @param invertSort
      */
     public void sortRows(SortOption option, double location, String tag, boolean invertSort) {
 
