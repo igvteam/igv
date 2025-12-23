@@ -797,7 +797,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
         if (sortOptionString != null) {
             try {
-                SortOption option = SortOption.valueOf(sortOptionString);
+                SortOption option = SortOption.fromString(sortOptionString);
                 String tag = prefMgr.get(SAM_SORT_BY_TAG);
                 boolean invertSort = prefMgr.getAsBoolean(SAM_INVERT_SORT);
                 double location = referenceFrame.getCenter();
@@ -1789,7 +1789,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             if (element.hasAttribute("sortOption")) {
-                sortOption = SortOption.valueOf((element.getAttribute("sortOption")));
+                sortOption = SortOption.fromString((element.getAttribute("sortOption")));
             }
             if (element.hasAttribute("groupByOption")) {
                 String value = element.getAttribute("groupByOption");

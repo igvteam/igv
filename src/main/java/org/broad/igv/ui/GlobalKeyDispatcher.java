@@ -306,7 +306,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
         if (sortOptionString != null) {
             try {
-                SortOption option = SortOption.valueOf(sortOptionString);
+                SortOption option = SortOption.fromString(sortOptionString);
                 String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
                 AlignmentTrackUtils.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
             } catch (IllegalArgumentException e1) {

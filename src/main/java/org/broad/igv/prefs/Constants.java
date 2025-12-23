@@ -154,6 +154,7 @@ final public class Constants {
     public static final String SAM_GROUP_OPTION = "SAM.GROUP_OPTION";
 
     public static final String SAM_GROUP_ALL = "SAM.GROUP_ALL";
+    public static final String SAM_SORT_ALL = "SAM.SORT_ALL";
     public static final String SAM_SHOW_ALL_BASES = "SAM.SHOW_ALL_BASES";
     public static final String SAM_SHOW_MISMATCHES = "SAM.SHOW_MISMATCHES";
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";

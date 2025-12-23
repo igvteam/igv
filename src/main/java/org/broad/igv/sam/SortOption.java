@@ -22,7 +22,7 @@ public enum SortOption {
                     ? ((LinkedAlignment) a).getStrandAtPosition(center)
                     : a.getReadStrand());
         }
-    }, NUCLEOTIDE {
+    }, BASE {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
 
@@ -172,6 +172,20 @@ public enum SortOption {
     // center alignment anyway
     abstract Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase);
 
+    /**
+     * Custom valueOf method with backward compatibility.
+     * Supports "NUCLEOTIDE" as an alias for "BASE" for backward compatibility.
+     *
+     * @param name the string name of the enum constant
+     * @return the enum constant with the specified name
+     * @throws IllegalArgumentException if no constant with the specified name is found
+     */
+    public static SortOption fromString(String name) {
+        if ("NUCLEOTIDE".equals(name)) {
+            return BASE;
+        }
+        return SortOption.valueOf(name);
+    }
 
     public static final Comparator<Locatable> POSITION_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(Locatable::getContig, ChromosomeNameComparator.get()))
             .thenComparing(Locatable::getStart)

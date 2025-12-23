@@ -254,7 +254,7 @@ public class PreferencesManager implements IGVEventObserver {
         String group = null;
 
         try {
-            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/org/broad/igv/prefs/preferences.tab")));
+            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/preferences.tab")));
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
 
@@ -322,7 +322,7 @@ public class PreferencesManager implements IGVEventObserver {
         BufferedReader reader = null;
         String nextLine;
         try {
-            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/org/broad/igv/prefs/defaults_2.3.tab")));
+            reader = new BufferedReader(new InputStreamReader(PreferencesEditor.class.getResourceAsStream("/defaults_2.3.tab")));
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = Globals.tabPattern.split(nextLine);
                 if (tokens.length == 2) {

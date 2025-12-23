@@ -1229,7 +1229,7 @@ public class CommandExecutor {
         } else if (str.equalsIgnoreCase("strand")) {
             return SortOption.STRAND;
         } else if (str.equalsIgnoreCase("base")) {
-            return SortOption.NUCLEOTIDE;
+            return SortOption.BASE;
         } else if (str.equalsIgnoreCase("quality")) {
             return SortOption.QUALITY;
         } else if (str.equalsIgnoreCase("sample")) {
@@ -1250,10 +1250,10 @@ public class CommandExecutor {
             return SortOption.ALIGNED_READ_LENGTH;
         } else {
             try {
-                return SortOption.valueOf(str.toUpperCase());
+                return SortOption.fromString(str.toUpperCase());
             } catch (IllegalArgumentException e) {
                 log.error("Unknown sort option: " + str);
-                return SortOption.NUCLEOTIDE;
+                return SortOption.BASE;
             }
         }
 

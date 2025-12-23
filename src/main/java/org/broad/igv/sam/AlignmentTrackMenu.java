@@ -571,16 +571,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         groupMenu.add(tagOption);
         group.add(tagOption);
 
-//        Range oldGroupByPos = renderOptions.getGroupByPos();
-//        if (oldGroupByPos != null && renderOptions.getGroupByOption() == AlignmentTrack.GroupOption.BASE_AT_POS) { // already sorted by the base at a position
-//            JCheckBoxMenuItem oldGroupByPosOption = new JCheckBoxMenuItem("base at " + oldGroupByPos.getChr() +
-//                    ":" + Globals.DECIMAL_FORMAT.format(1 + oldGroupByPos.getStart()));
-//            groupMenu.add(oldGroupByPosOption);
-//            oldGroupByPosOption.setSelected(true);
-//        }
-//
-//        if (renderOptions.getGroupByOption() != AlignmentTrack.GroupOption.BASE_AT_POS || oldGroupByPos == null ||
-//                !oldGroupByPos.getChr().equals(chrom) || oldGroupByPos.getStart() != chromStart) { // not already sorted by this position
         JCheckBoxMenuItem newGroupByPosOption = new JCheckBoxMenuItem("base at " + chrom +
                 ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
         newGroupByPosOption.addActionListener(aEvt -> {
@@ -645,7 +635,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("start location", SortOption.START);
         mappings.put("read strand", SortOption.STRAND);
         mappings.put("first-of-pair strand", SortOption.FIRST_OF_PAIR_STRAND);
-        mappings.put("base", SortOption.NUCLEOTIDE);
+        mappings.put("base", SortOption.BASE);
         mappings.put("mapping quality", SortOption.QUALITY);
         mappings.put("sample", SortOption.SAMPLE);
         mappings.put("read group", SortOption.READ_GROUP);
@@ -1451,12 +1441,17 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
 
     private void sortAlignmentTracks(SortOption option, String tag, boolean invertSort) {
-        AlignmentTrackUtils.sortAlignmentTracks(option, tag, invertSort);
-        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
-        for (IGVPreferences prefs : allPrefs) {
-            prefs.put(SAM_SORT_OPTION, option.toString());
-            prefs.put(SAM_SORT_BY_TAG, tag);
-            prefs.put(SAM_INVERT_SORT, invertSort);
+
+        if (alignmentTrack.getPreferences().getAsBoolean(SAM_SORT_ALL)) {
+            AlignmentTrackUtils.sortAlignmentTracks(option, tag, invertSort);
+//            Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
+//            for (IGVPreferences prefs : allPrefs) {
+//                prefs.put(SAM_SORT_OPTION, option.toString());
+//                prefs.put(SAM_SORT_BY_TAG, tag);
+//                prefs.put(SAM_INVERT_SORT, invertSort);
+//            }
+        } else {
+            alignmentTrack.sortRows(option, null, tag, invertSort);
         }
     }
 
