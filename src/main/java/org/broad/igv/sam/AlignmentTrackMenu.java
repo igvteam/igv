@@ -629,6 +629,8 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     void addSortMenuItem() {
 
         JMenu sortMenu = new JMenu("Sort alignments by");
+        ButtonGroup group = new ButtonGroup();
+
         //LinkedHashMap is supposed to preserve order of insertion for iteration
         Map<String, SortOption> mappings = new LinkedHashMap<>();
 
@@ -650,17 +652,22 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             mappings.put("chromosome of mate", SortOption.MATE_CHR);
         }
 
+        SortOption currentSortOption = renderOptions.getSortOption();
+
         for (Map.Entry<String, SortOption> el : mappings.entrySet()) {
-            JMenuItem mi = new JMenuItem(el.getKey());
+            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(el.getKey());
+            mi.setSelected(currentSortOption == el.getValue());
             mi.addActionListener(aEvt -> {
                 final SortOption option = el.getValue();
                 renderOptions.setSortOption(option);
                 sortAlignmentTracks(option, null, renderOptions.isInvertSorting());
             });
             sortMenu.add(mi);
+            group.add(mi);
         }
 
-        JMenuItem tagOption = new JMenuItem("tag");
+        JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("tag");
+        tagOption.setSelected(currentSortOption == SortOption.TAG);
         tagOption.addActionListener(aEvt -> {
             String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getSortByTag());
             if (tag != null && tag.trim().length() > 0) {
@@ -670,6 +677,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             }
         });
         sortMenu.add(tagOption);
+        group.add(tagOption);
 
         sortMenu.add(new Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse sorting");
