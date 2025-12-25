@@ -243,7 +243,7 @@ class SupplementalAlignmentDiagram extends JPanel {
                 .collect(Collectors.groupingBy(Locatable::getContig, LinkedHashMap::new, Collectors.toList()));
 
 
-        //tihs should probably vary per contig instead of being uniform
+        //this should probably vary per contig instead of being uniform
         final double perContigAvailableSpace = (bounds.getWidth() - (2 * scaledBorderGap + (contigs.size() - 1) * scaledContigGap)) / ((double) contigs.size());
 
         int contigStart = scaledBorderGap;
