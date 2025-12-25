@@ -5,15 +5,10 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.prefs.IGVPreferences;
-import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.ui.IGV;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.broad.igv.prefs.Constants.*;
 
 
 /**
@@ -26,30 +21,16 @@ public class AlignmentTrackUtils {
     private static final Logger log = LogManager.getLogger(AlignmentTrackUtils.class);
 
     /**
-     * Sort all alignment tracks according to user preference setting.
+     * Sort all alignment tracks according to the specified option
+     *
+     * @param option
+     * @api
      */
-    public static void sortAlignmentTracks() {
-        IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
-        if (sortOptionString != null) {
-            try {
-                SortOption option = SortOption.fromString(sortOptionString);
-                String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-                AlignmentTrackUtils.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
-            } catch (IllegalArgumentException e1) {
-                log.error("Unrecognized sort option: " + sortOptionString);
-            }
-        }
-    }
-
     public static void sortAlignmentTracks(SortOption option, String tag, final boolean invertSort) {
-        sortAlignmentTracks(option, null, tag, invertSort);
-    }
-
-    public static void sortAlignmentTracks(SortOption option, Double location, String tag, boolean invertSort) {
-        List<AlignmentTrack> alignmentTracks = IGV.getInstance().getAlignmentTracks().stream()
-                .peek(track -> track.sortRows(option, location, tag, invertSort))
-                .collect(Collectors.toList());
+       List<AlignmentTrack> alignmentTracks = IGV.getInstance().getAlignmentTracks();
+        for (AlignmentTrack track : alignmentTracks) {
+            track.sortRows(option, tag, invertSort);
+        }
         IGV.getInstance().repaint(alignmentTracks);
     }
 

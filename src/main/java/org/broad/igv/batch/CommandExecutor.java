@@ -1087,7 +1087,7 @@ public class CommandExecutor {
                 reverseString = param3;
             }
 
-            // Special case, "reverse" is a resered word for inverting sorting.  Locus is optional
+            // Special case, "reverse" is a reserved word for inverting sorting.  Locus is optional
             if (reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
                 reverseString = locusString;
                 locusString = null;
@@ -1095,24 +1095,12 @@ public class CommandExecutor {
 
             Double location = null;
             if (locusString != null && locusString.trim().length() > 0) {
-                // Apparently there have been 2 conventions for "location", a full locus string and a base position
-                // Try locus string first
-                Locus locus = Locus.fromString(locusString);
-                if (locus != null) {
-                    location = (double) locus.getStart();
-                } else {
-                    try {
-                        location = Double.valueOf(locusString.replace(",", ""));
-                        if (location != null) location--;
-                    } catch (NumberFormatException e) {
-                        return "Error parsing location: " + locusString;
-                    }
-                }
+                igv.goToLocus(locusString);
             }
 
             boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
 
-            AlignmentTrackUtils.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort);
+            AlignmentTrackUtils.sortAlignmentTracks(getAlignmentSortOption(sortArg), tag, invertSort);
             return "OK";
         }
     }

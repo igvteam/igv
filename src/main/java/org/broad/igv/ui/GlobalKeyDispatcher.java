@@ -250,7 +250,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final Action sorAlignmentTracksAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AlignmentTrackUtils.sortAlignmentTracks();
+                sortAlignmentTracks();
             }
         };
         inputMap.put(sortByLastKey, "sortByLast");
@@ -300,19 +300,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         inputMap.put(forwardKey1, "forward");
         inputMap.put(forwardKey2, "forward");
 
-    }
-
-    public static void sortAlignmentTracks(IGVPreferences prefMgr, IGV igv) {
-        String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
-        if (sortOptionString != null) {
-            try {
-                SortOption option = SortOption.fromString(sortOptionString);
-                String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-                AlignmentTrackUtils.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
-            } catch (IllegalArgumentException e1) {
-                log.error("Unrecognized sort option: " + sortOptionString);
-            }
-        }
     }
 
     /**
@@ -474,9 +461,26 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         } else {
             //MessageUtils.showMessage("To use track panning you must first select a single feature track.");
         }
-
-
     }
+
+
+    /**
+     * Sort all alignment tracks according to user preference setting.
+     */
+    public static void sortAlignmentTracks() {
+        IGVPreferences prefMgr = PreferencesManager.getPreferences();
+        String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
+        if (sortOptionString != null) {
+            try {
+                SortOption option = SortOption.fromString(sortOptionString);
+                String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
+                AlignmentTrackUtils.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
+            } catch (IllegalArgumentException e1) {
+                log.error("Unrecognized sort option: " + sortOptionString);
+            }
+        }
+    }
+
 
     /**
      * TODO I'm actually pretty sure this class doesn't do what it's intended to do,

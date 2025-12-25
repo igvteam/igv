@@ -631,13 +631,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         JMenu sortMenu = new JMenu("Sort alignments by");
         ButtonGroup group = new ButtonGroup();
 
-        //LinkedHashMap is supposed to preserve order of insertion for iteration
+        //LinkedHashMap to preserve order of insertion
         Map<String, SortOption> mappings = new LinkedHashMap<>();
-
-        mappings.put("start location", SortOption.START);
+        mappings.put("base", SortOption.BASE);
         mappings.put("read strand", SortOption.STRAND);
         mappings.put("first-of-pair strand", SortOption.FIRST_OF_PAIR_STRAND);
-        mappings.put("base", SortOption.BASE);
         mappings.put("mapping quality", SortOption.QUALITY);
         mappings.put("sample", SortOption.SAMPLE);
         mappings.put("read group", SortOption.READ_GROUP);
@@ -646,11 +644,12 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         mappings.put("aligned read length", SortOption.ALIGNED_READ_LENGTH);
         mappings.put("left clip", SortOption.LEFT_CLIP);
         mappings.put("right clip", SortOption.RIGHT_CLIP);
-
         if (dataManager.isPairedEnd()) {
             mappings.put("insert size", SortOption.INSERT_SIZE);
             mappings.put("chromosome of mate", SortOption.MATE_CHR);
         }
+        mappings.put("start location", SortOption.START);
+        mappings.put("none", SortOption.NONE);
 
         SortOption currentSortOption = renderOptions.getSortOption();
 
@@ -1450,17 +1449,26 @@ class AlignmentTrackMenu extends IGVPopupMenu {
 
     private void sortAlignmentTracks(SortOption option, String tag, boolean invertSort) {
 
-        if (alignmentTrack.getPreferences().getAsBoolean(SAM_SORT_ALL)) {
-            AlignmentTrackUtils.sortAlignmentTracks(option, tag, invertSort);
-//            Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
-//            for (IGVPreferences prefs : allPrefs) {
-//                prefs.put(SAM_SORT_OPTION, option.toString());
-//                prefs.put(SAM_SORT_BY_TAG, tag);
-//                prefs.put(SAM_INVERT_SORT, invertSort);
-//            }
-        } else {
-            alignmentTrack.sortRows(option, null, tag, invertSort);
+        Collection<AlignmentTrack> tracksToSort = PreferencesManager.getPreferences().getAsBoolean(SAM_SORT_ALL) ?
+                IGV.getInstance().getAlignmentTracks() :
+                List.of(alignmentTrack);
+
+        for (AlignmentTrack track : tracksToSort) {
+            track.renderOptions.setSortOption(option);
+            track.renderOptions.setSortByTag(tag);
+            track.renderOptions.setInvertSorting(invertSort);
+            track.sortRows(option, tag, invertSort);
+            IGV.getInstance().repaint(tracksToSort);
         }
+
+        // Update preferences.  The desirability of this is questionable, but its always been done.
+        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
+        for (IGVPreferences prefs : allPrefs) {
+            prefs.put(SAM_SORT_OPTION, option.toString());
+            prefs.put(SAM_SORT_BY_TAG, tag);
+            prefs.put(SAM_INVERT_SORT, invertSort);
+        }
+
     }
 
 
