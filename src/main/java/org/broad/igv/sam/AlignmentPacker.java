@@ -53,8 +53,15 @@ public class AlignmentPacker {
      */
     public static final int MIN_ALIGNMENT_SPACING = 2;
 
+    /**
+     * Maximum number of rows to search for gaps when tight packing.
+     * This limits the worst-case complexity to O(n * MAX_GAP_SEARCH_DEPTH).
+     * Set to a reasonable value that balances tight packing with performance.
+     */
+    private static final int MAX_GAP_SEARCH_DEPTH = 100;
 
     private static final String NULL_GROUP_VALUE = "";
+
 
     /**
      * Allocates each alignment to row such that there is no overlap.
@@ -166,18 +173,34 @@ public class AlignmentPacker {
         }
 
         // Pack alignments into rows, ensuring tight packing with no overlaps.
-        // Always searches from row 0 for tight packing. The fast-path optimization in canFitInRow
-        // (checking lastEnd) makes this efficient even for large datasets (250K+ alignments).
+        // Optimization: Use a two-phase approach to balance tight packing with performance.
+        // Phase 1 (fast-path): Check if alignment fits at the end of any row (common case)
+        // Phase 2 (gap-filling): Search a limited number of rows for gaps (bounded complexity)
         for (Alignment alignment : alignmentsToPack) {
             boolean placed = false;
+            int alignmentStart = alignment.getStart();
 
-            // Try to find an existing row where this alignment fits
-            // Start from row 0 to ensure tightest packing
+            // Phase 1: Fast-path check for appending to row ends
+            // This handles the common case (genomically ordered alignments) in O(1) per alignment
             for (Row row : alignmentRows) {
-                if (canFitInRow(row, alignment)) {
+                if (alignmentStart >= row.getLastEnd() + MIN_ALIGNMENT_SPACING) {
                     row.addAlignment(alignment);
                     placed = true;
                     break;
+                }
+            }
+
+            // Phase 2: Gap-filling check if alignment couldn't be appended
+            // Limit search depth to prevent O(n*m) complexity in worst case
+            if (!placed) {
+                int searchDepth = Math.min(alignmentRows.size(), MAX_GAP_SEARCH_DEPTH);
+                for (int i = 0; i < searchDepth; i++) {
+                    Row row = alignmentRows.get(i);
+                    if (canFitInRowGap(row, alignment)) {
+                        row.addAlignment(alignment);
+                        placed = true;
+                        break;
+                    }
                 }
             }
 
@@ -241,25 +264,18 @@ public class AlignmentPacker {
     }
 
     /**
-     * Check if an alignment can fit in a row without overlapping existing alignments.
-     * Optimized for genomic order processing with fast-path check.
+     * Check if an alignment can fit in a gap within a row without overlapping existing alignments.
+     * This method is only called when the alignment cannot be appended to the end of the row,
+     * so it needs to check for gaps between existing alignments.
      *
-     * Performance note: This method is critical for large datasets (250K+ alignments).
-     * The fast-path handles the common case (alignment after all existing) in O(1).
+     * Performance note: This is the slow path, only used when filling gaps in rows.
+     * The common case (appending to row end) is handled by the fast-path check in packDense.
      */
-    private boolean canFitInRow(Row row, Alignment alignment) {
+    private boolean canFitInRowGap(Row row, Alignment alignment) {
         int alignmentStart = alignment.getStart();
         int alignmentEnd = alignment.getEnd();
 
-        // Fast path: if this alignment starts after the last alignment in the row ends (with spacing),
-        // it definitely fits without needing to check individual alignments.
-        // This is the common case when processing alignments in genomic order.
-        if (alignmentStart >= row.getLastEnd() + MIN_ALIGNMENT_SPACING) {
-            return true;
-        }
-
-        // Slow path: need to check against each alignment in the row.
-        // This happens when inserting into gaps or before centered alignments.
+        // Check against each alignment in the row to see if there's a gap
         List<Alignment> existingAlignments = row.getAlignments();
         for (Alignment existing : existingAlignments) {
             int existingStart = existing.getStart();
