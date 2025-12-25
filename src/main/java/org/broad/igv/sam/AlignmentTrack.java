@@ -703,7 +703,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 double groupHeight = rows.size() * h;
                 if (groupHeight > GROUP_LABEL_HEIGHT + 2 && !context.multiframe) {
                     String groupName = entry.getKey();
-                    if (groupName.equals("SELECTED")) groupName = "S*";
+                    if (groupName.equals("SELECTED")) {
+                        // Abbreviate the "SELECTED" group label to "S*" for display to conserve horizontal space in the UI.
+                        groupName = "S*";
+                    }
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
