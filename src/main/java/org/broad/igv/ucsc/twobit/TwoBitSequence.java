@@ -141,7 +141,7 @@ public class TwoBitSequence implements Sequence {
             //don't run off the end of the genome
             regionEnd = Math.min(record.getDnaSize(), regionEnd);
 
-            if(regionEnd <= regionStart) {
+            if (regionEnd <= regionStart) {
                 return new byte[0];
             }
 
