@@ -27,8 +27,6 @@ package org.broad.igv.event;
 
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import java.sql.Ref;
-
 /**
  * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).
  * <p>
