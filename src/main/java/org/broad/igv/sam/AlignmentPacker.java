@@ -40,7 +40,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import java.util.*;
 
 /**
- * Packs alignments tightly with no overlap
+ * Packs alignments such that there is no overlap
  *
  * @author jrobinso
  */
