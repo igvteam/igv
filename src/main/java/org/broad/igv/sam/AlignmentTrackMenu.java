@@ -1458,9 +1458,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             track.renderOptions.setSortByTag(tag);
             track.renderOptions.setInvertSorting(invertSort);
             track.sortRows(option, tag, invertSort);
-            IGV.getInstance().repaint(tracksToSort);
         }
 
+        IGV.getInstance().repaint(tracksToSort);
         // Update preferences.  The desirability of this is questionable, but its always been done.
         Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
         for (IGVPreferences prefs : allPrefs) {
