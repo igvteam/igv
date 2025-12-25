@@ -794,7 +794,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame frame : frames) {
             final AlignmentInterval interval = getDataManager().getLoadedInterval(frame);
-            final double actloc =  frame.getCenter();
+            final double actloc = frame.getCenter();
             interval.sortRows(option, actloc, tag, invertSort);
         }
     }
