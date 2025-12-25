@@ -50,7 +50,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
 import org.broad.igv.util.blat.BlatClient;
@@ -63,8 +62,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.broad.igv.prefs.Constants.*;
@@ -79,14 +78,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     // Alignment colors
     static final Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
-
-    public static void sortSelectedReadsToTheTop(final Set<String> selectedReadNames) {
-        //copy this in case it changes out from under us
-        Set<String> selectedReadNameCopy = new HashSet<>(selectedReadNames);
-        //Run this on the event thread to make sure it happens after loading begins
-        UIUtilities.invokeOnEventThread(() ->
-                IGV.getInstance().sortAlignmentTracks(SortOption.NONE, null, null, false, selectedReadNameCopy));
-    }
 
     public enum ColorOption {
         INSERT_SIZE,
@@ -318,8 +309,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private ColorTable readNamePalette;
     private final HashMap<String, Color> selectedReadNames = new HashMap<>();
 
-    private final HashMap<ReferenceFrame, Consumer<ReferenceFrame>> actionToPerformOnFrameLoad = new HashMap<>();
-
     /**
      * Create a new alignment track
      *
@@ -409,15 +398,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 case REFRESH -> repaint();
             }
         } else if (event instanceof DataLoadedEvent dataLoaded) {
-            if (dataManager.isLoaded(dataLoaded.referenceFrame())) {
-                actionToPerformOnFrameLoad.computeIfPresent(dataLoaded.referenceFrame(), (k, v) -> {
-                    v.accept(k);
-                    return null; //remove this action from the map
-                });
-            }
+            sortRows(dataLoaded.referenceFrame());
         } else if (event instanceof ViewChange viewChange) {
-            if(viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning && getDisplayMode() == DisplayMode.FULL) {
-                packAlignments();
+            if (viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
+                if (getDisplayMode() == DisplayMode.FULL) {
+                    packAlignments();
+                }
+                // Don't autosort on completion of a track pan (drag)
+                if (!viewChange.fromPanning) {
+                    sortRows(viewChange.referenceFrame);
+                }
             }
         }
     }
@@ -495,9 +485,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void setDisplayMode(DisplayMode mode) {
-        boolean repack = (getDisplayMode() == DisplayMode.FULL ||  mode == DisplayMode.FULL);
+        boolean repack = (getDisplayMode() == DisplayMode.FULL || mode == DisplayMode.FULL);
         super.setDisplayMode(mode);
-        if(repack) {
+        if (repack) {
             packAlignments();
         }
     }
@@ -550,6 +540,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             log.debug("Reading - thread: " + Thread.currentThread().getName());
         }
         dataManager.load(referenceFrame, renderOptions, getDisplayMode(), true);
+        sortRows(referenceFrame);
     }
 
     @Override
@@ -712,6 +703,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 double groupHeight = rows.size() * h;
                 if (groupHeight > GROUP_LABEL_HEIGHT + 2 && !context.multiframe) {
                     String groupName = entry.getKey();
+                    if (groupName.equals("SELECTED")) {
+                        // Abbreviate the "SELECTED" group label to "S*" for display to conserve horizontal space in the UI.
+                        groupName = "S*";
+                    }
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
@@ -788,39 +783,46 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
             y += GROUP_MARGIN;
 
-
         }
-
     }
 
-
-    public void sortRows(final SortOption option, final Double location, final String tag, final boolean invertSort, final Set<String> priorityRecords) {
+    /**
+     * Sort alignment rows for all reference frames.  This is called on user initiated sort events.
+     *
+     * @param option
+     * @param tag
+     * @param invertSort
+     */
+    public void sortRows(final SortOption option, final String tag, final boolean invertSort) {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame frame : frames) {
-            Consumer<ReferenceFrame> sort = (ReferenceFrame f) -> {
-                final AlignmentInterval interval = getDataManager().getLoadedInterval(f);
-                final double actloc = location != null ? location : f.getCenter();
-                interval.sortRows(option, actloc, tag, invertSort, priorityRecords);
-            };
-            //If the data is loaded sort now, otherwise delay until we get a message that it is loaded.
-            if (getDataManager().isLoaded(frame)) {
-                sort.accept(frame);
-            } else {
-                log.debug("Attempt to sort alignments prior to loading");
-                actionToPerformOnFrameLoad.put(frame, sort);
+            final AlignmentInterval interval = getDataManager().getLoadedInterval(frame);
+            if(interval != null) {
+                final double location = frame.getCenter();
+                interval.sortRows(option, location, tag, invertSort);
             }
         }
     }
 
-    void sortAlignmentTracks(SortOption option, String tag, boolean invertSort) {
-        IGV.getInstance().sortAlignmentTracks(option, tag, invertSort);
-        Collection<IGVPreferences> allPrefs = PreferencesManager.getAllPreferences();
-        for (IGVPreferences prefs : allPrefs) {
-            prefs.put(SAM_SORT_OPTION, option.toString());
-            prefs.put(SAM_SORT_BY_TAG, tag);
-            prefs.put(SAM_INVERT_SORT, invertSort);
+    /**
+     * Sort alignment rows for a specific reference frame using track render settings.  This is called on locus
+     * change and data load events.
+     *
+     * @param referenceFrame
+     */
+    public void sortRows(ReferenceFrame referenceFrame) {
+        SortOption option = this.renderOptions.getSortOption();
+        String tag = this.renderOptions.getSortByTag();
+        boolean invertSort = this.renderOptions.isInvertSorting();
+        if (option != SortOption.NONE) {
+            final AlignmentInterval interval = getDataManager().getLoadedInterval(referenceFrame);
+            if (interval != null) {
+                double location = referenceFrame.getCenter();
+                interval.sortRows(option, location, tag, invertSort);
+            }
         }
     }
+
 
     /**
      * Visually regroup alignments by the provided {@code GroupOption}.
@@ -1464,6 +1466,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         public boolean isIndelQualColoring() {
             return indelQualColoring == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_COLORING) : indelQualColoring;
         }
+
         public boolean isIndelQualUsesMin() {
             return indelQualUsesMin == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_USES_MIN) : indelQualUsesMin;
         }
@@ -1471,7 +1474,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         // SBX Options
         public boolean isIndelQualSbx() {
-            return ExperimentType.SBX == track.experimentType && (indelQualSbx == null ?  getPreferences().getAsBoolean(SAM_INDEL_QUAL_SBX) : indelQualSbx);
+            return ExperimentType.SBX == track.experimentType && (indelQualSbx == null ? getPreferences().getAsBoolean(SAM_INDEL_QUAL_SBX) : indelQualSbx);
         }
 
         public void setTailQualSbx(Boolean tailQualSbx) {
@@ -1555,7 +1558,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         SortOption getSortOption() {
-            return sortOption == null ? CollUtils.valueOf(SortOption.class, getPreferences().get(SAM_SORT_OPTION), null) : sortOption;
+            return sortOption == null ? SortOption.fromString(getPreferences().get(SAM_SORT_OPTION)) : sortOption;
         }
 
         String getSortByTag() {
@@ -1798,11 +1801,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             if (element.hasAttribute("sortOption")) {
-                sortOption = SortOption.valueOf((element.getAttribute("sortOption")));
+                sortOption = SortOption.fromString((element.getAttribute("sortOption")));
             }
             if (element.hasAttribute("groupByOption")) {
                 String value = element.getAttribute("groupByOption");
-                if(value.equals("HAPLOTYPE")) {
+                if (value.equals("HAPLOTYPE")) {
                     value = "CLUSTER";  // Backward compatibility
                 }
                 groupByOption = GroupOption.valueOf(value);

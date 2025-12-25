@@ -35,6 +35,7 @@ public class Row  {
 
     int nextIdx;
     private double score = 0;
+    private int lastEnd = Integer.MIN_VALUE;  // Track rightmost position for quick checks
 
     public List<Alignment> getAlignments() {
         return alignments;
@@ -56,7 +57,16 @@ public class Row  {
 //            }
 //        } else {
         alignments.add(alignment);
+        // Update lastEnd to track the rightmost position in this row
+        lastEnd = Math.max(lastEnd, alignment.getEnd());
 //        }
+    }
+
+    /**
+     * Get the rightmost end position of alignments in this row
+     */
+    public int getLastEnd() {
+        return lastEnd;
     }
 
     public Alignment nextAlignment() {

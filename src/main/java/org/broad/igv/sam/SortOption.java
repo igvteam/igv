@@ -22,18 +22,18 @@ public enum SortOption {
                     ? ((LinkedAlignment) a).getStrandAtPosition(center)
                     : a.getReadStrand());
         }
-    }, NUCLEOTIDE {
+    }, BASE {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
 
             final Comparator<Alignment> insertionComparator = Comparator.comparing((Alignment alignment) -> {
                 String insertionBases = "";
                 AlignmentBlock leftInsertion = alignment.getInsertionAt(center + 1); //todo figure out what's going on with the +1 here..
-                if(leftInsertion != null) {
+                if (leftInsertion != null) {
                     insertionBases += leftInsertion.getBases().getString();
                 }
                 AlignmentBlock rightInsertion = alignment.getInsertionAt(center);
-                if(rightInsertion != null) {
+                if (rightInsertion != null) {
                     insertionBases += rightInsertion.getBases().getString();
                 }
                 return insertionBases;
@@ -92,7 +92,7 @@ public enum SortOption {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
             return Comparator.comparing((Alignment a) -> a.getMate() == null)
-                    .thenComparing(a -> a.getMate() != null && Objects.equals(a.getMate().getChr(),a.getChr()))
+                    .thenComparing(a -> a.getMate() != null && Objects.equals(a.getMate().getChr(), a.getChr()))
                     .thenComparing(nullSafeComparator(a -> a.getMate() == null ? null : a.getMate().getChr()));
 
         }
@@ -172,6 +172,23 @@ public enum SortOption {
     // center alignment anyway
     abstract Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase);
 
+    /**
+     * Custom valueOf method with backward compatibility.
+     * Supports "NUCLEOTIDE" as an alias for "BASE" for backward compatibility.
+     *
+     * @param name the string name of the enum constant
+     * @return the enum constant with the specified name
+     * @throws IllegalArgumentException if no constant with the specified name is found
+     */
+    public static SortOption fromString(String name) {
+        if (name == null) {
+            return SortOption.NONE;
+        }
+        if ("NUCLEOTIDE".equals(name)) {
+            return BASE;
+        }
+        return SortOption.valueOf(name);
+    }
 
     public static final Comparator<Locatable> POSITION_COMPARATOR = Comparator.nullsFirst(Comparator.comparing(Locatable::getContig, ChromosomeNameComparator.get()))
             .thenComparing(Locatable::getStart)

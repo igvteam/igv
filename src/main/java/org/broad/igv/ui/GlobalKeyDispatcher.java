@@ -40,6 +40,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrackUtils;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
@@ -249,16 +250,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final Action sorAlignmentTracksAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
-                if (sortOptionString != null) {
-                    try {
-                        SortOption option = SortOption.valueOf(sortOptionString);
-                        String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
-                        igv.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
-                    } catch (IllegalArgumentException e1) {
-                        log.error("Unrecognized sort option: " + sortOptionString);
-                    }
-                }
+                sortAlignmentTracks();
             }
         };
         inputMap.put(sortByLastKey, "sortByLast");
@@ -469,9 +461,26 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         } else {
             //MessageUtils.showMessage("To use track panning you must first select a single feature track.");
         }
-
-
     }
+
+
+    /**
+     * Sort all alignment tracks according to user preference setting.
+     */
+    public static void sortAlignmentTracks() {
+        IGVPreferences prefMgr = PreferencesManager.getPreferences();
+        String sortOptionString = prefMgr.get(SAM_SORT_OPTION);
+        if (sortOptionString != null) {
+            try {
+                SortOption option = SortOption.fromString(sortOptionString);
+                String lastSortTag = prefMgr.get(SAM_SORT_BY_TAG);
+                AlignmentTrackUtils.sortAlignmentTracks(option, lastSortTag, prefMgr.getAsBoolean(SAM_INVERT_SORT));
+            } catch (IllegalArgumentException e1) {
+                log.error("Unrecognized sort option: " + sortOptionString);
+            }
+        }
+    }
+
 
     /**
      * TODO I'm actually pretty sure this class doesn't do what it's intended to do,

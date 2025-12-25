@@ -42,6 +42,7 @@ import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.sam.AlignmentTrackUtils;
 import org.broad.igv.sam.SortOption;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -849,7 +850,7 @@ public class CommandExecutor {
 
                 if (sort != null) {
                     final SortOption sortOption = getAlignmentSortOption(sort);
-                    igv.sortAlignmentTracks(sortOption, sortTag, false);
+                    AlignmentTrackUtils.sortAlignmentTracks(sortOption, sortTag, false);
                 }
             }
 
@@ -1086,7 +1087,7 @@ public class CommandExecutor {
                 reverseString = param3;
             }
 
-            // Special case, "reverse" is a resered word for inverting sorting.  Locus is optional
+            // Special case, "reverse" is a reserved word for inverting sorting.  Locus is optional
             if (reverseString == null && "reverse".equalsIgnoreCase(locusString)) {
                 reverseString = locusString;
                 locusString = null;
@@ -1094,24 +1095,12 @@ public class CommandExecutor {
 
             Double location = null;
             if (locusString != null && locusString.trim().length() > 0) {
-                // Apparently there have been 2 conventions for "location", a full locus string and a base position
-                // Try locus string first
-                Locus locus = Locus.fromString(locusString);
-                if (locus != null) {
-                    location = (double) locus.getStart();
-                } else {
-                    try {
-                        location = Double.valueOf(locusString.replace(",", ""));
-                        if (location != null) location--;
-                    } catch (NumberFormatException e) {
-                        return "Error parsing location: " + locusString;
-                    }
-                }
+                igv.goToLocus(locusString);
             }
 
             boolean invertSort = "reverse".equalsIgnoreCase(reverseString);
 
-            igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag, invertSort, null);
+            AlignmentTrackUtils.sortAlignmentTracks(getAlignmentSortOption(sortArg), tag, invertSort);
             return "OK";
         }
     }
@@ -1132,13 +1121,13 @@ public class CommandExecutor {
                 }
             }
         }
-        igv.groupAlignmentTracks(groupOption, tagArg, r);
+        AlignmentTrackUtils.groupAlignmentTracks(groupOption, tagArg, r);
         return "OK";
     }
 
     private String colorBy(String colorArg, String tagArg) {
         final AlignmentTrack.ColorOption colorOption = AlignmentTrack.ColorOption.valueOf(colorArg.toUpperCase());
-        igv.colorAlignmentTracks(colorOption, tagArg);
+        AlignmentTrackUtils.colorAlignmentTracks(colorOption, tagArg);
         return "OK";
     }
 
@@ -1228,7 +1217,7 @@ public class CommandExecutor {
         } else if (str.equalsIgnoreCase("strand")) {
             return SortOption.STRAND;
         } else if (str.equalsIgnoreCase("base")) {
-            return SortOption.NUCLEOTIDE;
+            return SortOption.BASE;
         } else if (str.equalsIgnoreCase("quality")) {
             return SortOption.QUALITY;
         } else if (str.equalsIgnoreCase("sample")) {
@@ -1249,10 +1238,10 @@ public class CommandExecutor {
             return SortOption.ALIGNED_READ_LENGTH;
         } else {
             try {
-                return SortOption.valueOf(str.toUpperCase());
+                return SortOption.fromString(str.toUpperCase());
             } catch (IllegalArgumentException e) {
                 log.error("Unknown sort option: " + str);
-                return SortOption.NUCLEOTIDE;
+                return SortOption.BASE;
             }
         }
 

@@ -10,8 +10,6 @@ sort BASE chr17:7,579,801
 snapshot sortByBase.png
 sort BASE chr17:7,579,801 reverse
 snapshot sortByBaseReverse.png
-sort BASE reverse
-snapshot sortByBaseReverse2.png
 # Sort by base at an insertion
 goto chr17:7,571,487
 sort BASE
