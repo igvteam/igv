@@ -25,6 +25,8 @@
 
 package org.broad.igv.event;
 
+import org.broad.igv.ui.panel.ReferenceFrame;
+
 /**
  * Events corresponding to a change in viewed area (chromosome, position, and/or zoom).
  * <p>
@@ -46,10 +48,13 @@ public final class ViewChange implements IGVEvent{
     final public String chrName;
     final public double start;
     final public double end;
+    final public ReferenceFrame referenceFrame;
     public boolean panning = false;
+    public boolean fromPanning = false;
 
-    private ViewChange(Type type, String chrName, double start, double end, boolean recordHistory) {
+    private ViewChange(Type type, ReferenceFrame referenceFrame, String chrName, double start, double end, boolean recordHistory) {
         this.type = type;
+        this.referenceFrame = referenceFrame;
         this.chrName = chrName;
         this.start = start;
         this.end = end;
@@ -61,16 +66,16 @@ public final class ViewChange implements IGVEvent{
         return this.recordHistory;
     }
 
-    public static ViewChange ChromosomeChangeResult(String chrName, boolean recordHistory) {
-        return new ViewChange(Type.ChromosomeChange, chrName, 0.0, 0.0, recordHistory);
+    public static ViewChange ChromosomeChangeResult(ReferenceFrame referenceFrame, String chrName, boolean recordHistory) {
+        return new ViewChange(Type.ChromosomeChange, referenceFrame, chrName, 0.0, 0.0, recordHistory);
     }
 
-    public static ViewChange LocusChangeResult(String chrName, double start, double end, boolean recordHistory) {
-        return new ViewChange(Type.LocusChange, chrName, start, end, recordHistory);
+    public static ViewChange LocusChangeResult(ReferenceFrame referenceFrame, String chrName, double start, double end, boolean recordHistory) {
+        return new ViewChange(Type.LocusChange, referenceFrame, chrName, start, end, recordHistory);
     }
 
-    public static ViewChange LocusChangeResultPanning(String chrName, double start, double end, boolean recordHistory) {
-        ViewChange vc =  new ViewChange(Type.LocusChange, chrName, start, end, recordHistory);
+    public static ViewChange LocusChangeResultPanning(ReferenceFrame referenceFrame, String chrName, double start, double end, boolean recordHistory) {
+        ViewChange vc =  new ViewChange(Type.LocusChange, referenceFrame, chrName, start, end, recordHistory);
         vc.panning = true;
         return vc;
     }

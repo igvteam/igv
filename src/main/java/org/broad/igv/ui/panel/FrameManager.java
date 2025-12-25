@@ -38,6 +38,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.prefs.Constants;
 import org.broad.igv.prefs.PreferencesManager;
+import org.broad.igv.sam.AlignmentTrackUtils;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -50,7 +51,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.broad.igv.sam.AlignmentTrack;
+
 import org.broad.igv.sam.SortOption;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -375,9 +376,8 @@ public class FrameManager implements IGVEventObserver {
      * Open new frames displaying the locations included in toIncludeInSplit
      * @param frame this is used to set the width of the new frames to be consistent
      * @param toIncludeInSplit new locations to open frames for
-     * @param selectedReadNames a set of read names which will be sorted to the top of the open frames
      */
-    public static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit, final Set<String> selectedReadNames) {
+    public static void addNewLociToFrames(final ReferenceFrame frame, final List<? extends Locatable> toIncludeInSplit) {
         final Stream<String> newLoci = toIncludeInSplit.stream().map(locatable -> getLocusStringScaledToFrame(frame, locatable));
         final Stream<String> existingFrames = getFrames().stream().map(ref -> {
             String name = ref.getName();
@@ -397,16 +397,6 @@ public class FrameManager implements IGVEventObserver {
         geneList.sort(comparator);
         IGV.getInstance().getSession().setCurrentGeneList(geneList);
         IGV.getInstance().resetFrames();
-
-        /*
-        We want the sort to happen after the frame refresh / track loading begins.
-        This puts the sort onto the event thread so that it happens after loading has already started.
-        Since loading reads happens asynchronously on a different thread from the event thread, it is likely
-        that the loading won't be done by the time the sort fires.  In that case the sort will be set as the
-        action to perform when the load is finished
-        See {@link AlignmentTrack#sortRows(SortOption, Double, String, boolean, Set)}
-        */
-        AlignmentTrack.sortSelectedReadsToTheTop(selectedReadNames);
     }
 
     private static String getLocusStringScaledToFrame(final ReferenceFrame frame, final Locatable alignment) {

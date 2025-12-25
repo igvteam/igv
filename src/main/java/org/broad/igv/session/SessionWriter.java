@@ -122,7 +122,7 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
             }
 
-            String locus = session.getLocusString();
+            String locus = session.getCurrentLocus();
             if (locus != null && !FrameManager.isGeneListMode()) {
                 globalElement.setAttribute(SessionAttribute.LOCUS, locus);
             }

@@ -4,7 +4,6 @@ import htsjdk.samtools.util.Interval;
 import htsjdk.samtools.util.Locatable;
 import org.broad.igv.logging.LogManager;
 import org.broad.igv.logging.Logger;
-import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.SupplementaryAlignment;
 import org.broad.igv.sam.SupplementaryGroup;
 import org.broad.igv.ui.IGV;
@@ -19,14 +18,8 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 class SupplementalAlignmentDiagram extends JPanel {
@@ -84,17 +77,14 @@ class SupplementalAlignmentDiagram extends JPanel {
 
                     if (igv != null && !selected.isEmpty()) {
                         final SupplementaryAlignment first = selected.stream().findFirst().get();
-                        final Set<String> selectedReadNameSet = Set.of(toDraw.getReadName());
-
-                        if (e.isShiftDown()) { //if shift is held add to the existing set of frames instead of replacing them
-                            FrameManager.addNewLociToFrames(FrameManager.getDefaultFrame(), java.util.List.of(first), selectedReadNameSet);
-                        } else {
-                            igv.setDefaultFrame(first.getContig() + ":" + first.getStart() + "-" + first.getEnd());
-                            AlignmentTrack.sortSelectedReadsToTheTop(selectedReadNameSet);
-                        }
                         igv.getAlignmentTracks().forEach(
                                 t -> t.setSelectedAlignment(toDraw.unwrap())
                         );
+                        if (e.isShiftDown()) { //if shift is held add to the existing set of frames instead of replacing them
+                            FrameManager.addNewLociToFrames(FrameManager.getDefaultFrame(), java.util.List.of(first));
+                        } else {
+                            igv.setDefaultFrame(first.getContig() + ":" + first.getStart() + "-" + first.getEnd());
+                        }
                     }
                 }
             }
@@ -111,7 +101,7 @@ class SupplementalAlignmentDiagram extends JPanel {
         elementsOnScreen.clear();
         final int halfHeight = getHeight() / 2;
         final int width = getWidth();
-        chrDiagramBounds =  new Rectangle2D.Float(0, 10, width, halfHeight - 10);
+        chrDiagramBounds = new Rectangle2D.Float(0, 10, width, halfHeight - 10);
         drawContigOrder(g, chrDiagramBounds);
         readDiagramBounds = new Rectangle2D.Float(0, halfHeight, width, halfHeight);
         drawReadOrder(g, readDiagramBounds);
@@ -125,44 +115,44 @@ class SupplementalAlignmentDiagram extends JPanel {
 
     private void drawReadOrder(final Graphics g, final Rectangle2D bounds) {
         g.setColor(Color.DARK_GRAY);
-        ((Graphics2D)g).draw(bounds);
-        g.drawString("Read Order", (int)bounds.getX()+5, (int)bounds.getY()+15);
+        ((Graphics2D) g).draw(bounds);
+        g.drawString("Read Order", (int) bounds.getX() + 5, (int) bounds.getY() + 15);
         Map<SupplementaryAlignment, AlignmentArrow> saInReadOrder = drawAlignmentsInReadOrder((Graphics2D) g.create(), toDraw, selected, bounds);
         drawArcs((Graphics2D) g.create(), toDraw, selected, saInReadOrder, bounds);
         final int lowestArrowPoint = saInReadOrder.values().stream().mapToInt(a -> (int) a.getBounds2D().getMaxY()).max().getAsInt();
-        drawReadLengthLabel(((Graphics2D) g.create()), lowestArrowPoint + 15 , saInReadOrder);
+        drawReadLengthLabel(((Graphics2D) g.create()), lowestArrowPoint + 15, saInReadOrder);
         saInReadOrder.forEach((k, v) -> elementsOnScreen.put(v, k));
         g.setColor(Color.DARK_GRAY);
-        ((Graphics2D)g).draw(bounds);
+        ((Graphics2D) g).draw(bounds);
     }
 
     private void drawContigOrder(final Graphics g, final Rectangle2D bounds) {
         g.setColor(Color.DARK_GRAY);
-        ((Graphics2D)g).draw(bounds);
-        g.drawString("Alignment Order", (int)bounds.getX()+5, (int)bounds.getY()+15);
+        ((Graphics2D) g).draw(bounds);
+        g.drawString("Alignment Order", (int) bounds.getX() + 5, (int) bounds.getY() + 15);
         Map<SupplementaryAlignment, AlignmentArrow> saInPositionOrder = drawAlignmentsInCondensedChromosomeOrder((Graphics2D) g.create(), toDraw, selected, bounds);
         drawArcs((Graphics2D) g.create(), toDraw, selected, saInPositionOrder, bounds);
         final int lowestArrowPoint = saInPositionOrder.values().stream().mapToInt(a -> (int) a.getBounds2D().getMaxY()).max().getAsInt();
         drawContigLabels((Graphics2D) g.create(), lowestArrowPoint + 15, saInPositionOrder);
         saInPositionOrder.forEach((k, v) -> elementsOnScreen.put(v, k));
         g.setColor(Color.DARK_GRAY);
-        ((Graphics2D)g).draw(bounds);
+        ((Graphics2D) g).draw(bounds);
     }
 
     private void drawReadLengthLabel(final Graphics2D g, final int mid, final Map<SupplementaryAlignment, AlignmentArrow> saInReadOrder) {
         java.util.List<AlignmentArrow> arrowsInOrder = new ArrayList<>(saInReadOrder.values());
-        int left = (int)arrowsInOrder.get(0).getBounds().getMinX();
-        int right = (int)arrowsInOrder.get(arrowsInOrder.size() - 1).getBounds().getMaxX();
+        int left = (int) arrowsInOrder.get(0).getBounds().getMinX();
+        int right = (int) arrowsInOrder.get(arrowsInOrder.size() - 1).getBounds().getMaxX();
         final int baseCount = toDraw.getBaseCount();
         g.setColor(Color.BLACK);
         drawCenteredStringWithRangeLines(g, mid, "Length in bases = " + baseCount, left, right);
     }
 
     private static void drawArcs(final Graphics2D g,
-                          final SupplementaryGroup toDraw,
-                          final Set<SupplementaryAlignment> selected,
-                          final Map<SupplementaryAlignment, AlignmentArrow> saToArrowMap,
-                          final Rectangle2D bounds) {
+                                 final SupplementaryGroup toDraw,
+                                 final Set<SupplementaryAlignment> selected,
+                                 final Map<SupplementaryAlignment, AlignmentArrow> saToArrowMap,
+                                 final Rectangle2D bounds) {
         toDraw.iterateInReadOrder()
                 .forEachRemaining(sa -> {
                     SupplementaryAlignment next = toDraw.getNextInRead(sa);
@@ -180,8 +170,8 @@ class SupplementalAlignmentDiagram extends JPanel {
     }
 
     private static Map<SupplementaryAlignment, AlignmentArrow> drawAlignmentsInReadOrder(final Graphics2D g, final SupplementaryGroup toDraw,
-                                                                                  final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
-        int midline =(int) (bounds.getY() + .5 * bounds.getHeight());
+                                                                                         final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
+        int midline = (int) (bounds.getY() + .5 * bounds.getHeight());
         final Map<SupplementaryAlignment, AlignmentArrow> positions = new LinkedHashMap<>();
         final int totalAlignedBases = toDraw.getBaseCount();
         final int scaledAlignmentGap = scale(2, BETWEEN_ALIGNMENT_GAP, bounds.getWidth());
@@ -192,7 +182,7 @@ class SupplementalAlignmentDiagram extends JPanel {
         for (SupplementaryAlignment sa : (Iterable<SupplementaryAlignment>) toDraw::iterateInReadOrder) {
             final double spaceToUse = getSpaceToUse(availableSpace, sa.getNumberOfAlignedBases(), totalAlignedBases);
             final int end = (int) (lastPosition + spaceToUse);
-            AlignmentArrow readArrow = new AlignmentArrow(midline, ALIGNMENT_HEIGHT, (int)( bounds.getX() + lastPosition) , (int)( bounds.getX() + end), sa.getStrand());
+            AlignmentArrow readArrow = new AlignmentArrow(midline, ALIGNMENT_HEIGHT, (int) (bounds.getX() + lastPosition), (int) (bounds.getX() + end), sa.getStrand());
             lastPosition = end + scaledAlignmentGap;
             positions.put(sa, readArrow);
         }
@@ -208,19 +198,19 @@ class SupplementalAlignmentDiagram extends JPanel {
         return selectedGraphics;
     }
 
-    private static <T extends Locatable> Map<Locatable, List<T>> groupBySpanningInterval(List<T> intervals){
+    private static <T extends Locatable> Map<Locatable, List<T>> groupBySpanningInterval(List<T> intervals) {
         List<T> currentGroup = null;
         Map<Locatable, List<T>> output = new LinkedHashMap<>();
         Locatable spanning = null;
-        if(intervals.isEmpty()){
+        if (intervals.isEmpty()) {
             return Collections.emptyMap();
         }
-        for( T loc : intervals){
-            if(currentGroup == null || currentGroup.isEmpty()){
+        for (T loc : intervals) {
+            if (currentGroup == null || currentGroup.isEmpty()) {
                 currentGroup = new ArrayList<>();
                 currentGroup.add(loc);
                 spanning = loc;
-            } else if( spanning.overlaps(loc)) {
+            } else if (spanning.overlaps(loc)) {
                 currentGroup.add(loc);
                 spanning = new Interval(spanning.getContig(), Math.min(spanning.getStart(), loc.getStart()), Math.max(spanning.getEnd(), loc.getEnd()));
             } else {
@@ -237,7 +227,7 @@ class SupplementalAlignmentDiagram extends JPanel {
     //Draw the alignments in chromosome order but give an indication of how close they are to each other i.e. within a 1kb window or not
     //Handle overlapping alignments
     private static Map<SupplementaryAlignment, AlignmentArrow> drawAlignmentsInCondensedChromosomeOrder(final Graphics2D g, final SupplementaryGroup toDraw,
-                                                                                             final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
+                                                                                                        final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
 
 
         final double midline = bounds.getY() + .5 * bounds.getHeight();
@@ -253,32 +243,32 @@ class SupplementalAlignmentDiagram extends JPanel {
                 .collect(Collectors.groupingBy(Locatable::getContig, LinkedHashMap::new, Collectors.toList()));
 
 
-        //tihs should probably vary per contig instead of being uniform
-        final double perContigAvailableSpace = (bounds.getWidth() - (2 * scaledBorderGap + (contigs.size() -1) * scaledContigGap))/((double)contigs.size());
+        //this should probably vary per contig instead of being uniform
+        final double perContigAvailableSpace = (bounds.getWidth() - (2 * scaledBorderGap + (contigs.size() - 1) * scaledContigGap)) / ((double) contigs.size());
 
         int contigStart = scaledBorderGap;
-        for(var contigEntry: byContig.entrySet()){
+        for (var contigEntry : byContig.entrySet()) {
             //find the available space for each contig and set the drawing head there
-            int contigEnd = (int)(contigStart + perContigAvailableSpace);
+            int contigEnd = (int) (contigStart + perContigAvailableSpace);
             List<Locatable> distinctSpans = contigEntry.getValue();
             //find the reference length of all the span groups on this contig
             int totalSpansLength = distinctSpans.stream().mapToInt(Locatable::getLengthOnReference).sum();
             int spanStart = contigStart;
-            for(Locatable span: distinctSpans){
+            for (Locatable span : distinctSpans) {
                 //now handle each span group
-                int spanLength =  span.getLengthOnReference();
-                int spanSpaceAvailable = (int)getSpaceToUse((double) perContigAvailableSpace - (distinctSpans.size() -1) * scaledAlignmentGap, spanLength, totalSpansLength );
+                int spanLength = span.getLengthOnReference();
+                int spanSpaceAvailable = (int) getSpaceToUse((double) perContigAvailableSpace - (distinctSpans.size() - 1) * scaledAlignmentGap, spanLength, totalSpansLength);
                 final List<SupplementaryAlignment> activeSpanGroup = groupedBySpan.get(span);
-                for(int i = 0; i < activeSpanGroup.size(); i++){
+                for (int i = 0; i < activeSpanGroup.size(); i++) {
                     //each read in the span is placed relatively within the space
                     SupplementaryAlignment sa = activeSpanGroup.get(i);
-                    int scaledReadStart = (int)getSpaceToUse(spanSpaceAvailable, sa.getStart() - span.getStart(), spanLength);
-                    int scaledReadEnd = (int)getSpaceToUse(spanSpaceAvailable, sa.getEnd() - span.getStart(), spanLength);
+                    int scaledReadStart = (int) getSpaceToUse(spanSpaceAvailable, sa.getStart() - span.getStart(), spanLength);
+                    int scaledReadEnd = (int) getSpaceToUse(spanSpaceAvailable, sa.getEnd() - span.getStart(), spanLength);
                     // height offset is used to try to layout overlapping arrows above instead of ontop of each other
-                    int heightOffset = ALIGNMENT_HEIGHT - (int)((2*ALIGNMENT_HEIGHT) * (1.0/(activeSpanGroup.size()+1.0))*(i+1.0));
-                    final AlignmentArrow readArrow = new AlignmentArrow((int)midline + 2*heightOffset, ALIGNMENT_HEIGHT,
-                            (int)bounds.getX() + spanStart + scaledReadStart,
-                            (int)bounds.getX() + spanStart + scaledReadEnd,
+                    int heightOffset = ALIGNMENT_HEIGHT - (int) ((2 * ALIGNMENT_HEIGHT) * (1.0 / (activeSpanGroup.size() + 1.0)) * (i + 1.0));
+                    final AlignmentArrow readArrow = new AlignmentArrow((int) midline + 2 * heightOffset, ALIGNMENT_HEIGHT,
+                            (int) bounds.getX() + spanStart + scaledReadStart,
+                            (int) bounds.getX() + spanStart + scaledReadEnd,
                             sa.getStrand());
 
                     positions.put(sa, readArrow);
@@ -422,10 +412,10 @@ class SupplementalAlignmentDiagram extends JPanel {
         // Calculate the height proportional to the distance. We'll use 1/4 of the bounding box height
         // as a baseline and then adjust based on the distance.
         double minHeight = bounds.getY();
-        double heightAdjustment =1; //.75 + .25 * (distance / bounds.getWidth());
+        double heightAdjustment = 1; //.75 + .25 * (distance / bounds.getWidth());
         double maxHeight = bounds.getHeight() - 5;
         double actualHeight = maxHeight * heightAdjustment;
-        double controlY = bounds.getY()+(bounds.getHeight() - actualHeight);
+        double controlY = bounds.getY() + (bounds.getHeight() - actualHeight);
 
         // Create two control points for the Bezier curve.
         Point2D control1 = new Point2D.Double(from.getX() + (to.getX() - from.getX()) / 4, controlY);

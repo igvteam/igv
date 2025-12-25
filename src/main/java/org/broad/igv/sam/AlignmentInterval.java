@@ -33,7 +33,9 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -121,8 +123,10 @@ public class AlignmentInterval extends Locus {
      *
      * @param option
      * @param location
+     * @param tag
+     * @param invertSort
      */
-    public void sortRows(SortOption option, double location, String tag, boolean invertSort, Set<String> priorityRecords) {
+    public void sortRows(SortOption option, double location, String tag, boolean invertSort) {
 
         PackedAlignments packedAlignments = getPackedAlignments();
         if (packedAlignments == null) {
@@ -132,13 +136,6 @@ public class AlignmentInterval extends Locus {
         final int center = (int) location;
         byte referenceBase = this.getReference(center);
         Comparator<Row> rowComparator = option.getComparator(center, referenceBase, tag, invertSort);
-
-        if (priorityRecords != null && !priorityRecords.isEmpty()) {
-            rowComparator = Comparator.comparing((Row row) -> row.getAlignments().stream()
-                            .anyMatch(aln -> priorityRecords.contains(aln.getReadName())))
-                    .reversed()
-                    .thenComparing(rowComparator);
-        }
 
         for (List<Row> alignmentRows : packedAlignments.values()) {
             alignmentRows.sort(rowComparator);
