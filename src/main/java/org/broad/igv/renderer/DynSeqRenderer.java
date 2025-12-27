@@ -1,10 +1,13 @@
 package org.broad.igv.renderer;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.SeqUtils;
 import org.broad.igv.prefs.IGVPreferences;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -53,6 +56,9 @@ public class DynSeqRenderer extends XYPlotRenderer {
             byte [] seq = GenomeManager.getInstance().getCurrentGenome().getSequence(chr, score.getStart(), score.getEnd());
             for(int pos = score.getStart(); pos < score.getEnd(); pos++) {
                 char base = (char) seq[pos - score.getStart()];
+                if(IGV.getInstance().getSequenceTrack().getStrand() == Strand.NEGATIVE) {
+                    base = SeqUtils.complementChar(base);
+                }
                 pX = (int) ((pos - origin) / locScale);
                 renderDynSeq(context.getGraphics(), pixelsPerBP, pX, baseY, pY, base);
             }
