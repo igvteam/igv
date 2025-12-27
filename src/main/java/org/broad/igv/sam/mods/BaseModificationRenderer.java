@@ -109,7 +109,7 @@ public class BaseModificationRenderer {
                         if (modStrand == alStrand) {
                             // Forward reference strand: upper half
                             rectHeight = halfHeight;
-                        } else if (modStrand != alStrand) {
+                        } else {
                             // Reverse reference strand: lower half
                             rectY = pY + rectHeight - halfHeight;
                             rectHeight = halfHeight;
