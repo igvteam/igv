@@ -64,7 +64,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.broad.igv.prefs.Constants.*;
 
@@ -201,7 +200,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private static final int GROUP_MARGIN = 5;
     private static final int TOP_MARGIN = 20;
     private static final int DS_MARGIN_0 = 2;
-    private static final int DOWNSAMPLED_ROW_HEIGHT = 3;
+    private static final int DOWNSAMPLED_ROW_HEIGHT = 10;
     private static final int INSERTION_ROW_HEIGHT = 9;
 
     public enum BisulfiteContext {
@@ -577,21 +576,24 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         downsampleRect = new Rectangle(rect);
         downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
-        renderDownsampledIntervals(context, downsampleRect);
+        boolean downsampled = renderDownsampledIntervals(context, downsampleRect);
 
         alignmentsRect = new Rectangle(rect);
-        alignmentsRect.y += 2;
+        if(downsampled) {
+            alignmentsRect.y += DOWNSAMPLED_ROW_HEIGHT;
+        }
+        alignmentsRect.y +=  2;
         alignmentsRect.height -= (alignmentsRect.y - rect.y);
         renderAlignments(context, alignmentsRect);
     }
 
-    private void renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
+    private boolean renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
 
         // Might be offscreen
-        if (!context.getVisibleRect().intersects(downsampleRect)) return;
+        if (!context.getVisibleRect().intersects(downsampleRect)) return false;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
-        if (loadedInterval == null) return;
+        if (loadedInterval == null) return false;
 
         Graphics2D g = context.getGraphic2DForColor(darkMode ? Color.white : Color.black);
 
@@ -610,6 +612,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             //Color color = (gray <= 0 ? Color.black : ColorUtilities.getGrayscaleColor(gray));
             g.fillRect(x0, downsampleRect.y, w, downsampleRect.height);
         }
+        return intervals.size() > 0;
     }
 
 
@@ -797,7 +800,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         final List<ReferenceFrame> frames = FrameManager.getFrames();
         for (ReferenceFrame frame : frames) {
             final AlignmentInterval interval = getDataManager().getLoadedInterval(frame);
-            if(interval != null) {
+            if (interval != null) {
                 final double location = frame.getCenter();
                 interval.sortRows(option, location, tag, invertSort);
             }
