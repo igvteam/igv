@@ -693,7 +693,9 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
                     }
 
                     CachedRedirect cr = new CachedRedirect();
-                    cr.url = new URL(conn.getHeaderField("Location"));
+                    final String location = conn.getHeaderField("Location");
+                    // Location header can be relative or absolute, resolve it against the current URL
+                    cr.url = new URL(url, location);
                     if (cr.url != null) {
                         cr.expires = ZonedDateTime.now().plusMinutes(DEFAULT_REDIRECT_EXPIRATION_MIN);
                         String s;
