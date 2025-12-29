@@ -16,9 +16,9 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
     java -showversion --module-path="${prefix}/lib" -Xmx1500m \
         @${prefix}/igv.args \
         @"$HOME/.igv/java_arguments" \
-        --module=org.igv/org.broad.igv.tools.IgvTools  gui
+        --module=org.igv/org.igv.tools.IgvTools  gui
 else
     java -showversion --module-path="${prefix}/lib" -Xmx1500m \
         @${prefix}/igv.args \
-        --module=org.igv/org.broad.igv.tools.IgvTools  gui
+        --module=org.igv/org.igv.tools.IgvTools  gui
 fi

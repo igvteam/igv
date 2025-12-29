@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="general"
-            id="org.broad.igv.plugin.general">
+            id="org.igv.plugin.general">
     <tool name="Shell Input" defaultPath="" visible="false"
           description="Command line interface with user-supplied executable">
         <command name="Shell Input" cmd="">

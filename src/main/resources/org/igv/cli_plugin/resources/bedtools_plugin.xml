@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="1.0" name="BEDTools"
-            id="org.broad.igv.plugin.bedtools">
+            id="org.igv.plugin.bedtools">
     <tool name="BEDTools" defaultPath="bedtools" toolUrl="http://code.google.com/p/bedtools/" visible="true"
           helpUrl="http://bedtools.readthedocs.org/en/latest/"
           description="bedtools: a flexible suite of utilities for comparing genomic features."
@@ -34,13 +34,13 @@
         <default_arg>
             <arg name="Track A" cmd_arg="-a" type="FEATURE_TRACK"/>
             <arg name="Track B" cmd_arg="-b" type="FEATURE_TRACK"
-                 encodingCodec="org.broad.igv.feature.tribble.IGVBEDCodec"/>
+                 encodingCodec="org.igv.feature.tribble.IGVBEDCodec"/>
             <arg name="Optional Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
         </default_arg>
 
         <default_output>
             <output name="Output Track">
-                <parser format="bed" strict="true" decodingCodec="org.broad.igv.cli_plugin.BEDToolsDecoder">
+                <parser format="bed" strict="true" decodingCodec="org.igv.cli_plugin.BEDToolsDecoder">
                     <libs>BEDToolsPluginCodec.jar</libs>
                 </parser>
             </output>

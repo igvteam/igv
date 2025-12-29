@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="snpEff"
-            id="org.broad.igv.plugin.snpeff">
+            id="org.igv.plugin.snpeff">
     <tool name="snpEff" defaultPath="snpEff.jar" visible="false"
           helpUrl="http://snpeff.sourceforge.net/SnpEff_manual.html" toolUrl="http://snpeff.sourceforge.net">
 

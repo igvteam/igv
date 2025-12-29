@@ -114,7 +114,7 @@ static int simpleLauncher(int argc, char **argv)
             "-Dapple.laf.useScreenMenuBar=true",
             "-Djava.net.useSystemProxies=true",
             extraArguments,
-            "org.broad.igv.ui.Main",
+            "org.igv.ui.Main",
             NULL};
 
         ret = execvp(cmd, args);
@@ -137,7 +137,7 @@ static int simpleLauncher(int argc, char **argv)
             "-Djava.net.preferIPv4Stack=true",
             "-Dapple.laf.useScreenMenuBar=true",
             "-Djava.net.useSystemProxies=true",
-            "org.broad.igv.ui.Main",
+            "org.igv.ui.Main",
             NULL};
         
         ret = execvp(cmd, args);

@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="GATK"
-            id="org.broad.igv.plugin.gatk">
+            id="org.igv.plugin.gatk">
     <tool name="GATK" defaultPath="GenomeAnalysisTK.jar" visible="false"
           helpUrl="http://www.broadinstitute.org/gatk/gatkdocs/" toolUrl="http://www.broadinstitute.org/gatk/">
 

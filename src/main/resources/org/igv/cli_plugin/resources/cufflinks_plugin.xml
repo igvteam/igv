@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="cufflinks"
-            id="org.broad.igv.plugin.cufflinks">
+            id="org.igv.plugin.cufflinks">
     <tool name="cufflinks" defaultPath="cufflinks" visible="false">
         <command name="cufflinks" cmd="--quiet">
             <arg name="Output Dir" id="outdir" cmd_arg="-o" type="LONGTEXT" defaultValue="./"/>
@@ -37,10 +37,10 @@
             <arg name="Other arguments" cmd_arg="" type="LONGTEXT" defaultValue=""/>
             <arg name="Track" cmd_arg="" type="ALIGNMENT_TRACK"/>
             <output name="Transcripts Track" defaultValue="Transcripts">
-                <parser source="$outdir/transcripts.gtf" decodingCodec="org.broad.igv.cli_plugin.CufflinksTranscriptDecoder"/>
+                <parser source="$outdir/transcripts.gtf" decodingCodec="org.igv.cli_plugin.CufflinksTranscriptDecoder"/>
             </output>
             <output name="Gene FPKM Track" type="DataSourceTrack" defaultValue="Gene FPKM">
-                <parser source="$outdir/genes.fpkm_tracking" decodingCodec="org.broad.igv.data.cufflinks.FPKMTrackingSampleCodec"/>
+                <parser source="$outdir/genes.fpkm_tracking" decodingCodec="org.igv.data.cufflinks.FPKMTrackingSampleCodec"/>
             </output>
         </command>
 

@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>igv_icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.broad.igv.ui.Main</string>
+	<string>org.igv.ui.Main</string>
 	<key>CFBundleDisplayName</key>
 	<string>IGV</string>
 	<key>CFBundleInfoDictionaryVersion</key>

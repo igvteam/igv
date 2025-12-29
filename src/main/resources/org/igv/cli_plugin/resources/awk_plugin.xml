@@ -25,7 +25,7 @@
 
 <!DOCTYPE cli_plugin SYSTEM "cli_plugin.dtd">
 <cli_plugin api_version="alpha" plugin_version="0.1" name="awk"
-            id="org.broad.igv.plugin.awk">
+            id="org.igv.plugin.awk">
     <tool name="awk" defaultPath="awk" visible="false">
         <default_arg>
             <arg name="Arguments" cmd_arg="" type="TEXT" defaultValue=""/>
