@@ -89,7 +89,7 @@ public class Globals {
     static {
         Properties properties = new Properties();
         try {
-            properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
+            properties.load(Globals.class.getResourceAsStream("/about.properties"));
         } catch (Exception e) {
             log.error("*** Error retrieving version and build information! ***", e);
         }
