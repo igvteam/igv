@@ -147,7 +147,9 @@ public class ReferenceFrame {
         eventBus.post(event);
     }
 
+
     public void changeChromosome(String chrName, boolean recordHistory) {
+        boolean changed = setChromosomeName(chrName, false);
         ViewChange resultEvent = ViewChange.ChromosomeChangeResult(this, chrName, recordHistory);
         eventBus.post(resultEvent);
         changeZoom(0);
@@ -159,6 +161,10 @@ public class ReferenceFrame {
         eventBus.post(result);
     }
 
+
+    public void changeGenome(Genome genome) {
+        setChromosomeName(genome.getHomeChromosome(), true);
+    }
 
     /**
      * Set the position and width of the frame, in pixels
