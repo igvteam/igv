@@ -26,12 +26,12 @@ if exist "%USERPROFILE%\.igv\java_arguments" (
         -Djava.net.preferIPv4Stack=true ^
         -Djava.net.useSystemProxies=true ^
         @"%USERPROFILE%\.igv\java_arguments" ^
-        -cp "%CP%" org.broad.igv.ui.Main %*
+        -cp "%CP%" org.igv.ui.Main %*
 ) else (
     %JAVA_CMD% -Xmx8g ^
         @%BatchPath%igv.args ^
         -Dsamjdk.snappy.disable=true ^
         -Djava.net.preferIPv4Stack=true ^
         -Djava.net.useSystemProxies=true ^
-        -cp "%CP%" org.broad.igv.ui.Main %*
+        -cp "%CP%" org.igv.ui.Main %*
 )

@@ -1,0 +1,243 @@
+package org.igv.data;
+
+import com.google.common.collect.Iterators;
+import org.igv.logging.*;
+import org.igv.feature.LocusScore;
+import org.igv.session.IGVSessionReader;
+import org.igv.track.DataTrack;
+import org.igv.track.Track;
+import org.igv.track.TrackType;
+import org.igv.track.WindowFunction;
+
+import java.util.*;
+
+/**
+ * Data source which combines two other DataSources
+ * <p>
+ * TODO Multiple DataSources. There is no 2
+ *
+ * @author jrobinso, jacob
+ */
+public class CombinedDataSource implements DataSource {
+
+    private static Logger log = LogManager.getLogger(CombinedDataSource.class);
+
+    public enum Operation {
+        ADD("+"),
+        SUBTRACT("-"),
+        MULTIPLY("*"),
+        DIVIDE("/");
+
+        private String stringRep;
+
+        private Operation(String stringrep) {
+            this.stringRep = stringrep;
+        }
+
+    }
+
+    DataTrack trackl;
+    DataTrack track2;
+
+    Operation operation = Operation.ADD;
+
+    public CombinedDataSource(DataTrack trackl, DataTrack track2, Operation operation) {
+        this.trackl = trackl;
+        this.track2 = track2;
+        this.operation = operation;
+    }
+
+    public void updateTrackReferences(List<Track> allTracks) {
+        //We filled in sources with placeholder tracks if not found, now find the real ones
+        trackl = updateTrackReference(trackl, allTracks);
+        track2 = updateTrackReference(track2, allTracks);
+    }
+
+    public DataTrack getTrackl() {
+        return trackl;
+    }
+
+    public DataTrack getTrack2() {
+        return track2;
+    }
+
+    public Operation getOperation() {
+        return operation;
+    }
+
+    private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks) {
+
+        if (memberTrack.getName() == null && memberTrack.getResourceLocator() == null) {
+            DataTrack matchingTrack = (DataTrack) IGVSessionReader.getMatchingTrack(memberTrack.getId(), allTracks);
+            if (matchingTrack == null)
+                throw new IllegalStateException("Could not find track with ID " + memberTrack.getId());
+            return matchingTrack;
+        } else {
+            return memberTrack;
+        }
+
+    }
+
+    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
+
+        List<LocusScore> outerScores = this.trackl.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
+        List<LocusScore> innerScores = this.track2.getSummaryScores(chr, startLocation, endLocation, zoom).getFeatures();
+
+        int initialSize = outerScores.size() + innerScores.size();
+        List<LocusScore> combinedScoresList = new ArrayList<LocusScore>(initialSize);
+
+        if (initialSize == 0) return combinedScoresList;
+
+        //TODO We assume that having no data from one source is the identity operation, that may not be true
+        if (innerScores.size() == 0) return outerScores;
+        if (outerScores.size() == 0) return innerScores;
+
+
+        /**
+         * We first generate the chunks which will need to be calculated separately
+         * This is the set of all start/end positions of outerScores and innerScores
+         * We could be a bit smarter, but this is simpler and there's no problem with
+         * skipping over intervals which don't have data later.
+         *
+         * Following that, for each interval generated, we search outerScores and innerScores
+         * for the unique LocusScore which contains the generated interval.
+         */
+
+        //Generate the boundaries for the new combined regions
+        Set<Integer> boundariesSet = new LinkedHashSet<Integer>(2 * initialSize);
+        Iterator<LocusScore> dualIter = Iterators.mergeSorted(Arrays.asList(innerScores.iterator(), outerScores.iterator()),
+                new Comparator<LocusScore>() {
+
+                    @Override
+                    public int compare(LocusScore o1, LocusScore o2) {
+                        return o1.getStart() - o2.getStart();
+                    }
+                });
+        while (dualIter.hasNext()) {
+            LocusScore score = dualIter.next();
+            boundariesSet.add(score.getStart());
+            boundariesSet.add(score.getEnd());
+        }
+        Integer[] boundariesArray = boundariesSet.toArray(new Integer[0]);
+        Arrays.sort(boundariesArray);
+
+        int outerScoreInd = 0;
+        int innerScoreInd = 0;
+        //Calculate value for each interval
+        for (int bb = 0; bb < boundariesArray.length - 1; bb++) {
+            int start = boundariesArray[bb];
+            int end = boundariesArray[bb + 1];
+            //It shouldn't be possible for more than one LocusScore of either
+            //tracks to overlap each interval, since the start/ends
+            //were based on all start/ends of the inputs
+            outerScoreInd = findContains(start, end, outerScores, Math.max(outerScoreInd, 0));
+            innerScoreInd = findContains(start, end, innerScores, Math.max(innerScoreInd, 0));
+            LocusScore outerScore = getContains(outerScores, outerScoreInd);
+            LocusScore innerScore = getContains(innerScores, innerScoreInd);
+
+            if (outerScore == null && innerScore == null) continue;
+            float score = combineScores(outerScore, innerScore);
+            BasicScore newScore = new BasicScore(start, end, score);
+            combinedScoresList.add(newScore);
+        }
+        return combinedScoresList;
+    }
+
+    /**
+     * Search {@code scoresList} (must be sorted by start position) for a score which contains the interval specified
+     * by start/end. The first one which satisfies this requirement is returned.
+     *
+     * @param start
+     * @param end
+     * @param scoresList
+     * @param startIndex Optimization, where to start searching in {@code scoresList}
+     **/
+    private int findContains(int start, int end, List<LocusScore> scoresList, int startIndex) {
+        for (int ii = startIndex; ii < scoresList.size(); ii++) {
+            LocusScore score = scoresList.get(ii);
+            if (score.getStart() <= start && score.getEnd() >= end) {
+                return ii;
+            } else if (score.getStart() >= end) {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
+    private LocusScore getContains(List<LocusScore> scores, int index) {
+        if (index >= 0 && index < scores.size()) {
+            return scores.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Combine the scores using this sources operation. Either can be null,
+     * in which case it is given the coordinates of the other and a score of 0.
+     * Both inputs cannot be null
+     *
+     * @param score0
+     * @param score1
+     * @return
+     */
+    private float combineScores(LocusScore score0, LocusScore score1) {
+        if (score0 == null && score1 == null) throw new IllegalArgumentException("Both inputs cannot be null");
+        if (score0 == null) {
+            score0 = new BasicScore(score1.getStart(), score1.getEnd(), 0.0f);
+        } else if (score1 == null) {
+            score1 = new BasicScore(score0.getStart(), score0.getEnd(), 0.0f);
+        }
+
+        switch (operation) {
+            case ADD:
+                return score0.getScore() + score1.getScore();
+            case SUBTRACT:
+                return score0.getScore() - score1.getScore();
+            case MULTIPLY:
+                return score0.getScore() * score1.getScore();
+            case DIVIDE:
+                if (score1.getScore() == 0.0f) {
+                    return 0.0f;
+                }
+                return score0.getScore() / score1.getScore();
+            default:
+                throw new IllegalStateException("Operation not recognized: " + operation);
+        }
+    }
+
+    public double getDataMax() {
+        return 0;
+    }
+
+    public double getDataMin() {
+        return 0;
+    }
+
+    public TrackType getTrackType() {
+        return TrackType.PLUGIN;
+    }
+
+    public void setWindowFunction(WindowFunction statType) {
+        //TODO
+    }
+
+    public boolean isLogNormalized() {
+        return false;
+    }
+
+    public WindowFunction getWindowFunction() {
+        return WindowFunction.none;
+    }
+
+    public Collection<WindowFunction> getAvailableWindowFunctions() {
+        return new ArrayList<WindowFunction>();
+    }
+
+    @Override
+    public void dispose() {
+        if (trackl != null) trackl.unload();
+        if (track2 != null) track2.unload();
+    }
+
+}

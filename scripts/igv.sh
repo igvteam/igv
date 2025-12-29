@@ -34,7 +34,7 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
         -Djava.net.useSystemProxies=true \
         @"$HOME/.igv/java_arguments" \
         -cp "$CP" \
-        org.broad.igv.ui.Main "$@"
+        org.igv.ui.Main "$@"
 else
     java -Xmx8g \
         @"${prefix}/igv.args" \
@@ -43,5 +43,5 @@ else
         -Djava.net.preferIPv4Stack=true \
         -Djava.net.useSystemProxies=true \
         -cp "$CP" \
-        org.broad.igv.ui.Main "$@"
+        org.igv.ui.Main "$@"
 fi

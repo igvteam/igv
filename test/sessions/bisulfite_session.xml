@@ -7,32 +7,32 @@
         <Resource path="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam" type="bam"/>
     </Resources>
     <Panel height="91" name="DataPanel" width="1367">
-        <Track attributeKey="GM12878 H3K4me3" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,150,0" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/GM12878 H3k4me3.wig" name="GM12878 H3K4me3" renderer="BAR_CHART" visible="true" windowFunction="mean">
+        <Track attributeKey="GM12878 H3K4me3" autoScale="false" clazz="org.igv.track.DataSourceTrack" color="0,150,0" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/GM12878 H3k4me3.wig" name="GM12878 H3K4me3" renderer="BAR_CHART" visible="true" windowFunction="mean">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="79.75" minimum="0.0" type="LINEAR"/>
         </Track>
     </Panel>
     <Panel height="1304" name="Panel1654030938565" width="1367">
-        <Track attributeKey="normal.STK33.bam Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam_coverage" name="normal.STK33.bam Coverage" snpThreshold="0.2" visible="true">
+        <Track attributeKey="normal.STK33.bam Coverage" autoScale="true" clazz="org.igv.sam.CoverageTrack" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam_coverage" name="normal.STK33.bam Coverage" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="86.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="normal.STK33.bam Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam_junctions" name="normal.STK33.bam Junctions" visible="false"/>
-        <Track attributeKey="normal.STK33.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam" name="normal.STK33.bam" visible="true">
+        <Track attributeKey="normal.STK33.bam Junctions" clazz="org.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam_junctions" name="normal.STK33.bam Junctions" visible="false"/>
+        <Track attributeKey="normal.STK33.bam" clazz="org.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/normal.STK33.bam" name="normal.STK33.bam" visible="true">
             <RenderOptions colorOption="BISULFITE"/>
         </Track>
     </Panel>
     <Panel height="1052" name="Panel1654030938572" width="1367">
-        <Track attributeKey="tumor.STK33.bam Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam_coverage" name="tumor.STK33.bam Coverage" snpThreshold="0.2" visible="true">
+        <Track attributeKey="tumor.STK33.bam Coverage" autoScale="true" clazz="org.igv.sam.CoverageTrack" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam_coverage" name="tumor.STK33.bam Coverage" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="68.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="tumor.STK33.bam Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam_junctions" name="tumor.STK33.bam Junctions" visible="false"/>
-        <Track attributeKey="tumor.STK33.bam" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam" name="tumor.STK33.bam" visible="true">
+        <Track attributeKey="tumor.STK33.bam Junctions" clazz="org.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam_junctions" name="tumor.STK33.bam Junctions" visible="false"/>
+        <Track attributeKey="tumor.STK33.bam" clazz="org.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/tumor.STK33.bam" name="tumor.STK33.bam" visible="true">
             <RenderOptions colorOption="BISULFITE"/>
         </Track>
     </Panel>
     <Panel height="182" name="FeaturePanel" width="1367">
-        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
-        <Track attributeKey="Refseq Genes" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;390.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg18/refGene.txt.gz" name="Refseq Genes" visible="true"/>
-        <Track attributeKey="cpgIslands.bed" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;0.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/cpgIslands.bed" name="CpG Islands" visible="true"/>
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
+        <Track attributeKey="Refseq Genes" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;390.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg18/refGene.txt.gz" name="Refseq Genes" visible="true"/>
+        <Track attributeKey="cpgIslands.bed" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;0.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.test/data/WGBS/stk33/cpgIslands.bed" name="CpG Islands" visible="true"/>
     </Panel>
     <PanelLayout dividerFractions="0.12416555407209613,0.43658210947930576,0.7503337783711616"/>
     <HiddenAttributes>

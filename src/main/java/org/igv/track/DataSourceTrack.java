@@ -1,0 +1,142 @@
+package org.igv.track;
+
+
+import org.igv.Globals;
+import org.igv.data.CombinedDataSource;
+import org.igv.data.CoverageDataSource;
+import org.igv.data.DataSource;
+import org.igv.feature.LocusScore;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.renderer.DataRange;
+import org.igv.util.ResourceLocator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+
+/**
+ * @author jrobinso
+ */
+
+public class DataSourceTrack extends DataTrack {
+
+    private static Logger log = LogManager.getLogger(DataSourceTrack.class);
+
+    public DataSource dataSource;
+
+    public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
+        super(locator, id, name);
+        if(dataSource == null && locator != null) {
+            log.warn("Null data source for track: " + locator.getTrackName() + "  " + locator.getPath());
+        }
+        if (dataSource != null) {
+            setDatasource(dataSource);
+        }
+    }
+
+    public void setDatasource(DataSource dataSource) {
+        this.dataSource = dataSource;
+        if (this.dataSource != null) {
+            setTrackType(dataSource.getTrackType());
+ //           List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
+ //           if (scores.size() > 0) {
+ //               initScale(dataSource, scores);
+ //           }
+        }
+    }
+
+    public DataSourceTrack() {
+
+    }
+
+
+    void initScale(DataSource dataSource, List<LocusScore> scores) {
+
+        float min = (float) dataSource.getDataMin();
+        float max = (float) dataSource.getDataMax();
+        float baseline = 0;
+
+        // If the range is all + numbers set the min to zero
+        if (min > 0) {
+            min = 0;
+        }
+        for (LocusScore score : scores) {
+            max = Math.max(max, score.getScore());
+        }
+
+        setDataRange(new DataRange(min, baseline, max));
+    }
+
+    public LoadedDataInterval<List<LocusScore>> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+
+        List<LocusScore> tmp = dataSource == null ?
+                Collections.EMPTY_LIST :
+                dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        if (tmp == null) tmp = Collections.EMPTY_LIST;
+        if (dataRange == null && !autoScale) {
+            initScale(dataSource, tmp);
+        }
+        return new LoadedDataInterval<>(chr, startLocation, endLocation, zoom, tmp);
+    }
+
+
+    @Override
+    public void setWindowFunction(WindowFunction statType) {
+        clearCaches();
+        if (dataSource != null) {
+            dataSource.setWindowFunction(statType);
+        }
+    }
+
+    public boolean isLogNormalized() {
+        return dataSource != null ? dataSource.isLogNormalized() : false;
+    }
+
+
+    public WindowFunction getWindowFunction() {
+
+        return dataSource != null ? dataSource.getWindowFunction() : null;
+    }
+
+
+    @Override
+    public Collection<WindowFunction> getAvailableWindowFunctions() {
+        return dataSource != null ? dataSource.getAvailableWindowFunctions() : null;
+    }
+
+    public void updateTrackReferences(List<Track> allTracks) {
+        if (dataSource != null && dataSource instanceof CombinedDataSource) {
+            ((CombinedDataSource) dataSource).updateTrackReferences(allTracks);
+        }
+    }
+
+    public void marshalXML(Document document, Element element) {
+
+        super.marshalXML(document, element);
+
+        if (dataSource != null && dataSource instanceof CoverageDataSource){
+            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
+            if (normalize) {
+                element.setAttribute("normalize", "true");
+            }
+        }
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (dataSource != null) {
+            if (dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")) {
+                ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
+            }
+        }
+
+
+    }
+}

@@ -13,7 +13,7 @@ if exist %BatchPath%\jdk-21 (
 )
 
 if exist "%USERPROFILE%\.igv\java_arguments" (
-  start %JAVA_CMD% -showversion --module-path=%BatchPath%\lib -Xmx1500m @%BatchPath%\igv.args @"%USERPROFILE%\.igv\java_arguments" --module=org.igv/org.broad.igv.tools.IgvTools gui
+  start %JAVA_CMD% -showversion --module-path=%BatchPath%\lib -Xmx1500m @%BatchPath%\igv.args @"%USERPROFILE%\.igv\java_arguments" --module=org.igv/org.igv.tools.IgvTools gui
 ) else (
-  start %JAVA_CMD% -showversion --module-path=%BatchPath%\lib -Xmx1500m @%BatchPath%\igv.args --module=org.igv/org.broad.igv.tools.IgvTools gui
+  start %JAVA_CMD% -showversion --module-path=%BatchPath%\lib -Xmx1500m @%BatchPath%\igv.args --module=org.igv/org.igv.tools.IgvTools gui
 )

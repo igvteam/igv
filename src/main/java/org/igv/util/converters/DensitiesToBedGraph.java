@@ -1,0 +1,58 @@
+package org.igv.util.converters;
+
+import org.igv.util.ParsingUtils;
+
+import java.io.*;
+import java.util.List;
+
+/**
+ * Converts a directory of "density" files (Tarjei et al) to bedgraph
+ *
+ * @author Jim Robinson
+ * @date 9/13/11
+ */
+public class DensitiesToBedGraph {
+
+
+    public static void main(String[] args) throws IOException {
+
+
+        File inputDir = new File(args[0]);
+        File outputDir = new File(args[1]);
+
+        convertAll(inputDir, outputDir);
+
+    }
+
+    private static void convertAll(File inputDir, File outputDir) throws IOException {
+        File[] files = inputDir.listFiles();
+        for (File f : files) {
+            if (f.getAbsolutePath().endsWith(".densities.txt.gz")) {
+                String ofile = f.getName().replace(".densities.txt.gz", ".bedgraph");
+                convert(f, new File(outputDir, ofile));
+            }
+        }
+    }
+
+    public static void convert(File ifile, File ofile) throws IOException {
+
+        BufferedReader reader = null;
+        PrintWriter pw = null;
+
+        reader = ParsingUtils.openBufferedReader(ifile.getAbsolutePath());
+        pw = new PrintWriter(new BufferedWriter(new FileWriter(ofile)));
+
+        String nextLine;
+        while ((nextLine = reader.readLine()) != null) {
+            String[] tokens = nextLine.split("\t");
+            float counts = Float.parseFloat(tokens[2]);
+            if (counts > 0) {
+                int start = Integer.parseInt(tokens[1]);
+                pw.println(tokens[0] + "\t" + start + "\t" + (start + 25) + "\t" + counts);
+            }
+        }
+
+        reader.close();
+        pw.close();
+    }
+}

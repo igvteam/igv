@@ -1,0 +1,124 @@
+package org.igv.ultima.annotate;
+
+import htsjdk.samtools.SAMRecord;
+import org.apache.commons.lang3.StringUtils;
+import org.igv.sam.AlignmentBlock;
+import org.igv.sam.ByteSubarray;
+import org.igv.sam.SAMAlignment;
+import org.igv.ultima.render.FlowIndelRendering;
+
+public class FlowBlockAnnotator {
+
+    private static final String KEY_ATTR = "tp";
+    private static final String T0_ATTR = "t0";
+
+    public boolean handlesBlocks(final AlignmentBlock block) {
+
+        // sanity: bases and qualities
+        if ( (block.getBases() == null) || (block.getQualities() == null) ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public void appendBlockQualityAnnotation(SAMAlignment samAlignment, AlignmentBlock block, StringBuffer buf) {
+
+        if (FlowIndelRendering.isFlow(samAlignment.getRecord()) ) {
+            buf.append(" @ QV " + qualsAsString(block.getQualities()) + attrAsString(samAlignment, block, KEY_ATTR, -1));
+            buf.append(" " + attrAsString(samAlignment, block, T0_ATTR, -1));
+        }
+    }
+
+    public void appendBlockAttrAnnotation(SAMAlignment samAlignment, AlignmentBlock block, int offset, StringBuffer buf) {
+
+        if ( FlowIndelRendering.isFlow(samAlignment.getRecord()) ) {
+            buf.append(attrAsString(samAlignment, block, KEY_ATTR, offset));
+            buf.append(attrAsString(samAlignment, block, T0_ATTR, offset));
+        }
+    }
+
+    private int[] attrAsIntegers(SAMAlignment samAlignment, AlignmentBlock block, String name, int offset, StringBuilder sbName) {
+
+        Object  value = null;
+        for ( String name1 : name.split(",") ) {
+            value = samAlignment.getRecord().getAttribute(name1);
+            if ( value != null ) {
+                name = name1;
+                if ( sbName != null )
+                    sbName.append(name);
+                break;
+            }
+        }
+        if ( value == null )
+            return new int[0];
+        byte[]  arr;
+        if ( value instanceof String ) {
+            arr = ((String)value).getBytes();
+            for ( int i = 0 ; i < arr.length ; i++ ) {
+                arr[i] -= 33;
+            }
+
+        } else {
+            arr = (byte[])value;
+        }
+
+        if ( offset >= 0 ) {
+            int[]   integers = new int[1];
+            int     start = block.getIndexOnRead();
+            integers[0] = (int)(arr[start + offset]);
+            return integers;
+
+        } else {
+            int     start = block.getIndexOnRead();
+            int     length = block.getLength();
+            int[]   integers = new int[length];
+            for ( int ofs = start ; ofs < (start + length) ; ofs++ ) {
+                integers[ofs - start] = arr[ofs];
+            }
+            return integers;
+        }
+    }
+
+    private String attrAsString(SAMAlignment samAlignment, AlignmentBlock block, String name, int offset) {
+
+        StringBuilder   sb = new StringBuilder(" ");
+        int[]       integers = attrAsIntegers(samAlignment, block, name, offset, sb);
+        if ( integers == null )
+            return "";
+
+        sb.append(" ");
+        sb.append(StringUtils.join(integers, ','));
+
+        String  r = sb.toString();
+        if ( r.length() > 40 )
+            r = r.substring(0, 40) + "...";
+
+        return r;
+    }
+
+    static public String qualsAsString(ByteSubarray quals) {
+
+        StringBuilder       sb = new StringBuilder();
+        final int           digestLength = 25;
+        boolean             isDigest = quals.length >= (digestLength * 2);
+
+        // translate quals back into ASCII
+        for ( int i = 0 ; i < quals.length ; i++ ) {
+            final byte q = quals.getByte(i);
+            if ( !isDigest || (i < digestLength) || (i > quals.length - digestLength) ) {
+                if ( i > 0 )
+                    sb.append(",");
+                if (q == 255)
+                    sb.append('?');
+                else {
+                    sb.append(Integer.toString(q));
+                }
+            }
+            if ( isDigest && (i == digestLength) )
+                sb.append("...");
+        }
+
+        return sb.toString();
+    }
+}

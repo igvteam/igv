@@ -1,0 +1,225 @@
+package org.igv.track;
+
+import htsjdk.samtools.util.Locatable;
+import org.igv.logging.*;
+import org.igv.feature.BasicFeature;
+import org.igv.feature.IGVFeature;
+import org.igv.feature.SpliceJunctionFeature;
+import org.igv.feature.Strand;
+import org.igv.renderer.SpliceJunctionRenderer;
+import org.igv.ui.util.MessageUtils;
+import htsjdk.tribble.Feature;
+
+import java.util.*;
+
+/**
+ * @author dhmay
+ * @date Feb 3, 2011
+ *
+ * This class is a subclass of PackedFeatures that is for display of splice junctions. It overrides some
+ * methods in order to deviate from superclass in two ways:
+ * 1.  Features are allowed to be on the same line if flanking regions overlap
+ * 2.  Overlapping features are allowed to be on the same line if they are from different strands
+ * 3.  Features are ordered from top to bottom in ascending order of read depth
+ * The goal is for the dominant isoform to appear on the top row.
+ *
+ * I think I've got the 90% case covered, but there's quite a bit of ambiguity here.  Some items for future work:
+ * -The feature ordering will probably fail in certain conditions, e.g., an exon removal in which the situation
+ * where the exon is present has more coverage in the first junction, but the absent-exon condition has more
+ * coverage overall.  These are kind of degenerate cases, so only worth handling if someone complains.
+ */
+public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
+
+    private static Logger log = LogManager.getLogger(PackedFeaturesSpliceJunctions.class);
+
+    public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, Track.DisplayMode displayMode) {
+        super(chr, start, end, iter, displayMode, false);
+    }
+
+    /**
+     * Splice junction features should be rendered on the same line even if their flanking regions overlap
+     * @param feature
+     * @return
+     */
+    protected int getFeatureStartForPacking(Feature feature)
+    {
+        return ((SpliceJunctionFeature) feature).getJunctionStart();
+    }
+
+
+    /**
+     * Splice junction features should be rendered on the same line even if their flanking regions overlap
+     * @param feature
+     * @return
+     */
+    protected int getFeatureEndForPacking(Feature feature)
+    {
+        return ((SpliceJunctionFeature) feature).getJunctionEnd();
+    }
+
+    int getRowCount() {
+        return getRows().size();
+    }
+
+    /**
+     * Allocates each alignment to the rows such that there is no overlap. For splice junctions, priority queues
+     * are ordered by feature score (read depth).  For the superclass, this is done by length.
+     * Since splice junctions only interfere with each other within a strand, break up the iterator into one
+     * iterator per strand, farm out the work per strand, and reintegrate.
+     *
+     * This seems nice and clean, but it's actually not that efficient, since we're handling all of one strand
+     * and then all of the other -- we're essentially buffering all the second strand's features until we get
+     * to them
+     *
+     * @param iter TabixLineReader wrapping the collection of alignments
+     */
+    List<FeatureRow> packFeatures(Iterator iter) {
+
+        // Split features by strand
+        List<SpliceJunctionFeature> posFeatures = new ArrayList<>();
+        List<SpliceJunctionFeature> negFeatures = new ArrayList<>();
+        while(iter.hasNext()) {
+            SpliceJunctionFeature f = (SpliceJunctionFeature) iter.next();
+            if(f.getStrand() == Strand.NEGATIVE) {
+                negFeatures.add(f);
+            } else {
+                posFeatures.add(f);
+            }
+        }
+
+        List<FeatureRow> posRows = packFeaturesOneStrand(posFeatures.iterator());
+        List<FeatureRow> negativeRows = packFeaturesOneStrand(negFeatures.iterator());
+
+        Comparator startComparator = new Comparator<Feature>() {
+            public int compare(Feature row1, Feature row2) {
+                return row1.getStart() - row2.getStart();
+            }
+        };
+
+        int numRows = Math.max(posRows.size(), negativeRows.size());
+        List<FeatureRow> result = new ArrayList<FeatureRow>(numRows);
+        features.clear();
+        for (int i=0; i<numRows; i++)
+        {
+            List<Feature> posAndNegFeatures = new ArrayList<Feature>();
+            if (negativeRows.size() > i)
+                posAndNegFeatures.addAll(negativeRows.get(i).getFeatures());
+            if (posRows.size() > i)
+                posAndNegFeatures.addAll(posRows.get(i).getFeatures());
+
+            if (!posAndNegFeatures.isEmpty())
+            {
+                Collections.sort(posAndNegFeatures, startComparator);
+                FeatureRow resultRow = new FeatureRow();
+                for (Feature feature : posAndNegFeatures)
+                    resultRow.addFeature(feature);
+                result.add(resultRow);
+                features.addAll(posAndNegFeatures);
+            }
+        }
+        Collections.sort(features, startComparator);
+        return result;
+    }
+
+
+    /**
+     * This does the real work of packing features, pretty much the same way the superclass does, except
+     * that features can overlap in their flanking regions and they're ordered among the rows by score
+     * @param iter
+     * @return
+     */
+    List<FeatureRow> packFeaturesOneStrand(Iterator iter) {
+        List<FeatureRow> rows = new ArrayList(10);
+        if (iter == null || !iter.hasNext()) {
+            return rows;
+        }
+
+        maxFeatureLength = 0;
+        int totalCount = 0;
+
+        LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
+        Comparator pqComparator = new Comparator<BasicFeature>() {
+            public int compare(BasicFeature row1, BasicFeature row2) {
+                return (int) (((IGVFeature) row2).getScore() - ((IGVFeature) row1).getScore());
+            }
+        };
+
+        while (iter.hasNext()) {
+            T feature = (T) iter.next();
+            maxFeatureLength = Math.max(maxFeatureLength,
+                    getFeatureEndForPacking(feature) - getFeatureStartForPacking(feature));
+            features.add(feature);
+
+            int bucketNumber = getFeatureStartForPacking(feature);
+
+            PriorityQueue<T> bucket = bucketArray.get(bucketNumber);
+            if (bucket == null) {
+                bucket = new PriorityQueue<T>(5, pqComparator);
+                bucketArray.put(bucketNumber, bucket);
+            }
+            bucket.add(feature);
+            totalCount++;
+
+        }
+
+        // Allocate features to rows
+        FeatureRow currentRow = new FeatureRow();
+        int allocatedCount = 0;
+        int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
+
+        int lastAllocatedCount = -1;
+        while (allocatedCount < totalCount && rows.size() < maxLevels) {
+
+            // Check to prevent infinite loops
+            if (lastAllocatedCount == allocatedCount) {
+                String msg = "Infinite loop detected while packing features "  +
+                        ".<br>Not all features will be shown." +
+                        "<br>Please contact igv-team@broadinstitute.org";
+
+                log.error(msg);
+                MessageUtils.showMessage(msg);
+                break;
+            }
+            lastAllocatedCount = allocatedCount;
+
+            // Loop through alignments until we reach the end of the interval
+
+            PriorityQueue<T> bucket = null;
+
+            ArrayList<Integer> emptyBucketKeys = new ArrayList();
+            for (Integer key : bucketArray.keySet()) {
+                if (key >= nextStart) {
+                    bucket = bucketArray.get(key);
+
+                    T feature = bucket.poll();
+
+                    if (bucket.isEmpty()) {
+                        emptyBucketKeys.add(key);
+                    }
+                    currentRow.addFeature(feature);
+                    nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
+                    allocatedCount++;
+                }
+            }
+            for (Integer key : emptyBucketKeys) {
+                bucketArray.remove(key);
+            }
+
+
+            // We've reached the end of the interval,  start a new row
+            if (currentRow.features.size() > 0) {
+                rows.add(currentRow);
+                lastAllocatedCount = -1;
+            }
+            currentRow = new FeatureRow();
+            nextStart = 0;
+        }
+        // Add the last row
+        if (currentRow.features.size() > 0) {
+            rows.add(currentRow);
+        }
+
+        return rows;
+    }
+
+}

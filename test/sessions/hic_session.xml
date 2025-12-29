@@ -4,11 +4,11 @@
         <Resource path="https://4dn-open-data-public.s3.amazonaws.com/fourfront-webprod/wfoutput/cc0accc9-a89f-4b40-bac6-de754a7f77c9/4DNFILI6XOB5.hic" type="hic"/>
     </Resources>
     <Panel height="493" name="DataPanel" width="1162">
-        <Track arcOption="ALL" attributeKey="4DNFILI6XOB5.hic" autoscale="true" clazz="org.broad.igv.bedpe.InteractionTrack" color="180,25,137" direction="UP" fontSize="10" graphType="NESTED_ARC" height="250" id="https://4dn-open-data-public.s3.amazonaws.com/fourfront-webprod/wfoutput/cc0accc9-a89f-4b40-bac6-de754a7f77c9/4DNFILI6XOB5.hic" name="4DNFILI6XOB5.hic" nvi="6360373541,25900" showBlocks="false" thickness="1" transparency="0.1" visible="true"/>
+        <Track arcOption="ALL" attributeKey="4DNFILI6XOB5.hic" autoscale="true" clazz="org.igv.bedpe.InteractionTrack" color="180,25,137" direction="UP" fontSize="10" graphType="NESTED_ARC" height="250" id="https://4dn-open-data-public.s3.amazonaws.com/fourfront-webprod/wfoutput/cc0accc9-a89f-4b40-bac6-de754a7f77c9/4DNFILI6XOB5.hic" name="4DNFILI6XOB5.hic" nvi="6360373541,25900" showBlocks="false" thickness="1" transparency="0.1" visible="true"/>
     </Panel>
     <Panel height="74" name="FeaturePanel" width="1162">
-        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
-        <Track attributeKey="Refseq All" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;1037.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;1037.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
     </Panel>
     <PanelLayout dividerFractions="0.8623693379790941"/>
 </Session>

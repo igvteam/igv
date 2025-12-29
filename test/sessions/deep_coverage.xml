@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="chr3:185791817-185791856" nextAutoscaleGroup="2" version="8">
+    <Resources>
+        <Resource path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bam/deep/deep_coverage.bam" type="bam"/>
+    </Resources>
+    <Panel height="7448" name="Panel1766959273285" width="1136">
+        <Track attributeKey="deep_coverage.bam Coverage" autoScale="true" clazz="org.igv.sam.CoverageTrack" fontSize="10" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bam/deep/deep_coverage.bam_coverage" name="deep_coverage.bam Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1477.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="deep_coverage.bam Junctions" autoScale="true" clazz="org.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bam/deep/deep_coverage.bam_junctions" maxdepth="50" name="deep_coverage.bam Junctions" visible="false"/>
+        <Track attributeKey="deep_coverage.bam" clazz="org.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bam/deep/deep_coverage.bam" name="deep_coverage.bam" visible="true">
+            <RenderOptions duplicatesOption="FILTER"/>
+        </Track>
+    </Panel>
+    <Panel height="252" name="FeaturePanel" width="1136">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;696.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.00718562874251497,0.6922155688622754"/>
+</Session>

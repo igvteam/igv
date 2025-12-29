@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg38" locus="All" version="8">
+    <Resources>
+        <Resource path="https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz" type="vcf"/>
+        <Resource path="https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb" type="bb"/>
+    </Resources>
+    <Panel height="276" name="DataPanel" width="1136">
+        <Track attributeKey="clinvar.vcf.gz" clazz="org.igv.variant.VariantTrack" displayMode="EXPANDED" featureVisibilityWindow="100100" fontSize="10" groupByStrand="false" id="https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz" name="clinvar.vcf.gz" siteColorMode="ALLELE_FREQUENCY" visible="true"/>
+        <Track attributeKey="clinvarMain.bb" clazz="org.igv.track.FeatureTrack" featureVisibilityWindow="7491344" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb" name="clinvarMain.bb" visible="true"/>
+    </Panel>
+    <Panel height="274" name="FeaturePanel" width="1136">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="MANE v1.0 - Ensembl" clazz="org.igv.track.FeatureTrack" featureNameProperty="nucAcc" featureVisibilityWindow="1615203887" fontSize="10" groupByStrand="false" id="https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.0/MANE.GRCh38.v1.0.ensembl.bb" name="MANE v1.0 - Ensembl" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;1037.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.4991023339317774"/>
+</Session>

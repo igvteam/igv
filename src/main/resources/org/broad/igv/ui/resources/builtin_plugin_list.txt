@@ -1,4 +1,0 @@
-org.broad.igv.plugin.mongocollab.MongoCollabPlugin
-org.broad.igv.plugin.mongovariant.VariantReviewPlugin
-org.broad.igv.plugin.AddMenuSeparator
-org.broad.igv.gitools.Gitools

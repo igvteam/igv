@@ -1,0 +1,172 @@
+package org.igv.sam.reader;
+
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMReadGroupRecord;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import org.igv.logging.*;
+import org.igv.exceptions.DataLoadException;
+import org.igv.util.FileUtils;
+import org.igv.util.ParsingUtils;
+import org.igv.util.ResourceLocator;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * @author jrobinso
+ */
+public class AlignmentReaderFactory {
+    private static Logger log = LogManager.getLogger(AlignmentReaderFactory.class);
+
+    static {
+        SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
+    }
+
+    public static AlignmentReader getReader(String path, boolean requireIndex) throws IOException {
+        return getReader(new ResourceLocator(path), requireIndex);
+    }
+
+    public static AlignmentReader getReader(ResourceLocator locator) throws IOException {
+        return getReader(locator, true);
+    }
+
+    public static AlignmentReader getReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+        log.debug("Getting alignment reader for " + locator);
+        String pathLowerCase = locator.getPath().toLowerCase();
+
+        AlignmentReader reader = null;
+
+        String samFile = locator.getPath();
+        String format = locator.getFormat();
+
+        if ("alist".equals(format)) {
+            reader = getMergedReader(locator.getPath(), true);
+        } else if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
+            reader = new CGIAlignmentReader(samFile);
+        } else if (format.equals("sam")) {
+            reader = new SAMReader(samFile, requireIndex);
+
+        } else if (format.equals("aligned")
+                || format.equals("aligned.txt")
+                || format.equals("bedz")
+                || format.equals("bed")
+                || format.equals("psl")
+                || format.equals("pslx")) {
+            reader = new GeraldReader(samFile, requireIndex);
+        } else if (format.equals("bam") || (format.equals("cram")) || locator.isHtsget()) {
+            try {
+                reader = new BAMReader(locator, requireIndex); //, requireIndex);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
+            }
+        } else if (format.equals("bam.list") || pathLowerCase.equals("sam.list")) {
+            reader = getBamListReader(locator.getPath(), requireIndex);
+        }  else {
+            throw new RuntimeException("Cannot determine file format: " + locator.getPath());
+        }
+
+        return reader;
+    }
+
+    static AlignmentReader getBamListReader(String listFile, boolean requireIndex) {
+
+        List<AlignmentReader> readers = new ArrayList();
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(listFile);
+            Map<String, String> replacements = new HashMap();
+            String nextLine = null;
+            while ((nextLine = reader.readLine()) != null) {
+
+                if (nextLine.startsWith("#replace")) {
+                    String[] tokens = nextLine.split("\\s+");
+                    if (tokens.length == 2) {
+                        String[] kv = tokens[1].split("=");
+                        if (kv.length == 2)
+                            replacements.put(kv[0], kv[1]);
+                    }
+                } else {
+                    String f = nextLine.trim();
+                    if (f.length() == 0) continue;  // Empty line
+
+                    for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                        f = f.replace(entry.getKey(), entry.getValue());
+                    }
+
+                    f = FileUtils.getAbsolutePath(f, listFile);
+                    readers.add(AlignmentReaderFactory.getReader(f, requireIndex));
+                }
+            }
+            if (readers.size() == 1) {
+                return readers.get(0);
+            } else {
+                return new MergedAlignmentReader(readers);
+            }
+        } catch (IOException e) {
+            log.error("Error parsing " + listFile, e);
+            throw new RuntimeException("Error parsing: " + listFile + " (" + e.toString() + ")");
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+    }
+
+    public static AlignmentReader getMergedReader(String alignmentFileList, boolean requireIndex) {
+
+        String aFile = null;
+        try {
+            String[] alignmentFiles = ParsingUtils.COMMA_PATTERN.split(alignmentFileList);
+            List<AlignmentReader> readers = new ArrayList(alignmentFiles.length);
+            for (String f : alignmentFiles) {
+                aFile = f;
+                readers.add(AlignmentReaderFactory.getReader(aFile, requireIndex));
+            }
+            if (readers.size() == 1) {
+                return readers.get(0);
+            } else {
+                return new MergedAlignmentReader(readers);
+            }
+        } catch (IOException e) {
+            log.error("Error instantiating reader for: " + aFile, e);
+            throw new RuntimeException("Error instantiating reader for : " + aFile + " (" + e.toString() + ")");
+        }
+
+    }
+
+    /**
+     * @param header
+     * @return Return the set of platforms, uppercase. Will be null iff header is null
+     */
+    public static Set<String> getPlatforms(SAMFileHeader header) {
+        Set<String> platforms = null;
+        if (header != null) {
+            List<SAMReadGroupRecord> readGroups = header.getReadGroups();
+            if (readGroups != null) {
+                platforms = new HashSet<String>();
+                for (SAMReadGroupRecord rg : readGroups) {
+                    String platform = rg.getPlatform();
+                    if (platform != null) {
+                        platforms.add(platform.toUpperCase());
+                    }
+                }
+            }
+        }
+
+        // Hack for Moleculo
+        if(header.getProgramRecord("MAFtoSAM") != null) {
+            platforms.add("MOLECULO");
+        }
+
+        return platforms;
+    }
+
+}
+
