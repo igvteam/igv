@@ -3,6 +3,7 @@ package org.igv.ui.commandbar;
 import com.jidesoft.hints.ListDataIntelliHints;
 import htsjdk.tribble.NamedFeature;
 import org.igv.feature.FeatureDB;
+import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -56,8 +57,11 @@ public class SearchTextField extends JTextField {
             if (text.length() <= 1) {
                 return false;
             } else {
-
-                final FeatureDB featureDB = GenomeManager.getInstance().getCurrentGenome().getFeatureDB();
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                if (genome == null || genome == Genome.NULL_GENOME) {
+                    return false;
+                }
+                final FeatureDB featureDB = genome.getFeatureDB();
                 List<NamedFeature> features = featureDB.getFeaturesStartingWith(text, SearchCommand.SEARCH_LIMIT);
                 final List<SearchCommand.SearchResult> results = SearchCommand.getResults(features);
                 Object[] list = SearchCommand.getSelectionList(results, false);

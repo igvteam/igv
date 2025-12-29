@@ -25,7 +25,7 @@ import java.util.Vector;
  */
 public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
-    private static Logger log = LogManager.getLogger(GenomeComboBox.class);
+    private static final Logger log = LogManager.getLogger(GenomeComboBox.class);
 
     public GenomeComboBox() {
 
@@ -53,10 +53,8 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
     /**
      * Build a model for the genome combo box
-     *
-     * @return
      */
-    private DefaultComboBoxModel buildModel() {
+    private DefaultComboBoxModel<GenomeListItem> buildModel() {
         Collection<GenomeListItem> genomes;
         try {
             genomes = GenomeListManager.getInstance().getGenomeItemMap().values();
@@ -68,17 +66,16 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
         Vector<GenomeListItem> vector = new Vector<>(genomes);
         vector.sort(Comparator.comparing(GenomeListItem::getDisplayableName));
-        return new DefaultComboBoxModel(vector);
+        return new DefaultComboBoxModel<>(vector);
     }
 
     class GenomeBoxActionListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
             Object selItem = getSelectedItem();
-            if (!(selItem instanceof GenomeListItem)) {
+            if (!(selItem instanceof GenomeListItem genomeListItem)) {
                 return;
             }
-            GenomeListItem genomeListItem = (GenomeListItem) selItem;
 
             // If we haven't changed genomes do nothing
             if (genomeListItem.getId().equalsIgnoreCase(GenomeManager.getInstance().getGenomeId())) {
@@ -87,7 +84,7 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
 
             final Runnable runnable = () -> {
 
-                if (genomeListItem != null && genomeListItem.getPath() != null) {
+                if (genomeListItem.getPath() != null) {
                     try {
                         GenomeManager.getInstance().loadGenome(genomeListItem.getPath());
                     } catch (Exception e) {
@@ -108,32 +105,20 @@ public class GenomeComboBox extends JComboBox<GenomeListItem> {
     }
 
 
-    static class ComboBoxRenderer implements ListCellRenderer {
+    static class ComboBoxRenderer implements ListCellRenderer<GenomeListItem> {
 
         JSeparator separator;
 
-        /**
-         * Constructs ...
-         */
         public ComboBoxRenderer() {
             separator = new JSeparator(JSeparator.HORIZONTAL);
         }
 
-        /**
-         * Method description
-         *
-         * @param list
-         * @param value
-         * @param index
-         * @param isSelected
-         * @param cellHasFocus
-         * @return
-         */
-        public Component getListCellRendererComponent(JList list, Object value, int index,
+        @Override
+        public Component getListCellRendererComponent(JList<? extends GenomeListItem> list, GenomeListItem value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
             String text = (value == null) ? "" : value.toString();
 
-            Component renderer = null;
+            Component renderer;
 
             if (UIConstants.GENOME_LIST_SEPARATOR.equals(text)) {
                 return separator;

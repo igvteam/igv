@@ -21,22 +21,21 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
 
-    public static final String LOCAL_SEQUENCE_CHAR = "\u002A";
-    private static Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
+    public static final String LOCAL_SEQUENCE_CHAR = "*";
+    private static final Logger log = LogManager.getLogger(RemoveGenomesDialog.class);
 
     private List<GenomeListItem> allListItems;
-
     private boolean haveLocalSequence = false;
+
+    private JList<GenomeListItem> genomeList;
+    private JLabel label2;
 
     public RemoveGenomesDialog(Frame owner) {
         super(owner);
@@ -67,7 +66,7 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
         String currentId = GenomeManager.getInstance().getGenomeId();
         List<GenomeListItem> filteredList = allListItems.stream()
                 .filter((item) -> !item.getId().equals(currentId))
-                .collect(Collectors.toList());
+                .toList();
         genomeList.setListData(filteredList.toArray(new GenomeListItem[0]));
     }
 
@@ -77,8 +76,10 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
 
     private void saveButtonActionPerformed(ActionEvent event) {
 
+        // Get selected values on EDT before submitting background task
+        List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
+
         Runnable runnable = () -> {
-            List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
             if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
 
                 // Remove from the dropdown list
@@ -94,17 +95,17 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
 
                 // If the last genome selected (DEFAULT_GENOME) was removed reset the key
                 String lastGenomeKey = PreferencesManager.getPreferences().get(Constants.DEFAULT_GENOME);
-                for (GenomeListItem item : selectedValuesList) {
-                    if (lastGenomeKey.equals(item.getId())) {
-                        PreferencesManager.getPreferences().remove(Constants.DEFAULT_GENOME);
-                        break;
+                if (lastGenomeKey != null) {
+                    for (GenomeListItem item : selectedValuesList) {
+                        if (lastGenomeKey.equals(item.getId())) {
+                            PreferencesManager.getPreferences().remove(Constants.DEFAULT_GENOME);
+                            break;
+                        }
                     }
                 }
-            }
-            if (selectedValuesList.size() > 0) {
+
                 IGVEventBus.getInstance().post(new GenomeResetEvent());
             }
-
         };
 
         LongRunningTask.submit(runnable);
@@ -112,40 +113,25 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
     }
 
 
-    private void removeSelected() {
-        List<GenomeListItem> selectedValuesList = genomeList.getSelectedValuesList();
-        allListItems.removeAll(selectedValuesList);
-        buildList();
-    }
-
-    private void genomeListKeyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-            removeSelected();
-        }
-    }
-
-    private void removeButtonActionPerformed(ActionEvent e) {
-        removeSelected();
-    }
 
 
-    private class GenomeCellRenderer implements ListCellRenderer {
+
+    private class GenomeCellRenderer implements ListCellRenderer<GenomeListItem> {
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends GenomeListItem> list, GenomeListItem value, int index, boolean isSelected, boolean cellHasFocus) {
 
             JLabel comp = new JLabel(value.toString());
 
-            GenomeListItem item = (GenomeListItem) value;
-            String displayableName = item.getDisplayableName();
+            String displayableName = value.getDisplayableName();
 
-            comp.setToolTipText(item.getPath());
+            comp.setToolTipText(value.getPath());
             if (isSelected) {
                 comp.setBackground(genomeList.getSelectionBackground());
                 comp.setForeground(genomeList.getSelectionForeground());
                 comp.setOpaque(isSelected);
             }
 
-            if (DotGenomeUtils.getLocalFasta(item.getId()) != null) {
+            if (DotGenomeUtils.getLocalFasta(value.getId()) != null) {
                 displayableName += LOCAL_SEQUENCE_CHAR;
             }
 
@@ -157,18 +143,18 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        dialogPane = new JPanel();
-        label1 = new JTextArea();
-        contentPanel = new JPanel();
-        scrollPane1 = new JScrollPane();
+        JPanel dialogPane = new JPanel();
+        JTextArea label1 = new JTextArea();
+        JPanel contentPanel = new JPanel();
+        JScrollPane scrollPane1 = new JScrollPane();
         genomeList = new JList<>();
         label2 = new JLabel();
-        panel1 = new JPanel();
-        addRemBar = new JPanel();
-        separator1 = new JSeparator();
-        buttonBar = new JPanel();
-        okButton = new JButton();
-        cancelButton = new JButton();
+        JPanel panel1 = new JPanel();
+        JPanel addRemBar = new JPanel();
+        JSeparator separator1 = new JSeparator();
+        JPanel buttonBar = new JPanel();
+        JButton okButton = new JButton();
+        JButton cancelButton = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -202,12 +188,6 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
                     genomeList.setMaximumSize(new Dimension(39, 5000));
                     genomeList.setDropMode(DropMode.INSERT);
                     genomeList.setDragEnabled(true);
-                    genomeList.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyReleased(KeyEvent e) {
-                            genomeListKeyReleased(e);
-                        }
-                    });
                     scrollPane1.setViewportView(genomeList);
                 }
                 contentPanel.add(scrollPane1);
@@ -251,7 +231,7 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
                     okButton.setMaximumSize(new Dimension(93, 29));
                     okButton.setMinimumSize(new Dimension(93, 29));
                     okButton.setPreferredSize(new Dimension(93, 29));
-                    okButton.addActionListener(e -> saveButtonActionPerformed(e));
+                    okButton.addActionListener(this::saveButtonActionPerformed);
                     buttonBar.add(okButton);
 
                     //---- cancelButton ----
@@ -259,7 +239,7 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
                     cancelButton.setMinimumSize(new Dimension(93, 29));
                     cancelButton.setPreferredSize(new Dimension(93, 29));
                     cancelButton.setMaximumSize(new Dimension(93, 29));
-                    cancelButton.addActionListener(e -> cancelButtonActionPerformed(e));
+                    cancelButton.addActionListener(this::cancelButtonActionPerformed);
                     buttonBar.add(cancelButton);
                 }
                 panel1.add(buttonBar);
@@ -272,19 +252,4 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
-    private JPanel dialogPane;
-    private JTextArea label1;
-    private JPanel contentPanel;
-    private JScrollPane scrollPane1;
-    private JList<GenomeListItem> genomeList;
-    private JLabel label2;
-    private JPanel panel1;
-    private JPanel addRemBar;
-    private JSeparator separator1;
-    private JPanel buttonBar;
-    private JButton okButton;
-    private JButton cancelButton;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

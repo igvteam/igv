@@ -11,26 +11,26 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by jrobinso on 7/6/17.
  */
-public class ChromosomeComboBox extends JComboBox {
+public class ChromosomeComboBox extends JComboBox<String> {
 
 
-    private static int MAX_CHROMOSOME_COUNT = 10000;
-    private static String MAX_EXCEEDED = "Max exceeded";
+    private static final int MAX_CHROMOSOME_COUNT = 10000;
+    private static final String MAX_EXCEEDED = "Max exceeded";
 
     public ChromosomeComboBox() {
-        addActionListener(evt -> chromosomeComboBoxActionPerformed(evt));
+        addActionListener(this::chromosomeComboBoxActionPerformed);
     }
 
+    @SuppressWarnings("unchecked")
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        JComboBox combobox = (JComboBox) evt.getSource();
+        JComboBox<String> combobox = (JComboBox<String>) evt.getSource();
         final String chrDisplayName = (String) combobox.getSelectedItem();
         final String chrName = GenomeManager.getInstance().getCurrentGenome().getCanonicalChrName(chrDisplayName);
-        if (chrName != null & !chrName.equals(FrameManager.getDefaultFrame().getChrName()) && !chrName.equals(MAX_EXCEEDED)) {
+        if (chrName != null && !chrName.equals(FrameManager.getDefaultFrame().getChrName()) && !chrName.equals(MAX_EXCEEDED)) {
             FrameManager.getDefaultFrame().changeChromosome(chrName, true);
         }
     }
@@ -46,19 +46,18 @@ public class ChromosomeComboBox extends JComboBox {
             if (chromosomeNames == null) {
                 this.setVisible(false);
             } else {
-                List<String> allChromosomeNames = chromosomeNames.stream().map(chr -> genome.getChromosomeDisplayName(chr)).collect(Collectors.toList());
+                List<String> allChromosomeNames = chromosomeNames.stream().map(genome::getChromosomeDisplayName).toList();
 
                 if (allChromosomeNames.size() > 1) {
                     this.setVisible(true);
 
-                    List<String> tmp = new ArrayList<>();
-                    tmp.addAll(allChromosomeNames.size() > MAX_CHROMOSOME_COUNT ?
+                    List<String> tmp = new ArrayList<>(allChromosomeNames.size() > MAX_CHROMOSOME_COUNT ?
                             allChromosomeNames.subList(0, MAX_CHROMOSOME_COUNT) :
                             allChromosomeNames);
 
                     String homeChr = genome.getHomeChromosome();
                     if (homeChr.equals(Globals.CHR_ALL)) {
-                        tmp.add(0, Globals.CHR_ALL);
+                        tmp.addFirst(Globals.CHR_ALL);
                     }
 
                     if (allChromosomeNames.size() > MAX_CHROMOSOME_COUNT) {
@@ -80,7 +79,7 @@ public class ChromosomeComboBox extends JComboBox {
                         }
                     }
 
-                    final DefaultComboBoxModel defaultModel = new DefaultComboBoxModel(tmp.toArray());
+                    final DefaultComboBoxModel<String> defaultModel = new DefaultComboBoxModel<>(tmp.toArray(new String[0]));
                     final int dropdownWidth = w;
 
                     setModel(defaultModel);
@@ -96,8 +95,7 @@ public class ChromosomeComboBox extends JComboBox {
 
     private void adjustChromosomeDropdownWidth(int width) {
 
-        int newWidth = (width > IGVCommandBar.DEFAULT_CHROMOSOME_DROPDOWN_WIDTH)
-                ? width : IGVCommandBar.DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
+        int newWidth = Math.max(width, IGVCommandBar.DEFAULT_CHROMOSOME_DROPDOWN_WIDTH);
 
         setMaximumSize(new java.awt.Dimension(newWidth, 35));
         setMinimumSize(new java.awt.Dimension(newWidth, 27));

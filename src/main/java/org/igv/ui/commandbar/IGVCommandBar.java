@@ -43,27 +43,21 @@ import java.awt.event.MouseEvent;
  */
 public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserver {
 
-    private static Logger log = LogManager.getLogger(IGVCommandBar.class);
+    private static final Logger log = LogManager.getLogger(IGVCommandBar.class);
 
     final static String MODIFY_DETAILS_TOOLTIP = "Modify popup text behavior in data panels";
     final static int DEFAULT_CHROMOSOME_DROPDOWN_WIDTH = 120;
 
     private ChromosomeComboBox chromosomeComboBox;
     private GenomeComboBox genomeComboBox;
-    private JideButton goButton;
-    private JideButton homeButton;
-    private JPanel locationPanel;
-    private JideButton refreshButton;
     private JideToggleButton roiToggleButton;
     private JideButton detailsBehaviorButton;
     private JideToggleButton rulerLineButton;
     private SearchTextField searchTextField;
-    private JPanel toolPanel;
     private JPanel zoomControl;
 
     private JideButton backButton;
     private JideButton forwardButton;
-    private JideButton fitToWindowButton;
 
     private ShowDetailsBehavior detailsBehavior;
 
@@ -128,10 +122,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         if (IGV.hasInstance()) {
 
             if (GenomeManager.getInstance().getCurrentGenome() == Genome.NULL_GENOME) {
-                UIUtilities.invokeOnEventThread(() -> {
-                    searchTextField.setText("");
-                });
-
+                UIUtilities.invokeOnEventThread(() -> searchTextField.setText(""));
             } else {
                 String p = "";
                 ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
@@ -155,9 +146,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
 
     public void refreshGenomeListComboBox() {
-        UIUtilities.invokeAndWaitOnEventThread(() -> {
-            genomeComboBox.refreshGenomeListComboBox();
-        });
+        UIUtilities.invokeAndWaitOnEventThread(() -> genomeComboBox.refreshGenomeListComboBox());
     }
 
 
@@ -165,15 +154,14 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
      * Adjust the popup for the combobox to be at least as wide as
      * the widest item.
      *
-     * @param box
+     * @param box the combo box to adjust
      */
-    private void adjustPopupWidth(JComboBox box) {
+    private void adjustPopupWidth(JComboBox<?> box) {
         if (box.getItemCount() == 0) return;
         Object comp = box.getUI().getAccessibleChild(box, 0);
-        if (!(comp instanceof JPopupMenu)) {
+        if (!(comp instanceof JPopupMenu popup)) {
             return;
         }
-        JPopupMenu popup = (JPopupMenu) comp;
         JScrollPane scrollPane = null;
         for (Component scomp : popup.getComponents()) {
             if (scomp instanceof JScrollPane) {
@@ -264,7 +252,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     public void searchByLocus(final String searchText) {
 
-        if ((searchText != null) && (searchText.length() > 0)) {
+        if ((searchText != null) && (!searchText.isEmpty())) {
             String homeChr = GenomeManager.getInstance().getCurrentGenome().getHomeChromosome();
             if (searchText.equalsIgnoreCase(homeChr)) {
                 homeButtonActionPerformed(null);
@@ -294,7 +282,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         // This controls the vertical height of the command bar
 
-        locationPanel = new javax.swing.JPanel();
+        JPanel locationPanel = new javax.swing.JPanel();
         locationPanel.setBorder(new LineBorder(Color.lightGray, 1, true));
 
         // BorderFactory.createMatteBorder(2, 2, 2, 2, Color.lightGray));
@@ -352,7 +340,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
         locationPanel.add(searchTextField, JideBoxLayout.FIX);
 
-        goButton = new JideButton("Go");
+        JideButton goButton = new JideButton("Go");
         // goButton.setButtonStyle(ButtonStyle.TOOLBOX_STYLE);
 
         // goButton.setPreferredSize(new java.awt.Dimension(30, 30));
@@ -360,24 +348,19 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         // goButton.setMinimumSize(new java.awt.Dimension(30, 30));
         // goButton.setText("Go");
         goButton.setToolTipText("Jump to gene or locus");
-        goButton.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                goButtonActionPerformed(evt);
-            }
-        });
+        goButton.addActionListener(this::goButtonActionPerformed);
         locationPanel.add(goButton, JideBoxLayout.FIX);
 
         add(locationPanel, JideBoxLayout.FIX);
 
         add(Box.createHorizontalStrut(10), JideBoxLayout.FIX);
 
-        toolPanel = new javax.swing.JPanel();
+        JPanel toolPanel = new javax.swing.JPanel();
         toolPanel.setAlignmentX(RIGHT_ALIGNMENT);
         toolPanel.setLayout(new JideBoxLayout(toolPanel, JideBoxLayout.X_AXIS));
         //final Border toolButtonBorder = BorderFactory.createLineBorder(Color.gray, 1);
 
-        homeButton = new com.jidesoft.swing.JideButton();
+        JideButton homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
         //homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         // homeButton.setBorder(toolButtonBorder);
@@ -387,7 +370,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         homeButton.setMinimumSize(new java.awt.Dimension(32, 32));
         homeButton.setPreferredSize(new java.awt.Dimension(32, 32));
         homeButton.setToolTipText("Jump to whole genome view");
-        homeButton.addActionListener(evt -> homeButtonActionPerformed(evt));
+        homeButton.addActionListener(this::homeButtonActionPerformed);
         toolPanel.add(homeButton, JideBoxLayout.FIX);
 
 
@@ -425,7 +408,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         forwardButton.setEnabled(false);
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
 
-        refreshButton = new com.jidesoft.swing.JideButton();
+        JideButton refreshButton = new com.jidesoft.swing.JideButton();
         //refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //refreshButton.setBorder(toolButtonBorder);
         refreshButton.setAlignmentX(RIGHT_ALIGNMENT);
@@ -435,7 +418,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         refreshButton.setMinimumSize(new java.awt.Dimension(32, 32));
         refreshButton.setPreferredSize(new java.awt.Dimension(32, 32));
         refreshButton.setToolTipText("Reload tracks and refresh the screen");
-        refreshButton.addActionListener(evt -> refreshButtonActionPerformed(evt));
+        refreshButton.addActionListener(this::refreshButtonActionPerformed);
         toolPanel.add(refreshButton, JideBoxLayout.FIX);
 
 
@@ -450,16 +433,11 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         roiToggleButton.setMaximumSize(new java.awt.Dimension(32, 32));
         roiToggleButton.setMinimumSize(new java.awt.Dimension(32, 32));
         roiToggleButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        roiToggleButton.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                roiToggleButtonActionPerformed(evt);
-            }
-        });
+        roiToggleButton.addActionListener(this::roiToggleButtonActionPerformed);
         toolPanel.add(roiToggleButton, JideBoxLayout.FIX);
 
 
-        fitToWindowButton = new JideButton();
+        JideButton fitToWindowButton = new JideButton();
         //fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         //fitToWindowButton.setBorder(toolButtonBorder);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
@@ -475,7 +453,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
-        final Icon tooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
         detailsBehaviorButton = new JideButton(noTooltipIcon);
 
         //detailsBehaviorButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
