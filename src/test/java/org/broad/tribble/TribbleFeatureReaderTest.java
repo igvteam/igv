@@ -3,7 +3,7 @@ package org.broad.tribble;
 
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.FeatureCodec;
-import org.broad.igv.util.TestUtils;
+import org.igv.util.TestUtils;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 import htsjdk.tribble.util.LittleEndianOutputStream;

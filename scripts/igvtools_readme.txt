@@ -37,11 +37,11 @@ allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
 allocated and launched in the location where you have unpacked IGVTools.
 
-   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools [command] [options][arguments]
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.igv.tools.IgvTools [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.broad.igv.tools.IgvTools gui
+   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.igv.tools.IgvTools gui
 
 Note that the command line has become more complex with Java 11 compared to
 Java 8.  We recommend the shell scripts above for most users.

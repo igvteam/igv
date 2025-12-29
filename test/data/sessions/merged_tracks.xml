@@ -6,7 +6,7 @@
         <Resource name="GM12878 H3K36me3 ChipSeq Signal" path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k36me3StdSig.bigWig"/>
     </Resources>
     <Panel height="543" name="DataPanel" width="1255">
-        <Track attributeKey="Overlay" autoScale="false" clazz="org.broad.igv.track.MergedTracks" fontSize="10" id="88f14459-e8e5-4b5f-96ab-57879921f57e" name="Overlay" visible="true">
+        <Track attributeKey="Overlay" autoScale="false" clazz="org.igv.track.MergedTracks" fontSize="10" id="88f14459-e8e5-4b5f-96ab-57879921f57e" name="Overlay" visible="true">
             <Track altColor="0,0,178" attributeKey="GM12878 H3K27me3 ChipSeq Signal" autoScale="false" color="200,0,0" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k27me3StdSig.bigWig" name="GM12878 H3K27me3 ChipSeq Signal" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
             <Track altColor="0,0,178" attributeKey="GM12878 H3K36me3 ChipSeq Signal" autoScale="false" color="0,0,150" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k36me3StdSig.bigWig" name="GM12878 H3K36me3 ChipSeq Signal" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
             <Track altColor="0,0,178" attributeKey="GM12878 H3K4me3 ChipSeq Signal" autoScale="false" color="0,150,0" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k4me3StdSig.bigWig" name="GM12878 H3K4me3 ChipSeq Signal" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
@@ -14,8 +14,8 @@
         </Track>
     </Panel>
     <Panel height="177" name="FeaturePanel" width="1255">
-        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
-        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
     </Panel>
     <PanelLayout dividerFractions="0.749656121045392"/>
     <HiddenAttributes>

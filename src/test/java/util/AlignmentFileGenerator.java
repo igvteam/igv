@@ -1,6 +1,6 @@
 package util;
 
-import org.broad.igv.util.TestUtils;
+import org.igv.util.TestUtils;
 import org.junit.Ignore;
 
 import java.io.FileWriter;

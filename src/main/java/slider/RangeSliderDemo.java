@@ -1,6 +1,6 @@
 package slider;
 
-import org.broad.igv.ui.util.UIUtilities;
+import org.igv.ui.util.UIUtilities;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

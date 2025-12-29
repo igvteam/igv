@@ -27,13 +27,13 @@
 <Session genome="hg18" locus="chr8:40843467-40843577" version="5">
     <Panel height="168" name="FeaturePanel" width="1318">
         <Track altColor="0,0,178" autoScale="false" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="Reference sequence" name="Reference sequence" sortable="false" visible="true"/>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+        <Track altColor="0,0,178" autoScale="false" clazz="org.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes" name="RefSeq genes" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="testsearch Positive Strand" name="testsearch Positive Strand" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+        <Track altColor="0,0,178" autoScale="false" clazz="org.igv.track.FeatureTrack" color="0,0,178" displayMode="EXPANDED" featureVisibilityWindow="-1" fontSize="10" id="testsearch Positive Strand" name="testsearch Positive Strand" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
             <SequenceMatchSource featureWindowSize="-1" genome="hg18" pattern="ATGCATGCATGC" strand="POSITIVE"/>
         </Track>
-        <Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="255,0,0" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="testsearch Negative Strand" name="testsearch Negative Strand" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
+        <Track altColor="0,0,178" autoScale="false" clazz="org.igv.track.FeatureTrack" color="255,0,0" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" id="testsearch Negative Strand" name="testsearch Negative Strand" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
             <SequenceMatchSource featureWindowSize="-1" genome="hg18" pattern="ATGCATGCATGC" strand="NEGATIVE"/>
         </Track>
     </Panel>

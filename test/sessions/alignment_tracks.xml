@@ -5,26 +5,26 @@
         <Resource name="NA12878" path="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam" type="bam"/>
     </Resources>
     <Panel height="1262" name="Panel1643400488798" width="1515">
-        <Track attributeKey="NA12878 Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;83.0;255,255,255;176,176,176" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam_coverage" name="NA12878 Coverage" snpThreshold="0.2" visible="true">
+        <Track attributeKey="NA12878 Coverage" autoScale="true" clazz="org.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;83.0;255,255,255;176,176,176" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam_coverage" name="NA12878 Coverage" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="83.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="NA12878 Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam_junctions" name="NA12878 Junctions" visible="false"/>
-        <Track attributeKey="NA12878" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam" name="NA12878" visible="true">
+        <Track attributeKey="NA12878 Junctions" clazz="org.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam_junctions" name="NA12878 Junctions" visible="false"/>
+        <Track attributeKey="NA12878" clazz="org.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam" name="NA12878" visible="true">
             <RenderOptions/>
         </Track>
     </Panel>
     <Panel height="1304" name="Panel1643400492472" width="1515">
-        <Track attributeKey="NA12889 Coverage" autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;83.0;255,255,255;176,176,176" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam_coverage" name="NA12889 Coverage" snpThreshold="0.2" visible="true">
+        <Track attributeKey="NA12889 Coverage" autoScale="true" clazz="org.igv.sam.CoverageTrack" colorScale="ContinuousColorScale;0.0;83.0;255,255,255;176,176,176" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam_coverage" name="NA12889 Coverage" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="83.0" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="NA12889 Junctions" clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam_junctions" name="NA12889 Junctions" visible="false"/>
-        <Track attributeKey="NA12889" clazz="org.broad.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam" name="NA12889" visible="true">
+        <Track attributeKey="NA12889 Junctions" clazz="org.igv.sam.SpliceJunctionTrack" fontSize="10" groupByStrand="false" height="60" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam_junctions" name="NA12889 Junctions" visible="false"/>
+        <Track attributeKey="NA12889" clazz="org.igv.sam.AlignmentTrack" color="185,185,185" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam" name="NA12889" visible="true">
             <RenderOptions/>
         </Track>
     </Panel>
     <Panel height="150" name="FeaturePanel" width="1515">
-        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
-        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="true" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;444.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" height="35" id="hg19_genes" name="RefSeq Genes" visible="true"/>
     </Panel>
     <PanelLayout dividerFractions="0.015069967707212056,0.4908503767491927,0.8331539289558665"/>
     <HiddenAttributes>

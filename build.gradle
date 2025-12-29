@@ -19,7 +19,7 @@ repositories {
 import org.apache.tools.ant.filters.ReplaceTokens
 
 application {
-    mainClass = 'org.broad.igv.ui.Main'
+    mainClass = 'org.igv.ui.Main'
 }
 
 java {
