@@ -762,7 +762,6 @@ public class IGVPreferences {
             }
             colorScaleCache.put(key, scale);
 
-
         }
         return scale;
     }
