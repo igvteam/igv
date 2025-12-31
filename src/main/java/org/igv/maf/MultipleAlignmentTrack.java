@@ -158,10 +158,6 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
     }
 
-    public void setColorScale(ContinuousColorScale colorScale) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 

@@ -36,7 +36,7 @@ public class BlatClient {
 
     public static List<PSLRecord> blat(String db, String userSeq) throws IOException {
 
-        String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE, "");
+        String serverType = PreferencesManager.getPreferences().get(Constants.BLAT_SERVER_TYPE);
         String urlpref = PreferencesManager.getPreferences().get(Constants.BLAT_URL);
         if (urlpref == null || urlpref.trim().length() == 0) {
             MessageUtils.showMessage("BLAT url is not configured");
@@ -44,7 +44,7 @@ public class BlatClient {
         }
         urlpref = urlpref.trim();
 
-        if (serverType.equalsIgnoreCase("web_blat")) {
+        if ("web_blat".equalsIgnoreCase(serverType)) {
             return LegacyBlatClient.blat(userSeq);
 
         } else {

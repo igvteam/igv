@@ -1,73 +1,76 @@
-/*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
-package org.igv.ui.legend;
+package org.igv.prefs;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import org.igv.logging.*;
-import org.igv.prefs.PreferencesManager;
+import org.igv.Globals;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.TrackType;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
+import org.igv.ui.legend.HeatmapLegendEditor;
+import org.igv.ui.util.IGVMouseInputAdapter;
 import org.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputListener;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 
 /**
- * @author eflakes
+ * @author jrobinso
+ * A panel that displays a legend for a heatmap track in the preferences editor.  Clicking on the panel
+ * brings up the heatmap editor dialog.
  */
-public class HeatmapLegendPanel extends LegendPanel {
+public class LegendPanel extends JPanel {
 
-    static Logger log = LogManager.getLogger(HeatmapLegendPanel.class);
-
+    static Logger log = LogManager.getLogger(LegendPanel.class);
 
     enum Orientation {HORIZONTAL, VERTICAL}
 
     private Orientation orientation = Orientation.HORIZONTAL;
-    private TrackType type;
+    private String key;
     protected ContinuousColorScale colorScale;
+    private MouseInputListener mouseListener;
 
+    public LegendPanel(String key) {
 
-    public HeatmapLegendPanel(TrackType type) {
-        this.type = type;
-        this.colorScale = PreferencesManager.getPreferences().getColorScale(type);
+        this.key = key;
+
+        this.colorScale = PreferencesManager.getPreferences().getColorScale(key);
+
+        mouseListener = new IGVMouseInputAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                LegendPanel.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void igvMouseClicked(MouseEvent e) {
+                edit();
+            }
+        };
+        addMouseListener(mouseListener);
+
+        UIUtilities.invokeOnEventThread(() -> LegendPanel.this.setToolTipText(UIConstants.CLICK_ITEM_TO_EDIT_TOOLTIP));
     }
 
-    protected void persistResetPreferences() {
-        PreferencesManager.getPreferences().setColorScale(type, colorScale);
-    }
-
-    protected void resetPreferencesToDefault() {
-        colorScale = PreferencesManager.getPreferences().getDefaultColorScale(type);
-        persistResetPreferences();
-        showResetDisplay();
-    }
-
-    protected void reloadPreferences() {
-        PreferencesManager.getPreferences().setColorScale(type, colorScale);
-        //ColorScaleFactory.clearCache();
-        repaint();
-    }
-
-    /**
-     * Method description
-     */
     public void edit() {
 
         UIUtilities.invokeOnEventThread(() -> {
 
             IGV.getInstance().setStatusBarMessage("Setting view properties...");
 
-            HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getInstance().getMainFrame(), true, type, colorScale);
+            HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getInstance().getMainFrame(), true, colorScale);
 
             dialog.setTitle("HeatMap Preferences");
             dialog.setVisible(true);
-
 
             if (dialog.isCanceled()) {
                 IGV.getInstance().resetStatusMessage();
@@ -75,16 +78,21 @@ public class HeatmapLegendPanel extends LegendPanel {
             }
 
             colorScale = dialog.getColorScheme();
-            PreferencesManager.getPreferences().setColorScale(type, colorScale);
-            IGV.getInstance().repaint();
-            try {
-                reloadPreferences();
-            } finally {
+            PreferencesManager.getPreferences().setColorScale(key, colorScale);
 
-                UIUtilities.invokeOnEventThread(() -> SwingUtilities.getWindowAncestor(HeatmapLegendPanel.this).toFront());
-                IGV.getInstance().resetStatusMessage();
-            }
+            LegendPanel.this.repaint();
+            IGV.getInstance().repaint();
+
         });
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (PreferencesManager.getPreferences().getAntiAliasing()) {
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
+        paintLegend((Graphics2D) g);
     }
 
     protected void paintLegend(Graphics2D g) {
@@ -128,7 +136,7 @@ public class HeatmapLegendPanel extends LegendPanel {
             double labelVal = min + i * delta;
             int x0 = (int) (i * dx);
 
-            g2D.setColor(Color.BLACK);
+            g2D.setColor(Globals.isDarkMode() ? Color.WHITE : Color.BLACK);
             g2D.drawString(formatter.format(labelVal), x0, (int) getHeight() - 5);
         }
 
@@ -154,7 +162,6 @@ public class HeatmapLegendPanel extends LegendPanel {
         int dx = 10;
         int y0;
         int y1 = 0;
-
 
         for (int i = 0; i < npts + 1; i++) {
             for (int j = i * 10; j < i * 10 + 10; j++) {

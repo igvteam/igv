@@ -110,7 +110,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
             if(coordsValue != null) {
                 this.coords = coordsValue;
             } else {
-                this.coords = "1".equals(PreferencesManager.getPreferences().get(MUT_COORDS, "0")) ?
+                this.coords = "1".equals(PreferencesManager.getPreferences().get(MUT_COORDS)) ?
                         TrackProperties.BaseCoord.ONE : TrackProperties.BaseCoord.ZERO;
             }
 

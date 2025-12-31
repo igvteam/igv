@@ -9,7 +9,6 @@ import org.igv.ui.IGV;
 import org.igv.ui.color.ColorSwatch;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.color.PaletteColorTable;
-import org.igv.ui.legend.HeatmapLegendPanel;
 import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
@@ -179,15 +178,23 @@ public class PreferencesEditor {
                         JLabel label = new JLabel(pref.getLabel());
 
                         String[] selections = Globals.whitespacePattern.split(pref.getType())[1].split("\\|");
-//                        String[] labels = Arrays.stream(selections)
-//                                .map((s) -> labelMappings.containsKey(s) ? labelMappings.get(s) : s)
-//                                .toArray(String[]::new);
+                        SelectionItem[] items = Arrays.stream(selections)
+                                .map(s -> new SelectionItem(s, getSelectionLabel(s)))
+                                .toArray(SelectionItem[]::new);
 
-
-                        final JComboBox<String> comboBox = new JComboBox<String>(selections);
-                        comboBox.setSelectedItem(preferences.get(pref.getKey()));
+                        final JComboBox<SelectionItem> comboBox = new JComboBox<>(items);
+                        String currentValue = preferences.get(pref.getKey());
+                        for (SelectionItem item : items) {
+                            if (item.value.equals(currentValue)) {
+                                comboBox.setSelectedItem(item);
+                                break;
+                            }
+                        }
                         comboBox.addActionListener(event -> {
-                            updatedPrefs.put(pref.getKey(), comboBox.getSelectedItem().toString());
+                            SelectionItem selected = (SelectionItem) comboBox.getSelectedItem();
+                            if (selected != null) {
+                                updatedPrefs.put(pref.getKey(), selected.value);
+                            }
                         });
                         grid.addLayoutComponent(label, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3, 5, 2, 3), 2, 2));
                         grid.addLayoutComponent(comboBox, new GridBagConstraints(1, row, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 2, 2, 5), 2, 2));
@@ -219,8 +226,7 @@ public class PreferencesEditor {
 
                     } else if ("colorscale".equals(pref.getType())) {
                         String key = pref.getKey();
-                        String trackType = key.substring(Constants.COLOR_SCALE_KEY.length()).trim();
-                        HeatmapLegendPanel p = new HeatmapLegendPanel(TrackType.valueOf(trackType));
+                        LegendPanel p = new LegendPanel(key);
                         Dimension d = new Dimension(500, 30);
                         p.setPreferredSize(d);
                         p.setMaximumSize(d);
@@ -455,6 +461,42 @@ public class PreferencesEditor {
             for (String key : keys) {
                 prefs.remove(key);
             }
+        }
+    }
+
+    /**
+     * Returns a user-friendly label for a selection value.
+     * If no mapping exists, returns the original value.
+     */
+    private static String getSelectionLabel(String value) {
+        return switch (value) {
+            case "FLATLIGHT" -> "Flat macOS Light";
+            case "FLATDARK" -> "Flat macOS Dark";
+            case "FLATINTELLIJ" -> "Flat IntelliJ";
+            case "FLATINTELLIJDARK" -> "Flat Darcula";
+            case "SYSTEM" -> "System";
+            case "CROSS" -> "Cross Platform";
+            case "NIMBUS" -> "Nimbus";
+            case "METAL" -> "Metal";
+            default -> value;
+        };
+    }
+
+    /**
+     * Wrapper class for combo box items that stores both the value and display label.
+     */
+    private static class SelectionItem {
+        final String value;
+        final String label;
+
+        SelectionItem(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
         }
     }
 }

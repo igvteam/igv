@@ -999,13 +999,11 @@ public class IGVSessionReader implements SessionReader {
 
         TrackType trackType = CollUtils.valueOf(TrackType.class, type.toUpperCase(), TrackType.OTHER);
 
-        // TODO -- refactor to remove instanceof / cast.  Currently only ContinuousColorScale is handled
+        // Only ContinuousColorScale is handled
         ColorScale colorScale = ColorScaleFactory.getScaleFromString(value);
         if (colorScale instanceof ContinuousColorScale) {
             session.setColorScale(trackType, (ContinuousColorScale) colorScale);
         }
-
-        // ColorScaleFactory.setColorScale(trackType, colorScale);
     }
 
     private static String getAttribute(Element element, String key) {

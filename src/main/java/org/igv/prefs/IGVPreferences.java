@@ -48,7 +48,7 @@ public class IGVPreferences {
     // Cached non-string preference values
     private Map<String, Boolean> booleanCache = new Hashtable<>();
     private Map<String, Object> objectCache = new Hashtable<>();
-    private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable<>();
+    private Map<String, ContinuousColorScale> colorScaleCache = new Hashtable<>();
     private PaletteColorTable mutationColorScheme = null;
 
     public IGVPreferences() {
@@ -88,7 +88,7 @@ public class IGVPreferences {
      * @param defaultValue
      * @return
      */
-    public String get(String key, String defaultValue) {
+    public String getUserPreference(String key, String defaultValue) {
         key = key.trim();
         String val = userPreferences.get(key);
         return val == null ? defaultValue : val;
@@ -138,7 +138,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return false;
             }
-            boolValue = Boolean.valueOf(get(key, value));
+            boolValue = Boolean.valueOf(getUserPreference(key, value));
             booleanCache.put(key, boolValue);
         }
         return boolValue;
@@ -159,7 +159,18 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = Integer.valueOf(get(key, defValue));
+            String userPref = getUserPreference(key, defValue);
+            try {
+                value = Integer.valueOf(userPref);
+            } catch (NumberFormatException e) {
+                log.warn("Invalid integer preference for key '" + key + "': '" + userPref + "'. Using default value: '" + defValue + "'.");
+                try {
+                    value = Integer.valueOf(defValue);
+                } catch (NumberFormatException e2) {
+                    log.warn("Invalid integer default preference for key '" + key + "': '" + defValue + "'. Falling back to 0.");
+                    value = 0;
+                }
+            }
             objectCache.put(key, value);
         }
         return value.intValue();
@@ -201,7 +212,18 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = Float.valueOf(get(key, defValue));
+            String prefString = getUserPreference(key, defValue);
+            try {
+                value = Float.valueOf(prefString);
+            } catch (NumberFormatException e) {
+                log.warn("Invalid float value for preference '" + key + "': '" + prefString + "'. Using default '" + defValue + "'.", e);
+                try {
+                    value = Float.valueOf(defValue);
+                } catch (NumberFormatException e2) {
+                    log.warn("Invalid float default value for preference '" + key + "': '" + defValue + "'. Using 0.0f.", e2);
+                    value = Float.valueOf(0.0f);
+                }
+            }
             objectCache.put(key, value);
         }
         return value.floatValue();
@@ -478,7 +500,7 @@ public class IGVPreferences {
 
         File exportedRegionDirectory = null;
 
-        String lastFilePath = get(LAST_EXPORTED_REGION_DIRECTORY, null);
+        String lastFilePath = getUserPreference(LAST_EXPORTED_REGION_DIRECTORY, null);
 
         if (lastFilePath != null) {
 
@@ -504,7 +526,7 @@ public class IGVPreferences {
 
         File snapshotDirectory = null;
 
-        String lastFilePath = get(LAST_SNAPSHOT_DIRECTORY, null);
+        String lastFilePath = getUserPreference(LAST_SNAPSHOT_DIRECTORY, null);
 
         if (lastFilePath != null) {
 
@@ -530,7 +552,7 @@ public class IGVPreferences {
 
         File directory = null;
 
-        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = getUserPreference(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             directory = new File(lastFilePath);
@@ -554,7 +576,7 @@ public class IGVPreferences {
 
         File genomeImportDirectory = null;
 
-        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = getUserPreference(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             genomeImportDirectory = new File(lastFilePath);
@@ -590,7 +612,7 @@ public class IGVPreferences {
         Rectangle bounds = null;
 
         // Set the application's previous location and size
-        String applicationBounds = get(FRAME_BOUNDS_KEY, null);
+        String applicationBounds = getUserPreference(FRAME_BOUNDS_KEY, null);
 
         if (applicationBounds != null) {
             String[] values = applicationBounds.split(",");
@@ -618,7 +640,7 @@ public class IGVPreferences {
 
 
     public RecentFileSet getRecentSessions() {
-        String sessionsString = get(RECENT_SESSIONS, null);
+        String sessionsString = getUserPreference(RECENT_SESSIONS, null);
         return RecentFileSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
     }
 
@@ -629,7 +651,7 @@ public class IGVPreferences {
 
 
     public RecentUrlsSet getRecentUrls() {
-        String sessionsString = get(RECENT_URLS, null);
+        String sessionsString = getUserPreference(RECENT_URLS, null);
         return RecentUrlsSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
     }
 
@@ -680,7 +702,7 @@ public class IGVPreferences {
 
     public String getDefaultGenome() {
 
-        String genome = get(DEFAULT_GENOME, Globals.DEFAULT_GENOME);
+        String genome = getUserPreference(DEFAULT_GENOME, Globals.DEFAULT_GENOME);
         return genome;
     }
 
@@ -691,7 +713,7 @@ public class IGVPreferences {
 
     public File getLastTrackDirectory() {
 
-        String lastDirectoryPath = get(LAST_TRACK_DIRECTORY, null);
+        String lastDirectoryPath = getUserPreference(LAST_TRACK_DIRECTORY, null);
 
         File lastDirectoryFile = null;
         if (lastDirectoryPath != null) {
@@ -703,17 +725,15 @@ public class IGVPreferences {
 
 
     /**
-     * Set the color scheme for the track type.  Its unfortunate that this is a public
-     * method,  color schemes are managed by ColorScaleFactory and that is the
-     * only object that should call this method.
+     * Set the color scheme for the track key.
      *
-     * @param type
+     * @param key - Key for scale, which encodes track type and possibly "Dark Mode" flag (e.g. "COLOR_SCALE_GENE_EXPRESSION_DARK")
      * @param colorScale
      */
-    public void setColorScale(TrackType type, ContinuousColorScale colorScale) {
+    public void setColorScale(String key, ContinuousColorScale colorScale) {
         String colorScaleString = colorScale.asString();
-        put(COLOR_SCALE_KEY + type.toString(), colorScaleString);
-        colorScaleCache.put(type, colorScale);
+        put(key, colorScaleString);
+        colorScaleCache.put(key, colorScale);
     }
 
     /**
@@ -724,16 +744,15 @@ public class IGVPreferences {
      * @return
      */
 
-
     public ContinuousColorScale getColorScale(TrackType type) {
         if (type == null) {
             return null;
         }
 
-        ContinuousColorScale scale = colorScaleCache.get(type);
-
-        if (scale == null && scaledTypes.contains(type)) {
-            String colorScaleString = get(COLOR_SCALE_KEY + type.toString(), null);
+        String key = COLOR_SCALE_KEY + type.toString();
+        ContinuousColorScale scale = colorScaleCache.get(key);
+        if (scale == null) {
+            String colorScaleString = getUserPreference(key, null);
             if (colorScaleString != null) {
                 scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
             } else {
@@ -741,26 +760,43 @@ public class IGVPreferences {
             }
             if (scale != null) {
                 scale.setDefault(true);
-                colorScaleCache.put(type, scale);
+                colorScaleCache.put(key, scale);
             }
         }
         return scale;
     }
 
+    public ContinuousColorScale getColorScale(String key) {
+        ContinuousColorScale scale = colorScaleCache.get(key);
+        if (scale == null) {
+            String colorScaleString = get(key);
+            if (colorScaleString != null) {
+                scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
+            } else {
+                String typeString = key.replace(COLOR_SCALE_KEY, "").replace("_DARK", "");
+                try {
+                    TrackType type = TrackType.valueOf(typeString);
+                    scale = getDefaultColorScale(type);
+                } catch (IllegalArgumentException e) {
+                    // Ignore
+                }
+            }
+            if(scale != null) {
+                colorScaleCache.put(key, scale);
+            }
 
-    static Set<String> scaledTypes = new HashSet(Arrays.asList(
-            TrackType.LOH, TrackType.RNAI, TrackType.POOLED_RNAI, TrackType.DNA_METHYLATION,
-            TrackType.GENE_EXPRESSION, TrackType.COPY_NUMBER, TrackType.ALLELE_SPECIFIC_COPY_NUMBER, TrackType.CNV));
-
+        }
+        return scale;
+    }
 
     /**
-     * Return the default color scale.  This si the scale for track type "generic",
+     * Return the default color scale.  This is the scale for track type "generic",
      * as well as any track type without a specific scale.
      *
      * @param type
      * @return
      */
-    public static ContinuousColorScale getDefaultColorScale(TrackType type) {
+    static ContinuousColorScale getDefaultColorScale(TrackType type) {
         switch (type) {
             case LOH:
                 return new ContinuousColorScale(0, -1, 0, 1, Color.red, UIConstants.LIGHT_YELLOW, Color.blue);
@@ -1004,7 +1040,7 @@ public class IGVPreferences {
             put(key, value);
             return value;
         } else {
-            return get(key, def);
+            return getUserPreference(key, def);
         }
     }
 

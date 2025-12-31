@@ -41,9 +41,6 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.util.blat.BlatClient;
 import org.igv.util.extview.ExtendViewClient;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 
 import javax.swing.*;
 import java.awt.*;
@@ -701,27 +698,36 @@ public class TrackMenuUtils {
 
         JMenuItem item = new JMenuItem("Set Heatmap Scale...");
 
-        item.addActionListener(new ActionListener() {
+        item.addActionListener(evt -> {
 
-            public void actionPerformed(ActionEvent evt) {
-                if (selectedTracks.size() > 0) {
+            if (selectedTracks.size() > 0) {
 
-                    ContinuousColorScale colorScale = selectedTracks.iterator().next().getColorScale();
-                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getInstance().getMainFrame(), colorScale);
-
-                    dlg.setVisible(true);
-                    if (!dlg.isCanceled()) {
-                        colorScale = dlg.getColorScale();
-
-                        // dlg.isFlipAxis());
-                        for (Track track : selectedTracks) {
-                            track.setColorScale(colorScale);
-                        }
-                        IGV.getInstance().repaint();
+                // Find the first non-null color scale among the selected tracks
+                ContinuousColorScale colorScale = null;
+                for (Track t : selectedTracks) {
+                    colorScale = t.getColorScale();
+                    if (colorScale != null) {
+                        break;
                     }
-
                 }
 
+                // Fallback: if none of the selected tracks provide a color scale, create a simple default
+                if (colorScale == null) {
+                    colorScale = new ContinuousColorScale(0, 10, Color.white, Color.red);
+                }
+
+                HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getInstance().getMainFrame(), colorScale);
+
+                dlg.setVisible(true);
+                if (!dlg.isCanceled()) {
+                    colorScale = dlg.getColorScale();
+
+                    // dlg.isFlipAxis());
+                    for (Track track : selectedTracks) {
+                        track.setColorScale(colorScale);
+                    }
+                    IGV.getInstance().repaint();
+                }
             }
         });
         return item;
