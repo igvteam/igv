@@ -770,7 +770,6 @@ public class IGVPreferences {
         ContinuousColorScale scale = colorScaleCache.get(key);
         if (scale == null) {
             String colorScaleString = get(key);
-
             if (colorScaleString != null) {
                 scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
             } else {
@@ -782,7 +781,9 @@ public class IGVPreferences {
                     // Ignore
                 }
             }
-            colorScaleCache.put(key, scale);
+            if(scale != null) {
+                colorScaleCache.put(key, scale);
+            }
 
         }
         return scale;
