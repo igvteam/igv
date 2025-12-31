@@ -159,7 +159,18 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = Integer.valueOf(getUserPreference(key, defValue));
+            String userPref = getUserPreference(key, defValue);
+            try {
+                value = Integer.valueOf(userPref);
+            } catch (NumberFormatException e) {
+                log.warn("Invalid integer preference for key '" + key + "': '" + userPref + "'. Using default value: '" + defValue + "'.");
+                try {
+                    value = Integer.valueOf(defValue);
+                } catch (NumberFormatException e2) {
+                    log.warn("Invalid integer default preference for key '" + key + "': '" + defValue + "'. Falling back to 0.");
+                    value = 0;
+                }
+            }
             objectCache.put(key, value);
         }
         return value.intValue();
