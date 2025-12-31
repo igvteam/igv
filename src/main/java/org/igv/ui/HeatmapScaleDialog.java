@@ -427,22 +427,6 @@ public class HeatmapScaleDialog extends org.igv.ui.IGVDialog  {
         }
     }
 
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                HeatmapScaleDialog dialog = new HeatmapScaleDialog(new javax.swing.JFrame(),
-                        (ContinuousColorScale) PreferencesManager.getPreferences().getDefaultColorScale(TrackType.COPY_NUMBER));
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
-
-
     private JPanel jPanel2;
     private JLabel jLabel1;
     private JLabel jLabel2;

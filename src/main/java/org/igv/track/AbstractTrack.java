@@ -28,8 +28,8 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static org.igv.prefs.Constants.*;
 
@@ -684,8 +684,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     /**
-     * Return the color scale for this track.  If a specific scale exists for this data type
-     * use that.  Otherwise create one using the track color and data range.
+     * Return the color scale for this track.  Used for heatmaps.
      *
      * @return
      */
@@ -693,26 +692,29 @@ public abstract class AbstractTrack implements Track {
 
         if (colorScale == null) {
 
-            if (IGV.hasInstance()) {
-                ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
-                if (defaultScale != null) {
-                    colorScale = defaultScale;
-                    return defaultScale;
-                }
+            // Check for a default color scale for this track type in the session.  This is a long deprecated
+            // session feature,  but we need to support it for backward compatibility.
+            ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
+            if (defaultScale == null) {
+                // Now check user preferences
+                defaultScale = PreferencesManager.getPreferences().getColorScale(trackType);
+            }
+            if (defaultScale != null) {
+                return defaultScale;
             }
 
+            // There is no default,  create one from the data range and track colors
             double min = dataRange == null ? 0 : dataRange.getMinimum();
             double max = dataRange == null ? 10 : dataRange.getMaximum();
-            Color c = getColor();
-            Color minColor = Color.white;
             if (min < 0) {
-                minColor = altColor == null ? oppositeColor(minColor) : altColor;
-                colorScale = new ContinuousColorScale(min, 0, max, minColor, Color.white, c);
+                Color minColor = altColor == null ? oppositeColor(Color.white) : altColor;
+                colorScale = new ContinuousColorScale(min, 0, max, minColor, Color.white, getColor());
             } else {
-                colorScale = new ContinuousColorScale(min, max, minColor, c);
+                colorScale = new ContinuousColorScale(min, max, Color.white, getColor());
             }
             colorScale.setNoDataColor(PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR));
         }
+
         return colorScale;
     }
 

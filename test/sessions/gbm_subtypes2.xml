@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg18" locus="All" version="8">
+    <Resources>
+        <Resource path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz" type="seg"/>
+        <Resource path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/sampleTable.txt" type="/igvteam/igv-data/refs/heads/main/data/test/gbm/sampletable"/>
+    </Resources>
+    <Panel height="2885" name="DataPanel" width="1136">
+        <Track altColor="0,0,255" ampThreshold="0.1" attributeKey="CNV Summary" clazz="org.igv.seg.CNFreqTrack" color="255,0,0" delThreshold="-0.1" fontSize="10" height="50" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz" name="CNV Summary" visible="true"/>
+        <Track attributeKey="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz_cn" clazz="org.igv.seg.SegTrack" fontSize="10" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz_cn" name="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz_cn" renderer="HEATMAP" visible="true"/>
+    </Panel>
+    <Panel height="94" name="FeaturePanel" width="1136">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz" name="RefSeq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.881437125748503"/>
+</Session>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Session genome="hg18" hasGeneTrack="false" hasSequenceTrack="true" locus="All" version="8">
     <Resources>
-        <Resource name="Segmented Copy Number (Broad Affy 6.0)" path="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz" type="seg"/>
-        <Resource name="Sample Information" path="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz" type="txt"/>
+        <Resource name="Segmented Copy Number (Broad Affy 6.0)" path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz" type="seg"/>
+        <Resource name="Sample Information" path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/sampleTable.txt" type="txt"/>
     </Resources>
     <Panel height="2885" name="DataPanel" width="1133">
         <Track altColor="0,0,255" ampThreshold="0.1" attributeKey="CNV Summary" clazz="org.igv.track.CNFreqTrack" color="255,0,0" delThreshold="-0.1" fontSize="10" height="50" id="http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/Broad.080528.subtypes.seg.gz" name="CNV Summary" visible="true"/>

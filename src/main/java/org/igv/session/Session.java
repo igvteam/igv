@@ -171,15 +171,9 @@ public class Session implements IGVEventObserver {
     public void setColorScale(TrackType trackType, ContinuousColorScale colorScale) {
         colorScales.put(trackType, colorScale);
     }
-
     public ContinuousColorScale getColorScale(TrackType trackType) {
-        if (colorScales.containsKey(trackType)) {
             return colorScales.get(trackType);
-        } else {
-            return PreferencesManager.getPreferences().getColorScale(trackType);
-        }
     }
-
 
     public boolean getPreferenceAsBoolean(String key) {
         if (preferences.containsKey(key)) {

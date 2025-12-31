@@ -22,15 +22,13 @@ import org.jdesktop.layout.LayoutStyle;
 public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     private boolean canceled = true;
     private ContinuousColorScale colorScheme;
-    private TrackType type;
 
     /**
      * Creates new form HeatmapLegendEditor2
      */
-    public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, TrackType type, ColorScale colorScheme) {
+    public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme) {
         super(parent, modal);
         this.colorScheme = (ContinuousColorScale) colorScheme;
-        this.type = type;
         initComponents();
         initValues();
         this.setLocationRelativeTo(parent);

@@ -247,11 +247,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
-    public ContinuousColorScale getColorScale() {
-        return super.getColorScale();
-    }
-
-    @Override
     public void setColorScale(ContinuousColorScale colorScale) {
         super.setColorScale(colorScale);
         for (Track track : memberTracks) {

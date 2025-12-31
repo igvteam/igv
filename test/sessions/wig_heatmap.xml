@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" version="8">
+    <Resources>
+        <Resource name="A549 H3K4me3 ChipSeq Signal" path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me2 ChipSeq Signal" path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me3 ChipSeq Signal" path="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Etoh02Sig.bigWig" type="bigwig"/>
+    </Resources>
+    <Panel height="624" name="DataPanel" width="1136">
+        <Track attributeKey="A549 H3K4me2 ChipSeq Signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" color="0,150,0" colorScale="ContinuousColorScale;0.0;0.0;0.0;24.592185974121094;0,0,0;0,0,0;0,150,0" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Etoh02Sig.bigWig" name="A549 H3K4me2 ChipSeq Signal" renderer="HEATMAP" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.592186" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="A549 H3K4me3 ChipSeq Signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" color="0,150,0" colorScale="ContinuousColorScale;0.0;0.0;0.0;24.592185974121094;0,0,0;0,0,0;0,150,0" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Dex100nmSig.bigWig" name="A549 H3K4me3 ChipSeq Signal" renderer="HEATMAP" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="95.22424" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="A549 H3K4me3 ChipSeq Signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" color="0,150,0" colorScale="ContinuousColorScale;0.0;0.0;0.0;24.592185974121094;0,0,0;0,0,0;0,150,0" fontSize="10" id="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Etoh02Sig.bigWig" name="A549 H3K4me3 ChipSeq Signal" renderer="HEATMAP" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="109.39461" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="204" name="FeaturePanel" width="1136">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;696.0;255,255,255;0,255,255" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.7497005988023953"/>
+</Session>

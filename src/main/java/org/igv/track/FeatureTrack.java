@@ -781,10 +781,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         } else {
             float max = getMaxEstimate(scores);
-            ContinuousColorScale cs = getColorScale();
-            if (cs != null) {
-                cs.setPosEnd(max);
-            }
             if (this.dataRange == null) {
                 setDataRange(new DataRange(0, 0, max));
             } else {
