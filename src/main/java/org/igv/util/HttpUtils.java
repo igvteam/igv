@@ -400,21 +400,21 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
         String pw = null;
 
         IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        proxyHost = prefMgr.get(PROXY_HOST, null);
+        proxyHost = prefMgr.get(PROXY_HOST);
         try {
-            proxyPort = Integer.parseInt(prefMgr.get(PROXY_PORT, "-1"));
+            proxyPort = Integer.parseInt(prefMgr.get(PROXY_PORT));
         } catch (NumberFormatException e) {
             proxyPort = -1;
         }
         useProxy = prefMgr.getAsBoolean(USE_PROXY) && proxyHost != null && proxyHost.trim().length() > 0;
         auth = prefMgr.getAsBoolean(PROXY_AUTHENTICATE);
-        user = prefMgr.get(PROXY_USER, null);
-        String pwString = prefMgr.get(PROXY_PW, null);
+        user = prefMgr.get(PROXY_USER);
+        String pwString = prefMgr.get(PROXY_PW);
         if (pwString != null) {
             pw = Utilities.base64Decode(pwString);
         }
 
-        String proxyTypeString = prefMgr.get(PROXY_TYPE, "HTTP");
+        String proxyTypeString = prefMgr.get(PROXY_TYPE);
         Proxy.Type type = Proxy.Type.valueOf(proxyTypeString.trim().toUpperCase());
 
         String proxyWhitelistString = prefMgr.get(PROXY_WHITELIST);
