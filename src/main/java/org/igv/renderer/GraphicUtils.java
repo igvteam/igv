@@ -116,7 +116,7 @@ public class GraphicUtils {
             int y = Math.max(rect.y, yPos - h);
             int h2 = Math.min(rect.height, 2 * h);
             Color c = g2D.getColor();
-            g2D.setColor(Color.WHITE);
+            g2D.setColor(((Graphics2D) g2D).getBackground());
             g2D.fillRect(rect.x, y, rect.width, h2);
             g2D.setColor(c);
         }

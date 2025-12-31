@@ -431,30 +431,26 @@ public class IGVMenuBar extends JMenuBar  {
 
         tracksMenuAttributeComponents = new ArrayList<>();
         // Sort Tracks
-        menuAction = new SortTracksMenuAction("Sort Tracks by Attribute...", KeyEvent.VK_S, IGV.getInstance());
-        menuAction.setToolTipText(SORT_TRACKS_TOOLTIP);
+        menuAction = new SortTracksMenuAction("Sort Samples by Attribute...", KeyEvent.VK_S, IGV.getInstance());
         JMenuItem sortTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         tracksMenu.add(sortTracksMenuItem);
         tracksMenuAttributeComponents.add(sortTracksMenuItem);
 
         // Group Tracks
-        menuAction = new GroupTracksMenuAction("Group Tracks by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
+        menuAction = new GroupTracksMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         tracksMenu.add(groupTracksMenuItem);
         tracksMenuAttributeComponents.add(groupTracksMenuItem);
 
         // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks by Attribute...", KeyEvent.VK_F, IGV.getInstance());
-        filterTracksAction.setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
+        filterTracksAction = new FilterTracksMenuAction("Filter Samples by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
         tracksMenu.add(filterTracksMenuItem);
         tracksMenuAttributeComponents.add(filterTracksMenuItem);
 
 
         // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Tracks by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.RENAME_TRACKS_TOOLTIP);
+        menuAction = new RenameTracksMenuAction("Rename Samples by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
         JMenuItem renameTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         tracksMenu.add(renameTracksMenuItem);
         tracksMenuAttributeComponents.add(renameTracksMenuItem);

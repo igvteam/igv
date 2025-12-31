@@ -9,7 +9,8 @@
 package org.igv.ui.panel;
 
 
-import org.igv.logging.*;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.Track;
@@ -47,8 +48,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     List<GroupExtent> groupExtents = new ArrayList();
     BufferedImage dndImage = null;
     TrackGroup selectedGroup = null;
-    boolean showGroupNames = true;
-    boolean showSampleNamesWhenGrouped = false;
+    boolean showGroupNames = false;  // Reserved for future use
 
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
@@ -69,8 +69,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
-        if(darkMode) {
-          setBackground(UIManager.getColor("Panel.background"));
+        if (darkMode) {
+            setBackground(UIManager.getColor("Panel.background"));
         }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
@@ -92,7 +92,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         paintImpl(g, rect, true);
 
-        borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
+        borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
         borderGraphics.dispose();
     }
 
@@ -110,6 +110,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         Graphics2D fontGraphics = (Graphics2D) g.create();
         fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
+        final Color backgroundColor = darkMode ?
+                UIManager.getColor("Panel.background") :
+                PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+        fontGraphics.setBackground(backgroundColor);
+
 
         if (!groups.isEmpty()) {
 
@@ -149,10 +154,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                     if (isGrouped) {
                         groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
-                        if (showGroupNames) {
-                            //Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                            group.renderName(fontGraphics, displayableRect);
-                        }
                     }
 
                     if (group.isDrawBorder()) {
@@ -186,7 +187,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         List<Track> tmp = new ArrayList(group.getVisibleTracks());
         final Color backgroundColor = darkMode ?
-                UIManager.getColor("Panel.background"):
+                UIManager.getColor("Panel.background") :
                 PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
         graphics2D.setBackground(backgroundColor);
         //graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
@@ -205,18 +206,15 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     Rectangle region = new Rectangle(regionX, regionY, width, height);
                     addMousableRegion(new MouseableRegion(region, track));
 
-                    if (!isGrouped() || showSampleNamesWhenGrouped) {
-                        Rectangle rect = new Rectangle(regionX, regionY, width, height);
-                        //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-                        if (!snapshot && track.isSelected()) {
-                            graphics2D.setBackground(Color.LIGHT_GRAY);
-                        } else {
-                            graphics2D.setBackground(backgroundColor);
-                        }
-                        graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-                        track.renderName(graphics2D, rect, visibleRect);
+                    Rectangle rect = new Rectangle(regionX, regionY, width, height);
+                    //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
+                    if (!snapshot && track.isSelected()) {
+                        graphics2D.setBackground(Color.LIGHT_GRAY);
+                    } else {
+                        graphics2D.setBackground(backgroundColor);
                     }
-
+                    graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+                    track.renderName(graphics2D, rect, visibleRect);
                 }
                 regionY += trackHeight;
             }
@@ -227,8 +225,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private void init() {
 
-    //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
-    //    setBackground(new java.awt.Color(255, 255, 255));
+        //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
+        //    setBackground(new java.awt.Color(255, 255, 255));
         GroupLayout dataTrackNamePanelLayout = new org.jdesktop.layout.GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);
         dataTrackNamePanelLayout.setHorizontalGroup(
@@ -250,27 +248,16 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         ArrayList<Component> extraItems = null;
         if (isGrouped()) {
-            extraItems = new ArrayList();
+            // Uncomment if/when there is an option to show/hide group names
+//            extraItems = new ArrayList();
+//            final JMenuItem item = new JCheckBoxMenuItem("Show group names");
+//            item.setSelected(showGroupNames);
+//            item.addActionListener(e -> {
+//                showGroupNames = item.isSelected();
+//                repaint();
+//            });
+//            extraItems.add(item);
 
-            final JMenuItem item = new JCheckBoxMenuItem("Show group names");
-            item.setSelected(showGroupNames);
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showGroupNames = item.isSelected();
-                    repaint();
-                }
-            });
-            extraItems.add(item);
-
-            final JMenuItem item2 = new JCheckBoxMenuItem("Show sample names");
-            item2.setSelected(showSampleNamesWhenGrouped);
-            item2.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showSampleNamesWhenGrouped = item2.isSelected();
-                    repaint();
-                }
-            });
-            extraItems.add(item2);
         }
 
         super.openPopupMenu(te, extraItems);

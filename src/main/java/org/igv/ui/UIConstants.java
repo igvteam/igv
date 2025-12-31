@@ -41,15 +41,6 @@ public class UIConstants {
     static final public String SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP =
             "Customize attribute display to show only checked attributes";
 
-    static final public String SORT_TRACKS_TOOLTIP = "Sort tracks by attribute value";
-    static final public String GROUP_TRACKS_TOOLTIP = "Group tracks by attribute value";
-    static final public String OVERLAY_TRACKS_TOOLTIP = "Overlay data (wig) tracks by attribute value";
-    static final public String RENAME_TRACKS_TOOLTIP = "Rename tracks by attribute value";
-    static final public String FILTER_TRACKS_TOOLTIP = "Filter tracks by attribute value";
-    static final public String SET_DEFAULT_TRACK_HEIGHT_TOOLTIP = "Set the height for all tracks";
-    static final public String FIT_DATA_TO_WINDOW_TOOLTIP =
-            "Resize track heights to make best use of vertical space without scrolling";
-
     static final public String EXPORT_REGION_TOOLTIP = "Save all defined regions to a file";
     static final public String IMPORT_REGION_TOOLTIP = "Load regions from a file";
 
