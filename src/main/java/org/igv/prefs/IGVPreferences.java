@@ -79,20 +79,11 @@ public class IGVPreferences {
         }
     }
 
-
-    /**
-     * Return preference with given key and specified default value.  If key is not present defaultValue is returned,
-     * no search through defaults or hierarchy is performed.
-     *
-     * @param key
-     * @param defaultValue
-     * @return
-     */
-    public String getUserPreference(String key, String defaultValue) {
-        key = key.trim();
-        String val = userPreferences.get(key);
+    public String get(String key, String defaultValue) {
+        String val = get(key);
         return val == null ? defaultValue : val;
     }
+
 
     /**
      * Return preference as explicitly set in prefs.properties.  If no value is set return null.
@@ -138,7 +129,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return false;
             }
-            boolValue = Boolean.valueOf(getUserPreference(key, value));
+            boolValue = Boolean.valueOf(get(key, value));
             booleanCache.put(key, boolValue);
         }
         return boolValue;
@@ -159,7 +150,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            String userPref = getUserPreference(key, defValue);
+            String userPref = get(key, defValue);
             try {
                 value = Integer.valueOf(userPref);
             } catch (NumberFormatException e) {
@@ -212,7 +203,7 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            String prefString = getUserPreference(key, defValue);
+            String prefString = get(key, defValue);
             try {
                 value = Float.valueOf(prefString);
             } catch (NumberFormatException e) {
@@ -500,7 +491,7 @@ public class IGVPreferences {
 
         File exportedRegionDirectory = null;
 
-        String lastFilePath = getUserPreference(LAST_EXPORTED_REGION_DIRECTORY, null);
+        String lastFilePath = get(LAST_EXPORTED_REGION_DIRECTORY, null);
 
         if (lastFilePath != null) {
 
@@ -526,7 +517,7 @@ public class IGVPreferences {
 
         File snapshotDirectory = null;
 
-        String lastFilePath = getUserPreference(LAST_SNAPSHOT_DIRECTORY, null);
+        String lastFilePath = get(LAST_SNAPSHOT_DIRECTORY, null);
 
         if (lastFilePath != null) {
 
@@ -552,7 +543,7 @@ public class IGVPreferences {
 
         File directory = null;
 
-        String lastFilePath = getUserPreference(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = get(DEFINE_GENOME_INPUT_DIRECTORY_KEY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             directory = new File(lastFilePath);
@@ -576,7 +567,7 @@ public class IGVPreferences {
 
         File genomeImportDirectory = null;
 
-        String lastFilePath = getUserPreference(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
+        String lastFilePath = get(LAST_GENOME_IMPORT_DIRECTORY, DirectoryManager.getUserDefaultDirectory().getAbsolutePath());
 
         if (lastFilePath != null) {
             genomeImportDirectory = new File(lastFilePath);
@@ -612,7 +603,7 @@ public class IGVPreferences {
         Rectangle bounds = null;
 
         // Set the application's previous location and size
-        String applicationBounds = getUserPreference(FRAME_BOUNDS_KEY, null);
+        String applicationBounds = get(FRAME_BOUNDS_KEY, null);
 
         if (applicationBounds != null) {
             String[] values = applicationBounds.split(",");
@@ -640,7 +631,7 @@ public class IGVPreferences {
 
 
     public RecentFileSet getRecentSessions() {
-        String sessionsString = getUserPreference(RECENT_SESSIONS, null);
+        String sessionsString = get(RECENT_SESSIONS, null);
         return RecentFileSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
     }
 
@@ -651,7 +642,7 @@ public class IGVPreferences {
 
 
     public RecentUrlsSet getRecentUrls() {
-        String sessionsString = getUserPreference(RECENT_URLS, null);
+        String sessionsString = get(RECENT_URLS, null);
         return RecentUrlsSet.fromString(sessionsString, UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST);
     }
 
@@ -702,7 +693,7 @@ public class IGVPreferences {
 
     public String getDefaultGenome() {
 
-        String genome = getUserPreference(DEFAULT_GENOME, Globals.DEFAULT_GENOME);
+        String genome = get(DEFAULT_GENOME, Globals.DEFAULT_GENOME);
         return genome;
     }
 
@@ -713,7 +704,7 @@ public class IGVPreferences {
 
     public File getLastTrackDirectory() {
 
-        String lastDirectoryPath = getUserPreference(LAST_TRACK_DIRECTORY, null);
+        String lastDirectoryPath = get(LAST_TRACK_DIRECTORY, null);
 
         File lastDirectoryFile = null;
         if (lastDirectoryPath != null) {
@@ -752,7 +743,7 @@ public class IGVPreferences {
         String key = COLOR_SCALE_KEY + type.toString();
         ContinuousColorScale scale = colorScaleCache.get(key);
         if (scale == null) {
-            String colorScaleString = getUserPreference(key, null);
+            String colorScaleString = get(key, null);
             if (colorScaleString != null) {
                 scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
             } else {
@@ -1040,7 +1031,7 @@ public class IGVPreferences {
             put(key, value);
             return value;
         } else {
-            return getUserPreference(key, def);
+            return get(key, def);
         }
     }
 
