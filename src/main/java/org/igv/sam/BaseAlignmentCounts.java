@@ -41,7 +41,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     public BaseAlignmentCounts(int start, int end, AlignmentTrack.BisulfiteContext bisulfiteContext) {
         final IGVPreferences prefs = PreferencesManager.getPreferences();
-        String snpsFile = prefs.get(KNOWN_SNPS, null);
+        String snpsFile = prefs.get(KNOWN_SNPS);
         if (snpsFile != null && knownSnps == null) {
             loadKnownSnps(snpsFile);
         }
