@@ -768,7 +768,7 @@ public class IGVPreferences {
     }
 
     /**
-     * Return the default color scale.  This si the scale for track type "generic",
+     * Return the default color scale.  This is the scale for track type "generic",
      * as well as any track type without a specific scale.
      *
      * @param type
