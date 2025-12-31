@@ -212,7 +212,18 @@ public class IGVPreferences {
                 log.warn("No default value for: " + key);
                 return 0;
             }
-            value = Float.valueOf(getUserPreference(key, defValue));
+            String prefString = getUserPreference(key, defValue);
+            try {
+                value = Float.valueOf(prefString);
+            } catch (NumberFormatException e) {
+                log.warn("Invalid float value for preference '" + key + "': '" + prefString + "'. Using default '" + defValue + "'.", e);
+                try {
+                    value = Float.valueOf(defValue);
+                } catch (NumberFormatException e2) {
+                    log.warn("Invalid float default value for preference '" + key + "': '" + defValue + "'. Using 0.0f.", e2);
+                    value = Float.valueOf(0.0f);
+                }
+            }
             objectCache.put(key, value);
         }
         return value.floatValue();
