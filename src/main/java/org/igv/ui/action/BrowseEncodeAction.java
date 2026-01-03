@@ -152,7 +152,7 @@ public class BrowseEncodeAction extends MenuAction {
             if (value != null && value.length() > 0 && sampleInfoAttributes.contains(normalizedKey)) {
                 AttributeManager.getInstance().addAttribute(rl.getName(),normalizedKey, value);
             } else if (value != null && value.length() > 0 && trackLineAttributes.contains(normalizedKey)) {
-                trackLine.append(normalizedKey + "=\"" + value + "\" ");
+                trackLine.append(normalizedKey).append("=\"").append(value).append("\" ");
             }
         }
         rl.setMetadata(attributes);
