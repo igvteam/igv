@@ -1,6 +1,7 @@
 package org.igv.tools;
 
-import org.igv.logging.*;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.tdf.TDFUtils;
 import org.igv.track.WindowFunction;
 import org.igv.ui.util.FileDialogUtils;
@@ -27,7 +28,8 @@ public class IgvToolsGui extends org.igv.ui.IGVDialog {
         SORT("Sort"),
         INDEX("Index"),
         TO_TDF("toTDF"),
-        TO_BEDGRAPH("TDFtoBedGraph"),;
+        TO_BEDGRAPH("TDFtoBedGraph"),
+        ;
 
         private String displayName;
 
@@ -99,8 +101,10 @@ public class IgvToolsGui extends org.igv.ui.IGVDialog {
         tempButton.addActionListener(e -> {
             try {
                 File chosenFile = FileDialogUtils.chooseDirectory("Choose Directory:", lastDirectory);
-                tmpDirectoryField.setText(chosenFile.getAbsolutePath());
-                updateUI();
+                if (chosenFile != null) {
+                    tmpDirectoryField.setText(chosenFile.getAbsolutePath());
+                    updateUI();
+                }
             } catch (NullPointerException npe) {
             }
         });

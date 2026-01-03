@@ -30,7 +30,6 @@ public class Globals {
     private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
-    public static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
 
     /**
      * Field description
@@ -62,7 +61,6 @@ public class Globals {
     public static String BUILD;
     public static String TIMESTAMP;
 
-
     final public static boolean IS_WINDOWS =
             System.getProperty("os.name").toLowerCase().startsWith("windows");
     final public static boolean IS_MAC =
@@ -73,6 +71,9 @@ public class Globals {
 
     final public static boolean IS_JWS =
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;
+
+    // Default to false, set to true only if environment variable FORCE_SWING_DIALOG is set to "true"
+    final public static boolean FORCE_SWING_DIALOG = "true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG"));
 
     public static final String JAVA_VERSION_STRING = "java.version";
 
