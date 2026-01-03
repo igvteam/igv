@@ -1,6 +1,7 @@
 package org.igv.util.collections;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A Map implementation that treats String keys as case-insensitive.
@@ -11,6 +12,7 @@ import java.util.*;
 public class CaseInsensitiveMap<V> implements Map<String, V> {
 
     private final Map<String, V> map = new HashMap<>();
+    private final Map<String, String> originalKeys = new HashMap<>();
 
     private static String lowerKey(Object key) {
         return key == null ? null : key.toString().toLowerCase();
@@ -43,11 +45,13 @@ public class CaseInsensitiveMap<V> implements Map<String, V> {
 
     @Override
     public V put(String key, V value) {
+        originalKeys.put(lowerKey(key), key);
         return map.put(lowerKey(key), value);
     }
 
     @Override
     public V remove(Object key) {
+        originalKeys.remove(lowerKey(key));
         return map.remove(lowerKey(key));
     }
 
@@ -61,11 +65,17 @@ public class CaseInsensitiveMap<V> implements Map<String, V> {
     @Override
     public void clear() {
         map.clear();
+        originalKeys.clear();
     }
 
+    /**
+     * Get the set of keys in the map.
+     * @return a Set containing the keys in their original case (snapshot)
+     */
     @Override
     public Set<String> keySet() {
-        return map.keySet();
+        // Return the original-case keys (snapshot) instead of the internal lower-cased keys
+        return new LinkedHashSet<>(originalKeys.values());
     }
 
     @Override
@@ -75,6 +85,10 @@ public class CaseInsensitiveMap<V> implements Map<String, V> {
 
     @Override
     public Set<Entry<String, V>> entrySet() {
-        return map.entrySet();
+        return map.entrySet().stream()
+                .map(e -> new AbstractMap.SimpleEntry<>(originalKeys.get(e.getKey()), e.getValue()))
+                .collect(Collectors.toSet());
     }
 }
+
+
