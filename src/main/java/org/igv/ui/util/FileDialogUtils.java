@@ -38,31 +38,44 @@ public class FileDialogUtils {
     private static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter,
                                    int directoriesMode, int mode) {
 
+        File file = null;
         if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
         }
         // Strip off parent directory
         if (initialFile != null) initialFile = new File(initialFile.getName());
-        return chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
 
+        if (Globals.FORCE_SWING_DIALOG) {
+            File[] files = chooseSwing(title, initialDirectory, initialFile, filter, directoriesMode, mode);
+            file = (files != null && files.length > 0) ? files[0] : null;
+        } else {
+            file = chooseNative(title, initialDirectory, initialFile, filter, directoriesMode, mode);
+        }
+        return file;
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
         if (Globals.IS_MAC) {
             return chooseNative(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
         } else {
-            return chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+            File[] files = chooseSwing(title, initialDirectory, null, null, JFileChooser.DIRECTORIES_ONLY, LOAD);
+            return (files != null && files.length > 0) ? files[0] : null;
         }
     }
 
 
     public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
-
+        
         File[] files = null;
-        FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
-        if (fd.isMultipleMode()) {
-            fd.setVisible(true);
-            files = fd.getFiles();
+        if (Globals.FORCE_SWING_DIALOG) {
+            File[] selectedFiles = chooseSwing(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD, true);
+            files = selectedFiles;
+        } else {
+            FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
+            if (fd.isMultipleMode()) {
+                fd.setVisible(true);
+                files = fd.getFiles();
+            }
         }
         return files;
     }
@@ -110,12 +123,18 @@ public class FileDialogUtils {
         }
     }
 
+    // Overload: default multiSelectionEnabled to false
+    private static File[] chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
+                                 int directoryMode, int mode) {
+        return chooseSwing(title, initialDirectory, initialFile, filter, directoryMode, mode, false);
+    }
 
-    private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
-                                    int directoryMode, int mode) {
+    private static File[] chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
+                                    int directoryMode, int mode, boolean multiSelectionEnabled) {
 
         UIManager.put("FileChooser.readOnly", Boolean.FALSE);
         JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directoryMode);
+        fileChooser.setMultiSelectionEnabled(multiSelectionEnabled);
         Frame parentFrame = getParentFrame();
         boolean approve;
         if (mode == LOAD) {
@@ -126,11 +145,16 @@ public class FileDialogUtils {
         }
 
         if (approve) {
-            return fileChooser.getSelectedFile();
+            if (mode == LOAD && multiSelectionEnabled) {
+                return fileChooser.getSelectedFiles();
+            } else {
+                File selected = fileChooser.getSelectedFile();
+                return (selected != null) ? new File[] { selected } : null;
+            }
         } else {
             return null;
         }
-
+        
     }
 
     /**

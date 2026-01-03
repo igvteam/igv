@@ -23,6 +23,9 @@ public class Globals {
     public static final String DEFAULT_GENOME = "hg38";
 
     public static final String CHR_ALL = "All";
+    public static final String TRACK_NAME_ATTRIBUTE = "NAME";
+    public static final String TRACK_DATA_FILE_ATTRIBUTE = "DATA FILE";
+    public static final String TRACK_DATA_TYPE_ATTRIBUTE = "DATA TYPE";
 
     private static boolean headless = false;
     private static boolean suppressMessages = false;
@@ -62,7 +65,6 @@ public class Globals {
     public static String BUILD;
     public static String TIMESTAMP;
 
-
     final public static boolean IS_WINDOWS =
             System.getProperty("os.name").toLowerCase().startsWith("windows");
     final public static boolean IS_MAC =
@@ -73,6 +75,10 @@ public class Globals {
 
     final public static boolean IS_JWS =
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;
+
+    // Default to false, set to true only if environment variable FORCE_SWING_DIALOG is set to "true"
+    final public static boolean FORCE_SWING_DIALOG =
+            "true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG")) && IS_LINUX;
 
     public static final String JAVA_VERSION_STRING = "java.version";
 
