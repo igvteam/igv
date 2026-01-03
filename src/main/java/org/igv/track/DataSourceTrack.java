@@ -42,10 +42,6 @@ public class DataSourceTrack extends DataTrack {
         this.dataSource = dataSource;
         if (this.dataSource != null) {
             setTrackType(dataSource.getTrackType());
- //           List<LocusScore> scores = this.dataSource.getSummaryScoresForRange(Globals.CHR_ALL, -1, -1, 0);
- //           if (scores.size() > 0) {
- //               initScale(dataSource, scores);
- //           }
         }
     }
 
@@ -83,7 +79,6 @@ public class DataSourceTrack extends DataTrack {
         return new LoadedDataInterval<>(chr, startLocation, endLocation, zoom, tmp);
     }
 
-
     @Override
     public void setWindowFunction(WindowFunction statType) {
         clearCaches();
@@ -96,9 +91,7 @@ public class DataSourceTrack extends DataTrack {
         return dataSource != null ? dataSource.isLogNormalized() : false;
     }
 
-
     public WindowFunction getWindowFunction() {
-
         return dataSource != null ? dataSource.getWindowFunction() : null;
     }
 
@@ -136,7 +129,5 @@ public class DataSourceTrack extends DataTrack {
                 ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
             }
         }
-
-
     }
 }

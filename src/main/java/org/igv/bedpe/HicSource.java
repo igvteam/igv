@@ -34,7 +34,7 @@ public class HicSource implements InteractionSource {
     @Override
     public List<BedPE> getFeatures(String chr, int start, int end, double bpPerPixel, String normalization, int maxFeatureCount) throws IOException {
 
-        final int binSize = getBinSize(bpPerPixel);
+        final int binSize = getBinSize(chr, bpPerPixel);
 
         List<ContactRecord> records = getRecords(chr, start, end, binSize);
 
@@ -159,7 +159,13 @@ public class HicSource implements InteractionSource {
         return features;
     }
 
-    private int getBinSize(double bpPerPixel) {
+    private int getBinSize(String chr, double bpPerPixel) {
+
+        if("all".equalsIgnoreCase(chr)) {
+            // Special case, the whole-genome psuedo-chromosome all has a single resolution
+            return hicFile.getWGResolution();
+        }
+
         // choose resolution
         List<Integer> resolutions = hicFile.getBpResolutions();
         int index = 0;
@@ -180,7 +186,7 @@ public class HicSource implements InteractionSource {
 
     @Override
     public boolean hasNormalizationVector(String type, String chr, double bpPerPixel) {
-        return hicFile.hasNormalizationVector(type, chr, "BP", getBinSize(bpPerPixel));
+        return hicFile.hasNormalizationVector(type, chr, "BP", getBinSize(chr, bpPerPixel));
     }
 
     /**

@@ -28,7 +28,6 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.*;
 
 import static org.igv.prefs.Constants.*;
@@ -561,35 +560,34 @@ public abstract class AbstractTrack implements Track {
      * @param properties
      */
     public void setProperties(TrackProperties properties) {
-        this.itemRGB = properties.isItemRGB();
-        this.useScore = properties.isUseScore();
-        this.viewLimitMin = properties.getMinValue();
-        this.viewLimitMax = properties.getMaxValue();
-        this.yLine = properties.getyLine();
+
+        if (properties.isItemRGB() != null) {
+            this.itemRGB = properties.isItemRGB();
+        }
+        if (properties.isUseScore() != null) {
+            this.useScore = properties.isUseScore();
+        }
+        if (properties.getyLine() != null) {
+            this.yLine = properties.getyLine();
+        }
         this.drawYLine = properties.isDrawYLine();
         this.sortable = properties.isSortable();
 
+        // The viewLimit properties com from UCSC track lines and control "useScore" shading. They
+        // are somewhat redundant with dataRange,  but we keep both for now to avoid breaking existing behavior.
+        this.viewLimitMin = properties.getMinValue() != null ? properties.getMinValue() : Float.NaN;
+        this.viewLimitMax = properties.getMaxValue() != null ? properties.getMaxValue() : Float.NaN;
 
-        // If view limits are explicitly set turn off autoscale
-        if (!Float.isNaN(viewLimitMin) && !Float.isNaN(viewLimitMax)) {
-            this.setAutoScale(false);
-        }
 
-        // Color scale properties
-        if (!properties.isAutoScale()) {
+        if (properties.getMaxValue() != null) {
 
-            float min = properties.getMinValue();
             float max = properties.getMaxValue();
 
-            float mid = properties.getMidValue();
-            if (Float.isNaN(mid)) {
-                if (min >= 0) {
-                    mid = Math.max(min, 0);
-                } else {
-                    mid = Math.min(max, 0);
-                }
-            }
+            Float minVal = properties.getMinValue();
+            float min = (minVal == null) ? 0f : minVal;
 
+            Float midVal = properties.getMidValue();
+            float mid = (midVal == null) ? (min < 0 ? 0f : min) : midVal;
 
             DataRange dr = new DataRange(min, mid, max);
             setDataRange(dr);
@@ -603,10 +601,10 @@ public abstract class AbstractTrack implements Track {
             Color minColor = properties.getAltColor();
             if (maxColor != null && minColor != null) {
 
-                float tmp = properties.getNeutralFromValue();
-                float neutralFrom = Float.isNaN(tmp) ? mid : tmp;
+                Float tmp = properties.getNeutralFromValue();
+                float neutralFrom = tmp == null ? mid : tmp;
                 tmp = properties.getNeutralToValue();
-                float neutralTo = Float.isNaN(tmp) ? mid : tmp;
+                float neutralTo = tmp == null ? mid : tmp;
 
                 Color midColor = properties.getMidColor();
                 if (midColor == null) {
@@ -614,7 +612,6 @@ public abstract class AbstractTrack implements Track {
                 }
                 colorScale = new ContinuousColorScale(neutralFrom, min, neutralTo, max, minColor, midColor, maxColor);
             }
-
         }
 
         if (properties.getDisplayMode() != null) {
@@ -633,10 +630,10 @@ public abstract class AbstractTrack implements Track {
         if (properties.getMidColor() != null) {
             //setMidColor(trackProperties.getMidColor());
         }
-        if (properties.getHeight() > 0) {
+        if (properties.getHeight() != null) {
             setHeight(properties.getHeight());
         }
-        if (properties.getMinHeight() > 0) {
+        if (properties.getMinHeight() != null) {
             setMinimumHeight(properties.getMinHeight());
         }
         if (properties.getRendererClass() != null) {
@@ -659,10 +656,10 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        // Start of Roche-Tessella modification
-        this.autoScale = properties.getAutoScale();
-        // End of Roche-Tessella modification
-
+        Boolean as = properties.getAutoScale();
+        if (as != null) {
+            this.autoScale = as;
+        }
     }
 
     /**

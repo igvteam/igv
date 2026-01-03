@@ -84,35 +84,6 @@ public class IGVPreferences {
         return val == null ? defaultValue : val;
     }
 
-
-    /**
-     * Return preference as explicitly set in prefs.properties.  If no value is set return null.
-     * @param key
-     * @return
-     */
-    public String getExplicitValue(String key) {
-        key = key.trim();
-        String val = userPreferences.get(key);
-        if (val == null && parent != null) {
-            val = parent.userPreferences.get(key);
-        }
-        return val;
-    }
-
-    /**
-     * Return the default preference value as set in org.igv.prefs.preferences.tab
-     * @param key
-     * @return
-     */
-    public String getDefault(String key) {
-        key = key.trim();
-        String val = defaults.get(key);
-        if (val == null && parent != null) {
-            val = parent.defaults.get(key);
-        }
-        return val;
-    }
-
     /**
      * Return the preference as a boolean value.
      *
@@ -123,13 +94,12 @@ public class IGVPreferences {
         key = key.trim();
         Boolean boolValue = booleanCache.get(key);
         if (boolValue == null) {
-
             String value = get(key);
             if (value == null) {
-                log.warn("No default value for: " + key);
+                log.warn("No value for preference key:: " + key);
                 return false;
             }
-            boolValue = Boolean.valueOf(get(key, value));
+            boolValue = Boolean.valueOf(value);
             booleanCache.put(key, boolValue);
         }
         return boolValue;
@@ -145,22 +115,16 @@ public class IGVPreferences {
         key = key.trim();
         Number value = (Number) objectCache.get(key);
         if (value == null) {
-            String defValue = get(key);
-            if (defValue == null) {
-                log.warn("No default value for: " + key);
+            String stringValue = get(key);
+            if (stringValue == null) {
+                log.warn("No value for preference key:: " + key);
                 return 0;
             }
-            String userPref = get(key, defValue);
             try {
-                value = Integer.valueOf(userPref);
+                value = Integer.valueOf(stringValue);
             } catch (NumberFormatException e) {
-                log.warn("Invalid integer preference for key '" + key + "': '" + userPref + "'. Using default value: '" + defValue + "'.");
-                try {
-                    value = Integer.valueOf(defValue);
-                } catch (NumberFormatException e2) {
-                    log.warn("Invalid integer default preference for key '" + key + "': '" + defValue + "'. Falling back to 0.");
-                    value = 0;
-                }
+                log.warn("Invalid integer preference for key '" + key + "': '" + stringValue + "'. Falling back to 0.");
+                value = 0;
             }
             objectCache.put(key, value);
         }
@@ -179,7 +143,7 @@ public class IGVPreferences {
         if (value == null) {
             String defValue = get(key);
             if (defValue == null) {
-                log.warn("No default value for: " + key);
+                log.warn("No value for preference key:: " + key);
                 return Color.white;
             }
             value = ColorUtilities.stringToColor(defValue);
@@ -198,22 +162,16 @@ public class IGVPreferences {
         key = key.trim();
         Number value = (Number) objectCache.get(key);
         if (value == null) {
-            String defValue = get(key);
-            if (defValue == null) {
-                log.warn("No default value for: " + key);
+            String stringValue = get(key);
+            if (stringValue == null) {
+                log.warn("No value for preference key:: " + key);
                 return 0;
             }
-            String prefString = get(key, defValue);
             try {
-                value = Float.valueOf(prefString);
+                value = Float.valueOf(stringValue);
             } catch (NumberFormatException e) {
-                log.warn("Invalid float value for preference '" + key + "': '" + prefString + "'. Using default '" + defValue + "'.", e);
-                try {
-                    value = Float.valueOf(defValue);
-                } catch (NumberFormatException e2) {
-                    log.warn("Invalid float default value for preference '" + key + "': '" + defValue + "'. Using 0.0f.", e2);
-                    value = Float.valueOf(0.0f);
-                }
+                log.warn("Invalid float value for preference '" + key + "': '" + stringValue + "'. Falling back to 0.0f.", e);
+                value = 0.0f;
             }
             objectCache.put(key, value);
         }

@@ -42,10 +42,6 @@ public class FileRecord {
         return value;
     }
 
-    public Collection<String> getAttributeNames() {
-        return attributes.keySet();
-    }
-
     public Map<String, String> getAttributes() {
         return attributes;
     }

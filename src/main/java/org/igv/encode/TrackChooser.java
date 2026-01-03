@@ -8,6 +8,7 @@ import com.jidesoft.swing.JideBoxLayout;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.ui.IGV;
 import org.igv.util.Pair;
 
 import javax.swing.*;
@@ -24,6 +25,7 @@ import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -109,6 +111,18 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
         return model.getRecords();
     }
 
+    public void updateRecordSelectionState() {
+
+        Set<String> loadedPaths = IGV.getInstance().getDataResourceLocators().stream()
+                .map(rl -> rl.getPath())
+                .collect(Collectors.toSet());
+
+        for (FileRecord fileRecord : model.getRecords()) {
+            if (loadedPaths.contains(fileRecord.getPath())) {
+                fileRecord.setSelected(true);
+            }
+        }
+    }
 
     private class RegexFilter extends RowFilter {
 
