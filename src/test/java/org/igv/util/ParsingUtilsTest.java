@@ -140,7 +140,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         assertEquals("Track 196", props.getName());
         assertEquals(Track.DisplayMode.EXPANDED, props.getDisplayMode());
         assertEquals(" CD34 - H3K27me3 - hg19 - 18.7 M/20.9 M - 61P7DAAXX.6", props.getDescription());
-        assertEquals(70, props.getHeight());
+        assertEquals(70, props.getHeight().intValue());
         assertEquals(0, props.getMinValue(), 1.0e-9);
         assertEquals(18, props.getMaxValue(), 1.0e-9);
         assertEquals(WindowFunction.mean, props.getWindowingFunction());
