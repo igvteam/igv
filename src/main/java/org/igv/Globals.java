@@ -23,9 +23,6 @@ public class Globals {
     public static final String DEFAULT_GENOME = "hg38";
 
     public static final String CHR_ALL = "All";
-    public static final String TRACK_NAME_ATTRIBUTE = "NAME";
-    public static final String TRACK_DATA_FILE_ATTRIBUTE = "DATA FILE";
-    public static final String TRACK_DATA_TYPE_ATTRIBUTE = "DATA TYPE";
 
     private static boolean headless = false;
     private static boolean suppressMessages = false;
@@ -33,7 +30,6 @@ public class Globals {
     private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 20000;        // 20 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
-    public static int TOKEN_EXPIRE_GRACE_TIME = 1000 * 60; // 1 minute
 
     /**
      * Field description
@@ -77,8 +73,7 @@ public class Globals {
             System.getProperty("webstart.version", null) != null || System.getProperty("javawebstart.version", null) != null;
 
     // Default to false, set to true only if environment variable FORCE_SWING_DIALOG is set to "true"
-    final public static boolean FORCE_SWING_DIALOG =
-            "true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG")) && IS_LINUX;
+    final public static boolean FORCE_SWING_DIALOG = "true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG"));
 
     public static final String JAVA_VERSION_STRING = "java.version";
 
