@@ -35,7 +35,7 @@ public class EncodeTrackChooserFactory {
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
     private static String ENCODE_HOST = "https://www.encodeproject.org";
-    private static Set<String> filteredColumns = new HashSet(Arrays.asList(
+    private static Set<String> filteredColumns = new HashSet<>(Arrays.asList(
             "ID", "Assembly", "HREF", "path",
             "url", "Project", "name", "color", "altColor"));
 
