@@ -62,7 +62,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
-
+            // Purge any cached data not associated with current frames
             Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
             Map<String, LoadedDataInterval<List<LocusScore>>> newCache = Collections.synchronizedMap(new HashMap<>());
             for (ReferenceFrame f : frames) {

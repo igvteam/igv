@@ -144,7 +144,7 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
         assertEquals(0, props.getMinValue(), 1.0e-9);
         assertEquals(18, props.getMaxValue(), 1.0e-9);
         assertEquals(WindowFunction.mean, props.getWindowingFunction());
-        assertEquals(false, props.isAutoScale());
+        assertEquals(false, props.getAutoScale());
         assertEquals(new Color(255, 0, 0), props.getColor());
         assertEquals("http://www.broadinstitute.org/epigenomics/dataportal/track_00196.portal.bw", props.getDataURL());
     }

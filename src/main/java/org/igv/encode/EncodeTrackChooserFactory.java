@@ -4,6 +4,17 @@
 
 package org.igv.encode;
 
+import org.igv.Globals;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
+import org.igv.ui.IGV;
+import org.igv.ui.action.BrowseEncodeAction;
+import org.igv.util.Pair;
+import org.igv.util.ParsingUtils;
+
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,17 +23,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-
-import org.igv.logging.*;
-import org.igv.Globals;
-import org.igv.prefs.Constants;
-import org.igv.prefs.PreferencesManager;
-import org.igv.ui.IGV;
-import org.igv.ui.action.BrowseEncodeAction;
-import org.igv.util.Pair;
-import org.igv.util.ParsingUtils;
 
 /**
  * @author Jim Robinson
@@ -35,7 +35,9 @@ public class EncodeTrackChooserFactory {
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
     private static String ENCODE_HOST = "https://www.encodeproject.org";
-    private static Set<String> filteredColumns = new HashSet(Arrays.asList("ID", "Assembly", "HREF", "path"));
+    private static Set<String> filteredColumns = new HashSet(Arrays.asList(
+            "ID", "Assembly", "HREF", "path",
+            "url", "Project", "name", "color", "altColor"));
 
     private static List<String> filteredExtensions = Arrays.asList("tsv", "tsv.gz");
 
@@ -53,6 +55,8 @@ public class EncodeTrackChooserFactory {
     static HashSet<String> ucscSupportedGenomes = new HashSet<>(Arrays.asList("hg19", "mm9"));
     static HashSet<String> supportedGenomes = new HashSet<>(
             Arrays.asList("ce10", "ce11", "dm3", "dm6", "GRCh38", "hg19", "mm10", "mm9"));
+    static HashSet<String> hicGenomes = new HashSet<>(
+            Arrays.asList("GRCh38", "hg19", "mm10", "mm9"));
 
     /**
      * Return a new or cached instance of a track chooser for the given genome and type.
@@ -79,7 +83,6 @@ public class EncodeTrackChooserFactory {
             instance = new TrackChooser(parent, headings, rows, title);
             instanceMap.put(key, instance);
         }
-
         return instance;
     }
 
@@ -87,6 +90,8 @@ public class EncodeTrackChooserFactory {
 
         if (type == BrowseEncodeAction.Type.UCSC) {
             return "ENCODE data hosted at UCSC (2012)";
+        } else if (type == BrowseEncodeAction.Type.FOUR_DN) {
+            return "4DN";
         } else {
             switch (type) {
                 case SIGNALS_CHIP:
@@ -101,6 +106,10 @@ public class EncodeTrackChooserFactory {
 
     public static boolean genomeSupportedUCSC(String genomeId) {
         return genomeId != null && ucscSupportedGenomes.contains(getEncodeGenomeID(genomeId));
+    }
+
+    public static boolean hicSupportedUCSC(String genomeId) {
+        return genomeId != null && hicGenomes.contains(getEncodeGenomeID(genomeId));
     }
 
     public static boolean genomeSupported(String genomeId) {
@@ -128,26 +137,16 @@ public class EncodeTrackChooserFactory {
             if (is == null) {
                 return null;
             }
-            Pair<List<String>, List<FileRecord>> headingRecordPair = parseRecords(is, type, genomeId);
-
-            if (IGV.hasInstance()) {
-                Set<String> loadedPaths = IGV.getInstance().getDataResourceLocators().stream()
-                        .map(rl -> rl.getPath())
-                        .collect(Collectors.toSet());
-
-                for (FileRecord fileRecord : headingRecordPair.getSecond()) {
-                    if (loadedPaths.contains(fileRecord.getPath())) {
-                        fileRecord.setSelected(true);
-                    }
-                }
-            }
-            return headingRecordPair;
+            return parseRecords(is, type, genomeId);
         }
     }
 
     private static InputStream getStreamFor(String genomeId, BrowseEncodeAction.Type type) throws IOException {
         if (type == BrowseEncodeAction.Type.UCSC) {
             return EncodeTrackChooserFactory.class.getResourceAsStream("encode." + genomeId + ".txt");
+        } else if (type == BrowseEncodeAction.Type.FOUR_DN) {
+            String url = PreferencesManager.getPreferences().get(Constants.FOUR_DN_FILELIST_URL) + "4dn_" + genomeId + "_tracks.txt";
+            return ParsingUtils.openInputStream(url);
         } else {
             String root = PreferencesManager.getPreferences().get(Constants.ENCODE_FILELIST_URL) + genomeId + ".";
             String url = null;
@@ -157,6 +156,9 @@ public class EncodeTrackChooserFactory {
                     break;
                 case SIGNALS_OTHER:
                     url = root + "signals.other.txt.gz";
+                    break;
+                case HIC:
+                    url = root + "hic.txt.gz";
                     break;
                 case OTHER:
                     url = root + "other.txt.gz";
@@ -175,7 +177,10 @@ public class EncodeTrackChooserFactory {
 
         String[] headers = Globals.tabPattern.split(reader.readLine());
 
-        int pathColumn = type == BrowseEncodeAction.Type.UCSC ? 0 : Arrays.asList(headers).indexOf("HREF");
+        int pathColumn = switch (type) {
+            case UCSC, FOUR_DN -> 0;
+            default -> Arrays.asList(headers).indexOf("HREF");
+        };
 
         List<FileRecord> records = new ArrayList<>(20000);
         String nextLine;
@@ -183,13 +188,16 @@ public class EncodeTrackChooserFactory {
             if (!nextLine.startsWith("#")) {
 
                 String[] tokens = Globals.tabPattern.split(nextLine, -1);
-                String path = type == BrowseEncodeAction.Type.UCSC ? tokens[pathColumn] : ENCODE_HOST + tokens[pathColumn];
+                String path = switch (type) {
+                    case UCSC, FOUR_DN -> tokens[pathColumn];
+                    default -> ENCODE_HOST + tokens[pathColumn];
+                };
 
                 if (filteredExtensions.stream().anyMatch(e -> path.endsWith(e))) {
                     continue;
                 }
 
-                Map<String, String> attributes = new LinkedHashMap<>();
+                Map<String, String> attributes = new HashMap<>();
                 for (int i = 0; i < headers.length; i++) {
                     String value = i < tokens.length ? tokens[i] : "";
                     if (value.length() > 0) {
@@ -198,7 +206,6 @@ public class EncodeTrackChooserFactory {
                 }
                 final FileRecord record = new FileRecord(path, attributes);
                 records.add(record);
-
             }
         }
 

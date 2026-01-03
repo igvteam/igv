@@ -316,6 +316,7 @@ UCSC_HOST	hgdownload.soe.ucsc.edu
 UCSC_BACKUP_HOST	genome-browser.s3.us-east-1.amazonaws.com
 
 ENCODE_FILELIST_URL	https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/encode/
+FOUR_DN_FILELIST_URL	https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/4dn/
 
 PROVISIONING_URL_DEFAULT	https://igv.org/services/desktop_google
 SAM.SHOW_JUNCTION_FLANKINGREGIONS	FALSE

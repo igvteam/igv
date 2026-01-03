@@ -28,15 +28,20 @@ public class TrackProperties {
         ZERO, ONE, UNSPECIFIED
     }
 
-    private Track.DisplayMode displayMode;
+    /**
+     * The original track line from a track file or track hub.  This is not always set.  Not sure why we need this.
+     */
+    private String trackLine;
 
+
+    private Track.DisplayMode displayMode;
 
     /**
      * Base coordinate system,  either 0 or 1
      */
     private BaseCoord baseCoord = BaseCoord.UNSPECIFIED;
 
-    private String trackLine;
+
     private String type;
 
     /**
@@ -59,9 +64,9 @@ public class TrackProperties {
     /**
      * The track height in pixels
      */
-    private int height;
+    private Integer height;
 
-    private int minHeight;
+    private Integer minHeight;
 
     private boolean gffTags = false;
 
@@ -81,19 +86,17 @@ public class TrackProperties {
 
     private String genome;
 
-    private int offset;
+    private Boolean autoscale;
 
-    private boolean autoscale = false;
+    private Float minValue;
 
-    private float minValue = Float.NaN;
+    private Float maxValue;
 
-    private float maxValue = Float.NaN;
+    private Float midValue;
 
-    private float midValue = Float.NaN;
+    private Float neutralFromValue;
 
-    private float neutralFromValue = Float.NaN;
-
-    private float neutralToValue = Float.NaN;
+    private Float neutralToValue ;
 
     private boolean drawYLine = false;
 
@@ -103,15 +106,15 @@ public class TrackProperties {
 
     private int smoothingWindow;
 
-    private boolean itemRGB = true;
+    private Boolean itemRGB = null;
 
-    private boolean useScore = false;
+    private Boolean useScore = null;
 
     private int featureVisibilityWindow = -1;
 
-    private boolean logScale;
+    private boolean logScale = false;
 
-    private float yLine;
+    private Float yLine;
 
     private boolean sortable = true;
 
@@ -146,15 +149,31 @@ public class TrackProperties {
      * @param trackConfig
      */
     public TrackProperties(TrackConfig trackConfig) {
-        this.color = parseColor(trackConfig.color);
-        this.altColor = parseColor(trackConfig.altColor);
-        this.displayMode = parseDisplayMode(trackConfig.displayMode);
+        if(trackConfig.color != null) {
+            this.color = parseColor(trackConfig.color);
+        }
+        if(trackConfig.altColor != null) {
+            this.altColor = parseColor(trackConfig.altColor);
+        }
+        if(trackConfig.displayMode != null) {
+            this.displayMode = parseDisplayMode(trackConfig.displayMode);
+        }
         setFeatureVisibilityWindow(trackConfig.visibilityWindow != null ? trackConfig.visibilityWindow : -1);
-        setMinValue(trackConfig.min != null ? trackConfig.min : Float.NaN);
-        setMaxValue(trackConfig.max != null ? trackConfig.max : Float.NaN);
-        setAutoScale(Boolean.TRUE.equals(trackConfig.autoscale));
-        setHeight(trackConfig.height != null ? trackConfig.height : this.height);
-        setMinHeight(trackConfig.minHeight != null ? trackConfig.minHeight : this.minHeight);
+        if(trackConfig.min != null) {
+            setMinValue(trackConfig.min);
+        }
+        if(trackConfig.max != null) {
+            setMaxValue(trackConfig.max);
+        }
+        if(trackConfig.autoscale != null) {
+            setAutoScale(trackConfig.autoscale);
+        }
+        if(trackConfig.height != null) {
+            setHeight(trackConfig.height);
+        }
+        if(trackConfig.minHeight != null) {
+            setMinHeight(trackConfig.minHeight);
+        }
     }
 
 
@@ -228,33 +247,20 @@ public class TrackProperties {
         this.featureVisibilityWindow = featureVisibilityWindow;
     }
 
-    public boolean isUseScore() {
+    public Boolean isUseScore() {
         return useScore;
     }
 
-    public void setUseScore(boolean useScore) {
+    public void setUseScore(Boolean useScore) {
         this.useScore = useScore;
     }
 
-    public boolean isItemRGB() {
+    public Boolean isItemRGB() {
         return itemRGB;
     }
 
-    public void setItemRGB(boolean itemRGB) {
+    public void setItemRGB(Boolean itemRGB) {
         this.itemRGB = itemRGB;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public int getOffset() {
-        return offset;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
     }
 
     public String getName() {
@@ -286,12 +292,12 @@ public class TrackProperties {
     }
 
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
 
-    public void setHeight(int height) {
+    public void setHeight(Integer height) {
         this.height = height;
     }
 
@@ -305,7 +311,6 @@ public class TrackProperties {
         this.color = color;
     }
 
-
     public Color getAltColor() {
         return altColor;
     }
@@ -315,44 +320,44 @@ public class TrackProperties {
         this.altColor = altColor;
     }
 
-
-    public boolean isAutoScale() {
-        return autoscale || Float.isNaN(minValue) || Float.isNaN(maxValue);
-    }
-
-    public boolean getAutoScale() {
-        return this.autoscale;
-    }
-
     public String getGenome() {
         return genome;
     }
-
 
     public void setGenome(String genome) {
         this.genome = genome;
     }
 
-
-    public float getMinValue() {
-        return minValue;
+    public Boolean getAutoScale() {
+        return this.autoscale;
     }
 
+    public void setAutoScale(Boolean autoScale) {
+        this.autoscale = autoScale;
+    }
+    public Float getMinValue() {
+        return minValue;
+    }
 
     public void setMinValue(float minValue) {
         this.minValue = minValue;
     }
 
-
-    public float getMaxValue() {
+    public Float getMaxValue() {
         return maxValue;
     }
 
-
-    public void setMaxValue(float maxValue) {
+    public void setMaxValue(Float maxValue) {
         this.maxValue = maxValue;
     }
 
+    public Float getMidValue() {
+        return midValue;
+    }
+
+    public void setMidValue(Float midValue) {
+        this.midValue = midValue;
+    }
 
     public WindowFunction getWindowingFunction() {
         return windowingFunction;
@@ -382,17 +387,6 @@ public class TrackProperties {
         this.rendererClass = rendererClass;
     }
 
-    public void setAutoScale(boolean autoScale) {
-        this.autoscale = autoScale;
-    }
-
-    public float getMidValue() {
-        return midValue;
-    }
-
-    public void setMidValue(float midValue) {
-        this.midValue = midValue;
-    }
 
     public Color getMidColor() {
         return midColor;
@@ -410,11 +404,11 @@ public class TrackProperties {
         this.drawYLine = drawYLine;
     }
 
-    public int getMinHeight() {
+    public Integer getMinHeight() {
         return minHeight;
     }
 
-    public void setMinHeight(int minHeight) {
+    public void setMinHeight(Integer minHeight) {
         this.minHeight = minHeight;
     }
 
@@ -426,27 +420,26 @@ public class TrackProperties {
         this.baseCoord = baseCoord;
     }
 
-    public float getNeutralFromValue() {
+    public Float getNeutralFromValue() {
         return neutralFromValue;
     }
-
-    public void setNeutralFromValue(float neutralFromValue) {
+    public void setNeutralFromValue(Float neutralFromValue) {
         this.neutralFromValue = neutralFromValue;
     }
 
-    public float getNeutralToValue() {
+    public Float getNeutralToValue() {
         return neutralToValue;
     }
 
-    public void setNeutralToValue(float neutralToValue) {
+    public void setNeutralToValue(Float neutralToValue) {
         this.neutralToValue = neutralToValue;
     }
 
-    public float getyLine() {
+    public Float getyLine() {
         return yLine;
     }
 
-    public void setyLine(float yLine) {
+    public void setyLine(Float yLine) {
         this.yLine = yLine;
     }
 

@@ -6,6 +6,7 @@ import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.util.CompressionUtils;
+import org.igv.util.collections.CaseInsensitiveMap;
 import org.igv.util.collections.LRUCache;
 import org.igv.util.stream.IGVSeekableStreamFactory;
 
@@ -56,7 +57,8 @@ public class HicFile {
     private Map<String, Long> expectedValueVectors;
     private Map<String, Object> attributes;
     private List<Chromosome> chromosomes = new ArrayList<>();
-    private Map<String, Integer> chromosomeIndexMap = new HashMap<>();
+    private Map<String, Integer> chromosomeIndexMap = new CaseInsensitiveMap<Integer>();
+    private Integer wgResolution = null;
     private List<Integer> bpResolutions = new ArrayList<>();
     private List<Integer> fragResolutions = new ArrayList<>();
     private Map<String, String> chrAliasTable = new HashMap<>();
@@ -90,7 +92,7 @@ public class HicFile {
     }
 
     public String getNVIString() {
-        if(this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
+        if (this.normVectorIndexPosition > 0 && this.normVectorIndexSize > 0) {
             return this.normVectorIndexPosition + "," + this.normVectorIndexSize;
         } else {
             return null;
@@ -158,17 +160,19 @@ public class HicFile {
 
         // chromosomes
         this.chromosomes = new ArrayList<>();
-        this.chromosomeIndexMap = new HashMap<>();
+        this.chromosomeIndexMap = new CaseInsensitiveMap<>();
         int nChrs = bodyParser.getInt();
         for (int i = 0; i < nChrs; i++) {
             String name = getString(bodyParser);
             long size = this.version < 9 ? bodyParser.getInt() : bodyParser.getLong();
             Chromosome chr = new Chromosome(i, name, (int) size);
-            if ("all".equalsIgnoreCase(name)) {
-                // whole genome handling omitted other fields
-            }
             this.chromosomes.add(chr);
+
+            String canonicalName = genome == null ? name : genome.getCanonicalChrName(name);
+            chrAliasTable.put(canonicalName, name);
+
             this.chromosomeIndexMap.put(name, i);
+
         }
 
         // bp resolutions
@@ -184,12 +188,6 @@ public class HicFile {
             for (int i = 0; i < nFrag; i++) {
                 this.fragResolutions.add(bodyParser.getInt());
             }
-        }
-
-        // build alias table
-        for (String chrName : chromosomeIndexMap.keySet()) {
-            String canonicalName = genome == null ? chrName : genome.getCanonicalChrName(chrName);
-            chrAliasTable.put(canonicalName, chrName);
         }
     }
 
@@ -280,13 +278,31 @@ public class HicFile {
             if (block == null) continue;
 
             for (ContactRecord rec : block.records) {
-                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2)  && rec.counts() > 1) {
+                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2) && rec.counts() > 1) {
                     contactRecords.add(rec);
                 }
             }
         }
 
         return contactRecords;
+    }
+
+    public int getWGResolution() {
+        if (wgResolution == null) {
+            try {
+                Integer idx = chromosomeIndexMap.get("all");
+                if (idx == null) return -1;
+                Matrix matrix = getMatrix(idx, idx);
+                if (matrix == null) return -1;
+                List<MatrixZoomData> zdArray = matrix.getBpZoomData();
+                if (zdArray.isEmpty()) return -1;
+                wgResolution = zdArray.get(0).getZoom().binSize();
+            } catch (IOException e) {
+                log.error(e.getMessage());
+                wgResolution = -1;
+            }
+        }
+        return wgResolution;
     }
 
     private List<Block> getBlocks(Region region1, Region region2, String unit, int binSize) throws IOException {

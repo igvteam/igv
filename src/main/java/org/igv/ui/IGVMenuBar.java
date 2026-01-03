@@ -699,6 +699,12 @@ public class IGVMenuBar extends JMenuBar  {
                 otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
                 hubsMenu.add(otherSignalsItem);
 
+                if(EncodeTrackChooserFactory.hicSupportedUCSC(ucscId)) {
+                    JMenuItem hicSignalsItem = new JMenuItem();
+                    hicSignalsItem.setAction(new BrowseEncodeAction("ENCODE Contact Maps ...", 0, BrowseEncodeAction.Type.HIC, igv));
+                    hubsMenu.add(hicSignalsItem);
+                }
+
                 JMenuItem otherItem = new JMenuItem();
                 otherItem.setAction(new BrowseEncodeAction("ENCODE Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
                 hubsMenu.add(otherItem);
@@ -710,6 +716,13 @@ public class IGVMenuBar extends JMenuBar  {
                         new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
                 hubsMenu.add(encodeUCSCMenuItem);
             }
+
+            if ("hg38".equals(ucscId)) {
+                JMenuItem fdnItem = new JMenuItem();
+                fdnItem.setAction(new BrowseEncodeAction("4DN ...", 0, BrowseEncodeAction.Type.FOUR_DN, igv));
+                hubsMenu.add(fdnItem);
+            }
+
         }
 
         // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.

@@ -188,9 +188,9 @@ public class ColorUtilities {
 
             } else {
                 String[] rgb = string.split(",");
-                int red = Integer.parseInt(rgb[0]);
-                int green = Integer.parseInt(rgb[1]);
-                int blue = Integer.parseInt(rgb[2]);
+                int red = Integer.parseInt(rgb[0].trim());
+                int green = Integer.parseInt(rgb[1].trim());
+                int blue = Integer.parseInt(rgb[2].trim());
                 c = new Color(red, green, blue);
             }
         } else if (string.startsWith("#")) {

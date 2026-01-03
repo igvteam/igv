@@ -108,10 +108,9 @@ public class TrackChooserModel extends AbstractTableModel {
 
         for (int row = 0; row < records.size(); row++) {
             FileRecord record = records.get(row);
-            if (loadedPaths.contains(record.getPath())) {
-                record.setSelected(true);
-            }
+            record.setSelected(loadedPaths.contains(record.getPath()));
         }
+        fireTableDataChanged();
     }
 
     public List<FileRecord> getRecords() {

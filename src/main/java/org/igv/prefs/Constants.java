@@ -320,6 +320,7 @@ final public class Constants {
 
     // Misc URLS
     public static final String ENCODE_FILELIST_URL = "ENCODE_FILELIST_URL";
+    public static final String FOUR_DN_FILELIST_URL = "FOUR_DN_FILELIST_URL";
 
 
     /**

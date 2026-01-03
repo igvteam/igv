@@ -1,17 +1,18 @@
 package org.igv.ui.action;
 
+import org.igv.encode.EncodeTrackChooserFactory;
+import org.igv.encode.FileRecord;
 import org.igv.encode.TrackChooser;
-import org.igv.feature.genome.GenomeManager;
-import org.igv.logging.*;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
 import org.igv.ui.WaitCursorManager;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
-import org.igv.encode.EncodeTrackChooserFactory;
-import org.igv.encode.FileRecord;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +33,9 @@ public class BrowseEncodeAction extends MenuAction {
         UCSC,
         SIGNALS_CHIP,
         SIGNALS_OTHER,
-        OTHER
+        OTHER,
+        HIC,
+        FOUR_DN
     }
 
     private static Logger log = LogManager.getLogger(BrowseEncodeAction.class);
@@ -40,7 +43,7 @@ public class BrowseEncodeAction extends MenuAction {
     private static Map<String, Color> colors;
 
     static {
-        colors = new HashMap<String, Color>();
+        colors = new HashMap<>();
         colors.put("H3K27AC", new Color(200, 0, 0));
         colors.put("H3K27ME3", new Color(200, 0, 0));
         colors.put("H3K36ME3", new Color(0, 0, 150));
@@ -51,8 +54,18 @@ public class BrowseEncodeAction extends MenuAction {
         colors.put("H3K9ME1", new Color(100, 0, 0));
     }
 
+    /** Sample info attributes
+     *      * Properties available in various sets
+     *      *   UCSC Encode:  path	cell	dataType	antibody	view	replicate	type	lab	hub
+     *      *   Encode:       Biosample	AssayType	Target	BioRep	TechRep	OutputType
+     *      *   4DN:          Type	Biosource	Assay	Replicate	Dataset Accession	Experiment	name
+     */
     static Set<String> sampleInfoAttributes = new HashSet<>(Arrays.asList(
-            "dataType", "cell", "antibody", "lab", "Biosample", "AssayType", "Target"));
+            "dataType", "cell", "antibody", "lab", "Biosample", "AssayType", "Target", "Biosource"));
+
+    static Set<String> trackLineAttributes = new HashSet<>(Arrays.asList(
+            "name", "description", "color", "altColor", "visibility", "maxHeightPixels",
+            "viewLimits", "autoScale", "priority"));
 
     private final Type type;
 
@@ -126,34 +139,81 @@ public class BrowseEncodeAction extends MenuAction {
         ResourceLocator rl = new ResourceLocator(record.getPath());
         rl.setName(getTrackName(record));
         Map<String, String> attributes = record.getAttributes();
+        StringBuffer trackLine = new StringBuffer();
+
         String antibody = attributes.containsKey("antibody") ? attributes.get("antibody") : attributes.get("Target");
         if (antibody != null) {
             rl.setColor(colors.get(antibody.toUpperCase()));
         }
+
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             String value = entry.getValue();
-            if (value != null && value.length() > 0 && sampleInfoAttributes.contains(entry.getKey())) {
-                AttributeManager.getInstance().addAttribute(rl.getName(), entry.getKey(), value);
+            String normalizedKey = normalizeAttributeName(entry.getKey());
+            if (value != null && value.length() > 0 && sampleInfoAttributes.contains(normalizedKey)) {
+                AttributeManager.getInstance().addAttribute(rl.getName(),normalizedKey, value);
+            } else if (value != null && value.length() > 0 && trackLineAttributes.contains(normalizedKey)) {
+                trackLine.append(normalizedKey + "=\"" + value + "\" ");
             }
         }
         rl.setMetadata(attributes);
+        if (trackLine.length() > 0) {
+            rl.setTrackLine(trackLine.toString().trim());
+        }
+
         return rl;
     }
 
     /**
-     * Return a friendly name for the track.  Unfortunately it is neccessary to hardcode certain attributes.
+     * Normalize attribute names across different data sources (Encode, UCSC, 4DN)
+     * @param rawName
+     * @return
+     */
+    private static String normalizeAttributeName(String rawName) {
+        switch (rawName) {
+            case "cell":
+            case "Biosource":
+                return "Biosample";
+            case "antibody":
+                return "Target";
+            default:
+                return rawName;
+        }
+    }
+
+
+    /**
+     * Return a friendly name for the track.
+     *
+     * Properties available in various sets
+     *   UCSC Encode:  path	cell	dataType	antibody	view	replicate	type	lab	hub
+     *   Encode:       Biosample	AssayType	Target	BioRep	TechRep	OutputType
+     *   4DN:          Type	Biosource	Assay	Replicate	Dataset Accession	Experiment	name
      *
      * @return
      */
     public String getTrackName(FileRecord record) {
 
         Map<String, String> attributes = record.getAttributes();
+        if (attributes.containsKey("name")) {
+            return attributes.get("name");
+        }
+        if(attributes.containsKey("Dataset")) {
+            return attributes.get("Dataset");
+        }
+
         StringBuffer sb = new StringBuffer();
-        if (attributes.containsKey("cell")) sb.append(attributes.get("cell") + " ");
-        if (attributes.containsKey("antibody")) sb.append(attributes.get("antibody") + " ");
-        if (attributes.containsKey("dataType")) sb.append(attributes.get("dataType") + " ");
-        if (attributes.containsKey("view")) sb.append(attributes.get("view") + " ");
-        if (attributes.containsKey("replicate")) sb.append("rep " + attributes.get("replicate"));
+        if (attributes.containsKey("cell")) sb.append(attributes.get("cell"));
+        else if (attributes.containsKey("Biosample")) sb.append(attributes.get("Biosample"));
+
+        if (attributes.containsKey("antibody")) sb.append(" " + attributes.get("antibody"));
+        else if (attributes.containsKey("Target")) sb.append(" " + attributes.get("Target"));
+
+        if (attributes.containsKey("dataType")) sb.append(" " + attributes.get("dataType"));
+        else if (attributes.containsKey("AssayType")) sb.append(" " + attributes.get("AssayType"));
+        else if (attributes.containsKey("Assay")) sb.append(" " + attributes.get("Assay"));
+
+        if (attributes.containsKey("view")) sb.append(" " + attributes.get("view"));
+        else if (attributes.containsKey("OutputType")) sb.append(" " + attributes.get("OutputType"));
 
         String trackName = sb.toString().trim();
         if (sb.length() == 0) {
