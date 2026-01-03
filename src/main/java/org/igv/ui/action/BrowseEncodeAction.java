@@ -205,15 +205,15 @@ public class BrowseEncodeAction extends MenuAction {
         if (attributes.containsKey("cell")) sb.append(attributes.get("cell"));
         else if (attributes.containsKey("Biosample")) sb.append(attributes.get("Biosample"));
 
-        if (attributes.containsKey("antibody")) sb.append(" " + attributes.get("antibody"));
-        else if (attributes.containsKey("Target")) sb.append(" " + attributes.get("Target"));
+        if (attributes.containsKey("antibody")) sb.append(" ").append(attributes.get("antibody"));
+        else if (attributes.containsKey("Target")) sb.append(" ").append(attributes.get("Target"));
 
-        if (attributes.containsKey("dataType")) sb.append(" " + attributes.get("dataType"));
-        else if (attributes.containsKey("AssayType")) sb.append(" " + attributes.get("AssayType"));
-        else if (attributes.containsKey("Assay")) sb.append(" " + attributes.get("Assay"));
+        if (attributes.containsKey("dataType")) sb.append(" ").append(attributes.get("dataType"));
+        else if (attributes.containsKey("AssayType")) sb.append(" ").append(attributes.get("AssayType"));
+        else if (attributes.containsKey("Assay")) sb.append(" ").append(attributes.get("Assay"));
 
-        if (attributes.containsKey("view")) sb.append(" " + attributes.get("view"));
-        else if (attributes.containsKey("OutputType")) sb.append(" " + attributes.get("OutputType"));
+        if (attributes.containsKey("view")) sb.append(" ").append(attributes.get("view"));
+        else if (attributes.containsKey("OutputType")) sb.append(" ").append(attributes.get("OutputType"));
 
         String trackName = sb.toString().trim();
         if (sb.length() == 0) {
