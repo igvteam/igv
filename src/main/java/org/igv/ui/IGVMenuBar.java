@@ -699,7 +699,7 @@ public class IGVMenuBar extends JMenuBar  {
                 otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
                 hubsMenu.add(otherSignalsItem);
 
-                if(EncodeTrackChooserFactory.hicSupportedUCSC(ucscId)) {
+                if (EncodeTrackChooserFactory.hicSupportedUCSC(ucscId)) {
                     JMenuItem hicSignalsItem = new JMenuItem();
                     hicSignalsItem.setAction(new BrowseEncodeAction("ENCODE Contact Maps ...", 0, BrowseEncodeAction.Type.HIC, igv));
                     hubsMenu.add(hicSignalsItem);
