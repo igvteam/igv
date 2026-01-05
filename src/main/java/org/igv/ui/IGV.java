@@ -17,7 +17,6 @@ import org.igv.batch.BatchRunner;
 import org.igv.batch.CommandListener;
 import org.igv.event.*;
 import org.igv.exceptions.DataLoadException;
-import org.igv.feature.Range;
 import org.igv.feature.RegionOfInterest;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.Genome;
@@ -31,9 +30,7 @@ import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesEditor;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
-import org.igv.sam.AlignmentTrackUtils;
 import org.igv.sam.InsertionSelectionEvent;
-import org.igv.sam.SortOption;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
@@ -2111,7 +2108,7 @@ public class IGV implements IGVEventObserver {
     public void revalidateTrackPanels() {
         UIUtilities.invokeOnEventThread(() -> {
             getMainPanel().revalidateTrackPanels();
-            repaint(rootPane);
+            repaint();
         });
     }
 
@@ -2135,36 +2132,55 @@ public class IGV implements IGVEventObserver {
         repaint();
     }
 
+    /**
+     * Repaint all visible tracks.
+     */
     public void repaint() {
-        repaint(contentPane);
-    }
-
-    public void repaint(Track track) {
-        this.repaint(contentPane, List.of(track));
-    }
-
-    public void repaint(Collection<? extends Track> tracks) {
-        this.repaint(contentPane, tracks);
-    }
-
-    private void repaint(final JComponent component) {
         Collection<Track> trackList = new ArrayList<>();
         for (TrackPanel tp : getTrackPanels()) {
             trackList.addAll(visibleTracks(tp.getDataPanelContainer()));
         }
-        repaint(component, trackList);
+        getAllTracks();
+        repaint(contentPane, trackList);
     }
 
-    private boolean isLoading = false;
-    private Collection<? extends Track> pending = null;
+    /**
+     * Repaint a collection of tracks.Rather than search for panels containing the tracks we paint the entire content
+     * pane.  In practice this is not significantly different from a full repaint(), but has the potential of
+     * being optimized.  Also, we only need to check and potentially load the specified tracks.
+     *
+     * @param tracks
+     */
+    public void repaint(Collection<? extends Track> tracks) {
+        this.repaint(contentPane, tracks);
+    }
+
+
+    /**
+     * Repaint a single track.  In practice this repaints the entire panel containing the track
+     *
+     * @param track
+     */
+    public void repaint(Track track) {
+        // Find the panel containing this track
+        for (TrackPanel tp : getTrackPanels()) {
+            if (tp.containsTrack(track)) {
+                this.repaint(tp, List.of(track));
+                return;
+            }
+        }
+    }
+
+
+    private volatile boolean isLoading = false;
+    private Set<Track> pendingTracks = null;
+    private final Object repaintLock = new Object();
 
     private void repaint(final JComponent component, Collection<? extends Track> trackList) {
 
         if (Globals.isBatch()) {
             // In batch mode everything is done synchronously on the event thread
             UIUtilities.invokeAndWaitOnEventThread(() -> {
-
-                CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
                     for (ReferenceFrame frame : FrameManager.getFrames()) {
                         for (Track track : trackList) {
@@ -2177,7 +2193,6 @@ public class IGV implements IGVEventObserver {
                     checkPanelLayouts();
                     component.paintImmediately(component.getBounds());
                 } finally {
-                    WaitCursorManager.removeWaitCursor(token);
                     synchronized (IGV.getInstance()) {
                         IGV.getInstance().notifyAll();
                     }
@@ -2186,13 +2201,20 @@ public class IGV implements IGVEventObserver {
 
         } else {
 
-            if (isLoading) {
-                // Track data is being loaded, do a repaint with existing data and mark this request for future execution
-                UIUtilities.invokeOnEventThread(contentPane::repaint);
-                pending = trackList;
-                return;
+            synchronized (repaintLock) {
+                if (isLoading) {
+                    // Track data is being loaded.  Paint the component with available data and queue these tracks for
+                    // the next repaint cycle
+                    UIUtilities.invokeOnEventThread(contentPane::repaint);
+                    if (pendingTracks == null) {
+                        pendingTracks = new HashSet<>();
+                    }
+                    pendingTracks.addAll(trackList);
+                    return;
+                }
             }
 
+            // Not currently loading
             // Find tracks that need loading (not ready to paint)
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             for (ReferenceFrame frame : FrameManager.getFrames()) {
@@ -2205,37 +2227,52 @@ public class IGV implements IGVEventObserver {
 
             if (futures.isEmpty()) {
                 // All tracks are ready to paint
+                Autoscaler.autoscale(getAllTracks());
                 UIUtilities.invokeOnEventThread(() -> {
-                    Autoscaler.autoscale(getAllTracks());
                     checkPanelLayouts();
                     component.repaint();
+
                 });
-            } else {
-                // One or more tracks require loading before repaint.
-                isLoading = true;
-                final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenCompleteAsync((ignored, ex) -> {
-                    WaitCursorManager.removeWaitCursor(token);
-                    isLoading = false;
-
-                    if (ex != null) {
-                        log.error("Error loading track data", ex);
-                    }
-
-                    // Autoscale as required, check layouts, and repaint.
-                    Autoscaler.autoscale(getAllTracks());
-                    UIUtilities.invokeOnEventThread(() -> {
-                        checkPanelLayouts();
-                        component.repaint();
-                        if (pending != null) {
-                            Collection<? extends Track> tmp = pending;
-                            pending = null;
-                            repaint(tmp);
-                        }
-                    });
-                }, SwingUtilities::invokeLater);
+                return;
             }
+
+
+            // One or more tracks require loading before repaint.
+            synchronized (repaintLock) {
+                isLoading = true;
+            }
+            final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((ignored, ex) -> {
+                WaitCursorManager.removeWaitCursor(token);
+
+                if (ex != null) {
+                    log.error("Error loading track data", ex);
+                }
+
+                // Collect pending tracks and reset state under lock
+                Set<Track> tracksToRepaint;
+                synchronized (repaintLock) {
+                    isLoading = false;
+                    tracksToRepaint = pendingTracks;
+                    pendingTracks = null;
+                }
+
+                // Autoscale (modifies track internal state, not UI)
+                Autoscaler.autoscale(getAllTracks());
+
+                // Check layouts and repaint on EDT
+                UIUtilities.invokeOnEventThread(() -> {
+                    checkPanelLayouts();
+                    if (tracksToRepaint != null && !tracksToRepaint.isEmpty()) {
+                        // Pending tracks exist - repaint will be called by the recursive invocation
+                        repaint(component, tracksToRepaint);
+                    } else {
+                        component.repaint();
+                    }
+                });
+            });
+
         }
     }
 
