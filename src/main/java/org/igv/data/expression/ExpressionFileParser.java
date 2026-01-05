@@ -10,7 +10,6 @@
  */
 package org.igv.data.expression;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.Globals;

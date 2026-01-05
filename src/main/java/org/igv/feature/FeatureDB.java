@@ -1,6 +1,5 @@
 package org.igv.feature;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import com.jidesoft.utils.SortedList;
 import htsjdk.tribble.Feature;

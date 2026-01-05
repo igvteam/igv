@@ -5,7 +5,6 @@ TCGA-02-0001-01C-01D-0183-04    1       74693652        75110251        37      
  */
 package org.igv.seg;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.Globals;
 import org.igv.feature.FeatureUtils;

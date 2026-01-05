@@ -8,7 +8,6 @@
 */
 package org.igv.track;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.feature.IGVFeature;

@@ -148,6 +148,15 @@ public class TrackPanel extends IGVPanel {
         return tracks;
     }
 
+    public boolean containsTrack(Track track) {
+        for (TrackGroup tg : trackGroups) {
+            if (tg.contains(track)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void clearTracks() {
 
         for (Track t : getTracks()) {

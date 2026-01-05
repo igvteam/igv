@@ -9,7 +9,6 @@
 
 package org.igv.feature;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.track.WindowFunction;
 

@@ -69,7 +69,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setAutoscrolls(true);
         setToolTipText("");
         painter = new DataPanelPainter();
-        setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
+
+        if(darkMode && !PreferencesManager.getPreferences().hasExplicitValue(Constants.BACKGROUND_COLOR)){
+            setBackground(UIManager.getColor("Panel.background"));
+        } else {
+            setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
+        }
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
@@ -101,26 +106,18 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
-    long lastPaintTime = 0;
-
     @Override
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
 
-        if(darkMode){
-            setBackground(UIManager.getColor("Panel.background"));
-        }
-
         RenderContext context = null;
         try {
-
-            lastPaintTime = System.currentTimeMillis();
 
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
             final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
-            Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
+            Graphics2D graphics2D = (Graphics2D) g;
 
             context = new RenderContext(this, graphics2D, frame, visibleRect);
 
@@ -143,10 +140,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             }
 
             drawAllRegions(g);
-
-
-            long dt = System.currentTimeMillis() - lastPaintTime;
-            PanTool.repaintTime(dt);
 
         } catch (Exception e) {
             MessageUtils.showMessage("Unexpected error repainting view.  See igv.log for details.");

@@ -1,10 +1,5 @@
-/*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
-*/
 package org.igv.renderer;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;

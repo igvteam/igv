@@ -1,6 +1,5 @@
 package org.igv.util;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import biz.source_code.base64Coder.Base64Coder;
 import org.igv.logging.*;

@@ -1,6 +1,5 @@
 package org.igv.sashimi;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
 import org.igv.Globals;
