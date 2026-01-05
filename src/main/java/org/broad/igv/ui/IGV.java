@@ -287,6 +287,16 @@ public class IGV implements IGVEventObserver {
 
         subscribeToEvents();
 
+        if ("true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG"))) {
+            javax.swing.Timer refreshTimer = new javax.swing.Timer(500, e -> {
+                for (Window w : Window.getWindows()) {
+                    if (w.isShowing()) {
+                        w.repaint();
+                    }
+                }
+            });
+            refreshTimer.start();
+        }
 
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
 
