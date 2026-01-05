@@ -1,6 +1,5 @@
 package org.igv.track;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.event.IGVEvent;
 import org.igv.logging.*;

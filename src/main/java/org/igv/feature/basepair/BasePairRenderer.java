@@ -1,6 +1,5 @@
 package org.igv.feature.basepair;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.feature.basepair.BasePairTrack.*;

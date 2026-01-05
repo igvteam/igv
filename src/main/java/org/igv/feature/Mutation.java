@@ -1,6 +1,5 @@
 package org.igv.feature;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.*;

@@ -1,6 +1,5 @@
 package org.igv.ui;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 
 import org.igv.ui.color.ColorUtilities;

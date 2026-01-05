@@ -8,7 +8,6 @@
  */
 package org.igv.ui.panel;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;

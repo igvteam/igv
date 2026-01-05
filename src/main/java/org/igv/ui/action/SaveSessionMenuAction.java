@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.igv.ui.action;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.DirectoryManager;
 import org.igv.logging.*;

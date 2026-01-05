@@ -1,6 +1,5 @@
 package org.igv.ui.action;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;

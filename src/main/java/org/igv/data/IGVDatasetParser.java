@@ -1,6 +1,5 @@
 package org.igv.data;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.logging.*;

@@ -1,6 +1,5 @@
 package org.igv.data;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.feature.LocusScore;
 import org.igv.track.WindowFunction;

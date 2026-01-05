@@ -1,12 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 
 package org.igv.ui.panel;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.sam.AlignmentTrack;

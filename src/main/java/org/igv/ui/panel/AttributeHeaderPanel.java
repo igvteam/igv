@@ -9,7 +9,6 @@
 
 package org.igv.ui.panel;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.Globals;
 import org.igv.prefs.Constants;

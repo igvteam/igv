@@ -1,6 +1,5 @@
 package org.igv.seg;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import htsjdk.tribble.readers.AsciiLineReader;
 import org.igv.Globals;

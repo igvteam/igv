@@ -1,6 +1,5 @@
 package org.igv.tools.parsers;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.Globals;

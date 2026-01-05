@@ -1,6 +1,5 @@
 package org.igv.maf;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

@@ -1,6 +1,5 @@
 package org.igv.blast;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.feature.BasicFeature;
 import org.igv.feature.Strand;

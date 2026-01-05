@@ -10,7 +10,6 @@
 
 package org.igv.renderer;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.igv.logging.*;
 import org.igv.Globals;
