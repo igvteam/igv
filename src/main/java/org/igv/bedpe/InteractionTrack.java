@@ -3,11 +3,14 @@ package org.igv.bedpe;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventObserver;
+import org.igv.hic.ContactMatrixView;
+import org.igv.hic.HicFile;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
@@ -505,6 +508,15 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     menu.add(normItem);
                 }
             }
+
+            JMenuItem mapItem = new JMenuItem("Open Contact Map in New Window");
+            mapItem.addActionListener(e -> {
+                ContinuousColorScale colorScale = this.getColorScale();
+                ReferenceFrame frame = te.getFrame() != null ? te.getFrame() : FrameManager.getDefaultFrame();
+                HicFile hicFile = ((HicSource) featureSource).getHicFile();
+                ContactMatrixView.showPopup(hicFile, frame, colorScale);
+            });
+            menu.add(mapItem);
 
         } else {
             menu.addSeparator();

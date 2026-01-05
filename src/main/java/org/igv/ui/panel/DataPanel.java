@@ -144,10 +144,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             drawAllRegions(g);
 
-
-            long dt = System.currentTimeMillis() - lastPaintTime;
-            PanTool.repaintTime(dt);
-
         } catch (Exception e) {
             MessageUtils.showMessage("Unexpected error repainting view.  See igv.log for details.");
             log.error("Error painting DataPanel", e);

@@ -305,6 +305,27 @@ public class HicFile {
         return wgResolution;
     }
 
+    public int getBinSize(String chr, double bpPerPixel) {
+
+        if ("all".equalsIgnoreCase(chr)) {
+            // Special case, the whole-genome psuedo-chromosome all has a single resolution
+            return this.getWGResolution();
+        }
+
+        // choose resolution
+        List<Integer> resolutions = this.getBpResolutions();
+        int index = 0;
+        for (int i = resolutions.size() - 1; i >= 0; i--) {
+            if (resolutions.get(i) >= bpPerPixel) {
+                index = i;
+                break;
+            }
+        }
+        int binSize = resolutions.get(index);
+        return binSize;
+
+    }
+
     private List<Block> getBlocks(Region region1, Region region2, String unit, int binSize) throws IOException {
         init();
         String chr1 = getFileChrName(region1.chr());
