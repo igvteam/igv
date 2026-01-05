@@ -70,6 +70,8 @@ import org.broad.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
@@ -131,7 +133,7 @@ public class IGV implements IGVEventObserver {
     /**
      * Timer for triggering periodic autosave of current session
      */
-    private Timer sessionAutosaveTimer = new Timer();
+    private java.util.Timer sessionAutosaveTimer = new java.util.Timer();
 
     // Misc state
     private Map<String, List<Track>> overlayTracksMap = new HashMap<>();
@@ -287,6 +289,16 @@ public class IGV implements IGVEventObserver {
 
         subscribeToEvents();
 
+        if ("true".equalsIgnoreCase(System.getenv("FORCE_SWING_DIALOG"))) {
+            javax.swing.Timer refreshTimer = new javax.swing.Timer(500, e -> {
+                for (Window w : Window.getWindows()) {
+                    if (w.isShowing()) {
+                        w.repaint();
+                    }
+                }
+            });
+            refreshTimer.start();
+        }
 
         // Start running periodic autosaves (unless the user has specified not to retain timed autosaves)
 
