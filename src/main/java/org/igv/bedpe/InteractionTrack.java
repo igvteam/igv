@@ -46,6 +46,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     enum ArcOption {ALL, ONE_END, BOTH_ENDS}
 
     static Map<String, String> normalizationLabels = new LinkedHashMap<>();
+
     static {
         normalizationLabels.put("NONE", "None");
         normalizationLabels.put("VC", "Coverage");
@@ -143,7 +144,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         }
     }
 
-
     protected boolean isShowFeatures(ReferenceFrame frame) {
 
         if (frame.getChrName().equals(Globals.CHR_ALL)) {
@@ -155,21 +155,20 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         }
     }
 
-
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
 
         LoadedInterval interval = loadedIntervalMap.get(frame);
-        return interval != null && interval.contains(frame.getChrName(),
+        final boolean b = interval != null && interval.contains(frame.getChrName(),
                 (int) frame.getOrigin(),
                 (int) frame.getEnd(),
-                (int) frame.getZoom(),
+                frame.getZoom(),
                 normalization);
+        return b;
     }
 
     @Override
     public void load(ReferenceFrame frame) {
-
         String chr = frame.getChrName();
         int start = (int) frame.getOrigin();
         int end = (int) frame.getEnd();
@@ -189,37 +188,59 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         }
     }
 
-
     @Override
     public void render(RenderContext context, Rectangle trackRectangle) {
+
 
         Graphics2D g2d = context.getGraphics();
         Rectangle clip = new Rectangle(g2d.getClip().getBounds());
         g2d.setClip(trackRectangle.intersection(clip.getBounds()));
         context.clearGraphicsCache();
 
-        if (!isShowFeatures(context.getReferenceFrame())) {
+        final ReferenceFrame referenceFrame = context.getReferenceFrame();
+        if (!isShowFeatures(referenceFrame)) {
             String message = "Zoom in to see features, or right-click to increase Feature Visibility Window.";
             GraphicUtils.drawCenteredText(message, trackRectangle, context.getGraphics());
             return;
         }
 
         try {
-            String chr = context.getReferenceFrame().getChrName();
+            String chr = referenceFrame.getChrName();
 
-            if (normalization != null && !normalization.equals("NONE") && !featureSource.hasNormalizationVector(normalization, chr, context.getScale())) {
-                normalization = "NONE";
+            if (normalization != null && !normalization.equals("NONE") &&
+                    !featureSource.hasNormalizationVector(normalization, chr, context.getScale())) {
                 String message = "Normalization '" + normalization + "' not available at this resolution. Switching normalization to 'NONE'.";
+                normalization = "NONE";
                 UIUtilities.invokeOnEventThread(() -> MessageUtils.showMessage(message));
             }
 
-            final LoadedInterval interval = loadedIntervalMap.get(context.getReferenceFrame());
+            final LoadedInterval interval = loadedIntervalMap.get(referenceFrame);
             if (interval == null) {
                 return;
             }
-            List<BedPE> features = interval.features();
 
-            if (features != null && !features.isEmpty()) {
+            List<BedPE> features = interval.features();
+            List<BedPE> filteredFeatures;
+            if (isHIC && interval.zoom < referenceFrame.getZoom()) {
+                // In hic mode we limit interactions to those in view plus a margin of one screen width to either side.
+                // If zooming in this means we have to filter the features from the previous zoom level that are outside
+                // of this range.  Not doing so leads to inconsistent rendering when loading for the current zoom
+                // completes and repaints.
+                int start = (int) referenceFrame.getOrigin();
+                int end = (int) referenceFrame.getEnd();
+                int w = (end - start);
+                int finalStart = start - w;
+                int finalEnd = end + w;
+                filteredFeatures = features.stream()
+                        .takeWhile(f -> f.getStart() <= finalEnd)
+                        .filter(f -> f.getEnd() >= finalStart)
+                        .toList();
+            } else {
+                filteredFeatures = features;
+            }
+
+
+            if (filteredFeatures != null && !filteredFeatures.isEmpty()) {
 
                 if (graphType == GraphType.PROPORTIONAL_ARC) {
                     if (autoscale || maxScore <= 0) {
@@ -228,17 +249,16 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     drawScale(context, trackRectangle);
                 }
 
-                renderers.get(graphType).render(features, context, trackRectangle, this.arcOption);
+                renderers.get(graphType).render(filteredFeatures, context, trackRectangle, this.arcOption);
             }
             if (showBlocks) {
-                renderers.get(GraphType.BLOCK).render(features, context, trackRectangle, this.arcOption);
+                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
             }
 
         } finally {
             context.clearGraphicsCache();
             g2d.setClip(clip);
         }
-
     }
 
     /**
@@ -569,9 +589,9 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (!autoscale) {
             element.setAttribute("maxScore", String.valueOf(maxScore));
         }
-        if(this.isHIC) {
+        if (this.isHIC) {
             String nviString = ((HicSource) featureSource).getNVIString();
-            if(nviString != null)   {
+            if (nviString != null) {
                 element.setAttribute("nvi", nviString);
             }
         }
@@ -607,7 +627,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (element.hasAttribute("transparency")) {
             this.transparency = Float.parseFloat(element.getAttribute("transparency"));
         }
-        if(element.hasAttribute("nvi"))   {
+        if (element.hasAttribute("nvi")) {
             String nviString = element.getAttribute("nvi");
             ((HicSource) featureSource).setNVIString(nviString);
         }
@@ -647,8 +667,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     }
 
 
-    public static record LoadedInterval(String chr, int start, int end, int zoom, String normalization,
-                                        List<BedPE> features) {
+    public record LoadedInterval(String chr, int start, int end, int zoom, String normalization,
+                                 List<BedPE> features) {
 
         String getKey() {
             return chr + "_" + start + "_" + end + "_" + zoom + "_" + normalization;

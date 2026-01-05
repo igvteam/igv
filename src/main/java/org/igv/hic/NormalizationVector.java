@@ -58,6 +58,9 @@ public class NormalizationVector {
     /**
      * Return values in range [start, end) as a double[].
      * Returns null if the underlying read fails.
+     * @param startBin
+     * @param endBin
+     * @return double[] Normalization values over the reqested range.  endBin is inclusive (included in the result).
      */
     public double[] getValues(int startBin, int endBin) throws IOException {
 
@@ -65,7 +68,7 @@ public class NormalizationVector {
         if (endBin > nValues) endBin = nValues;
         if (startBin >= endBin) return new double[0];
 
-        if (cache == null || startBin < cache.start || endBin > cache.end) {
+        if (cache == null || startBin < cache.start || endBin >= cache.end) {
             int adjustedStart = Math.max(0, startBin - 1000);
             int adjustedEnd = Math.min(nValues, endBin + 1000);
             int n = adjustedEnd - adjustedStart;
@@ -97,7 +100,7 @@ public class NormalizationVector {
         }
 
         int sliceStart = startBin - cache.start;
-        int sliceLength = endBin - startBin;
+        int sliceLength = Math.min(endBin - startBin + 1, cache.values.length - sliceStart);
         return Arrays.copyOfRange(cache.values, sliceStart, sliceStart + sliceLength);
     }
 
