@@ -264,7 +264,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
             }
             if(contactMapView != null && !FrameManager.isGeneListMode()) {
-                //contactMapView.setReferenceFrame(referenceFrame);
             }
 
         } finally {
