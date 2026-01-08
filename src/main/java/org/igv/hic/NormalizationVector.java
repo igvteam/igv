@@ -4,6 +4,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
@@ -55,6 +56,10 @@ public class NormalizationVector {
         this.cache = null;
     }
 
+    public int getnValues() {
+        return nValues;
+    }
+
     /**
      * Return values in range [start, end) as a double[].
      * Returns null if the underlying read fails.
@@ -87,6 +92,7 @@ public class NormalizationVector {
                 return null;
             }
             ByteBuffer buf = ByteBuffer.wrap(byteArray);
+            buf.order(ByteOrder.LITTLE_ENDIAN);
 
             double[] values = new double[n];
             for (int i = 0; i < n; i++) {

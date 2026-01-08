@@ -187,7 +187,10 @@ public class ReferenceFrame {
             computeLocationScale();
             computeZoom();
         }
+    }
 
+    public void setWidthInPixels(int widthInPixels) {
+        this.widthInPixels = widthInPixels;
     }
 
     /**
@@ -676,6 +679,10 @@ public class ReferenceFrame {
                 this.scale = (((double) getChromosomeLength()) / nPixel);
             }
         }
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 
     /**

@@ -133,6 +133,14 @@ public class NestedArcRenderer implements BedPERenderer{
 
                 }
             }
+
+            if(track.markerBounds != null) {
+                int l1 = (int) ((track.markerBounds[0] - origin) / locScale);
+                int l2 = (int) ((track.markerBounds[1] - origin) / locScale);
+                g.setColor(Color.black);
+                g.drawLine(l1, trackRectangle.y, l1, trackRectangle.y + trackRectangle.height - 1);
+                g.drawLine(l2, trackRectangle.y, l2, trackRectangle.y + trackRectangle.height - 1);
+            }
         } finally {
             if(g != null) g.dispose();
         }

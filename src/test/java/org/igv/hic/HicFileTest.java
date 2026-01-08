@@ -33,7 +33,7 @@ public class HicFileTest {
         Region region1 = new Region("chr1", 0, 249000000);
         Region region2 = new Region("chr1", 0, 249000000);
         int binSize = 250000;
-        List<ContactRecord> records = hicFile.getContactRecords(region1, region2, "BP", binSize, true);
+        List<ContactRecord> records = hicFile.getContactRecords(region1, region2, "BP", binSize, "NONE", true);
         assertEquals(396963, records.size());
     }
 
@@ -52,4 +52,5 @@ public class HicFileTest {
         String nvi = NVI.getNVI("https://4dn-open-data-public.s3.amazonaws.com/fourfront-webprod/wfoutput/e351f7cc-7a2c-4515-ae0b-3bb2f91c986a/4DNFIMIMLMD3.hic");
         assertEquals("240094740,25900", nvi);
     }
+
 }

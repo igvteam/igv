@@ -3,11 +3,13 @@ package org.igv.bedpe;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventObserver;
+import org.igv.hic.HicFile;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
@@ -76,9 +78,12 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     private Map<GraphType, BedPERenderer> renderers;
 
     private boolean isHIC;
+    ContactMapView contactMapView;
     float transparency = 1.0f;
     String normalization = "NONE";
     private int maxFeatureCount = 5000;
+
+    int[] markerBounds = null;
 
     transient Map<ReferenceFrame, List<BedPE>> lastRenderedFeatures = new HashMap<>();
 
@@ -142,6 +147,10 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 log.error("Illegal arc blocks option: " + blockString, e);
             }
         }
+    }
+
+    void setContactMapView(ContactMapView contactMapView) {
+        this.contactMapView = contactMapView;
     }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
@@ -253,6 +262,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             }
             if (showBlocks) {
                 renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
+            }
+            if(contactMapView != null && !FrameManager.isGeneListMode()) {
             }
 
         } finally {
@@ -499,12 +510,30 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     normItem.setSelected(type.equals(normalization));
                     normItem.addActionListener(e -> {
                         this.normalization = type;
+                        if(contactMapView != null) {
+                            contactMapView.setNormalization(type);
+                        }
                         InteractionTrack.this.repaint();
+
                     });
                     normGroup.add(normItem);
                     menu.add(normItem);
                 }
             }
+
+            menu.addSeparator();
+            JMenuItem mapItem = new JMenuItem("Open Contact Map View");
+            mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
+            mapItem.addActionListener(e -> {
+                ReferenceFrame frame = te.getFrame() != null ? te.getFrame() : FrameManager.getDefaultFrame();
+                if (contactMapView == null) {
+                    ContinuousColorScale colorScale = this.getColorScale();
+
+                    HicFile hicFile = ((HicSource) featureSource).getHicFile();
+                    ContactMapView.showPopup(this, hicFile, normalization, frame, colorScale.getMaxColor());
+                }
+            });
+            menu.add(mapItem);
 
         } else {
             menu.addSeparator();
@@ -664,6 +693,11 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             // Remove cached intervals for frames that are no longer present
             loadedIntervalMap.keySet().removeIf(f -> !frames.contains(f));
         }
+    }
+
+    public void setMarkerBounds(int[] markerBounds) {
+        this.markerBounds = markerBounds;
+        this.repaint();
     }
 
 

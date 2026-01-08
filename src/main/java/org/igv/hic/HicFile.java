@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Representation of a .hic file, with methods to access contact recrods and normalization vectors.
@@ -68,6 +71,10 @@ public class HicFile {
     private BlockCache blockCache = new BlockCache();
     private List<String> normalizationTypes = new ArrayList<>(Collections.singletonList("NONE"));
     private Long normExpectedValueVectorsPosition;
+
+    // Map to track pending block read requests to prevent duplicate I/O operations
+    // Key is the block key, value is a CompletableFuture that will complete when the block is loaded
+    private final Map<String, CompletableFuture<Block>> pendingBlockRequests = new ConcurrentHashMap<>();
 
 
     public HicFile(String path, Genome genome) throws IOException {
@@ -253,6 +260,7 @@ public class HicFile {
                                                  Region region2,
                                                  String units,
                                                  int binSize,
+                                                 String normalization,
                                                  boolean allRecords) throws IOException {
 
         int idx1 = chromosomeIndexMap.getOrDefault(getFileChrName(region1.chr()), -1);
@@ -274,12 +282,43 @@ public class HicFile {
         double y1 = (double) region2.start() / binSize;
         double y2 = (double) region2.end() / binSize;
 
+
+        boolean useNormalization = normalization != null && !"NONE".equals(normalization);
+        NormalizationVector nv = useNormalization ? getNormalizationVector(normalization, region1.chr(), "BP", binSize) : null;
+        if (nv == null) {
+            useNormalization = false;
+        }
+
+
         for (Block block : blocks) {
             if (block == null) continue;
 
+            double[] normVector = null;
+
+            // Compute binMin and binMax from block.records
+            int binMin = Integer.MAX_VALUE;
+            int binMax = Integer.MIN_VALUE;
+            if (useNormalization) {
+                for (ContactRecord rec : block.records) {
+                    binMin = Math.min(binMin, Math.min(rec.bin1(), rec.bin2()));
+                    binMax = Math.max(binMax, Math.max(rec.bin1(), rec.bin2()));
+                }
+                normVector = nv.getValues(binMin, binMax);
+            }
+
             for (ContactRecord rec : block.records) {
                 if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2) && rec.counts() > 1) {
-                    contactRecords.add(rec);
+                    if (normVector == null) {
+                        contactRecords.add(rec);
+                    } else {
+                        float value = rec.counts();
+                        double nvnv = normVector[rec.bin1() - binMin] * normVector[rec.bin2() - binMin];
+                        if (!Double.isNaN(nvnv)) {
+                            value /= nvnv;
+                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), value);
+                            contactRecords.add(normRec);
+                        } 
+                    }
                 }
             }
         }
@@ -305,6 +344,27 @@ public class HicFile {
         return wgResolution;
     }
 
+    public int getBinSize(String chr, double bpPerPixel) {
+
+        if ("all".equalsIgnoreCase(chr)) {
+            // Special case, the whole-genome psuedo-chromosome all has a single resolution
+            return this.getWGResolution();
+        }
+
+        // choose resolution
+        List<Integer> resolutions = this.getBpResolutions();
+        int index = 0;
+        for (int i = resolutions.size() - 1; i >= 0; i--) {
+            if (resolutions.get(i) >= bpPerPixel) {
+                index = i;
+                break;
+            }
+        }
+        int binSize = resolutions.get(index);
+        return binSize;
+
+    }
+
     private List<Block> getBlocks(Region region1, Region region2, String unit, int binSize) throws IOException {
         init();
         String chr1 = getFileChrName(region1.chr());
@@ -325,6 +385,7 @@ public class HicFile {
         List<Integer> blockNumbers = zd.getBlockNumbers(region1, region2, this.version);
         List<Block> blocks = new ArrayList<>();
         List<Integer> toQuery = new ArrayList<>();
+
         for (Integer num : blockNumbers) {
             String key = zd.getKey() + "_" + num;
             if (blockCache.has(binSize, key)) {
@@ -334,15 +395,64 @@ public class HicFile {
             }
         }
 
+        // Fetch blocks that aren't in cache, with deduplication for concurrent requests
         for (Integer bn : toQuery) {
-            Block b = readBlock(bn, zd);
-            if (b != null) {
-                blockCache.set(binSize, zd.getKey() + "_" + b.blockNumber, b);
-            }
-            blocks.add(b);
+            String key = zd.getKey() + "_" + bn;
+            Block block = getBlockWithDeduplication(key, bn, binSize, zd);
+            blocks.add(block);
         }
 
         return blocks;
+    }
+
+    /**
+     * Get a block with request deduplication. If another thread is already fetching the same block,
+     * this method will wait for that operation to complete and return the same result instead of
+     * initiating a redundant read.
+     */
+    private Block getBlockWithDeduplication(String key, int blockNumber, int binSize, MatrixZoomData zd) throws IOException {
+        // Double-check cache (in case another thread just added it)
+        if (blockCache.has(binSize, key)) {
+            return blockCache.get(binSize, key);
+        }
+
+        // Create a new future for this request
+        CompletableFuture<Block> newFuture = new CompletableFuture<>();
+
+        // Try to be the first to register this request
+        CompletableFuture<Block> existingFuture = pendingBlockRequests.putIfAbsent(key, newFuture);
+
+        if (existingFuture != null) {
+            // Another thread is already fetching this block - wait for its result
+            try {
+                return existingFuture.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while waiting for block data", e);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                }
+                throw new IOException("Error reading block", cause);
+            }
+        }
+
+        // This thread won the race - perform the actual read
+        try {
+            Block block = readBlock(blockNumber, zd);
+            if (block != null) {
+                blockCache.set(binSize, key, block);
+            }
+            newFuture.complete(block);
+            return block;
+        } catch (IOException e) {
+            newFuture.completeExceptionally(e);
+            throw e;
+        } finally {
+            // Clean up the pending request
+            pendingBlockRequests.remove(key);
+        }
     }
 
     private Block readBlock(int blockNumber, MatrixZoomData zd) throws IOException {

@@ -34,7 +34,7 @@ public class HicSource implements InteractionSource {
     @Override
     public List<BedPE> getFeatures(String chr, int start, int end, double bpPerPixel, String normalization, int maxFeatureCount) throws IOException {
 
-        final int binSize = getBinSize(chr, bpPerPixel);
+        final int binSize = hicFile.getBinSize(chr, bpPerPixel);
 
         List<ContactRecord> records = getRecords(chr, start, end, binSize);
 
@@ -159,26 +159,6 @@ public class HicSource implements InteractionSource {
         return features;
     }
 
-    private int getBinSize(String chr, double bpPerPixel) {
-
-        if("all".equalsIgnoreCase(chr)) {
-            // Special case, the whole-genome psuedo-chromosome all has a single resolution
-            return hicFile.getWGResolution();
-        }
-
-        // choose resolution
-        List<Integer> resolutions = hicFile.getBpResolutions();
-        int index = 0;
-        for (int i = resolutions.size() - 1; i >= 0; i--) {
-            if (resolutions.get(i) >= bpPerPixel) {
-                index = i;
-                break;
-            }
-        }
-        int binSize = resolutions.get(index);
-        return binSize;
-    }
-
     @Override
     public List<String> getNormalizationTypes() {
         return hicFile.getNormalizationTypes();
@@ -186,7 +166,7 @@ public class HicSource implements InteractionSource {
 
     @Override
     public boolean hasNormalizationVector(String type, String chr, double bpPerPixel) {
-        return hicFile.hasNormalizationVector(type, chr, "BP", getBinSize(chr, bpPerPixel));
+        return hicFile.hasNormalizationVector(type, chr, "BP", hicFile.getBinSize(chr, bpPerPixel));
     }
 
     /**
@@ -209,17 +189,18 @@ public class HicSource implements InteractionSource {
                 region1,
                 "BP",
                 binSize,
+                "NONE",
                 false
         );
 
         if(start > 0) {
             Region adjacent = new Region(chr, Math.max(0, start - (end - start)), start);
-            List<ContactRecord> adjacentRecords = hicFile.getContactRecords(region1, adjacent, "BP", binSize, false);
+            List<ContactRecord> adjacentRecords = hicFile.getContactRecords(region1, adjacent, "BP", binSize, "NONE", false);
             records.addAll(adjacentRecords);
         }
 
         Region adjacent2 = new Region(chr, end, end + (end - start));
-        List<ContactRecord> adjacentRecords2 = hicFile.getContactRecords(region1, adjacent2, "BP", binSize, false);
+        List<ContactRecord> adjacentRecords2 = hicFile.getContactRecords(region1, adjacent2, "BP", binSize, "NONE", false);
         records.addAll(adjacentRecords2);
 
         return records;
@@ -244,4 +225,7 @@ public class HicSource implements InteractionSource {
         hicFile.setNVIString(nviString);
     }
 
+    public HicFile getHicFile() {
+        return hicFile;
+    }
 }
