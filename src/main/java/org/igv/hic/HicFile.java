@@ -15,7 +15,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Representation of a .hic file, with methods to access contact recrods and normalization vectors.
@@ -71,8 +73,8 @@ public class HicFile {
     private Long normExpectedValueVectorsPosition;
 
     // Map to track pending block read requests to prevent duplicate I/O operations
-    // The value is the block key that's being fetched
-    private final Set<String> pendingBlockRequests = ConcurrentHashMap.newKeySet();
+    // Key is the block key, value is a CompletableFuture that will complete when the block is loaded
+    private final Map<String, CompletableFuture<Block>> pendingBlockRequests = new ConcurrentHashMap<>();
 
 
     public HicFile(String path, Genome genome) throws IOException {
@@ -315,9 +317,7 @@ public class HicFile {
                             value /= nvnv;
                             ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), value);
                             contactRecords.add(normRec);
-                        } else {
-                            System.out.println(rec.bin1() + " " + rec.bin2() + " " + value);
-                        }
+                        } 
                     }
                 }
             }
@@ -407,7 +407,7 @@ public class HicFile {
 
     /**
      * Get a block with request deduplication. If another thread is already fetching the same block,
-     * this method will wait for that operation to complete and then retrieve from cache instead of
+     * this method will wait for that operation to complete and return the same result instead of
      * initiating a redundant read.
      */
     private Block getBlockWithDeduplication(String key, int blockNumber, int binSize, MatrixZoomData zd) throws IOException {
@@ -416,44 +416,42 @@ public class HicFile {
             return blockCache.get(binSize, key);
         }
 
-        // Try to add to pending requests set
-        boolean isFetching = !pendingBlockRequests.add(key);
+        // Create a new future for this request
+        CompletableFuture<Block> newFuture = new CompletableFuture<>();
 
-        if (isFetching) {
-            // Another thread is fetching this block - wait for it
-            synchronized (pendingBlockRequests) {
-                // Wait until the other thread finishes (check cache periodically)
-                while (pendingBlockRequests.contains(key)) {
-                    try {
-                        pendingBlockRequests.wait(100); // Wait up to 100ms
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IOException("Interrupted while waiting for block data", e);
-                    }
+        // Try to be the first to register this request
+        CompletableFuture<Block> existingFuture = pendingBlockRequests.putIfAbsent(key, newFuture);
 
-                    // Check if block is now in cache
-                    if (blockCache.has(binSize, key)) {
-                        return blockCache.get(binSize, key);
-                    }
-                }
-                // If we get here, the other thread completed - check cache one final time
-                return blockCache.get(binSize, key);
-            }
-        } else {
-            // This thread won the race - perform the actual read
+        if (existingFuture != null) {
+            // Another thread is already fetching this block - wait for its result
             try {
-                Block block = readBlock(blockNumber, zd);
-                if (block != null) {
-                    blockCache.set(binSize, key, block);
+                return existingFuture.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted while waiting for block data", e);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
                 }
-                return block;
-            } finally {
-                // Remove from pending set and notify waiting threads
-                synchronized (pendingBlockRequests) {
-                    pendingBlockRequests.remove(key);
-                    pendingBlockRequests.notifyAll();
-                }
+                throw new IOException("Error reading block", cause);
             }
+        }
+
+        // This thread won the race - perform the actual read
+        try {
+            Block block = readBlock(blockNumber, zd);
+            if (block != null) {
+                blockCache.set(binSize, key, block);
+            }
+            newFuture.complete(block);
+            return block;
+        } catch (IOException e) {
+            newFuture.completeExceptionally(e);
+            throw e;
+        } finally {
+            // Clean up the pending request
+            pendingBlockRequests.remove(key);
         }
     }
 

@@ -219,10 +219,24 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
      * Shutdown the executor service. Should be called when the view is disposed.
      */
     public void dispose() {
+        // Cancel any pending fetch task
         if (currentFetchTask != null) {
             currentFetchTask.cancel(true);
         }
-        dataFetchExecutor.shutdownNow();
+
+        // Gracefully shutdown the executor
+        dataFetchExecutor.shutdown();
+        try {
+            // Wait up to 2 seconds for current task to complete
+            if (!dataFetchExecutor.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                // Force shutdown if task doesn't complete in time
+                dataFetchExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            // If interrupted while waiting, force shutdown
+            dataFetchExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
