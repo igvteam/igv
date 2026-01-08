@@ -372,6 +372,15 @@ public class ContinuousColorScale extends AbstractColorScale {
             posImage = createGradientImage(negColor, posColor);
         }
 
+        public void setMax(double max) {
+            this.max = max;
+            posImage = createGradientImage(minColor, maxColor);
+        }
+
+        public double getMax() {
+            return max;
+        }
+
         /**
          * Creates a gradient image given specified <CODE>Color</CODE>(s)
          *

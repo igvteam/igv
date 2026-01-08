@@ -2,6 +2,7 @@ package org.igv.hic;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class DynamicBlockIndex {
         if (boundsMax - boundsMin < chunkSize) {
             int len = (int) (boundsMax - boundsMin);
             ByteBuffer buf = ByteBuffer.allocate(len);
+            buf.order(ByteOrder.LITTLE_ENDIAN);
             fileChannel.read(buf, boundsMin);
             buf.flip();
 
@@ -84,6 +86,7 @@ public class DynamicBlockIndex {
         long nEntries = (boundsMax - boundsMin) / ENTRY_SIZE;
         long pos1 = boundsMin + (nEntries / 2) * ENTRY_SIZE;
         ByteBuffer buf = ByteBuffer.allocate((int) ENTRY_SIZE);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
         fileChannel.read(buf, pos1);
         buf.flip();
         int bn = buf.getInt();

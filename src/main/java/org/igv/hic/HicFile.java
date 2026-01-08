@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Representation of a .hic file, with methods to access contact recrods and normalization vectors.
@@ -68,6 +69,10 @@ public class HicFile {
     private BlockCache blockCache = new BlockCache();
     private List<String> normalizationTypes = new ArrayList<>(Collections.singletonList("NONE"));
     private Long normExpectedValueVectorsPosition;
+
+    // Map to track pending block read requests to prevent duplicate I/O operations
+    // The value is the block key that's being fetched
+    private final Set<String> pendingBlockRequests = ConcurrentHashMap.newKeySet();
 
 
     public HicFile(String path, Genome genome) throws IOException {
@@ -253,6 +258,7 @@ public class HicFile {
                                                  Region region2,
                                                  String units,
                                                  int binSize,
+                                                 String normalization,
                                                  boolean allRecords) throws IOException {
 
         int idx1 = chromosomeIndexMap.getOrDefault(getFileChrName(region1.chr()), -1);
@@ -274,12 +280,45 @@ public class HicFile {
         double y1 = (double) region2.start() / binSize;
         double y2 = (double) region2.end() / binSize;
 
+
+        boolean useNormalization = normalization != null && !"NONE".equals(normalization);
+        NormalizationVector nv = useNormalization ? getNormalizationVector(normalization, region1.chr(), "BP", binSize) : null;
+        if (nv == null) {
+            useNormalization = false;
+        }
+
+
         for (Block block : blocks) {
             if (block == null) continue;
 
+            double[] normVector = null;
+
+            // Compute binMin and binMax from block.records
+            int binMin = Integer.MAX_VALUE;
+            int binMax = Integer.MIN_VALUE;
+            if (useNormalization) {
+                for (ContactRecord rec : block.records) {
+                    binMin = Math.min(binMin, Math.min(rec.bin1(), rec.bin2()));
+                    binMax = Math.max(binMax, Math.max(rec.bin1(), rec.bin2()));
+                }
+                normVector = nv.getValues(binMin, binMax);
+            }
+
             for (ContactRecord rec : block.records) {
                 if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2) && rec.counts() > 1) {
-                    contactRecords.add(rec);
+                    if (normVector == null) {
+                        contactRecords.add(rec);
+                    } else {
+                        float value = rec.counts();
+                        double nvnv = normVector[rec.bin1() - binMin] * normVector[rec.bin2() - binMin];
+                        if (!Double.isNaN(nvnv)) {
+                            value /= nvnv;
+                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), value);
+                            contactRecords.add(normRec);
+                        } else {
+                            System.out.println(rec.bin1() + " " + rec.bin2() + " " + value);
+                        }
+                    }
                 }
             }
         }
@@ -346,6 +385,7 @@ public class HicFile {
         List<Integer> blockNumbers = zd.getBlockNumbers(region1, region2, this.version);
         List<Block> blocks = new ArrayList<>();
         List<Integer> toQuery = new ArrayList<>();
+
         for (Integer num : blockNumbers) {
             String key = zd.getKey() + "_" + num;
             if (blockCache.has(binSize, key)) {
@@ -355,15 +395,66 @@ public class HicFile {
             }
         }
 
+        // Fetch blocks that aren't in cache, with deduplication for concurrent requests
         for (Integer bn : toQuery) {
-            Block b = readBlock(bn, zd);
-            if (b != null) {
-                blockCache.set(binSize, zd.getKey() + "_" + b.blockNumber, b);
-            }
-            blocks.add(b);
+            String key = zd.getKey() + "_" + bn;
+            Block block = getBlockWithDeduplication(key, bn, binSize, zd);
+            blocks.add(block);
         }
 
         return blocks;
+    }
+
+    /**
+     * Get a block with request deduplication. If another thread is already fetching the same block,
+     * this method will wait for that operation to complete and then retrieve from cache instead of
+     * initiating a redundant read.
+     */
+    private Block getBlockWithDeduplication(String key, int blockNumber, int binSize, MatrixZoomData zd) throws IOException {
+        // Double-check cache (in case another thread just added it)
+        if (blockCache.has(binSize, key)) {
+            return blockCache.get(binSize, key);
+        }
+
+        // Try to add to pending requests set
+        boolean isFetching = !pendingBlockRequests.add(key);
+
+        if (isFetching) {
+            // Another thread is fetching this block - wait for it
+            synchronized (pendingBlockRequests) {
+                // Wait until the other thread finishes (check cache periodically)
+                while (pendingBlockRequests.contains(key)) {
+                    try {
+                        pendingBlockRequests.wait(100); // Wait up to 100ms
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("Interrupted while waiting for block data", e);
+                    }
+
+                    // Check if block is now in cache
+                    if (blockCache.has(binSize, key)) {
+                        return blockCache.get(binSize, key);
+                    }
+                }
+                // If we get here, the other thread completed - check cache one final time
+                return blockCache.get(binSize, key);
+            }
+        } else {
+            // This thread won the race - perform the actual read
+            try {
+                Block block = readBlock(blockNumber, zd);
+                if (block != null) {
+                    blockCache.set(binSize, key, block);
+                }
+                return block;
+            } finally {
+                // Remove from pending set and notify waiting threads
+                synchronized (pendingBlockRequests) {
+                    pendingBlockRequests.remove(key);
+                    pendingBlockRequests.notifyAll();
+                }
+            }
+        }
     }
 
     private Block readBlock(int blockNumber, MatrixZoomData zd) throws IOException {

@@ -189,17 +189,18 @@ public class HicSource implements InteractionSource {
                 region1,
                 "BP",
                 binSize,
+                "NONE",
                 false
         );
 
         if(start > 0) {
             Region adjacent = new Region(chr, Math.max(0, start - (end - start)), start);
-            List<ContactRecord> adjacentRecords = hicFile.getContactRecords(region1, adjacent, "BP", binSize, false);
+            List<ContactRecord> adjacentRecords = hicFile.getContactRecords(region1, adjacent, "BP", binSize, "NONE", false);
             records.addAll(adjacentRecords);
         }
 
         Region adjacent2 = new Region(chr, end, end + (end - start));
-        List<ContactRecord> adjacentRecords2 = hicFile.getContactRecords(region1, adjacent2, "BP", binSize, false);
+        List<ContactRecord> adjacentRecords2 = hicFile.getContactRecords(region1, adjacent2, "BP", binSize, "NONE", false);
         records.addAll(adjacentRecords2);
 
         return records;
