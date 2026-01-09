@@ -109,22 +109,23 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 track.setMarkerBounds(new int[]{coordX, coordY});
 
                 // Lookup a contact record for these bins (or the transpose) and update tooltip
-                if (cachedRecords != null) {
-                    final int searchBin1 = binX;
-                    final int searchBin2 = binY;
-                    ContactRecord found = cachedRecords.stream()
-                            .filter(r -> (r.bin1() == searchBin1 && r.bin2() == searchBin2) ||
-                                    (r.bin1() == searchBin2 && r.bin2() == searchBin1))
-                            .findFirst()
-                            .orElse(null);
-                    if (found != null) {
-                        setToolTipText(String.format("Counts: %d   Normalized Counts: %.2f", (int) found.counts(), found.normCounts()));
-                    } else {
-                        setToolTipText(null);
-                    }
-                } else {
-                    setToolTipText(null);
-                }
+                // Disabled for performance reasons, revist with a better algorithm
+//                if (cachedRecords != null) {
+//                    final int searchBin1 = binX;
+//                    final int searchBin2 = binY;
+//                    ContactRecord found = cachedRecords.stream()
+//                            .filter(r -> (r.bin1() == searchBin1 && r.bin2() == searchBin2) ||
+//                                    (r.bin1() == searchBin2 && r.bin2() == searchBin1))
+//                            .findFirst()
+//                            .orElse(null);
+//                    if (found != null) {
+//                        setToolTipText(String.format("Counts: %d   Normalized Counts: %.2f", (int) found.counts(), found.normCounts()));
+//                    } else {
+//                        setToolTipText(null);
+//                    }
+//                } else {
+//                    setToolTipText(null);
+//                }
 
                 //String tooltip = String.format("Bin1: %d (Coord: %d), Bin2: %d (Coord: %d)", binX, coordX, binY, coordY);
                 //setToolTipText(tooltip);
@@ -202,7 +203,14 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         final String fetchCacheKey = newCacheKey;
 
         // Threshold on contact records.
-        int countThreshold = getCountThreshold(binSize);
+        int countThreshold;
+        if (chrName.equalsIgnoreCase("all")) {
+            // For "all" chromosomes, scale bin size by 1000x to reduce data volume
+            countThreshold = 100;
+        } else {
+            countThreshold = getCountThreshold(binSize);
+        }
+
 
         currentFetchTask = dataFetchExecutor.submit(() -> {
             try {
@@ -780,25 +788,31 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
      * Format bin size for display (e.g., 1000 -> "1 kb", 1000000 -> "1 Mb")
      * Avoids using fractional kb values (e.g., "200 bp" instead of "0.2 kb")
      */
-    private static String formatBinSize(int binSize) {
-        if (binSize >= 1000000) {
+    private String formatBinSize(int binSize) {
+
+        int actualBinSize = binSize;
+        if (frame.getChrName().equalsIgnoreCase("all")) {
+            actualBinSize *= 1000;
+        }
+
+        if (actualBinSize >= 1000000) {
             // Format Mb - remove decimal if it's a whole number
-            double mb = binSize / 1000000.0;
+            double mb = actualBinSize / 1000000.0;
             if (mb == Math.floor(mb)) {
                 return String.format("%d Mb", (int) mb);
             } else {
                 return String.format("%.1f Mb", mb);
             }
-        } else if (binSize >= 1000) {
+        } else if (actualBinSize >= 1000) {
             // Format kb - only use kb if >= 1 kb, remove decimal if it's a whole number
-            double kb = binSize / 1000.0;
+            double kb = actualBinSize / 1000.0;
             if (kb == Math.floor(kb)) {
                 return String.format("%d kb", (int) kb);
             } else {
                 return String.format("%.1f kb", kb);
             }
         } else {
-            return binSize + " bp";
+            return actualBinSize + " bp";
         }
     }
 
@@ -830,16 +844,22 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 .sorted()
                 .collect(Collectors.toList());
 
-        if (counts.isEmpty()) {
-            return 10; //no records pass the filter.  Highly unlikely
+        double percentile;
+        if (frame.getChrName().equalsIgnoreCase("all")) {
+            percentile = 0.98;
+        } else if (binSize < 1000) {
+            percentile = 0.0;
+        } else if (binSize <= 10000) {
+            percentile = 0.9;
+        } else {
+            percentile = 0.8;
         }
 
-        int index = (int) Math.ceil(.98 * counts.size()) - 1;
+        int index = (int) Math.ceil(percentile * (counts.size() - 1));
         float midCount = counts.get(index);
-
-        // Update slider range based on min and max of filtered counts
         float minCount = counts.get(0);
         float maxCount = 4 * midCount;
+
         this.sliderMinValue = minCount;
         this.sliderMaxValue = maxCount;
 
