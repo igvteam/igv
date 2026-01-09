@@ -262,6 +262,17 @@ public class HicFile {
                                                  int binSize,
                                                  String normalization,
                                                  boolean allRecords) throws IOException {
+        return this.getContactRecords(region1, region2, units, binSize, normalization, allRecords, 1);
+
+    }
+
+    public List<ContactRecord> getContactRecords(Region region1,
+                                                 Region region2,
+                                                 String units,
+                                                 int binSize,
+                                                 String normalization,
+                                                 boolean allRecords,
+                                                 int countsTreshold) throws IOException {
 
         int idx1 = chromosomeIndexMap.getOrDefault(getFileChrName(region1.chr()), -1);
         int idx2 = chromosomeIndexMap.getOrDefault(getFileChrName(region2.chr()), -1);
@@ -307,7 +318,7 @@ public class HicFile {
             }
 
             for (ContactRecord rec : block.records) {
-                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2) && rec.counts() > 1) {
+                if ((allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2)) && rec.counts() > countsTreshold) {
                     if (normVector == null) {
                         contactRecords.add(rec);
                     } else {

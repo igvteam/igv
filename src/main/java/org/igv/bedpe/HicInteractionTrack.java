@@ -79,7 +79,7 @@ public class HicInteractionTrack extends InteractionTrack {
         }
 
         menu.addSeparator();
-        JMenuItem mapItem = new JMenuItem("Open Contact Map View");
+        JMenuItem mapItem = new JMenuItem("Contact Map View...");
         mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
         mapItem.addActionListener(e -> {
             ReferenceFrame frame = te.getFrame() != null ? te.getFrame() : FrameManager.getDefaultFrame();

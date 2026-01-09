@@ -31,6 +31,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
     private HicFile hicFile;
     private String normalization;
     private Color color;
+    private Color backgroundColor;  // Background color for the contact map, based on light/dark mode
     private Map<String, ContinuousColorScale> colorScaleCache = new HashMap<>();  // Key: "normalization_binSize", computed once per combination
     private ReferenceFrame frame;  // Current genomic region frame (dynamic)
     private int binSize; // Bin size for the current genomic region (dynamic)
@@ -68,6 +69,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         this.normalization = normalization;
         this.frame = frame;
         this.color = color;
+        this.backgroundColor = Globals.isDarkMode() ? Color.BLACK : Color.WHITE;
         binSize = hicFile.getBinSize(frame.getChrName(), frame.getScale());
         startBin = (int) (frame.getOrigin() / binSize);
 
@@ -199,6 +201,9 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         final int currentBinSize = binSize;
         final String fetchCacheKey = newCacheKey;
 
+        // Threshold on contact records.
+        int countThreshold = getCountThreshold(binSize);
+
         currentFetchTask = dataFetchExecutor.submit(() -> {
             try {
                 Region region = new Region(chrName, origin, end);
@@ -208,7 +213,8 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                         "BP",
                         currentBinSize,
                         normalization,
-                        true
+                        true,
+                        countThreshold
                 );
 
                 // Update cache on EDT to avoid race conditions
@@ -237,6 +243,20 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 });
             }
         });
+    }
+
+    /**
+     * Determine count threshold based on bin size. Larger bin sizes get higher thresholds to reduce noise.
+     * Linear mapping: binSize 5000 → 0, binSize 250000 → 10, everything above 250000 → 10
+     *
+     * @param binSize
+     * @return
+     */
+    private static int getCountThreshold(int binSize) {
+        if (binSize <= 5000) return 0;
+        if (binSize >= 250000) return 10;
+        // Linear interpolation: threshold = (binSize - 5000) * 10 / (250000 - 5000)
+        return (int) Math.round((binSize - 5000) * 10.0 / 245000.0);
     }
 
     /**
@@ -456,6 +476,12 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
 
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
+        // Fill the entire image with the background color (lowerColor)
+        Graphics2D g2d = img.createGraphics();
+        g2d.setColor(backgroundColor);
+        g2d.fillRect(0, 0, width, height);
+        g2d.dispose();
+
         // Calculate scale factor for rendering
         double scaleFactor = (double) width / nBins;
 
@@ -467,8 +493,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         if (colorScale == null) {
             // Compute initial color scale from the current data
             double upper = initializeColorScale(cachedRecords);
-            Color lowerColor = Globals.isDarkMode() ? Color.BLACK : Color.WHITE;
-            colorScale = new ContinuousColorScale(0, upper, lowerColor, color);
+            colorScale = new ContinuousColorScale(0, upper, backgroundColor, color);
             colorScaleCache.put(colorScaleKey, colorScale);
 
             // Update text field and slider position for the new color scale
@@ -599,16 +624,16 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         this.maxSlider.setAlignmentY(Component.CENTER_ALIGNMENT);
         this.maxSlider.setToolTipText(String.format("Range: %.2f - %.2f", sliderMinValue, sliderMaxValue));
         this.maxSlider.addChangeListener(e -> {
-                // Map slider value (0-100) to actual range (sliderMinValue to sliderMaxValue)
-                double value = sliderMinValue + (sliderMaxValue - sliderMinValue) * this.maxSlider.getValue() / 100.0;
-                this.maxField.setText(String.format("%.2f", value));
+            // Map slider value (0-100) to actual range (sliderMinValue to sliderMaxValue)
+            double value = sliderMinValue + (sliderMaxValue - sliderMinValue) * this.maxSlider.getValue() / 100.0;
+            this.maxField.setText(String.format("%.2f", value));
 
-                // Update tooltip to show current value
-                this.maxSlider.setToolTipText(String.format("Value: %.2f (Range: %.2f - %.2f)",
-                        value, sliderMinValue, sliderMaxValue));
+            // Update tooltip to show current value
+            this.maxSlider.setToolTipText(String.format("Value: %.2f (Range: %.2f - %.2f)",
+                    value, sliderMinValue, sliderMaxValue));
 
-                // Throttled update of the color scale to avoid excessive updates while dragging
-                applySliderValueThrottled(value);
+            // Throttled update of the color scale to avoid excessive updates while dragging
+            applySliderValueThrottled(value);
         });
         controlPanel.add(this.maxSlider);
 
