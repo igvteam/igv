@@ -1,6 +1,7 @@
 package org.igv.session;
 
 import org.igv.Globals;
+import org.igv.bedpe.HicInteractionTrack;
 import org.igv.bedpe.InteractionTrack;
 import org.igv.data.CombinedDataSource;
 import org.igv.feature.Locus;
@@ -1088,6 +1089,8 @@ public class IGVSessionReader implements SessionReader {
             return new MotifTrack();
         } else if (className.contains("GisticTrack")) {
             return new GisticTrack();
+        } else if (className.contains("HicInteractionTrack")) {
+            return new HicInteractionTrack();
         } else if (className.contains("InteractionTrack")) {
             return new InteractionTrack();
         } else if (className.contains("MergedTracks")) {

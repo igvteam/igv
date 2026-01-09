@@ -311,13 +311,12 @@ public class HicFile {
                     if (normVector == null) {
                         contactRecords.add(rec);
                     } else {
-                        float value = rec.counts();
                         double nvnv = normVector[rec.bin1() - binMin] * normVector[rec.bin2() - binMin];
                         if (!Double.isNaN(nvnv)) {
-                            value /= nvnv;
-                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), value);
+                            float normCounts = (float) (rec.counts() / nvnv);
+                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), rec.counts(), normCounts);
                             contactRecords.add(normRec);
-                        } 
+                        }
                     }
                 }
             }

@@ -31,8 +31,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
     private HicFile hicFile;
     private String normalization;
     private Color color;
-    private Map<String, ContinuousColorScale> colorScaleCache = new HashMap<>();  // Key: "normalization_binSize"
-    private Map<String, String> colorScaleDataKeys = new HashMap<>();  // Tracks which data cache key was used for each color scale
+    private Map<String, ContinuousColorScale> colorScaleCache = new HashMap<>();  // Key: "normalization_binSize", computed once per combination
     private ReferenceFrame frame;  // Current genomic region frame (dynamic)
     private int binSize; // Bin size for the current genomic region (dynamic)
     private int startBin; // Start bin for the current genomic region (dynamic)
@@ -117,7 +116,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                             .findFirst()
                             .orElse(null);
                     if (found != null) {
-                        setToolTipText(String.format("Counts: %.2f", found.counts()));
+                        setToolTipText(String.format("Counts: %d   Normalized Counts: %.2f", (int) found.counts(), found.normCounts()));
                     } else {
                         setToolTipText(null);
                     }
@@ -463,43 +462,18 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         String colorScaleKey = getColorScaleCacheKey();
         ContinuousColorScale colorScale = colorScaleCache.get(colorScaleKey);
 
-        // Check if the cached records match the current view parameters
-        // If they don't, we have stale data and shouldn't compute a new color scale yet
-        String currentCacheKey = generateCacheKey();
-        boolean dataMatchesCurrentView = currentCacheKey.equals(dataCacheKey);
-
-        // Check if this color scale was computed from the current data
-        String colorScaleDataKey = colorScaleDataKeys.get(colorScaleKey);
-        boolean colorScaleNeedsUpdate = colorScale == null || !currentCacheKey.equals(colorScaleDataKey);
-
-        // We need to compute/recompute the color scale if:
-        // 1. No color scale exists for this key, OR
-        // 2. The color scale exists but was computed from different data
-        if (dataMatchesCurrentView && colorScaleNeedsUpdate) {
-            // We have fresh data and need to compute/update color scale from it
-            // First, compute the percentile and update slider range
+        // Create a color scale for this binSize + normalization combination if one doesn't exist.
+        // Once created, it persists and is only modified by user edits through the control panel.
+        if (colorScale == null) {
+            // Compute initial color scale from the current data
             double upper = initializeColorScale(cachedRecords);
+            Color lowerColor = Globals.isDarkMode() ? Color.BLACK : Color.WHITE;
+            colorScale = new ContinuousColorScale(0, upper, lowerColor, color);
+            colorScaleCache.put(colorScaleKey, colorScale);
 
-            if (colorScale == null) {
-                // Create new color scale
-                Color lowerColor = Globals.isDarkMode() ? Color.BLACK : Color.WHITE;
-                colorScale = new ContinuousColorScale(0, upper, lowerColor, color);
-                colorScaleCache.put(colorScaleKey, colorScale);
-            } else {
-                // Update existing color scale with new max value
-                colorScale.setPosEnd(upper);
-            }
-
-            // Track that this color scale was computed from the current data
-            colorScaleDataKeys.put(colorScaleKey, currentCacheKey);
-
-            // Now update text field and slider position based on the new color scale
+            // Update text field and slider position for the new color scale
             maxField.setText(String.format("%.2f", colorScale.getMaximum()));
             updateSliderFromValue(colorScale.getMaximum());
-        } else if (colorScale == null) {
-            // We don't have fresh data and no color scale exists
-            // Just return null and wait for fresh data
-            return null;
         }
 
 
@@ -513,7 +487,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
             int y = (int) (binY * scaleFactor);
 
             if (x >= 0 && y >= 0) {
-                Color color = colorScale.getColor(record.counts());
+                Color color = colorScale.getColor(record.normCounts());
 
                 // Calculate the size of each scaled bin
                 int pixelSize = Math.max(1, (int) Math.ceil(scaleFactor));
@@ -826,10 +800,8 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
             return 10; // no records
         }
 
-        // Filter records close to the diagonal
         List<Float> counts = contactRecords.stream()
-                .filter(record -> Math.abs(record.bin2() - record.bin1()) > 2)
-                .map(ContactRecord::counts)
+                .map(ContactRecord::normCounts)
                 .sorted()
                 .collect(Collectors.toList());
 
@@ -842,7 +814,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
 
         // Update slider range based on min and max of filtered counts
         float minCount = counts.get(0);
-        float maxCount = 2 * midCount;
+        float maxCount = 4 * midCount;
         this.sliderMinValue = minCount;
         this.sliderMaxValue = maxCount;
 
