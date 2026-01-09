@@ -33,7 +33,7 @@ public class HicFileTest {
         Region region1 = new Region("chr1", 0, 249000000);
         Region region2 = new Region("chr1", 0, 249000000);
         int binSize = 250000;
-        List<ContactRecord> records = hicFile.getContactRecords(region1, region2, "BP", binSize, "NONE", true);
+        List<ContactRecord> records = hicFile.getContactRecords(region1, region2, "BP", binSize, "NONE", true, 0);
         assertEquals(396963, records.size());
     }
 
