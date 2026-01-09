@@ -512,7 +512,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
             int y = (int) (binY * scaleFactor);
 
             if (x >= 0 && y >= 0) {
-                Color color = colorScale.getColor(record.normCounts());
+                Color featureColor = colorScale.getColor(record.normCounts());
 
                 // Calculate the size of each scaled bin
                 int pixelSize = Math.max(1, (int) Math.ceil(scaleFactor));
@@ -521,11 +521,11 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 for (int dx = 0; dx < pixelSize && (x + dx) < width; dx++) {
                     for (int dy = 0; dy < pixelSize && (y + dy) < height; dy++) {
                         if ((x + dx) < width && (y + dy) < height) {
-                            img.setRGB(x + dx, y + dy, color.getRGB());
+                            img.setRGB(x + dx, y + dy, featureColor.getRGB());
                         }
                         // Mirror for symmetry
                         if ((y + dx) < width && (x + dy) < height) {
-                            img.setRGB(y + dx, x + dy, color.getRGB());
+                            img.setRGB(y + dx, x + dy, featureColor.getRGB());
                         }
                     }
                 }
