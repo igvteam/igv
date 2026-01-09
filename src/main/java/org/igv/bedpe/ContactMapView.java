@@ -40,8 +40,15 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
     private RulerPanel rulerPanel;  // Reference to ruler panel for synchronized updates
     private JTextField maxField;
     private JSlider maxSlider;
+    private JLabel binSizeLabel;  // Display for current bin size
     private double sliderMinValue = 0;
     private double sliderMaxValue = 100;
+
+    // Throttle fields for slider updates: ensure color-scale updates occur at most once every 100 ms
+    private final Object sliderThrottleLock = new Object();
+    private volatile long lastSliderApplyTime = 0;
+    private javax.swing.Timer sliderThrottleTimer = null;
+    private volatile double pendingSliderValue = Double.NaN;
 
     // Cached data for rendering
     private volatile List<ContactRecord> cachedRecords;
@@ -99,6 +106,24 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 int coordX = binX * binSize + binSize / 2;
                 int coordY = binY * binSize + binSize / 2;
                 track.setMarkerBounds(new int[]{coordX, coordY});
+
+                // Lookup a contact record for these bins (or the transpose) and update tooltip
+                if (cachedRecords != null) {
+                    final int searchBin1 = binX;
+                    final int searchBin2 = binY;
+                    ContactRecord found = cachedRecords.stream()
+                            .filter(r -> (r.bin1() == searchBin1 && r.bin2() == searchBin2) ||
+                                    (r.bin1() == searchBin2 && r.bin2() == searchBin1))
+                            .findFirst()
+                            .orElse(null);
+                    if (found != null) {
+                        setToolTipText(String.format("Counts: %.2f", found.counts()));
+                    } else {
+                        setToolTipText(null);
+                    }
+                } else {
+                    setToolTipText(null);
+                }
 
                 //String tooltip = String.format("Bin1: %d (Coord: %d), Bin2: %d (Coord: %d)", binX, coordX, binY, coordY);
                 //setToolTipText(tooltip);
@@ -275,6 +300,11 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         this.frame = new ReferenceFrame(newFrame);
         binSize = newBinSize;
 
+        // Update bin size label display
+        if (binSizeLabel != null) {
+            binSizeLabel.setText(formatBinSize(binSize));
+        }
+
         // Calculate how many bins are needed to span the requested genomic range
         int genomicSpan = (int) (newFrame.getEnd() - newFrame.getOrigin());
         int requestedNBins = (int) Math.ceil((double) genomicSpan / binSize);
@@ -448,7 +478,7 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         if (dataMatchesCurrentView && colorScaleNeedsUpdate) {
             // We have fresh data and need to compute/update color scale from it
             // First, compute the percentile and update slider range
-            double upper = computePercentileOnly(cachedRecords, .5);
+            double upper = initializeColorScale(cachedRecords);
 
             if (colorScale == null) {
                 // Create new color scale
@@ -576,20 +606,25 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
      * This panel can be extended with additional controls in the future.
      */
     private JPanel createControlPanel() {
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
         controlPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Label for max value
         JLabel maxLabel = new JLabel("Color Scale Max:");
+        maxLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
         controlPanel.add(maxLabel);
+
+        controlPanel.add(Box.createHorizontalStrut(5));
 
         // Slider for max value - instance variable for this view
         // Initial range 0-100, will be updated dynamically
         this.maxSlider = new JSlider(0, 100, 50);
-        this.maxSlider.setPreferredSize(new Dimension(200, 25));
+        this.maxSlider.setPreferredSize(new Dimension(133, 25));
+        this.maxSlider.setMaximumSize(new Dimension(133, 25));
+        this.maxSlider.setAlignmentY(Component.CENTER_ALIGNMENT);
         this.maxSlider.setToolTipText(String.format("Range: %.2f - %.2f", sliderMinValue, sliderMaxValue));
         this.maxSlider.addChangeListener(e -> {
-            if (!this.maxSlider.getValueIsAdjusting()) {
                 // Map slider value (0-100) to actual range (sliderMinValue to sliderMaxValue)
                 double value = sliderMinValue + (sliderMaxValue - sliderMinValue) * this.maxSlider.getValue() / 100.0;
                 this.maxField.setText(String.format("%.2f", value));
@@ -598,19 +633,17 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
                 this.maxSlider.setToolTipText(String.format("Value: %.2f (Range: %.2f - %.2f)",
                         value, sliderMinValue, sliderMaxValue));
 
-                // Update the color scale
-                String colorScaleKey = getColorScaleCacheKey();
-                ContinuousColorScale colorScale = this.colorScaleCache.get(colorScaleKey);
-                if (colorScale != null) {
-                    colorScale.setPosEnd(value);
-                    this.repaint();
-                }
-            }
+                // Throttled update of the color scale to avoid excessive updates while dragging
+                applySliderValueThrottled(value);
         });
         controlPanel.add(this.maxSlider);
 
+        controlPanel.add(Box.createHorizontalStrut(5));
+
         // Text field for max value - instance variable for this view
-        this.maxField = new JTextField("10", 10);
+        this.maxField = new JTextField("10", 6);
+        this.maxField.setMaximumSize(this.maxField.getPreferredSize());
+        this.maxField.setAlignmentY(Component.CENTER_ALIGNMENT);
         this.maxField.addActionListener(e -> {
             try {
                 double newMax = Double.parseDouble(this.maxField.getText().trim());
@@ -634,8 +667,11 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         });
         controlPanel.add(this.maxField);
 
+        controlPanel.add(Box.createHorizontalStrut(5));
+
         // Apply button
         JButton applyButton = new JButton("Apply");
+        applyButton.setAlignmentY(Component.CENTER_ALIGNMENT);
         applyButton.addActionListener(e -> {
             try {
                 String colorScaleKey = getColorScaleCacheKey();
@@ -659,6 +695,14 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
             }
         });
         controlPanel.add(applyButton);
+
+        // Add glue to push bin size label to the right
+        controlPanel.add(Box.createHorizontalGlue());
+
+        // Bin size label - right-justified
+        this.binSizeLabel = new JLabel(formatBinSize(binSize));
+        this.binSizeLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+        controlPanel.add(this.binSizeLabel);
 
         return controlPanel;
     }
@@ -686,28 +730,74 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
     }
 
     /**
-     * Update the slider range based on min and max values from the filtered data.
+     * Throttled application of the slider value to the color scale.
+     * Ensures updates occur at most once every 100 milliseconds.
      */
-    private void updateSliderRange(double minValue, double maxValue) {
-        this.sliderMinValue = minValue;
-        this.sliderMaxValue = maxValue;
-
-        // Update slider position to maintain current value if possible
-        String colorScaleKey = getColorScaleCacheKey();
-        ContinuousColorScale colorScale = this.colorScaleCache.get(colorScaleKey);
-        if (colorScale != null) {
-            updateSliderFromValue(colorScale.getMaximum());
+    private void applySliderValueThrottled(double value) {
+        final long THROTTLE_MS = 100;
+        synchronized (sliderThrottleLock) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - lastSliderApplyTime;
+            if (elapsed >= THROTTLE_MS) {
+                // Apply immediately
+                lastSliderApplyTime = now;
+                SwingUtilities.invokeLater(() -> applySliderValue(value));
+            } else {
+                // Schedule the latest pending value to run after the remaining delay
+                pendingSliderValue = value;
+                int delay = (int) Math.max(1, (THROTTLE_MS - elapsed));
+                if (sliderThrottleTimer != null && sliderThrottleTimer.isRunning()) {
+                    sliderThrottleTimer.stop();
+                }
+                sliderThrottleTimer = new javax.swing.Timer(delay, e -> {
+                    double v;
+                    synchronized (sliderThrottleLock) {
+                        v = pendingSliderValue;
+                        pendingSliderValue = Double.NaN;
+                        lastSliderApplyTime = System.currentTimeMillis();
+                    }
+                    applySliderValue(v);
+                });
+                sliderThrottleTimer.setRepeats(false);
+                sliderThrottleTimer.start();
+            }
         }
     }
 
     /**
+     * Apply the slider value to the current color scale and repaint. Must be called on EDT.
+     */
+    private void applySliderValue(double value) {
+        String colorScaleKey = getColorScaleCacheKey();
+        ContinuousColorScale colorScale = this.colorScaleCache.get(colorScaleKey);
+        if (colorScale != null) {
+            colorScale.setPosEnd(value);
+            this.repaint();
+        }
+    }
+
+
+    /**
      * Format bin size for display (e.g., 1000 -> "1 kb", 1000000 -> "1 Mb")
+     * Avoids using fractional kb values (e.g., "200 bp" instead of "0.2 kb")
      */
     private static String formatBinSize(int binSize) {
         if (binSize >= 1000000) {
-            return String.format("%.1f Mb", binSize / 1000000.0);
+            // Format Mb - remove decimal if it's a whole number
+            double mb = binSize / 1000000.0;
+            if (mb == Math.floor(mb)) {
+                return String.format("%d Mb", (int) mb);
+            } else {
+                return String.format("%.1f Mb", mb);
+            }
         } else if (binSize >= 1000) {
-            return String.format("%.1f kb", binSize / 1000.0);
+            // Format kb - only use kb if >= 1 kb, remove decimal if it's a whole number
+            double kb = binSize / 1000.0;
+            if (kb == Math.floor(kb)) {
+                return String.format("%d kb", (int) kb);
+            } else {
+                return String.format("%.1f kb", kb);
+            }
         } else {
             return binSize + " bp";
         }
@@ -731,23 +821,23 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
      *
      * @return the percentile value, or -1 if contactRecords is empty
      */
-    private double computePercentileOnly(List<ContactRecord> contactRecords, double percentile) {
+    private double initializeColorScale(List<ContactRecord> contactRecords) {
         if (contactRecords == null || contactRecords.isEmpty()) {
-            return -1; // Return -1 if there are no records
+            return 10; // no records
         }
 
-        // Filter records where Math.abs(bin2 - bin1) < 5
+        // Filter records close to the diagonal
         List<Float> counts = contactRecords.stream()
-                .filter(record -> Math.abs(record.bin2() - record.bin1()) < 5)
+                .filter(record -> Math.abs(record.bin2() - record.bin1()) > 2)
                 .map(ContactRecord::counts)
                 .sorted()
                 .collect(Collectors.toList());
 
         if (counts.isEmpty()) {
-            return -1; // Return -1 if no records pass the filter
+            return 10; //no records pass the filter.  Highly unlikely
         }
 
-        int index = (int) Math.ceil(percentile * counts.size()) - 1;
+        int index = (int) Math.ceil(.98 * counts.size()) - 1;
         float midCount = counts.get(index);
 
         // Update slider range based on min and max of filtered counts
@@ -755,7 +845,6 @@ public class ContactMapView extends JPanel implements IGVEventObserver {
         float maxCount = 2 * midCount;
         this.sliderMinValue = minCount;
         this.sliderMaxValue = maxCount;
-
 
         return midCount;
     }

@@ -79,7 +79,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
     private boolean isHIC;
     ContactMapView contactMapView;
-    float transparency = 1.0f;
+    float transparency = 0.1f;
     String normalization = "NONE";
     private int maxFeatureCount = 5000;
 
@@ -110,10 +110,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (isHIC) {
             graphType = GraphType.NESTED_ARC;
             useScore = true;
-            transparency = 0.1f;
             this.setColor(Color.red);
         } else {
-
             String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
             if (typeString != null) {
                 try {
