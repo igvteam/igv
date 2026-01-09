@@ -62,26 +62,25 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         normalizationLabels.put("GW_KR", "Genome-wide Balanced");
     }
 
-    private InteractionSource featureSource;
+    protected InteractionSource featureSource;
     private JCheckBoxMenuItem autoscaleCB;
     private JMenuItem maxScoreItem;
 
     InteractionTrack.Direction direction = UP; //DOWN;
-    GraphType graphType;  // GraphType.block; //
+    protected GraphType graphType;  // GraphType.block; //
     private ArcOption arcOption = ArcOption.ALL;
     int thickness = 1;
     boolean autoscale = true;
     double maxScore = -1;
     int gap = 5;
     boolean showBlocks = false;
-    boolean useScore = false;
+    protected boolean useScore = false;
     private Map<GraphType, BedPERenderer> renderers;
 
-    private boolean isHIC;
     ContactMapView contactMapView;
-    float transparency = 1.0f;
-    String normalization = "NONE";
-    private int maxFeatureCount = 5000;
+    float transparency = 0.1f;
+    protected String normalization = "NONE";
+    protected int maxFeatureCount = 20000;
 
     int[] markerBounds = null;
 
@@ -106,25 +105,16 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         renderers.put(GraphType.PROPORTIONAL_ARC, new ProportionalArcRenderer(this));
         renderers.put(GraphType.BLOCK, new PEBlockRenderer(this));
 
-        this.isHIC = "hic".equals(locator.getFormat());
-        if (isHIC) {
-            graphType = GraphType.NESTED_ARC;
-            useScore = true;
-            transparency = 0.1f;
-            this.setColor(Color.red);
-        } else {
-
-            String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
-            if (typeString != null) {
-                try {
-                    graphType = GraphType.valueOf(typeString);
-                } catch (IllegalArgumentException e) {
-                    log.error("Illegal graph type: " + typeString, e);
-                    graphType = GraphType.NESTED_ARC; // default
-                }
-            } else {
-                graphType = GraphType.PROPORTIONAL_ARC;
+        String typeString = PreferencesManager.getPreferences().get(Constants.ARC_TYPE);
+        if (typeString != null) {
+            try {
+                graphType = GraphType.valueOf(typeString);
+            } catch (IllegalArgumentException e) {
+                log.error("Illegal graph type: " + typeString, e);
+                graphType = GraphType.NESTED_ARC; // default
             }
+        } else {
+            graphType = GraphType.PROPORTIONAL_ARC;
         }
 
         String directionString = PreferencesManager.getPreferences().get(Constants.ARC_DIRECTION);
@@ -229,24 +219,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             }
 
             List<BedPE> features = interval.features();
-            List<BedPE> filteredFeatures;
-            if (isHIC && interval.zoom < referenceFrame.getZoom()) {
-                // In hic mode we limit interactions to those in view plus a margin of one screen width to either side.
-                // If zooming in this means we have to filter the features from the previous zoom level that are outside
-                // of this range.  Not doing so leads to inconsistent rendering when loading for the current zoom
-                // completes and repaints.
-                int start = (int) referenceFrame.getOrigin();
-                int end = (int) referenceFrame.getEnd();
-                int w = (end - start);
-                int finalStart = start - w;
-                int finalEnd = end + w;
-                filteredFeatures = features.stream()
-                        .takeWhile(f -> f.getStart() <= finalEnd)
-                        .filter(f -> f.getEnd() >= finalStart)
-                        .toList();
-            } else {
-                filteredFeatures = features;
-            }
+            List<BedPE> filteredFeatures = filterFeaturesForZoom(features, interval, referenceFrame);
 
 
             if (filteredFeatures != null && !filteredFeatures.isEmpty()) {
@@ -263,7 +236,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             if (showBlocks) {
                 renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
             }
-            if(contactMapView != null && !FrameManager.isGeneListMode()) {
+            if (contactMapView != null && !FrameManager.isGeneListMode()) {
             }
 
         } finally {
@@ -311,6 +284,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         return maxScore;
     }
 
+    /**
+     * Hook method for subclasses to filter features based on zoom level.
+     * Default implementation returns features unchanged.
+     */
+    protected List<BedPE> filterFeaturesForZoom(List<BedPE> features, LoadedInterval interval, ReferenceFrame referenceFrame) {
+        return features;
+    }
+
 
     @Override
     public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
@@ -327,7 +308,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
 
-        if (!this.isHIC) {
+        if (supportsGraphTypeSelection()) {
             menu.addSeparator();
             menu.add(new JLabel("<html><b>Graph Type</b>"));
             //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
@@ -382,7 +363,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(showBlocksCB);
 
-        if (!isHIC) {
+        if (supportsAutoscaleMenu()) {
             menu.addSeparator();
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
@@ -469,73 +450,38 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(transparencyItem);
 
-        if (isHIC) {
-            final JMenuItem maxFeatureCountItem = new JMenuItem("Set Max Feature Count...");
-            maxFeatureCountItem.addActionListener(e -> {
-                final JSlider slider = new JSlider(1000, 20000, InteractionTrack.this.maxFeatureCount);
-                slider.setMajorTickSpacing(5000);
-                slider.setPaintTicks(true);
 
-                final JLabel valueLabel = new JLabel(String.valueOf(InteractionTrack.this.maxFeatureCount));
+        final JMenuItem maxFeatureCountItem = new JMenuItem("Set Maximum Feature Count...");
+        maxFeatureCountItem.addActionListener(e -> {
+            final JSlider slider = new JSlider(1000, 20000, InteractionTrack.this.maxFeatureCount);
+            slider.setMajorTickSpacing(5000);
+            slider.setPaintTicks(true);
 
-                slider.addChangeListener(changeEvent -> {
-                    JSlider source = (JSlider) changeEvent.getSource();
-                    int value = source.getValue();
-                    InteractionTrack.this.maxFeatureCount = value;
-                    valueLabel.setText(String.valueOf(value));
-                    InteractionTrack.this.loadedIntervalMap.clear();
-                    InteractionTrack.this.repaint();
-                });
+            final JLabel valueLabel = new JLabel(String.valueOf(InteractionTrack.this.maxFeatureCount));
 
-                JPanel panel = new JPanel(new BorderLayout());
-                panel.add(slider, BorderLayout.CENTER);
-                panel.add(valueLabel, BorderLayout.SOUTH);
-
-                final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-                JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+            slider.addChangeListener(changeEvent -> {
+                JSlider source = (JSlider) changeEvent.getSource();
+                int value = source.getValue();
+                InteractionTrack.this.maxFeatureCount = value;
+                valueLabel.setText(String.valueOf(value));
+                InteractionTrack.this.loadedIntervalMap.clear();
+                InteractionTrack.this.repaint();
             });
-            menu.add(maxFeatureCountItem);
-        }
 
-        // Add normalization options for HiC tracks
-        if (isHIC) {
-            List<String> normalizationTypes = featureSource.getNormalizationTypes();
-            if (normalizationTypes != null && normalizationTypes.size() > 1) {
-                menu.addSeparator();
-                menu.add(new JLabel("<html><b>Normalization</b>"));
-                ButtonGroup normGroup = new ButtonGroup();
-                for (String type : normalizationTypes) {
-                    String label = normalizationLabels.getOrDefault(type, type);
-                    JRadioButtonMenuItem normItem = new JRadioButtonMenuItem(label);
-                    normItem.setSelected(type.equals(normalization));
-                    normItem.addActionListener(e -> {
-                        this.normalization = type;
-                        if(contactMapView != null) {
-                            contactMapView.setNormalization(type);
-                        }
-                        InteractionTrack.this.repaint();
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(slider, BorderLayout.CENTER);
+            panel.add(valueLabel, BorderLayout.SOUTH);
 
-                    });
-                    normGroup.add(normItem);
-                    menu.add(normItem);
-                }
-            }
+            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+            JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+        });
+        menu.add(maxFeatureCountItem);
 
-            menu.addSeparator();
-            JMenuItem mapItem = new JMenuItem("Open Contact Map View");
-            mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
-            mapItem.addActionListener(e -> {
-                ReferenceFrame frame = te.getFrame() != null ? te.getFrame() : FrameManager.getDefaultFrame();
-                if (contactMapView == null) {
-                    ContinuousColorScale colorScale = this.getColorScale();
 
-                    HicFile hicFile = ((HicSource) featureSource).getHicFile();
-                    ContactMapView.showPopup(this, hicFile, normalization, frame, colorScale.getMaxColor());
-                }
-            });
-            menu.add(mapItem);
+        // Hook for subclass-specific menu items (e.g., HiC normalization options)
+        addFormatSpecificMenuItems(menu, te);
 
-        } else {
+        if (supportsFeatureWindowMenu()) {
             menu.addSeparator();
             menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
         }
@@ -543,7 +489,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         // Experimental JBrowse.
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
                 CircularViewUtilities.ping() &&
-                !isHIC) {
+                supportsCircularView()) {
             menu.addSeparator();
             JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
             circViewItem.addActionListener(e -> {
@@ -563,6 +509,42 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     private void setGraphType(GraphType value) {
         // TODO adjust height
         this.graphType = value;
+    }
+
+    /**
+     * Hook method for subclasses to add format-specific menu items.
+     * Default implementation does nothing.
+     */
+    protected void addFormatSpecificMenuItems(IGVPopupMenu menu, TrackClickEvent te) {
+        // Default: no additional menu items
+    }
+
+    /**
+     * Hook method for subclasses to indicate if graph type selection is supported.
+     */
+    protected boolean supportsGraphTypeSelection() {
+        return true;
+    }
+
+    /**
+     * Hook method for subclasses to indicate if circular view is supported.
+     */
+    protected boolean supportsCircularView() {
+        return true;
+    }
+
+    /**
+     * Hook method for subclasses to indicate if autoscale menu is supported.
+     */
+    protected boolean supportsAutoscaleMenu() {
+        return true;
+    }
+
+    /**
+     * Hook method for subclasses to indicate if feature window menu is supported.
+     */
+    protected boolean supportsFeatureWindowMenu() {
+        return true;
     }
 
     @Override
@@ -618,12 +600,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         if (!autoscale) {
             element.setAttribute("maxScore", String.valueOf(maxScore));
         }
-        if (this.isHIC) {
-            String nviString = ((HicSource) featureSource).getNVIString();
-            if (nviString != null) {
-                element.setAttribute("nvi", nviString);
-            }
-        }
 
     }
 
@@ -655,10 +631,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         }
         if (element.hasAttribute("transparency")) {
             this.transparency = Float.parseFloat(element.getAttribute("transparency"));
-        }
-        if (element.hasAttribute("nvi")) {
-            String nviString = element.getAttribute("nvi");
-            ((HicSource) featureSource).setNVIString(nviString);
         }
     }
 

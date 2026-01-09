@@ -412,19 +412,17 @@ public class TrackLoader {
 
         String format = locator.getFormat();
 
-        InteractionSource source;
         if("hic".equals(format)) {
-            source = new HicSource(locator.getPath(),  genome);
+            HicSource source = new HicSource(locator.getPath(), genome);
+            newTracks.add(new HicInteractionTrack(locator, source));
         } else {
             List<BedPE> features = "interact".equals(format) ?
                     InteractParser.parse(locator, genome) :
                     BedPEParser.parse(locator, genome);
             BedPESource featureSource = new BedPESource(features, genome);
-            source = new WrappedInteractionSource(featureSource);
+            InteractionSource source = new WrappedInteractionSource(featureSource);
+            newTracks.add(new InteractionTrack(locator, source));
         }
-
-
-        newTracks.add(new InteractionTrack(locator, source));
     }
 
     private void loadClusterFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

@@ -7,7 +7,10 @@ import org.igv.hic.NormalizationVector;
 import org.igv.hic.Region;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -36,7 +39,7 @@ public class HicSource implements InteractionSource {
 
         final int binSize = hicFile.getBinSize(chr, bpPerPixel);
 
-        List<ContactRecord> records = getRecords(chr, start, end, binSize);
+        List<ContactRecord> records = getRecords(chr, start, end, binSize, normalization);
 
         if (records.isEmpty()) {
             return Collections.emptyList();
@@ -52,7 +55,7 @@ public class HicSource implements InteractionSource {
             int b1 = rec.bin1();
             int b2 = rec.bin2();
             if (Math.abs(b1 - b2) > this.binThreshold) {
-                values.add(rec.counts());
+                values.add(rec.normCounts());
             }
             if (b1 < binMin) binMin = b1;
             if (b2 < binMin) binMin = b2;
@@ -60,7 +63,7 @@ public class HicSource implements InteractionSource {
             if (b2 > binMax) binMax = b2;
         }
 
-        if(values.isEmpty()) {
+        if (values.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -78,7 +81,7 @@ public class HicSource implements InteractionSource {
             int bin2 = rec.bin2();
             if (Math.abs(bin1 - bin2) <= this.binThreshold) continue;
 
-            float counts = rec.counts();
+            float counts = rec.normCounts();
             if (counts > threshold) {
                 significantRecords.add(rec);
             } else if (counts == threshold) {
@@ -107,48 +110,17 @@ public class HicSource implements InteractionSource {
             }
         }
 
-        double[] normVector = null;
-        boolean useNormalization = normalization != null && !"NONE".equals(normalization);
-        if (useNormalization) {
-            NormalizationVector nv = hicFile.getNormalizationVector(normalization, chr, "BP", binSize);
-            if (nv == null) {
-                useNormalization = false;
-            } else {
-                normVector = nv.getValues(binMin, binMax);
-                if (normVector == null) {
-                    useNormalization = false;
-                }
-            }
-        }
-
         // Convert contact records to features
         List<BedPE> features = new ArrayList<>();
         String c = getChromosomeNameFromGenome(chr);
         for (ContactRecord rec : significantRecords) {
 
-            int bin1 = rec.bin1();
-            int bin2 = rec.bin2();
-            float value = rec.counts();
-            if (useNormalization) {
-                double nvnv = 1;
-                try {
-                    nvnv = normVector[bin1 - binMin] * normVector[bin2 - binMin];
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                if (!Double.isNaN(nvnv)) {
-                    value /= nvnv;
-                } else {
-                    continue;
-                }
-            }
-
-            int start1 = bin1 * binSize;
+            int start1 = rec.bin1() * binSize;
             int end1 = start1 + binSize;
-            int start2 = bin2 * binSize;
+            int start2 = rec.bin2() * binSize;
             int end2 = start2 + binSize;
 
-            HicFeature f = new HicFeature(c, start1, end1, c, start2, end2, rec.counts(), value);
+            HicFeature f = new HicFeature(c, start1, end1, c, start2, end2, rec.counts(), rec.normCounts());
             int score = (max > min) ? (int) Math.round(200 + Math.min(Math.max((f.getValue() - min) / (max - min), 0), 1) * 600) : 800;
             f.setScore(score);
             features.add(f);
@@ -181,7 +153,7 @@ public class HicSource implements InteractionSource {
      * @return
      * @throws IOException
      */
-    private List<ContactRecord> getRecords(String chr, int start, int end, int binSize) throws IOException {
+    private List<ContactRecord> getRecords(String chr, int start, int end, int binSize, String normalization) throws IOException {
 
         final Region region1 = new Region(chr, start, end);
         List<ContactRecord> records = hicFile.getContactRecords(
@@ -189,11 +161,11 @@ public class HicSource implements InteractionSource {
                 region1,
                 "BP",
                 binSize,
-                "NONE",
+                normalization,
                 false
         );
 
-        if(start > 0) {
+        if (start > 0) {
             Region adjacent = new Region(chr, Math.max(0, start - (end - start)), start);
             List<ContactRecord> adjacentRecords = hicFile.getContactRecords(region1, adjacent, "BP", binSize, "NONE", false);
             records.addAll(adjacentRecords);

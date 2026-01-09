@@ -262,6 +262,17 @@ public class HicFile {
                                                  int binSize,
                                                  String normalization,
                                                  boolean allRecords) throws IOException {
+        return this.getContactRecords(region1, region2, units, binSize, normalization, allRecords, 1);
+
+    }
+
+    public List<ContactRecord> getContactRecords(Region region1,
+                                                 Region region2,
+                                                 String units,
+                                                 int binSize,
+                                                 String normalization,
+                                                 boolean allRecords,
+                                                 int countsThreshold) throws IOException {
 
         int idx1 = chromosomeIndexMap.getOrDefault(getFileChrName(region1.chr()), -1);
         int idx2 = chromosomeIndexMap.getOrDefault(getFileChrName(region2.chr()), -1);
@@ -307,17 +318,16 @@ public class HicFile {
             }
 
             for (ContactRecord rec : block.records) {
-                if (allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2) && rec.counts() > 1) {
+                if ((allRecords || (rec.bin1() >= x1 && rec.bin1() < x2 && rec.bin2() >= y1 && rec.bin2() < y2)) && rec.counts() > countsThreshold) {
                     if (normVector == null) {
                         contactRecords.add(rec);
                     } else {
-                        float value = rec.counts();
                         double nvnv = normVector[rec.bin1() - binMin] * normVector[rec.bin2() - binMin];
                         if (!Double.isNaN(nvnv)) {
-                            value /= nvnv;
-                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), value);
+                            float normCounts = (float) (rec.counts() / nvnv);
+                            ContactRecord normRec = new ContactRecord(rec.bin1(), rec.bin2(), rec.counts(), normCounts);
                             contactRecords.add(normRec);
-                        } 
+                        }
                     }
                 }
             }

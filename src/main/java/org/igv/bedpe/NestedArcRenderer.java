@@ -10,10 +10,13 @@ import java.util.Map;
 
 import static org.igv.bedpe.InteractionTrack.Direction.UP;
 
-public class NestedArcRenderer implements BedPERenderer{
+public class NestedArcRenderer implements BedPERenderer {
 
 
     private Map<String, Color> alphaColors = new HashMap<>();
+
+    // Default track color to use when track.getColor() returns null
+    private static final Color DEFAULT_TRACK_COLOR = Color.blue;
 
     InteractionTrack track;
     double theta = Math.toRadians(45);
@@ -37,7 +40,7 @@ public class NestedArcRenderer implements BedPERenderer{
             g = (Graphics2D) context.getGraphics().create();
             double origin = context.getOrigin();
             double locScale = context.getScale();
-            Color trackColor = track.getColor();
+            Color trackColor = track.getColor() == null ? DEFAULT_TRACK_COLOR : track.getColor();
             int gap = track.gap;
 
             if (track.thickness > 1) {
@@ -75,16 +78,17 @@ public class NestedArcRenderer implements BedPERenderer{
                     if (bedPE.isSameChr()) {
 
                         BedPE feature = bedPE;
-                        Color fcolor = feature.getColor() == null ? trackColor : feature.getColor();
 
                         double pixelStart = (feature.getMidStart() - origin) / locScale;
                         double pixelEnd = (feature.getMidEnd() - origin) / locScale;
 
                         // Optionally filter arcs with one or both ends out of view
-                        if(arcOption == InteractionTrack.ArcOption.ONE_END) {
-                            if(pixelStart < trackRectangle.x && pixelEnd > trackRectangle.x + trackRectangle.width) continue;
-                        } else if(arcOption == InteractionTrack.ArcOption.BOTH_ENDS) {
-                            if(pixelStart < trackRectangle.x || pixelEnd > trackRectangle.x + trackRectangle.width) continue;
+                        if (arcOption == InteractionTrack.ArcOption.ONE_END) {
+                            if (pixelStart < trackRectangle.x && pixelEnd > trackRectangle.x + trackRectangle.width)
+                                continue;
+                        } else if (arcOption == InteractionTrack.ArcOption.BOTH_ENDS) {
+                            if (pixelStart < trackRectangle.x || pixelEnd > trackRectangle.x + trackRectangle.width)
+                                continue;
                         }
 
                         int w = (int) (pixelEnd - pixelStart);
@@ -94,16 +98,14 @@ public class NestedArcRenderer implements BedPERenderer{
                         }
 
 
-                        if (fcolor != null && w > trackRectangle.width && !track.useScore) {
-                            fcolor = getAlphaColor(fcolor, 0.1f);
-                        } else if (track.useScore) {
-                            float alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
-                            fcolor = getAlphaColor(fcolor, alpha);
+                        Color fcolor = feature.getColor() == null ? trackColor : feature.getColor();
+                        float alpha = track.transparency;
+                        if (track.useScore) {
+                            alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
                         }
+                        fcolor = getAlphaColor(fcolor, alpha);
+                        g.setColor(fcolor);
 
-                        if (fcolor != null) {
-                            g.setColor(fcolor);
-                        }
                         final int trackBaseLine = trackRectangle.y + trackRectangle.height;
 
                         double a = w / 2;
@@ -134,7 +136,7 @@ public class NestedArcRenderer implements BedPERenderer{
                 }
             }
 
-            if(track.markerBounds != null) {
+            if (track.markerBounds != null) {
                 int l1 = (int) ((track.markerBounds[0] - origin) / locScale);
                 int l2 = (int) ((track.markerBounds[1] - origin) / locScale);
                 g.setColor(Color.black);
@@ -142,7 +144,7 @@ public class NestedArcRenderer implements BedPERenderer{
                 g.drawLine(l2, trackRectangle.y, l2, trackRectangle.y + trackRectangle.height - 1);
             }
         } finally {
-            if(g != null) g.dispose();
+            if (g != null) g.dispose();
         }
     }
 
@@ -215,7 +217,7 @@ public class NestedArcRenderer implements BedPERenderer{
 
             double dx = x - xc;
             double dy = y - yc;
-            double dist = Math.sqrt(dx*dx + dy*dy);
+            double dist = Math.sqrt(dx * dx + dy * dy);
             return Math.abs(r - dist) <= 3;
         }
     }
