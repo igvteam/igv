@@ -1,5 +1,6 @@
 package org.igv.feature;
 
+import htsjdk.samtools.util.CoordMath;
 import org.igv.track.WindowFunction;
 
 /**
@@ -21,6 +22,10 @@ public interface LocusScore extends htsjdk.tribble.Feature {
      */
     default String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return "";
+    }
+
+    default int getLengthOnReference() {
+        return getEnd() - getStart();
     }
 
 }
