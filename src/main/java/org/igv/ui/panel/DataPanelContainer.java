@@ -5,6 +5,7 @@ import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.session.SessionReader;
 import org.igv.track.TrackGroup;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -191,8 +192,14 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     List<File> files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
                     if (files != null && files.size() > 0) {
-                        List<ResourceLocator> locators = ResourceLocator.getLocators(files);
-                        igv.loadTracks(locators, panel);
+                        // Check if this is a single session file
+                        if (files.size() == 1 && SessionReader.isSessionFile(files.get(0).getAbsolutePath())) {
+                            String sessionPath = files.get(0).getAbsolutePath();
+                            LongRunningTask.submit(() -> igv.loadSession(sessionPath, null));
+                        } else {
+                            List<ResourceLocator> locators = ResourceLocator.getLocators(files);
+                            igv.loadTracks(locators, panel);
+                        }
                     }
                 } else if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
@@ -206,6 +213,8 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                                 MessageUtils.showMessage("Error loading track hub: " + e.getMessage());
                             }
                         });
+                    } else if (SessionReader.isSessionFile(obj)) {
+                        LongRunningTask.submit(() -> igv.loadSession(obj, null));
                     } else {
                         igv.loadTracks(Collections.singletonList(new ResourceLocator(obj)), panel);
                     }
