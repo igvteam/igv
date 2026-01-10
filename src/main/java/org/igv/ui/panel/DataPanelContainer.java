@@ -1,7 +1,6 @@
 package org.igv.ui.panel;
 
 import org.igv.Globals;
-import org.igv.exceptions.DataLoadException;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
@@ -21,9 +20,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -189,34 +186,28 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
             DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
             MessageCollection messages = new MessageCollection();
+            final IGV igv = IGV.getInstance();
             try {
                 if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     List<File> files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
                     if (files != null && files.size() > 0) {
                         List<ResourceLocator> locators = ResourceLocator.getLocators(files);
-                        for (ResourceLocator locator : locators) {
-                            try {
-                                IGV.getInstance().load(locator, panel);
-                            } catch (DataLoadException de) {
-                                messages.append(de.getMessage());
-                            }
-                        }
+                        igv.loadTracks(locators, panel);
                     }
                 } else if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
 
                     // Check for genomes, sessions, etc firs
-                    if(HubGenomeLoader.isHubURL(obj)) {
-                       LongRunningTask.submit(() -> {
-                           try {
-                               GenomeManager.getInstance().loadGenome(obj);
-                           } catch (IOException e) {
-                               MessageUtils.showMessage("Error loading track hub: " + e.getMessage());
-                           }
-                       });
-                    }
-                    else {
-                        IGV.getInstance().load(new ResourceLocator(obj), panel);
+                    if (HubGenomeLoader.isHubURL(obj)) {
+                        LongRunningTask.submit(() -> {
+                            try {
+                                GenomeManager.getInstance().loadGenome(obj);
+                            } catch (IOException e) {
+                                MessageUtils.showMessage("Error loading track hub: " + e.getMessage());
+                            }
+                        });
+                    } else {
+                        igv.loadTracks(Collections.singletonList(new ResourceLocator(obj)), panel);
                     }
                 } else {
                     messages.append("Unknown object type: " + transferable.toString());
@@ -232,7 +223,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 MessageUtils.showMessage(messages.getFormattedMessage());
             }
 
-            IGV.getInstance().getMainFrame().repaint();
+            igv.getMainFrame().repaint();
             event.dropComplete(true);
         }
 

@@ -341,10 +341,21 @@ public class IGV implements IGVEventObserver {
      * Load a collection of tracks in a background thread.
      * <p/>
      * Note: Most of the code here is to adjust the scrollbars and split pane after loading
+     * Note: The method returns a Future, which most callers currently ignore.
      *
      * @param locators
      */
     public Future loadTracks(final Collection<ResourceLocator> locators) {
+        return loadTracks(locators, null);
+
+    }
+        /**
+         * Load a collection of tracks in a background thread placing them in a specified panel.
+         * Used by drag and drop.
+         * @param locators
+         */
+
+    public Future loadTracks(final Collection<ResourceLocator> locators, final TrackPanel panel) {
 
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
@@ -371,7 +382,11 @@ public class IGV implements IGVEventObserver {
 
                         try {
                             List<Track> tracks = load(locator);
-                            addTracks(tracks);
+                            if(panel == null) {
+                                addTracks(tracks);
+                            } else {
+                                panel.addTracks(tracks);
+                            }
 
                         } catch (Exception e) {
                             log.error("Error loading track", e);
@@ -387,7 +402,6 @@ public class IGV implements IGVEventObserver {
                         }
                     }
 
-
                     resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
                     revalidateTrackPanels();
@@ -402,6 +416,39 @@ public class IGV implements IGVEventObserver {
         }
         log.debug("Finish loadTracks");
         return toRet;
+    }
+
+
+    /**
+     * Load a resource and return the tracks.  Does not add tracks to the igv instance
+     *
+     * @param locator
+     * @return A list of loaded tracks
+     */
+    public List<Track> load(ResourceLocator locator) throws DataLoadException {
+
+        try {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("Loading " + locator.getPath());
+            }
+
+            TrackLoader loader = new TrackLoader();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            List<Track> newTracks = loader.load(locator, genome);
+            if (newTracks.size() > 0) {
+                for (Track track : newTracks) {
+                    TrackProperties properties = locator.getTrackProperties();
+                    if (properties != null) {
+                        track.setProperties(properties);
+                    }
+                }
+            }
+            return newTracks;
+        } finally {
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setStatusBarMessage3("");
+            }
+        }
     }
 
     /**
@@ -1202,67 +1249,6 @@ public class IGV implements IGVEventObserver {
         panel.addTracks(Collections.singleton(track));
     }
 
-    /**
-     * Load a resource and return the tracks.
-     * Does not add tracks to igv instance
-     *
-     * @param locator
-     * @return A list of loaded tracks
-     */
-    public List<Track> load(ResourceLocator locator) throws DataLoadException {
-
-        try {
-            if (IGV.hasInstance()) {
-                IGV.getInstance().setStatusBarMessage3("Loading " + locator.getPath());
-            }
-
-            TrackLoader loader = new TrackLoader();
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
-            List<Track> newTracks = loader.load(locator, genome);
-            if (newTracks.size() > 0) {
-                for (Track track : newTracks) {
-                    String fn = locator.getPath();
-                    int lastSlashIdx = fn.lastIndexOf("/");
-                    if (lastSlashIdx < 0) {
-                        lastSlashIdx = fn.lastIndexOf("\\");
-                    }
-                    if (lastSlashIdx > 0) {
-                        fn = fn.substring(lastSlashIdx + 1);
-                    }
-
-                    TrackProperties properties = locator.getTrackProperties();
-                    if (properties != null) {
-                        track.setProperties(properties);
-                    }
-                }
-            }
-            return newTracks;
-        } finally {
-            if (IGV.hasInstance()) {
-                IGV.getInstance().setStatusBarMessage3("");
-            }
-        }
-    }
-
-
-    /**
-     * Load the data file into the specified panel.   Triggered via drag and drop.
-     */
-    public void load(final ResourceLocator locator, final TrackPanel panel) throws DataLoadException {
-
-        // If this is a session  TODO -- need better "is a session?" test
-        if (SessionReader.isSessionFile(locator.getPath())) {
-            LongRunningTask.submit(() -> this.loadSession(locator.getPath(), null));
-        } else {
-            // Not a session, load into target panel
-            Runnable runnable = () -> {
-                List<Track> tracks = load(locator);
-                panel.addTracks(tracks);
-                repaint();
-            };
-            LongRunningTask.submit(runnable);
-        }
-    }
 
     /**
      * Return a DataPanel for the given track.
