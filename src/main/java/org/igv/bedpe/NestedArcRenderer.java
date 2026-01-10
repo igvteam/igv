@@ -1,5 +1,6 @@
 package org.igv.bedpe;
 
+import org.igv.Globals;
 import org.igv.track.RenderContext;
 
 import java.awt.*;
@@ -13,6 +14,7 @@ import static org.igv.bedpe.InteractionTrack.Direction.UP;
 public class NestedArcRenderer implements BedPERenderer {
 
 
+    public static final Color MARKER_COLOR = Globals.isDarkMode() ? Color.WHITE : Color.BLACK;
     private Map<String, Color> alphaColors = new HashMap<>();
 
     // Default track color to use when track.getColor() returns null
@@ -139,7 +141,7 @@ public class NestedArcRenderer implements BedPERenderer {
             if (track.markerBounds != null) {
                 int l1 = (int) ((track.markerBounds[0] - origin) / locScale);
                 int l2 = (int) ((track.markerBounds[1] - origin) / locScale);
-                g.setColor(Color.black);
+                g.setColor(MARKER_COLOR);
                 g.drawLine(l1, trackRectangle.y, l1, trackRectangle.y + trackRectangle.height - 1);
                 g.drawLine(l2, trackRectangle.y, l2, trackRectangle.y + trackRectangle.height - 1);
             }
