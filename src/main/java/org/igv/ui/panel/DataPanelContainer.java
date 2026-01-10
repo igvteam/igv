@@ -197,7 +197,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 } else if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
 
-                    // Check for genomes, sessions, etc firs
+                    // Check for genomes, sessions, etc first
                     if (HubGenomeLoader.isHubURL(obj)) {
                         LongRunningTask.submit(() -> {
                             try {
