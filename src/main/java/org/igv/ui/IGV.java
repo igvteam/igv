@@ -349,12 +349,12 @@ public class IGV implements IGVEventObserver {
         return loadTracks(locators, null);
 
     }
-        /**
-         * Load a collection of tracks in a background thread placing them in a specified panel.
-         * Used by drag and drop.
-         * @param locators
-         */
-
+    /**
+     * Load a collection of tracks in a background thread placing them in a specified panel.
+     * Used by drag and drop.
+     *
+     * @param locators collection of resource locators
+     */
     public Future loadTracks(final Collection<ResourceLocator> locators, final TrackPanel panel) {
 
         Future toRet = null;
