@@ -60,16 +60,17 @@ public class RulerPanel extends JPanel {
     boolean drawSpan = true;
     private Font tickFont = FontManager.getFont(10);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
+    private Color tickColor = Color.black;
+    ;
+    private Color dragColor = new Color(.5f, .5f, 1f, .3f);
+    private Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
+    private Color expandedInsertionColor = Color.BLUE;
+    private Color collapsedInsertionColor = Color.BLACK;
+    private Color zoomedoutInsertionColor = ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
 
     private boolean showInsertions = false;
     private List<ClickLink> clickLinks = new ArrayList();
 
-    private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
-    private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
-
-    private Color expandedInsertionColor = Globals.isDarkMode() ? Color.BLUE.brighter() : Color.BLUE;
-    private Color collapsedInsertionColor = Globals.isDarkMode() ? Color.WHITE : Color.BLACK;
-    private Color zoomedoutInsertionColor = Globals.isDarkMode() ? Color.darkGray : ColorUtilities.modifyAlpha(collapsedInsertionColor, 20);
 
     boolean dragging = false;
     int dragStart;
@@ -77,11 +78,142 @@ public class RulerPanel extends JPanel {
 
     ReferenceFrame frame;
 
+
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
         this.darkMode = Globals.isDarkMode();
         init();
     }
+
+    private void init() {
+
+        if (Globals.isDarkMode()) {
+            tickColor = Color.white;
+            setBackground(UIManager.getColor("Panel.background"));
+            expandedInsertionColor = Color.CYAN;
+            collapsedInsertionColor = Color.WHITE;
+            zoomedoutInsertionColor = ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
+            dragColor = new Color(.8f, .8f, 1f, .3f);
+            zoomBoundColor = new Color(220,220,220);
+        }
+
+        //setBorder(BorderFactory.createLineBorder(UIConstants.TRACK_BORDER_GRAY));
+        setCursor(Cursor.getDefaultCursor());
+        if (isWholeGenomeView()) {
+            this.setToolTipText(WHOLE_GENOME_TOOLTIP);
+        } else {
+            this.setToolTipText("Click and drag to zoom");
+        }
+
+        MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
+
+            private MouseEvent mouseDown;
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                for (ClickLink link : clickLinks) {
+                    if (link.region.contains(e.getPoint())) {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                        setToolTipText(link.tooltipText);
+                        return;
+                    }
+                }
+                setCursor(Cursor.getDefaultCursor());
+                setToolTipText(isWholeGenomeView() ? WHOLE_GENOME_TOOLTIP : CHROM_TOOLTIP);
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setCursor(Cursor.getDefaultCursor());
+                if (isWholeGenomeView()) {
+                    setToolTipText(WHOLE_GENOME_TOOLTIP);
+                } else {
+                    setToolTipText(CHROM_TOOLTIP);
+                }
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (Math.abs(e.getPoint().getX() - dragStart) > 1) {
+                    dragEnd = e.getX();
+                    dragging = true;
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mousePressed(final MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    // ignore
+                } else {
+                    dragStart = e.getX();
+                    mouseDown = e;
+                }
+            }
+
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    // ignore
+                } else {
+                    if (dragging) {
+                        dragEnd = e.getX();
+                        dragging = false;
+                        zoom();
+                    } else {
+                        if (mouseDown != null && distance(mouseDown, e) < 5) {
+                            doMouseClick(e);
+                        }
+                    }
+                }
+            }
+
+            private double distance(MouseEvent e1, MouseEvent e2) {
+                double dx = e1.getX() - e2.getX();
+                double dy = e1.getY() - e2.getY();
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+
+            /**
+             * mouseClick is not used because in Java a mouseClick is emitted ONLY if the mouse has not moved
+             * between press and release.  This is really difficult to achieve, even if trying.
+             *
+             * @param evt
+             */
+            public void doMouseClick(MouseEvent evt) {
+                final MouseEvent e = evt;
+                setCursor(Cursor.getDefaultCursor());
+                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+                    boolean clickHandled = false;
+                    for (final ClickLink link : clickLinks) {
+                        if (link.region.contains(e.getPoint())) {
+                            link.action.accept(link.value);
+                            clickHandled = true;
+                        }
+                    }
+                    if (!clickHandled && !isWholeGenomeView()) {
+                        double newLocation = frame.getChromosomePosition(e);
+                        frame.centerOnLocation(newLocation);
+                    }
+
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                }
+
+            }
+
+        };
+
+        addMouseMotionListener(mouseAdapter);
+
+        addMouseListener(mouseAdapter);
+    }
+
 
     private boolean isWholeGenomeView() {
         return frame.getChrName().equals(Globals.CHR_ALL);
@@ -91,12 +223,6 @@ public class RulerPanel extends JPanel {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
-
-        if (darkMode) {
-            setBackground(UIManager.getColor("Panel.background"));
-            expandedInsertionColor = Color.CYAN;
-            collapsedInsertionColor = Color.WHITE;
-        }
 
         if (PreferencesManager.getPreferences().getAntiAliasing()) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -123,7 +249,7 @@ public class RulerPanel extends JPanel {
     private void render(Graphics g) {
 
         clickLinks.clear();
-        g.setColor(darkMode ? Color.white : Color.black);
+        g.setColor(tickColor);
         if (isWholeGenomeView()) {
             drawChromosomeTicks(g);
         } else {
@@ -413,140 +539,6 @@ public class RulerPanel extends JPanel {
         } else {
             return new TickSpacing(Math.pow(10, nZeroes) / 2, majorUnit, unitMultiplier);
         }
-    }
-
-    private void init() {
-
-        //setBorder(BorderFactory.createLineBorder(UIConstants.TRACK_BORDER_GRAY));
-        setCursor(Cursor.getDefaultCursor());
-        if (isWholeGenomeView()) {
-            this.setToolTipText(WHOLE_GENOME_TOOLTIP);
-        } else {
-            this.setToolTipText("Click and drag to zoom");
-        }
-
-        MouseInputAdapter mouseAdapter = new MouseInputAdapter() {
-
-            private MouseEvent mouseDown;
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                for (ClickLink link : clickLinks) {
-                    if (link.region.contains(e.getPoint())) {
-                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                        setToolTipText(link.tooltipText);
-                        return;
-                    }
-                }
-                if(inInsertionArea(e)) {
-                    // In insertion area
-                    return;
-                }
-                setCursor(Cursor.getDefaultCursor());
-                setToolTipText(isWholeGenomeView() ? WHOLE_GENOME_TOOLTIP : CHROM_TOOLTIP);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                setCursor(Cursor.getDefaultCursor());
-                if (isWholeGenomeView()) {
-                    setToolTipText(WHOLE_GENOME_TOOLTIP);
-                } else {
-                    setToolTipText(CHROM_TOOLTIP);
-                }
-
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if(inInsertionArea(e)) {
-                    return;
-                }
-                if (Math.abs(e.getPoint().getX() - dragStart) > 1) {
-                    dragEnd = e.getX();
-                    dragging = true;
-                    repaint();
-                }
-            }
-
-            @Override
-            public void mousePressed(final MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    // ignore
-                } else {
-                    if(!inInsertionArea(e)){
-                        dragStart = e.getX();
-                    }
-                    mouseDown = e;
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    // ignore
-                } else {
-                    if (dragging) {
-                        dragEnd = e.getX();
-                        dragging = false;
-                        zoom();
-                    } else {
-                        if (mouseDown != null && distance(mouseDown, e) < 5) {
-                            doMouseClick(e);
-                        }
-                    }
-                }
-            }
-
-            private boolean inInsertionArea(MouseEvent e) {
-                return showInsertions && e.getY() >= getHeight() - INSERTION_ROW_HEIGHT - 1;
-            }
-
-            private double distance(MouseEvent e1, MouseEvent e2) {
-                double dx = e1.getX() - e2.getX();
-                double dy = e1.getY() - e2.getY();
-                return Math.sqrt(dx * dx + dy * dy);
-            }
-
-
-            /**
-             * mouseClick is not used because in Java a mouseClick is emitted ONLY if the mouse has not moved
-             * between press and release.  This is really difficult to achieve, even if trying.
-             *
-             * @param evt
-             */
-            public void doMouseClick(MouseEvent evt) {
-                final MouseEvent e = evt;
-                setCursor(Cursor.getDefaultCursor());
-                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                try {
-                    boolean clickHandled = false;
-                    for (final ClickLink link : clickLinks) {
-                        if (link.region.contains(e.getPoint())) {
-                            link.action.accept(link.value);
-                            clickHandled = true;
-                        }
-                    }
-                    if(showInsertions && e.getY() >= getHeight() - INSERTION_ROW_HEIGHT) {
-                        // In insertion area
-                        return;
-                    }
-                    if (!clickHandled && !isWholeGenomeView()) {
-                        double newLocation = frame.getChromosomePosition(e);
-                        frame.centerOnLocation(newLocation);
-                    }
-
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
-                }
-
-            }
-
-        };
-
-        addMouseMotionListener(mouseAdapter);
-
-        addMouseListener(mouseAdapter);
     }
 
     private void zoom() {
