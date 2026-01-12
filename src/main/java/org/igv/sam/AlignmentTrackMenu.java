@@ -140,8 +140,26 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             }
             renderOptions.setHideSmallIndels(smallIndelsItem.isSelected());
             alignmentTrack.repaint();
+            IGV.getInstance().repaintHeaderPanels();
         }));
         add(smallIndelsItem);
+
+        // Indel size setting
+        JMenuItem indelSizeItem = new JMenuItem("Set indel size threshold...");
+        indelSizeItem.setEnabled(renderOptions.isHideSmallIndels());
+        indelSizeItem.addActionListener(aEvt -> UIUtilities.invokeOnEventThread(() -> {
+            String sith = MessageUtils.showInputDialog("Small indel threshold: ", String.valueOf(renderOptions.getSmallIndelThreshold()));
+            if (sith != null) {
+                try {
+                    renderOptions.setSmallIndelThreshold(Integer.parseInt(sith));
+                    alignmentTrack.repaint();
+                    IGV.getInstance().repaintHeaderPanels();
+                } catch (NumberFormatException exc) {
+                    log.error("Error setting small indel threshold - not an integer", exc);
+                }
+            }
+        }));
+        add(indelSizeItem);
 
         // Paired end items
         if (dataManager.isPairedEnd()) {

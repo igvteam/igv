@@ -2,17 +2,18 @@ package org.igv.sam;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
-import org.igv.event.IGVEvent;
-import org.igv.logging.*;
 import org.igv.Globals;
+import org.igv.event.IGVEvent;
+import org.igv.event.IGVEventBus;
+import org.igv.event.IGVEventObserver;
+import org.igv.event.StopEvent;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.reader.AlignmentReader;
 import org.igv.sam.reader.ReadGroupFilter;
 import org.igv.ui.IGV;
-import org.igv.event.IGVEventBus;
-import org.igv.event.IGVEventObserver;
-import org.igv.event.StopEvent;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ObjectCache;
 import org.igv.util.RuntimeUtils;
@@ -100,21 +101,21 @@ public class AlignmentTileLoader implements IGVEventObserver {
                            AlignmentDataManager.DownsampleOptions downsampleOptions,
                            Map<String, PEStats> peStats,
                            AlignmentTrack.BisulfiteContext bisulfiteContext,
-                           AlignmentTrack.RenderOptions renderOptions) {
+                           AlignmentTrack.RenderOptions renderOptions,
+                           IGVPreferences preferences) {
 
-        final IGVPreferences prefMgr = PreferencesManager.getPreferences();
-        boolean filterFailedReads = prefMgr.getAsBoolean(SAM_FILTER_FAILED_READS);
-        boolean filterSecondaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
-        boolean filterSupplementaryAlignments = prefMgr.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
+        boolean filterFailedReads = preferences.getAsBoolean(SAM_FILTER_FAILED_READS);
+        boolean filterSecondaryAlignments = preferences.getAsBoolean(SAM_FILTER_SECONDARY_ALIGNMENTS);
+        boolean filterSupplementaryAlignments = preferences.getAsBoolean(SAM_FILTER_SUPPLEMENTARY_ALIGNMENTS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
         boolean filterDuplicates = renderOptions != null
                 ? renderOptions.getDuplicatesOption() == AlignmentTrack.DuplicatesOption.FILTER
-                : prefMgr.getAsBoolean(SAM_FILTER_DUPLICATES);
+                : preferences.getAsBoolean(SAM_FILTER_DUPLICATES);
 
-        int qualityThreshold = prefMgr.getAsInt(SAM_QUALITY_THRESHOLD);
-        int alignmentScoreTheshold = prefMgr.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
+        int qualityThreshold = preferences.getAsInt(SAM_QUALITY_THRESHOLD);
+        int alignmentScoreTheshold = preferences.getAsInt(SAM_ALIGNMENT_SCORE_THRESHOLD);
 
-        boolean reducedMemory = prefMgr.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
+        boolean reducedMemory = preferences.getAsBoolean(SAM_REDUCED_MEMORY_MODE);
 
         AlignmentTile t = new AlignmentTile(start, end, spliceJunctionHelper, downsampleOptions, bisulfiteContext, reducedMemory);
 
@@ -254,8 +255,8 @@ public class AlignmentTileLoader implements IGVEventObserver {
             // Compute peStats
             if (peStats != null) {
                 // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
-                double minPercentile = prefMgr.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
-                double maxPercentile = prefMgr.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
+                double minPercentile = preferences.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
+                double maxPercentile = preferences.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
                 for (PEStats stats : peStats.values()) {
                     stats.computeInsertSize(minPercentile, maxPercentile);
                     stats.computeExpectedOrientation();
@@ -274,7 +275,6 @@ public class AlignmentTileLoader implements IGVEventObserver {
             }
             t.finish();
 
-            // TODO -- make this optional (on a preference)
             InsertionManager.getInstance().processAlignments(chr, t.alignments);
 
 

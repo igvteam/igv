@@ -1767,7 +1767,6 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-
     /**
      * Swing worker class to startup IGV
      */
@@ -2156,6 +2155,15 @@ public class IGV implements IGVEventObserver {
             }
         }
     }
+
+    /**
+     * Repaint all header panels.  Used to force update of insertion markers.
+     */
+    public void repaintHeaderPanels() {
+        getMainPanel().repaintHeaderPanels();
+    }
+
+
 
 
     private volatile boolean isLoading = false;
