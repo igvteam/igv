@@ -528,7 +528,7 @@ public class RulerPanel extends JPanel {
                         }
                     }
                     if(showInsertions && e.getY() >= getHeight() - INSERTION_ROW_HEIGHT) {
-                        // In insetion area
+                        // In insertion area
                         return;
                     }
                     if (!clickHandled && !isWholeGenomeView()) {
