@@ -65,17 +65,10 @@ public class InsertionManager {
             insertionMaps.put(chr, insertionMap);
         }
 
-        int minLength = 0;
-        final IGVPreferences preferences = PreferencesManager.getPreferences(Constants.THIRD_GEN);
-        if(preferences.getAsBoolean(SAM_HIDE_SMALL_INDEL)) {
-            minLength = preferences.getAsInt(SAM_SMALL_INDEL_BP_THRESHOLD);
-        }
-
         for (Alignment a : alignments) {
             AlignmentBlock[] blocks = a.getInsertions();
             if (blocks != null) {
                 for (AlignmentBlock block : blocks) {
-                    if (block.getBasesLength() < minLength) continue;
                     Integer key = block.getStart();
                     InsertionMarker insertionMarker = insertionMap.get(key);
                     if (insertionMarker == null) {

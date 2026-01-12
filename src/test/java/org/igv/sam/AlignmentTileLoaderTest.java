@@ -2,6 +2,7 @@ package org.igv.sam;
 
 import org.igv.AbstractHeadlessTest;
 import org.igv.prefs.Constants;
+import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.reader.AlignmentReader;
 import org.igv.sam.reader.AlignmentReaderFactory;
@@ -79,7 +80,9 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
 
             AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions(true, 50, actMaxDepth);
 
-            AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null, downsampleOptions, null, null, null);
+            IGVPreferences preferences = new IGVPreferences();
+            AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null,
+                    downsampleOptions, null, null, null, preferences);
             List<Alignment> alignments = tile.getAlignments();
             int count = 0;
             Map<String, Integer> pairedReads = new HashMap<String, Integer>();

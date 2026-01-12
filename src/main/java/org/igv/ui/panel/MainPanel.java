@@ -577,5 +577,9 @@ public class MainPanel extends JPanel implements Paintable {
         }
     }
 
+    public void repaintHeaderPanels() {
+        headerPanelContainer.repaint();
+    }
+
 
 }

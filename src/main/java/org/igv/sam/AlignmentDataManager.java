@@ -319,7 +319,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         SpliceJunctionHelper spliceJunctionHelper = new SpliceJunctionHelper();
 
         AlignmentTileLoader.AlignmentTile t = getLoader().loadTile(seqName, start, end, spliceJunctionHelper,
-                downsampleOptions, peStats, bisulfiteContext, renderOptions);
+                downsampleOptions, peStats, bisulfiteContext, renderOptions, getPreferences());
         List<Alignment> alignments = t.getAlignments();
         List<DownsampledInterval> downsampledIntervals = t.getDownsampledIntervals();
         this.updateBaseModfications(alignments);

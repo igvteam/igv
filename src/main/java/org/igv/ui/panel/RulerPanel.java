@@ -8,12 +8,13 @@
  */
 package org.igv.ui.panel;
 
-import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.feature.Chromosome;
 import org.igv.feature.genome.ChromosomeCoordinate;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionManager;
@@ -35,7 +36,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.igv.prefs.Constants.*;
+import static org.igv.prefs.Constants.DEFAULT_GENOME;
 
 /**
  * @author jrobinso
@@ -48,28 +49,31 @@ public class RulerPanel extends JPanel {
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     private static final int INSERTION_ROW_HEIGHT = 9;
+
+    public static final String WHOLE_GENOME_TOOLTIP = "<html>Click on a chromosome number to jump to that chromosome," +
+            "<br>or click and drag to zoom in.";
+
+    public static final String CHROM_TOOLTIP = "Click and drag to zoom in.";
+
     private final boolean darkMode;
 
-    // TODO -- get from preferences
     boolean drawSpan = true;
     private Font tickFont = FontManager.getFont(10);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
 
+    private boolean showInsertions = false;
     private List<ClickLink> clickLinks = new ArrayList();
 
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
     private static Color zoomBoundColor = new Color(0.5f, 0.5f, 0.5f);
 
-    private Color expandedInsertionColor = Color.BLUE;
-    private Color collapsedInsertionColor = Color.BLACK;
-    private Color zoomedoutInsertionColor =   ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
+    private Color expandedInsertionColor = Globals.isDarkMode() ? Color.BLUE.brighter() : Color.BLUE;
+    private Color collapsedInsertionColor = Globals.isDarkMode() ? Color.WHITE : Color.BLACK;
+    private Color zoomedoutInsertionColor = Globals.isDarkMode() ? Color.darkGray : ColorUtilities.modifyAlpha(collapsedInsertionColor, 20);
 
     boolean dragging = false;
     int dragStart;
     int dragEnd;
-    public static final String WHOLE_GENOME_TOOLTIP = "<html>Click on a chromosome number to jump to that chromosome," +
-            "<br>or click and drag to zoom in.";
-    public static final String CHROM_TOOLTIP = "Click and drag to zoom in.";
 
     ReferenceFrame frame;
 
@@ -88,7 +92,7 @@ public class RulerPanel extends JPanel {
 
         super.paintComponent(g);
 
-        if(darkMode) {
+        if (darkMode) {
             setBackground(UIManager.getColor("Panel.background"));
             expandedInsertionColor = Color.CYAN;
             collapsedInsertionColor = Color.WHITE;
@@ -132,7 +136,10 @@ public class RulerPanel extends JPanel {
             Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
             int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
             if (!frame.getChrName().equals(Globals.CHR_ALL) && (frame.getEnd() - frame.getOrigin()) <= maxVizWindow) {
+                showInsertions = true;
                 drawInsertionMarkers(g);
+            } else {
+                showInsertions = false;
             }
         }
     }
@@ -300,12 +307,23 @@ public class RulerPanel extends JPanel {
 
         if (insertionMarkers == null) return;
 
+        int minLength = Integer.MAX_VALUE;
+        boolean hideSmallIndels = false;
+        for (AlignmentTrack track : IGV.getInstance().getAlignmentTracks()) {
+            hideSmallIndels = hideSmallIndels || track.getRenderOptions().isHideSmallIndels();
+            minLength = Math.min(minLength, track.getRenderOptions().getSmallIndelThreshold());
+        }
+
         InsertionMarker expanded = frame.getExpandedInsertion();
 
         int w = (int) ((1.41 * INSERTION_ROW_HEIGHT) / 2);
         int y = getHeight() - INSERTION_ROW_HEIGHT - 1;
 
         for (InsertionMarker insertionMarker : insertionMarkers) {
+
+            if (hideSmallIndels && insertionMarker.size < minLength) {
+                continue;
+            }
 
             int x0;
             int x1;
@@ -332,9 +350,10 @@ public class RulerPanel extends JPanel {
                 p = new Polygon(new int[]{x0 - w, x1 + w, x0},
                         new int[]{y, y, y + INSERTION_ROW_HEIGHT}, 3);
 
+
                 double expandedInsertionWidth = insertionMarker.size / frame.getScale();
 
-                if (expandedInsertionWidth > 5) {
+                if (expandedInsertionWidth > 1) {
                     c = collapsedInsertionColor;
                     String tooltipText = "Click to expand insertion (" + (insertionMarker.size + "bases)");
                     Rectangle clickArea = p.getBounds();
@@ -349,7 +368,7 @@ public class RulerPanel extends JPanel {
                 }
             }
 
-            if (x1 + w >= 0 && x0 - w <= getWidth()) {
+            if (x1 + w >= 0 && x0 - w <= getWidth() && c != null) {
                 g.setColor(c);
                 g.fillPolygon(p);
             }
@@ -419,9 +438,12 @@ public class RulerPanel extends JPanel {
                         return;
                     }
                 }
+                if(inInsertionArea(e)) {
+                    // In insetion area
+                    return;
+                }
                 setCursor(Cursor.getDefaultCursor());
                 setToolTipText(isWholeGenomeView() ? WHOLE_GENOME_TOOLTIP : CHROM_TOOLTIP);
-
             }
 
             @Override
@@ -437,6 +459,9 @@ public class RulerPanel extends JPanel {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                if(inInsertionArea(e)) {
+                    return;
+                }
                 if (Math.abs(e.getPoint().getX() - dragStart) > 1) {
                     dragEnd = e.getX();
                     dragging = true;
@@ -449,11 +474,12 @@ public class RulerPanel extends JPanel {
                 if (e.isPopupTrigger()) {
                     // ignore
                 } else {
-                    dragStart = e.getX();
+                    if(!inInsertionArea(e)){
+                        dragStart = e.getX();
+                    }
                     mouseDown = e;
                 }
             }
-
 
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -470,6 +496,10 @@ public class RulerPanel extends JPanel {
                         }
                     }
                 }
+            }
+
+            private boolean inInsertionArea(MouseEvent e) {
+                return showInsertions && e.getY() >= getHeight() - INSERTION_ROW_HEIGHT - 1;
             }
 
             private double distance(MouseEvent e1, MouseEvent e2) {
@@ -496,6 +526,10 @@ public class RulerPanel extends JPanel {
                             link.action.accept(link.value);
                             clickHandled = true;
                         }
+                    }
+                    if(showInsertions && e.getY() >= getHeight() - INSERTION_ROW_HEIGHT) {
+                        // In insetion area
+                        return;
                     }
                     if (!clickHandled && !isWholeGenomeView()) {
                         double newLocation = frame.getChromosomePosition(e);
