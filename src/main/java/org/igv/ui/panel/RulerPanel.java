@@ -439,7 +439,7 @@ public class RulerPanel extends JPanel {
                     }
                 }
                 if(inInsertionArea(e)) {
-                    // In insetion area
+                    // In insertion area
                     return;
                 }
                 setCursor(Cursor.getDefaultCursor());
