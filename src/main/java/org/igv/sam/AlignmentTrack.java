@@ -652,7 +652,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             double yGroup = y;  // Remember this for label
 
             // Loop through the alignment rows for this group
-            List<Row> rows = entry.getValue();
+            // Create a snapshot to avoid ConcurrentModificationException from background loading threads
+            List<Row> rows = new ArrayList<>(entry.getValue());
             for (Row row : rows) {
                 if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     break;
