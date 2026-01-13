@@ -1,6 +1,7 @@
 package org.igv.ui.util;
 
 import com.jidesoft.swing.JideBoxLayout;
+import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.StopEvent;
 import org.igv.logging.*;
@@ -37,8 +38,9 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
 
     private void initialize() {
 
-        setBackground(new Color(240, 240, 240));
-        Color messageBG = new Color(230, 230, 230);
+        setBackground(Globals.isDarkMode() ? Color.darkGray : new Color(240, 240, 240));
+        Color messageBG = Globals.isDarkMode() ? Color.darkGray :  new Color(230, 230, 230);
+
         Font messageFont = FontManager.getFont(11);
 
         setMinimumSize(new Dimension(200, 20));
@@ -54,7 +56,7 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
         add(messageBox, JideBoxLayout.FIX);
 
         stopButton = new JButton();
-        stopButton.setBorder(BorderFactory.createLineBorder(Color.black));
+        stopButton.setBorder(BorderFactory.createLineBorder(Globals.isDarkMode() ? Color.white : Color.black));
         stopButton.addActionListener(e -> IGVEventBus.getInstance().post(new StopEvent()));
         stopButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/general/Stop16.gif")));
@@ -119,7 +121,10 @@ public class ApplicationStatusBar extends JPanel implements IGVEventObserver { /
         JLabel messageField = new JLabel("");
         messageField.setBackground(bg);
         messageField.setFont(font);
-        messageField.setBorder(BorderFactory.createLineBorder(Color.black));
+        messageField.setBorder(BorderFactory.createLineBorder(Globals.isDarkMode() ? Color.white : Color.black));
+        if(Globals.isDarkMode()) {
+            messageField.setForeground(Color.white);
+        }
         return messageField;
 
     }

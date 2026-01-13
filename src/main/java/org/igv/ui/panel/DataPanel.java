@@ -354,7 +354,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     @Override
     public void setToolTipText(String text) {
         if (!Objects.equal(tooltipText, text)) {
-            IGV.getInstance().setStatusWindowText(text);
             this.tooltipText = text;
             putClientProperty(TOOL_TIP_TEXT_KEY, text);
         }

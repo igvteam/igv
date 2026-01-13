@@ -84,7 +84,6 @@ public class IGV implements IGVEventObserver {
     private JRootPane rootPane;
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
-    private StatusWindow statusWindow;
 
     // Glass panes
     Component glassPane;
@@ -1207,19 +1206,6 @@ public class IGV implements IGVEventObserver {
 
     public boolean isShowDetailsOnHover() {
         return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.HOVER;
-    }
-
-    public void openStatusWindow() {
-        if (statusWindow == null) {
-            statusWindow = new StatusWindow();
-        }
-        statusWindow.setVisible(true);
-    }
-
-    public void setStatusWindowText(String text) {
-        if (statusWindow != null && statusWindow.isVisible()) {
-            statusWindow.updateText(text);
-        }
     }
 
     /**
