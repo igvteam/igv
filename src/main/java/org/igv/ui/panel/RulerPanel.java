@@ -55,8 +55,6 @@ public class RulerPanel extends JPanel {
 
     public static final String CHROM_TOOLTIP = "Click and drag to zoom in.";
 
-    private final boolean darkMode;
-
     boolean drawSpan = true;
     private Font tickFont = FontManager.getFont(10);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
@@ -68,9 +66,7 @@ public class RulerPanel extends JPanel {
     private Color collapsedInsertionColor = Color.BLACK;
     private Color zoomedoutInsertionColor = ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
 
-    private boolean showInsertions = false;
     private List<ClickLink> clickLinks = new ArrayList();
-
 
     boolean dragging = false;
     int dragStart;
@@ -81,7 +77,6 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
-        this.darkMode = Globals.isDarkMode();
         init();
     }
 
@@ -262,10 +257,7 @@ public class RulerPanel extends JPanel {
             Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
             int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
             if (!frame.getChrName().equals(Globals.CHR_ALL) && (frame.getEnd() - frame.getOrigin()) <= maxVizWindow) {
-                showInsertions = true;
                 drawInsertionMarkers(g);
-            } else {
-                showInsertions = false;
             }
         }
     }
@@ -420,9 +412,7 @@ public class RulerPanel extends JPanel {
                         frame.changeChromosome((String) ch, true);
                     }));
                 }
-
                 even = !even;
-
             }
         }
     }
