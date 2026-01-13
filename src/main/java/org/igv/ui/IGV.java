@@ -2164,10 +2164,8 @@ public class IGV implements IGVEventObserver {
     }
 
 
-
-
     private volatile boolean isLoading = false;
-    private Set<Track> pendingTracks = null;
+    private volatile boolean repaintPending = false;
     private final Object repaintLock = new Object();
 
     private void repaint(final JComponent component, Collection<? extends Track> trackList) {
@@ -2195,27 +2193,31 @@ public class IGV implements IGVEventObserver {
 
         } else {
 
+            // Hold lock for the entire check-and-set operation to prevent race conditions
+            List<CompletableFuture<Void>> futures;
             synchronized (repaintLock) {
                 if (isLoading) {
-                    // Track data is being loaded.  Paint the component with available data and queue these tracks for
-                    // the next repaint cycle
-                    UIUtilities.invokeOnEventThread(contentPane::repaint);
-                    if (pendingTracks == null) {
-                        pendingTracks = new HashSet<>();
-                    }
-                    pendingTracks.addAll(trackList);
+                    // Track data is being loaded. Just flag that a repaint is needed when loading completes.
+                    // Since repaint() has no state, we only need to know that *a* repaint was requested.
+                    repaintPending = true;
                     return;
                 }
-            }
 
-            // Not currently loading
-            // Find tracks that need loading (not ready to paint)
-            List<CompletableFuture<Void>> futures = new ArrayList<>();
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                for (Track track : trackList) {
-                    if (!track.isReadyToPaint(frame)) {
-                        futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
+                // Not currently loading - find tracks that need loading (not ready to paint)
+                futures = new ArrayList<>();
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    for (Track track : trackList) {
+                        if (!track.isReadyToPaint(frame)) {
+                            futures.add(CompletableFuture.runAsync(() -> track.load(frame), threadExecutor));
+                        }
                     }
+                }
+
+                if (futures.isEmpty()) {
+                    // All tracks are ready to paint - no need to set isLoading
+                } else {
+                    // One or more tracks require loading before repaint - set loading flag while holding lock
+                    isLoading = true;
                 }
             }
 
@@ -2225,16 +2227,11 @@ public class IGV implements IGVEventObserver {
                 UIUtilities.invokeOnEventThread(() -> {
                     checkPanelLayouts();
                     component.repaint();
-
                 });
                 return;
             }
 
-
-            // One or more tracks require loading before repaint.
-            synchronized (repaintLock) {
-                isLoading = true;
-            }
+            // Loading is now in progress
             final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((ignored, ex) -> {
@@ -2244,12 +2241,12 @@ public class IGV implements IGVEventObserver {
                     log.error("Error loading track data", ex);
                 }
 
-                // Collect pending tracks and reset state under lock
-                Set<Track> tracksToRepaint;
+                // Check if a repaint was requested while loading, and reset state under lock
+                boolean needsRepaint;
                 synchronized (repaintLock) {
                     isLoading = false;
-                    tracksToRepaint = pendingTracks;
-                    pendingTracks = null;
+                    needsRepaint = repaintPending;
+                    repaintPending = false;
                 }
 
                 // Autoscale (modifies track internal state, not UI)
@@ -2258,11 +2255,11 @@ public class IGV implements IGVEventObserver {
                 // Check layouts and repaint on EDT
                 UIUtilities.invokeOnEventThread(() -> {
                     checkPanelLayouts();
-                    if (tracksToRepaint != null && !tracksToRepaint.isEmpty()) {
-                        // Pending tracks exist - repaint will be called by the recursive invocation
-                        repaint(component, tracksToRepaint);
-                    } else {
-                        component.repaint();
+                    component.repaint();
+                    // If a repaint was requested while loading, trigger another repaint cycle
+                    // to load any new data that may be needed
+                    if (needsRepaint) {
+                        repaint(component, getAllTracks());
                     }
                 });
             });
@@ -2270,10 +2267,14 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+    /**
+     * Check if any track panels need layout revalidation due to height changes.
+     * Note: This method should be called from the EDT.
+     */
     private void checkPanelLayouts() {
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
-                UIUtilities.invokeOnEventThread(() -> tp.revalidate());
+                tp.revalidate();
             }
         }
     }

@@ -1,108 +1,108 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Session genome="hg19" locus="chr11:62671495-62700195" version="8">
+<Session genome="hg19" locus="chr11:1-135006516" version="8">
     <Resources>
-        <Resource name="A549 H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k4me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfControlStdSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2Ezh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27acEtoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k9acStdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27acStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k9acStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekControlStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekCtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH2azSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2ControlStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH2azSig.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq MinusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dMinusSignalRep1V3.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k09me3Sig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2CtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549CtcfDex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k36me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k09me3Sig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k36me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq MinusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dTh1014IlnaMinusSignalRep1.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Etoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k9acStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27me3Etoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k09me3Sig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH4k20me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k27acStdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27acDex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k9acStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k36me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HUVEC RnaSeq Signal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqHuvecR2x75Th1014Il200SigRep2V4.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq PlusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dPlusSignalRep2V3.bigWig" type="bigwig"/>
-        <Resource name="HSMMtube CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtCtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Dex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="A549 Control ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549ControlEtoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq MinusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dTh1014IlnaMinusSignalRep2.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq MinusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dMinusSignalRep2V3.bigWig" type="bigwig"/>
-        <Resource name="NHEK H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH4k20me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfCtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfEzh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 Control ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549ControlDex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k79me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k9me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHDF-Ad H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhdfadH4k20me1Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27me3Dex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH2azStdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k27me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k36me3Dex100nmSig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH4k20me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k09me3Sig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k4me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k4me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="A549 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549CtcfEtoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="HMEC EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecEzh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k36me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmControlStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMMtube EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtEzh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k09acEtoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="A549 H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k09me3Etoh02Sig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k79me2Sig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27acStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmCtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H4k20me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k79me2Sig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k36me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMMtube Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtControlStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="HepG2 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k27me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekEzh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k27acStdSig.bigWig" type="bigwig"/>
         <Resource name="HMEC H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k27me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHLF H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k4me3StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK H3K9me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k9me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHEK Pol2(b) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekPol2bStdSig.bigWig" type="bigwig"/>
         <Resource name="HMEC H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k27acStdSig.bigWig" type="bigwig"/>
-        <Resource name="HMEC H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH2azSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k79me2StdSig.bigWig" type="bigwig"/>
-        <Resource name="NHDF-Ad H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhdfadH3k9acStdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmEzh239875Sig.bigWig" type="bigwig"/>
-        <Resource name="HMEC CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecCtcfStdSig.bigWig" type="bigwig"/>
-        <Resource name="K562 RnaSeq PlusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dPlusSignalRep1V3.bigWig" type="bigwig"/>
+        <Resource name="A549 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549CtcfEtoh02Sig.bigWig" type="bigwig"/>
         <Resource name="HepG2 H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k04me1StdSig.bigWig" type="bigwig"/>
-        <Resource name="HSMM H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMMtube EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtEzh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq MinusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dTh1014IlnaMinusSignalRep2.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 Control ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549ControlEtoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="NHLF CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfCtcfStdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k36me3Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k27me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k9me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k4me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k09me3Sig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k9acStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K9me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k9me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2CtcfStdSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H4k20me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k09me3Sig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq MinusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dMinusSignalRep1V3.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k4me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMMtube CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtCtcfStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHDF-Ad H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhdfadH4k20me1Sig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH4k20me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH2azSig.bigWig" type="bigwig"/>
+        <Resource name="HUVEC RnaSeq Signal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqHuvecR2x75Th1014Il200SigRep2V4.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k4me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k36me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k36me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27me3StdSig.bigWig" type="bigwig"/>
         <Resource name="NHLF H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k4me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH2azSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecCtcfStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k09me3Sig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k27acStdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549CtcfDex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq PlusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dPlusSignalRep2V3.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k79me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azEtoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k36me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMMtube Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmtControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27acDex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2Ezh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekEzh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq MinusRawSignal rep 2" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dMinusSignalRep2V3.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me3Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k27acStdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k9acStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k36me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH2azSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmEzh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k09me3Sig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K36me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k36me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq MinusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dTh1014IlnaMinusSignalRep1.bigWig" type="bigwig"/>
         <Resource name="A549 H3K4me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k27me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k79me2Sig.bigWig" type="bigwig"/>
+        <Resource name="NHLF EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfEzh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k09acEtoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="HSMM CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmCtcfStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekH3k79me2Sig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27me3Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K27me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27me3Dex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH4k20me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27acStdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K4me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me1Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2ControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHEK Pol2(b) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekPol2bStdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k9acStdSig.bigWig" type="bigwig"/>
+        <Resource name="HepG2 H3K79me2 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H3k79me2StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H4K20me1 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH4k20me1StdSig.bigWig" type="bigwig"/>
+        <Resource name="HMEC EZH2_(39875) ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecEzh239875Sig.bigWig" type="bigwig"/>
+        <Resource name="NHEK CTCF ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhekCtcfStdSig.bigWig" type="bigwig"/>
         <Resource name="HMEC Input ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecControlStdSig.bigWig" type="bigwig"/>
+        <Resource name="NHDF-Ad H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhdfadH3k9acStdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K9me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k09me3Etoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="NHLF H3K4me3 ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k4me3StdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 Control ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549ControlDex100nmSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27acStdSig.bigWig" type="bigwig"/>
+        <Resource name="A549 H3K27ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k27acEtoh02Sig.bigWig" type="bigwig"/>
+        <Resource name="A549 H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig" type="bigwig"/>
         <Resource name="HepG2 H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHepg2H2azStdSig.bigWig" type="bigwig"/>
+        <Resource name="K562 RnaSeq PlusRawSignal rep 1" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeCaltechRnaSeq/wgEncodeCaltechRnaSeqK562R1x75dPlusSignalRep1V3.bigWig" type="bigwig"/>
+        <Resource name="HMEC H3K9ac ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHmecH3k9acStdSig.bigWig" type="bigwig"/>
+        <Resource name="HSMM H2A.Z ChipSeq Signal" path="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH2azStdSig.bigWig" type="bigwig"/>
     </Resources>
-    <Panel height="4000" name="DataPanel" width="1133">
+    <Panel height="4000" name="DataPanel" width="1202">
         <Track attributeKey="A549 Control ChipSeq Signal" autoScale="false" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549ControlDex100nmSig.bigWig" name="A549 Control ChipSeq Signal" renderer="BAR_CHART" visible="true" windowFunction="mean">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="80.582275" minimum="0.0" type="LINEAR"/>
         </Track>
@@ -404,11 +404,11 @@
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="-1.0" minimum="0.0" type="LINEAR"/>
         </Track>
     </Panel>
-    <Panel height="61" name="FeaturePanel" width="1133">
+    <Panel height="75" name="FeaturePanel" width="1202">
         <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
         <Track attributeKey="Refseq Genes" clazz="org.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;414.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq Genes" visible="true"/>
     </Panel>
-    <PanelLayout dividerFractions="0.8821428571428571"/>
+    <PanelLayout dividerFractions="0.8818316100443131"/>
     <HiddenAttributes>
         <Attribute name="DATA FILE"/>
         <Attribute name="DATA TYPE"/>
