@@ -45,6 +45,7 @@ import static org.igv.prefs.Constants.*;
 
 public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
+    public static final Color ZOOM_IN_TEXT_COLOR = Globals.isDarkMode() ? Color.lightGray : Color.gray;
     private static Logger log = LogManager.getLogger(CoverageTrack.class);
 
     public static final int TEN_MB = 10000000;
@@ -194,7 +195,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
             String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
                     "Select a chromosome and zoom in to see coverage." :
                     "Zoom in to see coverage.";

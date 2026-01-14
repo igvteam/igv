@@ -3,6 +3,7 @@
 package org.igv.ui.panel;
 
 
+import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionManager;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class DataPanelPainter {
 
+    public static final Color GROUP_BORDER_COLOR = Globals.isDarkMode() ? Color.white : Color.black;
     private static Logger log = LogManager.getLogger(DataPanelPainter.class);
 
     public synchronized void paint(Collection<TrackGroup> groups,
@@ -28,7 +30,6 @@ public class DataPanelPainter {
         Graphics2D graphics2D = context.getGraphics2D("BACKGROUND");
         graphics2D.setBackground(background);
         graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
-        graphics2D.setColor(Color.BLACK);
 
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
         InsertionMarker i = referenceFrame.getExpandedInsertion(); //insertionManager.getSelectedInsertion(referenceFrame.getChrName());
@@ -121,7 +122,7 @@ public class DataPanelPainter {
 
                 // Draw a line just above group.
                 if (group.isDrawBorder()) {
-                    Graphics2D graphics2D = dContext.getGraphic2DForColor(Color.black);
+                    Graphics2D graphics2D = dContext.getGraphic2DForColor(GROUP_BORDER_COLOR);
                     graphics2D.drawLine(0, trackY - 1, dRect.width, trackY - 1);
                 }
 
@@ -152,7 +153,7 @@ public class DataPanelPainter {
 
                 // Draw a line just below group.
                 if (group.isDrawBorder()) {
-                    Graphics2D graphics2D = dContext.getGraphic2DForColor(Color.black);
+                    Graphics2D graphics2D = dContext.getGraphic2DForColor(GROUP_BORDER_COLOR);
                     graphics2D.drawLine(0, trackY, dRect.width, trackY);
                 }
             }
@@ -201,7 +202,7 @@ public class DataPanelPainter {
     }
 
 
-    final private void draw(Track track, Rectangle rect, RenderContext context) {
+    private void draw(Track track, Rectangle rect, RenderContext context) {
 
         track.render(context, rect);
 
