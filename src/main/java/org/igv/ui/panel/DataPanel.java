@@ -49,7 +49,6 @@ import java.util.List;
  */
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
-    public static final Color BORDER_COLOR = Globals.isDarkMode() ? Color.darkGray : Color.lightGray;
     private static Logger log = LogManager.getLogger(DataPanel.class);
     private final boolean darkMode;
 
