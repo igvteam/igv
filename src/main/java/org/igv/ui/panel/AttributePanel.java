@@ -9,6 +9,7 @@
 package org.igv.ui.panel;
 
 
+import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -27,11 +28,15 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 
+import static org.igv.ui.panel.DataPanelPainter.GROUP_BORDER_COLOR;
+import static org.igv.ui.panel.DataPanelPainter.TRACK_BORDER_HEIGHT;
+
 /**
  * @author jrobinso
  */
 public class AttributePanel extends TrackPanelComponent implements  Paintable {
 
+    public static final Color GROUP_GAP_COLOR = Globals.isDarkMode() ? Color.darkGray : UIConstants.LIGHT_GREY;
     private static Logger log = LogManager.getLogger(AttributePanel.class);
 
 
@@ -104,7 +109,7 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
                 graphics2D.setColor(Color.BLACK);
 
                 final Graphics2D greyGraphics = (Graphics2D) g.create();
-                greyGraphics.setColor(UIConstants.LIGHT_GREY);
+                greyGraphics.setColor(GROUP_BORDER_COLOR);
 
                 final int left = AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                 int regionY = 0;
@@ -143,7 +148,7 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
                                     track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
                                     //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 }
-                                regionY += trackHeight;
+                                regionY += trackHeight + TRACK_BORDER_HEIGHT;
                             }
                         }
 
