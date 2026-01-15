@@ -192,8 +192,8 @@ public class DataPanelPainter {
 
         int trackY = 0;
         Rectangle dRect = context.getVisibleRect();
-        int bottom = dRect.y + dRect.height;
         if (dRect == null) return;
+        int bottom = dRect.y + dRect.height;
 
         Graphics2D borderGraphics = (Graphics2D) context.getGraphics().create();
         Color borderColor = PreferencesManager.getPreferences().getAsColor(Constants.TRACK_BORDER_COLOR);
