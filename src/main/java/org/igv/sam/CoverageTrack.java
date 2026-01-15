@@ -206,8 +206,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         drawData(context, rect);
 
-        drawBorder(context, rect);
-
         if (dataSourceRenderer != null) {
             dataSourceRenderer.renderBorder(this, context, rect);
             dataSourceRenderer.renderAxis(this, context, rect);
@@ -307,23 +305,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             return new Range(0, Math.max(10, intervalMax));
         }
-    }
-
-
-    /**
-     * Draw border and scale
-     *
-     * @param context
-     * @param rect
-     */
-    private void drawBorder(RenderContext context, Rectangle rect) {
-        context.getGraphic2DForColor(Color.gray).drawLine(
-                rect.x, rect.y + rect.height,
-                rect.x + rect.width, rect.y + rect.height);
-    }
-
-    public void drawScale(RenderContext context, Rectangle rect) {
-        DataRenderer.drawScale(getDataRange(), context, rect);
     }
 
     public boolean isLogNormalized() {
@@ -556,7 +537,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             int count = alignmentCounts.getCount(pos, (byte) nucleotide);
             if (count > 0) {
                 double f = count / totalCount;
-                int alleleHeight = (int) (f * barHeight);
+                int alleleHeight = (int) Math.round(f * barHeight);
                 int baseY = pBottom - alleleHeight;
                 Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
                 Graphics2D tGraphics = context.getGraphic2DForColor(c);

@@ -277,7 +277,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public int getHeight() {
         return isVisible() ? SEQUENCE_HEIGHT +
-                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
+                (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT + SequenceRenderer.TRANSLATED_SEQ_GAP : 0) :
                 0;
     }
 

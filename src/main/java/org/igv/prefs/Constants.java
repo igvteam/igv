@@ -99,14 +99,20 @@ final public class Constants {
 
     // Chart (bar, heatmap, plots) options
     public static final String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
-    public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
-    public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
-    public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
+    public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
+    public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
     public static final String CHART_DRAW_Y_AXIS = "CHART.DRAW_AXIS";
     public static final String CHART_DRAW_TRACK_NAME = "CHART.DRAW_TRACK_NAME";
     public static final String CHART_COLOR_TRACK_NAME = "CHART.COLOR_TRACK_NAME";
-    public static final String CHART_AUTOSCALE = "CHART.AUTOSCALE";
-    public static final String CHART_SHOW_DATA_RANGE = "CHART.SHOW_DATA_RANGE";
+
+    // Track border and options.  Originally these were for chart tracks only, thus the names.
+    public static final String TRACK_DRAW_BORDERS = "TRACK.DRAW_BORDERS";
+    public static final String TRACK_BORDER_COLOR = "TRACK.BORDER_COLOR";
+    public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
+    public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
+    public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
+
+
 
     // Alignment options
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";

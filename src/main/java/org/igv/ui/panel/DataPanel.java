@@ -9,12 +9,13 @@
 package org.igv.ui.panel;
 
 import com.google.common.base.Objects;
-import org.igv.event.IGVEvent;
-import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.event.DataLoadedEvent;
+import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.RegionOfInterest;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
@@ -36,8 +37,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -48,7 +49,6 @@ import java.util.*;
  */
 public class DataPanel extends JComponent implements Paintable, IGVEventObserver {
 
-    public static final Color BORDER_COLOR = Globals.isDarkMode() ? Color.darkGray : Color.lightGray;
     private static Logger log = LogManager.getLogger(DataPanel.class);
     private final boolean darkMode;
 
@@ -71,11 +71,12 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setToolTipText("");
         painter = new DataPanelPainter();
 
-        if(darkMode && !PreferencesManager.getPreferences().hasExplicitValue(Constants.BACKGROUND_COLOR)){
+        if (darkMode && !PreferencesManager.getPreferences().hasExplicitValue(Constants.BACKGROUND_COLOR)) {
             setBackground(UIManager.getColor("Panel.background"));
         } else {
             setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
         }
+
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
@@ -211,14 +212,13 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     public void paintOffscreen(final Graphics2D g, Rectangle rect, boolean batch) {
 
         RenderContext context = null;
-        Graphics2D borderGraphics = (Graphics2D) g.create();
-        borderGraphics.setColor(BORDER_COLOR);
+
 
         try {
             context = new RenderContext(null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             Insets insets = getInsets();
-            Rectangle contentRect =  new Rectangle(
+            Rectangle contentRect = new Rectangle(
                     rect.x + insets.left,
                     rect.y + insets.top,
                     rect.width - (insets.left + insets.right),
@@ -227,13 +227,10 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             painter.paint(groups, context, getBackground(), contentRect);
             drawAllRegions(g);
 
-            borderGraphics.drawRect(0, rect.y, rect.width, rect.height-1);
-
         } finally {
             if (context != null) {
                 context.dispose();
             }
-            borderGraphics.dispose();
         }
     }
 
@@ -451,7 +448,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
     private void init() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
+        // setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
         setRequestFocusEnabled(false);
 
         // Key Events

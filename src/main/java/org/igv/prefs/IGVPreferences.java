@@ -47,16 +47,13 @@ public class IGVPreferences {
     private Map<String, ContinuousColorScale> colorScaleCache = new Hashtable<>();
     private PaletteColorTable mutationColorScheme = null;
 
-    public IGVPreferences() {
-        this.userPreferences = new HashMap<>();
-    }
-
     public IGVPreferences(Map<String, String> userPreferences,
                           Map<String, String> defaults,
                           IGVPreferences parent) {
         this.parent = parent;
         this.defaults = defaults;
         this.userPreferences = userPreferences == null ? new HashMap<>() : userPreferences;
+        migrateUserPreferences();
     }
 
     public String get(String key) {
@@ -902,61 +899,6 @@ public class IGVPreferences {
         HttpUtils.getInstance().updateProxySettings();
     }
 
-    /**
-     * Get the path to the CLI plugin specified by the
-     * Id and tool name.
-     *
-     * @param pluginId
-     * @param toolName
-     * @return
-     * @see #putToolPath(String, String, String)
-     * @see #genToolKey
-     */
-    public String getToolPath(String pluginId, String toolName) {
-        return get(genToolKey(pluginId, toolName, "path"));
-    }
-
-    /**
-     * Set the path to the CLI plugin
-     *
-     * @param pluginId
-     * @param toolName
-     * @param path
-     * @see #getToolPath(String, String)
-     * @see #genToolKey
-     */
-    public void putToolPath(String pluginId, String toolName, String path) {
-        put(genToolKey(pluginId, toolName, "path"), path);
-    }
-
-    /**
-     * Used to generate a unique string based on pluginId, toolName, and attribute
-     *
-     * @param pluginId
-     * @param toolName
-     * @param key
-     * @return
-     */
-    private String genToolKey(String pluginId, String toolName, String key) {
-        return String.format("%s:%s:%s", pluginId, toolName.replace(' ', '_'), key.replace(' ', '_'));
-    }
-
-    public void putArgumentValue(String pluginId, String toolName, String command, String argName, String argValue) {
-        String key = genArgKey(pluginId, toolName, command, argName);
-        put(key, argValue);
-    }
-
-    public String getArgumentValue(String pluginId, String toolName, String commandName, String argId) {
-        return get(genArgKey(pluginId, toolName, commandName, argId));
-    }
-
-    private String genArgKey(String pluginId, String toolName, String command, String argId) {
-        return genToolKey(pluginId, toolName, String.format("%s:%s", command, argId));
-    }
-
-    public String[] getIGVPluginList() {
-        return getAsArray(IGV_PLUGIN_LIST_KEY);
-    }
 
     /**
      * Returns a preference value from either the preferences,
@@ -987,6 +929,21 @@ public class IGVPreferences {
         } else {
             return get(key, def);
         }
+    }
+
+    /**
+     * Migrate old preferences
+     */
+    private void migrateUserPreferences() {
+
+        if(!userPreferences.containsKey(TRACK_DRAW_BORDERS) &&
+                "TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_TOP_BORDER)) ||
+                "TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_BOTTOM_BORDER))) {
+            userPreferences.put(TRACK_DRAW_BORDERS, "TRUE");
+        }
+
+        userPreferences.remove(CHART_DRAW_TOP_BORDER);
+        userPreferences.remove(CHART_DRAW_BOTTOM_BORDER);
     }
 
     public void print(PrintWriter pw) {
