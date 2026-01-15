@@ -936,9 +936,9 @@ public class IGVPreferences {
      */
     private void migrateUserPreferences() {
 
-        if(!userPreferences.containsKey(TRACK_DRAW_BORDERS) &&
-                "TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_TOP_BORDER)) ||
-                "TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_BOTTOM_BORDER))) {
+        if (!userPreferences.containsKey(TRACK_DRAW_BORDERS) &&
+                ("TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_TOP_BORDER)) ||
+                        "TRUE".equalsIgnoreCase(userPreferences.get(CHART_DRAW_BOTTOM_BORDER)))) {
             userPreferences.put(TRACK_DRAW_BORDERS, "TRUE");
         }
 
