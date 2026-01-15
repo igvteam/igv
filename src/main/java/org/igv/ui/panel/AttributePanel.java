@@ -36,10 +36,8 @@ import static org.igv.ui.panel.DataPanelPainter.TRACK_BORDER_HEIGHT;
  */
 public class AttributePanel extends TrackPanelComponent implements  Paintable {
 
-    public static final Color GROUP_GAP_COLOR = Globals.isDarkMode() ? Color.darkGray : UIConstants.LIGHT_GREY;
     private static Logger log = LogManager.getLogger(AttributePanel.class);
-
-
+    
     /**
      * Constructs ...
      */

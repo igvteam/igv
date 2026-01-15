@@ -448,7 +448,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
     private void init() {
-        // setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
+
         setRequestFocusEnabled(false);
 
         // Key Events
