@@ -233,29 +233,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
             if (track.isDrawYLine()) {
                 Graphics2D yLineGraphics = context.getGraphic2DForColor(Color.gray);
                 int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
-                GraphicUtils.drawDashedLine(borderGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
+                GraphicUtils.drawDashedLine(yLineGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
             }
 
-
-            // If the chart has + and - numbers draw both borders or none. This
-            // needs documented somewhere.
-            boolean drawBorders = true;
-
-            if (minValue * maxValue < 0) {
-                drawBorders = prefs.getAsBoolean(CHART_DRAW_BOTTOM_BORDER) &&
-                        prefs.getAsBoolean(CHART_DRAW_TOP_BORDER);
-            }
-
-            if (drawBorders && prefs.getAsBoolean(CHART_DRAW_TOP_BORDER)) {
-                borderGraphics.drawLine(adjustedRect.x, adjustedRect.y,
-                        adjustedRect.x + adjustedRect.width, adjustedRect.y);
-            }
-
-            if (drawBorders && prefs.getAsBoolean(CHART_DRAW_BOTTOM_BORDER)) {
-                borderGraphics.drawLine(adjustedRect.x, adjustedRect.y + adjustedRect.height,
-                        adjustedRect.x + adjustedRect.width,
-                        adjustedRect.y + adjustedRect.height);
-            }
         }
     }
 

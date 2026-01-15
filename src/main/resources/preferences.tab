@@ -30,13 +30,16 @@ USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLAT
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
 IGV.track.height	Default feature track height (pixels)	integer	15
-CHART.DRAW_TOP_BORDER	Draw top border	boolean	FALSE
-CHART.DRAW_BOTTOM_BORDER	Draw bottom border	boolean	FALSE
-CHART.COLOR_BORDERS	Color borders	boolean	TRUE
+TRACK.DRAW_BORDERS	Draw borders between tracks	boolean	FALSE
+TRACK.BORDER_COLOR	Border color	color	192,192,192
+TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
+
+##Numeric Tracks
 CHART.DRAW_TRACK_NAME	Draw track label	boolean	FALSE
 CHART.DRAW_AXIS	Label Y axis	boolean	FALSE
 CHART.SHOW_DATA_RANGE	Show data range	boolean	TRUE
-TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
+
+##Feature Tracks
 EXPAND_FEATURE_TRACKS	Expand feature tracks	boolean	FALSE
 
 ##Color Scales

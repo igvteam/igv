@@ -80,7 +80,7 @@ public class AlignmentTileLoaderTest extends AbstractHeadlessTest {
 
             AlignmentDataManager.DownsampleOptions downsampleOptions = new AlignmentDataManager.DownsampleOptions(true, 50, actMaxDepth);
 
-            IGVPreferences preferences = new IGVPreferences();
+            IGVPreferences preferences = new IGVPreferences(new HashMap<>(), new HashMap(), null);
             AlignmentTileLoader.AlignmentTile tile = loader.loadTile(sequence, start, end, null,
                     downsampleOptions, null, null, null, preferences);
             List<Alignment> alignments = tile.getAlignments();

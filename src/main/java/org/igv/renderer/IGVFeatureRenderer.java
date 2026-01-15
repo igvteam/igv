@@ -54,7 +54,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     //protected double lastFeatureBoundsMaxY = 0;
     //protected double lastRegionMaxY = 0;
 
-    protected boolean drawBoundary = false;
 
     int blockHeight = BLOCK_HEIGHT;
     int thinBlockHeight = THIN_BLOCK_HEIGHT;
@@ -273,13 +272,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelWidth + 2), blockHeight + 2);
                 }
             }
-
-            if (drawBoundary) {
-                Graphics2D g2D = context.getGraphic2DForColor(Color.LIGHT_GRAY);
-                g2D.drawLine((int) trackRectangleX, (int) trackRectangleMaxY - 1,
-                        (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
-            }
-
         }
     }
 

@@ -11,7 +11,6 @@ public class GenotypeRenderer extends IGVFeatureRenderer {
     public GenotypeRenderer() {
         super();
         isGenotypeRenderer = true;
-        drawBoundary = false;
     }
 
 }

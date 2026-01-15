@@ -37,6 +37,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.igv.ui.panel.DataPanelPainter.GROUP_BORDER_COLOR;
+import static org.igv.ui.panel.DataPanelPainter.TRACK_BORDER_HEIGHT;
+
 /**
  * @author jrobinso
  */
@@ -119,7 +122,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         if (!groups.isEmpty()) {
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
-            greyGraphics.setColor(UIConstants.LIGHT_GREY);
+            greyGraphics.setColor(GROUP_BORDER_COLOR);
 
             int regionY = 0;
 
@@ -216,7 +219,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                     track.renderName(graphics2D, rect, visibleRect);
                 }
-                regionY += trackHeight;
+                regionY += trackHeight + TRACK_BORDER_HEIGHT;
             }
         }
         return regionY;

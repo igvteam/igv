@@ -31,6 +31,7 @@ public class SequenceRenderer {
 
     private static Logger log = LogManager.getLogger(SequenceRenderer.class);
 
+    public static final int TRANSLATED_SEQ_GAP = 2;
     private static final int AMINO_ACID_RESOLUTION = 5;
 
     public static Map<Character, Color> nucleotideColors;
@@ -117,8 +118,8 @@ public class SequenceRenderer {
             if (showTranslation) {
                 untranslatedSequenceHeight = (int) (trackRectangle.getHeight() / 4);
                 // Draw translated sequence
-                Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
-                        (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
+                Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight + TRANSLATED_SEQ_GAP,
+                        (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight - TRANSLATED_SEQ_GAP);
                 if (context.getScale() < AMINO_ACID_RESOLUTION) {
                     translatedSequenceDrawer.draw(context, sequenceStart, translatedSequenceRect, cache, strand);
                 }

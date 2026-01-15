@@ -44,6 +44,7 @@ import java.util.List;
 
 public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
 
+    public static final Color ZOOM_IN_TEXT_COLOR = Globals.isDarkMode() ? Color.lightGray.brighter() : Color.gray;
     private static Logger log = LogManager.getLogger(DataTrack.class);
 
     private DataRenderer renderer;
@@ -131,7 +132,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
         } else {
             getRenderer().render(inViewScores, context, rect, this);
@@ -145,7 +146,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
             GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
         } else if (inViewScores != null) {
             synchronized (inViewScores) {

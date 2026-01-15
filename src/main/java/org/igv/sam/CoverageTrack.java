@@ -45,6 +45,7 @@ import static org.igv.prefs.Constants.*;
 
 public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
+    public static final Color ZOOM_IN_TEXT_COLOR = Globals.isDarkMode() ? Color.lightGray : Color.gray;
     private static Logger log = LogManager.getLogger(CoverageTrack.class);
 
     public static final int TEN_MB = 10000000;
@@ -194,7 +195,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             Rectangle visibleRect = context.getVisibleRect().intersection(rect);
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
+            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
             String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
                     "Select a chromosome and zoom in to see coverage." :
                     "Zoom in to see coverage.";
@@ -204,8 +205,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
 
         drawData(context, rect);
-
-        drawBorder(context, rect);
 
         if (dataSourceRenderer != null) {
             dataSourceRenderer.renderBorder(this, context, rect);
@@ -306,23 +305,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
             return new Range(0, Math.max(10, intervalMax));
         }
-    }
-
-
-    /**
-     * Draw border and scale
-     *
-     * @param context
-     * @param rect
-     */
-    private void drawBorder(RenderContext context, Rectangle rect) {
-        context.getGraphic2DForColor(Color.gray).drawLine(
-                rect.x, rect.y + rect.height,
-                rect.x + rect.width, rect.y + rect.height);
-    }
-
-    public void drawScale(RenderContext context, Rectangle rect) {
-        DataRenderer.drawScale(getDataRange(), context, rect);
     }
 
     public boolean isLogNormalized() {
@@ -555,7 +537,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             int count = alignmentCounts.getCount(pos, (byte) nucleotide);
             if (count > 0) {
                 double f = count / totalCount;
-                int alleleHeight = (int) (f * barHeight);
+                int alleleHeight = (int) Math.round(f * barHeight);
                 int baseY = pBottom - alleleHeight;
                 Color c = SequenceRenderer.nucleotideColors.get(nucleotide);
                 Graphics2D tGraphics = context.getGraphic2DForColor(c);

@@ -13,8 +13,6 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.igv.prefs.Constants.CHART_COLOR_BORDERS;
-
 public class DynSeqRenderer extends XYPlotRenderer {
 
     static Map<Character, Map<String, String>> letterPaths = new HashMap<>();

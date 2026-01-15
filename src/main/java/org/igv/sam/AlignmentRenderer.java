@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.Preferences;
 
 import static org.igv.prefs.Constants.*;
 
@@ -71,7 +70,7 @@ public class AlignmentRenderer {
 
     // Split colors
     private static final Color hasSupplementaryColor = new Color(177, 202, 217);
-    private static final Color isSupplementaryColor  = new Color(49, 130, 189);
+    private static final Color isSupplementaryColor = new Color(49, 130, 189);
 
     // Bisulfite colors
     private static final Color bisulfiteColorFw1 = new Color(195, 195, 195);
@@ -89,7 +88,9 @@ public class AlignmentRenderer {
     public static final HSLColorTable tenXColorTable2 = new HSLColorTable(270);
     public static final GreyscaleColorTable tenXColorTable3 = new GreyscaleColorTable();
 
-    public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
+    public static final Color GROUP_DIVIDER_COLOR = Globals.isDarkMode() ?
+            new Color(130, 130, 130) :
+            new Color(200, 200, 200);
     // A "dummy" reference for soft-clipped reads.
     private static final byte[] softClippedReference = new byte[1000];
 

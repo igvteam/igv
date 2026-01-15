@@ -87,8 +87,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     int margin = DEFAULT_MARGIN;
 
-    private static boolean drawBorder = true;
-
     private boolean alternateExonColor = false;
 
     private String trackLine = null;
@@ -741,14 +739,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             }
             renderCoverage(context, renderRect);
         }
-
-        if (FeatureTrack.drawBorder) {
-            Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
-            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-            //TODO Fix height for variant track
-            borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
-        }
-
     }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
@@ -932,14 +922,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public IGVFeature getSelectedFeature() {
         return selectedFeature;
-    }
-
-    public static boolean isDrawBorder() {
-        return drawBorder;
-    }
-
-    public static void setDrawBorder(boolean drawBorder) {
-        FeatureTrack.drawBorder = drawBorder;
     }
 
     public boolean isAlternateExonColor() {
