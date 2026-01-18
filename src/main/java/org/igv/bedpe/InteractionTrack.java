@@ -3,20 +3,17 @@ package org.igv.bedpe;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventObserver;
-import org.igv.hic.HicFile;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.FontManager;
-import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -67,7 +64,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     private JMenuItem maxScoreItem;
 
     InteractionTrack.Direction direction = UP; //DOWN;
-    protected GraphType graphType;  // GraphType.block; //
+    protected GraphType graphType = GraphType.NESTED_ARC;  // GraphType.block; //
     private ArcOption arcOption = ArcOption.ALL;
     int thickness = 1;
     boolean autoscale = true;
@@ -75,10 +72,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     int gap = 5;
     boolean showBlocks = false;
     protected boolean useScore = false;
+    protected boolean isHIC = false;
     private Map<GraphType, BedPERenderer> renderers;
 
+    private Color defaultColor = new Color(180, 25, 137);
+
+
     ContactMapView contactMapView;
-    float transparency = 0.1f;
+    float transparency = 1.0f;
     protected String normalization = "NONE";
     protected int maxFeatureCount = 20000;
 
@@ -98,7 +99,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         this.featureSource = src;
 
         setHeight(250, true);
-        setColor(new Color(180, 25, 137));
 
         renderers = new HashMap<>();
         renderers.put(GraphType.NESTED_ARC, new NestedArcRenderer(this));
@@ -111,10 +111,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 graphType = GraphType.valueOf(typeString);
             } catch (IllegalArgumentException e) {
                 log.error("Illegal graph type: " + typeString, e);
-                graphType = GraphType.NESTED_ARC; // default
             }
-        } else {
-            graphType = GraphType.PROPORTIONAL_ARC;
         }
 
         String directionString = PreferencesManager.getPreferences().get(Constants.ARC_DIRECTION);
@@ -308,7 +305,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
         menu.add(item);
 
-        if (supportsGraphTypeSelection()) {
+        if (!isHIC) {
             menu.addSeparator();
             menu.add(new JLabel("<html><b>Graph Type</b>"));
             //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
@@ -322,7 +319,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
                 mm.setSelected(InteractionTrack.this.graphType == entry.getValue());
                 mm.addActionListener(evt -> {
-                    setGraphType(entry.getValue());
+                    this.graphType = entry.getValue();
                     PreferencesManager.getPreferences().put(Constants.ARC_TYPE, entry.getValue().toString());
                     autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
                     maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
@@ -363,7 +360,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         });
         menu.add(showBlocksCB);
 
-        if (supportsAutoscaleMenu()) {
+        if (!isHIC) {
             menu.addSeparator();
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
@@ -424,127 +421,42 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         menu.add(item);
 
 
-        final JMenuItem transparencyItem = new JMenuItem("Set Transparency...");
-        transparencyItem.addActionListener(e -> {
-            final JSlider slider = new JSlider(1, 100, (int) (InteractionTrack.this.transparency * 100));
-            slider.setMajorTickSpacing(10);
-            slider.setPaintTicks(true);
+        if (isHIC) {
+            addHICItems(te, menu);
 
-            // Create a label to show the current value
-            final JLabel valueLabel = new JLabel(String.format("%.2f", InteractionTrack.this.transparency));
-
-            slider.addChangeListener(changeEvent -> {
-                JSlider source = (JSlider) changeEvent.getSource();
-                float value = source.getValue() / 100.0f;
-                InteractionTrack.this.transparency = value;
-                valueLabel.setText(String.format("%.2f", value));
-                InteractionTrack.this.repaint();
-            });
-
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.add(slider, BorderLayout.CENTER);
-            panel.add(valueLabel, BorderLayout.SOUTH);
-
-            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-            JOptionPane.showMessageDialog(parent, panel, "Set Transparency for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
-        });
-        menu.add(transparencyItem);
-
-
-        final JMenuItem maxFeatureCountItem = new JMenuItem("Set Maximum Feature Count...");
-        maxFeatureCountItem.addActionListener(e -> {
-            final JSlider slider = new JSlider(1000, 20000, InteractionTrack.this.maxFeatureCount);
-            slider.setMajorTickSpacing(5000);
-            slider.setPaintTicks(true);
-
-            final JLabel valueLabel = new JLabel(String.valueOf(InteractionTrack.this.maxFeatureCount));
-
-            slider.addChangeListener(changeEvent -> {
-                JSlider source = (JSlider) changeEvent.getSource();
-                int value = source.getValue();
-                InteractionTrack.this.maxFeatureCount = value;
-                valueLabel.setText(String.valueOf(value));
-                InteractionTrack.this.loadedIntervalMap.clear();
-                InteractionTrack.this.repaint();
-            });
-
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.add(slider, BorderLayout.CENTER);
-            panel.add(valueLabel, BorderLayout.SOUTH);
-
-            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
-            JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + InteractionTrack.this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
-        });
-        menu.add(maxFeatureCountItem);
-
-
-        // Hook for subclass-specific menu items (e.g., HiC normalization options)
-        addFormatSpecificMenuItems(menu, te);
-
-        if (supportsFeatureWindowMenu()) {
+        } else {
+            // Not hic
             menu.addSeparator();
             menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
-        }
 
-        // Experimental JBrowse.
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
-                CircularViewUtilities.ping() &&
-                supportsCircularView()) {
-            menu.addSeparator();
-            JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
-            circViewItem.addActionListener(e -> {
-                List<ReferenceFrame> frames = te.getFrame() != null ?
-                        Collections.singletonList(te.getFrame()) :
-                        FrameManager.getFrames();
-                List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
-                CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
-            });
-            menu.add(circViewItem);
-            menu.addSeparator();
+
+            // Experimental JBrowse.
+            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
+                    CircularViewUtilities.ping()) {
+                menu.addSeparator();
+                JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
+                circViewItem.addActionListener(e -> {
+                    List<ReferenceFrame> frames = te.getFrame() != null ?
+                            Collections.singletonList(te.getFrame()) :
+                            FrameManager.getFrames();
+                    List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
+                    CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
+                });
+                menu.add(circViewItem);
+                menu.addSeparator();
+            }
         }
 
         return menu;
     }
 
-    private void setGraphType(GraphType value) {
-        // TODO adjust height
-        this.graphType = value;
+    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+        // Override in HIC subclass
     }
 
-    /**
-     * Hook method for subclasses to add format-specific menu items.
-     * Default implementation does nothing.
-     */
-    protected void addFormatSpecificMenuItems(IGVPopupMenu menu, TrackClickEvent te) {
-        // Default: no additional menu items
-    }
-
-    /**
-     * Hook method for subclasses to indicate if graph type selection is supported.
-     */
-    protected boolean supportsGraphTypeSelection() {
-        return true;
-    }
-
-    /**
-     * Hook method for subclasses to indicate if circular view is supported.
-     */
-    protected boolean supportsCircularView() {
-        return true;
-    }
-
-    /**
-     * Hook method for subclasses to indicate if autoscale menu is supported.
-     */
-    protected boolean supportsAutoscaleMenu() {
-        return true;
-    }
-
-    /**
-     * Hook method for subclasses to indicate if feature window menu is supported.
-     */
-    protected boolean supportsFeatureWindowMenu() {
-        return true;
+    @Override
+    public void setColor(Color color) {
+        super.setColor(color);
     }
 
     @Override

@@ -4,6 +4,7 @@ import org.igv.hic.HicFile;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.RenderContext;
 import org.igv.track.TrackClickEvent;
+import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -31,6 +32,7 @@ public class HicInteractionTrack extends InteractionTrack {
         maxFeatureCount = 5000;
         graphType = GraphType.NESTED_ARC;
         useScore = true;
+        isHIC = true;
         setColor(Color.red);
     }
 
@@ -54,8 +56,61 @@ public class HicInteractionTrack extends InteractionTrack {
         return features;
     }
 
-    @Override
-    protected void addFormatSpecificMenuItems(IGVPopupMenu menu, TrackClickEvent te) {
+    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+
+        final JMenuItem transparencyItem = new JMenuItem("Set Transparency...");
+        transparencyItem.addActionListener(e -> {
+            final JSlider slider = new JSlider(1, 100, (int) (this.transparency * 100));
+            slider.setMajorTickSpacing(10);
+            slider.setPaintTicks(true);
+
+            // Create a label to show the current value
+            final JLabel valueLabel = new JLabel(String.format("%.2f", this.transparency));
+
+            slider.addChangeListener(changeEvent -> {
+                JSlider source = (JSlider) changeEvent.getSource();
+                float value = source.getValue() / 100.0f;
+                this.transparency = value;
+                valueLabel.setText(String.format("%.2f", value));
+                this.repaint();
+            });
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(slider, BorderLayout.CENTER);
+            panel.add(valueLabel, BorderLayout.SOUTH);
+
+            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+            JOptionPane.showMessageDialog(parent, panel, "Set Transparency for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+        });
+        menu.add(transparencyItem);
+
+
+        final JMenuItem maxFeatureCountItem = new JMenuItem("Set Maximum Feature Count...");
+        maxFeatureCountItem.addActionListener(e -> {
+            final JSlider slider = new JSlider(1000, 20000, this.maxFeatureCount);
+            slider.setMajorTickSpacing(5000);
+            slider.setPaintTicks(true);
+
+            final JLabel valueLabel = new JLabel(String.valueOf(this.maxFeatureCount));
+
+            slider.addChangeListener(changeEvent -> {
+                JSlider source = (JSlider) changeEvent.getSource();
+                int value = source.getValue();
+                this.maxFeatureCount = value;
+                valueLabel.setText(String.valueOf(value));
+                this.loadedIntervalMap.clear();
+                this.repaint();
+            });
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(slider, BorderLayout.CENTER);
+            panel.add(valueLabel, BorderLayout.SOUTH);
+
+            final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
+            JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
+        });
+        menu.add(maxFeatureCountItem);
+
         // Add normalization options for HiC tracks
         List<String> normalizationTypes = featureSource.getNormalizationTypes();
         if (normalizationTypes != null && normalizationTypes.size() > 1) {
@@ -92,25 +147,7 @@ public class HicInteractionTrack extends InteractionTrack {
         menu.add(mapItem);
     }
 
-    @Override
-    protected boolean supportsGraphTypeSelection() {
-        return false;
-    }
 
-    @Override
-    protected boolean supportsCircularView() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsAutoscaleMenu() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsFeatureWindowMenu() {
-        return false;
-    }
 
     @Override
     public void marshalXML(Document document, Element element) {
