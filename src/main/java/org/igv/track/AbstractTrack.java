@@ -271,6 +271,7 @@ public abstract class AbstractTrack implements Track {
         this.defaultColor = color;
     }
 
+    @Override
     public Color getDefaultColor() {
         return defaultColor;
     }
