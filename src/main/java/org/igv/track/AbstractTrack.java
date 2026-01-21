@@ -259,6 +259,7 @@ public abstract class AbstractTrack implements Track {
         return color;
     }
 
+    @Override
     public void setAltColor(Color color) {
         altColor = color;
     }
