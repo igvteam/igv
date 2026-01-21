@@ -42,7 +42,6 @@ public class NestedArcRenderer implements BedPERenderer {
             g = (Graphics2D) context.getGraphics().create();
             double origin = context.getOrigin();
             double locScale = context.getScale();
-            Color trackColor = track.getColor() == null ? DEFAULT_TRACK_COLOR : track.getColor();
             int gap = track.gap;
 
             if (track.thickness > 1) {
@@ -100,12 +99,16 @@ public class NestedArcRenderer implements BedPERenderer {
                         }
 
 
-                        Color fcolor = feature.getColor() == null ? trackColor : feature.getColor();
-                        float alpha = track.transparency;
-                        if (track.useScore) {
-                            alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
+                        Color fcolor = track.getFeatureColor(feature);
+
+                        if(track.isHIC) {
+                            float alpha = track.transparency;
+                            if (track.isUseScore()) {
+                                alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
+                            }
+                            fcolor = getAlphaColor(fcolor, alpha);
                         }
-                        fcolor = getAlphaColor(fcolor, alpha);
+
                         g.setColor(fcolor);
 
                         final int trackBaseLine = trackRectangle.y + trackRectangle.height;

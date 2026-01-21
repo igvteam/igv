@@ -18,7 +18,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
 import org.igv.tools.motiffinder.MotifFinderSource;
 import org.igv.ui.IGV;
-import org.igv.ui.UIConstants;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.BrowserLauncher;
@@ -88,8 +87,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     int margin = DEFAULT_MARGIN;
 
     private boolean alternateExonColor = false;
-
-    private String trackLine = null;
 
     private boolean groupByStrand = false;
     private String labelField;
@@ -968,21 +965,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                                     igvFeature.getChr().equals(currentRange.getChr()))
                     .collect(Collectors.toList());
         }
-    }
-
-
-    @Override
-    public void setTrackLine(String trackLine) {
-        this.trackLine = trackLine;
-    }
-
-    /**
-     * Return "track" line information for exporting features to a file.  Default is null, subclasses may override.
-     *
-     * @return
-     */
-    public String getExportTrackLine() {
-        return trackLine;
     }
 
 

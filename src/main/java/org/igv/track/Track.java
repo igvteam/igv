@@ -3,6 +3,7 @@ package org.igv.track;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
+import org.igv.Globals;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
@@ -202,17 +203,13 @@ public interface Track extends Persistable, AttributeSupplier {
 
     Color getColor();
 
-    default Color getExplicitColor() {
-        return null;
+    default Color getDefaultColor() {
+        return Globals.isDarkMode() ? Color.cyan : Color.blue.brighter();
     }
 
     void setColor(Color color);
 
     Color getAltColor();
-
-    default Color getExplicitAltColor() {
-        return null;
-    }
 
     void setAltColor(Color color);
 
@@ -265,10 +262,6 @@ public interface Track extends Persistable, AttributeSupplier {
     boolean isItemRGB();
 
     boolean isUseScore();
-
-    float getViewLimitMin();
-
-    float getViewLimitMax();
 
     DisplayMode getDisplayMode();
 

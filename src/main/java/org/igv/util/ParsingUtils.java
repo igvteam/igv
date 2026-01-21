@@ -3,8 +3,9 @@ package org.igv.util;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
 import htsjdk.tribble.readers.AsciiLineReader;
-import org.igv.logging.*;
 import org.igv.Globals;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.renderer.*;
 import org.igv.track.Track;
 import org.igv.track.TrackProperties;
@@ -372,20 +373,18 @@ public class ParsingUtils {
                     String key = kv.get(0).toLowerCase().trim();
                     String value = kv.get(1).replaceAll("\"", "");
 
-                    if(key.equals("format")) {
+                    if (key.equals("format")) {
                         trackProperties.setFormat(value.toLowerCase());
-                    } else if(key.equals("type")) {
+                    } else if (key.equals("type")) {
                         trackProperties.setType(value.toLowerCase());
-                    }
-                    else if (key.equals("coords")) {
+                    } else if (key.equals("coords")) {
                         if (value.equals("0")) {
                             trackProperties.setBaseCoord(TrackProperties.BaseCoord.ZERO);
                         } else if (value.equals("1")) {
                             trackProperties.setBaseCoord(TrackProperties.BaseCoord.ONE);
                         }
 
-                    }
-                    else if (key.equals("name")) {
+                    } else if (key.equals("name")) {
                         trackProperties.setName(value);
                         //dhmay adding name check for TopHat junctions files. graphType is also checked.
                         if (value.equals("junctions")) {
@@ -397,7 +396,7 @@ public class ParsingUtils {
                     } else {
                         final String valueLowerCase = value.toLowerCase();
                         if (key.equals("itemrgb")) {
-                            trackProperties.setItemRGB(valueLowerCase.equals("on") || value.equals("1"));
+                            trackProperties.setItemRGB(!(valueLowerCase.equals("off") || value.equals("0"))); // Any value other than 0 or off => on
                         } else if (key.equals("usescore")) {
                             trackProperties.setUseScore(value.equals("1"));
                         } else if (key.equals("color")) {
@@ -409,6 +408,13 @@ public class ParsingUtils {
                         } else if (key.equals("midcolor")) {
                             Color color = ColorUtilities.stringToColor(value);
                             trackProperties.setMidColor(color);
+                        } else if (key.equals("colorByStrand")) {
+                            //Sets colors for + and - strands, in that order. The colors consist of three comma-separated RGB values from 0-255 each.
+                            String[] colors = value.split(" ");
+                            if (colors.length == 2) {
+                                trackProperties.setColor(ColorUtilities.stringToColor(colors[0]));
+                                trackProperties.setAltColor(ColorUtilities.stringToColor(colors[1]));
+                            }
                         } else if (key.equals("autoscale")) {
                             boolean autoscale = value.equals("on");
                             trackProperties.setAutoScale(autoscale);
@@ -603,14 +609,13 @@ class GZIPSafeBufferedStream extends BufferedInputStream {
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int ret = super.read(b, off, len);
-        if(available() == 0) {
+        if (available() == 0) {
             mark(26);
             read();
             reset();
         }
         return ret;
     }
-
 
 
 }

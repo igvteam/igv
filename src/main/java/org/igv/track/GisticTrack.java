@@ -138,54 +138,6 @@ public class GisticTrack extends AbstractTrack {
     }
 
     /**
-     * Return the score with the maximum "G Score" over the specified region.
-     * Assumes the scores are sorted by location
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     */
-    public GisticScore getMaxForRegion(String chr, long start, long end) {
-
-        List<GisticScore> scores = ampScoreMap.get(chr);
-        if ((scores == null) || scores.isEmpty()) {
-            return null;
-        }
-
-        GisticScore maxScore = null;
-        for (GisticScore score : scores) {
-            if (maxScore == null) {
-                if ((score.getStart() >= start)
-                        || ((start >= score.getStart()) && (start <= score.getEnd()))) {
-                    maxScore = score;
-                }
-            } else if (score.getStart() > end) {
-                break;
-            } else {
-                if (score.getGScore() > maxScore.getGScore()) {
-                    maxScore = score;
-                }
-            }
-        }
-
-        // If we haven't found bounding scores yet the region is to the right off the last
-        // score.  Use the last score for the region.  This should be a rare case and should
-        // probably be logged.
-        return (maxScore == null) ? ((GisticScore) scores.get(scores.size() - 1)) : maxScore;
-
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public double getMaxQValue() {
-        return maxQValue;
-    }
-
-    /**
      * Method description
      *
      * @return
@@ -242,15 +194,6 @@ public class GisticTrack extends AbstractTrack {
         return WindowFunction.median;
     }
 
-    /**
-     * Method description
-     *
-     * @param chr
-     * @return
-     */
-    public double getMedian(String chr) {
-        return 1.0;
-    }
 
     /**
      * Method description
@@ -271,32 +214,6 @@ public class GisticTrack extends AbstractTrack {
      */
     public List<IGVFeature> getFeatures(String chr, int startLocation, int endLocation) {
         return null;
-    }
-
-    /**
-     * This method is required for the interface, but will not be called.
-     *
-     * @param chr
-     * @param startLocation
-     * @param endLocation
-     * @param zoom
-     * @return
-     */
-    public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation,
-                                             int zoom) {
-
-        List<LocusScore> ss = new ArrayList();
-        List<GisticScore> ampScores = ampScoreMap.get(chr);
-        if (ampScores != null) {
-            ss.addAll(ampScores);
-        }
-        List<GisticScore> delScores = delScoreMap.get(chr);
-        if (delScores != null) {
-            ss.addAll(delScores);
-        }
-        return ss;
-
-        // return getFeatures(chr, startLocation, endLocation);
     }
 
     /**
@@ -357,67 +274,9 @@ public class GisticTrack extends AbstractTrack {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param chr
-     * @param startLocation
-     * @param endLocation
-     * @return
-     */
-    public List<List<IGVFeature>> getFeaturesByLevels(String chr, int startLocation, int endLocation) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public int getNumberOfFeatureLevels() {
-        return 1;
-    }
-
-    /**
-     * Method description
-     *
-     * @param isMultiLevel
-     */
-    public void setMultiLevelFeatures(boolean isMultiLevel) {
-
-        // ignore
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public boolean isMuliLevelFeatures() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-
-    public Color getColor() {
-        return null;
-    }
-
-    public void setColor(Color color) {
-        // Not used
-    }
-
-    public Color getAltColor() {
-        return null;
-    }
-
-    public void setAltColor(Color color) {
-        // Not used
-    }
-
     // GisticTrack does not expose its renderer
     public Renderer getRenderer() {
         return null;
     }
-
 
 }

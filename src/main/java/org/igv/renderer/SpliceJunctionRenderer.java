@@ -142,7 +142,10 @@
             We modify the alpha value of the chosen color to indicate if it is highlighted
           */
          final Color color;
-         final Color trackColor = isPositiveStrand ? track.getExplicitColor() : track.getExplicitAltColor();
+         Color trackColor = isPositiveStrand ? track.getColor() : track.getAltColor();
+         if(trackColor == null) {
+             trackColor = track.getDefaultColor();
+         }
          if (trackColor != null) {
              color = adjustAlpha(trackColor, highlight);
          } else if (featureColor != null) {

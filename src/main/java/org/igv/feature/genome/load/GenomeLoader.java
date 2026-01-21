@@ -83,8 +83,6 @@ abstract public class GenomeLoader {
         geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
         geneFeatureTrack.setMinimumHeight(5);
         geneFeatureTrack.setHeight(35);
-        //geneFeatureTrack.setRendererClass(GeneRenderer.class);
-        geneFeatureTrack.setColor(Color.BLUE.darker());
 
         return geneFeatureTrack;
     }
