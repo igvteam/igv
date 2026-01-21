@@ -4,6 +4,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.regex.Pattern;
  * Date: Feb 3, 2010
  */
 public class Globals {
+    public static final Color DULL_BLUE = new Color(0, 0, 200);
+    public static final Color DULL_RED = new Color(200, 0, 0);
     private static Logger log = LogManager.getLogger(Globals.class);
 
     public static final int DESIGN_DPI = 96;

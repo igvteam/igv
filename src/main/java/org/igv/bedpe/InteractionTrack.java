@@ -71,12 +71,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     double maxScore = -1;
     int gap = 5;
     boolean showBlocks = false;
-    protected boolean useScore = false;
     protected boolean isHIC = false;
     private Map<GraphType, BedPERenderer> renderers;
-
-    private Color defaultColor = new Color(180, 25, 137);
-
 
     ContactMapView contactMapView;
     float transparency = 1.0f;
@@ -99,6 +95,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         this.featureSource = src;
 
         setHeight(250, true);
+        setDefaultColor( new Color(180, 25, 137));
 
         renderers = new HashMap<>();
         renderers.put(GraphType.NESTED_ARC, new NestedArcRenderer(this));
@@ -303,6 +300,13 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
+        menu.add(item);
+
+        item = new JMenuItem("Unset Track Color");
+        item.addActionListener(evt -> {
+            this.setColor(null);
+            repaint();
+        });
         menu.add(item);
 
         if (!isHIC) {

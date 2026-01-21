@@ -1,6 +1,7 @@
 package org.igv.renderer;
 
 
+import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.feature.*;
 import org.igv.feature.aa.AminoAcidSequence;
@@ -8,10 +9,7 @@ import org.igv.feature.aa.CodonAA;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.prefs.PreferencesManager;
-import org.igv.track.FeatureTrack;
-import org.igv.track.RenderContext;
-import org.igv.track.Track;
-import org.igv.track.TrackType;
+import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.color.ColorUtilities;
 
@@ -38,8 +36,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     static final int THIN_BLOCK_HEIGHT = 6;
     protected Color AA_COLOR_1 = new Color(92, 92, 164);
     protected Color AA_COLOR_2 = new Color(12, 12, 120);
-    public static final Color DULL_BLUE = new Color(0, 0, 200);
-    public static final Color DULL_RED = new Color(200, 0, 0);
     static final int NON_CODING_HEIGHT = 8;
 
     private static final Color VARIANT_HET_COLOR = Color.blue.brighter();
@@ -118,8 +114,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
             boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
-            Color trackPosColor = track.getColor();
-            Color trackNegColor = alternateExonColor ? track.getColor() : track.getAltColor();
             String labelField = track.getLabelField();
 
             for (IGVFeature feature : featureList) {
@@ -176,7 +170,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     continue;
                 }
 
-                Color color = getFeatureColor(feature, track, trackPosColor, trackNegColor);
+                Color color = ((AbstractTrack) track).getFeatureColor(feature);
                 Graphics2D g2D = context.getGraphic2DForColor(color);
 
                 // Draw block representing entire feature
@@ -698,68 +692,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     public String getDisplayName() {
         return "Basic Feature";
     }
-
-    protected Color getFeatureColor(IGVFeature feature, Track track, Color defaultPosColor, Color defaultNegColor) {
-
-        // Set color used to draw the feature
-        Color color = null;
-
-        // If an alt color is explicitly set use it for negative strand features;
-        if (feature.getStrand() == Strand.NEGATIVE) {
-            color = track.getExplicitAltColor();
-        }
-
-        // If color is explicitly set use it
-        if (color == null) {
-            color = track.getExplicitColor();
-        }
-
-        // No explicitly set color, try the feature itself
-        if (color == null && track.isItemRGB()) {
-            color = feature.getColor();
-        }
-
-        // If still no color use defaults
-        if (color == null) {
-            if (track.getTrackType() == TrackType.CNV) {
-                color = feature.getName().equals("gain") ? DULL_RED : DULL_BLUE;
-            } else {
-                color = feature.getStrand() == Strand.NEGATIVE ? defaultNegColor : defaultPosColor;
-            }
-        }
-
-        if (track.isUseScore()) {
-            float min = getViewLimitMin(track);
-            float max = getViewLimitMax(track);
-
-            float score = feature.getScore();
-            float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, feature.getScore());
-            color = ColorUtilities.getCompositeColor(color, alpha);
-        }
-
-        return color;
-    }
-
-    float getViewLimitMin(Track track) {
-        if (Float.isNaN(viewLimitMin)) {
-            viewLimitMin = Float.isNaN(track.getViewLimitMin()) ? 0 : track.getViewLimitMin();
-        }
-        return viewLimitMin;
-    }
-
-    float getViewLimitMax(Track track) {
-        if (Float.isNaN(viewLimitMax)) {
-            viewLimitMax = Float.isNaN(track.getViewLimitMax()) ? 1000 : track.getViewLimitMax();
-        }
-        return viewLimitMax;
-    }
-
-    private float getAlpha(float minRange, float maxRange, float value) {
-        float binWidth = (maxRange - minRange) / 9;
-        int binNumber = (int) ((value - minRange) / binWidth);
-        return Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
-    }
-
 
     protected int getPixelFromChromosomeLocation(String chr, int chromosomeLocation, double origin,
                                                  double locationScale) {

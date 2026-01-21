@@ -107,14 +107,9 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
     @Override
     public Color getColor() {
-        return _color == null ?
+        return color == null ?
                 ColorUtilities.slightlyDarker(alignmentTrack.getColor()) :
-                _color;
-    }
-
-    @Override
-    public void setColor(Color color) {
-        _color = color;
+                color;
     }
 
     @Override

@@ -5,6 +5,8 @@ import htsjdk.tribble.Feature;
 import org.igv.Globals;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
+import org.igv.feature.IGVFeature;
+import org.igv.feature.Strand;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -46,7 +48,6 @@ public abstract class AbstractTrack implements Track {
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     protected final boolean darkMode;
 
-    private Color defaultColor;
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
@@ -57,8 +58,8 @@ public abstract class AbstractTrack implements Track {
 
     private boolean useScore;
     protected boolean autoScale = true;   // By default, can be overriden by track line
-    private float viewLimitMin = Float.NaN;     // From UCSC track line
-    private float viewLimitMax = Float.NaN;  // From UCSC track line
+    private float viewLimitMin = 0;     // From UCSC track line
+    private float viewLimitMax = 1000;  // From UCSC track line
     protected int fontSize;
     private boolean showDataRange = true;
 
@@ -80,7 +81,8 @@ public abstract class AbstractTrack implements Track {
 
     String autoscaleGroup;
 
-    protected Color posColor = null;
+    protected Color defaultColor;
+    protected Color color = null;
     protected Color altColor = null;
 
     protected int visibilityWindow = VISIBILITY_WINDOW;
@@ -90,6 +92,7 @@ public abstract class AbstractTrack implements Track {
 
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
+    private String trackLine = null;
 
     public AbstractTrack() {
         this.darkMode = Globals.isDarkMode();
@@ -248,21 +251,28 @@ public abstract class AbstractTrack implements Track {
     public void overlay(RenderContext context, Rectangle rect) {
     }
 
-
-    public Color getColor() {
-        return posColor == null ? defaultColor : posColor;
+    public void setColor(Color color) {
+        this.color = color;
     }
 
-    public Color getExplicitColor() {
-        return posColor;
+    public Color getColor() {
+        return color;
+    }
+
+    public void setAltColor(Color color) {
+        altColor = color;
     }
 
     public Color getAltColor() {
         return altColor == null ? getColor() : altColor;
     }
 
-    public Color getExplicitAltColor() {
-        return altColor;
+    public void setDefaultColor(Color color) {
+        this.defaultColor = color;
+    }
+
+    public Color getDefaultColor() {
+        return defaultColor;
     }
 
     public ResourceLocator getResourceLocator() {
@@ -428,14 +438,6 @@ public abstract class AbstractTrack implements Track {
         return visible;
     }
 
-    public void setColor(Color color) {
-        this.posColor = color;
-    }
-
-    public void setAltColor(Color color) {
-        altColor = color;
-    }
-
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
@@ -578,7 +580,6 @@ public abstract class AbstractTrack implements Track {
         this.viewLimitMin = properties.getMinValue() != null ? properties.getMinValue() : Float.NaN;
         this.viewLimitMax = properties.getMaxValue() != null ? properties.getMaxValue() : Float.NaN;
 
-
         if (properties.getMaxValue() != null) {
 
             float max = properties.getMaxValue();
@@ -660,6 +661,10 @@ public abstract class AbstractTrack implements Track {
         if (as != null) {
             this.autoScale = as;
         }
+
+        if (properties.getFeatureVisibilityWindow() >= 0) {
+            setVisibilityWindow(properties.getFeatureVisibilityWindow());
+        }
     }
 
     /**
@@ -731,14 +736,6 @@ public abstract class AbstractTrack implements Track {
 
     public boolean isUseScore() {
         return useScore;
-    }
-
-    public float getViewLimitMin() {
-        return viewLimitMin;
-    }
-
-    public float getViewLimitMax() {
-        return viewLimitMax;
     }
 
     public int getFontSize() {
@@ -949,6 +946,20 @@ public abstract class AbstractTrack implements Track {
         return showFeatureNames;
     }
 
+    @Override
+    public void setTrackLine(String trackLine) {
+        this.trackLine = trackLine;
+    }
+
+    /**
+     * Return "track" line information for exporting features to a file.  Default is null, subclasses may override.
+     *
+     * @return
+     */
+    public String getExportTrackLine() {
+        return trackLine;
+    }
+
     /**
      * Restore track from XML serialization -- work in progress
      * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
@@ -968,38 +979,31 @@ public abstract class AbstractTrack implements Track {
         if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
             element.setAttribute("showFeatureNames", Boolean.toString(showFeatureNames));
         }
-        if (posColor != null) {
-            element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(posColor));
+        if (color != null) {
+            element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(color));
         }
         if (altColor != null) {
             element.setAttribute(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
         }
-
         if (visibilityWindow != VISIBILITY_WINDOW) {
             element.setAttribute("featureVisibilityWindow", String.valueOf(visibilityWindow));
         }
-
         if (displayMode != DEFAULT_DISPLAY_MODE) {
             element.setAttribute(SessionAttribute.DISPLAY_MODE, displayMode.toString());
         }
-
         if (height != DEFAULT_HEIGHT) {
             element.setAttribute(SessionAttribute.HEIGHT, height.toString());
         }
-
         if (colorScale != null) {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
             element.setAttribute("colorScale", colorScale.asString());
         }
-
         if (height != DEFAULT_HEIGHT) {
             element.setAttribute("height", String.valueOf(this.height));
         }
-
         if (showDataRange == false) {
             element.setAttribute("showDataRange", Boolean.toString(showDataRange));
         }
-
         if (isNumeric()) {
             if (autoscaleGroup != null) {
                 element.setAttribute("autoscaleGroup", this.autoscaleGroup);
@@ -1044,7 +1048,7 @@ public abstract class AbstractTrack implements Track {
         if (element.hasAttribute("color")) {
             try {
                 Color c = ColorUtilities.stringToColor(element.getAttribute("color"));
-                this.posColor = c;
+                this.color = c;
             } catch (Exception e) {
                 log.error("Unrecognized color: " + element.getAttribute("color"));
             }
@@ -1164,6 +1168,49 @@ public abstract class AbstractTrack implements Track {
 
     public String getSampleId() {
         return sampleId;
+    }
+
+    public Color getFeatureColor(IGVFeature feature) {
+
+        // Set color used to draw the feature
+        Color featureColor = null;
+
+        // If an alt color is explicitly set use it for negative strand features;
+        if (feature.getStrand() == Strand.NEGATIVE) {
+            featureColor = getAltColor();
+        }
+
+        // If color is explicitly set use it
+        if (featureColor == null) {
+            featureColor = getColor();
+        }
+
+        // No explicitly set color, try the feature itself
+        if (featureColor == null) {
+            featureColor = feature.getColor();
+        }
+
+        // If still no color use defaults
+        if (featureColor == null) {
+            if (getTrackType() == TrackType.CNV) {
+                featureColor = feature.getName().equals("gain") ? Globals.DULL_RED : Globals.DULL_BLUE;
+            } else {
+                featureColor = getDefaultColor();
+            }
+        }
+
+        if (useScore) {
+            float score = feature.getScore();
+            float alpha = 1;
+            if (!Float.isNaN(score)) {
+                float binWidth = (viewLimitMax - viewLimitMin) / 9;
+                int binNumber = (int) ((score - viewLimitMin) / binWidth);
+                alpha = Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
+            }
+            featureColor = ColorUtilities.getCompositeColor(featureColor, alpha);
+        }
+
+        return featureColor;
     }
 
 }

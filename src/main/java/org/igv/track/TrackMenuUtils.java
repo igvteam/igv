@@ -659,16 +659,26 @@ public class TrackMenuUtils {
 
         menu.add(getTrackRenameItem(tracks));
 
-        String colorLabel = "Change Track Color...";
+        String colorLabel = "Set Track Color...";
         JMenuItem item = new JMenuItem(colorLabel);
         item.addActionListener(evt -> changeTrackColor(tracks));
         menu.add(item);
 
         // Change track color by attribute
-        item = new JMenuItem("Change Track Color (Negative Values or Strand)...");
+        item = new JMenuItem("Set Track Color (Negative Values or Strand)...");
         item.setToolTipText(
                 "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
         item.addActionListener(evt -> changeAltTrackColor(tracks));
+        menu.add(item);
+
+        item = new JMenuItem("Unset Track Color");
+        item.setToolTipText("Revert track color to default.");
+        item.addActionListener(evt -> {
+            tracks.forEach(track -> track.setColor(null));
+            IGV.getInstance().repaint(tracks);
+        });
+        // Enable only if at least one track has a non-null color
+        item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
         menu.add(item);
 
         menu.add(getChangeTrackHeightItem(tracks));
@@ -1132,7 +1142,8 @@ public class TrackMenuUtils {
 
         for (Track track : selectedTracks) {
             //We preserve the alpha value. This is motivated by MergedTracks
-            track.setColor(ColorUtilities.modifyAlpha(color, currentSelection.getAlpha()));
+            int currentAlpha = currentSelection != null ? currentSelection.getAlpha() : 255;
+            track.setColor(ColorUtilities.modifyAlpha(color, currentAlpha));
         }
         IGV.getInstance().repaint(selectedTracks);
     }

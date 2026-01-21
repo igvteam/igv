@@ -2,7 +2,6 @@ package org.igv.bedpe;
 
 import org.igv.hic.HicFile;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.track.RenderContext;
 import org.igv.track.TrackClickEvent;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
@@ -31,9 +30,9 @@ public class HicInteractionTrack extends InteractionTrack {
         // HiC-specific defaults
         maxFeatureCount = 5000;
         graphType = GraphType.NESTED_ARC;
-        useScore = true;
         isHIC = true;
-        setColor(Color.red);
+        setUseScore(false);   // Alpha score is set in the renderer based
+        setDefaultColor(Color.red);
     }
 
     @Override
@@ -146,8 +145,6 @@ public class HicInteractionTrack extends InteractionTrack {
         });
         menu.add(mapItem);
     }
-
-
 
     @Override
     public void marshalXML(Document document, Element element) {
