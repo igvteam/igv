@@ -251,6 +251,7 @@ public abstract class AbstractTrack implements Track {
     public void overlay(RenderContext context, Rectangle rect) {
     }
 
+    @Override
     public void setColor(Color color) {
         this.color = color;
     }
