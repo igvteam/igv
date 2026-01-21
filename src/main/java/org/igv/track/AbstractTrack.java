@@ -577,8 +577,12 @@ public abstract class AbstractTrack implements Track {
 
         // The viewLimit properties com from UCSC track lines and control "useScore" shading. They
         // are somewhat redundant with dataRange,  but we keep both for now to avoid breaking existing behavior.
-        this.viewLimitMin = properties.getMinValue() != null ? properties.getMinValue() : Float.NaN;
-        this.viewLimitMax = properties.getMaxValue() != null ? properties.getMaxValue() : Float.NaN;
+        if (properties.getMinValue() != null) {
+            this.viewLimitMin = properties.getMinValue();
+        }
+        if (properties.getMaxValue() != null) {
+            this.viewLimitMax = properties.getMaxValue();
+        }
 
         if (properties.getMaxValue() != null) {
 
