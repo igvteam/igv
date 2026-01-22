@@ -3,21 +3,22 @@ package org.igv.track;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
 import htsjdk.tribble.TribbleException;
-import org.igv.event.IGVEvent;
-import org.igv.logging.*;
 import org.igv.Globals;
-import org.igv.event.DataLoadedEvent;
+import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.*;
 import org.igv.feature.Range;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
 import org.igv.tools.motiffinder.MotifFinderSource;
 import org.igv.ui.IGV;
+import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.BrowserLauncher;
@@ -63,11 +64,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
 
-    // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
     /**
-     * Map of reference frame name -> packed features
+     * Map of reference frame -> packed features
      */
-    protected Map<String, PackedFeatures<Feature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<ReferenceFrame, PackedFeatures<Feature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
 
     protected Renderer renderer;
 
@@ -179,7 +179,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         this.renderer = locator != null && locator.getPath().endsWith("junctions.bed") ?
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
 
-        IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
+        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
 
     }
 
@@ -195,14 +195,16 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Called after features are finished loading, which can be asynchronous
      */
     public void receiveEvent(IGVEvent e) {
-        if (e instanceof DataLoadedEvent) {
-//            DataLoadedEvent event = (DataLoadedEvent) e;
-//            if (IGV.hasInstance()) {
-//                // TODO -- WHY IS THIS HERE????
-//                //TODO Assuming this is necessary, there can be many data loaded events in succession,
-//                //don't want to layout for each one
-//                IGV.getInstance().layoutMainPanel();
-//            }
+        if (e instanceof FrameManager.ChangeEvent) {
+            // Build a set of current frames
+            Set<ReferenceFrame> currentFrames = new HashSet<>(FrameManager.getFrames());
+
+            // Remove cached intervals for frames that are no longer present
+            // packedFeaturesMap is a synchronizedMap; synchronize while iterating/removing
+            synchronized (packedFeaturesMap) {
+                packedFeaturesMap.keySet().removeIf(frame -> !currentFrames.contains(frame));
+            }
+
         } else {
             log.warn("Unknown event type: " + e.getClass());
         }
@@ -359,7 +361,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
             StringBuffer buf = new StringBuffer();
             boolean firstFeature = true;
-            int maxNumber =  10;
+            int maxNumber = 10;
             int n = 1;
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
@@ -379,7 +381,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
                     firstFeature = false;
                     if (n > maxNumber) {
-                        buf.append("<hr><br<b>+ " + (allFeatures.size() - maxNumber) +  " more</b>");
+                        buf.append("<hr><br<b>+ " + (allFeatures.size() - maxNumber) + " more</b>");
                         break;
                     }
                 }
@@ -423,7 +425,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                         labelField != null ?
                                 igvFeature.getDisplayName(labelField) :
                                 igvFeature.getName();
-                    url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
+                url = trackURL.replaceAll("\\$\\$", StringUtils.encodeURL(idOrName));
             }
         }
         return url;
@@ -506,7 +508,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public List<Feature> getFeaturesAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
 
         if (packedFeatures == null) {
             return null;
@@ -634,7 +636,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             packedFeaturesMap.clear();
             return true;  // Ready by definition (nothing to paint)
         } else {
-            PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+            PackedFeatures packedFeatures = packedFeaturesMap.get(frame);
             String chr = frame.getChrName();
             int start = (int) frame.getOrigin();
             int end = (int) frame.getEnd();
@@ -643,7 +645,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     public void load(ReferenceFrame frame) {
-        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame.getName());
+        loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
     }
 
     /**
@@ -652,8 +654,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @param chr
      * @param start
      * @param end
+     * @param frame
      */
-    protected void loadFeatures(final String chr, final int start, final int end, final String frame) {
+    protected void loadFeatures(final String chr, final int start, final int end, final ReferenceFrame frame) {
 
         if (source == null) {
             return;
@@ -804,7 +807,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             log.trace(msg);
         }
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
+        PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame());
 
         if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
             return;
@@ -881,7 +884,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         Feature f = null;
         boolean canScroll = (forward && !frame.windowAtEnd()) || (!forward && frame.getOrigin() > 0);
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures packedFeatures = packedFeaturesMap.get(frame);
 
         // Compute a buffer to define "next"
         double buffer = Math.max(1, frame.getScale());
@@ -953,7 +956,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
         if (packedFeatures == null) {
             return Collections.emptyList();
         } else {

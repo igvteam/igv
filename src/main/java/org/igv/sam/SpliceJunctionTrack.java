@@ -200,7 +200,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
                 int intervalStart = loadedInterval.getStart();
                 int intervalEnd = loadedInterval.getEnd();
                 PackedFeatures pf = new PackedFeaturesSpliceJunctions(frame.getChrName(), intervalStart, intervalEnd, features.iterator(), getDisplayMode());
-                packedFeaturesMap.put(frame.getName(), pf);
+                packedFeaturesMap.put(frame, pf);
             }
         }
 

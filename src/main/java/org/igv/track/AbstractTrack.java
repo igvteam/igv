@@ -257,7 +257,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public Color getColor() {
-        return color;
+        return color == null ? defaultColor : color;
     }
 
     @Override
@@ -1184,12 +1184,12 @@ public abstract class AbstractTrack implements Track {
 
         // If an alt color is explicitly set use it for negative strand features;
         if (feature.getStrand() == Strand.NEGATIVE) {
-            featureColor = getAltColor();
+            featureColor = altColor;  // Use member variable, not getColor() which has defaulting behavior
         }
 
         // If color is explicitly set use it
         if (featureColor == null) {
-            featureColor = getColor();
+            featureColor = color;         // Use member variable, not getColor() which has defaulting behavior
         }
 
         // No explicitly set color, try the feature itself
