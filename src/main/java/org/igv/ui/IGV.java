@@ -10,7 +10,6 @@ package org.igv.ui;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.jidesoft.swing.JideSplitPane;
 import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.batch.BatchRunner;
@@ -40,7 +39,6 @@ import org.igv.ui.dnd.GhostGlassPane;
 import org.igv.ui.panel.*;
 import org.igv.ui.util.*;
 import org.igv.util.*;
-import org.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
@@ -348,8 +346,9 @@ public class IGV implements IGVEventObserver {
         return loadTracks(locators, null);
 
     }
+
     /**
-     * Load a collection of tracks in a background thread placing them in a specified panel.
+     * Load a collection of tracks in a background thread placing them after a specified panel.
      * Used by drag and drop.
      *
      * @param locators collection of resource locators
@@ -381,7 +380,7 @@ public class IGV implements IGVEventObserver {
 
                         try {
                             List<Track> tracks = load(locator);
-                            if(panel == null) {
+                            if (panel == null) {
                                 addTracks(tracks);
                             } else {
                                 panel.addTracks(tracks);
@@ -494,25 +493,6 @@ public class IGV implements IGVEventObserver {
                 // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
                 if (sp.getTrackPanel().getTracks().size() > 0)
                     totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-            }
-
-            // Adjust dividers for data panel.  The data panel divider can be
-            // zero if there are no data tracks loaded.
-            final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-            int htotal = centerSplitPane.getHeight();
-            int y = 0;
-            int i = 0;
-            for (Component c : centerSplitPane.getComponents()) {
-                if (c instanceof TrackPanelScrollPane) {
-                    final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                    if (trackPanel.getTracks().size() > 0) {
-                        int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                        int dh = (int) ((panelWeight / totalHeight) * htotal);
-                        y += dh;
-                    }
-                    centerSplitPane.setDividerLocation(i, y);
-                    i++;
-                }
             }
 
             contentPane.getMainPanel().invalidate();
@@ -900,7 +880,6 @@ public class IGV implements IGVEventObserver {
      * Add a new data panel set
      */
     public TrackPanelScrollPane addDataPanel(String name) {
-
         return contentPane.getMainPanel().addDataPanel(name);
     }
 
@@ -981,8 +960,6 @@ public class IGV implements IGVEventObserver {
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
 
-        getMainPanel().resetPanels();   // Also clears all tracks
-        getMainPanel().updatePanelDimensions();
         revalidateTrackPanels();
     }
 
@@ -1082,12 +1059,6 @@ public class IGV implements IGVEventObserver {
 
         sessionReader.loadSession(inputStream, session, sessionPath);
 
-        double[] dividerFractions = session.getDividerFractions();
-        if (dividerFractions != null) {
-            contentPane.getMainPanel().setDividerFractions(dividerFractions);
-        }
-        session.clearDividerLocations();
-
         revalidateTrackPanels();
         return true;
     }
@@ -1144,10 +1115,6 @@ public class IGV implements IGVEventObserver {
      */
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
-    }
-
-    public void tweakPanelDivider() {
-        contentPane.getMainPanel().tweakPanelDivider();
     }
 
     public void removeDataPanel(String name) {
@@ -1213,60 +1180,25 @@ public class IGV implements IGVEventObserver {
      * is chosen based on characteristics of the {@code locator}.
      */
     public void addTracks(List<Track> trackList) {
-        // Group tracks by locator.
-        Map<String, List<Track>> map = trackList.stream().collect(Collectors.groupingBy(t -> t.getResourceLocator().getPath()));
-        for (List<Track> tracks : map.values()) {
-            Track representativeTrack = tracks.get(0);
-            TrackPanel panel = getPanelFor(representativeTrack);
-            panel.addTracks(tracks);
+        for (var track : trackList) {
+            getMainPanel().addDataPanel(track);
         }
+
     }
 
     public void addTrack(Track track) {
-        getPanelFor(track).addTrack(track);
+        getMainPanel().addDataPanel(track);
     }
 
     /**
-     * Add the specified tracks to the specified panel.  This method is used to support legacy genome formats
-     * (.genome and .gbk)
-     */
-    public void addTrack(Track track, String panelName) {
-        TrackPanel panel = getTrackPanel(panelName);
-        panel.addTracks(Collections.singleton(track));
-    }
-
-
-    /**
-     * Return a DataPanel for the given track.
+     * @Deprecated
      *
      * @param track
      * @return
      */
     public TrackPanel getPanelFor(Track track) {
-
-        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-
-        ResourceLocator locator = track.getResourceLocator();
-        if (locator == null) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else if (locator.getPanelName() != null) {
-            return getTrackPanel(locator.getPanelName());
-        } else if ("alist".equals(locator.getFormat())) {
-            return getVcfBamPanel();
-        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else if (track instanceof VariantTrack && ((VariantTrack) track).sampleCount() > 10) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else {
-            // Default
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
+        String newPanelName = "Panel" + System.currentTimeMillis();
+        return addDataPanel(newPanelName).getTrackPanel();
     }
 
     /**
@@ -1282,13 +1214,6 @@ public class IGV implements IGVEventObserver {
         } else {
             return addDataPanel(panelName).getTrackPanel();
         }
-    }
-
-    private boolean isAnnotationFile(String format) {
-        Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
-                "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
-        return annotationFormats.contains(format);
     }
 
     /**
@@ -1538,10 +1463,9 @@ public class IGV implements IGVEventObserver {
      */
     public void setSequenceTrack() {
 
-        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-        panel.addTrack(newSeqTrack);
+        getMainPanel().addDataPanel(newSeqTrack);
+
 
 //        if (newGeneTrack != null) {
 //            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());

@@ -465,9 +465,13 @@ public class TrackPanel extends IGVPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        Dimension dim = super.getPreferredSize();
-        dim.height = getPreferredPanelHeight();
-        return dim;
+        return new Dimension(100000, getPreferredPanelHeight());
+
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
     }
 
     @Override

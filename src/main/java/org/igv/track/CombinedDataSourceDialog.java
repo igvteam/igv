@@ -7,7 +7,6 @@ package org.igv.track;
 import org.igv.logging.*;
 import org.igv.data.CombinedDataSource;
 import org.igv.ui.IGV;
-import org.igv.ui.PanelName;
 import org.igv.util.StringUtils;
 import org.igv.util.collections.CollUtils;
 

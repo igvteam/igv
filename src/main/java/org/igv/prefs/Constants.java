@@ -28,11 +28,8 @@ final public class Constants {
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
     public static final String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
-    public static final String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
     public static final String DETAILS_BEHAVIOR_KEY = "DETAILS_BEHAVIOR";
-    public static final String SKIP_VERSION = "SKIP_VERSION";
     public static final String SHOW_DEFAULT_TRACK_ATTRIBUTES = "SHOW_DEFAULT_TRACK_ATTRIBUTES";
-    public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
     public static final String CN_FREQ_AMP_THRESHOLD = "CN_FREQ.AMP_THRESHOLD";
     public static final String CN_FREQ_DEL_THRESHOLD = "CN_FREQ.DEL_THRESHOLD";
     public static final String AUTOSAVE_ON_EXIT = "AUTOSAVE_ON_EXIT";

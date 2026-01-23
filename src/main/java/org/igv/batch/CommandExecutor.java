@@ -159,7 +159,7 @@ public class CommandExecutor {
             String trackName = parseTrackName(param1);
             result = removeTrack(trackName);
         } else if (cmd.equalsIgnoreCase("tweakdivider")) {
-            igv.tweakPanelDivider();
+            //igv.tweakPanelDivider();
         } else if (cmd.equalsIgnoreCase("setDataRange")) {
             result = this.setDataRange(param1, param2);
         } else if (cmd.equalsIgnoreCase("setLogScale")) {

@@ -1,19 +1,13 @@
 package org.igv.tools.motiffinder;
 
-import org.igv.feature.CachingFeatureSource;
 import org.igv.feature.Strand;
-import org.igv.feature.genome.GenomeManager;
-import org.igv.track.FeatureTrack;
 import org.igv.track.MotifTrack;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
-import org.igv.ui.PanelName;
 import org.igv.util.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
