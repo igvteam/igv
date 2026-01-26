@@ -1,55 +1,108 @@
 package org.igv.ui.panel;
 
-import com.jidesoft.swing.JideScrollPane;
-import org.igv.logging.*;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
 /**
  * @author jrobinso
  */
-public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
+public class TrackPanelScrollPane extends JScrollPane implements Paintable {
 
     private static Logger log = LogManager.getLogger(TrackPanelScrollPane.class);
 
     TrackPanel trackPanel;
-    boolean isScrolling = false;
+
+
+    // User-specified height for this scroll pane. When set (> 0), this overrides content-based sizing.
+    private int explicitHeight = -1;
 
     public TrackPanelScrollPane() {
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         getVerticalScrollBar().setUnitIncrement(16);
 
-        addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
-                trackPanel.getNamePanel().repaint();
-            }
-        });
 
-        // A fix for name panel painting problems.   Not sure why this is neccessary, but it is.
-        // The adustment listener forces a repaint after a scroll action is complete.
-        final JScrollBar sb = this.getVerticalScrollBar();
-        sb.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
-                if (isScrolling) {
-                    if (!adjustmentEvent.getValueIsAdjusting()) {
-                        isScrolling = false;
-                        trackPanel.getNamePanel().repaint();
-                    }
-                } else {
-                    isScrolling = adjustmentEvent.getValueIsAdjusting();
-                }
+        addMouseWheelListener(mouseWheelEvent -> trackPanel.getNamePanel().repaint());
 
+    }
+
+    /**
+     * Set an explicit height for this scroll pane. This overrides the content-based sizing
+     * and locks the scroll pane to this height until changed by another call to this method.
+     *
+     * @param height the explicit height in pixels, or -1 to revert to content-based sizing
+     */
+    public void setExplicitHeight(int height) {
+        this.explicitHeight = height;
+
+        // Update scrollbar visibility based on new height
+        updateScrollbarPolicy();
+
+        // Invalidate ourselves first
+        invalidate();
+
+        // Revalidate the parent container to trigger BoxLayout recalculation
+        // This will resize us to the new explicit height
+        Container parent = getParent();
+        if (parent != null) {
+            parent.invalidate();
+            // Get the root container to force a complete layout pass
+            Component root = SwingUtilities.getRoot(this);
+            if (root instanceof Container) {
+                ((Container) root).validate();
             }
-        });
+        }
+
+        repaint();
+    }
+
+    /**
+     * Updates the vertical scrollbar policy based on whether the content height
+     * exceeds the scroll pane's preferred height. Call this when the track's
+     * content height may have changed.
+     */
+    public void updateScrollbarPolicy() {
+        if (trackPanel != null && trackPanel.getTrack() != null) {
+            int contentHeight = trackPanel.getTrack().getContentHeight();
+            int scrollPaneHeight = getPreferredSize().height;
+            boolean needsScrolling = contentHeight > scrollPaneHeight;
+
+            int newPolicy = needsScrolling
+                    ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+                    : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
+
+            if (getVerticalScrollBarPolicy() != newPolicy) {
+                setVerticalScrollBarPolicy(newPolicy);
+            }
+        }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        int height = trackPanel.getTrack().getHeight();
+        if (explicitHeight > 0) {
+            height = explicitHeight;
+        } else if (trackPanel != null && trackPanel.getTrack() != null) {
+            height = trackPanel.getTrack().getContentHeight();
+        } else {
+            return super.getPreferredSize();
+        }
+        return new Dimension(super.getPreferredSize().width, height);
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        // Limit maximum height to preferred height so BoxLayout doesn't stretch
+        Dimension pref = getPreferredSize();
+        return new Dimension(Integer.MAX_VALUE, pref.height);
     }
 
     @Override
@@ -66,22 +119,15 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         }
         super.setViewportView(trackSetView);
         this.trackPanel = (TrackPanel) trackSetView;
+        updateScrollbarPolicy();
     }
 
     public TrackPanel getTrackPanel() {
         return trackPanel;
     }
 
-
     public String getTrackPanelName() {
         return trackPanel.getName();
-    }
-
-    public void minimizeHeight() {
-        int prefHeight = trackPanel.getPreferredPanelHeight();
-        if (prefHeight < trackPanel.getViewportHeight()) {
-            this.setSize(getWidth(), prefHeight);
-        }
     }
 
     public DataPanelContainer getDataPanel() {
@@ -111,7 +157,7 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     @Override
     public int getSnapshotHeight(boolean batch) {
 
-        if(trackPanel.getTracks().size() == 0) {
+        if (trackPanel.getTracks().size() == 0) {
             return 0;
         }
 
@@ -122,7 +168,7 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
             if (maxPanelHeight <= 0) {
                 panelHeight = scrollPaneHeight;
             } else {
-                int contentHeight = trackPanel.getPreferredPanelHeight();
+                int contentHeight = trackPanel.getContentHeight();
                 panelHeight = Math.min(maxPanelHeight, Math.max(scrollPaneHeight, contentHeight));
             }
             return panelHeight;

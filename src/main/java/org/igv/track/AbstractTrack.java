@@ -17,10 +17,7 @@ import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 import org.igv.ui.TooltipTextFrame;
 import org.igv.ui.color.ColorUtilities;
-import org.igv.ui.panel.AttributeHeaderPanel;
-import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.panel.MouseableRegion;
-import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.*;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
 import org.w3c.dom.Document;
@@ -43,10 +40,12 @@ public abstract class AbstractTrack implements Track {
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
 
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
-    public static final int DEFAULT_HEIGHT = -1;
+    public static final int DEFAULT_HEIGHT = 20;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     protected final boolean darkMode;
+
+    TrackPanelScrollPane viewport;
 
     private ResourceLocator resourceLocator;
     private String id;
@@ -88,7 +87,7 @@ public abstract class AbstractTrack implements Track {
     protected int visibilityWindow = VISIBILITY_WINDOW;
     private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
 
-    protected Integer height = DEFAULT_HEIGHT;
+    protected int height;
 
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
@@ -127,6 +126,11 @@ public abstract class AbstractTrack implements Track {
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
+    }
+
+    @Override
+    public void setViewport(TrackPanelScrollPane viewport) {
+        this.viewport = viewport;
     }
 
     public void setRendererClass(Class rc) {
@@ -175,23 +179,17 @@ public abstract class AbstractTrack implements Track {
         this.sampleId = sampleId;
     }
 
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
-
-        Rectangle rect = getDisplayableRect(trackRectangle, visibleRectangle);
+    // Implement the default rendering of the track name.  Subclasses may override.
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle) {
 
         String trackName = getDisplayName();
         if ((trackName != null)) {
 
-            if (rect.getHeight() > 3) {
+            if (trackRectangle.getHeight() > 3) {
 
-                // Calculate fontsize
-                int gap = Math.min(4, rect.height / 3);
-                int fs = Math.min(fontSize, rect.height - gap);
-
-                Font font = FontManager.getFont(fs);
+                Font font = FontManager.getFont(fontSize);
                 g2D.setFont(font);
-
-                GraphicUtils.drawWrappedText(trackName, rect, g2D, false);
+                GraphicUtils.drawWrappedText(trackName, trackRectangle, g2D, true);
 
                 //g2D.dispose();
             }
@@ -370,22 +368,18 @@ public abstract class AbstractTrack implements Track {
         return sampleId != null ? sampleId : getName();
     }
 
-
-    /**
-     * Returns the default height based on the default renderer for the data
-     * type, as opposed to the actual renderer in use.  This is done to prevent
-     * the track size from changing if renderer is changed.
-     *
-     * @return
-     */
-    private int getDefaultHeight() {
-        if (getDefaultRenderer() instanceof XYPlotRenderer) {
-            return PreferencesManager.getPreferences().getAsInt(CHART_TRACK_HEIGHT_KEY);
-        } else {
-            return PreferencesManager.getPreferences().getAsInt(TRACK_HEIGHT_KEY);
-        }
+    @Override
+    public int getHeight() {
+        return height;
     }
 
+    public void setHeight(int height) {
+        this.height = height;
+        // Update the scroll pane's explicit height so it respects user-set dimensions
+        if (viewport != null) {
+            viewport.setExplicitHeight(height);
+        }
+    }
 
     /**
      * Returns the default minimum height based on the actual renderer for this track.  Heatmaps default
@@ -404,15 +398,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setMinimumHeight(int minimumHeight) {
         this.minimumHeight = minimumHeight;
-    }
-
-    /**
-     * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
-     *
-     * @return
-     */
-    public int getMinimumHeight() {
-        return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
     }
 
     @Override
@@ -460,28 +445,6 @@ public abstract class AbstractTrack implements Track {
         return selected;
     }
 
-    public void setHeight(int height) {
-        setHeight(height, false);
-    }
-
-    @Override
-    public void setHeight(int preferredHeight, boolean force) {
-        if (height < getHeight()) {
-            if ((this.getDisplayMode() == DisplayMode.EXPANDED) && (getTrackType() != TrackType.GENE)) {
-                this.setDisplayMode(DisplayMode.SQUISHED);
-            }
-        }
-
-        if (force) {
-            this.height = preferredHeight;
-        } else {
-            this.height = Math.max(getMinimumHeight(), preferredHeight);
-        }
-    }
-
-    public int getHeight() {
-        return (height < 0) ? getDefaultHeight() : height;
-    }
 
     public DataRange getDataRange() {
         if (dataRange == null) {
@@ -997,9 +960,6 @@ public abstract class AbstractTrack implements Track {
         }
         if (displayMode != DEFAULT_DISPLAY_MODE) {
             element.setAttribute(SessionAttribute.DISPLAY_MODE, displayMode.toString());
-        }
-        if (height != DEFAULT_HEIGHT) {
-            element.setAttribute(SessionAttribute.HEIGHT, height.toString());
         }
         if (colorScale != null) {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"

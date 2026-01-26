@@ -1,6 +1,5 @@
 package org.igv.ui.panel;
 
-import com.jidesoft.swing.JideSplitPane;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -40,7 +39,8 @@ public class MainPanel extends JPanel implements Paintable {
 
     public IGVPanel applicationHeaderPanel;
     public HeaderPanelContainer headerPanelContainer;
-    private JPanel centerSplitPane;
+    private JPanel trackPanelContainer;
+    private JScrollPane trackPanelScrollPane;
     private NameHeaderPanel nameHeaderPanel;
     private AttributeHeaderPanel attributeHeaderPanel;
 
@@ -180,10 +180,18 @@ public class MainPanel extends JPanel implements Paintable {
         headerScrollPane.setViewportView(applicationHeaderPanel);
 
 
-        centerSplitPane = new JPanel();
-        centerSplitPane.setLayout(new BoxLayout(centerSplitPane, BoxLayout.Y_AXIS));
+        // Custom panel that implements Scrollable to prevent viewport from stretching it
+        trackPanelContainer = new ScrollableTrackContainer();
 
-        add(centerSplitPane, BorderLayout.CENTER);
+        trackPanelScrollPane = new JScrollPane(trackPanelContainer);
+        trackPanelScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        trackPanelScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        trackPanelScrollPane.setBorder(null);
+        trackPanelScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        // Disable blit scrolling to prevent ghosting artifacts during scroll
+        //trackPanelScrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+
+        add(trackPanelScrollPane, BorderLayout.CENTER);
 
         setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
 
@@ -198,11 +206,8 @@ public class MainPanel extends JPanel implements Paintable {
         final TrackPanel trackPanel = new TrackPanel(name, this);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
         Runnable runnable = () -> {
-            // Print preferred sizes for debugging (line ~217)
-            System.out.println("DEBUG addDataPanel(String): sp.getPreferredSize()=" + sp.getPreferredSize() + ", trackPanel.getPreferredSize()=" + trackPanel.getPreferredSize());
-
             sp.setViewportView(trackPanel);
-            centerSplitPane.add(sp);
+            trackPanelContainer.add(sp);
 
         };
 
@@ -216,11 +221,11 @@ public class MainPanel extends JPanel implements Paintable {
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
         trackPanel.addTrack(track);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
+        track.setViewport(sp);
 
         Runnable runnable = () -> {
-            sp.setMaximumSize(trackPanel.getPreferredSize());
             sp.setViewportView(trackPanel);
-            centerSplitPane.add(sp);
+            trackPanelContainer.add(sp);
         };
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);
@@ -236,7 +241,7 @@ public class MainPanel extends JPanel implements Paintable {
      */
     public java.util.List<TrackPanel> getTrackPanels() {
         ArrayList<TrackPanel> panels = new ArrayList<TrackPanel>();
-        for (Component c : centerSplitPane.getComponents()) {
+        for (Component c : trackPanelContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 panels.add(((TrackPanelScrollPane) c).getTrackPanel());
             }
@@ -248,18 +253,18 @@ public class MainPanel extends JPanel implements Paintable {
     public void reorderPanels(java.util.List<String> names) {
 
         Map<String, TrackPanelScrollPane> panes = new HashMap();
-        for (Component c : centerSplitPane.getComponents()) {
+        for (Component c : trackPanelContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
                 panes.put(tsp.getTrackPanelName(), tsp);
             }
         }
 
-        centerSplitPane.removeAll();
+        trackPanelContainer.removeAll();
         for (String name : names) {
-            centerSplitPane.add(panes.get(name));
+            trackPanelContainer.add(panes.get(name));
         }
-        centerSplitPane.invalidate();
+        trackPanelContainer.invalidate();
     }
 
     public void removeEmptyDataPanels() {
@@ -271,7 +276,7 @@ public class MainPanel extends JPanel implements Paintable {
         }
         for (TrackPanelScrollPane panel : emptyPanels) {
             if (panel != null) {
-                centerSplitPane.remove(panel);
+                trackPanelContainer.remove(panel);
                 TrackNamePanel.removeDropListenerFor(panel.getNamePanel());
             }
 
@@ -294,9 +299,9 @@ public class MainPanel extends JPanel implements Paintable {
         if (panelIsRemovable(trackPanel)) {
             TrackPanelScrollPane sp = trackPanel.getScrollPane();
             if (sp != null) {
-                centerSplitPane.remove(sp);
+                trackPanelContainer.remove(sp);
                 TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
-                centerSplitPane.revalidate();
+                trackPanelContainer.revalidate();
             }
         }
     }
@@ -357,18 +362,8 @@ public class MainPanel extends JPanel implements Paintable {
         return dataPanelWidth;
     }
 
-    public JPanel getCenterSplitPane() {
-        return centerSplitPane;
-    }
-
-    static class SplitPane extends JideSplitPane {
-//        @Override
-//        public void doLayout() {
-//            if (log.isTraceEnabled()) {
-//                log.trace("Layout");
-//            }
-//            super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
-//        }
+    public JPanel getTrackPanelContainer() {
+        return trackPanelContainer;
     }
 
     @Override
@@ -390,11 +385,11 @@ public class MainPanel extends JPanel implements Paintable {
         headerGraphics.dispose();
 
         // Now loop through track panels
-        Rectangle r = centerSplitPane.getBounds();
+        Rectangle r = trackPanelContainer.getBounds();
         g.translate(0, r.y);
 
         // Get the components of the center pane and sort by Y position.
-        Component[] components = centerSplitPane.getComponents();
+        Component[] components = trackPanelContainer.getComponents();
         Arrays.sort(components, Comparator.comparingInt(Component::getY));
 
         int dy = components[0].getY();
@@ -445,7 +440,7 @@ public class MainPanel extends JPanel implements Paintable {
         if (batch) {
             int height = applicationHeaderPanel.getHeight();
 
-            for (Component c : centerSplitPane.getComponents()) {
+            for (Component c : trackPanelContainer.getComponents()) {
 
                 if (c instanceof TrackPanelScrollPane) {
 
@@ -473,5 +468,52 @@ public class MainPanel extends JPanel implements Paintable {
         headerPanelContainer.repaint();
     }
 
+    /**
+     * A scrollable panel container that uses BoxLayout and doesn't stretch vertically
+     * when placed in a JScrollPane viewport.
+     */
+    private static class ScrollableTrackContainer extends JPanel implements Scrollable {
 
+        public ScrollableTrackContainer() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            // Calculate preferred size based on children
+            int height = 0;
+            int width = 0;
+            for (Component c : getComponents()) {
+                Dimension pref = c.getPreferredSize();
+                height += pref.height;
+                width = Math.max(width, pref.width);
+            }
+            return new Dimension(width, height);
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true; // Stretch horizontally to fit viewport
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false; // Do NOT stretch vertically - use preferred height
+        }
+    }
 }

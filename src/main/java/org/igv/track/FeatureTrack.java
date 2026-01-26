@@ -211,13 +211,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         if (!isVisible()) {
             return 0;
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
         int minHeight = margin + rowHeight * Math.max(1, getNumberOfFeatureLevels());
-        return Math.max(minHeight, super.getHeight());
+        return Math.max(minHeight, super.getContentHeight());
     }
 
     public int getExpandedRowHeight() {
@@ -491,7 +491,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 rowHeight = getExpandedRowHeight();
                 break;
             default:
-                rowHeight = getHeight();
+                rowHeight = this.getContentHeight();
         }
 
         return Math.max(0, (y - this.getY() - this.margin) / rowHeight);
@@ -716,11 +716,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
-        Rectangle renderRect = new Rectangle(rect);
+    public void render(RenderContext context, Rectangle visibleRect) {
+
+        // Draw entire track.  TODO use clipBounds or visibleRect.
+        Rectangle renderRect = new Rectangle(0, 0, visibleRect.width, this.getContentHeight());
+
         renderRect.y = renderRect.y + margin;
         renderRect.height -= margin;
-
 
         showFeatures = isShowFeatures(context.getReferenceFrame());
         if (showFeatures) {
@@ -857,10 +859,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
                     renderer.render(row.features, context, new Rectangle(rect), this);
 
-                    if (selectedFeatureRowIndex == i) {
-                        Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
-                        fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
-                    }
+                  //  if (selectedFeatureRowIndex == i) {
+                   //     Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
+                  //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                  //  }
 
                     rect.y += h;
                     i++;

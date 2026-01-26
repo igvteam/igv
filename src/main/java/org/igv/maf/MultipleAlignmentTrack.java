@@ -2,7 +2,6 @@ package org.igv.maf;
 
 import org.igv.logging.*;
 import org.igv.feature.genome.Genome;
-import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
@@ -111,12 +110,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return GAPS_HEIGHT + (getSelectedSpecies().size() + 1) * EXPANDED_HEIGHT;
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle) {
 
         this.visibleNameRect = trackRectangle;
         if (isSelected()) {
@@ -149,7 +148,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 name = sp;
             }
 
-            if (visibleRectangle.intersects(rect)) {
+            if (trackRectangle.intersects(rect)) {
 
                 GraphicUtils.drawVerticallyCenteredText(name, margin, rect, g2D, true);
             }
@@ -191,12 +190,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         loadedAlignments = new MAFCache(chr, start, end, alignments);
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         double locScale = context.getScale();
 
         if (locScale > 10) {
-            Rectangle r = new Rectangle(rect);
+            Rectangle r = new Rectangle(visibleRect);
             if (visibleNameRect != null) {
                 r.y = visibleNameRect.y;
                 r.height = visibleNameRect.height;
@@ -218,7 +217,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
             alignments = loadedAlignments.getAlignments();
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
-                    renderAlignment(context, rect, ma);
+                    renderAlignment(context, visibleRect, ma);
                 }
             }
         }

@@ -530,7 +530,7 @@ public class CommandExecutor {
         List<Track> tracks = tracksMatchingName(trackName);
         if (tracks.size() > 0) {
             for (Track track : tracks) {
-                track.setHeight(height, true);
+                track.setHeight(height);
                 igv.repaint(track);
             }
             return "OK";
@@ -1126,7 +1126,7 @@ public class CommandExecutor {
         if (region == null || region.trim().length() == 0) {
             target = this.igv.getContentPane().getMainPanel();
         } else if ("trackpanels".equalsIgnoreCase(region)) {
-            target = this.igv.getMainPanel().getCenterSplitPane();
+            target = this.igv.getMainPanel().getTrackPanelContainer();
         }
 
         if (target == null) {

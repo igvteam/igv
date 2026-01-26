@@ -116,7 +116,7 @@ public class GWASTrack extends AbstractTrack {
         // Nothing to do, track is initialized with all data
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -127,9 +127,9 @@ public class GWASTrack extends AbstractTrack {
 
         try {
             g = (Graphics2D) context.getGraphics().create();
-            g.setClip(rect);
+            g.setClip(visibleRect);
 
-            Rectangle plotRect = calculateDrawingRect(rect);
+            Rectangle plotRect = calculateDrawingRect(visibleRect);
 
             DataRange dataRange = this.getDataRange();
             float maxValue = dataRange.getMaximum();

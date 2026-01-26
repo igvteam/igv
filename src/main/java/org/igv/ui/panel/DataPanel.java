@@ -68,6 +68,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         this.parent = parent;
         setFocusable(true);
         setAutoscrolls(true);
+        setOpaque(true);
+        setDoubleBuffered(true);
         setToolTipText("");
         painter = new DataPanelPainter();
 
@@ -113,23 +115,22 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         super.paintComponent(g);
 
+        // Explicitly fill background - JComponent without UI delegate doesn't do this automatically
+        Graphics2D graphics2D = (Graphics2D) g;
+        Rectangle clip = graphics2D.getClipBounds();
+        if (clip != null) {
+            graphics2D.setColor(getBackground());
+            graphics2D.fillRect(clip.x, clip.y, clip.width, clip.height);
+        }
+
         RenderContext context = null;
         try {
 
-            Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
-            final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
-            Graphics2D graphics2D = (Graphics2D) g;
 
             context = new RenderContext(this, graphics2D, frame, visibleRect);
 
-            final Collection<TrackGroup> groups = parent.getTrackGroups();
-
-            int trackWidth = getWidth();
-
-            computeMousableRegions(groups, trackWidth);
-
-            painter.paint(groups, context, getBackground(), damageRect);
+            painter.paint(getTrack(), context, getBackground(), visibleRect);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -186,7 +187,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 List<Track> trackList = group.getVisibleTracks();
                 for (Track track : trackList) {
                     if (track == null) continue;
-                    int trackHeight = track.getHeight();
+                    int trackHeight = track.getContentHeight();
 
                     if (track.isVisible()) {
                         Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
@@ -224,7 +225,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(groups, context, getBackground(), contentRect);
+            painter.paint(getTrack(), context, getBackground(), contentRect);
             drawAllRegions(g);
 
         } finally {
@@ -331,21 +332,9 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
      */
     static DecimalFormat locationFormatter = new DecimalFormat();
 
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     * @return
-     */
-    public Track getTrack(int x, int y) {
-        for (MouseableRegion mouseRegion : parent.getMouseRegions()) {
-            if (mouseRegion.containsPoint(x, y)) {
-                return mouseRegion.getTracks().iterator().next();
-            }
-        }
-        return null;
 
+    public Track getTrack() {
+        return parent.getTrack();
     }
 
 
@@ -689,7 +678,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             Object source = e.getSource();
             if (source instanceof DataPanel && e.getButton() == MouseEvent.BUTTON1) {
-                final Track track = ((DataPanel) e.getSource()).getTrack(e.getX(), e.getY());
+                final Track track = ((DataPanel) e.getSource()).getTrack();
 
                 if (e.isShiftDown()) {
                     final double locationClicked = frame.getChromosomePosition(e);

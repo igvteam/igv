@@ -1,22 +1,20 @@
 package org.igv.ui.panel;
 
 
-import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
-import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -58,16 +56,16 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     public TrackPanel getTrackPanel() {
-        if (trackPanel == null) {
-            trackPanel = (TrackPanel) getParent();
-        }
         return trackPanel;
+    }
+
+    public Track getTrack() {
+        return getTrackPanel().getTrack();
     }
 
     public String getTrackSetID() {
         return getTrackPanel().getName();
     }
-
 
     protected void addMousableRegion(MouseableRegion region) {
         mouseRegions.add(region);
@@ -144,10 +142,6 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected void openPopupMenu(TrackClickEvent te) {
-        openPopupMenu(te, null);
-    }
-
-    protected void openPopupMenu(TrackClickEvent te, List<Component> extraItems) {
 
         MouseEvent e = te.getMouseEvent();
         IGVPopupMenu menu = null;
@@ -179,12 +173,6 @@ abstract public class TrackPanelComponent extends JPanel {
             }
 
             // Add additional items, if any
-            if (extraItems != null) {
-                menu.addSeparator();
-                for (Component item : extraItems) {
-                    menu.add(item);
-                }
-            }
 
             if (menu.includeStandardItems()) {
 
@@ -209,7 +197,7 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
-        if(menu != null) {
+        if (menu != null) {
             menu.show(e.getComponent(), e.getX(), e.getY());
         }
 
@@ -230,25 +218,11 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected void selectTracks(MouseEvent e) {
-        for (MouseableRegion mouseRegion : mouseRegions) {
-            if (mouseRegion.containsPoint(e.getX(), e.getY())) {
-                IGV.getInstance().setTrackSelections(mouseRegion.getTracks());
-                return;
-            }
-        }
+        IGV.getInstance().setTrackSelections(Collections.singletonList(getTrack()));
     }
 
     protected boolean isTrackSelected(MouseEvent e) {
-        for (MouseableRegion mouseRegion : mouseRegions) {
-            if (mouseRegion.containsPoint(e.getX(), e.getY())) {
-                for (Track t : mouseRegion.getTracks()) {
-                    if (t.isSelected()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return getTrack().isSelected();
     }
 
 

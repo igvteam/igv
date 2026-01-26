@@ -134,7 +134,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle) {
 
         // Use local graphics -- this method corrupts graphics context when exporting to "png" files
         Graphics2D graphics = (Graphics2D) g.create();
@@ -145,11 +145,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         if (visible) {
             graphics.setFont(font);
-            int textBaseline = trackRectangle.y + 12;
-            graphics.drawString(NAME, trackRectangle.x + 5, textBaseline);
+            int textBaseline = 12;
+            graphics.drawString(NAME, 5, textBaseline);
 
-            int rx = trackRectangle.x + trackRectangle.width - 20;
-            arrowRect = new Rectangle(rx, trackRectangle.y + 2, 15, 10);
+            int rx = trackRectangle.width - 20;
+            arrowRect = new Rectangle(rx, 2, 15, 10);
             drawArrow(graphics);
 
             //Show icon when translation non-standard
@@ -244,9 +244,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
      * Render the sequence, and optionally the 3 frame translation table
      *
      * @param context
-     * @param rect
+     * @param visibleRect
      */
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
@@ -257,7 +257,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, rect, showTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, visibleRect, showTranslation, resolutionThreshold);
             }
         }
     }
@@ -275,7 +275,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return isVisible() ? SEQUENCE_HEIGHT +
                 (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT + SequenceRenderer.TRANSLATED_SEQ_GAP : 0) :
                 0;

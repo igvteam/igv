@@ -2,8 +2,6 @@ package org.igv.ui.panel;
 
 
 import org.igv.feature.RegionOfInterest;
-import org.igv.feature.genome.Genome;
-import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.track.RegionScoreType;
@@ -12,14 +10,17 @@ import org.igv.track.TrackGroup;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 
+import javax.swing.*;
 import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
 
 /**
  * @author eflakes
  */
-public class TrackPanel extends IGVPanel {
+public class TrackPanel extends IGVPanel implements Scrollable {
 
     private static Logger log = LogManager.getLogger(TrackPanel.class);
 
@@ -28,9 +29,8 @@ public class TrackPanel extends IGVPanel {
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
-    private String groupAttribute;
-    private int trackCountEstimate = 0;  // <= used to size array list, not neccesarily precise
     private List<TrackGroup> trackGroups;
+    private Track track;
 
     transient int lastHeight = 0;
 
@@ -42,10 +42,6 @@ public class TrackPanel extends IGVPanel {
     public TrackPanel(String name, MainPanel mainPanel) {
         super(mainPanel);
         this.name = name;
-        TrackGroup nullGroup = new TrackGroup();
-        nullGroup.setDrawBorder(false);
-        trackGroups = Collections.synchronizedList(new LinkedList<TrackGroup>());
-        trackGroups.add(nullGroup);
         init();
     }
 
@@ -69,6 +65,23 @@ public class TrackPanel extends IGVPanel {
     }
 
     @Override
+    public void doLayout() {
+        synchronized (getTreeLock()) {
+            // Use preferred height (content height) instead of actual height
+            // This ensures the panel is sized correctly for scrolling
+            int h = getPreferredSize().height;
+
+            int nw = mainPanel.getNamePanelWidth();
+
+            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
+            dataPanelContainer.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+
+            dataPanelContainer.doLayout();
+        }
+    }
+
+    @Override
     public void setBackground(Color color) {
         super.setBackground(color);
         if (namePanel != null) {
@@ -78,6 +91,10 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
+    public Track getTrack() {
+        return track;
+
+    }
 
     public TrackNamePanel getNamePanel() {
         return namePanel;
@@ -113,58 +130,33 @@ public class TrackPanel extends IGVPanel {
      * @return
      */
     public boolean hasTracks() {
-        for (TrackGroup tg : trackGroups) {
-            if (tg.getVisibleTracks().size() > 0) {
-                return true;
-            }
-        }
-        return false;
+        return track != null;
     }
 
     public int getVisibleTrackCount() {
-        int count = 0;
-        for (TrackGroup tg : trackGroups) {
-            for (Track t : tg.getVisibleTracks()) {
-                if (t != null && t.isVisible()) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return track != null && track.isVisible() ? 1 : 0;
     }
 
     public boolean isHeightChanged() {
-        int height = getPreferredPanelHeight();
+        int height = track.getContentHeight();
         boolean change = height != lastHeight;
         lastHeight = height;
         return change;
     }
 
     public List<Track> getTracks() {
-        ArrayList<Track> tracks = new ArrayList(trackCountEstimate);
-        for (TrackGroup tg : trackGroups) {
-            tracks.addAll(tg.getTracks());
-        }
-        return tracks;
+        return Collections.singletonList(this.track);
     }
 
     public boolean containsTrack(Track track) {
-        for (TrackGroup tg : trackGroups) {
-            if (tg.contains(track)) {
-                return true;
-            }
-        }
-        return false;
+        return track == this.track;
     }
 
     public void clearTracks() {
-
-        for (Track t : getTracks()) {
-            t.unload();
+        if (track != null) {
+            track.unload();
         }
-        groupAttribute = null;
-        trackGroups.clear();
-        trackCountEstimate = 0;
+        track = null;
     }
 
 
@@ -225,26 +217,10 @@ public class TrackPanel extends IGVPanel {
      * @param track
      */
     public void addTrack(Track track) {
-        log.debug("Adding track " + track.getName() + " to panel " + getName());
-        String groupName = (groupAttribute == null ? null : track.getAttributeValue(groupAttribute));
-        boolean foundGroup = false;
-        for (TrackGroup tg : trackGroups) {
-            if (groupAttribute == null || groupName == null || tg.getName().equals(groupName)) {
-                tg.add(track);
-                foundGroup = true;
-                break;
-            }
+        if (this.track != null) {
+            throw new RuntimeException("TrackPanel can only hold a single track");
         }
-        if (!foundGroup) {
-            TrackGroup newGroup = new TrackGroup(groupName);
-            newGroup.add(track);
-            if (groupAttribute == null) {
-                newGroup.setDrawBorder(false);
-            }
-            trackGroups.add(newGroup);
-        }
-        log.debug("Done adding track to TrackPanel");
-        trackCountEstimate++;
+        this.track = track;
     }
 
     public void addTracks(Collection<? extends Track> tracks) {
@@ -253,77 +229,24 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-    public void moveGroup(TrackGroup group, int index) {
-
-        if (index > trackGroups.indexOf(group)) {
-            index--;
-        }
-        trackGroups.remove(group);
-        if (index >= trackGroups.size()) {
-            trackGroups.add(group);
-        } else {
-            trackGroups.add(index, group);
-        }
-    }
-
-
     public void reset() {
-        this.groupAttribute = null;
         clearTracks();
-    }
-
-    /**
-     * Rebuild group list for supplied attribute.
-     *
-     * @param attribute
-     */
-    public void groupTracksByAttribute(String attribute) {
-
-        this.groupAttribute = attribute;
-        List<Track> tracks = getTracks();
-        trackGroups.clear();
-
-        if (attribute == null || attribute.length() == 0) {
-            TrackGroup nullGroup = new TrackGroup();
-            nullGroup.addAll(tracks);
-            nullGroup.setDrawBorder(false);
-            trackGroups.add(nullGroup);
-        } else {
-            Map<String, TrackGroup> groupMap = new HashMap();
-            for (Track track : tracks) {
-                String attributeValue = track.getAttributeValue(attribute);
-
-                if (attributeValue == null) {
-                    attributeValue = "";
-                }
-
-                TrackGroup group = groupMap.get(attributeValue);
-
-                if (group == null) {
-                    group = new TrackGroup(attributeValue);
-                    groupMap.put(attributeValue, group);
-                    trackGroups.add(group);
-                }
-                group.add(track);
-            }
-        }
     }
 
     public void sortTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
 
         assert attributeNames.length == ascending.length;
 
-        for (TrackGroup tg : trackGroups) {
-            tg.sortByAttributes(attributeNames, ascending);
-        }
+//        for (TrackGroup tg : trackGroups) {
+//            tg.sortByAttributes(attributeNames, ascending);
+//        }
     }
 
 
     public void sortTracksByPosition(List<String> trackIds) {
-        for (TrackGroup tg : trackGroups) {
-            tg.sortByList(trackIds);
-        }
-
+//        for (TrackGroup tg : trackGroups) {
+//            tg.sortByList(trackIds);
+//        }
     }
 
 
@@ -339,11 +262,11 @@ public class TrackPanel extends IGVPanel {
                                    final ReferenceFrame frame, List<String> sortedSamples) {
 
         sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
-        for (TrackGroup group : trackGroups) {
-            // If there is a non-null linking attribute
-            // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
-            group.sortGroup(type, sortedSamples);
-        }
+        //for (TrackGroup group : trackGroups) {
+        // If there is a non-null linking attribute
+        // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
+        //group.sortGroup(type, sortedSamples);
+        //}
     }
 
     /**
@@ -375,35 +298,12 @@ public class TrackPanel extends IGVPanel {
         }
     }
 
-
-    /**
-     * This is called upon switching genomes to replace the gene and sequence tracks
-     *
-     * @param newTrack
-     * @return true if gene track is found.
-     */
-    public boolean replaceTrack(Track oldTrack, Track newTrack) {
-
-        boolean foundTrack = false;
-
-        for (TrackGroup g : trackGroups) {
-            if (g.contains(oldTrack)) {
-                int idx = g.indexOf(oldTrack);
-                g.remove(oldTrack);
-                idx = Math.min(g.size(), idx);
-                if (newTrack != null) {
-                    g.add(idx, newTrack);
-                }
-                foundTrack = true;
-            }
-        }
-
-        return foundTrack;
-    }
-
     public void removeTracks(Collection<? extends Track> tracksToRemove) {
-        for (TrackGroup tg : trackGroups) {
-            tg.removeTracks(tracksToRemove);
+        for (Track t : tracksToRemove) {
+            if (t == this.track) {
+                clearTracks();
+                break;
+            }
         }
     }
 
@@ -411,8 +311,7 @@ public class TrackPanel extends IGVPanel {
      * Remove, but do not dispose of, tracks.  Used by session reader
      */
     public void removeAllTracks() {
-        trackGroups.clear();
-        trackCountEstimate = 0;
+        track = null;
     }
 
     /**
@@ -430,43 +329,21 @@ public class TrackPanel extends IGVPanel {
             return;
         }
 
-        for (TrackGroup tg : trackGroups) {
-            if (tg.moveSelectedTracksTo(selectedTracks, targetTrack, before)) {
-                return;
-            }
-        }
+//        for (TrackGroup tg : trackGroups) {
+//            if (tg.moveSelectedTracksTo(selectedTracks, targetTrack, before)) {
+//                return;
+//            }
+//        }
     }
 
 
-    public int getPreferredPanelHeight() {
-        int height = 0;
-
-        Collection<TrackGroup> groups = getGroups();
-
-        if (groups.size() > 1) {
-            height += UIConstants.groupGap;
-        }
-
-        synchronized (groups) {
-
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                TrackGroup group = groupIter.next();
-                if (group != null && group.isVisible()) {
-                    if (groups.size() > 1) {
-                        height += UIConstants.groupGap;
-                    }
-                    height += group.getHeight();
-                }
-            }
-        }
-
-        return Math.max(20, height);
+    public int getContentHeight() {
+        return this.track.getContentHeight();
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(100000, getPreferredPanelHeight());
-
+        return new Dimension(100000, track.getContentHeight());
     }
 
     @Override
@@ -474,13 +351,40 @@ public class TrackPanel extends IGVPanel {
         return getPreferredSize();
     }
 
+    // Scrollable interface methods
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 16; // pixels per unit scroll
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        if (orientation == SwingConstants.VERTICAL) {
+            return visibleRect.height;
+        }
+        return visibleRect.width;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        // Return true to make the panel stretch to fit the viewport width
+        return true;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        // Return false so the panel uses its preferred height and scrollbars appear when needed
+        return false;
+    }
+
     @Override
     public int getSnapshotHeight(boolean batch) {
         return getHeight();
-    }
-
-    public void addTrackGroup(TrackGroup trackGroup) {
-        trackGroups.add(trackGroup);
     }
 
     public static TrackPanel getParentPanel(Track track) {

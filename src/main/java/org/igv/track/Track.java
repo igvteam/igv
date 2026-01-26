@@ -9,9 +9,7 @@ import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
 import org.igv.session.Persistable;
 import org.igv.ui.IGV;
-import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.panel.MouseableRegion;
-import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.*;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
 
@@ -29,6 +27,8 @@ public interface Track extends Persistable, AttributeSupplier {
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, FULL
     }
+
+    void setViewport(TrackPanelScrollPane trackPanel);
 
     /**
      * Return an identifier for the track.   The identifier should be unique in the context of a session.  For
@@ -69,13 +69,13 @@ public interface Track extends Persistable, AttributeSupplier {
 
 
     /**
-     * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
-     * bounds of the rectangle.
+     * Render the portion of the track overlapping visitbleRect.  In many cases visibleRect cover the entire track,
+     * but in the case of scrolling it may not.
      *
      * @param context the render context
-     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
+     * @param visibleRect
      */
-    void render(RenderContext context, Rectangle rect);
+    void render(RenderContext context, Rectangle visibleRect);
 
     /**
      * Render the track as an overlay, presumably on another track.
@@ -88,15 +88,12 @@ public interface Track extends Persistable, AttributeSupplier {
     }
 
     /**
-     * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
-     * can adjust the placing of the name based on the current viewport.  This is used to center track names
-     * on the viewport for large tracks that extend outside the viewport.
+     * Render the name of the track.
      *
      * @param graphics
-     * @param trackRectangle   the track bounds, relative to the enclosing DataPanel bounds.
-     * @param visibleRectangle
+     * @param trackRectangle
      */
-    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
+    void renderName(Graphics2D graphics, Rectangle trackRectangle);
 
     void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                           List<String> names, List<MouseableRegion> mouseRegions);
@@ -175,9 +172,6 @@ public interface Track extends Persistable, AttributeSupplier {
 
     TrackType getTrackType();
 
-    void setHeight(int preferredHeight);
-
-    void setHeight(int preferredHeight, boolean force);
 
     void setY(int top);
 
@@ -187,9 +181,30 @@ public interface Track extends Persistable, AttributeSupplier {
 
     ContinuousColorScale getColorScale();
 
+    /**
+     * Set the viewport height of the track.   This is the visible height of the track, not necessarily the content height.
+     *
+     * @param height
+     */
+    void setHeight(int height);
+
+    /**
+     * Return the visible (viewport) height of the tracks.  For some tracks this can differ from the content height,
+     * in which case scrollbars will be shown.
+     *
+     * @return
+     */
     int getHeight();
 
-    int getMinimumHeight();
+    /**
+     * Return the content height of the track.  For tracks with variable numbers of rows this is calculated, for others
+     * it is the same as getHeight().
+     *
+     * @return
+     */
+    default int getContentHeight() {
+        return 0;
+    }
 
     /**
      * Manually specify the data range.

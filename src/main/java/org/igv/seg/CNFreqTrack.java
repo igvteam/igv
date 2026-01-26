@@ -34,9 +34,7 @@ public class CNFreqTrack extends AbstractTrack {
     FreqData data;
     BarChartRenderer renderer;
 
-
     float ampThreshold;
-
     float delThreshold;
 
     public CNFreqTrack() {
@@ -57,7 +55,11 @@ public class CNFreqTrack extends AbstractTrack {
         this.setMinimumHeight(25);
         this.setHeight(50);
         this.setSortable(false);
+    }
 
+    @Override
+    public int getContentHeight() {
+        return this.height;
     }
 
     @Override
@@ -83,23 +85,16 @@ public class CNFreqTrack extends AbstractTrack {
         this.delThreshold = delThreshold;
     }
 
-    public float getAmpThreshold() {
-        return ampThreshold;
-    }
 
-    public float getDelThreshold() {
-        return delThreshold;
-    }
+    public void render(RenderContext context, Rectangle visibleRect) {
 
+        // TODO -- generalize.  This track doesn't scroll, we don't need to account for visibleRect or clipBounds
+        Rectangle trackRect = new Rectangle(0, 0, visibleRect.width, this.height);
 
-    public void render(RenderContext context, Rectangle rect) {
         data.compute(ampThreshold, delThreshold);
-        renderer.render(data.getDelCounts(context.getChr()), context, rect, this);
-        renderer.render(data.getAmpCounts(context.getChr()), context, rect, this);
-        renderer.setMarginFraction(0);
-        renderer.renderBorder(this, context, rect);
-        context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height - 1);
-
+        renderer.render(data.getDelCounts(context.getChr()), context, trackRect, this);
+        renderer.render(data.getAmpCounts(context.getChr()), context, trackRect, this);
+        renderer.renderGuides(this, context, trackRect);
     }
 
 

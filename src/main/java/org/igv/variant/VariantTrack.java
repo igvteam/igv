@@ -194,7 +194,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
+                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (getHeight() - getVariantBandHeight() - margins) / sampleCount));
         showGenotypes = defaultShowGenotypes();
 
 
@@ -369,7 +369,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      *
      * @return
      */
-    public int getHeight() {
+    public int getContentHeight() {
         int sampleCount = sampleCount();
         int h;
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
@@ -401,37 +401,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private int getVariantsHeight() {
         return getVariantBandHeight() * getNumberOfFeatureLevels();
-    }
-
-    /**
-     * Set the height of the track.
-     *
-     * @param height
-     */
-    public void setHeight(int height) {
-
-        final DisplayMode displayMode = getDisplayMode();
-
-        // If collapsed there's nothing we can do to affect height
-        if (displayMode == DisplayMode.COLLAPSED) {
-            return;
-        }
-
-        // If height is < expanded height try "squishing" track, otherwise expand it
-        final int groupCount = samplesByGroups.size();
-        final int margins = (groupCount - 1) * 3;
-        int sampleCount = showGenotypes == false ? 0 : sampleCount();
-        final int expandedHeight = getVariantBandHeight() + margins + (sampleCount * getGenotypeBandHeight());
-        if (height < expandedHeight) {
-            setDisplayMode(DisplayMode.SQUISHED);
-        } else {
-            if (displayMode != DisplayMode.EXPANDED) {
-                setDisplayMode(DisplayMode.EXPANDED);
-            }
-        }
-
-        squishedHeight = showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (height - getVariantBandHeight() - margins) / sampleCount));
     }
 
 
@@ -522,7 +491,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         boolean isSelected = selectedVariant != null && selectedVariant == variant;
                         if (isSelected) {
                             Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
-                            selectionGraphics.drawRect(x, curRowTop, w, getHeight());
+                            selectionGraphics.drawRect(x, curRowTop, w, this.getContentHeight());
                         }
                     }
 
@@ -539,7 +508,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
         }
 
-        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
+        renderBoundaryLines(g2D, visibleRectangle);
 
     }
 
@@ -586,32 +555,27 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * Renders the top line, bottom track line, and border between variants / genotypes
      *
      * @param g2D
-     * @param trackRectangle
      * @param visibleRectangle
      */
-    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
-        top = trackRectangle.y;
-        final int left = trackRectangle.x;
-        final int right = (int) trackRectangle.getMaxX();
+    private void renderBoundaryLines(Graphics2D g2D, Rectangle visibleRectangle) {
+        top = 0;
+        final int left = 0;
+        final int right = visibleRectangle.width;
 
         //Top line
         // drawLineIfVisible(g2D, visibleRectangle, Color.black, top + 1, left, right);
 
-        // Bottom border
-        int bottomY = trackRectangle.y + trackRectangle.height;
-        drawLineIfVisible(g2D, visibleRectangle, borderGray, bottomY, left, right);
-
         // Variant / Genotype border
         if (sampleCount() > 0 && showGenotypes) {
-            int variantGenotypeBorderY = trackRectangle.y + getVariantsHeight();
+            int variantGenotypeBorderY = getVariantsHeight();
             drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
 
             if (samplesByGroups.size() > 1) {
                 g2D.setColor(Color.black);
-                int y = trackRectangle.y + getVariantsHeight();
+                int y = getVariantsHeight();
                 for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
                     y += entry.getValue().size() * getGenotypeBandHeight() + GROUP_BORDER_WIDTH;
-                    g2D.drawLine(trackRectangle.x, y, trackRectangle.x + trackRectangle.width, y);
+                    g2D.drawLine(0, y, visibleRectangle.width, y);
                 }
             }
         }
@@ -624,16 +588,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      *
      * @param g
      * @param trackRectangle
-     * @param visibleRectangle
      */
     @Override
-    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle) {
 
         Graphics2D g2D = null;
 
         try {
             g2D = (Graphics2D) g.create();
-            top = trackRectangle.y;
+            top = 0;
 
             Rectangle rect = new Rectangle(trackRectangle);
             g2D.setFont(FontManager.getFont(getFontSize()));
@@ -642,8 +605,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             g2D.setColor(Color.black);
             rect.height = getVariantsHeight();
-            if (rect.intersects(visibleRectangle)) {
-                Rectangle intersectedRect = rect.intersection(visibleRectangle);
+            if (rect.intersects(trackRectangle)) {
+                Rectangle intersectedRect = rect.intersection(trackRectangle);
                 GraphicUtils.drawWrappedText(getName(), intersectedRect, g2D, false);
             }
 
@@ -652,10 +615,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
-            drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
+            drawBackground(g2D, rect, trackRectangle, BackgroundType.NAME);
 
 
-            renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
+            renderBoundaryLines(g2D, trackRectangle);
         } finally {
             if (g2D != null) {
                 g2D.dispose();
@@ -709,7 +672,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         }
 
-        renderBoundaryLines(g2D, trackRectangle, visibleRectangle);
+        renderBoundaryLines(g2D, visibleRectangle);
 
     }
 

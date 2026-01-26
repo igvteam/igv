@@ -19,10 +19,7 @@ import static org.igv.prefs.Constants.*;
  */
 public abstract class XYPlotRenderer extends DataRenderer {
 
-    private double marginFraction = 0.2;
-
     static DecimalFormat formatter = new DecimalFormat();
-
 
     protected void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY,
                                  LocusScore score, RenderContext context) {
@@ -36,12 +33,10 @@ public abstract class XYPlotRenderer extends DataRenderer {
      * @param track
      * @param locusScores
      * @param context
-     * @param arect
+     * @param rect
      */
-    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
+    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle rect) {
 
-
-        Rectangle adjustedRect = calculateDrawingRect(arect);
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -66,15 +61,15 @@ public abstract class XYPlotRenderer extends DataRenderer {
         // Calculate the Y scale factor.
 
         double delta = (maxValue - minValue);
-        double yScaleFactor = adjustedRect.getHeight() / delta;
+        double yScaleFactor = rect.getHeight() / delta;
 
         // Calculate the Y position in pixels of the base value.  Clip to bounds of rectangle
         double baseDelta = maxValue - baseValue;
-        int baseY = (int) (adjustedRect.getY() + baseDelta * yScaleFactor);
-        if (baseY < adjustedRect.y) {
-            baseY = adjustedRect.y;
-        } else if (baseY > adjustedRect.y + adjustedRect.height) {
-            baseY = adjustedRect.y + adjustedRect.height;
+        int baseY = (int) (rect.getY() + baseDelta * yScaleFactor);
+        if (baseY < rect.y) {
+            baseY = rect.y;
+        } else if (baseY > rect.y + rect.height) {
+            baseY = rect.y + rect.height;
         }
 
         for (LocusScore score : locusScores) {
@@ -85,7 +80,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             double dx = Math.ceil((Math.max(1, score.getEnd() - score.getStart())) / locScale) + 1;
             if ((pX + dx < 0)) {
                 continue;
-            } else if (pX > adjustedRect.getMaxX()) {
+            } else if (pX > rect.getMaxX()) {
                 break;
             }
 
@@ -99,10 +94,10 @@ public abstract class XYPlotRenderer extends DataRenderer {
                 // Compute the pixel y location.  Clip to bounds of rectangle.
                 double dy = isLog ? Math.log10(dataY) - baseValue : (dataY - baseValue);
                 int pY = baseY - (int) (dy * yScaleFactor);
-                if (pY < adjustedRect.y) {
-                    pY = adjustedRect.y;
-                } else if (pY > adjustedRect.y + adjustedRect.height) {
-                    pY = adjustedRect.y + adjustedRect.height;
+                if (pY < rect.y) {
+                    pY = rect.y;
+                } else if (pY > rect.y + rect.height) {
+                    pY = rect.y + rect.height;
                 }
 
                 Color color = (dataY >= baseValue) ? posColor : negColor;
@@ -127,8 +122,6 @@ public abstract class XYPlotRenderer extends DataRenderer {
         }
 
         super.renderAxis(track, context, arect);
-
-        Rectangle drawingRect = calculateDrawingRect(arect);
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
@@ -157,13 +150,13 @@ public abstract class XYPlotRenderer extends DataRenderer {
             float minValue = axisDefinition.getMinimum();
             
             // Bottom (minimum tick mark)
-            int pY = computeYPixelValue(drawingRect, axisDefinition, minValue);
+            int pY = computeYPixelValue(arect, axisDefinition, minValue);
 
             labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, pY, axisRect.x + AXIS_AREA_WIDTH - 5, pY);
             GraphicUtils.drawRightJustifiedText(formatter.format(minValue), axisRect.x + AXIS_AREA_WIDTH - 15, pY, labelGraphics);
 
             // Top (maximum tick mark)
-            int topPY = computeYPixelValue(drawingRect, axisDefinition, maxValue);
+            int topPY = computeYPixelValue(arect, axisDefinition, maxValue);
 
             labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY,
                     axisRect.x + AXIS_AREA_WIDTH - 5, topPY);
@@ -175,7 +168,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
                     axisRect.x + AXIS_AREA_WIDTH - 10, pY);
 
             // Middle tick mark.  Draw only if room
-            int midPY = computeYPixelValue(drawingRect, axisDefinition, baseValue);
+            int midPY = computeYPixelValue(arect, axisDefinition, baseValue);
 
             if ((midPY < pY - 15) && (midPY > topPY + 15)) {
                 labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, midPY,
@@ -190,30 +183,25 @@ public abstract class XYPlotRenderer extends DataRenderer {
     }
 
     @Override
-    public void renderBorder(Track track, RenderContext context, Rectangle arect) {
-
-        Rectangle adjustedRect = calculateDrawingRect(arect);
+    public void renderGuides(Track track, RenderContext context, Rectangle arect) {
 
         // Draw boundaries if there is room
-        if (adjustedRect.getHeight() >= 10) {
+        if (arect.getHeight() >= 10) {
 
             ///TrackProperties pros = track.getProperties();
 
-
             // midline
-
             DataRange axisDefinition = track.getDataRange();
             float maxValue = axisDefinition.getMaximum();
             float baseValue = axisDefinition.getBaseline();
             float minValue = axisDefinition.getMinimum();
 
-
-            double maxX = adjustedRect.getMaxX();
-            double x = adjustedRect.getX();
-            double y = adjustedRect.getY();
+            double maxX = arect.getMaxX();
+            double x = arect.getX();
+            double y = arect.getY();
 
             if ((baseValue > minValue) && (baseValue < maxValue)) {
-                int baseY = computeYPixelValue(adjustedRect, axisDefinition, baseValue);
+                int baseY = computeYPixelValue(arect, axisDefinition, baseValue);
 
                 getBaselineGraphics(context).drawLine((int) x, baseY, (int) maxX, baseY);
             }
@@ -226,14 +214,14 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
             // Draw the baseline -- todo, this is a wig track option?
             double zeroValue = axisDefinition.getBaseline();
-            int zeroY = computeYPixelValue(adjustedRect, axisDefinition, zeroValue);
-            borderGraphics.drawLine(adjustedRect.x, zeroY, adjustedRect.x + adjustedRect.width, zeroY);
+            int zeroY = computeYPixelValue(arect, axisDefinition, zeroValue);
+            borderGraphics.drawLine(arect.x, zeroY, arect.x + arect.width, zeroY);
 
             // Optionally draw "Y" line  (UCSC track line option)
             if (track.isDrawYLine()) {
                 Graphics2D yLineGraphics = context.getGraphic2DForColor(Color.gray);
-                int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
-                GraphicUtils.drawDashedLine(yLineGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
+                int yLine = computeYPixelValue(arect, axisDefinition, track.getYLine());
+                GraphicUtils.drawDashedLine(yLineGraphics, arect.x, yLine, arect.x + arect.width, yLine);
             }
 
         }
@@ -280,20 +268,5 @@ public abstract class XYPlotRenderer extends DataRenderer {
         double pY = drawingRect.getY() + delta;
 
         return (int) Math.max(drawingRect.getMinY(), Math.min(drawingRect.getMaxY(), pY));
-    }
-
-    protected Rectangle calculateDrawingRect(Rectangle arect) {
-
-        double buffer = Math.min(arect.getHeight() * marginFraction, 10);
-        Rectangle adjustedRect = new Rectangle(arect);
-        adjustedRect.y = (int) (arect.getY() + buffer);
-        adjustedRect.height = (int) (arect.height - (adjustedRect.y - arect.getY()));
-
-
-        return adjustedRect;
-    }
-
-    public void setMarginFraction(double marginFraction) {
-        this.marginFraction = marginFraction;
     }
 }

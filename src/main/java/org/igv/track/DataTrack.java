@@ -18,8 +18,6 @@ import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
-import org.igv.prefs.Constants;
-import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.DataRenderer;
 import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
@@ -127,15 +125,15 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
             Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", visibleRect, g);
         } else {
-            getRenderer().render(inViewScores, context, rect, this);
+            getRenderer().render(inViewScores, context, visibleRect, this);
         }
 
     }
@@ -153,7 +151,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 getRenderer().renderScores(this, inViewScores, context, rect);
             }
         }
-        getRenderer().renderBorder(this, context, rect);
+        getRenderer().renderGuides(this, context, rect);
     }
 
 

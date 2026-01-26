@@ -61,15 +61,15 @@ public class BasePairTrack extends AbstractTrack {
                 genome, basePairData, renderOptions);
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         Graphics2D g2d = context.getGraphics();
         Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(rect.intersection(clip.getBounds()));
+        g2d.setClip(visibleRect.intersection(clip.getBounds()));
         context.clearGraphicsCache();
 
         try {
-            basePairRenderer.draw(basePairData, context, rect, renderOptions);
+            basePairRenderer.draw(basePairData, context, visibleRect, renderOptions);
             context.clearGraphicsCache();
         } finally {
             g2d.setClip(clip);

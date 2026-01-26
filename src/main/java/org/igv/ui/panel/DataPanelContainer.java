@@ -6,6 +6,7 @@ import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.session.SessionReader;
+import org.igv.track.Track;
 import org.igv.track.TrackGroup;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -80,7 +81,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         TrackPanel dataTrackView = (TrackPanel) getParent();
         return dataTrackView.getGroups();
     }
-
 
     public int getVisibleHeight() {
         TrackPanel dataTrackView = (TrackPanel) getParent();

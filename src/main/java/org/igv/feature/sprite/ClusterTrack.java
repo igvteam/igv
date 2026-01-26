@@ -77,7 +77,7 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return binnedClusters.size() * rowHeight;
     }
 
@@ -92,7 +92,7 @@ public class ClusterTrack extends AbstractTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
         String chr = context.getReferenceFrame().getChrName();
         double origin = context.getOrigin();
@@ -113,7 +113,7 @@ public class ClusterTrack extends AbstractTrack {
                     double pixelEnd = ((position + binSize - origin) / locScale);
 
                     // If the any part of the feature fits in the Track rectangle draw it
-                    if (pixelEnd >= rect.getX() && pixelStart <= rect.getMaxX()) {
+                    if (pixelEnd >= visibleRect.getX() && pixelStart <= visibleRect.getMaxX()) {
 
                         Color color = this.getColor();
                         Graphics2D g = context.getGraphic2DForColor(color);

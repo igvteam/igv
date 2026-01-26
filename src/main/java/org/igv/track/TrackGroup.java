@@ -157,7 +157,7 @@ public class TrackGroup {
         int h = 0;
         for (Track track : tracks) {
             if (track != null && track.isVisible()) {
-                h += track.getHeight();
+                h += track.getContentHeight();
             }
         }
         return h;

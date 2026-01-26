@@ -9,7 +9,6 @@
 package org.igv.ui.panel;
 
 
-import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -17,27 +16,22 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
-import org.igv.track.TrackGroup;
 import org.igv.ui.IGV;
-import org.igv.ui.UIConstants;
-import org.igv.ui.util.Packable;
 
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.List;
-import java.util.*;
-
-import static org.igv.ui.panel.DataPanelPainter.GROUP_BORDER_COLOR;
-import static org.igv.ui.panel.DataPanelPainter.TRACK_BORDER_HEIGHT;
+import java.util.Set;
 
 /**
  * @author jrobinso
  */
-public class AttributePanel extends TrackPanelComponent implements  Paintable {
+public class AttributePanel extends TrackPanelComponent implements Paintable {
 
     private static Logger log = LogManager.getLogger(AttributePanel.class);
-    
+
     /**
      * Constructs ...
      */
@@ -77,103 +71,42 @@ public class AttributePanel extends TrackPanelComponent implements  Paintable {
         paintImpl(g, rect, batch);
         Graphics2D borderGraphics = (Graphics2D) g.create();
         borderGraphics.setColor(Color.lightGray);
-        rect.height -=1;
+        rect.height -= 1;
         borderGraphics.draw(rect);
         borderGraphics.dispose();
     }
 
     public void paintImpl(Graphics2D g, Rectangle rect, boolean batch) {
 
-        List<String> names = AttributeManager.getInstance().getAttributeNames();
+        Track track = getTrack();
+        if (track.isVisible()) {
+            List<String> names = AttributeManager.getInstance().getAttributeNames();
 
-        if (names == null) {
-            return;
-        }
-
-        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) names.removeAll(hiddenAttributes);
-
-        if (names.size() > 0) {
-
-
-            // Get the current tracks
-            TrackPanel trackPanel = (TrackPanel) getParent();
-            Collection<TrackGroup> groups = trackPanel.getGroups();
-
-            if (!groups.isEmpty()) {
-
-                // int attributeColumnWidth = getAttributeColumnWidth();
-                final Graphics2D graphics2D = (Graphics2D) g.create();
-                graphics2D.setColor(Color.BLACK);
-
-                final Graphics2D greyGraphics = (Graphics2D) g.create();
-                greyGraphics.setColor(GROUP_BORDER_COLOR);
-
-                final int left = AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-                int regionY = 0;
-                final int bottom = rect.y + rect.height;
-
-                for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                    TrackGroup group = groupIter.next();
-
-                    // Out of view?
-                    if (regionY > bottom) {
-                        break;
-                    }
-
-                    if (group.isVisible()) {
-                        if (groups.size() > 1) {
-                            greyGraphics.fillRect(0, regionY + 1, getWidth(), UIConstants.groupGap - 1);
-                            regionY += UIConstants.groupGap;
-                        }
-
-
-                        if (group.isDrawBorder()) {
-                            g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
-                        }
-
-                        for (Track track : group.getVisibleTracks()) {
-                            if (track == null) continue;
-                            int trackHeight = track.getHeight();
-                            if (regionY > bottom) {
-                                break;
-                            }
-
-                            if (track.isVisible()) {
-                                int border = trackHeight < 5 ? 0 : 1;
-                                if (regionY + trackHeight >= rect.y) {
-                                    Rectangle trackRectangle = new Rectangle(left, regionY + border, getWidth(), trackHeight - border);
-                                    track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
-                                    //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
-                                }
-                                regionY += trackHeight + TRACK_BORDER_HEIGHT;
-                            }
-                        }
-
-                        if (group.isDrawBorder()) {
-                            g.drawLine(0, regionY, getWidth(), regionY);
-                        }
-                    }
-                }
-
-                // Border between columns
-                final Graphics2D columnBorderGraphics = (Graphics2D) g.create();
-                columnBorderGraphics.setColor(Color.lightGray);
-                final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-                for (int x = 1; x < rect.x + rect.width; x += colWidth) {
-                    columnBorderGraphics.fillRect(
-                            x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y, AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
-                }
-
-                graphics2D.dispose();
-                greyGraphics.dispose();
-                columnBorderGraphics.dispose();
-
+            if (names == null) {
+                return;
             }
 
+            final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+            if (hiddenAttributes != null) names.removeAll(hiddenAttributes);
+
+            if (names.size() > 0) {
+                track.renderAttributes(g, rect, rect, names, mouseRegions);
+            }
         }
 
+        // Border between columns
+        final Graphics2D columnBorderGraphics = (Graphics2D) g.create();
+        columnBorderGraphics.setColor(Color.lightGray);
+        final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+        for (int x = 1; x < rect.x + rect.width; x += colWidth) {
+            columnBorderGraphics.fillRect(
+                    x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y, AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
+        }
+
+        columnBorderGraphics.dispose();
+
     }
+
 
     @Override
     public int getSnapshotHeight(boolean batch) {

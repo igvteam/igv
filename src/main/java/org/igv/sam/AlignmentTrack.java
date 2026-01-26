@@ -274,7 +274,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private int expandedHeight = 14;
     private int collapsedHeight = 9;
     private final int maxSquishedHeight = 5;
-    private int squishedHeight = maxSquishedHeight;
+    private int squishedHeight = 2;
     private final int minHeight = 50;
 
     private Rectangle alignmentsRect;
@@ -466,14 +466,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    @Override
-    public void setHeight(int preferredHeight) {
-        super.setHeight(preferredHeight);
-        minimumHeight = preferredHeight;
-    }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
@@ -522,11 +517,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return (int) dataManager.getVisibilityWindow();
     }
 
-    public void render(RenderContext context, Rectangle rect) {
 
+    /**
+     * Draw that portion of the alignments track overlapping visibleRect.  This is the subset of the track visible
+     * in the current viewport.
+     *
+     * @param context
+     * @param visibleRect
+     */
+
+
+    public void render(RenderContext context, Rectangle visibleRect) {
+System.out.println(visibleRect);
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow()) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
             Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
             String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
                     "Select a chromosome and zoom in to see alignments." :
@@ -538,28 +542,34 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
-        // Split track rectangle into sections.
+        int yOffset = 0;
+
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
-        if (seqHeight > 0) {
-            Rectangle seqRect = new Rectangle(rect);
-            seqRect.height = seqHeight;
-            sequenceTrack.render(context, seqRect);
+        yOffset += seqHeight;
+        if(visibleRect.y < seqHeight) {
+            if (seqHeight > 0) {
+                Rectangle seqRect = new Rectangle(0, 0, visibleRect.width, seqHeight);
+                sequenceTrack.render(context, seqRect);
+            }
         }
 
         // Top gap.
-        rect.y += DS_MARGIN_0;
+        boolean downsampled = false;
+        if(visibleRect.y < seqHeight + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
+            Rectangle rect = new Rectangle(visibleRect);
+            rect.y += DS_MARGIN_0;
 
-        downsampleRect = new Rectangle(rect);
-        downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
-        boolean downsampled = renderDownsampledIntervals(context, downsampleRect);
-
-        alignmentsRect = new Rectangle(rect);
-        if(downsampled) {
-            alignmentsRect.y += DOWNSAMPLED_ROW_HEIGHT;
+            downsampleRect = new Rectangle(rect);
+            downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
+            downsampled = renderDownsampledIntervals(context, downsampleRect);
         }
-        alignmentsRect.y +=  2;
-        alignmentsRect.height -= (alignmentsRect.y - rect.y);
-        renderAlignments(context, alignmentsRect);
+
+//        alignmentsRect = new Rectangle(rect);
+//        if(downsampled) {
+//            alignmentsRect.y += DOWNSAMPLED_ROW_HEIGHT;
+//        }
+
+        renderAlignments(context, visibleRect);
     }
 
     private boolean renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
@@ -591,8 +601,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    private void renderAlignments(RenderContext context, Rectangle inputRect) {
-
+    private void renderAlignments(RenderContext context, Rectangle visibleRect) {
+Rectangle inputRect = new Rectangle(visibleRect);
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         if (loadedInterval == null) {
             return;
@@ -600,11 +610,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         final AlignmentCounts alignmentCounts = loadedInterval.getCounts();
 
-        //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
         if (groups == null) {
             //Assume we are still loading.
-            //This might not always be true
             return;
         }
 
@@ -618,10 +626,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.peStats = peStats;
         }
 
-        Rectangle visibleRect = context.getVisibleRect();
 
-        // Divide rectangle into equal height levels
-        double y = inputRect.getY();
         double h;
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
@@ -629,19 +634,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else if (displayMode == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
-
-            int visHeight = visibleRect.height;
-            int depth = dataManager.getNLevels();
-            if (depth == 0) {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-            } else {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-            }
             h = squishedHeight;
         }
 
 
         // Loop through groups
+        double y = alignmentsRect.y;
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
@@ -655,12 +653,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Create a snapshot to avoid ConcurrentModificationException from background loading threads
             List<Row> rows = new ArrayList<>(entry.getValue());
             for (Row row : rows) {
-                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                if (y > alignmentsRect.getMaxY()) {
                     break;
                 }
 
-                assert visibleRect != null;
-                if (y + h > visibleRect.getY()) {
+                if (y + h > alignmentsRect.y) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
@@ -689,8 +686,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
-                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup,
-                            (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
+                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
                     GraphicUtils.drawVerticallyCenteredText(groupName, 5, rect, g, false, true);
                 }
             }
@@ -731,13 +727,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
-            int visHeight = visibleRect.height;
-            int depth = dataManager.getNLevels();
-            if (depth == 0) {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-            } else {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-            }
             h = squishedHeight;
         }
 

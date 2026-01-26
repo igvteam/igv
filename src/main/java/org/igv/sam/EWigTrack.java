@@ -102,8 +102,8 @@ public class EWigTrack extends AbstractTrack {
         loadedIntervalCache.put(context.getName(), new LoadedInterval(chr, start, end, zoom, scores, nScores));
     }
 
-    public void render(RenderContext context, Rectangle rect) {
-        paint(context, rect);
+    public void render(RenderContext context, Rectangle visibleRect) {
+        paint(context, visibleRect);
     }
 
     public boolean isLogNormalized() {

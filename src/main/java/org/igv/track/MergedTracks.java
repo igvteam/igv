@@ -128,17 +128,17 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
         for (Track track : memberTracks) {
-            track.render(context, rect);
+            track.render(context, visibleRect);
         }
     }
 
     @Override
-    public int getHeight() {
-        int height = super.getHeight();
+    public int getContentHeight() {
+        int height = super.getContentHeight();
         for (Track track : memberTracks) {
-            height = Math.max(height, track.getHeight());
+            height = Math.max(height, track.getContentHeight());
         }
         return height;
     }

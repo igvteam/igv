@@ -74,11 +74,6 @@ public class GisticTrack extends AbstractTrack {
         //
     }
 
-    @Override
-    public int getMinimumHeight() {
-        return 25;
-    }
-
 
     public void setScores(List<GisticScore> scores) {
 
@@ -150,14 +145,14 @@ public class GisticTrack extends AbstractTrack {
      * Method description
      *
      * @param context
-     * @param rect
+     * @param visibleRect
      */
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle visibleRect) {
         if (renderer == null) {
             log.error("Null renderer !!");
 
         } else {
-            renderer.render(this, context, rect);
+            renderer.render(this, context, visibleRect);
         }
     }
 

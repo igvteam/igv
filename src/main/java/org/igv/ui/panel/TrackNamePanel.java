@@ -17,7 +17,6 @@ import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackGroup;
 import org.igv.ui.IGV;
-import org.igv.ui.UIConstants;
 import org.igv.ui.dnd.AbstractGhostDropManager;
 import org.igv.ui.dnd.GhostDropEvent;
 import org.igv.ui.dnd.GhostDropListener;
@@ -28,17 +27,12 @@ import org.jdesktop.layout.GroupLayout;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import static org.igv.ui.panel.DataPanelPainter.GROUP_BORDER_COLOR;
-import static org.igv.ui.panel.DataPanelPainter.TRACK_BORDER_HEIGHT;
 
 /**
  * @author jrobinso
@@ -52,6 +46,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     BufferedImage dndImage = null;
     TrackGroup selectedGroup = null;
     boolean showGroupNames = false;  // Reserved for future use
+    private Rectangle visibleRect = null;
 
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
@@ -81,8 +76,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         }
 
         removeMousableRegions();
-        Rectangle visibleRect = getVisibleRect();
-        paintImpl(g, visibleRect, false);
+
+        paintImpl(g, getBounds(), false);
     }
 
 
@@ -105,132 +100,33 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    private void paintImpl(Graphics g, Rectangle visibleRect, boolean snapshot) {
-
-        // Get available tracks
-        Collection<TrackGroup> groups = getGroups();
-        boolean isGrouped = groups.size() > 1;
+    private void paintImpl(Graphics g, Rectangle rect, boolean snapshot) {
 
         Graphics2D fontGraphics = (Graphics2D) g.create();
-        fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
-        final Color backgroundColor = darkMode ?
-                UIManager.getColor("Panel.background") :
-                PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
-        fontGraphics.setBackground(backgroundColor);
+        try {
+            fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
+            final Color backgroundColor = darkMode ?
+                    UIManager.getColor("Panel.background") :
+                    PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+            fontGraphics.setBackground(backgroundColor);
 
-
-        if (!groups.isEmpty()) {
-
-            final Graphics2D greyGraphics = (Graphics2D) g.create();
-            greyGraphics.setColor(GROUP_BORDER_COLOR);
-
-            int regionY = 0;
-
-            groupExtents.clear();
-
-            //Rectangle clipRect = g.getClipBounds();
-
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-                TrackGroup group = groupIter.next();
-
-                if (regionY > visibleRect.getMaxY()) {
-                    break;
-                }
-
-                if (group.isVisible()) {
-                    if (isGrouped) {
-                        if (regionY + UIConstants.groupGap >= visibleRect.y && regionY < visibleRect.getMaxY()) {
-                            greyGraphics.fillRect(0, regionY + 1, getWidth(), UIConstants.groupGap - 1);
-                        }
-                        regionY += UIConstants.groupGap;
-                    }
-
-                    if (group.isDrawBorder() && regionY + UIConstants.groupGap >= visibleRect.y &&
-                            regionY < visibleRect.getMaxY()) {
-                        g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
-                    }
-
-                    int h = group.getHeight();
-                    Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
-                    Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
-                    regionY = printTrackNames(group, displayableRect, visibleRect, fontGraphics, 0, regionY, snapshot);
-
-                    if (isGrouped) {
-                        groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
-                    }
-
-                    if (group.isDrawBorder()) {
-                        g.drawLine(0, regionY, getWidth(), regionY);
-                    }
-                }
-
-            }
-            greyGraphics.dispose();
-        }
-
-        fontGraphics.dispose();
-    }
-
-    private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {
-        Rectangle rect = null;
-        if (visibleRect != null) {
-            Rectangle intersectedRect = trackRectangle.intersection(visibleRect);
-            if (intersectedRect.height > 15) {
-                rect = intersectedRect;
-            } else {
-                rect = new Rectangle(trackRectangle);
-            }
-        }
-        return rect;
-
-    }
-
-    private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
-                                Graphics2D graphics2D, int regionX, int regionY, boolean snapshot) {
-
-        List<Track> tmp = new ArrayList(group.getVisibleTracks());
-        final Color backgroundColor = darkMode ?
-                UIManager.getColor("Panel.background") :
-                PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
-        graphics2D.setBackground(backgroundColor);
-        //graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
-
-
-        for (Track track : tmp) {
-            if (track == null) continue;
-            track.setY(regionY);
-            int trackHeight = track.getHeight();
+            Track track = getTrack();
             if (track.isVisible()) {
-
-                if (regionY + trackHeight >= clipRect.y && regionY < clipRect.getMaxY()) {
-                    int width = getWidth();
-                    int height = track.getHeight();
-
-                    Rectangle region = new Rectangle(regionX, regionY, width, height);
-                    addMousableRegion(new MouseableRegion(region, track));
-
-                    Rectangle rect = new Rectangle(regionX, regionY, width, height);
-                    //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-                    if (!snapshot && track.isSelected()) {
-                        graphics2D.setBackground(Color.LIGHT_GRAY);
-                    } else {
-                        graphics2D.setBackground(backgroundColor);
-                    }
-                    graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-                    track.renderName(graphics2D, rect, visibleRect);
+                if (!snapshot && track.isSelected()) {
+                    fontGraphics.setBackground(Color.LIGHT_GRAY);
                 }
-                regionY += trackHeight + TRACK_BORDER_HEIGHT;
+                track.renderName(fontGraphics, rect);
             }
+        } finally {
+            fontGraphics.dispose();
         }
-        return regionY;
     }
-
 
     private void init() {
 
         //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
         //    setBackground(new java.awt.Color(255, 255, 255));
-        GroupLayout dataTrackNamePanelLayout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout dataTrackNamePanelLayout = new GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);
         dataTrackNamePanelLayout.setHorizontalGroup(
                 dataTrackNamePanelLayout.createParallelGroup(GroupLayout.LEADING).add(0, 148, Short.MAX_VALUE));
@@ -243,29 +139,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         DropListener dndListener = new DropListener(this);
         addGhostDropListener(dndListener);
-    }
-
-
-    @Override
-    protected void openPopupMenu(TrackClickEvent te) {
-
-        ArrayList<Component> extraItems = null;
-        if (isGrouped()) {
-            // Uncomment if/when there is an option to show/hide group names
-//            extraItems = new ArrayList();
-//            final JMenuItem item = new JCheckBoxMenuItem("Show group names");
-//            item.setSelected(showGroupNames);
-//            item.addActionListener(e -> {
-//                showGroupNames = item.isSelected();
-//                repaint();
-//            });
-//            extraItems.add(item);
-
-        }
-
-        super.openPopupMenu(te, extraItems);
-
-
     }
 
 
@@ -327,6 +200,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         return null;
     }
 
+    public void setVisibleRect(Rectangle visibleRect) {
+        this.visibleRect = visibleRect;
+    }
 
     /**
      * Mouse adapter for the track name panel.  Supports multiple selection,
@@ -350,48 +226,25 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             requestFocus();
             grabFocus();
 
-            boolean isGrouped = isGrouped();
-
             if (e.isPopupTrigger()) {
-                if (isGrouped) {
-                    clearTrackSelections();
-                    TrackGroup g = getGroup(e.getY());
-                    if (null == g || g == selectedGroup) {
-                        selectedGroup = null;
-                    } else {
-                        selectGroup(g);
-                    }
-                } else if (!isTrackSelected(e)) {
-                    clearTrackSelections();
-                    selectTracks(e);
-                }
+                clearTrackSelections();
+                selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
             } // meta (mac) or control,  toggle selection]
             else if (e.getButton() == MouseEvent.BUTTON1) {
 
-                if (isGrouped) {
-                    clearTrackSelections();
-                    TrackGroup g = getGroup(e.getY());
-                    if (g == selectedGroup) {
-                        selectedGroup = null;
-                    } else {
-                        selectGroup(getGroup(e.getY()));
-                    }
-                } else {
-                    if (e.isMetaDown() || e.isControlDown()) {
-                        toggleTrackSelections(e);
-                    } else if (e.isShiftDown()) {
-                        shiftSelectTracks(e);
-                    } else if (!isTrackSelected(e)) {
-                        clearTrackSelections();
-                        selectTracks(e);
-                    }
-                }
-            } else {
-                if (isGrouped) {
-
+                if (e.isMetaDown() || e.isControlDown()) {
+                    toggleTrackSelections(e);
+                } else if (e.isShiftDown()) {
+                    shiftSelectTracks(e);
                 } else if (!isTrackSelected(e)) {
+                    clearTrackSelections();
+                    selectTracks(e);
+                }
+
+            } else {
+                if (!isTrackSelected(e)) {
                     clearTrackSelections();
                     selectTracks(e);
                 }
@@ -426,18 +279,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                 fireGhostDropEvent(new GhostDropEvent(dragStart, eventPoint, dragTracks));
 
-                if (selectedGroup != null) {
-                    int idx = getGroupGapNumber(e.getY());
-                    TrackPanel dataTrackView = (TrackPanel) getParent();
-                    dataTrackView.moveGroup(selectedGroup, idx);
-                    dataTrackView.repaint();
-                }
-                selectedGroup = null;
-
-
             }
 
             if (e.isPopupTrigger()) {
+                clearTrackSelections();
+                selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
             } else {

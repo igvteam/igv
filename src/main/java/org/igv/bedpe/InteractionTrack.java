@@ -94,7 +94,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         this.featureSource = src;
 
-        setHeight(250, true);
+        setHeight(250);
         setDefaultColor( new Color(180, 25, 137));
 
         renderers = new HashMap<>();
@@ -182,18 +182,18 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     }
 
     @Override
-    public void render(RenderContext context, Rectangle trackRectangle) {
+    public void render(RenderContext context, Rectangle visibleRect) {
 
 
         Graphics2D g2d = context.getGraphics();
         Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(trackRectangle.intersection(clip.getBounds()));
+        g2d.setClip(visibleRect.intersection(clip.getBounds()));
         context.clearGraphicsCache();
 
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
         if (!isShowFeatures(referenceFrame)) {
             String message = "Zoom in to see features, or right-click to increase Feature Visibility Window.";
-            GraphicUtils.drawCenteredText(message, trackRectangle, context.getGraphics());
+            GraphicUtils.drawCenteredText(message, visibleRect, context.getGraphics());
             return;
         }
 
@@ -222,13 +222,13 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     if (autoscale || maxScore <= 0) {
                         maxScore = autoscale(features);
                     }
-                    drawScale(context, trackRectangle);
+                    drawScale(context, visibleRect);
                 }
 
-                renderers.get(graphType).render(filteredFeatures, context, trackRectangle, this.arcOption);
+                renderers.get(graphType).render(filteredFeatures, context, visibleRect, this.arcOption);
             }
             if (showBlocks) {
-                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
+                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, visibleRect, this.arcOption);
             }
             if (contactMapView != null && !FrameManager.isGeneListMode()) {
             }

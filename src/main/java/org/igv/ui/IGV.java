@@ -492,7 +492,7 @@ public class IGV implements IGVEventObserver {
                 }
                 // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
                 if (sp.getTrackPanel().getTracks().size() > 0)
-                    totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
+                    totalHeight += Math.min(300, sp.getTrackPanel().getContentHeight());
             }
 
             contentPane.getMainPanel().invalidate();
@@ -1417,7 +1417,7 @@ public class IGV implements IGVEventObserver {
 
     public void setAllTrackHeights(int newHeight) {
         for (Track track : getAllTracks()) {
-            track.setHeight(newHeight, true);
+            track.setHeight(newHeight);
         }
 
     }
@@ -1624,9 +1624,9 @@ public class IGV implements IGVEventObserver {
 
     private void resetGroups() {
         log.debug("Resetting Groups");
-        for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
-        }
+//        for (TrackPanel trackPanel : getTrackPanels()) {
+//            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
+//        }
 
         for (Track t : getAllTracks()) {
             t.groupSamplesByAttribute(session.getGroupByAttribute());
@@ -2033,9 +2033,8 @@ public class IGV implements IGVEventObserver {
     public void repaint() {
         Collection<Track> trackList = new ArrayList<>();
         for (TrackPanel tp : getTrackPanels()) {
-            trackList.addAll(visibleTracks(tp.getDataPanelContainer()));
+            trackList.add(tp.getTrack());
         }
-        getAllTracks();
         repaint(contentPane, trackList);
     }
 
@@ -2182,10 +2181,50 @@ public class IGV implements IGVEventObserver {
      * Note: This method should be called from the EDT.
      */
     private void checkPanelLayouts() {
+        boolean heightChanged = false;
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
-                tp.revalidate();
+                heightChanged = true;
+
+                TrackPanelScrollPane scrollPane = tp.getScrollPane();
+                if (scrollPane != null) {
+                    JViewport viewport = scrollPane.getViewport();
+                    Dimension preferredSize = tp.getPreferredSize();
+
+                    System.out.println("=== Layout Update for: " + tp.getName() + " ===");
+                    System.out.println("  TrackPanel preferred size: " + preferredSize);
+                    System.out.println("  TrackPanel current size: " + tp.getSize());
+                    System.out.println("  Viewport size: " + viewport.getSize());
+                    System.out.println("  Viewport view size: " + viewport.getViewSize());
+                    System.out.println("  ScrollPane size: " + scrollPane.getSize());
+
+                    // Update the scrollbar policy based on new content height
+                    scrollPane.updateScrollbarPolicy();
+
+                    // Invalidate the entire hierarchy to mark it as needing layout
+                    tp.invalidate();
+                    viewport.invalidate();
+                    scrollPane.invalidate();
+                }
             }
+        }
+        if (heightChanged) {
+            // Use invokeLater to ensure the revalidation happens after current processing
+            final MainPanel mainPanel = getMainPanel();
+            SwingUtilities.invokeLater(() -> {
+                mainPanel.revalidate();
+                mainPanel.repaint();
+
+                // Debug: print sizes after layout
+                for (TrackPanel tp : getTrackPanels()) {
+                    TrackPanelScrollPane sp = tp.getScrollPane();
+                    if (sp != null) {
+                        System.out.println("  After invokeLater - " + tp.getName() + ":");
+                        System.out.println("    TrackPanel size: " + tp.getSize());
+                        System.out.println("    Viewport view size: " + sp.getViewport().getViewSize());
+                    }
+                }
+            });
         }
     }
 

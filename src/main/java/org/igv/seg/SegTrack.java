@@ -63,25 +63,9 @@ public class SegTrack extends AbstractTrack {
         setDataRange(new DataRange(min, baseline, max));
     }
 
-    @Override
-    public void setHeight(int height) {
-        if (height <= 0) {
-            return;
-        }
-        var nSamples = 0;
-        for (var group : sampleGroups) {
-            nSamples += group.samples().size();
-        }
-        if (nSamples > 0) {
-            this.sampleHeight = (height - (sampleGroups.size() - 1) * groupGap) / nSamples;
-            if (this.sampleHeight < 1) {
-                this.sampleHeight = 1;
-            }
-        }
-    }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         var nSamples = 0;
         for (var group : sampleGroups) {
             nSamples += group.samples().size();
@@ -90,14 +74,19 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public  void render(RenderContext context, Rectangle visibleRect) {
 
-        var y = rect.y;
+        var y = 0;
         for (var group : sampleGroups) {
-            for (String s : group.samples()) {
-                var r = new Rectangle(rect.x, y, rect.width, sampleHeight);
-                var scores = dataset.getSegments(s, context.getChr());
-                this.renderer.render(scores, context, r, this);
+            for (String sample : group.samples()) {
+                if(y > visibleRect.y + visibleRect.height) {
+                    break;
+                }
+                if(y + sampleHeight > visibleRect.y) {
+                    var r = new Rectangle(visibleRect.x, y, visibleRect.width, sampleHeight);
+                    var scores = dataset.getSegments(sample, context.getChr());
+                    this.renderer.render(scores, context, r, this);
+                }
                 y += sampleHeight;
             }
             y += groupGap; // Gap between groups
@@ -134,7 +123,7 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle) {
 
         // Calculate fontsize
         var gap = Math.min(4, sampleHeight / 3);
@@ -142,14 +131,19 @@ public class SegTrack extends AbstractTrack {
         var font = FontManager.getFont(fs);
         g2D.setFont(font);
 
-        var y = trackRectangle.y;
+        var y = 0;
         for (var group : sampleGroups) {
             for (String s : group.samples()) {
-                var r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
-                GraphicUtils.drawWrappedText(s, r, g2D, false);
+                if(y > trackRectangle.y + trackRectangle.height) {
+                    break;
+                }
+                if(y + sampleHeight > trackRectangle.y) {
+                    var r = new Rectangle(0, y, trackRectangle.width, sampleHeight);
+                    GraphicUtils.drawWrappedText(s, r, g2D, false);
+                }
                 y += sampleHeight;
             }
-            y += groupGap; // Gap
+            y += groupGap; // Gap between groups
         }
     }
 

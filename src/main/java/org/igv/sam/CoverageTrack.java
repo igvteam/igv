@@ -202,7 +202,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         drawData(context, rect);
 
         if (dataSourceRenderer != null) {
-            dataSourceRenderer.renderBorder(this, context, rect);
+            dataSourceRenderer.renderGuides(this, context, rect);
             dataSourceRenderer.renderAxis(this, context, rect);
         } else {
             DataRenderer.drawScale(this.getDataRange(), context, rect);

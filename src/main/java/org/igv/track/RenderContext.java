@@ -27,7 +27,7 @@ public class RenderContext {
     public int expandedInsertionPosition = -1;
 
     /**
-     * X trasnlation for this context relative to its parent.  This is used in expanded insertion "multi-frame* view
+     * X translation for this context relative to its parent.  This is used in expanded insertion "multi-frame* view
      * to convert screen coordinates to parent reference system when recording the pixel location of drawn objects
      */
     public int translateX = 0;

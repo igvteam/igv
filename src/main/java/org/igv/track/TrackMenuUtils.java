@@ -1024,7 +1024,7 @@ public class TrackMenuUtils {
 
         value = Math.max(0, value);
         for (Track track : selectedTracks) {
-            track.setHeight(value, true);
+            track.setHeight(value);
         }
         IGV.getInstance().repaint(selectedTracks);
     }
