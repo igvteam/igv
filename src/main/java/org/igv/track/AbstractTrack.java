@@ -370,29 +370,14 @@ public abstract class AbstractTrack implements Track {
 
     @Override
     public int getHeight() {
-        return height;
+        return height == 0 ? getContentHeight() : height;
     }
 
     public void setHeight(int height) {
         this.height = height;
         // Update the scroll pane's explicit height so it respects user-set dimensions
         if (viewport != null) {
-            viewport.setExplicitHeight(height);
-        }
-    }
-
-    /**
-     * Returns the default minimum height based on the actual renderer for this track.  Heatmaps default
-     * to 1,  all other renderers to 5.
-     *
-     * @return
-     */
-    public int getDefaultMinimumHeight() {
-        Renderer r = getRenderer();
-        if (r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
-            return 1;
-        } else {
-            return 10;
+            viewport.validateTrackHeight();
         }
     }
 

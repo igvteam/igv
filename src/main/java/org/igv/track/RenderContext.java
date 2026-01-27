@@ -22,7 +22,8 @@ public class RenderContext {
     private Map<Object, Graphics2D> graphicCache;
     private ReferenceFrame referenceFrame;
     private JComponent panel;
-    public Rectangle visibleRect;
+    public Rectangle trackRectangle;
+    private Rectangle clipBounds;
     public boolean multiframe = false;
     public int expandedInsertionPosition = -1;
 
@@ -32,12 +33,13 @@ public class RenderContext {
      */
     public int translateX = 0;
 
-    public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
+    public RenderContext(JComponent panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle trackRectangle, Rectangle clipBounds) {
         this.graphics = graphics;
         this.panel = panel;
         this.graphicCache = new HashMap();
         this.referenceFrame = referenceFrame;
-        this.visibleRect = visibleRect;
+        this.trackRectangle = trackRectangle;
+        this.clipBounds = clipBounds;
         if (PreferencesManager.getPreferences().getAntiAliasing() && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -48,7 +50,8 @@ public class RenderContext {
         this.graphicCache = new HashMap<>();
         this.referenceFrame = new ReferenceFrame(context.referenceFrame);
         this.panel = context.panel;
-        this.visibleRect = new Rectangle(context.visibleRect);
+        this.trackRectangle = new Rectangle(context.trackRectangle);
+        this.clipBounds = new Rectangle(context.clipBounds);
         this.expandedInsertionPosition = context.expandedInsertionPosition;
         if (PreferencesManager.getPreferences().getAntiAliasing() && graphics != null) {
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -84,10 +87,6 @@ public class RenderContext {
         return g;
     }
 
-    public Color getBackgroundColor() {
-        return panel.getBackground();
-    }
-
     public String getChr() {
         return referenceFrame.getChrName();
     }
@@ -105,7 +104,15 @@ public class RenderContext {
     }
 
     public Rectangle getVisibleRect() {
-        return visibleRect;
+        return trackRectangle;
+    }
+
+    public Rectangle getTrackRectangle() {
+        return trackRectangle;
+    }
+
+    public Rectangle getClipBounds() {
+        return clipBounds;
     }
 
     public JComponent getPanel() {

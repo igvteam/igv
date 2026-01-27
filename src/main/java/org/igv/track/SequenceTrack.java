@@ -262,6 +262,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    /**
+     * Determine if this track is visible in any frame
+     * @return
+     */
     @Override
     public boolean isVisible() {
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);

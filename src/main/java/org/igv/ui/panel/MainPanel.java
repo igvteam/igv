@@ -11,6 +11,8 @@ import org.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.*;
@@ -188,10 +190,22 @@ public class MainPanel extends JPanel implements Paintable {
         trackPanelScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         trackPanelScrollPane.setBorder(null);
         trackPanelScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        // Disable blit scrolling to prevent ghosting artifacts during scroll
-        //trackPanelScrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
-
-        add(trackPanelScrollPane, BorderLayout.CENTER);
+        trackPanelScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    Rectangle viewRect = trackPanelScrollPane.getViewport().getViewRect();
+                    for (Component c : trackPanelContainer.getComponents()) {
+                        if (c instanceof TrackPanelScrollPane) {
+                            TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                            if (c.getBounds().intersects(viewRect)) {
+                                tsp.trackPanel.getNamePanel().repaint();
+                            }
+                        }
+                    }
+                }
+            }
+        });        add(trackPanelScrollPane, BorderLayout.CENTER);
 
         setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
 
@@ -208,7 +222,6 @@ public class MainPanel extends JPanel implements Paintable {
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
             trackPanelContainer.add(sp);
-
         };
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);

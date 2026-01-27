@@ -23,15 +23,13 @@ public class DataPanelPainter {
     private static Logger log = LogManager.getLogger(DataPanelPainter.class);
 
     public synchronized void paint(Track track,
-                                   RenderContext context,
-                                   Color background,
-                                   Rectangle visibleRect) {
+                                   RenderContext context) {
         try {
 
             // Paint tracks, handling expanded insertion if present
             InsertionMarker insertion = context.getReferenceFrame().getExpandedInsertion();
-            if (shouldPaintExpandedInsertion(insertion, context, visibleRect)) {
-                paintWithExpandedInsertion(track, context, visibleRect, insertion);
+            if (shouldPaintExpandedInsertion(insertion, context)) {
+                paintWithExpandedInsertion(track, context, insertion);
             } else {
                 paintFrame(track, context);
             }
@@ -41,7 +39,7 @@ public class DataPanelPainter {
         }
     }
 
-    private boolean shouldPaintExpandedInsertion(InsertionMarker insertion, RenderContext context, Rectangle visibleRect) {
+    private boolean shouldPaintExpandedInsertion(InsertionMarker insertion, RenderContext context) {
         if (insertion == null) return false;
 
         Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
@@ -56,15 +54,14 @@ public class DataPanelPainter {
         int pixelPos = (int) ((insertion.position - frame.getOrigin()) / scale);
         int pixelWidth = (int) Math.ceil(insertion.size / scale);
 
-        return pixelWidth > 1 && pixelPos < visibleRect.width && pixelPos + pixelWidth > 0;
+        return pixelWidth > 1 && pixelPos < context.getTrackRectangle().width && pixelPos + pixelWidth > 0;
     }
 
-    private void paintWithExpandedInsertion(Track track, RenderContext context,
-                                            Rectangle visibleRect, InsertionMarker insertion) {
+    private void paintWithExpandedInsertion(Track track, RenderContext context, InsertionMarker insertion) {
+
         ReferenceFrame frame = context.getReferenceFrame();
         double scale = frame.getScale();
         int pixelPos = (int) ((insertion.position - frame.getOrigin()) / scale);
-        int pixelWidth = (int) Math.ceil(insertion.size / scale);
 
         context.expandedInsertionPosition = insertion.position;
 
@@ -74,11 +71,12 @@ public class DataPanelPainter {
         }
 
         // Paint expanded insertion
+        int pixelWidth = (int) Math.ceil(insertion.size / scale);
         paintExpandedInsertion(insertion, track, shiftRenderContext(context, insertion.position, pixelPos, pixelWidth));
 
         // Paint right of insertion
         int rightStart = pixelPos + pixelWidth;
-        int rightWidth = visibleRect.width - rightStart;
+        int rightWidth = context.getTrackRectangle().width - rightStart;
         if (rightWidth > 0) {
             RenderContext rightContext = shiftRenderContext(context, insertion.position, rightStart, rightWidth);
             rightContext.multiframe = true;
@@ -91,12 +89,12 @@ public class DataPanelPainter {
         RenderContext newContext = new RenderContext(ctx);
         newContext.getReferenceFrame().widthInPixels = pixelWidth;
         newContext.getReferenceFrame().origin = position;
-        newContext.visibleRect = new Rectangle(0, ctx.visibleRect.y, pixelWidth, ctx.visibleRect.height);
+        newContext.trackRectangle = new Rectangle(0, ctx.trackRectangle.y, pixelWidth, ctx.trackRectangle.height);
         newContext.translateX = translateX;
 
         Graphics2D dG = newContext.getGraphics();
         dG.translate(translateX, 0);
-        dG.setClip(newContext.visibleRect);
+        dG.setClip(newContext.trackRectangle);
 
         return newContext;
     }
@@ -109,7 +107,7 @@ public class DataPanelPainter {
         if (track.isVisible()) {
             try {
 
-                track.render(context, visibleRect);
+                track.render(context, context.getGraphics().getClipBounds()); //visibleRect);
 
                 // Get overlays
                 List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(track);

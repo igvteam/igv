@@ -75,7 +75,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public  void render(RenderContext context, Rectangle visibleRect) {
-
+System.out.println("SegTrack.render: " + getName() + " " + visibleRect);
         var y = 0;
         for (var group : sampleGroups) {
             for (String sample : group.samples()) {

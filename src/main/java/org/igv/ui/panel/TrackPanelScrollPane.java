@@ -6,8 +6,8 @@ import org.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 /**
  * @author jrobinso
@@ -18,10 +18,6 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
 
     TrackPanel trackPanel;
 
-
-    // User-specified height for this scroll pane. When set (> 0), this overrides content-based sizing.
-    private int explicitHeight = -1;
-
     public TrackPanelScrollPane() {
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         setForeground(new java.awt.Color(153, 153, 153));
@@ -29,19 +25,23 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         getVerticalScrollBar().setUnitIncrement(16);
 
-
-        addMouseWheelListener(mouseWheelEvent -> trackPanel.getNamePanel().repaint());
-
+        // Repaint name panels on end of scroll to center the text in the visible window.
+        getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    trackPanel.getNamePanel().repaint();
+                }
+            }
+        });
     }
 
     /**
      * Set an explicit height for this scroll pane. This overrides the content-based sizing
      * and locks the scroll pane to this height until changed by another call to this method.
      *
-     * @param height the explicit height in pixels, or -1 to revert to content-based sizing
      */
-    public void setExplicitHeight(int height) {
-        this.explicitHeight = height;
+    public void validateTrackHeight() {
 
         // Update scrollbar visibility based on new height
         updateScrollbarPolicy();
@@ -88,13 +88,6 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
     @Override
     public Dimension getPreferredSize() {
         int height = trackPanel.getTrack().getHeight();
-        if (explicitHeight > 0) {
-            height = explicitHeight;
-        } else if (trackPanel != null && trackPanel.getTrack() != null) {
-            height = trackPanel.getTrack().getContentHeight();
-        } else {
-            return super.getPreferredSize();
-        }
         return new Dimension(super.getPreferredSize().width, height);
     }
 

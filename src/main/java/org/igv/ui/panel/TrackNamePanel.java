@@ -67,17 +67,23 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
-        if (darkMode) {
-            setBackground(UIManager.getColor("Panel.background"));
+        Rectangle visibleRect = getVisibleRect();
+
+        if (visibleRect != null && visibleRect.height > 10) {
+
+            if (darkMode) {
+                setBackground(UIManager.getColor("Panel.background"));
+            }
+
+            if (PreferencesManager.getPreferences().getAntiAliasing()) {
+                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
+
+            removeMousableRegions();
+
+
+            paintImpl(g, getVisibleRect(), false);
         }
-
-        if (PreferencesManager.getPreferences().getAntiAliasing()) {
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
-
-        removeMousableRegions();
-
-        paintImpl(g, getBounds(), false);
     }
 
 

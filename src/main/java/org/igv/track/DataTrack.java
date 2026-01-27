@@ -8,9 +8,8 @@
  */
 package org.igv.track;
 
-import org.igv.event.IGVEvent;
-import org.igv.logging.*;
 import org.igv.Globals;
+import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.Chromosome;
@@ -18,6 +17,10 @@ import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.DataRenderer;
 import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
@@ -52,10 +55,18 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+
+        setHeight(PreferencesManager.getPreferences().getAsInt(Constants.CHART_TRACK_HEIGHT_KEY));
+
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
     public DataTrack() {
+    }
+
+    @Override
+    public int getContentHeight() {
+        return height;
     }
 
     public void receiveEvent(IGVEvent event) {
@@ -115,7 +126,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int delta = multiLocus ? 1 : (end - start) / 2;
         int expandedStart = Math.max(0, start - delta);
         int expandedEnd = Math.min(maxEnd, end + delta);
-        if(expandedEnd < 0) {
+        if (expandedEnd < 0) {
             // overflow
             expandedEnd = Integer.MAX_VALUE;
         }

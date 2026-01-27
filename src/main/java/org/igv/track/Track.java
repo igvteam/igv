@@ -197,14 +197,14 @@ public interface Track extends Persistable, AttributeSupplier {
     int getHeight();
 
     /**
-     * Return the content height of the track.  For tracks with variable numbers of rows this is calculated, for others
-     * it is the same as getHeight().
+     * Return the content height of the track.  For tracks with variable numbers of rows this is calculated.
      *
      * @return
      */
     default int getContentHeight() {
-        return 0;
+        return 20;
     }
+
 
     /**
      * Manually specify the data range.

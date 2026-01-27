@@ -126,11 +126,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         RenderContext context = null;
         try {
 
-            final Rectangle visibleRect = getVisibleRect();
+            final Rectangle trackRectangle = getBounds();
+            final Rectangle clipBounds = g.getClipBounds();
+            context = new RenderContext(this, graphics2D, frame, trackRectangle, clipBounds);
 
-            context = new RenderContext(this, graphics2D, frame, visibleRect);
-
-            painter.paint(getTrack(), context, getBackground(), visibleRect);
+            painter.paint(getTrack(), context);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -216,7 +216,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
         try {
-            context = new RenderContext(null, g, frame, rect);
+            context = new RenderContext(null, g, frame, rect, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             Insets insets = getInsets();
             Rectangle contentRect = new Rectangle(
@@ -225,7 +225,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(getTrack(), context, getBackground(), contentRect);
+            painter.paint(getTrack(), context);
             drawAllRegions(g);
 
         } finally {
