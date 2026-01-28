@@ -190,22 +190,20 @@ public class MainPanel extends JPanel implements Paintable {
         trackPanelScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         trackPanelScrollPane.setBorder(null);
         trackPanelScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        trackPanelScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-            @Override
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    Rectangle viewRect = trackPanelScrollPane.getViewport().getViewRect();
-                    for (Component c : trackPanelContainer.getComponents()) {
-                        if (c instanceof TrackPanelScrollPane) {
-                            TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-                            if (c.getBounds().intersects(viewRect)) {
-                                tsp.trackPanel.getNamePanel().repaint();
-                            }
+        trackPanelScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                Rectangle viewRect = trackPanelScrollPane.getViewport().getViewRect();
+                for (Component c : trackPanelContainer.getComponents()) {
+                    if (c instanceof TrackPanelScrollPane) {
+                        TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                        if (c.getBounds().intersects(viewRect)) {
+                            tsp.trackPanel.getNamePanel().repaint();
                         }
                     }
                 }
             }
-        });        add(trackPanelScrollPane, BorderLayout.CENTER);
+        });
+        add(trackPanelScrollPane, BorderLayout.CENTER);
 
         setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
 

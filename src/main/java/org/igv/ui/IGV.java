@@ -194,8 +194,9 @@ public class IGV implements IGVEventObserver {
         } else {
             rootPane = new JRootPane();
             mainFrame.add(rootPane);
-
         }
+        rootPane.setDoubleBuffered(true);
+
         contentPane = new IGVContentPane(this);
         menuBar = IGVMenuBar.createInstance(this);
 

@@ -575,7 +575,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private boolean renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
 
         // Might be offscreen
-        if (!context.getVisibleRect().intersects(downsampleRect)) return false;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
         if (loadedInterval == null) return false;
@@ -719,7 +718,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return;
         }
 
-        Rectangle visibleRect = context.getVisibleRect();
+        Rectangle clipBounds = context.getClipBounds();
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY() - 3;
@@ -736,12 +735,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Loop through the alignment rows for this group
             List<Row> rows = entry.getValue();
             for (Row row : rows) {
-                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                if ((clipBounds != null && y > clipBounds.getMaxY())) {
                     return;
                 }
 
-                assert visibleRect != null;
-                if (y + h > visibleRect.getY()) {
+                assert clipBounds != null;
+                if (y + h > clipBounds.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     if (row.alignments != null)  // TODO -- not sure this is needed
                         BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);

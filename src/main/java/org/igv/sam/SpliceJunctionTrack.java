@@ -91,16 +91,16 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle ignore) {
         if (!isShowFeatures(context.getReferenceFrame())) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Rectangle visibleRect = context.getVisibleRect();
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
                     "Select a chromosome and zoom in to see features." :
                     "Zoom in to see features.";
             GraphicUtils.drawCenteredText(message, visibleRect, g);
         } else {
-            super.render(context, rect);
+            super.render(context, ignore);
         }
     }
 

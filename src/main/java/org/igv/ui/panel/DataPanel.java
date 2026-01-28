@@ -110,6 +110,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
+
     @Override
     public void paintComponent(final Graphics g) {
 
@@ -165,43 +166,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         super.setBounds(x, y, width, height);
         Insets insets = this.getInsets();
         frame.setBounds(x + insets.left, width - insets.left - insets.right);
-    }
-
-    /**
-     * TODO -- move this to a "layout" command, to layout tracks and assign positions
-     */
-    private void computeMousableRegions(Collection<TrackGroup> groups, int width) {
-
-        final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
-        mouseableRegions.clear();
-        int trackX = 0;
-        int trackY = 0;
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
-
-
-            if (group.isVisible()) {
-                if (groups.size() > 1) {
-                    trackY += UIConstants.groupGap;
-                }
-
-                List<Track> trackList = group.getVisibleTracks();
-                for (Track track : trackList) {
-                    if (track == null) continue;
-                    int trackHeight = track.getContentHeight();
-
-                    if (track.isVisible()) {
-                        Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
-                        if (mouseableRegions != null) {
-                            mouseableRegions.add(new MouseableRegion(rect, track));
-                        }
-                        trackY += trackHeight;
-                    }
-                }
-
-            }
-        }
-
     }
 
     /**
