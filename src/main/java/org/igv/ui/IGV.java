@@ -105,8 +105,7 @@ public class IGV implements IGVEventObserver {
     private Timer sessionAutosaveTimer = new Timer();
 
     // Misc state
-    private Map<String, List<Track>> overlayTracksMap = new HashMap<>();
-    private Set<Track> overlaidTracks = new HashSet<>();
+
     private RecentFileSet recentSessionList;
     private RecentUrlsSet recentUrlsList;
 
@@ -877,14 +876,6 @@ public class IGV implements IGVEventObserver {
     }
 
     /**
-     * Add a new data panel set
-     */
-    public TrackPanelScrollPane addDataPanel(String name) {
-        return contentPane.getMainPanel().addDataPanel(name);
-    }
-
-
-    /**
      * Return the panel with the given name.  This is called infrequently, and doesn't need to be fast (linear
      * search is fine).
      *
@@ -892,15 +883,16 @@ public class IGV implements IGVEventObserver {
      * @return
      */
     public TrackPanel getTrackPanel(String name) {
-        for (TrackPanel sp : getTrackPanels()) {
-            if (name.equals(sp.getName())) {
-                return sp;
-            }
-        }
-
-        // If we get this far this is a new panel
-        TrackPanelScrollPane sp = addDataPanel(name);
-        return sp.getTrackPanel();
+//        for (TrackPanel sp : getTrackPanels()) {
+//            if (name.equals(sp.getName())) {
+//                return sp;
+//            }
+//        }
+//
+//        // If we get this far this is a new panel
+//        TrackPanelScrollPane sp = addDataPanel(name);
+//        return sp.getTrackPanel();
+        throw new RuntimeException("Not implemented");
     }
 
 
@@ -1197,95 +1189,7 @@ public class IGV implements IGVEventObserver {
      * @return
      */
     public TrackPanel getPanelFor(Track track) {
-        String newPanelName = "Panel" + System.currentTimeMillis();
-        return addDataPanel(newPanelName).getTrackPanel();
-    }
-
-    /**
-     * Experimental method to support VCF -> BAM coupling
-     *
-     * @return
-     */
-    public TrackPanel getVcfBamPanel() {
-        String panelName = "VCF_BAM";
-        TrackPanel panel = getTrackPanel(panelName);
-        if (panel != null) {
-            return panel;
-        } else {
-            return addDataPanel(panelName).getTrackPanel();
-        }
-    }
-
-    /**
-     * Reset the overlay tracks collection.  Currently the only overlayable track
-     * type is Mutation.  This method finds all mutation tracks and builds a map
-     * of key -> mutation track,  where the key is the specified attribute value
-     * for linking tracks for overlay.
-     */
-    public void resetOverlayTracks() {
-        log.debug("Resetting Overlay Tracks");
-        overlayTracksMap.clear();
-        overlaidTracks.clear();
-
-
-        // Old option to allow overlaying based on an arbitrary attribute.
-        // String overlayAttribute = igv.getSession().getOverlayAttribute();
-
-        for (Track track : getAllTracks()) {
-            if (track != null && track.getTrackType() == TrackType.MUTATION) {
-
-                String sample = track.getSample();
-
-                if (sample != null) {
-                    List<Track> trackList = overlayTracksMap.get(sample);
-
-                    if (trackList == null) {
-                        trackList = new ArrayList();
-                        overlayTracksMap.put(sample, trackList);
-                    }
-
-                    trackList.add(track);
-                }
-            }
-
-        }
-
-        for (Track track : getAllTracks()) {
-            if (track != null) {  // <= this should not be neccessary
-                if (track.getTrackType() != TrackType.MUTATION) {
-                    String sample = track.getSample();
-                    if (sample != null) {
-                        List<Track> trackList = overlayTracksMap.get(sample);
-                        if (trackList != null) overlaidTracks.addAll(trackList);
-                    }
-                }
-            }
-        }
-
-        boolean displayOverlays = getSession().getOverlayMutationTracks();
-        for (Track track : getAllTracks()) {
-            if (track != null) {
-                if (track.getTrackType() == TrackType.MUTATION) {
-                    track.setOverlayed(displayOverlays && overlaidTracks.contains(track));
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Return tracks overlaid on "track"
-     * // TODO -- why aren't overlaid tracks stored in a track member?  This seems unnecessarily complex
-     *
-     * @param track
-     * @return
-     */
-    public List<Track> getOverlayTracks(Track track) {
-        String sample = track.getSample();
-        if (sample != null) {
-            return overlayTracksMap.get(sample);
-        }
-        return null;
+        throw new RuntimeException("Deprecated method");
     }
 
     public int getVisibleTrackCount() {

@@ -185,11 +185,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return (int) dataManager.getVisibilityWindow();
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
+            Rectangle visibleRect = context.getVisibleRect();
             Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
             String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
                     "Select a chromosome and zoom in to see coverage." :
@@ -199,6 +199,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         }
 
 
+        Rectangle rect = context.getTrackRectangle();
         drawData(context, rect);
 
         if (dataSourceRenderer != null) {

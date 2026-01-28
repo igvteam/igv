@@ -73,9 +73,8 @@ public interface Track extends Persistable, AttributeSupplier {
      * but in the case of scrolling it may not.
      *
      * @param context the render context
-     * @param visibleRect
      */
-    void render(RenderContext context, Rectangle visibleRect);
+    void render(RenderContext context, Rectangle deprecated);
 
     /**
      * Render the track as an overlay, presumably on another track.
@@ -329,12 +328,6 @@ public interface Track extends Persistable, AttributeSupplier {
 
     default void groupSamplesByAttribute(String attributeKey) {
         // no op, override in subclass if needed
-    }
-
-    default void repaint() {
-        if(IGV.hasInstance()) {
-            IGV.getInstance().repaint(this);
-        }
     }
 
 }

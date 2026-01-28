@@ -87,9 +87,11 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         }
 
         // Some generic items from TrackMenuUtils
-        Collection<Track> tracks = List.of(alignmentTrack);
+        Collection<Track> tracks = Collections.singleton(alignmentTrack);
         addSeparator();
         add(TrackMenuUtils.getTrackRenameItem(tracks));
+
+        add(TrackMenuUtils.getChangeTrackHeightItem(tracks));
 
         JMenuItem item = new JMenuItem("Change Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(tracks));
@@ -1069,7 +1071,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             item.setSelected(spliceJunctionTrack.isVisible());
             item.setEnabled(!spliceJunctionTrack.isRemoved());
             item.addActionListener(aEvt -> {
-                alignmentTrack.setVisible(item.isSelected());
+                spliceJunctionTrack.setVisible(item.isSelected());
                 IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
 
             });

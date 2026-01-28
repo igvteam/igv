@@ -107,19 +107,8 @@ public class DataPanelPainter {
         if (track.isVisible()) {
             try {
 
-                track.render(context, context.getGraphics().getClipBounds()); //visibleRect);
+                track.render(context, null);
 
-                // Get overlays
-                List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(track);
-                if (overlayTracks != null) {
-                    for (Track overlayTrack : overlayTracks) {
-
-                        // Don't overlay on self
-                        if (overlayTrack != track) {
-                            overlayTrack.overlay(context, visibleRect);
-                        }
-                    }
-                }
             } catch (Exception e) {
                 log.error("Error rendering track: " + track.getName(), e);
             }

@@ -74,16 +74,18 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public  void render(RenderContext context, Rectangle visibleRect) {
-System.out.println("SegTrack.render: " + getName() + " " + visibleRect);
+    public  void render(RenderContext context, Rectangle ignore) {
+
+        Rectangle clipBounds = context.getClipBounds();
+        Rectangle trackRect = context.getTrackRectangle();
         var y = 0;
         for (var group : sampleGroups) {
             for (String sample : group.samples()) {
-                if(y > visibleRect.y + visibleRect.height) {
+                if(y > clipBounds.y + clipBounds.height) {
                     break;
                 }
-                if(y + sampleHeight > visibleRect.y) {
-                    var r = new Rectangle(visibleRect.x, y, visibleRect.width, sampleHeight);
+                if(y + sampleHeight > clipBounds.y) {
+                    var r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
                     var scores = dataset.getSegments(sample, context.getChr());
                     this.renderer.render(scores, context, r, this);
                 }

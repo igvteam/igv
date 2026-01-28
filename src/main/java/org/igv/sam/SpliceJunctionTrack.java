@@ -182,7 +182,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     @Override
-    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+    protected void renderFeatures(RenderContext context, Rectangle ignore) {
 
         // Intercept renderFeatures call and create splice junctions from alignments, if needed.
         ReferenceFrame frame = context.getReferenceFrame();
@@ -204,7 +204,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             }
         }
 
-        super.renderFeatures(context, inputRect);
+        super.renderFeatures(context, ignore);
     }
 
     public void load(ReferenceFrame frame) {

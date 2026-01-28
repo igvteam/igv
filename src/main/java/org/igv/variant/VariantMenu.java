@@ -126,11 +126,6 @@ public class VariantMenu extends IGVPopupMenu {
 
         add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
-
-        if (track.hasAlignmentFiles()) {
-            addSeparator();
-            add(getLoadBamsItem());
-        }
     }
 
     private JMenuItem getFeatureVisibilityItem() {
@@ -345,23 +340,6 @@ public class VariantMenu extends IGVPopupMenu {
 
         return items;
     }
-
-    /**
-     * Load bam files associated with the selected samples (experimental).
-     *
-     * @return
-     */
-    private JMenuItem getLoadBamsItem() {
-        final JMenuItem item = new JMenuItem("Load alignments");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.loadSelectedBams();
-            }
-        });
-        item.setEnabled(selectedSamples != null && selectedSamples.size() > 0);
-        return item;
-    }
-
 
     static class GenotypeComparator implements Comparator<String> {
 

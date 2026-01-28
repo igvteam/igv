@@ -212,23 +212,6 @@ public class MainPanel extends JPanel implements Paintable {
 
     }
 
-    /**
-     * Add a new data panel set
-     */
-    public synchronized TrackPanelScrollPane addDataPanel(String name) {
-
-        final TrackPanel trackPanel = new TrackPanel(name, this);
-        final TrackPanelScrollPane sp = new TrackPanelScrollPane();
-        Runnable runnable = () -> {
-            sp.setViewportView(trackPanel);
-            trackPanelContainer.add(sp);
-        };
-
-        UIUtilities.invokeAndWaitOnEventThread(runnable);
-
-        return sp;
-    }
-
     public synchronized TrackPanelScrollPane addDataPanel(Track track) {
 
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);

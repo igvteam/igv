@@ -244,9 +244,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
      * Render the sequence, and optionally the 3 frame translation table
      *
      * @param context
-     * @param visibleRect
      */
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
@@ -257,7 +256,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, visibleRect, showTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, context.getTrackRectangle(), showTranslation, resolutionThreshold);
             }
         }
     }

@@ -33,10 +33,10 @@ public abstract class XYPlotRenderer extends DataRenderer {
      * @param track
      * @param locusScores
      * @param context
-     * @param rect
      */
-    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle rect) {
+    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle ignore) {
 
+        Rectangle rect = context.getTrackRectangle();
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -112,14 +112,15 @@ public abstract class XYPlotRenderer extends DataRenderer {
      *
      * @param track
      * @param context
-     * @param arect
      */
     @Override
-    public void renderAxis(Track track, RenderContext context, Rectangle arect) {
+    public void renderAxis(Track track, RenderContext context, Rectangle ignore) {
 
         if (context.multiframe) {
             return;
         }
+
+        Rectangle arect = context.getTrackRectangle();
 
         super.renderAxis(track, context, arect);
 
@@ -183,7 +184,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
     }
 
     @Override
-    public void renderGuides(Track track, RenderContext context, Rectangle arect) {
+    public void renderGuides(Track track, RenderContext context, Rectangle ignore) {
+
+        Rectangle arect = context.getTrackRectangle();
 
         // Draw boundaries if there is room
         if (arect.getHeight() >= 10) {

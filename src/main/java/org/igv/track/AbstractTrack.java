@@ -1165,4 +1165,10 @@ public abstract class AbstractTrack implements Track {
         return featureColor;
     }
 
+    public void repaint() {
+        if (this.viewport != null) {
+            this.viewport.repaint(this.viewport.getVisibleRect());
+        }
+    }
+
 }

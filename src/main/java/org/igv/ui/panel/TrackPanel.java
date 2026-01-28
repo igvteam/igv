@@ -343,7 +343,7 @@ public class TrackPanel extends IGVPanel implements Scrollable {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(100000, track.getContentHeight());
+        return isVisible() ? new Dimension(100000, track.getContentHeight()) : new Dimension(0, 0);
     }
 
     @Override

@@ -128,7 +128,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             final Rectangle trackRectangle = getBounds();
             final Rectangle clipBounds = g.getClipBounds();
-            context = new RenderContext(this, graphics2D, frame, trackRectangle, clipBounds);
+            final Rectangle visibleRect = getVisibleRect();
+            context = new RenderContext(this, graphics2D, frame, trackRectangle, visibleRect, clipBounds);
 
             painter.paint(getTrack(), context);
 
@@ -216,7 +217,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
         try {
-            context = new RenderContext(null, g, frame, rect, rect);
+            context = new RenderContext(null, g, frame, rect, rect, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             Insets insets = getInsets();
             Rectangle contentRect = new Rectangle(
@@ -389,35 +390,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (mouseRegion.containsPoint(x, y)) {
                 track = mouseRegion.getTracks().iterator().next();
                 if (track != null) {
-
-                    // First see if there is an overlay track.  If there is, give
-                    // it first crack
-                    List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
-                    boolean foundOverlaidFeature = false;
-                    if (overlays != null) {
-                        for (Track overlay : overlays) {
-                            if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), position, x, y, frame) != null)) {
-                                String valueString = overlay.getValueStringAt(frame.getChrName(), position, x, y, frame);
-                                if (valueString != null) {
-                                    popupTextBuffer.append(valueString);
-                                    popupTextBuffer.append("<br>");
-                                    foundOverlaidFeature = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!foundOverlaidFeature) {
-                        String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
-                        if (valueString != null) {
-                            if (foundOverlaidFeature) {
-                                popupTextBuffer.append("---------------------<br>");
-                            }
-                            popupTextBuffer.append(valueString);
-                            popupTextBuffer.append("<br>");
-                            break;
-                        }
+                    String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
+                    if (valueString != null) {
+                        popupTextBuffer.append(valueString);
+                        popupTextBuffer.append("<br>");
+                        break;
                     }
                 }
             }
@@ -719,31 +696,14 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
                                     if (track != null) {
                                         TrackClickEvent te = new TrackClickEvent(e, frame);
-                                        List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
-                                        boolean handled = false;
-                                        if (overlays != null) {
-                                            for (Track overlay : overlays) {
-                                                if (overlay.getFeatureAtMousePosition(te) != null) {
-                                                    overlay.handleDataClick(te);
-                                                    handled = true;
-                                                }
-                                            }
-                                        }
-                                        if (!handled) {
-                                            handled = track.handleDataClick(te);
-                                        }
 
+                                        boolean handled = track.handleDataClick(te);
 
-                                        if (handled) {
-                                            return;
-                                        } else {
-                                            if (currentTool != null)
-                                                currentTool.mouseClicked(e);
-                                        }
+                                        if (!handled && currentTool != null)
+                                            currentTool.mouseClicked(e);
                                     }
                                 }
                             }
-
                         };
                         clickScheduler.scheduleClickTask(clickTask);
                     }

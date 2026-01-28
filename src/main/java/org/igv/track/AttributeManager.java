@@ -266,7 +266,6 @@ public class AttributeManager implements AttributeSupplier {
             loadedResources.add(locator);
 
             if (!Globals.isHeadless()) {
-                IGV.getInstance().resetOverlayTracks();
                 IGV.getInstance().repaint();
             }
 

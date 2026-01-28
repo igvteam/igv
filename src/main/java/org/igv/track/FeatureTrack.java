@@ -716,10 +716,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
         // Draw entire track.  TODO use clipBounds or visibleRect.
-        Rectangle renderRect = new Rectangle(0, 0, visibleRect.width, this.getContentHeight());
+        Rectangle renderRect = context.getTrackRectangle();
 
         renderRect.y = renderRect.y + margin;
         renderRect.height -= margin;

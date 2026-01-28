@@ -351,10 +351,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                // Sort by overlaid mutation count.
-                if (!Globals.isHeadless() && tracks == null) {
-                    tracks = IGV.getInstance().getOverlayTracks(this);
-                }
                 float count = 0;
                 String tSamp = this.getSample();
                 if (tracks != null && tSamp != null) {

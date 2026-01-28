@@ -1372,60 +1372,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return true;
     }
 
-    public void loadSelectedBams() {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                // Use a set to enforce uniqueness
-                final int nSamples = selectedSamples.size();
-                if (nSamples == 0) {
-                    return;
-                }
-
-                Set<String> bams = new HashSet<String>(nSamples);
-                String name = "";
-                int n = 0;
-                for (String sample : selectedSamples) {
-                    bams.add(getBamFileForSample(sample));
-                    n++;
-                    if (n < 7) {
-                        if (n == 6) {
-                            name += "...";
-                        } else {
-                            name += sample;
-                            if (n < nSamples) name += ", ";
-                        }
-                    }
-                }
-
-                if (bams.size() > 20) {
-                    boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
-                    if (!proceed) return;
-                }
-
-                String bamList = "";
-                for (String bam : bams) {
-                    bamList += bam + ",";
-
-                }
-                ResourceLocator loc = new ResourceLocator(bamList);
-                loc.setFormat("alist");
-                loc.setName(name);
-                List<Track> tracks = null;
-                try {
-                    tracks = IGV.getInstance().load(loc);
-                } catch (Exception e) {
-                    log.error("Error loading bam: " + loc.getPath(), e);
-                }
-
-                TrackPanel panel = IGV.getInstance().getVcfBamPanel();
-                panel.clearTracks();
-                panel.addTracks(tracks);
-            }
-        };
-
-        LongRunningTask.submit(runnable);
-    }
-
     /**
      * Return the nextLine or previous feature relative to the center location.
      * <p/>

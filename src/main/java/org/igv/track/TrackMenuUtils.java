@@ -1026,7 +1026,6 @@ public class TrackMenuUtils {
         for (Track track : selectedTracks) {
             track.setHeight(value);
         }
-        IGV.getInstance().repaint(selectedTracks);
     }
 
     public static void changeFeatureVisibilityWindow(final Collection<Track> selectedTracks) {
@@ -1306,7 +1305,7 @@ public class TrackMenuUtils {
 
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
-        JMenuItem item = new JMenuItem("Change Track Height...");
+        JMenuItem item = new JMenuItem("Set Track Height...");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {

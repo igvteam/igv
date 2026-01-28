@@ -277,9 +277,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private int squishedHeight = 2;
     private final int minHeight = 50;
 
-    private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
-    private Rectangle insertionRect;
     private ColorTable readNamePalette;
     private final HashMap<String, Color> selectedReadNames = new HashMap<>();
 
@@ -523,12 +521,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      * in the current viewport.
      *
      * @param context
-     * @param visibleRect
      */
 
 
-    public void render(RenderContext context, Rectangle visibleRect) {
-System.out.println(visibleRect);
+    public void render(RenderContext context, Rectangle ignore) {
+
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow()) {
             Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
@@ -536,40 +533,43 @@ System.out.println(visibleRect);
                     "Select a chromosome and zoom in to see alignments." :
                     "Zoom in to see alignments.";
 
-            GraphicUtils.drawCenteredText(message, visibleRect, g2);
+            GraphicUtils.drawCenteredText(message, context.getVisibleRect(), g2);
             return;
         }
 
+        Rectangle trackRect = context.getTrackRectangle();
+        Rectangle clipBounds = context.getClipBounds();
         context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
-        int yOffset = 0;
-
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
-        yOffset += seqHeight;
-        if(visibleRect.y < seqHeight) {
+        int yOffset = seqHeight;
+        if(clipBounds.y < seqHeight) {
             if (seqHeight > 0) {
-                Rectangle seqRect = new Rectangle(0, 0, visibleRect.width, seqHeight);
+                Rectangle seqRect = new Rectangle(0, 0, trackRect.width, seqHeight);
                 sequenceTrack.render(context, seqRect);
             }
         }
 
         // Top gap.
         boolean downsampled = false;
-        if(visibleRect.y < seqHeight + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
-            Rectangle rect = new Rectangle(visibleRect);
-            rect.y += DS_MARGIN_0;
-
-            downsampleRect = new Rectangle(rect);
-            downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
-            downsampled = renderDownsampledIntervals(context, downsampleRect);
+        if(clipBounds.y < yOffset + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
+            Rectangle dsRect = new Rectangle(trackRect);
+            dsRect.y = yOffset + DS_MARGIN_0;
+            dsRect.height = DOWNSAMPLED_ROW_HEIGHT;
+            downsampled = renderDownsampledIntervals(context, dsRect);
         }
+        if(downsampled) {
+            yOffset += DS_MARGIN_0 +  DOWNSAMPLED_ROW_HEIGHT;
+            this.downsampleRect = downsampleRect;
+        } else {
+            this.downsampleRect = null;
+        }
+        yOffset += DS_MARGIN_0;
 
-//        alignmentsRect = new Rectangle(rect);
-//        if(downsampled) {
-//            alignmentsRect.y += DOWNSAMPLED_ROW_HEIGHT;
-//        }
-
-        renderAlignments(context, visibleRect);
+        Rectangle alignmentsRect = new Rectangle(trackRect);
+        alignmentsRect.y = yOffset;
+        alignmentsRect.height -= yOffset;
+        renderAlignments(context, alignmentsRect);
     }
 
     private boolean renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
@@ -601,8 +601,10 @@ System.out.println(visibleRect);
     }
 
 
-    private void renderAlignments(RenderContext context, Rectangle visibleRect) {
-Rectangle inputRect = new Rectangle(visibleRect);
+    private void renderAlignments(RenderContext context, Rectangle alignmentsRect) {
+
+        Rectangle clipBounds = context.getClipBounds();
+
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         if (loadedInterval == null) {
             return;
@@ -653,12 +655,12 @@ Rectangle inputRect = new Rectangle(visibleRect);
             // Create a snapshot to avoid ConcurrentModificationException from background loading threads
             List<Row> rows = new ArrayList<>(entry.getValue());
             for (Row row : rows) {
-                if (y > alignmentsRect.getMaxY()) {
+                if (y > clipBounds.getMaxY()) {
                     break;
                 }
 
-                if (y + h > alignmentsRect.y) {
-                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                if (y + h > clipBounds.y) {
+                    Rectangle rowRectangle = new Rectangle(alignmentsRect.x, (int) y, alignmentsRect.width, (int) h);
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
                     row.h = h;
@@ -671,7 +673,7 @@ Rectangle inputRect = new Rectangle(visibleRect);
                 if (showGroupLine) {
                     if (groupNumber < nGroups) {
                         int borderY = (int) y + GROUP_MARGIN / 2;
-                        GraphicUtils.drawDottedDashLine(groupBorderGraphics, inputRect.x, borderY, inputRect.width, borderY);
+                        GraphicUtils.drawDottedDashLine(groupBorderGraphics, alignmentsRect.x, borderY, alignmentsRect.width, borderY);
                     }
                 }
 
@@ -686,15 +688,15 @@ Rectangle inputRect = new Rectangle(visibleRect);
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
-                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
+                    Rectangle rect = new Rectangle(alignmentsRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
                     GraphicUtils.drawVerticallyCenteredText(groupName, 5, rect, g, false, true);
                 }
             }
             y += GROUP_MARGIN;
         }
 
-        final int bottom = inputRect.y + inputRect.height;
-        groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
+        final int bottom = alignmentsRect.y + alignmentsRect.height;
+        groupBorderGraphics.drawLine(alignmentsRect.x, bottom, alignmentsRect.width, bottom);
     }
 
     /**
@@ -858,7 +860,6 @@ Rectangle inputRect = new Rectangle(visibleRect);
             }
         } else {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
-
             if (feature != null) {
                 return feature.getAlignmentValueString(position, mouseX, renderOptions);
             }
@@ -875,7 +876,7 @@ Rectangle inputRect = new Rectangle(visibleRect);
 
     Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
-        if (alignmentsRect == null || dataManager == null) {
+        if (dataManager == null) {
             return null;   // <= not loaded yet
         }
         PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);

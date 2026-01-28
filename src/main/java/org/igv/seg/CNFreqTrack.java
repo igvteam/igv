@@ -86,10 +86,10 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
 
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
         // TODO -- generalize.  This track doesn't scroll, we don't need to account for visibleRect or clipBounds
-        Rectangle trackRect = new Rectangle(0, 0, visibleRect.width, this.height);
+        Rectangle trackRect = context.getTrackRectangle();
 
         data.compute(ampThreshold, delThreshold);
         renderer.render(data.getDelCounts(context.getChr()), context, trackRect, this);

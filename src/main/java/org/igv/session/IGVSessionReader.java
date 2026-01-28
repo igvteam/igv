@@ -145,9 +145,6 @@ public class IGVSessionReader implements SessionReader {
         if (session.isRemoveEmptyPanels()) {
             igv.getMainPanel().removeEmptyDataPanels();
         }
-
-        igv.resetOverlayTracks();
-
     }
 
     /**
