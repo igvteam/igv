@@ -800,9 +800,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Render features in the given input rectangle.
      *
      * @param context
-     * @param inputRect
+     * @param ignore - deprecated
      */
-    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+    protected void renderFeatures(RenderContext context, Rectangle ignore) {
 
         if (log.isTraceEnabled()) {
             String msg = String.format("renderFeatures: %s frame: %s", getName(), context.getReferenceFrame().getName());
@@ -816,7 +816,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         try {
-            renderFeatureImpl(context, inputRect, packedFeatures);
+            renderFeatureImpl(context, packedFeatures);
         } catch (TribbleException e) {
             log.error("Tribble error", e);
             //Error loading features.  We'll let the user decide if this is "fatal" or not.
@@ -835,15 +835,17 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
+    protected void renderFeatureImpl(RenderContext context, PackedFeatures packedFeatures) {
 
+        Rectangle trackRectangle = context.getTrackRectangle();
+        Rectangle clipBounds = context.getClipBounds();
 
         Renderer renderer = getRenderer();
 
         if (getDisplayMode() == DisplayMode.COLLAPSED && !isGroupByStrand()) {
             List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
-                renderer.render(features, context, inputRect, this);
+                renderer.render(features, context, trackRectangle, this);
             }
         } else {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
@@ -851,13 +853,23 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
                 // Divide rectangle into equal height levels
                 double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-                Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
+                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, (int) h);
                 int i = 0;
 
                 if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
                 for (PackedFeatures.FeatureRow row : rows) {
 
-                    renderer.render(row.features, context, new Rectangle(rect), this);
+                    if(rect.y > clipBounds.y + clipBounds.height) {
+                        break;  // Gone past clip bounds
+                    }
+                    if (rect.y + rect.height < clipBounds.y) {
+                        // Not yet in clip bounds
+                        rect.y += h;
+                        i++;
+                        continue;
+                    }
+
+                    renderer.render(row.features, context, rect, this);
 
                   //  if (selectedFeatureRowIndex == i) {
                    //     Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);

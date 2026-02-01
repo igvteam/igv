@@ -370,7 +370,7 @@ public abstract class AbstractTrack implements Track {
 
     @Override
     public int getHeight() {
-        return height == 0 ? getContentHeight() : height;
+        return !isVisible() ? 0 : height == 0 ? getContentHeight() : height;
     }
 
     public void setHeight(int height) {

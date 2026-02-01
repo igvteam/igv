@@ -370,6 +370,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     public int getContentHeight() {
+
+        if(!isVisible()) {
+            return 0;
+        }
+
         int sampleCount = sampleCount();
         int h;
         if (getDisplayMode() == DisplayMode.COLLAPSED || sampleCount == 0 || showGenotypes == false) {
@@ -405,21 +410,21 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
     /**
-     * Render the features in the supplied rectangle.
      *
      * @param context
-     * @param trackRectangle
      * @param packedFeatures
      */
     @Override
-    protected void renderFeatureImpl(RenderContext context, Rectangle trackRectangle, PackedFeatures packedFeatures) {
+    protected void renderFeatureImpl(RenderContext context, PackedFeatures packedFeatures) {
 
         Graphics2D g2D = context.getGraphics();
+
+        Rectangle trackRectangle = context.getTrackRectangle();
+        Rectangle clipBounds = context.getClipBounds();
 
         top = trackRectangle.y;
         Rectangle visibleRectangle = context.getVisibleRect();
 
-        // A disposable rect -- note this gets modified all over the place, bad practice
         Rectangle tmpRect = new Rectangle(trackRectangle);
         tmpRect.height = getGenotypeBandHeight();
         tmpRect.y = trackRectangle.y;
