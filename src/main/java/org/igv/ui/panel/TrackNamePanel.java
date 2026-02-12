@@ -45,8 +45,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     List<GroupExtent> groupExtents = new ArrayList();
     BufferedImage dndImage = null;
     TrackGroup selectedGroup = null;
-    boolean showGroupNames = false;  // Reserved for future use
-    private Rectangle visibleRect = null;
 
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
@@ -67,22 +65,39 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
-        Rectangle visibleRect = getVisibleRect();
+        Rectangle trackRectangle = getVisibleRect();
+        Rectangle clipRect = g.getClipBounds();
 
-        if (visibleRect != null && visibleRect.height > 10) {
+        if (trackRectangle != null && trackRectangle.height > 10) {
 
-            if (darkMode) {
-                setBackground(UIManager.getColor("Panel.background"));
+            Graphics2D fontGraphics = null;
+
+            try {
+                if (darkMode) {
+                    setBackground(UIManager.getColor("Panel.background"));
+                }
+
+                fontGraphics = (Graphics2D) g.create();
+
+                final Color backgroundColor = darkMode ?
+                        UIManager.getColor("Panel.background") :
+                        PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+                fontGraphics.setBackground(backgroundColor);
+                fontGraphics.setColor(backgroundColor);
+                fontGraphics.fillRect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
+
+                fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
+
+                if (PreferencesManager.getPreferences().getAntiAliasing()) {
+                    ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
+
+                removeMousableRegions();
+
+                paintImpl(fontGraphics, trackRectangle, clipRect,false);
+            } finally {
+                fontGraphics.dispose();
             }
-
-            if (PreferencesManager.getPreferences().getAntiAliasing()) {
-                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            }
-
-            removeMousableRegions();
-
-
-            paintImpl(g, getVisibleRect(), false);
         }
     }
 
@@ -94,7 +109,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        paintImpl(g, rect, true);
+        paintImpl(g, rect, rect,true);
 
         borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
         borderGraphics.dispose();
@@ -106,26 +121,15 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    private void paintImpl(Graphics g, Rectangle rect, boolean snapshot) {
-
-        Graphics2D fontGraphics = (Graphics2D) g.create();
-        try {
-            fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
-            final Color backgroundColor = darkMode ?
-                    UIManager.getColor("Panel.background") :
-                    PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
-            fontGraphics.setBackground(backgroundColor);
+    private void paintImpl(Graphics2D g, Rectangle visibleRect, Rectangle clipRect, boolean snapshot) {
 
             Track track = getTrack();
             if (track.isVisible()) {
                 if (!snapshot && track.isSelected()) {
-                    fontGraphics.setBackground(Color.LIGHT_GRAY);
+                    g.setBackground(Color.LIGHT_GRAY);
                 }
-                track.renderName(fontGraphics, rect);
+                track.renderName(g, visibleRect, clipRect);
             }
-        } finally {
-            fontGraphics.dispose();
-        }
     }
 
     private void init() {
@@ -204,10 +208,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             }
         }
         return null;
-    }
-
-    public void setVisibleRect(Rectangle visibleRect) {
-        this.visibleRect = visibleRect;
     }
 
     /**

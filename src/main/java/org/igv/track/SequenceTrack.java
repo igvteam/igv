@@ -134,7 +134,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void renderName(Graphics2D g, Rectangle trackRectangle) {
+    public void renderName(Graphics2D g, Rectangle visibleRect, Rectangle clipRect) {
 
         // Use local graphics -- this method corrupts graphics context when exporting to "png" files
         Graphics2D graphics = (Graphics2D) g.create();
@@ -148,7 +148,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             int textBaseline = 12;
             graphics.drawString(NAME, 5, textBaseline);
 
-            int rx = trackRectangle.width - 20;
+            int rx = visibleRect.width - 20;
             arrowRect = new Rectangle(rx, 2, 15, 10);
             drawArrow(graphics);
 

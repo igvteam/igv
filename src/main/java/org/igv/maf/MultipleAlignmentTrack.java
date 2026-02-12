@@ -115,22 +115,22 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
 
-        this.visibleNameRect = trackRectangle;
+        this.visibleNameRect = visibleRect;
         if (isSelected()) {
             g2D.setBackground(Color.LIGHT_GRAY);
         } else {
             g2D.setBackground(Color.WHITE);
         }
 
-        Rectangle rect = new Rectangle(trackRectangle);
+        Rectangle rect = new Rectangle(visibleRect);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
 
         Font font = FontManager.getFont(getFontSize());
         g2D.setFont(font);
 
-        int y = trackRectangle.y;
+        int y = visibleRect.y;
 
         rect.height = GAPS_HEIGHT;
         rect.y = y;
@@ -148,7 +148,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 name = sp;
             }
 
-            if (trackRectangle.intersects(rect)) {
+            if (visibleRect.intersects(rect)) {
 
                 GraphicUtils.drawVerticallyCenteredText(name, margin, rect, g2D, true);
             }

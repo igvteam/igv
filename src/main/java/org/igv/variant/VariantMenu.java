@@ -27,7 +27,6 @@ public class VariantMenu extends IGVPopupMenu {
 
     private static Logger log = LogManager.getLogger(VariantMenu.class);
     private VariantTrack track;
-    private Collection<String> selectedSamples;
     static boolean depthSortingDirection;
     static boolean genotypeSortingDirection;
     static boolean sampleSortingDirection;
@@ -37,10 +36,6 @@ public class VariantMenu extends IGVPopupMenu {
     public VariantMenu(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
         super();
         this.track = variantTrack;
-
-        if (track.hasAlignmentFiles()) {
-            selectedSamples = track.getSelectedSamples();
-        }
 
         //Title
         JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.LEFT);
@@ -212,7 +207,7 @@ public class VariantMenu extends IGVPopupMenu {
             item.addActionListener(evt -> {
                 GenotypeComparator compare = new GenotypeComparator(variant);
                 genotypeSortingDirection = !genotypeSortingDirection;
-                track.sortSamplesByAttribute(compare);
+                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -243,7 +238,7 @@ public class VariantMenu extends IGVPopupMenu {
                     }
                 };
                 sampleSortingDirection = !sampleSortingDirection;
-                track.sortSamplesByAttribute(compare);
+                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -256,7 +251,7 @@ public class VariantMenu extends IGVPopupMenu {
             item.addActionListener(evt -> {
                 DepthComparator compare = new DepthComparator(variant);
                 depthSortingDirection = !depthSortingDirection;
-                track.sortSamplesByAttribute(compare);
+                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
 
@@ -272,7 +267,7 @@ public class VariantMenu extends IGVPopupMenu {
                 item.addActionListener(evt -> {
                     QualityComparator compare = new QualityComparator(variant);
                     qualitySortingDirection = !qualitySortingDirection;
-                    track.sortSamplesByAttribute(compare);
+                    track.sortSamples(compare);
                     IGV.getInstance().getContentPane().repaint();
                 });
             } else {

@@ -205,7 +205,7 @@ public class TrackGroup {
 
                 // Step 2.5, internal sort by sample attributes for variant tracks.
                 for (Track t : allTracks) {
-                    t.sortSamplesByAttribute(new SampleAttributeComparator(attributeNames, ascending));
+                    t.sortSamples(new SampleAttributeComparator(attributeNames, ascending));
                 }
 
                 // Step 3, put non-sortable tracks back in original order

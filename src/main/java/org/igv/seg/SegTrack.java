@@ -125,7 +125,7 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
 
         // Calculate fontsize
         var gap = Math.min(4, sampleHeight / 3);
@@ -136,11 +136,11 @@ public class SegTrack extends AbstractTrack {
         var y = 0;
         for (var group : sampleGroups) {
             for (String s : group.samples()) {
-                if(y > trackRectangle.y + trackRectangle.height) {
+                if(y > visibleRect.y + visibleRect.height) {
                     break;
                 }
-                if(y + sampleHeight > trackRectangle.y) {
-                    var r = new Rectangle(0, y, trackRectangle.width, sampleHeight);
+                if(y + sampleHeight > visibleRect.y) {
+                    var r = new Rectangle(0, y, visibleRect.width, sampleHeight);
                     GraphicUtils.drawWrappedText(s, r, g2D, false);
                 }
                 y += sampleHeight;
@@ -155,7 +155,7 @@ public class SegTrack extends AbstractTrack {
      *
      * @param comparator the comparator to sort by
      */
-    public void sortSamplesByAttribute(Comparator<String> comparator) {
+    public void sortSamples(Comparator<String> comparator) {
         for (var group : sampleGroups) {
             group.samples().sort(comparator);
         }

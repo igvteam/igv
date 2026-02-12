@@ -8,7 +8,6 @@ import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
 import org.igv.session.Persistable;
-import org.igv.ui.IGV;
 import org.igv.ui.panel.*;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
@@ -91,8 +90,9 @@ public interface Track extends Persistable, AttributeSupplier {
      *
      * @param graphics
      * @param trackRectangle
+     * @param clipRect
      */
-    void renderName(Graphics2D graphics, Rectangle trackRectangle);
+    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle clipRect);
 
     void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                           List<String> names, List<MouseableRegion> mouseRegions);
@@ -118,7 +118,7 @@ public interface Track extends Persistable, AttributeSupplier {
         return 1;
     }
 
-    default void sortSamplesByAttribute(Comparator<String> comparator) {
+    default void sortSamples(Comparator<String> comparator) {
         // no op, override in subclass if needed
     }
 

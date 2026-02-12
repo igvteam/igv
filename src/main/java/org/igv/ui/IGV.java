@@ -2094,14 +2094,6 @@ public class IGV implements IGVEventObserver {
                 TrackPanelScrollPane scrollPane = tp.getScrollPane();
                 if (scrollPane != null) {
                     JViewport viewport = scrollPane.getViewport();
-                    Dimension preferredSize = tp.getPreferredSize();
-
-                    System.out.println("=== Layout Update for: " + tp.getName() + " ===");
-                    System.out.println("  TrackPanel preferred size: " + preferredSize);
-                    System.out.println("  TrackPanel current size: " + tp.getSize());
-                    System.out.println("  Viewport size: " + viewport.getSize());
-                    System.out.println("  Viewport view size: " + viewport.getViewSize());
-                    System.out.println("  ScrollPane size: " + scrollPane.getSize());
 
                     // Update the scrollbar policy based on new content height
                     scrollPane.updateScrollbarPolicy();
@@ -2119,16 +2111,6 @@ public class IGV implements IGVEventObserver {
             SwingUtilities.invokeLater(() -> {
                 mainPanel.revalidate();
                 mainPanel.repaint();
-
-                // Debug: print sizes after layout
-                for (TrackPanel tp : getTrackPanels()) {
-                    TrackPanelScrollPane sp = tp.getScrollPane();
-                    if (sp != null) {
-                        System.out.println("  After invokeLater - " + tp.getName() + ":");
-                        System.out.println("    TrackPanel size: " + tp.getSize());
-                        System.out.println("    Viewport view size: " + sp.getViewport().getViewSize());
-                    }
-                }
             });
         }
     }
