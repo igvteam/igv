@@ -32,7 +32,6 @@ import org.igv.ui.genome.GenomeListItem;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.TrackPanel;
-import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.*;
 import org.igv.util.FilterElement.Operator;
@@ -230,21 +229,16 @@ public class IGVSessionReader implements SessionReader {
 
         log.debug("Adding \"leftover\" tracks");
         //For resetting track panels later
-        List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
-        trackPanelAttrs = igv.getTrackPanelAttrs();
+      //  List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
+      //  trackPanelAttrs = igv.getTrackPanelAttrs();
 
         for (Track track : tracks) {
             if (track.getResourceLocator() != null) {
-                TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
-                if (panel == null) {
-                    panel = igv.getPanelFor(track);
-                    trackPanelCache.put(track.getResourceLocator().getPath(), panel);
-                }
-                panel.addTrack(track);
+                igv.addTrack(track);
             }
         }
 
-        igv.resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
+       // igv.resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
     }
 
 
@@ -284,9 +278,9 @@ public class IGVSessionReader implements SessionReader {
         } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.PANEL)) {
-            processPanel(session, (Element) element, sessionPath);
+            //processPanel(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT)) {
-            processPanelLayout(session, (Element) element);
+            //processPanelLayout(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES)) {
             processHiddenAttributes(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.VISIBLE_ATTRIBUTES)) {

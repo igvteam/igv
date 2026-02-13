@@ -49,8 +49,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Globals.isDarkMode() ? new Color(200, 200, 200) : Color.white;
-    private static final Color SELECTED_BAND_COLOR = new Color(210, 210, 210);
-    private static final Color borderGray = new Color(200, 200, 200);
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
     private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
@@ -149,8 +147,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         super(locator, source);
 
         IGVPreferences prefMgr = PreferencesManager.getPreferences();
-
-        String path = locator == null ? null : locator.getPath();
 
         this.renderer = new VariantRenderer(this);
 

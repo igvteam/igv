@@ -302,6 +302,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         dataManager.subscribe(this);
 
         IGVPreferences prefs = getPreferences();
+        setHeight(PreferencesManager.getPreferences().getAsInt(ALIGNMENT_TRACK_HEIGHT));
         minimumHeight = 50;
         showGroupLine = prefs.getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         try {

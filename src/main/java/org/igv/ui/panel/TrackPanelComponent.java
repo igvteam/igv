@@ -149,7 +149,7 @@ abstract public class TrackPanelComponent extends JPanel {
         final Collection<Track> selectedTracks = getSelectedTracks();
         if (selectedTracks.isEmpty()) {
             // If this panel is empty (no tracks), and is removable,  present option to remove it
-            if (getAllTracks().size() == 0 && IGV.getInstance().panelIsRemovable(getTrackPanel())) {
+            if (getAllTracks().size() == 0) {
                 menu = new IGVPopupMenu();
                 JMenuItem item = new JMenuItem("Remove panel");
                 item.addActionListener(e12 -> {

@@ -113,7 +113,7 @@ public class RenderContext {
     }
 
     public Rectangle getVisibleRect() {
-        return trackRectangle;
+        return visibleRect;
     }
 
     public Rectangle getTrackRectangle() {

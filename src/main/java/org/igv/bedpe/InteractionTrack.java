@@ -94,7 +94,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         this.featureSource = src;
 
-        setHeight(250);
+        setHeight(PreferencesManager.getPreferences().getAsInt(Constants.INTERACT_TRACK_HEIGHT));
         setDefaultColor( new Color(180, 25, 137));
 
         renderers = new HashMap<>();
@@ -131,6 +131,10 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 log.error("Illegal arc blocks option: " + blockString, e);
             }
         }
+    }
+
+    public int getContentHeight() {
+        return height;
     }
 
     void setContactMapView(ContactMapView contactMapView) {
@@ -182,18 +186,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     }
 
     @Override
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
-
-        Graphics2D g2d = context.getGraphics();
-        Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(visibleRect.intersection(clip.getBounds()));
         context.clearGraphicsCache();
 
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
         if (!isShowFeatures(referenceFrame)) {
             String message = "Zoom in to see features, or right-click to increase Feature Visibility Window.";
-            GraphicUtils.drawCenteredText(message, visibleRect, context.getGraphics());
+            GraphicUtils.drawCenteredText(message, context.getVisibleRect(), context.getGraphics());
             return;
         }
 
@@ -222,20 +222,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     if (autoscale || maxScore <= 0) {
                         maxScore = autoscale(features);
                     }
-                    drawScale(context, visibleRect);
+                    drawScale(context, context.getTrackRectangle());
                 }
 
-                renderers.get(graphType).render(filteredFeatures, context, visibleRect, this.arcOption);
+                renderers.get(graphType).render(filteredFeatures, context, this.arcOption);
             }
             if (showBlocks) {
-                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, visibleRect, this.arcOption);
-            }
-            if (contactMapView != null && !FrameManager.isGeneListMode()) {
+                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, this.arcOption);
             }
 
         } finally {
             context.clearGraphicsCache();
-            g2d.setClip(clip);
         }
     }
 

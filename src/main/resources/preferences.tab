@@ -29,6 +29,7 @@ USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLAT
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
 IGV.track.height	Default feature track height (pixels)	integer	15
+IGV.interact.track.height	Default interaction track height (pixels)	integer	250
 TRACK.DRAW_BORDERS	Draw borders between tracks	boolean	FALSE
 TRACK.BORDER_COLOR	Border color	color	192,192,192
 TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
@@ -92,6 +93,7 @@ info	Default settings for alignment tracks.  A subset of these properties can be
 info	See also the RNA and Third Gen tabs.
 
 ##Track Display
+ALIGNMENT_TRACK_HEIGHT	Default alignment track height (pixels)	integer	300
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE

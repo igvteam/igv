@@ -79,6 +79,7 @@ final public class Constants {
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
     public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
+    public static final String INTERACT_TRACK_HEIGHT = "IGV.interact.track.height";
     public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
     public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
     public static final String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
@@ -112,6 +113,7 @@ final public class Constants {
 
 
     // Alignment options
+    public static final String ALIGNMENT_TRACK_HEIGHT = "ALIGNMENT_TRACK_HEIGHT";
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_ALLELE_USE_QUALITY = "SAM.ALLELE_USE_QUALITY";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";

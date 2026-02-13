@@ -11,8 +11,6 @@ import org.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.*;
@@ -210,7 +208,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     }
 
-    public synchronized TrackPanelScrollPane addDataPanel(Track track) {
+    public synchronized TrackPanelScrollPane addTrackPanel(Track track) {
 
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
         trackPanel.addTrack(track);
@@ -227,6 +225,10 @@ public class MainPanel extends JPanel implements Paintable {
         return sp;
     }
 
+    public void clearTrackPanels() {
+        trackPanelContainer.removeAll();
+    }
+
     /**
      * Return an ordered list of TrackPanels.  This method is provided primarily for storing sessions, where
      * TrackPanels need to be stored in proper order
@@ -240,7 +242,6 @@ public class MainPanel extends JPanel implements Paintable {
                 panels.add(((TrackPanelScrollPane) c).getTrackPanel());
             }
         }
-
         return panels;
     }
 
@@ -289,14 +290,11 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void removeTrackPanel(TrackPanel trackPanel) {
-        // Don't remove the "special" panes
-        if (panelIsRemovable(trackPanel)) {
-            TrackPanelScrollPane sp = trackPanel.getScrollPane();
-            if (sp != null) {
-                trackPanelContainer.remove(sp);
-                TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
-                trackPanelContainer.revalidate();
-            }
+        TrackPanelScrollPane sp = trackPanel.getScrollPane();
+        if (sp != null) {
+            trackPanelContainer.remove(sp);
+            TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
+            trackPanelContainer.revalidate();
         }
     }
 

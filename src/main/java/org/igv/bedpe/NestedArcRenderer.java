@@ -33,11 +33,11 @@ public class NestedArcRenderer implements BedPERenderer {
     @Override
     public void render(List<BedPE> features,
                        RenderContext context,
-                       Rectangle trackRectangle,
                        InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
-
+        Rectangle clipRect = context.getClipBounds();
+        Rectangle trackRectangle = context.getTrackRectangle();
         try {
             g = (Graphics2D) context.getGraphics().create();
             double origin = context.getOrigin();
@@ -72,7 +72,7 @@ public class NestedArcRenderer implements BedPERenderer {
                 double p1 = (bedPE.getStart() - origin) / locScale;
                 double p2 = (bedPE.getEnd() - origin) / locScale;
 
-                if (p2 >= trackRectangle.getX() && p1 <= trackRectangle.getMaxX()) {
+                if (p2 >= clipRect.getX() && p1 <= clipRect.getMaxX()) {
 
                     InteractionTrack.Direction direction = track.direction;
 
@@ -101,7 +101,7 @@ public class NestedArcRenderer implements BedPERenderer {
 
                         Color fcolor = track.getFeatureColor(feature);
 
-                        if(track.isHIC) {
+                        if (track.isHIC) {
                             float alpha = track.transparency;
                             if (track.isUseScore()) {
                                 alpha = track.transparency * Math.min(1.0f, Math.max(0.1f, feature.getScore() / 1000f));
@@ -136,8 +136,6 @@ public class NestedArcRenderer implements BedPERenderer {
                         g.drawLine((int) ps, yBase, (int) ps, yBase + h);
 
                     }
-                } else {
-
                 }
             }
 
