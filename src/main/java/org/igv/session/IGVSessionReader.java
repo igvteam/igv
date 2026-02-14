@@ -65,18 +65,21 @@ public class IGVSessionReader implements SessionReader {
     private boolean panelElementPresent = false;    // Flag indicating if "Panel" sections are present
 
     /**
+     * Map of id -> track, for second pass through when tracks reference each other
+     */
+    private final LinkedHashMap<String, List<Track>> allTracks = new LinkedHashMap<>();
+
+    /**
+     * Ordered set of tracks as they are appear in the "Panels" element, if present.
+     */
+    private LinkedHashSet<Track> orderedTracks = new LinkedHashSet<>();
+
+    /**
      * List of combined data source tracks.  Processing of combined data sources has to be deferred until all tracks
      * are loaded
      */
     private final List<Pair<CombinedDataTrack, Element>> combinedDataSourceTracks = new ArrayList<>();
 
-    private Set<Track> allocatedToPanel = new LinkedHashSet<>();
-    ;  // List of tracks allocated to panels, if Panel elements are present.
-
-    /**
-     * Map of id -> track, for second pass through when tracks reference each other
-     */
-    private final Map<String, List<Track>> allTracks = Collections.synchronizedMap(new LinkedHashMap<>());
 
     private final Set<String> erroredResources = Collections.synchronizedSet(new HashSet<>());
 
@@ -122,20 +125,19 @@ public class IGVSessionReader implements SessionReader {
 
         processCombinedDataSourceTracks();
 
-        // Add tracks not explicitly allocated to panels.   This can happen if a track resource path changes after
-        // session created, and session is hand-editted.  It can also happen if the annotation paths for a genome change
-        // after session creation.
+        // Add tracks explicitly enumerated in panel sections.
+        for (Track track : orderedTracks) {
+            igv.addTrack(track);
+        }
 
-        List<Track> unallocatedTracks = new ArrayList<>();
+        // Now add tracks that were not explicitly enumerated in panel sections.
         for (List<Track> tracks : allTracks.values()) {
             for (Track t : tracks) {
-                if (allocatedToPanel == null || !allocatedToPanel.contains(t)) {
-                    unallocatedTracks.add(t);
+                if (orderedTracks == null || !orderedTracks.contains(t)) {
+                    igv.addTrack(t);
                 }
             }
         }
-        addUnallocatedTracks(unallocatedTracks);
-
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
             igv.setGroupByAttribute(session.getGroupTracksBy());
@@ -185,7 +187,7 @@ public class IGVSessionReader implements SessionReader {
         setRemoveEmptyTracks(session, getAttribute(rootElement, "removeEmptyTracks"));
 
         session.setVersion(version);
-        process(session, rootElement.getChildNodes(), sessionPath);
+        processNode(session, rootElement.getChildNodes(), sessionPath);
     }
 
     private void handleGenomeLoading(String sessionPath, String genomeId) {
@@ -225,20 +227,11 @@ public class IGVSessionReader implements SessionReader {
     }
 
     private void addUnallocatedTracks(List<Track> tracks) {
-        Map<String, TrackPanel> trackPanelCache = new HashMap();
-
-        log.debug("Adding \"leftover\" tracks");
-        //For resetting track panels later
-      //  List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = null;
-      //  trackPanelAttrs = igv.getTrackPanelAttrs();
-
         for (Track track : tracks) {
             if (track.getResourceLocator() != null) {
                 igv.addTrack(track);
             }
         }
-
-       // igv.resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
     }
 
 
@@ -248,7 +241,7 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param element
      */
-    private void process(Session session, Node element, String sessionPath) {
+    private void processNode(Session session, Node element, String sessionPath) {
 
         if ((element == null) || (session == null)) {
             return;
@@ -278,7 +271,7 @@ public class IGVSessionReader implements SessionReader {
         } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS) ||
                 nodeName.equalsIgnoreCase(SessionElement.PANEL)) {
-            //processPanel(session, (Element) element, sessionPath);
+            processPanel(session, (Element) element, sessionPath);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT)) {
             //processPanelLayout(session, (Element) element);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES)) {
@@ -295,7 +288,7 @@ public class IGVSessionReader implements SessionReader {
         missingDataFiles = new ArrayList();
         NodeList elements = element.getChildNodes();
 
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
 
         if (missingDataFiles.size() > 0) {
             StringBuffer message = new StringBuffer();
@@ -518,7 +511,7 @@ public class IGVSessionReader implements SessionReader {
 
         NodeList elements = element.getChildNodes();
 
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
 
     }
 
@@ -526,7 +519,7 @@ public class IGVSessionReader implements SessionReader {
 
         session.clearRegionsOfInterest();
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
     }
 
     private void processRegion(Session session, Element element, String sessionPath) {
@@ -540,7 +533,7 @@ public class IGVSessionReader implements SessionReader {
         igv.addRegionOfInterest(region);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
     }
 
     private void processHiddenAttributes(Session session, Element element) {
@@ -694,79 +687,13 @@ public class IGVSessionReader implements SessionReader {
 
     private void processPanel(Session session, Element element, String sessionPath) {
 
-        if (panelElementPresent == false) {
-            panelElementPresent = true;
-            // First panel to be processed, do this only once.
-            // Add any tracks loaded as a side effect of loading genome
-            final List<Track> tmp = igv.getAllTracks();
-            for (Track track : tmp) {
-                String id = checkTrackId(track.getId());
-                if (!allTracks.containsKey(id)) {
-                    allTracks.put(id, new ArrayList<>());
-                }
-                allTracks.get(id).add(track);
-            }
-
-            // Tracks, if any,  will be placed back as prescribed by panel elements
-            removeAllTracksFromPanels();
-        }
-
-
-        String panelName = element.getAttribute("name");
-        if (panelName == null) {
-            panelName = "Panel" + panelCounter++;
-        }
-
-        List<Track> panelTracks = new ArrayList();
         NodeList elements = element.getChildNodes();
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
             if (nodeIsTrack(childNode)) {
-                List<Track> tracks = processTrack(session, (Element) childNode, sessionPath);
-                if (tracks != null) {
-                    panelTracks.addAll(tracks);
-                }
+                processTrack(session, (Element) childNode, sessionPath);
             } else {
-                process(session, childNode, sessionPath);
-            }
-        }
-
-        //We make a second pass through, resolving references to tracks which may have been processed after being referenced.
-        //For instance if Track 2 referenced Track 4
-        for (Track track : panelTracks) {
-            if (track instanceof FeatureTrack) {
-                FeatureTrack featureTrack = (FeatureTrack) track;
-                featureTrack.updateTrackReferences(panelTracks);
-            } else if (track instanceof DataSourceTrack) {
-                DataSourceTrack dataTrack = (DataSourceTrack) track;
-                dataTrack.updateTrackReferences(panelTracks);
-            }
-        }
-
-        TrackPanel panel = igv.getTrackPanel(panelName);
-        panel.addTracks(panelTracks);
-    }
-
-    private void processPanelLayout(Session session, Element element) {
-
-        String nodeName = element.getNodeName();
-
-        NamedNodeMap tNodeMap = element.getAttributes();
-        for (int i = 0; i < tNodeMap.getLength(); i++) {
-            Node node = tNodeMap.item(i);
-            String name = node.getNodeName();
-            if (name.equals("dividerFractions")) {
-                String value = node.getNodeValue();
-                String[] tokens = value.split(",");
-                double[] divs = new double[tokens.length];
-                try {
-                    for (int j = 0; j < tokens.length; j++) {
-                        divs[j] = Double.parseDouble(tokens[j]);
-                    }
-                    session.setDividerFractions(divs);
-                } catch (NumberFormatException e) {
-                    log.error("Error parsing divider locations", e);
-                }
+                processNode(session, childNode, sessionPath);
             }
         }
     }
@@ -786,15 +713,13 @@ public class IGVSessionReader implements SessionReader {
 
         String id = checkTrackId(getAttribute(element, SessionAttribute.ID));
 
-
         // Fix for legacy sessions with seg files -- seg files created a track per sample, with ids like segPath_sampleID
         // We'll take the first such track as representative of the now single copy number track
-        if(segPaths.size() > 0) {
+        if (segPaths.size() > 0) {
             final String originalId = id;
             Optional<String> segPath = segPaths.stream().filter(p -> originalId.startsWith(p + "_")).findFirst();
             if (segPath.isPresent()) {
                 id = segPath.get() + "_cn";      // Take first sample match as representative
-                segPaths.remove(segPath.get());   // Do this only once
             }
         }
 
@@ -812,7 +737,7 @@ public class IGVSessionReader implements SessionReader {
         if (matchedTracks != null) {
             for (final Track track : matchedTracks) {
                 track.unmarshalXML(element, version);
-                allocatedToPanel.add(track);
+                orderedTracks.add(track);
             }
         } else {
             // No match found, element represents either (1) a track from a file that errored during load, for example
@@ -860,7 +785,7 @@ public class IGVSessionReader implements SessionReader {
         }
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
 
         return matchedTracks;
     }
@@ -941,7 +866,7 @@ public class IGVSessionReader implements SessionReader {
     private void processColorScales(Session session, Element element, String sessionPath) {
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
     }
 
     private void processColorScale(Session session, Element element, String sessionPath) {
@@ -952,7 +877,7 @@ public class IGVSessionReader implements SessionReader {
         setColorScaleSet(session, trackType, value);
 
         NodeList elements = element.getChildNodes();
-        process(session, elements, sessionPath);
+        processNode(session, elements, sessionPath);
     }
 
     private void processPreferences(Session session, Element element) {
@@ -976,10 +901,10 @@ public class IGVSessionReader implements SessionReader {
      * @param session
      * @param elements
      */
-    private void process(Session session, NodeList elements, String sessionPath) {
+    private void processNode(Session session, NodeList elements, String sessionPath) {
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
-            process(session, childNode, sessionPath);
+            processNode(session, childNode, sessionPath);
         }
     }
 
@@ -1176,4 +1101,32 @@ public class IGVSessionReader implements SessionReader {
             "https://s3.dualstack.us-east-1.amazonaws.com/igv.org.genomes/hg38/ncbiRefGene.txt.gz", "hg38_gene_track",
             "https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz", "hg19_gene_track",
             "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz", "hg19_gene_track");
+
+
+    // Legacy methods
+
+    private void processPanelLayout(Session session, Element element) {
+
+        String nodeName = element.getNodeName();
+
+        NamedNodeMap tNodeMap = element.getAttributes();
+        for (int i = 0; i < tNodeMap.getLength(); i++) {
+            Node node = tNodeMap.item(i);
+            String name = node.getNodeName();
+            if (name.equals("dividerFractions")) {
+                String value = node.getNodeValue();
+                String[] tokens = value.split(",");
+                double[] divs = new double[tokens.length];
+                try {
+                    for (int j = 0; j < tokens.length; j++) {
+                        divs[j] = Double.parseDouble(tokens[j]);
+                    }
+                    session.setDividerFractions(divs);
+                } catch (NumberFormatException e) {
+                    log.error("Error parsing divider locations", e);
+                }
+            }
+        }
+    }
+
 }

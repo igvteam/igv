@@ -16,12 +16,14 @@ public interface Persistable {
      * @return
      */
 
-    public default void marshalXML(Document document, Element element) {};
+    default void marshalXML(Document document, Element element) {
+    }
 
     /**
      * Restore object state from an XML element
      */
 
-    public default void unmarshalXML(Element element, Integer version) {};
+    default void unmarshalXML(Element element, Integer version) {
+    }
 
 }
