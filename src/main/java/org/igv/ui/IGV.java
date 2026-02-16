@@ -341,17 +341,6 @@ public class IGV implements IGVEventObserver {
      * @param locators
      */
     public Future loadTracks(final Collection<ResourceLocator> locators) {
-        return loadTracks(locators, null);
-
-    }
-
-    /**
-     * Load a collection of tracks in a background thread placing them after a specified panel.
-     * Used by drag and drop.
-     *
-     * @param locators collection of resource locators
-     */
-    public Future loadTracks(final Collection<ResourceLocator> locators, final TrackPanel panel) {
 
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
@@ -378,12 +367,7 @@ public class IGV implements IGVEventObserver {
 
                         try {
                             List<Track> tracks = load(locator);
-                            if (panel == null) {
-                                addTracks(tracks);
-                            } else {
-                                panel.addTracks(tracks);
-                            }
-
+                            addTracks(tracks);
                         } catch (Exception e) {
                             log.error("Error loading track", e);
                             messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -446,7 +430,6 @@ public class IGV implements IGVEventObserver {
             }
         }
     }
-
 
 
     /**
@@ -701,8 +684,6 @@ public class IGV implements IGVEventObserver {
     }
 
 
-
-
     public Session getSession() {
         return session;
     }
@@ -847,7 +828,6 @@ public class IGV implements IGVEventObserver {
         PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
 
     }
-
 
 
     /**
@@ -1276,6 +1256,7 @@ public class IGV implements IGVEventObserver {
         TrackFilter trackFilter = session.getFilter();
         return trackFilter != null && trackFilter.isShowAll();
     }
+
     /**
      * Scroll panel(s) containing track with specified name to the top.  Supports batch command "scrolltotrack" *
      *

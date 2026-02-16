@@ -6,6 +6,7 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceMotionListener;
 
 /**
+ * Handler for moving multi-locus data panels.
  * <p>Used by both the draggable class and the target for negotiating data.</p>
  * <p>Note that this should be set for both the draggable object and the drop target.</p>
  *

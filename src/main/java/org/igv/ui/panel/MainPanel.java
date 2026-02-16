@@ -8,11 +8,17 @@ import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
+import org.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.io.File;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 
@@ -22,7 +28,7 @@ import static org.igv.prefs.Constants.*;
  * @author jrobinso
  * @date Sep 10, 2010
  */
-public class MainPanel extends JPanel implements Paintable {
+public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     private static Logger log = LogManager.getLogger(MainPanel.class);
 
@@ -39,7 +45,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     public IGVPanel applicationHeaderPanel;
     public HeaderPanelContainer headerPanelContainer;
-    private JPanel trackPanelContainer;
+    private ScrollableTrackContainer trackPanelContainer;
     private JScrollPane trackPanelScrollPane;
     private NameHeaderPanel nameHeaderPanel;
     private AttributeHeaderPanel attributeHeaderPanel;
@@ -51,6 +57,9 @@ public class MainPanel extends JPanel implements Paintable {
     public MainPanel(IGV igv) {
         this.igv = igv;
         initComponents();
+
+        // Enable drag-and-drop for files and URLs
+        new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this, true);
 
         //Load IGV logo
 //        try {
@@ -354,7 +363,7 @@ public class MainPanel extends JPanel implements Paintable {
         return dataPanelWidth;
     }
 
-    public JPanel getTrackPanelContainer() {
+    public ScrollableTrackContainer getTrackPanelContainer() {
         return trackPanelContainer;
     }
 
@@ -460,52 +469,122 @@ public class MainPanel extends JPanel implements Paintable {
         headerPanelContainer.repaint();
     }
 
-    /**
-     * A scrollable panel container that uses BoxLayout and doesn't stretch vertically
-     * when placed in a JScrollPane viewport.
-     */
-    private static class ScrollableTrackContainer extends JPanel implements Scrollable {
+    // DropTargetListener implementation
 
-        public ScrollableTrackContainer() {
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    @Override
+    public void dragEnter(DropTargetDragEvent dtde) {
+        if (isDragAcceptable(dtde)) {
+            dtde.acceptDrag(DnDConstants.ACTION_COPY);
+        } else {
+            dtde.rejectDrag();
         }
+    }
 
-        @Override
-        public Dimension getPreferredSize() {
-            // Calculate preferred size based on children
-            int height = 0;
-            int width = 0;
-            for (Component c : getComponents()) {
-                Dimension pref = c.getPreferredSize();
-                height += pref.height;
-                width = Math.max(width, pref.width);
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+        // No action needed
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+        // No action needed
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+        // No action needed
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        try {
+            dtde.acceptDrop(DnDConstants.ACTION_COPY);
+            Transferable transferable = dtde.getTransferable();
+
+            List<File> droppedFiles = new ArrayList<>();
+            List<String> droppedUrls = new ArrayList<>();
+
+            // Try to get files
+            if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                @SuppressWarnings("unchecked")
+                List<File> files = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+                droppedFiles.addAll(files);
             }
-            return new Dimension(width, height);
-        }
 
-        @Override
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
+            // Try to get URLs/URIs (for URL drops, including from browsers)
+            if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                String data = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                if (data != null && !data.trim().isEmpty()) {
+                    // Parse potential URLs (one per line)
+                    String[] lines = data.split("\\r?\\n");
+                    for (String line : lines) {
+                        line = line.trim();
+                        if (isUrl(line)) {
+                            droppedUrls.add(line);
+                        }
+                    }
+                }
+            }
 
-        @Override
-        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 16;
-        }
+            // Try URI list flavor (common on Linux)
+            DataFlavor uriListFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+            if (transferable.isDataFlavorSupported(uriListFlavor)) {
+                String data = (String) transferable.getTransferData(uriListFlavor);
+                if (data != null) {
+                    String[] uris = data.split("\\r?\\n");
+                    for (String uriStr : uris) {
+                        uriStr = uriStr.trim();
+                        if (!uriStr.isEmpty() && !uriStr.startsWith("#")) {
+                            try {
+                                URI uri = new URI(uriStr);
+                                if ("file".equals(uri.getScheme())) {
+                                    droppedFiles.add(new File(uri));
+                                } else {
+                                    droppedUrls.add(uriStr);
+                                }
+                            } catch (Exception e) {
+                                // Ignore invalid URIs
+                            }
+                        }
+                    }
+                }
+            }
 
-        @Override
-        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
-        }
+            // Load dropped files and URLs as tracks
+            List<ResourceLocator> locators = new ArrayList<>();
 
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return true; // Stretch horizontally to fit viewport
-        }
+            // Add file locators
+            if (!droppedFiles.isEmpty()) {
+                locators.addAll(ResourceLocator.getLocators(droppedFiles));
+            }
 
-        @Override
-        public boolean getScrollableTracksViewportHeight() {
-            return false; // Do NOT stretch vertically - use preferred height
+            // Add URL locators
+            for (String url : droppedUrls) {
+                locators.add(new ResourceLocator(url));
+            }
+
+            if (!locators.isEmpty()) {
+                igv.loadTracks(locators);
+            }
+
+            dtde.dropComplete(true);
+        } catch (Exception e) {
+            dtde.dropComplete(false);
         }
+    }
+
+    private boolean isDragAcceptable(DropTargetDragEvent dtde) {
+        return dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor) ||
+                dtde.isDataFlavorSupported(DataFlavor.stringFlavor);
+    }
+
+    private boolean isUrl(String str) {
+        if (str == null) return false;
+        String lower = str.toLowerCase();
+        return lower.startsWith("http://") ||
+                lower.startsWith("https://") ||
+                lower.startsWith("ftp://") ||
+                lower.startsWith("s3://") ||
+                lower.startsWith("gs://");
     }
 }

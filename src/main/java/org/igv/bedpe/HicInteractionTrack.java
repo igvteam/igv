@@ -31,6 +31,7 @@ public class HicInteractionTrack extends InteractionTrack {
         maxFeatureCount = 5000;
         graphType = GraphType.NESTED_ARC;
         isHIC = true;
+        transparency = 0.1f;
         setUseScore(false);   // Alpha score is set in the renderer based
         setDefaultColor(Color.red);
     }
