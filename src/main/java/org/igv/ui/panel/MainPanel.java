@@ -268,7 +268,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         for (String name : names) {
             trackPanelContainer.add(panes.get(name));
         }
-        trackPanelContainer.invalidate();
+        trackPanelContainer.revalidate();
+        trackPanelContainer.repaint();
     }
 
     public void removeEmptyDataPanels() {

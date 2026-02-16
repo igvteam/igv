@@ -14,6 +14,9 @@ import org.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,12 +25,15 @@ import java.util.List;
 /**
  * @author eflakes
  */
-public class TrackPanel extends IGVPanel implements Scrollable {
+public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
 
     private static Logger log = LogManager.getLogger(TrackPanel.class);
 
+    // DataFlavor for drag and drop
+    static DataFlavor trackPanelDataFlavor;
+
     private String name = null;
-    //private JPanel grabPanel;
+    private DragHandlePanel dragHandlePanel;
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
@@ -50,15 +56,19 @@ public class TrackPanel extends IGVPanel implements Scrollable {
 
     private void init() {
         setBackground(Color.white);
+        dragHandlePanel = new DragHandlePanel(this);
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
 
-        //add(grabPanel);
+        add(dragHandlePanel);
         add(namePanel);
         add(attributePanel);
         add(dataPanelContainer);
 
+        // Setup drag and drop
+        this.setTransferHandler(new TrackPanelTransferHandler());
+        this.setDropTarget(new DropTarget(this, new TrackPanelDropTargetListener(this)));
     }
 
 
@@ -73,11 +83,13 @@ public class TrackPanel extends IGVPanel implements Scrollable {
             // This ensures the panel is sized correctly for scrolling
             int h = getPreferredSize().height;
 
+            int dragHandleWidth = DragHandlePanel.DRAG_HANDLE_WIDTH;
             int nw = mainPanel.getNamePanelWidth();
 
-            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
-            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
-            dataPanelContainer.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+            dragHandlePanel.setBounds(0, 0, dragHandleWidth, h);
+            namePanel.setBounds(mainPanel.getNamePanelX() + dragHandleWidth, 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX() + dragHandleWidth, 0, mainPanel.getAttributePanelWidth(), h);
+            dataPanelContainer.setBounds(mainPanel.getDataPanelX() + dragHandleWidth, 0, mainPanel.getDataPanelWidth() - dragHandleWidth, h);
 
             dataPanelContainer.doLayout();
         }
@@ -87,10 +99,15 @@ public class TrackPanel extends IGVPanel implements Scrollable {
     public void setBackground(Color color) {
         super.setBackground(color);
         if (namePanel != null) {
+            dragHandlePanel.setBackground(color);
             namePanel.setBackground(color);
             attributePanel.setBackground(color);
             dataPanelContainer.setBackground(color);
         }
+    }
+
+    public DragHandlePanel getDragHandlePanel() {
+        return dragHandlePanel;
     }
 
     public Track getTrack() {
@@ -404,5 +421,51 @@ public class TrackPanel extends IGVPanel implements Scrollable {
             }
         }
         return null;
+    }
+
+    // ---- Transferable interface implementation ----
+
+    /**
+     * Returns the DataFlavor for TrackPanel drag and drop operations.
+     */
+    public static DataFlavor getTrackPanelDataFlavor() throws Exception {
+        if (trackPanelDataFlavor == null) {
+            trackPanelDataFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
+                    ";class=org.igv.ui.panel.TrackPanel");
+        }
+        return trackPanelDataFlavor;
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) {
+        try {
+            DataFlavor thisFlavor = getTrackPanelDataFlavor();
+            if (thisFlavor != null && flavor.equals(thisFlavor)) {
+                return this;
+            }
+        } catch (Exception ex) {
+            System.err.println("Problem getting transfer data: " + ex.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+        try {
+            return new DataFlavor[]{getTrackPanelDataFlavor()};
+        } catch (Exception ex) {
+            System.err.println("Problem getting data flavors: " + ex.getMessage());
+            return new DataFlavor[0];
+        }
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        try {
+            DataFlavor thisFlavor = getTrackPanelDataFlavor();
+            return thisFlavor != null && thisFlavor.equals(flavor);
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }
