@@ -88,7 +88,6 @@ public abstract class AbstractTrack implements Track {
     private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
 
     protected int height;
-
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
     private String trackLine = null;
@@ -375,7 +374,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
         this.height = height;
-        // Update the scroll pane's explicit height so it respects user-set dimensions
         if (viewport != null) {
             viewport.validateTrackHeight();
         }

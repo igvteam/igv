@@ -27,7 +27,7 @@ import java.util.*;
  * @author jrobinso
  * @date Jun 27, 2010
  */
-abstract public class TribbleFeatureSource implements org.igv.track.FeatureSource {
+abstract public class TribbleFeatureSource implements FeatureSource {
 
     IGVFeatureReader reader;
     FeatureReader wrappedReader;

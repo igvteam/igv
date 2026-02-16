@@ -4,6 +4,8 @@ package org.igv.ui.panel;
 import org.igv.feature.RegionOfInterest;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.track.RegionScoreType;
 import org.igv.track.Track;
 import org.igv.track.TrackGroup;
@@ -343,7 +345,13 @@ public class TrackPanel extends IGVPanel implements Scrollable {
 
     @Override
     public Dimension getPreferredSize() {
-        return isVisible() ? new Dimension(100000, Math.max(track.getHeight(), track.getContentHeight())) : new Dimension(0, 0);
+        if (!isVisible()) {
+            return new Dimension(0, 0);
+        }
+        if (PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return new Dimension(100000, Math.max(15, track.getContentHeight()));
+        }
+        return new Dimension(100000, Math.max(track.getHeight(), track.getContentHeight()));
     }
 
     @Override

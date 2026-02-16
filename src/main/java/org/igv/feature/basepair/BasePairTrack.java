@@ -51,6 +51,11 @@ public class BasePairTrack extends AbstractTrack {
     }
 
     @Override
+    public int getContentHeight() {
+        return this.height;
+    }
+
+    @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         return basePairData != null;
     }

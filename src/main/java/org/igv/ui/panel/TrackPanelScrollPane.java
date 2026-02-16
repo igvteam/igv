@@ -2,6 +2,8 @@ package org.igv.ui.panel;
 
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
@@ -87,7 +89,8 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
 
     @Override
     public Dimension getPreferredSize() {
-        int height = trackPanel.getTrack().getHeight();
+        int height = PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY) ?
+                trackPanel.getTrack().getContentHeight() : trackPanel.getTrack().getHeight();
         return new Dimension(super.getPreferredSize().width, height);
     }
 
