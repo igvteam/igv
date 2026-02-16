@@ -371,14 +371,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 case REFRESH -> repaint();
             }
         } else if (event instanceof DataLoadedEvent dataLoaded) {
-            sortRows(dataLoaded.referenceFrame());
+            if (getPreferences().getAsBoolean(SAM_AUTO_SORT)) {
+                sortRows(dataLoaded.referenceFrame());
+            }
         } else if (event instanceof ViewChange viewChange) {
             if (viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
                 if (getDisplayMode() == DisplayMode.FULL) {
                     packAlignments();
                 }
                 // Don't autosort on completion of a track pan (drag)
-                if (!viewChange.fromPanning) {
+                if (getPreferences().getAsBoolean(SAM_AUTO_SORT) && !viewChange.fromPanning) {
                     sortRows(viewChange.referenceFrame);
                 }
             }
@@ -544,7 +546,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
         int yOffset = seqHeight;
-        if(clipBounds.y < seqHeight) {
+        if (clipBounds.y < seqHeight) {
             if (seqHeight > 0) {
                 Rectangle seqRect = new Rectangle(0, 0, trackRect.width, seqHeight);
                 sequenceTrack.render(context, seqRect);
@@ -553,14 +555,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         // Top gap.
         boolean downsampled = false;
-        if(clipBounds.y < yOffset + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
+        if (clipBounds.y < yOffset + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
             Rectangle dsRect = new Rectangle(trackRect);
             dsRect.y = yOffset + DS_MARGIN_0;
             dsRect.height = DOWNSAMPLED_ROW_HEIGHT;
             downsampled = renderDownsampledIntervals(context, dsRect);
         }
-        if(downsampled) {
-            yOffset += DS_MARGIN_0 +  DOWNSAMPLED_ROW_HEIGHT;
+        if (downsampled) {
+            yOffset += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT;
             this.downsampleRect = downsampleRect;
         } else {
             this.downsampleRect = null;
