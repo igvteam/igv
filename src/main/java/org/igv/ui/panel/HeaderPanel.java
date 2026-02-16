@@ -33,7 +33,6 @@ import java.util.ArrayList;
 
 
 /**
- * The drag & drop code was modified from the excellent example of Bryan E. Smith.
  *
  * @author jrobinso
  */

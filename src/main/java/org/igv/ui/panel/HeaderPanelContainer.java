@@ -13,7 +13,6 @@ import java.awt.dnd.*;
 import java.util.*;
 
 /**
- * The drag & drop code was modified from the excellent example of Bryan E. Smith.
  *
  * @author jrobinso
  * @date Sep 10, 2010

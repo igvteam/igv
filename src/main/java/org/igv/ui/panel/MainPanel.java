@@ -183,6 +183,13 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         add(headerScrollPane, java.awt.BorderLayout.NORTH);
 
         applicationHeaderPanel = new IGVPanel(this);
+
+        // Add spacer panel to align with drag handle in TrackPanel
+        JPanel dragHandleSpacer = new JPanel();
+        dragHandleSpacer.setBackground(new java.awt.Color(255, 255, 255));
+        dragHandleSpacer.setPreferredSize(new java.awt.Dimension(DragHandlePanel.DRAG_HANDLE_WIDTH, 0));
+        applicationHeaderPanel.add(dragHandleSpacer);
+
         applicationHeaderPanel.add(nameHeaderPanel);
         applicationHeaderPanel.add(attributeHeaderPanel);
         applicationHeaderPanel.add(headerPanelContainer);
