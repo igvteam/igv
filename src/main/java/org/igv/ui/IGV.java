@@ -441,14 +441,6 @@ public class IGV implements IGVEventObserver {
 
         SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
         addTrackPanel(newSeqTrack);
-
-
-//        if (newGeneTrack != null) {
-//            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
-//            panel.addTrack(newGeneTrack);
-//        }
     }
 
     /**

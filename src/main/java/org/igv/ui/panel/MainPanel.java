@@ -6,6 +6,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
+import org.igv.track.TrackType;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
@@ -227,13 +228,34 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     public synchronized TrackPanelScrollPane addTrackPanel(Track track) {
 
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
+
+        TrackType trackType = track.getTrackType();
+
         trackPanel.addTrack(track);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
         track.setViewport(sp);
 
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
-            trackPanelContainer.add(sp);
+            if (trackType == TrackType.SEQUENCE) {
+                trackPanelContainer.add(sp, 0);
+            } else {
+                int position = 0;
+                Component[] components = trackPanelContainer.getComponents();
+                if (components.length > 0) {
+                    Component c = components[0];
+                    if (c instanceof TrackPanelScrollPane) {
+                        TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                        if (!tsp.getTrackPanel().getTracks().isEmpty()) {
+                            Track firstTrack = tsp.getTrackPanel().getTracks().get(0);
+                            if (firstTrack.getTrackType() == TrackType.SEQUENCE) {
+                                position = 1;
+                            }
+                        }
+                    }
+                }
+                trackPanelContainer.add(sp, position);
+            }
         };
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);

@@ -68,6 +68,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
+    @Override
+    public TrackType getTrackType() {
+        return TrackType.SEQUENCE;
+    }
+
     public static String getReverseComplement(String sequence) {
         char[] complement = new char[sequence.length()];
         int jj = complement.length;
