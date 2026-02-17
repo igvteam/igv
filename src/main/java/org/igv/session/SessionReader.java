@@ -10,7 +10,7 @@ import java.io.InputStream;
 public interface SessionReader {
 
     static boolean isSessionFile(String f) {
-        return f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session");
+        return f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session") || f.endsWith(".json");
     }
 
     void loadSession(InputStream inputStream, Session session, String sessionPath) throws IOException;

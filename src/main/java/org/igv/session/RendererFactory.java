@@ -31,27 +31,27 @@ public class RendererFactory {
         String typeName = rendererTypeName.toUpperCase();
 
         // Try know type names
-        if (typeName.equals(RendererType.BAR_CHART.name()) || typeName.equals("BAR")) {
+        if (typeName.equals(RendererType.BAR_CHART.name()) || typeName.equalsIgnoreCase("BAR")) {
             return BarChartRenderer.class;
-        } else if (typeName.equals(RendererType.BASIC_FEATURE.name())) {
+        } else if (typeName.equalsIgnoreCase(RendererType.BASIC_FEATURE.name())) {
             return IGVFeatureRenderer.class;
-        } else if (typeName.equals(RendererType.FEATURE_DENSITY.name())) {
+        } else if (typeName.equalsIgnoreCase(RendererType.FEATURE_DENSITY.name())) {
             return FeatureDensityRenderer.class;
-        } else if (typeName.equals(RendererType.GENE_TRACK.name())) {
+        } else if (typeName.equalsIgnoreCase(RendererType.GENE_TRACK.name())) {
             return GeneTrackRenderer.class;
         } else if (typeName.equals(RendererType.GISTIC_TRACK.name())) {
             return GisticTrackRenderer.class;
-        } else if (typeName.equals(RendererType.HEATMAP.name())) {
+        } else if (typeName.equalsIgnoreCase(RendererType.HEATMAP.name())) {
             return HeatmapRenderer.class;
-        } else if (typeName.equals(RendererType.MUTATION.name())) {
+        } else if (typeName.equalsIgnoreCase(RendererType.MUTATION.name())) {
             return MutationRenderer.class;
         } else if (typeName.equals(RendererType.SCATTER_PLOT.name()) ||
-                typeName.toUpperCase().equals("POINTS")) {
+                typeName.equalsIgnoreCase("POINTS")) {
             return PointsRenderer.class;
         } else if (typeName.equals(RendererType.LINE_PLOT.name()) ||
-                typeName.toUpperCase().equals("LINE")) {
+                typeName.equalsIgnoreCase("LINE")) {
             return LineplotRenderer.class;
-        } else if (typeName.equals(RendererType.DYNSEQ.name()))  {
+        } else if (typeName.equalsIgnoreCase(RendererType.DYNSEQ.name()))  {
             return DynSeqRenderer.class;
         }
         return null;

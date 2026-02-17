@@ -51,11 +51,10 @@ import java.util.stream.Collectors;
 /**
  * Class to parse an IGV session file
  */
-public class IGVSessionReader implements SessionReader {
+public class XMLSessionReader implements SessionReader {
 
-    private static Logger log = LogManager.getLogger(IGVSessionReader.class);
-    private static Map<String, String> attributeSynonymMap = new HashMap();
-    private static WeakReference<IGVSessionReader> currentReader;
+    private static Logger log = LogManager.getLogger(XMLSessionReader.class);
+    private static WeakReference<XMLSessionReader> currentReader;
 
     private IGV igv;
     private int version;
@@ -87,9 +86,9 @@ public class IGVSessionReader implements SessionReader {
 
     private final List<String> segPaths = new ArrayList<>();
 
-    public IGVSessionReader(IGV igv) {
+    public XMLSessionReader(IGV igv) {
         this.igv = igv;
-        currentReader = new WeakReference<IGVSessionReader>(this);
+        currentReader = new WeakReference<XMLSessionReader>(this);
     }
 
 
@@ -944,7 +943,7 @@ public class IGVSessionReader implements SessionReader {
      */
     public static Track getMatchingTrack(String trackId, List<Track> allTracks) {
         trackId = checkTrackId(trackId);
-        IGVSessionReader reader = currentReader.get();
+        XMLSessionReader reader = currentReader.get();
         List<Track> matchingTracks;
         if (reader != null) {
             matchingTracks = reader.getTracksById(trackId);

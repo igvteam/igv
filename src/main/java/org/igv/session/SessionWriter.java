@@ -1,10 +1,11 @@
 package org.igv.session;
 
-import org.igv.feature.genome.Genome;
-import org.igv.logging.*;
 import org.igv.feature.RegionOfInterest;
+import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.lists.GeneList;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.AttributeManager;
@@ -14,6 +15,8 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.TrackPanel;
 import org.igv.util.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,13 +34,18 @@ public class SessionWriter {
 
     static Logger log = LogManager.getLogger(SessionWriter.class);
 
+    private IGV igv;
     private Session session;
     private static int CURRENT_VERSION = 8;
     private File outputFile;
     private Document document;
 
+    public SessionWriter(IGV igv) {
+        this.igv = igv;
+    }
+
     /**
-     * Save the session as an XML document
+     * Save the session as a JSON file
      *
      * @param session
      * @param outputFile
@@ -56,13 +64,13 @@ public class SessionWriter {
             log.error("Session Management Error: NULL outputFile");
         }
 
-        String xmlString = createXmlFromSession(session, outputFile);
+        String json = createJsonFromSession(session);
 
         Writer fileWriter = null;
         try {
             fileWriter = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(outputFile), "UTF8"));
-            fileWriter.write(xmlString);
+            fileWriter.write(json);
         } finally {
             if (fileWriter != null) {
                 fileWriter.close();
@@ -70,6 +78,64 @@ public class SessionWriter {
         }
     }
 
+    public String createJsonFromSession(Session session) throws RuntimeException {
+
+        this.session = session;
+
+        JSONObject sessionObject = new JSONObject();
+
+        String genomeId = GenomeManager.getInstance().getGenomeId();
+        if (genomeId != null) {
+            // If genomeId is a file try to write it out as a relative path
+            if ((new File(genomeId)).exists() && isUseRelative(outputFile)) {
+                genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
+            }
+            sessionObject.put("genomeId", genomeId);
+        }
+
+        String locus = session.getCurrentLocus();
+        if (locus != null && !FrameManager.isGeneListMode()) {
+            sessionObject.put(SessionAttribute.LOCUS, locus);
+        }
+
+        String groupBy = session.getGroupByAttribute();
+        if (groupBy != null) {
+            sessionObject.put(SessionAttribute.GROUP_TRACKS_BY, groupBy);
+        }
+
+        int nextAutoscaleGroup = session.getNextAutoscaleGroup();
+        if (nextAutoscaleGroup > 1) {
+            sessionObject.put(SessionAttribute.NEXT_AUTOSCALE_GROUP, String.valueOf(nextAutoscaleGroup));
+        }
+
+        JSONArray tracks = new JSONArray();
+        for (Track track : IGV.getInstance().getAllTracks()) {
+            JSONObject trackJson = new JSONObject();
+            trackJson.put("clazz", SessionElement.getXMLClassName(track.getClass()));
+
+            String id = track.getId();
+            if (isUseRelative(outputFile) && !FileUtils.isRemote(id)) {
+                id = FileUtils.getRelativePath(outputFile.getAbsolutePath(), id);
+            }
+            trackJson.put("id", id);
+
+            track.marshalJSON(trackJson);
+
+            // TODO -- convert this to "min, max, mid, etc"
+//            if (track.isNumeric() && track.getDataRange() != null) {
+//                JSONObject dataRangeJson = new JSONObject();
+//                track.getDataRange().marshalJSON(dataRangeJson);
+//                trackJson.put(SessionElement.DATA_RANGE, dataRangeJson);
+//            }
+
+            tracks.put(trackJson);
+        }
+
+        sessionObject.put("tracks", tracks);
+
+        return sessionObject.toString(2);
+
+    }
 
     public String createXmlFromSession(Session session, File outputFile) throws RuntimeException {
 
@@ -88,14 +154,6 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.VERSION, String.valueOf(CURRENT_VERSION));
 
-            String genomeId = GenomeManager.getInstance().getGenomeId();
-            if (genomeId != null) {
-                // If genomeId is a file try to write it out as a relative path
-                if ((new File(genomeId)).exists() && isUseRelative(outputFile)) {
-                    genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
-                }
-                globalElement.setAttribute(SessionAttribute.GENOME, genomeId);
-            }
 
             String locus = session.getCurrentLocus();
             if (locus != null && !FrameManager.isGeneListMode()) {
@@ -376,7 +434,7 @@ public class SessionWriter {
 
             // Filter data files that are included in genome annotations
             final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-            if(currentGenome != null) {
+            if (currentGenome != null) {
                 List<ResourceLocator> genomeResources = currentGenome.getAnnotationResources();
                 Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
                         genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());

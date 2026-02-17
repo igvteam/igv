@@ -5,6 +5,7 @@ import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.session.Session;
 import org.igv.session.SessionWriter;
+import org.igv.ui.IGV;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,9 +45,9 @@ public class SessionAutosaveManager {
      */
     public static synchronized void saveExitSessionAutosaveFile(Session session) throws IOException {
         // Get the file we use for saving sessions on exit
-        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "exit_session_autosave.xml");
+        File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "exit_session_autosave.json");
         // Save the session
-        (new SessionWriter()).saveSession(session, autosavedSessionFile);
+        (new SessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
     }
 
     /**
@@ -72,7 +73,7 @@ public class SessionAutosaveManager {
     public static synchronized void saveTimedSessionAutosaveFile(Session session) throws IOException {
         // Create a filename for the new autosave file that includes the current datetime
         String currentDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
-        String newAutosaveFilename = "session_autosave" + currentDate + ".xml";
+        String newAutosaveFilename = "session_autosave" + currentDate + ".json";
 
         // Create the file
         File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), newAutosaveFilename);
@@ -87,7 +88,7 @@ public class SessionAutosaveManager {
         }
 
         // Save the session
-        (new SessionWriter()).saveSession(session, autosavedSessionFile);
+        (new SessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
     }
 
     /**

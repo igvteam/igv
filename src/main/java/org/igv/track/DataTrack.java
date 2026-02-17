@@ -26,10 +26,10 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
 import org.igv.renderer.XYPlotRenderer;
 import org.igv.session.RendererFactory;
-import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -455,7 +455,23 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 }
             }
         }
-
     }
 
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+
+        if (jsonObject.has("graphType")) {
+
+            Class rendererClass = RendererFactory.getRendererClass(jsonObject.getString("graphType"));
+
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
+        }
+    }
 }

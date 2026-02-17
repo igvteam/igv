@@ -69,8 +69,8 @@ public class SaveSessionMenuAction extends MenuAction {
 
 
         String filePath = sessionFile.getAbsolutePath();
-        if (!filePath.toLowerCase().endsWith(".xml")) {
-            sessionFile = new File(filePath + ".xml");
+        if (!filePath.toLowerCase().endsWith(".json")) {
+            sessionFile = new File(filePath + ".json");
         }
 
         igv.setStatusBarMessage("Saving session to " + sessionFile.getAbsolutePath());

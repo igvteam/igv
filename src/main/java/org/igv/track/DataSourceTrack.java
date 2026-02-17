@@ -10,6 +10,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.DataRange;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -127,6 +128,16 @@ public class DataSourceTrack extends DataTrack {
         if (dataSource != null) {
             if (dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")) {
                 ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
+            }
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (dataSource != null) {
+            if (dataSource instanceof CoverageDataSource && jsonObject.has("normalize")) {
+                ((CoverageDataSource) dataSource).setNormalize(jsonObject.getBoolean("normalize"));
             }
         }
     }

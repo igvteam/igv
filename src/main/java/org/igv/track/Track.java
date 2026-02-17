@@ -11,6 +11,9 @@ import org.igv.session.Persistable;
 import org.igv.ui.panel.*;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -21,7 +24,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public interface Track extends Persistable, AttributeSupplier {
+public interface Track  {
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, FULL
@@ -333,5 +336,29 @@ public interface Track extends Persistable, AttributeSupplier {
     default void groupSamplesByAttribute(String attributeKey) {
         // no op, override in subclass if needed
     }
+
+
+    /**
+     * Marshal object state in XML element
+     * @return
+     */
+
+    default void marshalXML(Document document, Element element) {
+    }
+
+    /**
+     * Restore object state from an XML element
+     */
+
+    default void unmarshalXML(Element element, Integer version) {
+    }
+
+    default void marshalJSON(JSONObject trackJson) {
+
+    }
+
+    default void unmarshalJSON(JSONObject jsonObject) {
+    }
+
 
 }

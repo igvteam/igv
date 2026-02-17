@@ -1145,14 +1145,14 @@ public class CommandExecutor {
 
     private String saveSession(String filename) {
         Session currentSession = igv.getSession();
-        if (!filename.endsWith(".xml")) {
-            filename = filename + ".xml";
+        if (!filename.endsWith(".json")) {
+            filename = filename + ".json";
         }
         File targetFile = getFile(filename);
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
-                (new SessionWriter()).saveSession(currentSession, targetFile);
+                (new SessionWriter(igv)).saveSession(currentSession, targetFile);
                 return "OK";
             } catch (Exception e) {
                 return "Error writingin sesssion: " + e.getMessage();

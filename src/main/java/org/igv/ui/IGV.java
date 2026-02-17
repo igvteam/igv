@@ -788,8 +788,10 @@ public class IGV implements IGVEventObserver {
             sessionReader = new UCSCSessionReader(this);
         } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
             sessionReader = new IndexAwareSessionReader(this);
+        } else if (sessionPath != null && sessionPath.endsWith(".json")) {
+            sessionReader = new JSONSessionReader(this);
         } else {
-            sessionReader = new IGVSessionReader(this);
+            sessionReader = new XMLSessionReader(this);
         }
 
         sessionReader.loadSession(inputStream, session, sessionPath);
@@ -807,7 +809,7 @@ public class IGV implements IGVEventObserver {
      * @throws IOException
      */
     public void saveSession(File targetFile) throws IOException {
-        (new SessionWriter()).saveSession(session, targetFile);
+        (new SessionWriter(this)).saveSession(session, targetFile);
 
         String sessionPath = targetFile.getAbsolutePath();
         session.setPath(sessionPath);

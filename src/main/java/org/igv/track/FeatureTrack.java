@@ -25,6 +25,7 @@ import org.igv.util.BrowserLauncher;
 import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.variant.VariantTrack;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -986,16 +987,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
-        if (labelField != null) {
-            element.setAttribute("featureNameProperty", labelField);
-        }
-        super.marshalXML(document, element);
-
-    }
-
-    @Override
     public boolean isSearchable() {
         return source != null && source.isSearchable();
     }
@@ -1003,6 +994,16 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public List<NamedFeature> search(String token) {
         return source.search(token);
+    }
+
+    @Override
+    public void marshalXML(Document document, Element element) {
+        element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
+        if (labelField != null) {
+            element.setAttribute("featureNameProperty", labelField);
+        }
+        super.marshalXML(document, element);
+
     }
 
     @Override
@@ -1023,8 +1024,18 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             source.unmarshalXML(sourceElement, version);
             this.source = source;
         }
-
     }
 
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+
+        super.unmarshalJSON(jsonObject);
+
+        if (jsonObject.has("featureNameProperty")) {
+            this.labelField = jsonObject.getString("featureNameProperty");
+        }
+
+        this.groupByStrand = "strand".equals(jsonObject.getString("groupBy"));
+    }
 }
 

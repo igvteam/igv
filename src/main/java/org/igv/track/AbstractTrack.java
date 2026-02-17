@@ -19,7 +19,9 @@ import org.igv.ui.TooltipTextFrame;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.*;
 import org.igv.ui.util.UIUtilities;
+import org.igv.util.FileUtils;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -913,6 +915,60 @@ public abstract class AbstractTrack implements Track {
         return trackLine;
     }
 
+    public String getSampleId() {
+        return sampleId;
+    }
+
+    public Color getFeatureColor(IGVFeature feature) {
+
+        // Set color used to draw the feature
+        Color featureColor = null;
+
+        // If an alt color is explicitly set use it for negative strand features;
+        if (feature.getStrand() == Strand.NEGATIVE) {
+            featureColor = altColor;  // Use member variable, not getColor() which has defaulting behavior
+        }
+
+        // If color is explicitly set use it
+        if (featureColor == null) {
+            featureColor = color;         // Use member variable, not getColor() which has defaulting behavior
+        }
+
+        // No explicitly set color, try the feature itself
+        if (featureColor == null) {
+            featureColor = feature.getColor();
+        }
+
+        // If still no color use defaults
+        if (featureColor == null) {
+            if (getTrackType() == TrackType.CNV) {
+                featureColor = feature.getName().equals("gain") ? Globals.DULL_RED : Globals.DULL_BLUE;
+            } else {
+                featureColor = getDefaultColor();
+            }
+        }
+
+        if (useScore) {
+            float score = feature.getScore();
+            float alpha = 1;
+            if (!Float.isNaN(score)) {
+                float binWidth = (viewLimitMax - viewLimitMin) / 9;
+                int binNumber = (int) ((score - viewLimitMin) / binWidth);
+                alpha = Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
+            }
+            featureColor = ColorUtilities.getCompositeColor(featureColor, alpha);
+        }
+
+        return featureColor;
+    }
+
+    public void repaint() {
+        if (this.viewport != null) {
+            this.viewport.repaint(this.viewport.getVisibleRect());
+        }
+    }
+
+
     /**
      * Restore track from XML serialization -- work in progress
      * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
@@ -1116,57 +1172,201 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-    public String getSampleId() {
-        return sampleId;
-    }
+    public void marshalJSON(JSONObject jsonObject) {
 
-    public Color getFeatureColor(IGVFeature feature) {
-
-        // Set color used to draw the feature
-        Color featureColor = null;
-
-        // If an alt color is explicitly set use it for negative strand features;
-        if (feature.getStrand() == Strand.NEGATIVE) {
-            featureColor = altColor;  // Use member variable, not getColor() which has defaulting behavior
-        }
-
-        // If color is explicitly set use it
-        if (featureColor == null) {
-            featureColor = color;         // Use member variable, not getColor() which has defaulting behavior
-        }
-
-        // No explicitly set color, try the feature itself
-        if (featureColor == null) {
-            featureColor = feature.getColor();
-        }
-
-        // If still no color use defaults
-        if (featureColor == null) {
-            if (getTrackType() == TrackType.CNV) {
-                featureColor = feature.getName().equals("gain") ? Globals.DULL_RED : Globals.DULL_BLUE;
-            } else {
-                featureColor = getDefaultColor();
+        ResourceLocator locator = this.getResourceLocator();
+        if (locator != null) {
+            String path = locator.getPath();
+            if (path != null) {
+                if (FileUtils.isRemote(path)) {
+                    jsonObject.put("url", path);
+                } else {
+                    jsonObject.put("path", path);
+                }
+                String indexPath = locator.getIndexPath();
+                if (indexPath != null) {
+                    if (FileUtils.isRemote(indexPath)) {
+                        jsonObject.put("indexURL", indexPath);
+                    } else {
+                        jsonObject.put("indexPath", indexPath);
+                    }
+                }
             }
         }
 
-        if (useScore) {
-            float score = feature.getScore();
-            float alpha = 1;
-            if (!Float.isNaN(score)) {
-                float binWidth = (viewLimitMax - viewLimitMin) / 9;
-                int binNumber = (int) ((score - viewLimitMin) / binWidth);
-                alpha = Math.min(1.0f, 0.2f + (binNumber * 0.8f) / 9);
+        jsonObject.put("id", id);
+        jsonObject.put("name", name);
+        jsonObject.put("attributeKey", attributeKey);
+        jsonObject.put("fontSize", String.valueOf(fontSize));
+        jsonObject.put("visible", String.valueOf(visible));
+
+        if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
+            jsonObject.put("showFeatureNames", Boolean.toString(showFeatureNames));
+        }
+        if (color != null) {
+            jsonObject.put(SessionAttribute.COLOR, ColorUtilities.colorToString(color));
+        }
+        if (altColor != null) {
+            jsonObject.put(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
+        }
+        if (visibilityWindow != VISIBILITY_WINDOW) {
+            jsonObject.put("featureVisibilityWindow", String.valueOf(visibilityWindow));
+        }
+        if (displayMode != DEFAULT_DISPLAY_MODE) {
+            jsonObject.put(SessionAttribute.DISPLAY_MODE, displayMode.toString());
+        }
+        if (colorScale != null) {
+            //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
+            jsonObject.put("colorScale", colorScale.asString());
+        }
+        if (height != DEFAULT_HEIGHT) {
+            jsonObject.put("height", String.valueOf(this.height));
+        }
+        if (showDataRange == false) {
+            jsonObject.put("showDataRange", Boolean.toString(showDataRange));
+        }
+        if (isNumeric()) {
+            if (autoscaleGroup != null) {
+                jsonObject.put("autoscaleGroup", this.autoscaleGroup);
             }
-            featureColor = ColorUtilities.getCompositeColor(featureColor, alpha);
+
+            jsonObject.put("autoScale", String.valueOf(this.autoScale));
+
+            if (this.getWindowFunction() != null) {
+                jsonObject.put("windowFunction", String.valueOf(this.getWindowFunction()));
+            }
         }
 
-        return featureColor;
     }
 
-    public void repaint() {
-        if (this.viewport != null) {
-            this.viewport.repaint(this.viewport.getVisibleRect());
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+
+        if (jsonObject.has("name")) {
+            this.name = jsonObject.getString("name");
         }
+
+        if (jsonObject.has("id")) {
+            this.id = jsonObject.getString("id");
+        }
+
+        if (jsonObject.has("attributeKey")) {
+            this.attributeKey = jsonObject.getString("attributeKey");
+        } else {
+            this.attributeKey = this.name;
+        }
+
+        if (jsonObject.has("displayMode")) {
+            try {
+                this.displayMode = DisplayMode.valueOf(jsonObject.getString("displayMode"));
+            } catch (IllegalArgumentException e) {
+                log.error("Unrecognized displayMode: " + jsonObject.getString("displayMode"));
+                this.displayMode = DisplayMode.COLLAPSED;
+            }
+        }
+
+        if (jsonObject.has("color")) {
+            try {
+                Color c = ColorUtilities.stringToColor(jsonObject.getString("color"));
+                this.color = c;
+            } catch (Exception e) {
+                log.error("Unrecognized color: " + jsonObject.getString("color"));
+            }
+        }
+
+        if (jsonObject.has("altColor")) {
+            try {
+                Color c = ColorUtilities.stringToColor(jsonObject.getString("altColor"));
+                this.altColor = c;
+            } catch (Exception e) {
+                log.error("Unrecognized altColor: " + jsonObject.getString("altColor"));
+            }
+        }
+
+        if (jsonObject.has("colorScale")) {
+            try {
+                this.colorScale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(jsonObject.getString("colorScale"));
+            } catch (Exception e) {
+                log.error("Unrecognized colorScale: " + jsonObject.getString("colorScale"));
+            }
+        }
+
+        if (jsonObject.has("visible")) {
+            try {
+                this.setVisible(Boolean.parseBoolean(jsonObject.getString("visible")));
+            } catch (Exception e) {
+                log.error("Unrecognized visisbilty: " + jsonObject.getString("visible"));
+            }
+        }
+
+        if (jsonObject.has("autoScale")) {
+            try {
+                this.autoScale = Boolean.valueOf(jsonObject.getString("autoScale"));
+            } catch (Exception e) {
+                log.error("Unrecognized autoScale: " + jsonObject.getString("autoScale"));
+            }
+        }
+
+        if (jsonObject.has("autoscaleGroup")) {
+            String autoscaleGroup = jsonObject.getString("autoscaleGroup");
+            this.setAttributeValue(AttributeManager.GROUP_AUTOSCALE, "" + autoscaleGroup);
+        }
+
+        if (jsonObject.has("showDataRange")) {
+            try {
+                this.showDataRange = Boolean.valueOf(jsonObject.getString("showDataRange"));
+            } catch (Exception e) {
+                log.error("Unrecognized showDataRange: " + jsonObject.getString("showDataRange"));
+            }
+        }
+
+        if (jsonObject.has("featureVisibilityWindow")) {
+            try {
+                this.visibilityWindow = Integer.parseInt(jsonObject.getString("featureVisibilityWindow"));
+            } catch (NumberFormatException e) {
+                log.error("Unrecognized featureVisibilityWindow: " + jsonObject.getString("featureVisibilityWindow"));
+            }
+        }
+
+        if (jsonObject.has("showFeatureNames")) {
+            try {
+                this.showFeatureNames = Boolean.valueOf(jsonObject.getString("showFeatureNames"));
+            } catch (Exception e) {
+                log.error("Unrecognized showDataRange: " + jsonObject.getString("showFeatureNames"));
+            }
+
+        }
+
+        if (jsonObject.has("fontSize")) {
+            try {
+                this.fontSize = jsonObject.getInt("fontSize");
+            } catch (Exception e) {
+                log.error("Unrecognized fontSize: " + jsonObject.getString("fontSize"));
+            }
+        }
+
+        if (jsonObject.has("height")) {
+            try {
+                this.height = jsonObject.getInt("height");
+            } catch (Exception e) {
+                log.error("Unrecognized height: " + jsonObject.getString("height"));
+            }
+        }
+
+        if (jsonObject.has("windowFunction")) {
+            try {
+                this.setWindowFunction(WindowFunction.valueOf(jsonObject.getString("windowFunction")));
+            } catch (IllegalArgumentException e) {
+                log.error("Unknown windowFunction: " + jsonObject.getString("windowFunction"), e);
+            }
+        }
+
+        if (jsonObject.has("max")) {
+            this.dataRange = DataRange.fromJson(jsonObject);
+        }
+
     }
+
 
 }

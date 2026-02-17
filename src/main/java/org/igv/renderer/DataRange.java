@@ -2,6 +2,7 @@ package org.igv.renderer;
 
 import org.igv.session.Persistable;
 import org.igv.track.Track;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -95,6 +96,15 @@ public class DataRange implements Persistable {
             drawBaseline = Boolean.parseBoolean(tmp);
         }
 
+    }
+
+    public static DataRange fromJson(JSONObject jsonObject) {
+        float minimum = (float) jsonObject.optDouble("min", 0);
+        float baseline = (float) jsonObject.optDouble("mid", 0);
+        float maximum = (float) jsonObject.optDouble("max", 0);
+        boolean drawBaseline = jsonObject.optBoolean("drawBaseline", true);
+        boolean isLog = jsonObject.optBoolean("logScale", false);
+        return new DataRange(minimum, baseline, maximum, drawBaseline, isLog);
     }
 
     public static DataRange getFromTracks(Collection<? extends Track> tracks) {

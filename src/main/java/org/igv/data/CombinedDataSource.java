@@ -3,7 +3,7 @@ package org.igv.data;
 import com.google.common.collect.Iterators;
 import org.igv.logging.*;
 import org.igv.feature.LocusScore;
-import org.igv.session.IGVSessionReader;
+import org.igv.session.XMLSessionReader;
 import org.igv.track.DataTrack;
 import org.igv.track.Track;
 import org.igv.track.TrackType;
@@ -68,7 +68,7 @@ public class CombinedDataSource implements DataSource {
     private DataTrack updateTrackReference(DataTrack memberTrack, List<Track> allTracks) {
 
         if (memberTrack.getName() == null && memberTrack.getResourceLocator() == null) {
-            DataTrack matchingTrack = (DataTrack) IGVSessionReader.getMatchingTrack(memberTrack.getId(), allTracks);
+            DataTrack matchingTrack = (DataTrack) XMLSessionReader.getMatchingTrack(memberTrack.getId(), allTracks);
             if (matchingTrack == null)
                 throw new IllegalStateException("Could not find track with ID " + memberTrack.getId());
             return matchingTrack;

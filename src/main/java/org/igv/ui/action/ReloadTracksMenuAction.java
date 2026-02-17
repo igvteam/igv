@@ -41,7 +41,7 @@ public class ReloadTracksMenuAction extends MenuAction {
         String currentSessionFilePath = igv.getSession().getPath();
         Session currentSession = igv.getSession();
         currentSession.setPath(currentSessionFilePath);
-        String xml = (new SessionWriter()).createXmlFromSession(currentSession, null);
+        String xml = (new SessionWriter(igv)).createXmlFromSession(currentSession, null);
 
         igv.resetSession(currentSessionFilePath);
         final InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
