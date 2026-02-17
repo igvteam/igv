@@ -1246,6 +1246,12 @@ public abstract class AbstractTrack implements Track {
             if (this.getWindowFunction() != null) {
                 jsonObject.put("windowFunction", String.valueOf(this.getWindowFunction()));
             }
+            // TODO -- convert this to "min, max, mid, etc"
+//            if (track.isNumeric() && track.getDataRange() != null) {
+//                JSONObject dataRangeJson = new JSONObject();
+//                track.getDataRange().marshalJSON(dataRangeJson);
+//                trackJson.put(SessionElement.DATA_RANGE, dataRangeJson);
+//            }
         }
 
     }

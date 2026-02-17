@@ -63,8 +63,13 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             }
         }
 
+        // Set the height all tracks to the same value as the merged track.
+        for (Track track : memberTracks) {
+            track.setHeight(this.getHeight());
+        }
+
         // Set the group autoscale attribute only IF all tracks are in the same group
-        if (memberTracks != null && memberTracks.size() > 1) {
+        if (memberTracks.size() > 1) {
             String group = memberTracks.iterator().next().getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
             if (group != null) {
                 for (Track t : memberTracks) {
@@ -146,8 +151,10 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     @Override
     public void setHeight(int height) {
         super.setHeight(height);
-        for (Track track : memberTracks) {
-            track.setHeight(height);
+        if(memberTracks != null) {
+            for (Track track : memberTracks) {
+                track.setHeight(height);
+            }
         }
     }
 

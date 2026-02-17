@@ -111,7 +111,6 @@ public class SessionWriter {
         JSONArray tracks = new JSONArray();
         for (Track track : IGV.getInstance().getAllTracks()) {
             JSONObject trackJson = new JSONObject();
-            trackJson.put("clazz", SessionElement.getXMLClassName(track.getClass()));
 
             String id = track.getId();
             if (isUseRelative(outputFile) && !FileUtils.isRemote(id)) {
@@ -120,13 +119,6 @@ public class SessionWriter {
             trackJson.put("id", id);
 
             track.marshalJSON(trackJson);
-
-            // TODO -- convert this to "min, max, mid, etc"
-//            if (track.isNumeric() && track.getDataRange() != null) {
-//                JSONObject dataRangeJson = new JSONObject();
-//                track.getDataRange().marshalJSON(dataRangeJson);
-//                trackJson.put(SessionElement.DATA_RANGE, dataRangeJson);
-//            }
 
             tracks.put(trackJson);
         }
