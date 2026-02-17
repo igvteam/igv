@@ -193,6 +193,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.variant;
+    }
+
+    @Override
     public boolean isFilterable() {
         return false;
     }

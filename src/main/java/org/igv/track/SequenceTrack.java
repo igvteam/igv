@@ -69,8 +69,13 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public TrackType getTrackType() {
-        return TrackType.SEQUENCE;
+    public DataType getDataType() {
+        return DataType.SEQUENCE;
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.sequence;
     }
 
     public static String getReverseComplement(String sequence) {

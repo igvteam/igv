@@ -351,6 +351,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.alignment;
+    }
+
+    @Override
     public boolean isAlignment() {
         return true;
     }

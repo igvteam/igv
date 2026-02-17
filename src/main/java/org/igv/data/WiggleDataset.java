@@ -3,7 +3,7 @@ package org.igv.data;
 
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ArrayHeapIntSorter;
 import org.igv.util.IntComparator;
 import org.igv.util.collections.FloatArrayList;
@@ -31,7 +31,7 @@ public class WiggleDataset implements Dataset {
     float percent10 = 0;
 
     private Map<String, Integer> longestFeatureMap;
-    private TrackType type = TrackType.OTHER;
+    private DataType type = DataType.OTHER;
 
     public WiggleDataset(Genome genome, String name) {
         this.genome = genome;
@@ -146,7 +146,7 @@ public class WiggleDataset implements Dataset {
     }
 
 
-    public TrackType getType() {
+    public DataType getType() {
         return type;
     }
 
@@ -217,7 +217,7 @@ public class WiggleDataset implements Dataset {
         this.longestFeatureMap = longestFeatureMap;
     }
 
-    public void setType(TrackType type) {
+    public void setType(DataType type) {
         this.type = type;
     }
 

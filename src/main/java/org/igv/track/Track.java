@@ -7,7 +7,6 @@ import org.igv.Globals;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
-import org.igv.session.Persistable;
 import org.igv.ui.panel.*;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
@@ -28,6 +27,14 @@ public interface Track  {
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, FULL
+    }
+
+    /**
+     * Return the igv.js compatible track type.  This is used for session export.
+     * @return
+     */
+    default TrackType getType() {
+        return TrackType.annotation;
     }
 
     void setViewport(TrackPanelScrollPane trackPanel);
@@ -170,9 +177,9 @@ public interface Track  {
 
     void setOverlayed(boolean overlayVisible);
 
-    void setTrackType(TrackType type);
+    void setDataType(DataType type);
 
-    TrackType getTrackType();
+    DataType getDataType();
 
 
     void setY(int top);

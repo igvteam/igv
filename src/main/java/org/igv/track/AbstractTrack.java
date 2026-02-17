@@ -66,7 +66,7 @@ public abstract class AbstractTrack implements Track {
 
     private int top;
     protected int minimumHeight = -1;
-    private TrackType trackType = TrackType.OTHER;
+    private DataType dataType = DataType.OTHER;
     private boolean selected = false;
     private boolean visible = true;
     private boolean sortable = true;
@@ -386,17 +386,17 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public void setTrackType(TrackType type) {
-        this.trackType = type;
+    public void setDataType(DataType type) {
+        this.dataType = type;
     }
 
-    public TrackType getTrackType() {
-        return trackType;
+    public DataType getDataType() {
+        return dataType;
     }
 
     public boolean isVisible() {
 
-        if (visible && getTrackType() == TrackType.MUTATION) {
+        if (visible && getDataType() == DataType.MUTATION) {
             // Special rules for mutations.  If display as overlays == true, only show if not overlaid on another
             // track and "show orphaned" is true
             boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
@@ -449,8 +449,8 @@ public abstract class AbstractTrack implements Track {
     }
 
     protected Renderer getDefaultRenderer() {
-        TrackType trackType = getTrackType();
-        switch (trackType) {
+        DataType dataType = getDataType();
+        switch (dataType) {
             case RNAI:
             case COPY_NUMBER:
             case ALLELE_SPECIFIC_COPY_NUMBER:
@@ -651,10 +651,10 @@ public abstract class AbstractTrack implements Track {
 
             // Check for a default color scale for this track type in the session.  This is a long deprecated
             // session feature,  but we need to support it for backward compatibility.
-            ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
+            ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(dataType);
             if (defaultScale == null) {
                 // Now check user preferences
-                defaultScale = PreferencesManager.getPreferences().getColorScale(trackType);
+                defaultScale = PreferencesManager.getPreferences().getColorScale(dataType);
             }
             if (defaultScale != null) {
                 return defaultScale;
@@ -729,11 +729,11 @@ public abstract class AbstractTrack implements Track {
 
         // Special case for copy # -- centers data around 2 copies (1 for allele
         // specific) and log normalizes
-        if (((getTrackType() == TrackType.COPY_NUMBER) ||
-                (getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER) ||
-                (getTrackType() == TrackType.CNV)) &&
+        if (((getDataType() == DataType.COPY_NUMBER) ||
+                (getDataType() == DataType.ALLELE_SPECIFIC_COPY_NUMBER) ||
+                (getDataType() == DataType.CNV)) &&
                 !isLogNormalized()) {
-            double centerValue = (getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER)
+            double centerValue = (getDataType() == DataType.ALLELE_SPECIFIC_COPY_NUMBER)
                     ? 1.0 : 2.0;
 
             return (float) (Globals.log2(Math.max(Float.MIN_VALUE, dataY) / centerValue));
@@ -743,9 +743,9 @@ public abstract class AbstractTrack implements Track {
     }
 
     public boolean isRegionScoreType(RegionScoreType type) {
-        return (getTrackType() == TrackType.GENE_EXPRESSION && type == RegionScoreType.EXPRESSION) ||
-                ((getTrackType() == TrackType.COPY_NUMBER || getTrackType() == TrackType.CNV ||
-                        getTrackType() == TrackType.ALLELE_SPECIFIC_COPY_NUMBER) &&
+        return (getDataType() == DataType.GENE_EXPRESSION && type == RegionScoreType.EXPRESSION) ||
+                ((getDataType() == DataType.COPY_NUMBER || getDataType() == DataType.CNV ||
+                        getDataType() == DataType.ALLELE_SPECIFIC_COPY_NUMBER) &&
                         (type == RegionScoreType.AMPLIFICATION ||
                                 type == RegionScoreType.DELETION ||
                                 type == RegionScoreType.FLUX)) ||
@@ -941,7 +941,7 @@ public abstract class AbstractTrack implements Track {
 
         // If still no color use defaults
         if (featureColor == null) {
-            if (getTrackType() == TrackType.CNV) {
+            if (getDataType() == DataType.CNV) {
                 featureColor = feature.getName().equals("gain") ? Globals.DULL_RED : Globals.DULL_BLUE;
             } else {
                 featureColor = getDefaultColor();
@@ -1192,18 +1192,29 @@ public abstract class AbstractTrack implements Track {
                     }
                 }
             }
+            String format = locator.getFormat();
+            if (format != null) {
+                jsonObject.put("format", format);
+            }
         }
 
+        jsonObject.put("type", getType().toString());
         jsonObject.put("id", id);
         jsonObject.put("name", name);
-        jsonObject.put("attributeKey", attributeKey);
-        jsonObject.put("fontSize", String.valueOf(fontSize));
-        jsonObject.put("visible", String.valueOf(visible));
+        if (!attributeKey.equals(name)) {
+            jsonObject.put("attributeKey", attributeKey);
+        }
+        if (fontSize != PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE)) {
+            jsonObject.put("fontSize", String.valueOf(fontSize));
+        }
+        if (!visible) {
+            jsonObject.put("visible", String.valueOf(visible));
+        }
 
         if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
             jsonObject.put("showFeatureNames", Boolean.toString(showFeatureNames));
         }
-        if (color != null) {
+        if (color != null && color != getDefaultColor()) {
             jsonObject.put(SessionAttribute.COLOR, ColorUtilities.colorToString(color));
         }
         if (altColor != null) {

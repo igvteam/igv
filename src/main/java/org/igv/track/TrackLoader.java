@@ -483,14 +483,14 @@ public class TrackLoader {
             if (header != null && header instanceof FeatureFileHeader) {
                 FeatureFileHeader ffh = (FeatureFileHeader) header;
                 if (ffh.getTrackType() != null) {
-                    t.setTrackType(ffh.getTrackType());
+                    t.setDataType(ffh.getTrackType());
                 }
                 if (ffh.getTrackProperties() != null) {
                     TrackProperties tp = ffh.getTrackProperties();
                     t.setProperties(tp);
                     t.setTrackLine(tp.getTrackLine());
                 }
-                if (ffh.getTrackType() == TrackType.REPMASK) {
+                if (ffh.getTrackType() == DataType.REPMASK) {
                     t.setHeight(15);
                 }
             }
@@ -625,7 +625,7 @@ public class TrackLoader {
 
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
-        TrackType type = ds.getType();
+        DataType type = ds.getType();
         for (String trackName : ds.getTrackNames()) {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
@@ -633,10 +633,10 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             // track.setRendererClass(HeatmapRenderer.class);
-            track.setTrackType(ds.getType());
+            track.setDataType(ds.getType());
             track.setProperties(trackProperties);
 
-            if (type == TrackType.ALLELE_FREQUENCY) {
+            if (type == DataType.ALLELE_FREQUENCY) {
                 track.setRenderer(new PointsRenderer());
                 track.setHeight(40);
             }
@@ -670,7 +670,7 @@ public class TrackLoader {
         }
 
         for (DataTrack track : cuffTracks) {
-            track.setTrackType(TrackType.FPKM);
+            track.setDataType(DataType.FPKM);
             CufflinksTrack.setCufflinksScale(track);
             newTracks.add(track);
         }
@@ -753,9 +753,9 @@ public class TrackLoader {
             track.setName(displayName);
             track.setProperties(props);
 
-            track.setTrackType(ds.getType());
+            track.setDataType(ds.getType());
 
-            if (ds.getType() == TrackType.EXPR) {
+            if (ds.getType() == DataType.EXPR) {
                 track.setWindowFunction(WindowFunction.none);
             }
 
@@ -768,7 +768,7 @@ public class TrackLoader {
 
         log.debug("Loading TDF file " + locator.getPath());
         TDFReader reader = TDFReader.getReader(locator);
-        TrackType type = reader.getTrackType();
+        DataType type = reader.getTrackType();
 
         TrackProperties props = null;
         String trackLine = reader.getTrackLine();
@@ -795,7 +795,7 @@ public class TrackLoader {
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
-            track.setTrackType(type);
+            track.setDataType(type);
             if (props != null) {
                 track.setProperties(props);
             }
@@ -1014,7 +1014,7 @@ public class TrackLoader {
         MutationTrackLoader loader = new MutationTrackLoader();
         List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
-            track.setTrackType(TrackType.MUTATION);
+            track.setDataType(DataType.MUTATION);
             track.setRenderer(new MutationRenderer());
             newTracks.add(track);
         }
@@ -1051,7 +1051,7 @@ public class TrackLoader {
         TrackProperties props = ds.getTrackProperties();
 
         // The "freq" track.
-        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+        if ((ds.getType() == DataType.COPY_NUMBER || ds.getType() == DataType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
@@ -1068,7 +1068,7 @@ public class TrackLoader {
         String trackId = path + "_cn"; // + "_" + trackName;
         org.igv.seg.SegTrack track = new org.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
         track.setRenderer(new HeatmapRenderer());
-        track.setTrackType(ds.getType());
+        track.setDataType(ds.getType());
 
         if (props != null) {
             track.setProperties(props);

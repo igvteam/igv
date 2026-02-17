@@ -12,7 +12,7 @@ import org.igv.Globals;
 import org.igv.data.Dataset;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 
 import java.util.HashMap;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class ExpressionDataset implements Dataset {
 
     private String name;
-    private TrackType type = TrackType.GENE_EXPRESSION;
+    private DataType type = DataType.GENE_EXPRESSION;
     private Genome genome;
     private String[] columnHeadings;
     private boolean normalized = false;
@@ -86,12 +86,12 @@ public class ExpressionDataset implements Dataset {
         return name;
     }
 
-    public void setType(TrackType type) {
+    public void setType(DataType type) {
         this.type = type;
     }
 
 
-    public TrackType getType() {
+    public DataType getType() {
         return type;
     }
 

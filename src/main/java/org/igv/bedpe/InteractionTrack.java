@@ -9,10 +9,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
-import org.igv.track.AbstractTrack;
-import org.igv.track.RenderContext;
-import org.igv.track.TrackClickEvent;
-import org.igv.track.TrackMenuUtils;
+import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
@@ -131,6 +128,11 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 log.error("Illegal arc blocks option: " + blockString, e);
             }
         }
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.interact;
     }
 
     public int getContentHeight() {

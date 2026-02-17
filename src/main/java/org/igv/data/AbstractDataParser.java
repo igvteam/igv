@@ -1,6 +1,6 @@
 package org.igv.data;
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 
 /**
@@ -27,7 +27,7 @@ public class AbstractDataParser {
             } else if (key.equals("type")) {
 
                 try {
-                    dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                    dataset.setTrackType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
 
                     // Ignore

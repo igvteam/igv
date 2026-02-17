@@ -9,11 +9,10 @@ import org.igv.logging.Logger;
 import org.igv.track.FeatureCollectionSource;
 import org.igv.track.FeatureTrack;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
 
-import java.awt.*;
 import java.io.*;
 import java.util.List;
 
@@ -64,7 +63,7 @@ public class DotGenomeLoader extends GenomeLoader {
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                 geneFeatureTrack.setMinimumHeight(5);
                 geneFeatureTrack.setHeight(35);
-                geneFeatureTrack.setTrackType(TrackType.GENE);
+                geneFeatureTrack.setDataType(DataType.GENE);
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {
                     geneFeatureTrack.setProperties(parser.getTrackProperties());

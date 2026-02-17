@@ -7,7 +7,7 @@ import org.igv.data.WiggleDataset;
 import org.igv.data.WiggleParser;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
@@ -52,7 +52,7 @@ public class ToolsWiggleParser extends WiggleParser{
             trackNames[3] = "T";
         }
 
-        dataConsumer.setTrackParameters(TrackType.OTHER, trackLine, trackNames);
+        dataConsumer.setTrackParameters(DataType.OTHER, trackLine, trackNames);
 
 
         // Parse track line, if any, to get the coordinate convention

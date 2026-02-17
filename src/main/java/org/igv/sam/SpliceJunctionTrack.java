@@ -74,6 +74,11 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.junction;
+    }
+
+    @Override
     public void setRenderer(Renderer renderer) {
         this.renderer = renderer;
     }

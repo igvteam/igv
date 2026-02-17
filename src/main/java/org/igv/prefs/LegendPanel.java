@@ -4,7 +4,6 @@ import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.track.TrackType;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;

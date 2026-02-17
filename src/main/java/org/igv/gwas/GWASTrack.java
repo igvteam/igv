@@ -102,6 +102,11 @@ public class GWASTrack extends AbstractTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.gwas;
+    }
+
+    @Override
     public boolean isNumeric() {
         return true;
     }

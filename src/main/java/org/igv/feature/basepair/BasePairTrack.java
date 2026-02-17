@@ -7,6 +7,7 @@ import org.igv.session.Persistable;
 
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
+import org.igv.track.TrackType;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
@@ -48,6 +49,11 @@ public class BasePairTrack extends AbstractTrack {
 
     public BasePairTrack() {
         this.genome = GenomeManager.getInstance().getCurrentGenome();
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.arc;
     }
 
     @Override

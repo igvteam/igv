@@ -8,7 +8,7 @@ import org.igv.exceptions.ParserException;
 import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 
@@ -49,7 +49,7 @@ public class SegmentFileParser {
         boolean birdsuite = (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls"));
 
         if (birdsuite) {
-            dataset.setTrackType(TrackType.CNV);
+            dataset.setTrackType(DataType.CNV);
         }
 
         AsciiLineReader reader = null;
@@ -189,7 +189,7 @@ public class SegmentFileParser {
                     return;
                 }
                 try {
-                    dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                    dataset.setTrackType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
                     log.error("Unknown track type: " + tokens[1].trim().toUpperCase());
                 }

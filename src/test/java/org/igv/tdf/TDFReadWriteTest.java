@@ -1,6 +1,6 @@
 package org.igv.tdf;
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,7 +22,7 @@ public class TDFReadWriteTest {
 
 
     static String[] trackNames = {"sample 1", "sample 2", "sample 3"};
-    static TrackType type = TrackType.COPY_NUMBER;
+    static DataType type = DataType.COPY_NUMBER;
     static String trackLine = "track line";
     static List<WindowFunction> wfs = Arrays.asList();
 

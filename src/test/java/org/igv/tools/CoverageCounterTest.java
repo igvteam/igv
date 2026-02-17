@@ -5,7 +5,7 @@ import org.igv.prefs.IGVPreferences;
 import org.igv.feature.genome.Genome;
 import org.igv.prefs.PreferencesManager;
 import org.igv.tools.parsers.DataConsumer;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -232,11 +232,11 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
 
         }
 
-        public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
+        public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames) {
 
         }
 
-        public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b) {
+        public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames, boolean b) {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 

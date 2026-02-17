@@ -5,7 +5,7 @@ import org.igv.feature.BasicFeature;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
@@ -51,7 +51,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
 
         String nextLine;
         header = new FeatureFileHeader();
-        header.setTrackType(TrackType.REPMASK);
+        header.setTrackType(DataType.REPMASK);
         int nLines = 0;
 
         try {
@@ -67,7 +67,7 @@ public class REPMaskCodec extends AsciiFeatureCodec<BasicFeature> {
                     String[] tokens = nextLine.split("=");
                     if (tokens.length > 1) {
                         try {
-                            header.setTrackType(TrackType.valueOf(tokens[1]));
+                            header.setTrackType(DataType.valueOf(tokens[1]));
                         } catch (Exception e) {
                             // log.error("Error converting track type: " + tokens[1]);
                         }

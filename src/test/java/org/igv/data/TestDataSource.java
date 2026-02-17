@@ -1,7 +1,7 @@
 package org.igv.data;
 
 import org.igv.feature.LocusScore;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class TestDataSource extends AbstractDataSource {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public TrackType getTrackType() {
+    public DataType getDataType() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

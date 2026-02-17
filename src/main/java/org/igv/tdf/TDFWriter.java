@@ -2,7 +2,7 @@ package org.igv.tdf;
 
 import org.igv.logging.*;
 import org.igv.exceptions.DataLoadException;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.util.CompressionUtils;
 
@@ -41,7 +41,7 @@ public class TDFWriter {
 
     public TDFWriter(File f,
                      String genomeId,
-                     TrackType trackType,
+                     DataType dataType,
                      String trackLine, String[] trackNames,
                      Collection<WindowFunction> windowFunctions,
                      boolean compressed) {
@@ -63,7 +63,7 @@ public class TDFWriter {
 //                os = System.out;
 //            }
             fos = new BufferedOutputStream(new FileOutputStream(file));
-            writeHeader(genomeId, trackType, trackLine, trackNames, windowFunctions);
+            writeHeader(genomeId, dataType, trackLine, trackNames, windowFunctions);
 
             TDFGroup rootGroup = new TDFGroup("/");
             groupCache.put(rootGroup.getName(), rootGroup);
@@ -77,7 +77,7 @@ public class TDFWriter {
     }
 
     private void writeHeader(String genomeId,
-                             TrackType trackType,
+                             DataType dataType,
                              String trackLine, String[] trackNames,
                              Collection<WindowFunction> windowFunctions) throws IOException {
 
@@ -103,7 +103,7 @@ public class TDFWriter {
         }
 
         // Track type
-        buffer.putNullTerminatedString(trackType.toString());
+        buffer.putNullTerminatedString(dataType.toString());
 
         // Reserved space for the track line
         byte[] trackLineBuffer = bufferString(trackLine, 1024);

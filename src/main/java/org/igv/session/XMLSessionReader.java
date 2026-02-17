@@ -744,7 +744,7 @@ public class XMLSessionReader implements SessionReader {
             // reference sequence, combined,  and merged tracks.
 
             String className = getAttribute(element, "clazz");
-            if (resourceIndpendentTracks.stream().anyMatch(c -> className.contains(c))) {
+            if (className != null && resourceIndpendentTracks.stream().anyMatch(c -> className.contains(c))) {
                 try {
                     Track track = createTrack(className, element);
                     if (track != null) {
@@ -913,12 +913,12 @@ public class XMLSessionReader implements SessionReader {
             return;
         }
 
-        TrackType trackType = CollUtils.valueOf(TrackType.class, type.toUpperCase(), TrackType.OTHER);
+        DataType dataType = CollUtils.valueOf(DataType.class, type.toUpperCase(), DataType.OTHER);
 
         // Only ContinuousColorScale is handled
         ColorScale colorScale = ColorScaleFactory.getScaleFromString(value);
         if (colorScale instanceof ContinuousColorScale) {
-            session.setColorScale(trackType, (ContinuousColorScale) colorScale);
+            session.setColorScale(dataType, (ContinuousColorScale) colorScale);
         }
     }
 

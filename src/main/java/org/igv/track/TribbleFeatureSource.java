@@ -432,8 +432,8 @@ abstract public class TribbleFeatureSource implements FeatureSource {
                 return dataMin;
             }
 
-            public TrackType getTrackType() {
-                return TrackType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
+            public DataType getDataType() {
+                return DataType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             // This won't work for large track!

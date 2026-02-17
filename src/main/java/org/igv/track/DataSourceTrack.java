@@ -1,7 +1,6 @@
 package org.igv.track;
 
 
-import org.igv.Globals;
 import org.igv.data.CombinedDataSource;
 import org.igv.data.CoverageDataSource;
 import org.igv.data.DataSource;
@@ -29,6 +28,9 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSource dataSource;
 
+    public DataSourceTrack() {
+    }
+
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
         if(dataSource == null && locator != null) {
@@ -42,14 +44,9 @@ public class DataSourceTrack extends DataTrack {
     public void setDatasource(DataSource dataSource) {
         this.dataSource = dataSource;
         if (this.dataSource != null) {
-            setTrackType(dataSource.getTrackType());
+            setDataType(dataSource.getDataType());
         }
     }
-
-    public DataSourceTrack() {
-
-    }
-
 
     void initScale(DataSource dataSource, List<LocusScore> scores) {
 

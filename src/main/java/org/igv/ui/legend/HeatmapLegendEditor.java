@@ -11,7 +11,6 @@ import javax.swing.*;
 
 import org.igv.renderer.ColorScale;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.track.TrackType;
 import org.igv.ui.color.ColorChooserPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;

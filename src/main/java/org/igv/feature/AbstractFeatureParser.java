@@ -6,7 +6,7 @@ import org.igv.exceptions.ParserException;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.tribble.CodecFactory;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
@@ -87,7 +87,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                         if (tokens.length > 1) {
                             try {
                                 // TODO: type is not currently used, is there any reason to keep this?
-                                TrackType type = TrackType.valueOf(tokens[1]);
+                                DataType type = DataType.valueOf(tokens[1]);
                             } catch (Exception e) {
                                 log.error("Error converting track type: " + tokens[1]);
                             }

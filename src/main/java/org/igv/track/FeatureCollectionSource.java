@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class FeatureCollectionSource implements FeatureSource {
 
-    private TrackType type;
+    private DataType type;
 
     private Map<String, List<htsjdk.tribble.Feature>> featureMap;
 
@@ -108,11 +108,11 @@ public class FeatureCollectionSource implements FeatureSource {
         featureMap.put(chr, features);
     }
 
-    public TrackType getType() {
+    public DataType getType() {
         return type;
     }
 
-    public void setType(TrackType type) {
+    public void setType(DataType type) {
         this.type = type;
     }
 
@@ -205,8 +205,8 @@ public class FeatureCollectionSource implements FeatureSource {
             return dataMin;
         }
 
-        public TrackType getTrackType() {
-            return TrackType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
+        public DataType getDataType() {
+            return DataType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
         // This won't work for large track!

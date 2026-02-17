@@ -294,7 +294,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         try {
             Iterator<Feature> features = source.getFeatures(chr, start, end);
             if (features != null) {
-                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
+                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getDataType() == DataType.MUTATION) {
                     int count = 0;
                     while (features.hasNext()) {
                         Feature f = features.next();
@@ -860,7 +860,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
                 for (PackedFeatures.FeatureRow row : rows) {
 
-                    if(rect.y > clipBounds.y + clipBounds.height) {
+                    if (rect.y > clipBounds.y + clipBounds.height) {
                         break;  // Gone past clip bounds
                     }
                     if (rect.y + rect.height < clipBounds.y) {
@@ -872,10 +872,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
                     renderer.render(row.features, context, rect, this);
 
-                  //  if (selectedFeatureRowIndex == i) {
-                   //     Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
-                  //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
-                  //  }
+                    //  if (selectedFeatureRowIndex == i) {
+                    //     Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
+                    //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    //  }
 
                     rect.y += h;
                     i++;
@@ -1034,8 +1034,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (jsonObject.has("featureNameProperty")) {
             this.labelField = jsonObject.getString("featureNameProperty");
         }
-
-        this.groupByStrand = "strand".equals(jsonObject.getString("groupBy"));
+        if (jsonObject.has("groupBy")) {
+            this.groupByStrand = "strand".equals(jsonObject.getString("groupBy"));
+        }
     }
 }
 

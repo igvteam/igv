@@ -14,7 +14,7 @@ import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.sam.InsertionManager;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
@@ -45,7 +45,7 @@ public class Session implements IGVEventObserver {
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter trackFilter;
     private HashMap<String, String> preferences;
-    private HashMap<TrackType, ContinuousColorScale> colorScales;
+    private HashMap<DataType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
 
@@ -168,11 +168,11 @@ public class Session implements IGVEventObserver {
         preferences.remove(key);
     }
 
-    public void setColorScale(TrackType trackType, ContinuousColorScale colorScale) {
-        colorScales.put(trackType, colorScale);
+    public void setColorScale(DataType dataType, ContinuousColorScale colorScale) {
+        colorScales.put(dataType, colorScale);
     }
-    public ContinuousColorScale getColorScale(TrackType trackType) {
-            return colorScales.get(trackType);
+    public ContinuousColorScale getColorScale(DataType dataType) {
+            return colorScales.get(dataType);
     }
 
     public boolean getPreferenceAsBoolean(String key) {

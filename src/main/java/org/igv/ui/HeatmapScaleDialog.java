@@ -7,10 +7,8 @@
 
 package org.igv.ui;
 
-import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.track.TrackType;
 import org.igv.ui.color.ColorChooserPanel;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;

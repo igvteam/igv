@@ -6,7 +6,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
@@ -229,7 +229,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
 
-        TrackType trackType = track.getTrackType();
+        DataType dataType = track.getDataType();
 
         trackPanel.addTrack(track);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
@@ -237,7 +237,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
-            if (trackType == TrackType.SEQUENCE) {
+            if (dataType == DataType.SEQUENCE) {
                 trackPanelContainer.add(sp, 0);
             } else {
                 int position = 0;
@@ -248,7 +248,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
                         TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
                         if (!tsp.getTrackPanel().getTracks().isEmpty()) {
                             Track firstTrack = tsp.getTrackPanel().getTracks().get(0);
-                            if (firstTrack.getTrackType() == TrackType.SEQUENCE) {
+                            if (firstTrack.getDataType() == DataType.SEQUENCE) {
                                 position = 1;
                             }
                         }

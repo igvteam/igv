@@ -4,7 +4,6 @@ import org.igv.logging.*;
 import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.oauth.OAuthUtils;
-import org.igv.track.TrackType;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorSwatch;
 import org.igv.ui.color.ColorUtilities;

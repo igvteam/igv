@@ -11,7 +11,7 @@ import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
@@ -24,7 +24,7 @@ import java.util.*;
 public class SegmentedDataSet {
 
     //SegFileParser parser;
-    TrackType trackType = TrackType.COPY_NUMBER;
+    DataType dataType = DataType.COPY_NUMBER;
     float dataMax = -Float.MAX_VALUE;
     float dataMin = Float.MAX_VALUE;
     /**
@@ -137,8 +137,8 @@ public class SegmentedDataSet {
      *
      * @return
      */
-    public TrackType getType() {
-        return trackType;
+    public DataType getType() {
+        return dataType;
     }
 
     /**
@@ -206,17 +206,17 @@ public class SegmentedDataSet {
      *
      * @return
      */
-    public TrackType getTrackType() {
-        return trackType;
+    public DataType getTrackType() {
+        return dataType;
     }
 
     /**
      * Method description
      *
-     * @param trackType
+     * @param dataType
      */
-    public void setTrackType(TrackType trackType) {
-        this.trackType = trackType;
+    public void setTrackType(DataType dataType) {
+        this.dataType = dataType;
     }
 
 

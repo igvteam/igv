@@ -6,7 +6,7 @@ import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.exceptions.ParserException;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MessageUtils;
@@ -137,10 +137,10 @@ public class IGVDatasetParser {
             // Infer datatype from extension.  This can be overriden in the
             // comment section
             if (isCopyNumberFileExt(dataResourceLocator.getPath())) {
-                dataset.setTrackType(TrackType.COPY_NUMBER);
+                dataset.setTrackType(DataType.COPY_NUMBER);
                 dataset.getTrackProperties().setWindowingFunction(WindowFunction.mean);
             } else if (isLOHFileExt(dataResourceLocator.getPath())) {
-                dataset.setTrackType(TrackType.LOH);
+                dataset.setTrackType(DataType.LOH);
                 dataset.getTrackProperties().setWindowingFunction(WindowFunction.mean);
             } else {
                 dataset.getTrackProperties().setWindowingFunction(WindowFunction.mean);
@@ -474,7 +474,7 @@ public class IGVDatasetParser {
             } else if (key.equals("type")) {
 
                 try {
-                    dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                    dataset.setTrackType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
 
                     // Ignore

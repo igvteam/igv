@@ -1,7 +1,7 @@
 
 package org.igv.tools.parsers;
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.util.Hashtable;
 
@@ -14,7 +14,7 @@ public abstract class AbstractParser {
 
     private DataConsumer dataConsumer;
     String trackLine = null;
-    private TrackType trackType = TrackType.COPY_NUMBER;
+    private DataType dataType = DataType.COPY_NUMBER;
     private String[] headings;
 
     public AbstractParser(DataConsumer dataConsumer) {
@@ -29,7 +29,7 @@ public abstract class AbstractParser {
     }
 
     protected void setTrackParameters() {
-        dataConsumer.setTrackParameters(trackType, trackLine, headings);
+        dataConsumer.setTrackParameters(dataType, trackLine, headings);
     }
 
     /**
@@ -50,7 +50,7 @@ public abstract class AbstractParser {
             String key = tokens[0].trim().toLowerCase();
             if (key.equals("type")) {
                 try {
-                    setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                    setTrackType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
                 }
             }
@@ -74,15 +74,15 @@ public abstract class AbstractParser {
     /**
      * @return the trackType
      */
-    public TrackType getTrackType() {
-        return trackType;
+    public DataType getTrackType() {
+        return dataType;
     }
 
     /**
-     * @param trackType the trackType to set
+     * @param dataType the trackType to set
      */
-    public void setTrackType(TrackType trackType) {
-        this.trackType = trackType;
+    public void setTrackType(DataType dataType) {
+        this.dataType = dataType;
     }
 
 }

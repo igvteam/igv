@@ -42,7 +42,7 @@ public class SegTrack extends AbstractTrack {
         this.sampleGroups = new ArrayList<>();
         this.sampleGroups.add(new SampleGroup("", sampleNames));
         setDataRange(new DataRange(0, 1, 2));
-        setTrackType(dataset.getType());
+        setDataType(dataset.getType());
         initScale(dataset);
 
         // Groups by global attribute if it exists

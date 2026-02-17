@@ -64,6 +64,20 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public DataTrack() {
     }
 
+
+    @Override
+    public TrackType getType() {
+        switch (getDataType()) {
+            case COPY_NUMBER:
+            case CNV:
+                return TrackType.seg;
+            case MUTATION:
+                return TrackType.mut;
+            default:
+                return TrackType.wig;
+        }
+    }
+
     @Override
     public int getContentHeight() {
         return height;
@@ -355,7 +369,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 String tSamp = this.getSample();
                 if (tracks != null && tSamp != null) {
                     for (Track t : tracks) {
-                        if (t.getTrackType() == TrackType.MUTATION && tSamp.equals(t.getSample())) {
+                        if (t.getDataType() == DataType.MUTATION && tSamp.equals(t.getSample())) {
                             count += t.getRegionScore(chr, start, end, zoom, type, frameName);
                         }
                     }

@@ -649,11 +649,11 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    public Set<TrackType> getLoadedTypes() {
-        Set<TrackType> types = new HashSet<>();
+    public Set<DataType> getLoadedTypes() {
+        Set<DataType> types = new HashSet<>();
         for (Track t : getAllTracks()) {
             if (t != null) {
-                TrackType type = t.getTrackType();
+                DataType type = t.getDataType();
                 types.add(type);
             }
         }

@@ -6,7 +6,7 @@ import org.igv.feature.LocusScore;
 import org.igv.session.XMLSessionReader;
 import org.igv.track.DataTrack;
 import org.igv.track.Track;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 
 import java.util.*;
@@ -214,8 +214,8 @@ public class CombinedDataSource implements DataSource {
         return 0;
     }
 
-    public TrackType getTrackType() {
-        return TrackType.PLUGIN;
+    public DataType getDataType() {
+        return DataType.PLUGIN;
     }
 
     public void setWindowFunction(WindowFunction statType) {

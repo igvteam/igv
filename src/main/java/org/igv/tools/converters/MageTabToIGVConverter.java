@@ -8,7 +8,7 @@ import org.igv.feature.Locus;
 import org.igv.feature.genome.Genome;
 import org.igv.tools.sort.SortableRecord;
 import org.igv.tools.sort.SortableRecordCodec;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.io.*;
 import java.util.Comparator;
@@ -54,14 +54,14 @@ public class MageTabToIGVConverter {
 
 
             String nextLine = null;
-            TrackType dataType = TrackType.GENE_EXPRESSION;
+            DataType dataType = DataType.GENE_EXPRESSION;
             while ((nextLine = reader.readLine()) != null) {
 
                 // A gct row can map to multiple loci, normally this indicates a problem with the probe
                 DataRow row = new DataRow(nextLine);
                 String probe = row.getProbe();
                 if (probe.startsWith("cg")) {
-                    dataType = TrackType.DNA_METHYLATION;
+                    dataType = DataType.DNA_METHYLATION;
                 }
 
                 List<Locus> loci = locusHelper.getLoci(probe, row.getDescription(), genome.getId());

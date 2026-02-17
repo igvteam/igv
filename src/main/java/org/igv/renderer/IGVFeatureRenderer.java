@@ -1,7 +1,6 @@
 package org.igv.renderer;
 
 
-import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.feature.*;
 import org.igv.feature.aa.AminoAcidSequence;
@@ -11,7 +10,6 @@ import org.igv.feature.genome.GenomeManager;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
-import org.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
@@ -384,7 +382,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             }
 
             if (exprValue != null) {
-                ContinuousColorScale colorScale = PreferencesManager.getPreferences().getColorScale(TrackType.GENE_EXPRESSION);
+                ContinuousColorScale colorScale = PreferencesManager.getPreferences().getColorScale(DataType.GENE_EXPRESSION);
                 Color chartColor = colorScale.getColor(exprValue);
                 g2D = context.getGraphic2DForColor(chartColor);
             }

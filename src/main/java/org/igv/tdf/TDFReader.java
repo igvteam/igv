@@ -5,7 +5,7 @@ import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.util.CompressionUtils;
 import org.igv.util.ResourceLocator;
@@ -31,7 +31,7 @@ public class TDFReader {
     private int version;
     private Map<String, IndexEntry> datasetIndex;
     private Map<String, IndexEntry> groupIndex;
-    private TrackType trackType;
+    private DataType dataType;
     private String trackLine;
     private String[] trackNames;
     private String genomeId;
@@ -135,10 +135,10 @@ public class TDFReader {
 
         // Track type
         try {
-            trackType = TrackType.valueOf(StringUtils.readString(byteBuffer));
+            dataType = DataType.valueOf(StringUtils.readString(byteBuffer));
 
         } catch (Exception e) {
-            trackType = TrackType.OTHER;
+            dataType = DataType.OTHER;
         }
 
         // Track line
@@ -330,8 +330,8 @@ public class TDFReader {
     /**
      * @return the trackType
      */
-    public TrackType getTrackType() {
-        return trackType;
+    public DataType getTrackType() {
+        return dataType;
     }
 
     /**

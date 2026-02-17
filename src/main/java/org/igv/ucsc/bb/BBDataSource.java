@@ -11,7 +11,7 @@ import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 
 import java.io.IOException;
@@ -144,8 +144,8 @@ public class BBDataSource extends AbstractDataSource implements DataSource {
     }
 
 
-    public TrackType getTrackType() {
-        return TrackType.OTHER;
+    public DataType getDataType() {
+        return DataType.OTHER;
     }
 
 

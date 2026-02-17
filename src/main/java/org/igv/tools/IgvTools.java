@@ -40,7 +40,7 @@ import org.igv.tools.converters.GCTtoIGVConverter;
 import org.igv.tools.converters.WigToBed;
 import org.igv.tools.sort.Sorter;
 import org.igv.tools.sort.SorterFactory;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.ui.ReadmeParser;
 import org.igv.ui.util.MessageUtils;
@@ -830,7 +830,7 @@ public class IgvTools {
 
             String prefix = FilenameUtils.getName(ifile);
             String[] tracknames = counter.getTrackNames(prefix + " ");
-            p.setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
+            p.setTrackParameters(DataType.COVERAGE, trackLine, tracknames);
 
             p.setSizeEstimate(((int) (genome.getWGLength() / windowSizeValue)));
 

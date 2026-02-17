@@ -8,7 +8,7 @@ import org.igv.feature.Locus;
 import org.igv.feature.genome.Genome;
 import org.igv.tools.sort.SortableRecord;
 import org.igv.tools.sort.SortableRecordCodec;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.collections.SortingCollection;
@@ -55,8 +55,8 @@ public class GCTtoIGVConverter {
 
 
             // Need a better way to determine type!
-            String dataType = resourceLocator.getPath().contains("methylation") ? TrackType.DNA_METHYLATION.toString()
-                    : TrackType.GENE_EXPRESSION.toString();
+            String dataType = resourceLocator.getPath().contains("methylation") ? DataType.DNA_METHYLATION.toString()
+                    : DataType.GENE_EXPRESSION.toString();
 
             writer.println("#type=" + dataType);
             writer.print("Chr\tStart\tEnd\tProbe");
