@@ -1,0 +1,81 @@
+{
+  "genomeId": "hg38",
+  "locus": "chr7:55018017-55212628",
+  "tracks": [
+    {
+      "name": "Reference sequence",
+      "id": "Reference sequence",
+      "type": "sequence",
+      "height": "0"
+    },
+    {
+      "type": "combined",
+      "track1": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
+      "track2": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
+      "op": "ADD",
+      "color": "0,204,255",
+      "name": "Sum",
+      "colorScale": "ContinuousColorScale;0.0;3.3990800380706787;255,255,255;0,150,0",
+      "windowFunction": "none",
+      "id": "1771369819387",
+
+      "height": "40",
+      "autoScale": "true"
+    },
+    {
+      "altColor": "0,150,0",
+      "color": "0,150,0",
+      "format": "bigwig",
+      "name": "Homo sapiens GM12878 H3K4me3",
+      "colorScale": "ContinuousColorScale;0.0;3.3990800380706787;255,255,255;0,150,0",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
+      "type": "wig",
+      "url": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
+      "height": "40",
+      "autoScale": "true"
+    },
+    {
+      "altColor": "0,0,150",
+      "color": "0,0,150",
+      "format": "bigwig",
+      "name": "Homo sapiens GM12878 H3K36me3",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
+      "type": "wig",
+      "url": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
+      "height": "40",
+      "autoScale": "true"
+    },
+    {
+      "altColor": "200,0,0",
+      "color": "200,0,0",
+      "format": "bigwig",
+      "name": "Homo sapiens GM12878 H3K27ac",
+      "colorScale": "ContinuousColorScale;0.0;7.462679862976074;255,255,255;200,0,0",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
+      "type": "wig",
+      "url": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
+      "height": "40",
+      "autoScale": "true"
+    },
+    {
+      "featureVisibilityWindow": "1615203887",
+      "format": "bigbed",
+      "name": "MANE v1.0 - Ensembl",
+      "id": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.0/MANE.GRCh38.v1.0.ensembl.bb",
+      "type": "annotation",
+      "url": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.0/MANE.GRCh38.v1.0.ensembl.bb",
+      "height": "0"
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "height": "0"
+    }
+  ]
+}

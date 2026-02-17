@@ -73,13 +73,12 @@ public class OverlayTracksMenuAction extends MenuAction {
 
     public static void unmerge(Collection<Track> tracks) {
         for (Track t : tracks) {
-            if (t instanceof MergedTracks) {
-                TrackPanel panel = TrackPanel.getParentPanel(t);
-                MergedTracks mergedTracks = (MergedTracks) t;
+
+            if (t instanceof MergedTracks mergedTracks) {
+                int index = IGV.getInstance().getTrackPanelIndex(mergedTracks);
                 mergedTracks.setTrackAlphas(1.0);
-                panel.addTracks(mergedTracks.getMemberTracks());
-                panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                IGV.getInstance().deleteTracks(Arrays.asList(mergedTracks));
+                IGV.getInstance().deleteTracks(List.of(mergedTracks));
+                IGV.getInstance().addTracks(new ArrayList<>(mergedTracks.getMemberTracks()), index);
             }
         }
         IGV.getInstance().repaint();

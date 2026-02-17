@@ -110,13 +110,8 @@ public class SessionWriter {
 
         JSONArray tracks = new JSONArray();
         for (Track track : IGV.getInstance().getAllTracks()) {
-            JSONObject trackJson = new JSONObject();
 
-            String id = track.getId();
-            if (isUseRelative(outputFile) && !FileUtils.isRemote(id)) {
-                id = FileUtils.getRelativePath(outputFile.getAbsolutePath(), id);
-            }
-            trackJson.put("id", id);
+            JSONObject trackJson = new JSONObject();
 
             track.marshalJSON(trackJson);
 

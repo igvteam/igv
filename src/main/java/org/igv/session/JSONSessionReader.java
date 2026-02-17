@@ -1,9 +1,11 @@
 package org.igv.session;
 
 import org.apache.commons.io.IOUtils;
+import org.igv.data.CombinedDataSource;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.track.CombinedDataTrack;
 import org.igv.track.DataTrack;
 import org.igv.track.MergedTracks;
 import org.igv.track.Track;
@@ -84,6 +86,10 @@ public class JSONSessionReader implements SessionReader {
 
                     topLevelDescriptors.add(new TrackDescriptor(trackJson, childFutureIndices, childJsons));
 
+                } else if (trackJson.has("type") && "combined".equals(trackJson.getString("type"))) {
+                    // Combined track - defer creation until referenced tracks are loaded
+                    topLevelDescriptors.add(new TrackDescriptor(trackJson));
+
                 } else if (trackJson.has("url")) {
                     // Non-merged top-level track
                     String url = trackJson.getString("url");
@@ -112,10 +118,24 @@ public class JSONSessionReader implements SessionReader {
                 log.error("Error waiting for track futures to complete", e);
             }
 
-            // Reconstruct top-level tracks in order
+            // Map to store id -> track for combined track creation
+            Map<String, Track> trackById = new HashMap<>();
+
+            // Track the current index for insertion and remember combined track positions
+            int currentIndex = 0;
+            List<Integer> combinedTrackIndices = new ArrayList<>();
+            List<TrackDescriptor> combinedDescriptors = new ArrayList<>();
+
+            // First pass: add non-combined tracks in order, record combined track positions
             for (TrackDescriptor descriptor : topLevelDescriptors) {
                 try {
-                    if (descriptor.isMerged()) {
+                    if (descriptor.isCombined()) {
+                        // Remember the position for this combined track
+                        combinedTrackIndices.add(currentIndex);
+                        combinedDescriptors.add(descriptor);
+                        currentIndex++;
+
+                    } else if (descriptor.isMerged()) {
                         // Assemble merged track from loaded child tracks
                         Collection<DataTrack> childTracks = new ArrayList<>();
                         for (int futureIndex : descriptor.childFutureIndices) {
@@ -123,6 +143,7 @@ public class JSONSessionReader implements SessionReader {
                             for (Track track : loadedTracks) {
                                 if (track instanceof DataTrack) {
                                     childTracks.add((DataTrack) track);
+                                    trackById.put(track.getId(), track);
                                 } else {
                                     log.warn("Expected DataTrack but got: " + track.getClass().getName());
                                 }
@@ -135,6 +156,8 @@ public class JSONSessionReader implements SessionReader {
                             MergedTracks mergedTracks = new MergedTracks(id, name, childTracks);
                             mergedTracks.unmarshalJSON(descriptor.trackJson);
                             igv.addTrack(mergedTracks);
+                            trackById.put(mergedTracks.getId(), mergedTracks);
+                            currentIndex++;
                         } else {
                             log.warn("Merged track has no valid child tracks: " + descriptor.trackJson.optString("name", "unknown"));
                         }
@@ -144,20 +167,81 @@ public class JSONSessionReader implements SessionReader {
                         List<Track> tracks = allTrackFutures.get(descriptor.singleFutureIndex).get();
                         for (Track t : tracks) {
                             igv.addTrack(t);
+                            trackById.put(t.getId(), t);
+                            currentIndex++;
                         }
                     }
                 } catch (Exception e) {
                     log.error("Error processing track descriptor", e);
                 }
             }
+
+            // Second pass: create and insert combined tracks at their original positions
+            for (int i = 0; i < combinedDescriptors.size(); i++) {
+                TrackDescriptor descriptor = combinedDescriptors.get(i);
+                int insertIndex = combinedTrackIndices.get(i);
+                try {
+                    CombinedDataTrack combinedTrack = createCombinedDataTrack(descriptor.trackJson, trackById);
+                    if (combinedTrack != null) {
+                        combinedTrack.unmarshalJSON(descriptor.trackJson);
+                        igv.addTracks(List.of(combinedTrack), insertIndex);
+                    }
+                } catch (Exception e) {
+                    log.error("Error creating combined track", e);
+                }
+            }
         }
     }
 
     /**
-     * Descriptor for a top-level track (merged or non-merged) that maintains
+     * Create a CombinedDataTrack from the JSON definition and the map of loaded tracks.
+     *
+     * @param trackJson   the JSON object containing track1, track2, and op properties
+     * @param trackById   map of track id to Track object
+     * @return the created CombinedDataTrack, or null if referenced tracks are not found
+     */
+    private CombinedDataTrack createCombinedDataTrack(JSONObject trackJson, Map<String, Track> trackById) {
+        String track1Id = trackJson.getString("track1");
+        String track2Id = trackJson.getString("track2");
+        String opString = trackJson.getString("op");
+
+        Track track1 = trackById.get(track1Id);
+        Track track2 = trackById.get(track2Id);
+
+        if (track1 == null) {
+            log.error("Combined track references unknown track1: " + track1Id);
+            return null;
+        }
+        if (track2 == null) {
+            log.error("Combined track references unknown track2: " + track2Id);
+            return null;
+        }
+        if (!(track1 instanceof DataTrack)) {
+            log.error("Combined track track1 is not a DataTrack: " + track1.getClass().getName());
+            return null;
+        }
+        if (!(track2 instanceof DataTrack)) {
+            log.error("Combined track track2 is not a DataTrack: " + track2.getClass().getName());
+            return null;
+        }
+
+        CombinedDataSource.Operation operation = CombinedDataSource.Operation.valueOf(opString);
+        CombinedDataSource dataSource = new CombinedDataSource((DataTrack) track1, (DataTrack) track2, operation);
+
+        String id = trackJson.optString("id", UUID.randomUUID().toString());
+        String name = trackJson.optString("name", "Combined Track");
+
+        return new CombinedDataTrack(dataSource, id, name);
+    }
+
+    /**
+     * Descriptor for a top-level track (merged, combined, or non-merged) that maintains
      * references to the futures that will provide the loaded tracks.
      */
     private static class TrackDescriptor {
+        enum Type { SINGLE, MERGED, COMBINED }
+
+        final Type type;
         final JSONObject trackJson;
         final List<Integer> childFutureIndices; // For merged tracks
         final List<JSONObject> childJsons;      // For merged tracks
@@ -165,6 +249,7 @@ public class JSONSessionReader implements SessionReader {
 
         // Constructor for merged track
         TrackDescriptor(JSONObject trackJson, List<Integer> childFutureIndices, List<JSONObject> childJsons) {
+            this.type = Type.MERGED;
             this.trackJson = trackJson;
             this.childFutureIndices = childFutureIndices;
             this.childJsons = childJsons;
@@ -173,14 +258,28 @@ public class JSONSessionReader implements SessionReader {
 
         // Constructor for non-merged track
         TrackDescriptor(JSONObject trackJson, int futureIndex) {
+            this.type = Type.SINGLE;
             this.trackJson = trackJson;
             this.childFutureIndices = null;
             this.childJsons = null;
             this.singleFutureIndex = futureIndex;
         }
 
+        // Constructor for combined track (no futures, created after other tracks)
+        TrackDescriptor(JSONObject trackJson) {
+            this.type = Type.COMBINED;
+            this.trackJson = trackJson;
+            this.childFutureIndices = null;
+            this.childJsons = null;
+            this.singleFutureIndex = -1;
+        }
+
         boolean isMerged() {
-            return childFutureIndices != null;
+            return type == Type.MERGED;
+        }
+
+        boolean isCombined() {
+            return type == Type.COMBINED;
         }
     }
 }

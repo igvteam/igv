@@ -1172,6 +1172,7 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
+    @Override
     public void marshalJSON(JSONObject jsonObject) {
 
         ResourceLocator locator = this.getResourceLocator();

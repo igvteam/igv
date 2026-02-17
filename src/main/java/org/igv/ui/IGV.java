@@ -530,7 +530,20 @@ public class IGV implements IGVEventObserver {
         for (var track : trackList) {
             addTrackPanel(track);
         }
+    }
 
+    /**
+     * Add the specified tracks starting at the specified index in the track panel collection.
+     *
+     * @param trackList the list of tracks to add
+     * @param index     the index at which to start inserting the tracks
+     */
+    public void addTracks(List<Track> trackList, int index) {
+        int currentIndex = index;
+        for (var track : trackList) {
+            addTrackPanel(track, currentIndex);
+            currentIndex++;
+        }
     }
 
     public void addTrack(Track track) {
@@ -539,6 +552,20 @@ public class IGV implements IGVEventObserver {
 
     public void addTrackPanel(Track track) {
         contentPane.getMainPanel().addTrackPanel(track);
+    }
+
+    public void addTrackPanel(Track track, int index) {
+        contentPane.getMainPanel().addTrackPanel(track, index);
+    }
+
+    /**
+     * Get the index of the track panel containing the specified track.
+     *
+     * @param track the track to find
+     * @return the index of the track panel, or -1 if not found
+     */
+    public int getTrackPanelIndex(Track track) {
+        return contentPane.getMainPanel().getTrackPanelIndex(track);
     }
 
 

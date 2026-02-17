@@ -263,6 +263,53 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return sp;
     }
 
+    /**
+     * Add a track panel at the specified index in the track panel container.
+     *
+     * @param track the track to add
+     * @param index the index at which to insert the track panel
+     * @return the TrackPanelScrollPane containing the track
+     */
+    public synchronized TrackPanelScrollPane addTrackPanel(Track track, int index) {
+
+        final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
+
+        trackPanel.addTrack(track);
+        final TrackPanelScrollPane sp = new TrackPanelScrollPane();
+        track.setViewport(sp);
+
+        Runnable runnable = () -> {
+            sp.setViewportView(trackPanel);
+            int componentCount = trackPanelContainer.getComponentCount();
+            int insertIndex = Math.max(0, Math.min(index, componentCount));
+            trackPanelContainer.add(sp, insertIndex);
+        };
+
+        UIUtilities.invokeAndWaitOnEventThread(runnable);
+
+        return sp;
+    }
+
+    /**
+     * Get the index of the track panel containing the specified track.
+     *
+     * @param track the track to find
+     * @return the index of the track panel, or -1 if not found
+     */
+    public int getTrackPanelIndex(Track track) {
+        Component[] components = trackPanelContainer.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            Component c = components[i];
+            if (c instanceof TrackPanelScrollPane) {
+                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                if (tsp.getTrackPanel().containsTrack(track)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     public void clearTrackPanels() {
         trackPanelContainer.removeAll();
     }

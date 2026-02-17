@@ -473,6 +473,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
+
         super.unmarshalJSON(jsonObject);
 
         if (jsonObject.has("graphType")) {

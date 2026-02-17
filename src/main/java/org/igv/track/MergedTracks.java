@@ -34,7 +34,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     private static double DEFAULT_ALPHA = 0.5;
 
-    private Collection<DataTrack> memberTracks;
+    private List<DataTrack> memberTracks;
     private double alpha;
 
 
@@ -54,7 +54,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     private void initTrackList(Collection<DataTrack> inputTracks) {
-        this.memberTracks = new ArrayList<DataTrack>(inputTracks.size());
+        this.memberTracks = new ArrayList<>(inputTracks.size());
         for (DataTrack inputTrack : inputTracks) {
             if (inputTrack instanceof MergedTracks) {
                 this.memberTracks.addAll(((MergedTracks) inputTrack).getMemberTracks());
@@ -112,7 +112,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         return locators;
     }
 
-    public Collection<DataTrack> getMemberTracks() {
+    public List<DataTrack> getMemberTracks() {
         return this.memberTracks;
     }
 
