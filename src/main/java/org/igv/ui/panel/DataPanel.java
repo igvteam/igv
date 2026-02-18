@@ -128,6 +128,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         try {
 
             final Rectangle trackRectangle = getBounds();
+            trackRectangle.x = 0;               // Adjust to be relative to the panel, not the parent
             final Rectangle clipBounds = g.getClipBounds();
             final Rectangle visibleRect = getVisibleRect();
             context = new RenderContext(this, graphics2D, frame, trackRectangle, visibleRect, clipBounds);
