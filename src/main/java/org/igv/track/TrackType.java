@@ -20,5 +20,6 @@ public enum TrackType {
     cnvpytor,
     arc,
     snp,
-    eqtl
+    eqtl,
+    blat
 }
