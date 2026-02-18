@@ -63,7 +63,19 @@ public class JSONSessionReader implements SessionReader {
         igv.clearTrackPanels();
 
         if (jsonObject.has("locus")) {
-            igv.goToLocus(jsonObject.getString("locus"));
+            Object locusValue = jsonObject.get("locus");
+            if (locusValue instanceof JSONArray) {
+                // Array of locus values
+                JSONArray locusArray = (JSONArray) locusValue;
+                List<String> loci = new ArrayList<>();
+                for (int i = 0; i < locusArray.length(); i++) {
+                    loci.add(locusArray.getString(i));
+                }
+                igv.goToLocus(String.join(" ", loci));
+            } else {
+                // Single locus value (may be space-delimited)
+                igv.goToLocus(locusValue.toString());
+            }
         }
 
         if (jsonObject.has("tracks")) {
