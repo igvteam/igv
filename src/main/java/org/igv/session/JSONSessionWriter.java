@@ -3,6 +3,7 @@ package org.igv.session;
 import org.igv.feature.RegionOfInterest;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.lists.GeneList;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -30,9 +31,9 @@ import java.util.stream.Collectors;
 /**
  * @author jrobinso
  */
-public class SessionWriter {
+public class JSONSessionWriter {
 
-    static Logger log = LogManager.getLogger(SessionWriter.class);
+    static Logger log = LogManager.getLogger(JSONSessionWriter.class);
 
     private IGV igv;
     private Session session;
@@ -40,7 +41,7 @@ public class SessionWriter {
     private File outputFile;
     private Document document;
 
-    public SessionWriter(IGV igv) {
+    public JSONSessionWriter(IGV igv) {
         this.igv = igv;
     }
 
@@ -84,14 +85,9 @@ public class SessionWriter {
 
         JSONObject sessionObject = new JSONObject();
 
-        String genomeId = GenomeManager.getInstance().getGenomeId();
-        if (genomeId != null) {
-            // If genomeId is a file try to write it out as a relative path
-            if ((new File(genomeId)).exists() && isUseRelative(outputFile)) {
-                genomeId = FileUtils.getRelativePath(outputFile.getAbsolutePath(), genomeId);
-            }
-            sessionObject.put("genomeId", genomeId);
-        }
+        JSONObject genomeJson = GenomeManager.getInstance().getCurrentGenome().getConfig().toJSON();
+        genomeJson.remove("tracks");   // Don't include tracks in the genome definition, they are included in the session
+        sessionObject.put("reference", genomeJson);
 
         String locus = session.getCurrentLocus();
         if (locus != null && !FrameManager.isGeneListMode()) {

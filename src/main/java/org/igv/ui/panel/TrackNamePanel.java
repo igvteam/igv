@@ -18,9 +18,6 @@ import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackGroup;
 import org.igv.ui.IGV;
 import org.igv.ui.dnd.AbstractGhostDropManager;
-import org.igv.ui.dnd.GhostDropEvent;
-import org.igv.ui.dnd.GhostDropListener;
-import org.igv.ui.dnd.GhostGlassPane;
 import org.igv.ui.util.IGVMouseInputAdapter;
 import org.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
@@ -43,7 +40,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
 
     List<GroupExtent> groupExtents = new ArrayList();
-    BufferedImage dndImage = null;
+
     TrackGroup selectedGroup = null;
 
     public TrackNamePanel(TrackPanel trackPanel) {
@@ -147,8 +144,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
 
-        DropListener dndListener = new DropListener(this);
-        addGhostDropListener(dndListener);
     }
 
 
@@ -170,16 +165,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             }
         }
         return text;
-    }
-
-
-    private synchronized void createDnDImage() {
-        dndImage = new BufferedImage(getWidth(), 2, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = dndImage.getGraphics();
-        g.setColor(Color.blue);
-        g.drawLine(1, 0, getWidth() - 2, 0);
-        g.drawLine(1, 1, getWidth() - 2, 1);
-
     }
 
     /**
@@ -216,18 +201,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
      */
     class NamePanelMouseAdapter extends IGVMouseInputAdapter {
 
-        boolean isDragging = false;
-        List<Track> dragTracks = new ArrayList();
-        Point dragStart = null;
-
         @Override
         /**
          * Mouse down.  Track selection logic goes here.
          */
         public void mousePressed(MouseEvent e) {
             super.mousePressed(e);
-
-            dragStart = e.getPoint();
 
             requestFocus();
             grabFocus();
@@ -266,104 +245,18 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
             super.mouseReleased(e);
 
-            if (isDragging) {
-
-                Component c = e.getComponent();
-
-                IGV.getInstance().endDnD();
-                GhostGlassPane glassPane = IGV.getInstance().getDnDGlassPane();
-
-                Point p = (Point) e.getPoint().clone();
-                SwingUtilities.convertPointToScreen(p, c);
-
-                Point eventPoint = (Point) p.clone();
-                SwingUtilities.convertPointFromScreen(p, glassPane);
-
-                glassPane.setPoint(p);
-                glassPane.setVisible(false);
-                glassPane.setImage(null);
-
-                fireGhostDropEvent(new GhostDropEvent(dragStart, eventPoint, dragTracks));
-
-            }
-
             if (e.isPopupTrigger()) {
                 clearTrackSelections();
                 selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
             } else {
-                if (!isDragging && !e.isMetaDown() && !e.isControlDown() &&
+                if (!e.isMetaDown() && !e.isControlDown() &&
                         !e.isShiftDown()) {
                     clearTrackSelections();
                     selectTracks(e);
                     IGV.getInstance().repaintNamePanels();
                 }
-            }
-
-            isDragging = false;
-            dragTracks.clear();
-            dndImage = null;
-
-
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-
-            Component c = e.getComponent();
-            if (e.isPopupTrigger()) {
-                return;
-            }
-            if (!isDragging) {
-
-                if (dragStart == null) {
-                    dragStart = e.getPoint();
-                    return;
-                } else if (e.getPoint().distance(dragStart) < 5) {
-                    return;
-                }
-
-                dragStart.x = getWidth() / 2;
-                IGV.getInstance().startDnD();
-
-                if (dndImage == null) {
-                    createDnDImage();
-                }
-                IGV.getInstance().getDnDGlassPane().setImage(dndImage);
-                isDragging = true;
-                dragTracks.clear();
-                dragTracks.addAll(IGV.getInstance().getSelectedTracks());
-
-
-                if (getGroups().size() > 0) {
-                    selectedGroup = getGroup(e.getY());
-                } else {
-                    selectedGroup = null;
-                }
-
-                // Code below paints target component on the dndImage.  It needs modified to paint some representation
-                // of the selectect tracks, probably the track names printed as a list.
-            }
-            if (isDragging) {
-
-                final GhostGlassPane glassPane = IGV.getInstance().getDnDGlassPane();
-
-                Point p = (Point) e.getPoint().clone();
-                p.x = getWidth() / 2;
-                SwingUtilities.convertPointToScreen(p, c);
-                SwingUtilities.convertPointFromScreen(p, glassPane);
-
-                glassPane.setPoint(p);
-
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        Rectangle bounds = new Rectangle(getBounds());
-                        bounds.height = 10000;
-                        glassPane.paintImmediately(bounds);
-                    }
-                });
             }
         }
 
@@ -391,91 +284,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             }
         }
 
-        protected void fireGhostDropEvent(GhostDropEvent evt) {
-            Iterator it = TrackNamePanel.dropListeners.iterator();
-            while (it.hasNext()) {
-                ((GhostDropListener) it.next()).ghostDropped(evt);
-            }
-        }
-    }
-
-
-    class DropListener extends AbstractGhostDropManager {
-
-        TrackNamePanel panel;
-
-        public DropListener(TrackNamePanel target) {
-            super(target);
-            this.panel = target;
-
-        }
-
-        public void ghostDropped(GhostDropEvent e) {
-            Point startPoint = e.getStartLocation();
-            Point dropPoint = getTranslatedPoint(e.getDropLocation());
-
-
-            Rectangle bounds = component.getVisibleRect();
-            boolean isInTarget = dropPoint.y > bounds.y && dropPoint.y < bounds.getMaxY();
-
-            if (isInTarget) {
-                tracksDropped(startPoint, dropPoint, e.getTracks());
-                e.removeTracksFromSource();
-                e.setTracksDropped(true);
-            } else {
-                TrackPanel view = ((TrackPanel) getParent());
-                if (e.isTracksDropped()) {
-                    view.removeTracks(e.getTracks());
-                } else {
-                    // Defer removal until we are sure the tracks are dropped in another panel
-                    e.addSourcePanel(view);
-                }
-            }
-        }
-
-        void tracksDropped(Point startPoint, Point dropPoint, List<Track> tracks) {
-
-            // This cast is horrid but we can't fix everything at once.
-            TrackPanel panel = ((TrackPanel) getParent());
-            List<MouseableRegion> regions = getMouseRegions();
-
-            if (regions.isEmpty()) {
-                // empty panel,  just add the tracks
-                panel.addTracks(tracks);
-            } else {
-                // Find the regions containing the startPoint and point
-                boolean before = true;
-                MouseableRegion dropRegion = null;
-                MouseableRegion startRegion = null;
-                for (MouseableRegion region : regions) {
-                    if (region.containsPoint(dropPoint.x, dropPoint.y)) {
-                        dropRegion = region;
-                        Rectangle bnds = dropRegion.getBounds();
-                        int dy1 = (dropPoint.y - bnds.y);
-                        int dy2 = bnds.height - dy1;
-                        before = dy1 < dy2;
-                    }
-                    if (region.containsPoint(startPoint.x, startPoint.y)) {
-                        startRegion = region;
-                    }
-                    if (dropRegion != null && startRegion != null) {
-                        break;
-                    }
-                }
-
-
-                Track dropTrack = null;
-                if (dropRegion != null) {
-                    Iterator<Track> tmp = dropRegion.getTracks().iterator();
-                    if (tmp.hasNext()) {
-                        dropTrack = tmp.next();
-                    }
-                }
-                panel.moveSelectedTracksTo(tracks, dropTrack, before);
-            }
-
-
-        }
     }
 
     private void selectGroup(TrackGroup group) {
@@ -507,37 +315,5 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             return minY > y;
         }
     }
-
-    int getGroupGapNumber(int y) {
-        for (int i = 0; i < groupExtents.size(); i++) {
-            if (groupExtents.get(i).isAfter(y)) {
-                return i;
-            }
-        }
-        return groupExtents.size();
-    }
-
-
-    // Track D&D support follows
-    // TODO -- this use of a static is really bad,  bugs and memory leaks waiting to happen.  Redesign this.
-    static List<DropListener> dropListeners = new ArrayList();
-
-
-    private static void addGhostDropListener(DropListener listener) {
-        if (listener != null) {
-            dropListeners.add(listener);
-        }
-    }
-
-    public static void removeDropListenerFor(TrackNamePanel panel) {
-        List<DropListener> removeThese = new ArrayList();
-        for (DropListener dl : dropListeners) {
-            if (dl.panel == panel) {
-                removeThese.add(dl);
-            }
-        }
-        dropListeners.removeAll(removeThese);
-    }
-
 
 }

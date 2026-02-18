@@ -70,8 +70,12 @@ public class GenomeConfig implements Cloneable {
         if (json.contains("chromosomeOrder")) {
             json = fixChromosomeOrder(json);
         }
-        GenomeConfig config = new GenomeConfig();
         JSONObject jsonObj = new JSONObject(json);
+        return getGenomeConfig(jsonObj);
+    }
+
+    public static GenomeConfig getGenomeConfig(JSONObject jsonObj) {
+        GenomeConfig config = new GenomeConfig();
         config.id = jsonObj.optString("id");
         config.name = jsonObj.optString("name", null);
         config.fastaURL = jsonObj.optString("fastaURL", null);

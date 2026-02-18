@@ -3,10 +3,7 @@ package org.igv.ui.action;
 
 import org.igv.DirectoryManager;
 import org.igv.logging.*;
-import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.session.Session;
-import org.igv.session.SessionWriter;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 import org.igv.ui.WaitCursorManager;
@@ -15,7 +12,6 @@ import org.igv.ui.util.FileDialogUtils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * @author jrobinso

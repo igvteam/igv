@@ -181,14 +181,6 @@ public class ResourceLocator {
 
     }
 
-    private void setFilterTypes(String[] filterTypes) {
-        this.filterTypes = filterTypes;
-    }
-
-    public String[] getFilterTypes() {
-        return filterTypes;
-    }
-
     /**
      * Constructor for local files and URLs
      *
@@ -203,6 +195,15 @@ public class ResourceLocator {
             this.htsget = true;
         }
 
+    }
+
+
+    private void setFilterTypes(String[] filterTypes) {
+        this.filterTypes = filterTypes;
+    }
+
+    public String[] getFilterTypes() {
+        return filterTypes;
     }
 
     private void resolveGoogleDrive(String path) {

@@ -2,7 +2,9 @@ package org.igv.session;
 
 import org.apache.commons.io.IOUtils;
 import org.igv.data.CombinedDataSource;
+import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.track.CombinedDataTrack;
@@ -35,10 +37,33 @@ public class JSONSessionReader implements SessionReader {
 
         String jsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = new JSONObject(jsonString);
-
         if (jsonObject.has("genome")) {
-            GenomeManager.getInstance().loadGenomeById(jsonObject.getString("genome"));
+            if (!GenomeManager.getInstance().getCurrentGenome().getId().equals(jsonObject.getString("genome"))) {
+                GenomeManager.getInstance().loadGenomeById(jsonObject.getString("genome"));
+            }
+
+        } else if (jsonObject.has("reference")) {
+            JSONObject genomeJson = jsonObject.getJSONObject("reference");
+            GenomeConfig genomeConfig = GenomeConfig.getGenomeConfig(genomeJson);
+            Genome newGenome = new Genome(genomeConfig);
+            if (IGV.hasInstance()) {
+                IGV.getInstance().resetSession(null);
+            }
+            GenomeManager.getInstance().setCurrentGenome(newGenome);
+
+        } else {
+            throw new RuntimeException("Session file is missing required 'genome' or 'reference' property");
         }
+
+        // Cache genome tracks if provided, to avoid redundant genome queries during track loading.  Genome tracks
+        // will always include sequence, but may also include annotation tracks.  We remove them here and re-add
+        // after loading all other tracks to maintain the original track order.
+        Map<String, Track> genomeTrackMap = new HashMap<>();
+        List<Track> genomeTracks = igv.getAllTracks();
+        for (Track track : genomeTracks) {
+            genomeTrackMap.put(getId(track), track);
+        }
+        igv.clearTrackPanels();
 
         if (jsonObject.has("locus")) {
             igv.goToLocus(jsonObject.getString("locus"));
@@ -56,6 +81,14 @@ public class JSONSessionReader implements SessionReader {
 
             for (int i = 0; i < tracksArray.length(); i++) {
                 JSONObject trackJson = tracksArray.getJSONObject(i);
+                String id = getId(trackJson);
+                if (id != null && genomeTrackMap.containsKey(id)) {
+
+                    // This track is already loaded as a genome track - create descriptor for correct positioning
+                    Track existingTrack = genomeTrackMap.remove(id);
+                    topLevelDescriptors.add(new TrackDescriptor(trackJson, existingTrack));
+                    continue;
+                }
 
                 if (trackJson.has("type") && "merged".equals(trackJson.getString("type"))) {
                     // Merged track - collect child track futures
@@ -121,18 +154,26 @@ public class JSONSessionReader implements SessionReader {
             // Map to store id -> track for combined track creation
             Map<String, Track> trackById = new HashMap<>();
 
-            // Track the current index for insertion and remember combined track positions
+            // Track the current index for insertion and remember deferred track positions
             int currentIndex = 0;
             List<Integer> combinedTrackIndices = new ArrayList<>();
             List<TrackDescriptor> combinedDescriptors = new ArrayList<>();
+            List<Integer> genomeTrackIndices = new ArrayList<>();
+            List<TrackDescriptor> genomeDescriptors = new ArrayList<>();
 
-            // First pass: add non-combined tracks in order, record combined track positions
+            // First pass: add non-deferred tracks in order, record deferred track positions
             for (TrackDescriptor descriptor : topLevelDescriptors) {
                 try {
                     if (descriptor.isCombined()) {
                         // Remember the position for this combined track
                         combinedTrackIndices.add(currentIndex);
                         combinedDescriptors.add(descriptor);
+                        currentIndex++;
+
+                    } else if (descriptor.isGenome()) {
+                        // Remember the position for this genome track (defer to maintain order)
+                        genomeTrackIndices.add(currentIndex);
+                        genomeDescriptors.add(descriptor);
                         currentIndex++;
 
                     } else if (descriptor.isMerged()) {
@@ -143,7 +184,7 @@ public class JSONSessionReader implements SessionReader {
                             for (Track track : loadedTracks) {
                                 if (track instanceof DataTrack) {
                                     childTracks.add((DataTrack) track);
-                                    trackById.put(track.getId(), track);
+                                    trackById.put(getId(track), track);
                                 } else {
                                     log.warn("Expected DataTrack but got: " + track.getClass().getName());
                                 }
@@ -167,7 +208,7 @@ public class JSONSessionReader implements SessionReader {
                         List<Track> tracks = allTrackFutures.get(descriptor.singleFutureIndex).get();
                         for (Track t : tracks) {
                             igv.addTrack(t);
-                            trackById.put(t.getId(), t);
+                            trackById.put(getId(t), t);
                             currentIndex++;
                         }
                     }
@@ -176,20 +217,80 @@ public class JSONSessionReader implements SessionReader {
                 }
             }
 
-            // Second pass: create and insert combined tracks at their original positions
+            // Second pass: insert deferred tracks (genome and combined) at their original positions
+            // We need to process them in order of their indices to maintain correct positioning
+            List<DeferredTrack> deferredTracks = new ArrayList<>();
+            for (int i = 0; i < genomeDescriptors.size(); i++) {
+                deferredTracks.add(new DeferredTrack(genomeTrackIndices.get(i), genomeDescriptors.get(i)));
+            }
             for (int i = 0; i < combinedDescriptors.size(); i++) {
-                TrackDescriptor descriptor = combinedDescriptors.get(i);
-                int insertIndex = combinedTrackIndices.get(i);
+                deferredTracks.add(new DeferredTrack(combinedTrackIndices.get(i), combinedDescriptors.get(i)));
+            }
+            // Sort by original index to insert in correct order
+            deferredTracks.sort(Comparator.comparingInt(d -> d.index));
+
+            for (DeferredTrack deferred : deferredTracks) {
                 try {
-                    CombinedDataTrack combinedTrack = createCombinedDataTrack(descriptor.trackJson, trackById);
-                    if (combinedTrack != null) {
-                        combinedTrack.unmarshalJSON(descriptor.trackJson);
-                        igv.addTracks(List.of(combinedTrack), insertIndex);
+                    if (deferred.descriptor.isGenome()) {
+                        Track t = deferred.descriptor.genomeTrack;
+                        t.unmarshalJSON(deferred.descriptor.trackJson);
+                        igv.addTracks(List.of(t), deferred.index);
+                        trackById.put(getId(t), t);
+                    } else if (deferred.descriptor.isCombined()) {
+                        CombinedDataTrack combinedTrack = createCombinedDataTrack(deferred.descriptor.trackJson, trackById);
+                        if (combinedTrack != null) {
+                            combinedTrack.unmarshalJSON(deferred.descriptor.trackJson);
+                            igv.addTracks(List.of(combinedTrack), deferred.index);
+                        }
                     }
                 } catch (Exception e) {
-                    log.error("Error creating combined track", e);
+                    log.error("Error inserting deferred track", e);
                 }
             }
+
+            // Add any remaining tracks that are explicitly defined in the genome or reference section, but were not
+            // referenced in the tracks section.
+            for (Track track : genomeTrackMap.values()) {
+                igv.addTrack(track);
+            }
+        }
+    }
+
+    /**
+     * Return an identifier for a track JSON object. The "id" property is not reliable, so we check "url" and "path"
+     * properties, which are commonly used.
+     *
+     * @param trackJson
+     * @return
+     */
+    private static String getId(JSONObject trackJson) {
+        return trackJson.has("url") ? trackJson.getString("url") :
+                trackJson.has("path") ? trackJson.getString("path") :
+                trackJson.optString("id", null);
+    }
+
+    /**
+     * Return an identifier for a loaded Track.  We check the resource locator path first, as this is more likely
+     * to be consistent with the JSON definition than the track's internal id (which may be a generated UUID).
+     *
+     * @param track
+     * @return
+     */
+    private static String getId(Track track) {
+        ResourceLocator locator = track.getResourceLocator();
+        return locator != null && locator.getPath() != null ? locator.getPath() : track.getId();
+    }
+
+    /**
+     * Helper class to track deferred tracks and their target indices.
+     */
+    private static class DeferredTrack {
+        final int index;
+        final TrackDescriptor descriptor;
+
+        DeferredTrack(int index, TrackDescriptor descriptor) {
+            this.index = index;
+            this.descriptor = descriptor;
         }
     }
 
@@ -235,17 +336,18 @@ public class JSONSessionReader implements SessionReader {
     }
 
     /**
-     * Descriptor for a top-level track (merged, combined, or non-merged) that maintains
+     * Descriptor for a top-level track (merged, combined, genome, or non-merged) that maintains
      * references to the futures that will provide the loaded tracks.
      */
     private static class TrackDescriptor {
-        enum Type { SINGLE, MERGED, COMBINED }
+        enum Type {SINGLE, MERGED, COMBINED, GENOME}
 
         final Type type;
         final JSONObject trackJson;
         final List<Integer> childFutureIndices; // For merged tracks
         final List<JSONObject> childJsons;      // For merged tracks
         final int singleFutureIndex;            // For non-merged tracks
+        final Track genomeTrack;                // For genome tracks
 
         // Constructor for merged track
         TrackDescriptor(JSONObject trackJson, List<Integer> childFutureIndices, List<JSONObject> childJsons) {
@@ -254,6 +356,7 @@ public class JSONSessionReader implements SessionReader {
             this.childFutureIndices = childFutureIndices;
             this.childJsons = childJsons;
             this.singleFutureIndex = -1;
+            this.genomeTrack = null;
         }
 
         // Constructor for non-merged track
@@ -263,6 +366,7 @@ public class JSONSessionReader implements SessionReader {
             this.childFutureIndices = null;
             this.childJsons = null;
             this.singleFutureIndex = futureIndex;
+            this.genomeTrack = null;
         }
 
         // Constructor for combined track (no futures, created after other tracks)
@@ -272,6 +376,17 @@ public class JSONSessionReader implements SessionReader {
             this.childFutureIndices = null;
             this.childJsons = null;
             this.singleFutureIndex = -1;
+            this.genomeTrack = null;
+        }
+
+        // Constructor for genome track (already loaded, just needs positioning)
+        TrackDescriptor(JSONObject trackJson, Track genomeTrack) {
+            this.type = Type.GENOME;
+            this.trackJson = trackJson;
+            this.childFutureIndices = null;
+            this.childJsons = null;
+            this.singleFutureIndex = -1;
+            this.genomeTrack = genomeTrack;
         }
 
         boolean isMerged() {
@@ -280,6 +395,10 @@ public class JSONSessionReader implements SessionReader {
 
         boolean isCombined() {
             return type == Type.COMBINED;
+        }
+
+        boolean isGenome() {
+            return type == Type.GENOME;
         }
     }
 }

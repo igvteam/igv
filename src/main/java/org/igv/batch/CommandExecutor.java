@@ -17,7 +17,7 @@ import org.igv.sam.AlignmentTrackUtils;
 import org.igv.sam.SortOption;
 import org.igv.session.Session;
 import org.igv.session.SessionReader;
-import org.igv.session.SessionWriter;
+import org.igv.session.JSONSessionWriter;
 import org.igv.track.*;
 import org.igv.ui.IGV;
 import org.igv.ui.action.OverlayTracksMenuAction;
@@ -1152,7 +1152,7 @@ public class CommandExecutor {
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
-                (new SessionWriter(igv)).saveSession(currentSession, targetFile);
+                (new JSONSessionWriter(igv)).saveSession(currentSession, targetFile);
                 return "OK";
             } catch (Exception e) {
                 return "Error writingin sesssion: " + e.getMessage();

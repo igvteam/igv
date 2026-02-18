@@ -358,11 +358,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         for (TrackPanelScrollPane panel : emptyPanels) {
             if (panel != null) {
                 trackPanelContainer.remove(panel);
-                TrackNamePanel.removeDropListenerFor(panel.getNamePanel());
             }
-
         }
-
     }
 
     public void removeDataPanel(String name) {
@@ -379,7 +376,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         TrackPanelScrollPane sp = trackPanel.getScrollPane();
         if (sp != null) {
             trackPanelContainer.remove(sp);
-            TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
             trackPanelContainer.revalidate();
         }
     }

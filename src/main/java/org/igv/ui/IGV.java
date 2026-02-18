@@ -85,7 +85,6 @@ public class IGV implements IGVEventObserver {
 
     // Glass panes
     Component glassPane;
-    GhostGlassPane dNdGlassPane;
 
     // Cursors
     public static Cursor fistCursor;
@@ -206,8 +205,6 @@ public class IGV implements IGVEventObserver {
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // consumeEvents(glassPane);
 
-        dNdGlassPane = new GhostGlassPane();
-
         mainFrame.pack();
 
         //Certain components MUST be visible, so we set minimum size
@@ -274,20 +271,6 @@ public class IGV implements IGVEventObserver {
 
     public Frame getMainFrame() {
         return mainFrame;
-    }
-
-    public GhostGlassPane getDnDGlassPane() {
-        return dNdGlassPane;
-    }
-
-    public void startDnD() {
-        rootPane.setGlassPane(dNdGlassPane);
-        dNdGlassPane.setVisible(true);
-    }
-
-    public void endDnD() {
-        rootPane.setGlassPane(glassPane);
-        glassPane.setVisible(false);
     }
 
     public Dimension getPreferredSize() {
@@ -590,6 +573,10 @@ public class IGV implements IGVEventObserver {
         return allTracks;
     }
 
+    public void clearTrackPanels() {
+        contentPane.getMainPanel().clearTrackPanels();
+    }
+
     public List<FeatureTrack> getFeatureTracks() {
         return Lists.newArrayList(Iterables.filter(getAllTracks(), FeatureTrack.class));
     }
@@ -836,7 +823,7 @@ public class IGV implements IGVEventObserver {
      * @throws IOException
      */
     public void saveSession(File targetFile) throws IOException {
-        (new SessionWriter(this)).saveSession(session, targetFile);
+        (new JSONSessionWriter(this)).saveSession(session, targetFile);
 
         String sessionPath = targetFile.getAbsolutePath();
         session.setPath(sessionPath);

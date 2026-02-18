@@ -4,17 +4,15 @@ import org.igv.DirectoryManager;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.session.Session;
-import org.igv.session.SessionWriter;
+import org.igv.session.JSONSessionWriter;
 import org.igv.ui.IGV;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Defines several static methods for saving and retrieving session autosave files
@@ -47,7 +45,7 @@ public class SessionAutosaveManager {
         // Get the file we use for saving sessions on exit
         File autosavedSessionFile = new File(DirectoryManager.getAutosaveDirectory(), "exit_session_autosave.json");
         // Save the session
-        (new SessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
+        (new JSONSessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
     }
 
     /**
@@ -88,7 +86,7 @@ public class SessionAutosaveManager {
         }
 
         // Save the session
-        (new SessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
+        (new JSONSessionWriter(IGV.getInstance())).saveSession(session, autosavedSessionFile);
     }
 
     /**

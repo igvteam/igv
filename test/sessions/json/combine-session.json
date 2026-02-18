@@ -1,27 +1,44 @@
 {
-  "genomeId": "hg38",
-  "locus": "chr7:55018017-55212628",
+  "reference": {
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+    "maneTrixURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.ix",
+    "aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg38/hg38_alias.tab",
+    "chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes",
+    "name": "Human (hg38)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz",
+    "maneBbURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
+    "id": "hg38",
+    "wholeGenomeView": true,
+    "chromosomeOrder": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr8",
+      "chr9",
+      "chr10",
+      "chr11",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ],
+    "hubs": ["https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg38/hub.txt"]
+  },
+  "locus": "chr7:55029817-55029857",
   "tracks": [
-    {
-      "name": "Reference sequence",
-      "id": "Reference sequence",
-      "type": "sequence",
-      "height": "0"
-    },
-    {
-      "type": "combined",
-      "track1": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
-      "track2": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
-      "op": "ADD",
-      "color": "0,204,255",
-      "name": "Sum",
-      "colorScale": "ContinuousColorScale;0.0;3.3990800380706787;255,255,255;0,150,0",
-      "windowFunction": "none",
-      "id": "1771369819387",
-
-      "height": "40",
-      "autoScale": "true"
-    },
     {
       "altColor": "0,150,0",
       "color": "0,150,0",
@@ -48,6 +65,20 @@
       "autoScale": "true"
     },
     {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "height": "0"
+    },
+    {
+      "name": "Reference sequence",
+      "id": "Reference sequence",
+      "type": "sequence",
+      "height": "0"
+    },
+    {
       "altColor": "200,0,0",
       "color": "200,0,0",
       "format": "bigwig",
@@ -59,23 +90,6 @@
       "url": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
       "height": "40",
       "autoScale": "true"
-    },
-    {
-      "featureVisibilityWindow": "1615203887",
-      "format": "bigbed",
-      "name": "MANE v1.0 - Ensembl",
-      "id": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.0/MANE.GRCh38.v1.0.ensembl.bb",
-      "type": "annotation",
-      "url": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.0/MANE.GRCh38.v1.0.ensembl.bb",
-      "height": "0"
-    },
-    {
-      "format": "refgene",
-      "name": "Refseq All",
-      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
-      "type": "annotation",
-      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
-      "height": "0"
     }
   ]
 }
