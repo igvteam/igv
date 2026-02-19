@@ -107,15 +107,6 @@ public class BlatTrack extends FeatureTrack {
         return menu;
     }
 
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-        element.setAttribute("db", this.db);
-        element.setAttribute("sequence", this.sequence);
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 

@@ -72,19 +72,11 @@ public class BasePairTrack extends AbstractTrack {
                 genome, basePairData, renderOptions);
     }
 
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
 
-        Graphics2D g2d = context.getGraphics();
-        Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(visibleRect.intersection(clip.getBounds()));
-        context.clearGraphicsCache();
-
-        try {
-            basePairRenderer.draw(basePairData, context, visibleRect, renderOptions);
+            basePairRenderer.draw(basePairData, context, renderOptions);
             context.clearGraphicsCache();
-        } finally {
-            g2d.setClip(clip);
-        }
+
     }
 
 
@@ -96,7 +88,7 @@ public class BasePairTrack extends AbstractTrack {
         return this.renderOptions;
     }
 
-    public static class RenderOptions implements Persistable  {
+    public static class RenderOptions  {
 
         public static final String NAME = "BPRenderOptions";
 
@@ -166,7 +158,7 @@ public class BasePairTrack extends AbstractTrack {
             this.colorLabels.set(i, s);
         }
 
-        @Override
+
         public void marshalXML(Document document, Element element) {
 
             if(arcDirection != ArcDirection.DOWN) {
@@ -181,7 +173,27 @@ public class BasePairTrack extends AbstractTrack {
             }
         }
 
-        @Override
+
+        public void marshalJSON(org.json.JSONObject json) {
+            json.put("arcDirection", arcDirection.toString());
+            json.put("colors", colors);
+        }
+
+
+        public void unmarshalJSON(org.json.JSONObject json) {
+            if(json.has("arcDirection")) {
+                this.arcDirection = ArcDirection.valueOf(json.getString("arcDirection"));
+            }
+            if(json.has("colors")) {
+                this.colors = new ArrayList<>();
+                org.json.JSONArray colorArray = json.getJSONArray("colors");
+                for(int i=0; i<colorArray.length(); i++) {
+                    this.colors.add(colorArray.getString(i));
+                }
+            }
+        }
+
+
         public void unmarshalXML(Element element, Integer version) {
 
             if(element.hasAttribute("arcDirection")) {
@@ -212,7 +224,6 @@ public class BasePairTrack extends AbstractTrack {
 
         Element renderElement = document.createElement("BPRenderOptions");
         renderOptions.marshalXML(document, renderElement);
-
         element.appendChild(renderElement);
 
     }
@@ -227,7 +238,13 @@ public class BasePairTrack extends AbstractTrack {
             Element renderElement = (Element) tmp.item(0);
             this.renderOptions.unmarshalXML(renderElement, version);
         }
+    }
 
-
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        org.json.JSONObject renderOptionsJSON = new org.json.JSONObject();
+        renderOptions.marshalJSON(renderOptionsJSON);
+        json.put("renderOptions", renderOptionsJSON);
     }
 }

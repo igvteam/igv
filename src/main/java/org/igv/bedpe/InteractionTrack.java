@@ -17,6 +17,7 @@ import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -188,7 +189,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     }
 
     @Override
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         context.clearGraphicsCache();
 
@@ -498,58 +499,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         return super.getValueStringAt(chr, position, mouseX, mouseY, frame);
     }
 
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("direction", String.valueOf(direction));
-        element.setAttribute("thickness", String.valueOf(thickness));
-        element.setAttribute("graphType", String.valueOf(graphType));
-        element.setAttribute("arcOption", String.valueOf(arcOption));
-        element.setAttribute("showBlocks", String.valueOf(showBlocks));
-        element.setAttribute("autoscale", String.valueOf(autoscale));
-        if (transparency != 1.0f) {
-            element.setAttribute("transparency", String.valueOf(transparency));
-        }
-        if (!autoscale) {
-            element.setAttribute("maxScore", String.valueOf(maxScore));
-        }
-
-    }
-
-    @Override
-    public void unmarshalXML(Element element, Integer version) {
-
-        super.unmarshalXML(element, version);
-
-        if (element.hasAttribute("arcOption")) {
-            String typeString = element.getAttribute("arcOption").toUpperCase();
-            this.arcOption = ArcOption.valueOf(typeString);
-        }
-        if (element.hasAttribute("direction"))
-            this.direction = Direction.valueOf(element.getAttribute("direction"));
-        if (element.hasAttribute("thickness"))
-            this.thickness = Integer.parseInt(element.getAttribute("thickness"));
-        if (element.hasAttribute("graphType")) {
-            String typeString = element.getAttribute("graphType").toUpperCase();
-            if (typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
-            this.graphType = GraphType.valueOf(typeString);
-        }
-        if (element.hasAttribute("showBlocks"))
-            this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
-        if (element.hasAttribute("autoscale")) {
-            this.autoscale = Boolean.parseBoolean(element.getAttribute("autoscale"));
-        }
-        if (element.hasAttribute("maxScore")) {
-            this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
-        }
-        if (element.hasAttribute("transparency")) {
-            this.transparency = Float.parseFloat(element.getAttribute("transparency"));
-        }
-    }
-
-
     /**
      * Return features visible in the supplied frames
      */
@@ -603,4 +552,70 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     (this.normalization == null || this.normalization.equals(normalization));
         }
     }
+
+    /**
+     height: 250,
+     theta: Math.PI / 4,
+     arcOrientation: "UP",
+     showBlocks: true,
+     blockHeight: 3,
+     thickness: 1,
+     alpha: 0.02,
+     logScale: true,
+     colorBy: undefined,
+     transparency: 1,
+     normalization: "NONE"
+     * @param jsonObject
+     */
+
+    @Override
+    public void marshalJSON(JSONObject  jsonObject) {
+        super.marshalJSON(jsonObject);
+
+        jsonObject.put("direction", String.valueOf(direction));
+        jsonObject.put("thickness", String.valueOf(thickness));
+        jsonObject.put("graphType", String.valueOf(graphType));
+        jsonObject.put("arcOption", String.valueOf(arcOption));
+        jsonObject.put("showBlocks", String.valueOf(showBlocks));
+        jsonObject.put("autoscale", String.valueOf(autoscale));
+        if (transparency != 1.0f) {
+            jsonObject.put("transparency", String.valueOf(transparency));
+        }
+        if (!autoscale) {
+            jsonObject.put("maxScore", String.valueOf(maxScore));
+        }
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("arcOption")) {
+            String typeString = element.getAttribute("arcOption").toUpperCase();
+            this.arcOption = ArcOption.valueOf(typeString);
+        }
+        if (element.hasAttribute("direction"))
+            this.direction = Direction.valueOf(element.getAttribute("direction"));
+        if (element.hasAttribute("thickness"))
+            this.thickness = Integer.parseInt(element.getAttribute("thickness"));
+        if (element.hasAttribute("graphType")) {
+            String typeString = element.getAttribute("graphType").toUpperCase();
+            if (typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
+            this.graphType = GraphType.valueOf(typeString);
+        }
+        if (element.hasAttribute("showBlocks"))
+            this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
+        if (element.hasAttribute("autoscale")) {
+            this.autoscale = Boolean.parseBoolean(element.getAttribute("autoscale"));
+        }
+        if (element.hasAttribute("maxScore")) {
+            this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
+        }
+        if (element.hasAttribute("transparency")) {
+            this.transparency = Float.parseFloat(element.getAttribute("transparency"));
+        }
+    }
+
+
 }

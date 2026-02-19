@@ -190,12 +190,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         loadedAlignments = new MAFCache(chr, start, end, alignments);
     }
 
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
 
         double locScale = context.getScale();
 
         if (locScale > 10) {
-            Rectangle r = new Rectangle(visibleRect);
+            Rectangle r = new Rectangle(context.getTrackRectangle());
             if (visibleNameRect != null) {
                 r.y = visibleNameRect.y;
                 r.height = visibleNameRect.height;
@@ -217,14 +217,15 @@ public class MultipleAlignmentTrack extends AbstractTrack {
             alignments = loadedAlignments.getAlignments();
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
-                    renderAlignment(context, visibleRect, ma);
+                    renderAlignment(context, ma);
                 }
             }
         }
     }
 
-    private void renderAlignment(RenderContext context, Rectangle trackRectangle, MultipleAlignmentBlock ma) {
+    private void renderAlignment(RenderContext context, MultipleAlignmentBlock ma) {
 
+        Rectangle trackRectangle = context.getTrackRectangle();
         int y = trackRectangle.y;
 
         MultipleAlignmentBlock.Sequence reference = ma.getRefSequence();

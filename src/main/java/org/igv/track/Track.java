@@ -104,7 +104,7 @@ public interface Track  {
      *
      * @param context the render context
      */
-    void render(RenderContext context, Rectangle deprecated);
+    void render(RenderContext context);
 
     /**
      * Render the track as an overlay, presumably on another track.

@@ -150,7 +150,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
@@ -439,18 +439,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         return regionScore;
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (renderer != null) {
-            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
-            if (type != null) {
-                element.setAttribute("renderer", type.name());
-            }
-        }
-
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -471,6 +459,18 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         }
     }
 
+    @Override
+    public void marshalJSON(JSONObject json) {
+
+        super.marshalJSON(json);
+
+        if (renderer != null) {
+            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
+            if (type != null) {
+                json.put("graphType", type.name());
+            }
+        }
+    }
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
 

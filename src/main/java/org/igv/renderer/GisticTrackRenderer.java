@@ -17,13 +17,13 @@ public class GisticTrackRenderer {
         // Ignore for now
     }
 
-    public void render(Track track, RenderContext context, Rectangle rect) {
+    public void render(Track track, RenderContext context) {
 
         // I only know how to render gistic tracks
         if (!(track instanceof GisticTrack)) {
             return;
         }
-        plotScores(track, context, rect);
+        plotScores(track, context);
     }
 
     protected void plotScoresOn(List<GisticScore> scores, Graphics2D g2D, Rectangle rect, int xEnd,
@@ -56,7 +56,9 @@ public class GisticTrackRenderer {
 
     // TODO -- need to combine the amp and del regions with a parameter.  Remove
     // duplicated code.
-    private void plotScores(Track track, RenderContext context, Rectangle rect) {
+    private void plotScores(Track track, RenderContext context) {
+
+        Rectangle rect  = context.getTrackRectangle();
 
         GisticTrack gisticTrack = (GisticTrack) track;
         String chr = context.getChr();

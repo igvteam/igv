@@ -226,48 +226,6 @@ public class JSONSessionWriter {
                 PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
     }
 
-    private void writePanels(Element globalElement, Document document) throws DOMException {
-
-        for (TrackPanel trackPanel : IGV.getInstance().getTrackPanels()) {
-
-            // TODO -- loop through panels groups, rather than skipping groups to tracks
-
-            List<Track> tracks = trackPanel.getTracks();
-            if ((tracks != null) && !tracks.isEmpty()) {
-
-                Element panelElement = document.createElement(SessionElement.PANEL);
-                panelElement.setAttribute("name", trackPanel.getName());
-                panelElement.setAttribute("height", String.valueOf(trackPanel.getHeight()));
-                panelElement.setAttribute("width", String.valueOf(trackPanel.getWidth()));
-
-                for (Track track : tracks) {
-
-                    Element element = document.createElement("Track");
-                    element.setAttribute("clazz", SessionElement.getXMLClassName(track.getClass()));
-
-                    String id = track.getId();
-                    if (isUseRelative(outputFile) && !FileUtils.isRemote(id)) {
-                        id = FileUtils.getRelativePath(outputFile.getAbsolutePath(), id);
-                    }
-                    element.setAttribute("id", id);
-
-                    track.marshalXML(document, element);
-
-                    if (track.isNumeric() && track.getDataRange() != null) {
-                        Element dataRangeElement = document.createElement(SessionElement.DATA_RANGE);
-                        track.getDataRange().marshalXML(document, dataRangeElement);
-                        element.appendChild(dataRangeElement);
-                    }
-
-                    panelElement.appendChild(element);
-
-                }
-
-                globalElement.appendChild(panelElement);
-            }
-        }
-    }
-
     private void writePanelLayout(Element globalElement, Document document) {
 
     }

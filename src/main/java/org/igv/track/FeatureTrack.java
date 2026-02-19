@@ -717,7 +717,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         // Draw entire track.  TODO use clipBounds or visibleRect.
         Rectangle renderRect = context.getTrackRectangle();
@@ -997,16 +997,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
-        if (labelField != null) {
-            element.setAttribute("featureNameProperty", labelField);
-        }
-        super.marshalXML(document, element);
-
-    }
-
-    @Override
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
@@ -1023,6 +1013,17 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             MotifFinderSource source = new MotifFinderSource();
             source.unmarshalXML(sourceElement, version);
             this.source = source;
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        if (labelField != null) {
+            jsonObject.put("featureNameProperty", labelField);
+        }
+        if (groupByStrand) {
+            jsonObject.put("groupBy", "strand");
         }
     }
 

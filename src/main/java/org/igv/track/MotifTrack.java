@@ -34,17 +34,25 @@ public class MotifTrack extends FeatureTrack {
     }
 
     @Override
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("pattern", pattern);
-        element.setAttribute("strand", String.valueOf(strand));
-        super.marshalXML(document, element);
-    }
-
-    @Override
     public void unmarshalXML(Element element, Integer version) {
         super.unmarshalXML(element, version);
         this.pattern = element.getAttribute("pattern");
         this.strand = Strand.fromString(element.getAttribute("strand"));
+        init();
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        jsonObject.put("pattern", pattern);
+        jsonObject.put("strand", strand.toString());
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        this.pattern = jsonObject.getString("pattern");
+        this.strand = Strand.fromString(jsonObject.getString("strand"));
         init();
     }
 }

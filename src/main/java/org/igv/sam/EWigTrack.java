@@ -102,20 +102,9 @@ public class EWigTrack extends AbstractTrack {
         loadedIntervalCache.put(context.getName(), new LoadedInterval(chr, start, end, zoom, scores, nScores));
     }
 
-    public void render(RenderContext context, Rectangle visibleRect) {
-        paint(context, visibleRect);
-    }
+    public void render(RenderContext context) {
 
-    public boolean isLogNormalized() {
-        return false;
-    }
-
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
-        return 0;
-    }
-
-    private void paint(RenderContext context, Rectangle rect) {
-
+        Rectangle rect = context.getTrackRectangle();
         ReferenceFrame frame = context.getReferenceFrame();
         final String chr = frame.getChrName();
         final int start = (int) frame.getOrigin();
@@ -127,7 +116,6 @@ public class EWigTrack extends AbstractTrack {
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end, zoom)) {
             return;
         }
-
 
         // The total score
         List<LocusScore> scores = loadedInterval.scores;
@@ -210,6 +198,15 @@ public class EWigTrack extends AbstractTrack {
             }
         }*/
 
+
+    }
+
+    public boolean isLogNormalized() {
+        return false;
+    }
+
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
+        return 0;
     }
 
     public JPopupMenu getPopupMenu(

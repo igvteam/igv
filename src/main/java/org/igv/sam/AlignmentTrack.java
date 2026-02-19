@@ -29,6 +29,7 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.util.blat.BlatClient;
 import org.igv.util.collections.CollUtils;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -532,7 +533,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
 
 
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow()) {
@@ -554,7 +555,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (clipBounds.y < seqHeight) {
             if (seqHeight > 0) {
                 Rectangle seqRect = new Rectangle(0, 0, trackRect.width, seqHeight);
-                sequenceTrack.render(context, seqRect);
+                sequenceTrack.render(context);
             }
         }
 
@@ -1147,20 +1148,31 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
     @Override
-    public void marshalXML(Document document, Element element) {
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
 
-        super.marshalXML(document, element);
-
-        if (experimentType != null) {
-            element.setAttribute("experimentType", experimentType.toString());
+        if (jsonObject.has("experimentType")) {
+            experimentType = ExperimentType.valueOf(jsonObject.getString("experimentType"));
         }
 
-        Element sourceElement = document.createElement("RenderOptions");
-        renderOptions.marshalXML(document, sourceElement);
-        element.appendChild(sourceElement);
+        if (jsonObject.has("renderOptions")) {
+            renderOptions = new RenderOptions(this);
+            renderOptions.unmarshalJSON(jsonObject.getJSONObject("renderOptions"));
+        }
+    }
 
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+
+        if (experimentType != null) {
+            jsonObject.put("experimentType", experimentType.toString());
+        }
+
+        JSONObject renderOptionsObject = new JSONObject();
+        renderOptions.marshalJSON(renderOptionsObject);
+        jsonObject.put("renderOptions", renderOptionsObject);
     }
 
     static class InsertionMenu extends IGVPopupMenu {
@@ -1204,7 +1216,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public static class RenderOptions implements Cloneable, Persistable {
+    public static class RenderOptions implements Cloneable {
 
         public static final String NAME = "RenderOptions";
         private static final Logger log = LogManager.getLogger(RenderOptions.class);
@@ -1626,117 +1638,111 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.basemodDistinguishStrands = basemodDistinguishStrands;
         }
 
-
-        @Override
-        public void marshalXML(Document document, Element element) {
-
+        public void marshalJSON(JSONObject jsonObject) {
             if (shadeBasesOption != null) {
-                element.setAttribute("shadeBasesOption", shadeBasesOption.toString());
+                jsonObject.put("shadeBasesOption", shadeBasesOption);
             }
             if (shadeCenters != null) {
-                element.setAttribute("shadeCenters", shadeCenters.toString());
+                jsonObject.put("shadeCenters", shadeCenters);
             }
             if (flagUnmappedPairs != null) {
-                element.setAttribute("flagUnmappedPairs", flagUnmappedPairs.toString());
+                jsonObject.put("flagUnmappedPairs", flagUnmappedPairs);
             }
             if (showAllBases != null) {
-                element.setAttribute("showAllBases", showAllBases.toString());
+                jsonObject.put("showAllBases", showAllBases);
             }
             if (minInsertSize != null) {
-                element.setAttribute("minInsertSize", minInsertSize.toString());
+                jsonObject.put("minInsertSize", minInsertSize);
             }
             if (maxInsertSize != null) {
-                element.setAttribute("maxInsertSize", maxInsertSize.toString());
+                jsonObject.put("maxInsertSize", maxInsertSize);
             }
             if (colorOption != null) {
-                element.setAttribute("colorOption", colorOption.toString());
+                jsonObject.put("colorOption", colorOption.toString());
             }
             if (groupByOption != null) {
-                element.setAttribute("groupByOption", groupByOption.toString());
+                jsonObject.put("groupByOption", groupByOption.toString());
             }
             if (shadeAlignmentsOption != null) {
-                element.setAttribute("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
+                jsonObject.put("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
             }
             if (duplicatesOption != null) {
-                element.setAttribute("duplicatesOption", duplicatesOption.toString());
+                jsonObject.put("duplicatesOption", duplicatesOption.toString());
             }
             if (mappingQualityLow != null) {
-                element.setAttribute("mappingQualityLow", mappingQualityLow.toString());
+                jsonObject.put("mappingQualityLow", mappingQualityLow);
             }
             if (mappingQualityHigh != null) {
-                element.setAttribute("mappingQualityHigh", mappingQualityHigh.toString());
+                jsonObject.put("mappingQualityHigh", mappingQualityHigh);
             }
-            if (viewPairs != false) {
-                element.setAttribute("viewPairs", Boolean.toString(viewPairs));
+            if (viewPairs) {
+                jsonObject.put("viewPairs", viewPairs);
             }
             if (colorByTag != null) {
-                element.setAttribute("colorByTag", colorByTag);
+                jsonObject.put("colorByTag", colorByTag);
             }
             if (groupByTag != null) {
-                element.setAttribute("groupByTag", groupByTag);
+                jsonObject.put("groupByTag", groupByTag);
             }
             if (sortByTag != null) {
-                element.setAttribute("sortByTag", sortByTag);
+                jsonObject.put("sortByTag", sortByTag);
             }
             if (linkByTag != null) {
-                element.setAttribute("linkByTag", linkByTag);
+                jsonObject.put("linkByTag", linkByTag);
             }
             if (linkedReads != null) {
-                element.setAttribute("linkedReads", linkedReads.toString());
+                jsonObject.put("linkedReads", linkedReads);
             }
             if (quickConsensusMode != null) {
-                element.setAttribute("quickConsensusMode", quickConsensusMode.toString());
+                jsonObject.put("quickConsensusMode", quickConsensusMode);
             }
             if (showMismatches != null) {
-                element.setAttribute("showMismatches", showMismatches.toString());
+                jsonObject.put("showMismatches", showMismatches);
             }
             if (computeIsizes != null) {
-                element.setAttribute("computeIsizes", computeIsizes.toString());
+                jsonObject.put("computeIsizes", computeIsizes);
             }
             if (minInsertSizePercentile != null) {
-                element.setAttribute("minInsertSizePercentile", minInsertSizePercentile.toString());
+                jsonObject.put("minInsertSizePercentile", minInsertSizePercentile);
             }
             if (maxInsertSizePercentile != null) {
-                element.setAttribute("maxInsertSizePercentile", maxInsertSizePercentile.toString());
+                jsonObject.put("maxInsertSizePercentile", maxInsertSizePercentile);
             }
             if (pairedArcView != null) {
-                element.setAttribute("pairedArcView", pairedArcView.toString());
+                jsonObject.put("pairedArcView", pairedArcView);
             }
             if (flagZeroQualityAlignments != null) {
-                element.setAttribute("flagZeroQualityAlignments", flagZeroQualityAlignments.toString());
+                jsonObject.put("flagZeroQualityAlignments", flagZeroQualityAlignments);
             }
             if (groupByPos != null) {
-                element.setAttribute("groupByPos", groupByPos.toString());
+                jsonObject.put("groupByPos", groupByPos.toString());
             }
             if (invertSorting != null) {
-                element.setAttribute("invertSorting", Boolean.toString(invertSorting));
+                jsonObject.put("invertSorting", invertSorting);
             }
             if (sortOption != null) {
-                element.setAttribute("sortOption", sortOption.toString());
+                jsonObject.put("sortOption", sortOption.toString());
             }
             if (invertGroupSorting) {
-                element.setAttribute("invertGroupSorting", Boolean.toString(invertGroupSorting));
+                jsonObject.put("invertGroupSorting", invertGroupSorting);
             }
             if (hideSmallIndels != null) {
-                element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
+                jsonObject.put("hideSmallIndels", hideSmallIndels);
             }
             if (smallIndelThreshold != null) {
-                element.setAttribute("smallIndelThreshold", smallIndelThreshold.toString());
+                jsonObject.put("smallIndelThreshold", smallIndelThreshold);
             }
             if (basemodFilter != null) {
-                element.setAttribute("basemodFilter", basemodFilter.toString());
+                jsonObject.put("basemodFilter", basemodFilter.toString());
             }
             if (basemodThreshold != null) {
-                element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
+                jsonObject.put("basemodThreshold", basemodThreshold);
             }
             if (minJunctionCoverage != null) {
-                element.setAttribute("minJunctionCoverage", String.valueOf(minJunctionCoverage));
+                jsonObject.put("minJunctionCoverage", minJunctionCoverage);
             }
-
         }
 
-
-        @Override
         public void unmarshalXML(Element element, Integer version) {
             if (element.hasAttribute("shadeBasesOption")) {
                 String v = element.getAttribute("shadeBasesOption");
@@ -1864,6 +1870,136 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("minJunctionCoverage")) {
                 minJunctionCoverage = Integer.parseInt(element.getAttribute("minJunctionCoverage"));
+            }
+        }
+
+        public void unmarshalJSON(org.json.JSONObject json) {
+            if (json.has("shadeBasesOption")) {
+                String v = json.getString("shadeBasesOption");
+                if (v != null) {
+                    shadeBasesOption = v.equalsIgnoreCase("quality") || v.equalsIgnoreCase("true");
+                }
+            }
+            if (json.has("shadeCenters")) {
+                shadeCenters = Boolean.parseBoolean(json.getString("shadeCenters"));
+            }
+            if (json.has("showAllBases")) {
+                showAllBases = Boolean.parseBoolean(json.getString("showAllBases"));
+            }
+            if (json.has("flagUnmappedPairs")) {
+                flagUnmappedPairs = Boolean.parseBoolean(json.getString("flagUnmappedPairs"));
+            }
+
+            if (json.has("minInsertSize")) {
+                minInsertSize = Integer.parseInt(json.getString("minInsertSize"));
+            }
+            if (json.has("maxInsertSize")) {
+                maxInsertSize = Integer.parseInt(json.getString("maxInsertSize"));
+            }
+            if (json.has("colorOption")) {
+                // Convert deprecated options
+                final String attributeValue = json.getString("colorOption");
+                if ("BASE_MODIFICATION_6MA".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    basemodFilter = new BaseModficationFilter("a");
+                } else if ("BASE_MODIFICATION_5MC".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION_2COLOR;
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else if ("BASE_MODIFICATION_C".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else {
+                    colorOption = ColorOption.valueOf(attributeValue);
+                }
+            }
+            if (json.has("sortOption")) {
+                sortOption = SortOption.fromString((json.getString("sortOption")));
+            }
+            if (json.has("groupByOption")) {
+                String value = json.getString("groupByOption");
+                if (value.equals("HAPLOTYPE")) {
+                    value = "CLUSTER";  // Backward compatibility
+                }
+                groupByOption = GroupOption.valueOf(value);
+            }
+            if (json.has("shadeAlignmentsByOption")) {
+                shadeAlignmentsOption = ShadeAlignmentsOption.valueOf(json.getString("shadeAlignmentsByOption"));
+            }
+            if (json.has("duplicatesOption")) {
+                duplicatesOption = CollUtils.valueOf(DuplicatesOption.class, json.getString("duplicatesOption"), null);
+            }
+            if (json.has("mappingQualityLow")) {
+                mappingQualityLow = Integer.parseInt(json.getString("mappingQualityLow"));
+            }
+            if (json.has("mappingQualityHigh")) {
+                mappingQualityHigh = Integer.parseInt(json.getString("mappingQualityHigh"));
+            }
+            if (json.has("viewPairs")) {
+                viewPairs = Boolean.parseBoolean(json.getString("viewPairs"));
+            }
+            if (json.has("colorByTag")) {
+                colorByTag = json.getString("colorByTag");
+            }
+            if (json.has("groupByTag")) {
+                groupByTag = json.getString("groupByTag");
+            }
+            if (json.has("sortByTag")) {
+                sortByTag = json.getString("sortByTag");
+            }
+            if (json.has("linkByTag")) {
+                linkByTag = json.getString("linkByTag");
+            }
+            if (json.has("linkedReads")) {
+                linkedReads = Boolean.parseBoolean(json.getString("linkedReads"));
+            }
+            if (json.has("quickConsensusMode")) {
+                quickConsensusMode = Boolean.parseBoolean(json.getString("quickConsensusMode"));
+            }
+            if (json.has("showMismatches")) {
+                showMismatches = Boolean.parseBoolean(json.getString("showMismatches"));
+            }
+            if (json.has("computeIsizes")) {
+                computeIsizes = Boolean.parseBoolean(json.getString("computeIsizes"));
+            }
+            if (json.has("minInsertSizePercentile")) {
+                minInsertSizePercentile = Double.parseDouble(json.getString("minInsertSizePercentile"));
+            }
+            if (json.has("maxInsertSizePercentile")) {
+                maxInsertSizePercentile = Double.parseDouble(json.getString("maxInsertSizePercentile"));
+            }
+            if (json.has("pairedArcView")) {
+                pairedArcView = Boolean.parseBoolean(json.getString("pairedArcView"));
+            }
+            if (json.has("flagZeroQualityAlignments")) {
+                flagZeroQualityAlignments = Boolean.parseBoolean(json.getString("flagZeroQualityAlignments"));
+            }
+            if (json.has("groupByPos")) {
+                groupByPos = Range.fromString(json.getString("groupByPos"));
+            }
+            if (json.has("invertSorting")) {
+                invertSorting = Boolean.parseBoolean(json.getString("invertSorting"));
+            }
+            if (json.has("invertGroupSorting")) {
+                invertGroupSorting = Boolean.parseBoolean(json.getString("invertGroupSorting"));
+            }
+            if (json.has("hideSmallIndels")) {
+                hideSmallIndels = Boolean.parseBoolean(json.getString("hideSmallIndels"));
+            }
+            if (json.has("smallIndelThreshold")) {
+                smallIndelThreshold = Integer.parseInt(json.getString("smallIndelThreshold"));
+            }
+            if (json.has("showInsertionMarkers")) {
+                // TODO -- something with this
+                // showInsertionMarkers = Boolean.parseBoolean(json.getString("showInsertionMarkers"));
+            }
+            if (json.has("basemodFilter")) {
+                basemodFilter = BaseModficationFilter.fromString(json.getString("basemodFilter"));
+            }
+            if (json.has("basemodThreshold")) {
+                basemodFilter = BaseModficationFilter.fromString(json.getString("basemodThreshold"));
+            }
+            if (json.has("minJunctionCoverage")) {
+                minJunctionCoverage = Integer.parseInt(json.getString("minJunctionCoverage"));
             }
         }
 

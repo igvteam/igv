@@ -67,7 +67,7 @@ public class OverlayTracksMenuAction extends MenuAction {
         Track firstTrack = dataTrackList.iterator().next();
         TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
         panel.addTrack(mergedTracks);
-        panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
+       // panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
         panel.removeTracks(dataTrackList);
     }
 

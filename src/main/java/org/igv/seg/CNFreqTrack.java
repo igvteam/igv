@@ -86,7 +86,7 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
 
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         // TODO -- generalize.  This track doesn't scroll, we don't need to account for visibleRect or clipBounds
         Rectangle trackRect = context.getTrackRectangle();
@@ -175,17 +175,6 @@ public class CNFreqTrack extends AbstractTrack {
         return menu;
     }
 
-
-    @Override
-    public void marshalXML(Document document, Element parentElement) {
-
-        super.marshalXML(document, parentElement);
-
-        parentElement.setAttribute("ampThreshold", String.valueOf(ampThreshold));
-        parentElement.setAttribute("delThreshold", String.valueOf(delThreshold));
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -194,5 +183,19 @@ public class CNFreqTrack extends AbstractTrack {
         this.ampThreshold = Float.parseFloat(element.getAttribute("ampThreshold"));
         this.delThreshold = Float.parseFloat(element.getAttribute("delThreshold"));
 
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        jsonObject.put("ampThreshold", ampThreshold);
+        jsonObject.put("delThreshold", delThreshold);
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        this.ampThreshold = (float) jsonObject.optDouble("ampThreshold", ampThreshold);
+        this.delThreshold = (float) jsonObject.optDouble("delThreshold", delThreshold);
     }
 }

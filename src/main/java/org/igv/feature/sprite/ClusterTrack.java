@@ -92,7 +92,7 @@ public class ClusterTrack extends AbstractTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
 
         String chr = context.getReferenceFrame().getChrName();
         double origin = context.getOrigin();
@@ -102,6 +102,7 @@ public class ClusterTrack extends AbstractTrack {
 
         int y = 0;
 
+        Rectangle trackRectangle = context.getTrackRectangle();
         for (Cluster c : binnedClusters) {
 
             List<Integer> loci = c.posMap.get(chr);
@@ -112,8 +113,8 @@ public class ClusterTrack extends AbstractTrack {
                     double pixelStart = ((position - origin) / locScale);
                     double pixelEnd = ((position + binSize - origin) / locScale);
 
-                    // If the any part of the feature fits in the Track rectangle draw it
-                    if (pixelEnd >= visibleRect.getX() && pixelStart <= visibleRect.getMaxX()) {
+                    // If  any part of the feature fits in the Track rectangle draw it
+                    if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
 
                         Color color = this.getColor();
                         Graphics2D g = context.getGraphic2DForColor(color);
@@ -234,22 +235,28 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("binSize", String.valueOf(binSize));
-        element.setAttribute("sequence", String.valueOf(rowHeight));
-
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        json.put("binSize", binSize);
+        json.put("rowHeight", rowHeight);
     }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
-
         this.binSize = Integer.parseInt(element.getAttribute("binSize"));
         this.rowHeight = Integer.parseInt(element.getAttribute("rowHeight"));
+    }
 
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("binSize")) {
+            this.binSize = jsonObject.getInt("binSize");
+        }
+        if (jsonObject.has("rowHeight")) {
+            this.rowHeight = jsonObject.getInt("rowHeight");
+        }
     }
 }

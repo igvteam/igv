@@ -257,7 +257,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
      *
      * @param context
      */
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
@@ -468,15 +468,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("shouldShowTranslation", String.valueOf(showTranslation));
-        element.setAttribute("sequenceTranslationStrandValue", String.valueOf(strand));
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -489,5 +480,21 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));
         }
     }
+
+        @Override
+        public void marshalJSON(org.json.JSONObject jsonObject) {
+            super.marshalJSON(jsonObject);
+            jsonObject.put("shouldShowTranslation", showTranslation);
+            jsonObject.put("sequenceTranslationStrandValue", strand.toString());
+        }
+
+        @Override
+        public void unmarshalJSON(org.json.JSONObject jsonObject) {
+            super.unmarshalJSON(jsonObject);
+            this.showTranslation = jsonObject.optBoolean("shouldShowTranslation", showTranslation);
+            if(jsonObject.has("sequenceTranslationStrandValue")) {
+                this.strand = Strand.fromString(jsonObject.getString("sequenceTranslationStrandValue"));
+            }
+        }
 
 }

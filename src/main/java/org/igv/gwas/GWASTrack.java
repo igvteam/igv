@@ -1,7 +1,6 @@
 package org.igv.gwas;
 
 import org.igv.logging.*;
-import org.igv.Globals;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.prefs.Constants;
@@ -29,7 +28,6 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author jussi
@@ -121,7 +119,7 @@ public class GWASTrack extends AbstractTrack {
         // Nothing to do, track is initialized with all data
     }
 
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -132,9 +130,8 @@ public class GWASTrack extends AbstractTrack {
 
         try {
             g = (Graphics2D) context.getGraphics().create();
-            g.setClip(visibleRect);
 
-            Rectangle plotRect = calculateDrawingRect(visibleRect);
+            Rectangle plotRect = context.getTrackRectangle();
 
             DataRange dataRange = this.getDataRange();
             float maxValue = dataRange.getMaximum();
@@ -271,14 +268,6 @@ public class GWASTrack extends AbstractTrack {
         return (int) Math.max(drawingRect.getMinY(), Math.min(drawingRect.getMaxY(), pY));
     }
 
-
-    Rectangle calculateDrawingRect(Rectangle arect) {
-        double buffer = Math.min(arect.getHeight() * 0.2, 10);
-        Rectangle adjustedRect = new Rectangle(arect);
-        adjustedRect.y = (int) (arect.getY() + buffer);
-        adjustedRect.height = (int) (arect.height - (adjustedRect.y - arect.getY()));
-        return adjustedRect;
-    }
 
     /**
      * Find index of data point closest to given chromosomal location and y-coordinate
@@ -590,25 +579,6 @@ public class GWASTrack extends AbstractTrack {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("maxPointSize", String.valueOf(maxPointSize));
-        element.setAttribute("minPointSize", String.valueOf(minPointSize));
-        element.setAttribute("useChrColors", String.valueOf(useChrColors));
-        element.setAttribute("singleColor", String.valueOf(singleColor));
-        element.setAttribute("showAxis", String.valueOf(showAxis));
-        element.setAttribute("alternatingColors", String.valueOf(alternatingColors));
-        if (primaryColor != null) {
-            element.setAttribute("primaryColor", ColorUtilities.colorToString(primaryColor));
-        }
-        if (secondaryColor != null) {
-            element.setAttribute("secondaryColor", ColorUtilities.colorToString(secondaryColor));
-        }
-
-
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -626,6 +596,40 @@ public class GWASTrack extends AbstractTrack {
         }
         if (element.hasAttribute("secondaryColor ")) {
             secondaryColor = ColorUtilities.stringToColor(element.getAttribute("secondaryColor"));
+        }
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        json.put("maxPointSize", maxPointSize);
+        json.put("minPointSize", minPointSize);
+        json.put("useChrColors", useChrColors);
+        json.put("singleColor", singleColor);
+        json.put("showAxis", showAxis);
+        json.put("alternatingColors", alternatingColors);
+        if (primaryColor != null) {
+            json.put("primaryColor", ColorUtilities.colorToString(primaryColor));
+        }
+        if (secondaryColor != null) {
+            json.put("secondaryColor", ColorUtilities.colorToString(secondaryColor));
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        maxPointSize = jsonObject.getInt("maxPointSize");
+        minPointSize = jsonObject.getInt("minPointSize");
+        useChrColors = jsonObject.getBoolean("useChrColors");
+        singleColor = jsonObject.getBoolean("singleColor");
+        showAxis = jsonObject.getBoolean("showAxis");
+        alternatingColors = jsonObject.getBoolean("alternatingColors");
+        if (jsonObject.has("primaryColor")) {
+            primaryColor = ColorUtilities.stringToColor(jsonObject.getString("primaryColor"));
+        }
+        if (jsonObject.has("secondaryColor")) {
+            secondaryColor = ColorUtilities.stringToColor(jsonObject.getString("secondaryColor"));
         }
     }
 }

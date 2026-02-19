@@ -21,28 +21,11 @@ public class CombinedDataTrack extends DataSourceTrack {
         super(null, id, name, dataSource);
     }
 
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("track1", ((CombinedDataSource) dataSource).getTrackl().getId());
-        element.setAttribute("track2", ((CombinedDataSource) dataSource).getTrack2().getId());
-        element.setAttribute("op", ((CombinedDataSource) dataSource).getOperation().toString());
-
-
-//        for (DataTrack track : memberTracks) {
-//            Element trackElement = document.createElement(SessionElement.TRACK);
-//            track.marshalXML(document, trackElement);
-//            element.appendChild(trackElement);
-//        }
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
-
         // Un-marshalling handled in IGVSessionReader
     }
 
@@ -52,6 +35,12 @@ public class CombinedDataTrack extends DataSourceTrack {
         jsonObject.put("track1", ((CombinedDataSource) dataSource).getTrackl().getId());
         jsonObject.put("track2", ((CombinedDataSource) dataSource).getTrack2().getId());
         jsonObject.put("op", ((CombinedDataSource) dataSource).getOperation().toString());
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        // Un-marshalling handled in IGVSessionReader
     }
 }
 

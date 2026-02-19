@@ -105,18 +105,6 @@ public class DataSourceTrack extends DataTrack {
         }
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (dataSource != null && dataSource instanceof CoverageDataSource){
-            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
-            if (normalize) {
-                element.setAttribute("normalize", "true");
-            }
-        }
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -125,6 +113,17 @@ public class DataSourceTrack extends DataTrack {
         if (dataSource != null) {
             if (dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")) {
                 ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
+            }
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        if (dataSource != null && dataSource instanceof CoverageDataSource){
+            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
+            if (normalize) {
+                jsonObject.put("normalize", true);
             }
         }
     }

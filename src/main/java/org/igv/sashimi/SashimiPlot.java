@@ -263,7 +263,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             Rectangle bounds = new Rectangle(getBounds());
             bounds.y = 0;
             RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds, bounds, bounds);
-            track.render(context, bounds);
+            track.render(context);
         }
 
         @Override

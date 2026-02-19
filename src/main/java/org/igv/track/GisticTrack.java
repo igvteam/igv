@@ -20,7 +20,6 @@ import org.igv.renderer.Renderer;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -141,18 +140,12 @@ public class GisticTrack extends AbstractTrack {
         return maxGScore;
     }
 
-    /**
-     * Method description
-     *
-     * @param context
-     * @param visibleRect
-     */
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
         if (renderer == null) {
             log.error("Null renderer !!");
 
         } else {
-            renderer.render(this, context, visibleRect);
+            renderer.render(this, context);
         }
     }
 

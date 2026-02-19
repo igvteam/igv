@@ -133,9 +133,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
 
     @Override
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context) {
         for (Track track : memberTracks) {
-            track.render(context, visibleRect);
+            track.render(context);
         }
     }
 
@@ -343,21 +343,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             return new Range(min, max);
         } else {
             return null;
-        }
-    }
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (alpha != DEFAULT_ALPHA) {
-            element.setAttribute("alpha", String.valueOf(alpha));
-        }
-        for (DataTrack track : memberTracks) {
-            Element trackElement = document.createElement(SessionElement.TRACK);
-            track.marshalXML(document, trackElement);
-            element.appendChild(trackElement);
         }
     }
 

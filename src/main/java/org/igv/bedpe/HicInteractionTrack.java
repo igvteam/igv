@@ -8,6 +8,7 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -147,15 +148,6 @@ public class HicInteractionTrack extends InteractionTrack {
         menu.add(mapItem);
     }
 
-    @Override
-    public void marshalXML(Document document, Element element) {
-        super.marshalXML(document, element);
-
-        String nviString = ((HicSource) featureSource).getNVIString();
-        if (nviString != null) {
-            element.setAttribute("nvi", nviString);
-        }
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -164,6 +156,29 @@ public class HicInteractionTrack extends InteractionTrack {
         if (element.hasAttribute("nvi")) {
             String nviString = element.getAttribute("nvi");
             ((HicSource) featureSource).setNVIString(nviString);
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        String nviString = ((HicSource) featureSource).getNVIString();
+        if (nviString != null) {
+            json.put("nvi", nviString);
+        }
+        if(!"NONE".equals(normalization)) {
+            json.put("normalization", normalization);
+        }
+    }
+
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("nvi")) {
+            String nviString = jsonObject.getString("nvi");
+            ((HicSource) featureSource).setNVIString(nviString);
+        }
+        if(jsonObject.has("normalization")) {
+            this.normalization = jsonObject.getString("normalization");
         }
     }
 }

@@ -96,7 +96,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
         if (!isShowFeatures(context.getReferenceFrame())) {
             Rectangle visibleRect = context.getVisibleRect();
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
@@ -105,7 +105,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
                     "Zoom in to see features.";
             GraphicUtils.drawCenteredText(message, visibleRect, g);
         } else {
-            super.render(context, ignore);
+            super.render(context);
         }
     }
 
@@ -365,24 +365,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         return menu;
     }
 
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (removed) {
-            element.setAttribute("removed", String.valueOf(removed));
-        }
-
-        // Autoscale is set here, but restored in AbstractTrack
-        element.setAttribute("autoScale", String.valueOf(autoScale));
-
-        element.setAttribute("maxdepth", String.valueOf(((SpliceJunctionRenderer) renderer).getMaxDepth()));
-
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -397,7 +379,31 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
                 ((SpliceJunctionRenderer) renderer).setMaxDepth((int) Float.parseFloat(element.getAttribute("maxdepth")));
             }
         }
-
     }
 
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        if (removed) {
+            json.put("removed", removed);
+        }
+
+        // Autoscale is set here, but restored in AbstractTrack
+        json.put("autoScale", String.valueOf(autoScale));
+
+        json.put("maxdepth", ((SpliceJunctionRenderer) renderer).getMaxDepth());
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("removed")) {
+            this.removed = jsonObject.getBoolean("removed");
+        }
+        if (jsonObject.has("maxdepth")) {
+            if (renderer != null && renderer instanceof SpliceJunctionRenderer) {
+                ((SpliceJunctionRenderer) renderer).setMaxDepth(jsonObject.getInt("maxdepth"));
+            }
+        }
+    }
 }

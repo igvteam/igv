@@ -15,6 +15,7 @@ import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,17 +75,17 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public  void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         Rectangle clipBounds = context.getClipBounds();
         Rectangle trackRect = context.getTrackRectangle();
         var y = 0;
         for (var group : sampleGroups) {
             for (String sample : group.samples()) {
-                if(y > clipBounds.y + clipBounds.height) {
+                if (y > clipBounds.y + clipBounds.height) {
                     break;
                 }
-                if(y + sampleHeight > clipBounds.y) {
+                if (y + sampleHeight > clipBounds.y) {
                     var r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
                     var scores = dataset.getSegments(sample, context.getChr());
                     this.renderer.render(scores, context, r, this);
@@ -136,10 +137,10 @@ public class SegTrack extends AbstractTrack {
         var y = 0;
         for (var group : sampleGroups) {
             for (String s : group.samples()) {
-                if(y > visibleRect.y + visibleRect.height) {
+                if (y > visibleRect.y + visibleRect.height) {
                     break;
                 }
-                if(y + sampleHeight > visibleRect.y) {
+                if (y + sampleHeight > visibleRect.y) {
                     var r = new Rectangle(0, y, visibleRect.width, sampleHeight);
                     GraphicUtils.drawWrappedText(s, r, g2D, false);
                 }
@@ -322,7 +323,7 @@ public class SegTrack extends AbstractTrack {
     @Override
     public void groupSamplesByAttribute(String attributeKey) {
 
-        if(attributeKey == null && IGV.hasInstance()) {
+        if (attributeKey == null && IGV.hasInstance()) {
             attributeKey = IGV.getInstance().getGroupByAttribute();
         }
 
@@ -353,6 +354,20 @@ public class SegTrack extends AbstractTrack {
         repaint();
     }
 
+    public static boolean isSegFile(String pathOrURL) {
+        String path;
+        try {
+            var url = new URL(pathOrURL);
+            path = url.getPath();
+        } catch (MalformedURLException e) {
+            // Not a valid URL, assume it's a file path
+            path = pathOrURL;
+        }
+        var lowerPath = path.toLowerCase();
+        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
+    }
+
+
     public void marshalXML(Document document, Element element) {
         super.marshalXML(document, element);
         if (renderer != null) {
@@ -381,17 +396,18 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-    public static boolean isSegFile(String pathOrURL) {
-        String path;
-        try {
-            var url = new URL(pathOrURL);
-            path = url.getPath();
-        } catch (MalformedURLException e) {
-            // Not a valid URL, assume it's a file path
-            path = pathOrURL;
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("renderer")) {
+            Class rendererClass = RendererFactory.getRendererClass(jsonObject.getString("renderer"));
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
         }
-        var lowerPath = path.toLowerCase();
-        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
     }
-
 }

@@ -472,7 +472,7 @@ public class TrackLoader {
 
             // Create feature source and track
             AbstractTrack t =
-                    "interact".equals(locator.format) ?
+                    "interact".equals(locator.getFormat()) ?
                             new InteractionTrack(locator, new WrappedInteractionSource(src)) :
                             new FeatureTrack(locator, src);
 

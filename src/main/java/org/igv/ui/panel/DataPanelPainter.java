@@ -13,7 +13,6 @@ import org.igv.ui.IGV;
 
 import java.awt.*;
 import java.util.Collection;
-import java.util.List;
 
 
 public class DataPanelPainter {
@@ -106,7 +105,7 @@ public class DataPanelPainter {
 
         if (track.isVisible()) {
             try {
-                track.render(context, null);
+                track.render(context);
 
             } catch (Exception e) {
                 log.error("Error rendering track: " + track.getName(), e);

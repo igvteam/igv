@@ -25,6 +25,7 @@ import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -185,7 +186,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return (int) dataManager.getVisibilityWindow();
     }
 
-    public void render(RenderContext context, Rectangle ignore) {
+    public void render(RenderContext context) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
@@ -814,18 +815,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         this.globalAutoScale = globalAutoScale;
     }
 
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-        element.setAttribute("snpThreshold", String.valueOf(snpThreshold));
-        if (_color != null) {
-            element.setAttribute("_color", ColorUtilities.colorToString(_color));
-        }
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
         super.unmarshalXML(element, version);
@@ -835,7 +824,25 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (element.hasAttribute("_color")) {
             _color = ColorUtilities.stringToColor(element.getAttribute("_color"));
         }
-
     }
 
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        json.put("snpThreshold", snpThreshold);
+        if (_color != null) {
+            json.put("_color", ColorUtilities.colorToString(_color));
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("snpThreshold")) {
+            snpThreshold = jsonObject.getFloat("snpThreshold");
+        }
+        if (jsonObject.has("_color")) {
+            _color = ColorUtilities.stringToColor(jsonObject.getString("_color"));
+        }
+    }
 }

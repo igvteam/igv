@@ -165,7 +165,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // Group samples by the current global attribute, if any.  Samples must be grouped to be displayed.
         samplesByGroups.put(DEFAULT_GROUP, new ArrayList<>(samples));
         String groupByAttribute = IGV.getInstance().getGroupByAttribute();
-        if(groupByAttribute != null) {
+        if (groupByAttribute != null) {
             groupSamplesByAttribute(groupByAttribute);
         }
 
@@ -1211,30 +1211,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (showGenotypes != defaultShowGenotypes()) {
-            element.setAttribute("showGenotypes", String.valueOf(showGenotypes));
-        }
-
-        if (this.squishedHeight != DEFAULT_SQUISHED_HEIGHT) {
-            element.setAttribute("squishedHeight", String.valueOf(squishedHeight));
-        }
-
-        if (genotypeColorMode != ColorMode.GENOTYPE) {
-            element.setAttribute("genotypeColorMode", genotypeColorMode.toString());
-        }
-
-        if (siteColorMode != null) {
-            element.setAttribute("siteColorMode", siteColorMode.toString());
-        }
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -1258,6 +1234,49 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (element.hasAttribute("siteColorMode")) {
             this.siteColorMode = ColorMode.valueOf(element.getAttribute("siteColorMode"));
 
+        }
+    }
+
+
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+
+        super.marshalJSON(json);
+
+        if (showGenotypes != defaultShowGenotypes()) {
+            json.put("showGenotypes", showGenotypes);
+        }
+        if (this.squishedHeight != DEFAULT_SQUISHED_HEIGHT) {
+            json.put("squishedHeight", squishedHeight);
+        }
+        if (genotypeColorMode != ColorMode.GENOTYPE) {
+            json.put("genotypeColorMode", genotypeColorMode.toString());
+        }
+        if (siteColorMode != null) {
+            json.put("siteColorMode", siteColorMode.toString());
+        }
+    }
+
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject json) {
+
+        super.unmarshalJSON(json);
+
+        if (json.has("showGenotypes")) {
+            this.showGenotypes = json.getBoolean("showGenotypes");
+        }
+
+        if (json.has("squishedHeight")) {
+            this.squishedHeight = json.getInt("squishedHeight");
+        }
+
+        if (json.has("genotypeColorMode")) {
+            this.genotypeColorMode = ColorMode.valueOf(json.getString("genotypeColorMode"));
+        }
+
+        if (json.has("siteColorMode")) {
+            this.siteColorMode = ColorMode.valueOf(json.getString("siteColorMode"));
         }
     }
 
