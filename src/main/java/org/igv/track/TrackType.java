@@ -22,5 +22,9 @@ public enum TrackType {
     snp,
     eqtl,
     blat,
-    motif
+    motif,
+    gistic,
+    maf,
+    coverage,
+    cnFreq
 }

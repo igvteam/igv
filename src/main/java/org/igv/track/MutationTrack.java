@@ -38,6 +38,11 @@ public class MutationTrack extends FeatureTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.mut;
+    }
+
+    @Override
     public void overlay(RenderContext context, Rectangle rect) {
         if (!context.getChr().equals(Globals.CHR_ALL) ||
                 IGV.getInstance().getSession().getPreferenceAsBoolean(Constants.OVERLAY_MUTATIONS_WHOLE_GENOME)) {

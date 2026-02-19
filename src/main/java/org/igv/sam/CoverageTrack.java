@@ -107,6 +107,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.coverage;
+    }
+
+    @Override
     public Color getColor() {
         return color == null ?
                 ColorUtilities.slightlyDarker(alignmentTrack.getColor()) :
@@ -831,7 +836,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         super.marshalJSON(json);
         json.put("snpThreshold", snpThreshold);
         if (_color != null) {
-            json.put("_color", ColorUtilities.colorToString(_color));
+            json.put("color", ColorUtilities.colorToString(_color));
         }
     }
 
@@ -841,7 +846,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (jsonObject.has("snpThreshold")) {
             snpThreshold = jsonObject.getFloat("snpThreshold");
         }
-        if (jsonObject.has("_color")) {
+        if (jsonObject.has("color")) {
             _color = ColorUtilities.stringToColor(jsonObject.getString("_color"));
         }
     }

@@ -91,6 +91,10 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         selectedSpecies.addAll(reader.getSpecies());
     }
 
+    @Override
+    public TrackType getType() {
+        return TrackType.maf;
+    }
 
     public List<String> getSelectedSpecies() {
         return selectedSpecies;

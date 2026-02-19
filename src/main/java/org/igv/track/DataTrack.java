@@ -30,7 +30,6 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
@@ -67,15 +66,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     @Override
     public TrackType getType() {
-        switch (getDataType()) {
-            case COPY_NUMBER:
-            case CNV:
-                return TrackType.seg;
-            case MUTATION:
-                return TrackType.mut;
-            default:
-                return TrackType.wig;
-        }
+        return TrackType.wig;
     }
 
     @Override
@@ -471,6 +462,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
             }
         }
     }
+
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
 

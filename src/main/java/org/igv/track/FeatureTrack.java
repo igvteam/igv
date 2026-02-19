@@ -96,6 +96,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     }
 
+    @Override
+    public TrackType getType() {
+        return TrackType.annotation;
+    }
+
     // TODO -- there are WAY too many constructors for this class
 
     /**

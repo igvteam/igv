@@ -64,6 +64,11 @@ public class GisticTrack extends AbstractTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.gistic;
+    }
+
+    @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         return hasScores;
     }

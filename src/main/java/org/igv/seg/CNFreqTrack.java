@@ -58,6 +58,11 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.cnFreq;
+    }
+
+    @Override
     public int getContentHeight() {
         return this.height;
     }
