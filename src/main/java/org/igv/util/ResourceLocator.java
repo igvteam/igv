@@ -5,6 +5,7 @@ import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.track.TrackProperties;
+import org.igv.ui.color.ColorUtilities;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -28,14 +29,10 @@ public class ResourceLocator {
     private static final Logger log = LogManager.getLogger(ResourceLocator.class);
 
     /**
-     * Display name
+     * TrackConfig containing track configuration properties.
+     * Always initialized, either from external config or as empty default.
      */
-    String name;
-
-    /**
-     * The local path or url (http, https, or ftp) for the resource.
-     */
-    String path;
+    private TrackConfig trackConfig;
 
     /**
      * URL to a database server
@@ -43,12 +40,6 @@ public class ResourceLocator {
     String dbURL;
 
     /**
-     * Optional path to an associated index file
-     */
-    String indexPath;
-
-    /**
-     * /**
      * Path to an associated density file.  This is used primarily for sequence alignments
      */
     String coverage;
@@ -56,7 +47,6 @@ public class ResourceLocator {
     /**
      * Optional path to an associated variant->bam mapping file (vcf only)
      */
-
     String mappingPath;
 
     /**
@@ -65,55 +55,25 @@ public class ResourceLocator {
     String trackInforURL;
 
     /**
-     * A URL pattern (UCSC convention) to a specific URL applicable to each feature
-     */
-    String featureInfoURL;
-
-    String labelField;
-
-    /**
-     * Descriptive text
-     */
-    String description;
-
-    /**
-     * The type of resource (generally this refers to the file format)
-     */
-    public String format;
-
-    /**
      * A UCSC style track line.  Overrides value in file, if any.
      */
-    String trackLine;  //
+    String trackLine;
 
     TrackProperties trackProperties;
 
-    /**
-     * Color for features or data.  Somewhat redundant with trackLine.
-     */
-    Color color;
 
     String sampleId;
-
-    long order;
 
     /**
      * Track metadata.  Primarily for generating description and popup text.
      */
     private Map<String, String> metadata;
-    private boolean indexed;
-
 
     /**
      * True if this is an htsget resource
      */
     private boolean htsget;
     private boolean dataURL;
-    private Integer visibilityWindow;
-    private String trixURL;
-    private String panelName;
-    private String autoscaleGroup;
-    private String[] filterTypes;
 
     public static List<ResourceLocator> getLocators(Collection<File> files) {
 
@@ -161,26 +121,21 @@ public class ResourceLocator {
      * @param trackConfig
      * @return
      */
-
     public static ResourceLocator fromTrackConfig(TrackConfig trackConfig) {
         String trackPath = trackConfig.url;
         ResourceLocator res = new ResourceLocator(trackPath);
-        res.setName(trackConfig.name);
-        res.setIndexPath(trackConfig.indexURL);
-        res.setFormat(trackConfig.format);
-        res.setVisibilityWindow(trackConfig.visibilityWindow);
-        res.setPanelName(trackConfig.panelName);
-        res.setTrixURL(trackConfig.trixURL);
-        res.setFeatureInfoURL(trackConfig.infoURL);
-        res.setIndexed(trackConfig.indexed != null ? trackConfig.indexed : false);
-        res.setLabelField(trackConfig.labelField);
-        res.setDescription(trackConfig.description);
-        res.setAutoscaleGroup(trackConfig.autoscaleGroup);
+        res.trackConfig = trackConfig;
         res.setTrackProperties(new TrackProperties(trackConfig));
-        res.setFilterTypes(trackConfig.filterTypes);
-        res.order = trackConfig.order;
         return res;
+    }
 
+    /**
+     * Returns the TrackConfig associated with this locator, or null if none.
+     *
+     * @return the TrackConfig, or null
+     */
+    public TrackConfig getTrackConfig() {
+        return trackConfig;
     }
 
     /**
@@ -190,6 +145,7 @@ public class ResourceLocator {
      */
     public ResourceLocator(String path) {
 
+        this.trackConfig = new TrackConfig();
         this.setPath(path);
         if (path != null && path.startsWith("https://") && GoogleUtils.isGoogleDrive(path)) {
             this.resolveGoogleDrive(path);
@@ -200,26 +156,26 @@ public class ResourceLocator {
     }
 
     public long getOrder() {
-        return order;
+        return trackConfig.order;
     }
 
     public void setOrder(long order) {
-        this.order = order;
-    }
-
-    private void setFilterTypes(String[] filterTypes) {
-        this.filterTypes = filterTypes;
+        trackConfig.order = order;
     }
 
     public String[] getFilterTypes() {
-        return filterTypes;
+        return trackConfig.filterTypes;
+    }
+
+    public void setFilterTypes(String[] filterTypes) {
+        trackConfig.filterTypes = filterTypes;
     }
 
     private void resolveGoogleDrive(String path) {
 
         JSONObject fileInfo = GoogleUtils.getDriveFileInfo(path);
-        this.name = fileInfo.optString("name", null);
-        this.format = deriveFormat(this.name);
+        trackConfig.name = fileInfo.optString("name", null);
+        trackConfig.format = deriveFormat(trackConfig.name);
     }
 
     /**
@@ -229,6 +185,7 @@ public class ResourceLocator {
      * @param path
      */
     public ResourceLocator(String dbURL, String path) {
+        this.trackConfig = new TrackConfig();
         this.dbURL = dbURL;
         this.setPath(path);
     }
@@ -243,12 +200,12 @@ public class ResourceLocator {
      * @return true if resource was found.
      */
     public boolean exists() {
-        return ParsingUtils.fileExists(path);
+        return ParsingUtils.fileExists(trackConfig.url);
     }
 
 
     public void setFormat(String formatOrExt) {
-        this.format = formatOrExt == null ? null : formatOrExt.startsWith(".") ? formatOrExt.substring(1) : formatOrExt;
+        trackConfig.format = formatOrExt == null ? null : formatOrExt.startsWith(".") ? formatOrExt.substring(1) : formatOrExt;
     }
 
     /**
@@ -258,19 +215,19 @@ public class ResourceLocator {
      * @return
      */
     public String getFormat() {
-        if (format == null) {
-            format = deriveFormat(this.path);
+        if (trackConfig.format == null) {
+            trackConfig.format = deriveFormat(trackConfig.url);
         }
-        return format;
+        return trackConfig.format;
     }
 
 
     public Integer getVisibilityWindow() {
-        return visibilityWindow;
+        return trackConfig.visibilityWindow;
     }
 
     public void setVisibilityWindow(Integer visibilityWindow) {
-        this.visibilityWindow = visibilityWindow;
+        trackConfig.visibilityWindow = visibilityWindow;
     }
 
     public static String deriveFormat(String pathOrName) {
@@ -378,14 +335,16 @@ public class ResourceLocator {
     }
 
     public String toString() {
-        return path + (dbURL == null ? "" : " " + dbURL);
+        return trackConfig.url + (dbURL == null ? "" : " " + dbURL);
     }
 
     public String getPath() {
-        return path;
+        return trackConfig.url;
     }
 
     public String getFileName() {
+        String path = trackConfig.url;
+        if (path == null) return null;
         if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("gs://")) {
             int idxQuestion = path.indexOf('?');
             String actualPath = idxQuestion < 0 ? path : path.substring(0, idxQuestion);
@@ -405,28 +364,28 @@ public class ResourceLocator {
     }
 
     public boolean isLocal() {
-        return dbURL == null && !dataURL && !FileUtils.isRemote(path);
+        return dbURL == null && !dataURL && !FileUtils.isRemote(trackConfig.url);
     }
 
     public void setTrackInfoURL(String trackInforURL) {
-        this.trackInforURL = trackInforURL;
+        trackConfig.html = trackInforURL;
     }
 
     public String getTrackInfoURL() {
-        return trackInforURL;
+        return trackConfig.html;
     }
 
     public String getDescription() {
-        return description;
+        return trackConfig.description;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        trackConfig.description = description;
     }
 
     public String getTrackName() {
-        if (name != null) {
-            return name;
+        if (trackConfig.name != null) {
+            return trackConfig.name;
         } else {
             return this.getFileName();
         }
@@ -441,11 +400,11 @@ public class ResourceLocator {
     }
 
     public void setName(String name) {
-        this.name = name;
+        trackConfig.name = name;
     }
 
     public String getName() {
-        return name;
+        return trackConfig.name;
     }
 
     public String getCoverage() {
@@ -457,41 +416,48 @@ public class ResourceLocator {
     }
 
     public Color getColor() {
-        return color;
+        if (trackConfig.color == null) {
+            return null;
+        }
+        return ColorUtilities.stringToColor(trackConfig.color);
     }
 
     public void setColor(Color color) {
-        this.color = color;
+        if (color == null) {
+            trackConfig.color = null;
+        } else {
+            trackConfig.color = ColorUtilities.colorToString(color);
+        }
     }
 
 
     public String getFeatureInfoURL() {
-        return featureInfoURL;
+        return trackConfig.infoURL;
     }
 
     public String getLabelField() {
-        return labelField;
+        return trackConfig.labelField;
     }
 
     public void setLabelField(String labelField) {
-        this.labelField = labelField;
+        trackConfig.labelField = labelField;
     }
 
     public void setFeatureInfoURL(String featureInfoURL) {
-        this.featureInfoURL = featureInfoURL;
+        trackConfig.infoURL = featureInfoURL;
     }
 
     public void setPath(String path) {
 
         if (path != null && path.startsWith("file://")) {
-            this.path = path.substring("file://".length());
+            trackConfig.url = path.substring("file://".length());
         } else if (path != null && path.startsWith("s3://")) {
-            this.path = path;
+            trackConfig.url = path;
             String s3UrlIndexPath = detectIndexPath(path);
             this.setIndexPath(s3UrlIndexPath);
         } else {
             this.dataURL = ParsingUtils.isDataURL(path);
-            this.path = path;
+            trackConfig.url = path;
         }
     }
 
@@ -512,11 +478,11 @@ public class ResourceLocator {
     }
 
     public String getIndexPath() {
-        return indexPath;
+        return trackConfig.indexURL;
     }
 
     public void setIndexPath(String indexPath) {
-        this.indexPath = indexPath;
+        trackConfig.indexURL = indexPath;
     }
 
     // XXX: Why does IGV not do that across all providers already?
@@ -548,14 +514,16 @@ public class ResourceLocator {
         ResourceLocator that = (ResourceLocator) o;
 
         if (dbURL != null ? !dbURL.equals(that.dbURL) : that.dbURL != null) return false;
-        if (path != null ? !path.equals(that.path) : that.path != null) return false;
+        String thisUrl = trackConfig.url;
+        String thatUrl = that.trackConfig.url;
+        if (thisUrl != null ? !thisUrl.equals(thatUrl) : thatUrl != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = path != null ? path.hashCode() : 0;
+        int result = trackConfig.url != null ? trackConfig.url.hashCode() : 0;
         result = 31 * result + (dbURL != null ? dbURL.hashCode() : 0);
         return result;
     }
@@ -607,11 +575,11 @@ public class ResourceLocator {
     }
 
     public void setIndexed(boolean indexed) {
-        this.indexed = indexed;
+        trackConfig.indexed = indexed;
     }
 
     public boolean isIndexed() {
-        return indexed;
+        return trackConfig.indexed != null && trackConfig.indexed;
     }
 
     public boolean isHtsget() {
@@ -640,11 +608,11 @@ public class ResourceLocator {
     }
 
     public void setTrixURL(String trixURL) {
-        this.trixURL = trixURL;
+        trackConfig.trixURL = trixURL;
     }
 
     public String getTrixURL() {
-        return trixURL;
+        return trackConfig.trixURL;
     }
 
     public Map<String, String> getMetadata() {
@@ -656,11 +624,11 @@ public class ResourceLocator {
     }
 
     public String getPanelName() {
-        return panelName;
+        return trackConfig.panelName;
     }
 
     public void setPanelName(String panelName) {
-        this.panelName = panelName;
+        trackConfig.panelName = panelName;
     }
 
     public void setDataURL(boolean dataURL) {
@@ -672,11 +640,11 @@ public class ResourceLocator {
     }
 
     public void setAutoscaleGroup(String autoscaleGroup) {
-        this.autoscaleGroup = autoscaleGroup;
+        trackConfig.autoscaleGroup = autoscaleGroup;
     }
 
     public String getAutoscaleGroup() {
-        return autoscaleGroup;
+        return trackConfig.autoscaleGroup;
     }
 
     /**
