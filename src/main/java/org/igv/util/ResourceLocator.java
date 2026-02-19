@@ -95,6 +95,7 @@ public class ResourceLocator {
 
     String sampleId;
 
+    long order;
 
     /**
      * Track metadata.  Primarily for generating description and popup text.
@@ -177,6 +178,7 @@ public class ResourceLocator {
         res.setAutoscaleGroup(trackConfig.autoscaleGroup);
         res.setTrackProperties(new TrackProperties(trackConfig));
         res.setFilterTypes(trackConfig.filterTypes);
+        res.order = trackConfig.order;
         return res;
 
     }
@@ -197,6 +199,13 @@ public class ResourceLocator {
 
     }
 
+    public long getOrder() {
+        return order;
+    }
+
+    public void setOrder(long order) {
+        this.order = order;
+    }
 
     private void setFilterTypes(String[] filterTypes) {
         this.filterTypes = filterTypes;

@@ -150,17 +150,17 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    public void render(RenderContext context, Rectangle visibleRect) {
+    public void render(RenderContext context, Rectangle ignore) {
 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
             Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
+            Rectangle visibleRect = context.getVisibleRect();
             GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", visibleRect, g);
         } else {
-            getRenderer().render(inViewScores, context, visibleRect, this);
+            getRenderer().render(inViewScores, context, context.getTrackRectangle(), this);
         }
-
     }
 
 

@@ -75,10 +75,14 @@ public class OverlayTracksMenuAction extends MenuAction {
         for (Track t : tracks) {
 
             if (t instanceof MergedTracks mergedTracks) {
-                int index = IGV.getInstance().getTrackPanelIndex(mergedTracks);
+                long order = mergedTracks.getOrder();
                 mergedTracks.setTrackAlphas(1.0);
+                // Set the order of member tracks to match the merged track's order
+                for (Track memberTrack : mergedTracks.getMemberTracks()) {
+                    memberTrack.setOrder(order);
+                }
                 IGV.getInstance().deleteTracks(List.of(mergedTracks));
-                IGV.getInstance().addTracks(new ArrayList<>(mergedTracks.getMemberTracks()), index);
+                IGV.getInstance().addTracks(new ArrayList<>(mergedTracks.getMemberTracks()));
             }
         }
         IGV.getInstance().repaint();

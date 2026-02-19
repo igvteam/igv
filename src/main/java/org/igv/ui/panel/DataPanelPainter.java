@@ -106,7 +106,6 @@ public class DataPanelPainter {
 
         if (track.isVisible()) {
             try {
-
                 track.render(context, null);
 
             } catch (Exception e) {

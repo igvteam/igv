@@ -506,8 +506,8 @@ public class IGV implements IGVEventObserver {
 
 
     /**
-     * Add the specified tracks to the appropriate panel. The list of tracks share a common file (locator).  Panel
-     * is chosen based on characteristics of the {@code locator}.
+     * Add the specified tracks to the appropriate panel. Tracks are inserted at positions based on their
+     * order property, maintaining ascending order.
      */
     public void addTracks(List<Track> trackList) {
         for (var track : trackList) {
@@ -515,41 +515,18 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-    /**
-     * Add the specified tracks starting at the specified index in the track panel collection.
-     *
-     * @param trackList the list of tracks to add
-     * @param index     the index at which to start inserting the tracks
-     */
-    public void addTracks(List<Track> trackList, int index) {
-        int currentIndex = index;
-        for (var track : trackList) {
-            addTrackPanel(track, currentIndex);
-            currentIndex++;
-        }
-    }
-
     public void addTrack(Track track) {
         addTrackPanel(track);
     }
 
+    /**
+     * Add a track panel at the position determined by the track's order property.
+     * Tracks are inserted to maintain ascending order by the order property.
+     */
     public void addTrackPanel(Track track) {
         contentPane.getMainPanel().addTrackPanel(track);
     }
 
-    public void addTrackPanel(Track track, int index) {
-        contentPane.getMainPanel().addTrackPanel(track, index);
-    }
-
-    /**
-     * Get the index of the track panel containing the specified track.
-     *
-     * @param track the track to find
-     * @return the index of the track panel, or -1 if not found
-     */
-    public int getTrackPanelIndex(Track track) {
-        return contentPane.getMainPanel().getTrackPanelIndex(track);
-    }
 
 
     public int getVisibleTrackCount() {

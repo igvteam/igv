@@ -41,14 +41,14 @@ public class ReloadTracksMenuAction extends MenuAction {
         String currentSessionFilePath = igv.getSession().getPath();
         Session currentSession = igv.getSession();
         currentSession.setPath(currentSessionFilePath);
-        String xml = (new JSONSessionWriter(igv)).createXmlFromSession(currentSession, null);
+        String json = (new JSONSessionWriter(igv)).createJsonFromSession(currentSession);
 
         igv.resetSession(currentSessionFilePath);
-        final InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+        final InputStream inputStream = new ByteArrayInputStream(json.getBytes());
 
         Runnable runnable = () -> {
             try {
-                igv.loadSessionFromStream(currentSessionFilePath, inputStream);
+                igv.loadSessionFromStream("tmp.json", inputStream);
             } catch (IOException ex) {
                 log.error("Error reloading tracks", ex);
             }

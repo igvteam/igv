@@ -101,6 +101,9 @@ class TrackPanelDropTargetListener implements DropTargetListener {
         // Reorder the panels in the MainPanel
         mainPanel.reorderPanels(orderedNames);
 
+        // Update the moved track's order property to reflect its new position
+        mainPanel.updateMovedTrackOrder(droppedPanel);
+
         dtde.dropComplete(true);
     }
 }

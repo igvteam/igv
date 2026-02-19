@@ -187,45 +187,34 @@ public class JSONSessionReader implements SessionReader {
                 log.error("Error waiting for track futures to complete", e);
             }
 
-            // Sort track descriptors by order (ascending), then by fileIndex for stable sorting
-            // Tracks with order=0 (default) will appear before tracks with higher order values
-            topLevelDescriptors.sort(Comparator
-                    .comparingLong((TrackDescriptor d) -> d.order)
-                    .thenComparingInt(d -> d.fileIndex));
-
             // Map to store id -> track for combined track creation
             Map<String, Track> trackById = new HashMap<>();
 
-            // Track combined descriptors and their positions in the sorted order
-            List<Integer> combinedTrackPositions = new ArrayList<>();
+            // Track combined descriptors for second pass (combined tracks depend on other tracks being loaded first)
             List<TrackDescriptor> combinedDescriptors = new ArrayList<>();
-            int nonCombinedTrackCount = 0;
 
-            // First pass: add all non-combined tracks in sorted order, record combined track positions
-            for (int i = 0; i < topLevelDescriptors.size(); i++) {
-                TrackDescriptor descriptor = topLevelDescriptors.get(i);
+            // First pass: add all non-combined tracks, setting order property from descriptor
+            for (TrackDescriptor descriptor : topLevelDescriptors) {
                 try {
                     if (descriptor.isCombined()) {
-                        // Remember the position for this combined track (relative to other tracks added so far)
-                        combinedTrackPositions.add(nonCombinedTrackCount);
+                        // Defer combined tracks to second pass
                         combinedDescriptors.add(descriptor);
-                        // Don't increment nonCombinedTrackCount - this slot is reserved for the combined track
 
                     } else if (descriptor.isBlat()) {
-                        // Blat track - create and add at current position
+                        // Blat track - create, set order, and add
                         BlatTrack blatTrack = new BlatTrack();
+                        blatTrack.setOrder(descriptor.order);
                         blatTrack.unmarshalJSON(descriptor.trackJson);
-                        igv.addTracks(List.of(blatTrack), nonCombinedTrackCount);
+                        igv.addTrack(blatTrack);
                         trackById.put(getId(blatTrack), blatTrack);
-                        nonCombinedTrackCount++;
 
                     } else if (descriptor.isGenome()) {
-                        // Genome track - unmarshal and add at current position
+                        // Genome track - set order, unmarshal, and add
                         Track t = descriptor.genomeTrack;
+                        t.setOrder(descriptor.order);
                         t.unmarshalJSON(descriptor.trackJson);
-                        igv.addTracks(List.of(t), nonCombinedTrackCount);
+                        igv.addTrack(t);
                         trackById.put(getId(t), t);
-                        nonCombinedTrackCount++;
 
                     } else if (descriptor.isMerged()) {
                         // Assemble merged track from loaded child tracks
@@ -246,21 +235,21 @@ public class JSONSessionReader implements SessionReader {
                             String id = descriptor.trackJson.optString("id", UUID.randomUUID().toString());
                             String name = descriptor.trackJson.optString("name", "Merged Track");
                             MergedTracks mergedTracks = new MergedTracks(id, name, childTracks);
+                            mergedTracks.setOrder(descriptor.order);
                             mergedTracks.unmarshalJSON(descriptor.trackJson);
-                            igv.addTracks(List.of(mergedTracks), nonCombinedTrackCount);
+                            igv.addTrack(mergedTracks);
                             trackById.put(mergedTracks.getId(), mergedTracks);
-                            nonCombinedTrackCount++;
                         } else {
                             log.warn("Merged track has no valid child tracks: " + descriptor.trackJson.optString("name", "unknown"));
                         }
 
                     } else {
-                        // Add non-merged track(s) at current position
+                        // Add non-merged track(s)
                         List<Track> tracks = allTrackFutures.get(descriptor.singleFutureIndex).get();
                         for (Track t : tracks) {
-                            igv.addTracks(List.of(t), nonCombinedTrackCount);
+                            t.setOrder(descriptor.order);
+                            igv.addTrack(t);
                             trackById.put(getId(t), t);
-                            nonCombinedTrackCount++;
                         }
                     }
                 } catch (Exception e) {
@@ -268,16 +257,14 @@ public class JSONSessionReader implements SessionReader {
                 }
             }
 
-            // Second pass: insert combined tracks at their recorded positions
-            // Process in order so that each insertion adjusts subsequent positions correctly
-            for (int i = 0; i < combinedDescriptors.size(); i++) {
-                TrackDescriptor descriptor = combinedDescriptors.get(i);
-                int insertPosition = combinedTrackPositions.get(i) + i; // Adjust for previously inserted combined tracks
+            // Second pass: create and add combined tracks
+            for (TrackDescriptor descriptor : combinedDescriptors) {
                 try {
                     CombinedDataTrack combinedTrack = createCombinedDataTrack(descriptor.trackJson, trackById);
                     if (combinedTrack != null) {
+                        combinedTrack.setOrder(descriptor.order);
                         combinedTrack.unmarshalJSON(descriptor.trackJson);
-                        igv.addTracks(List.of(combinedTrack), insertPosition);
+                        igv.addTrack(combinedTrack);
                     }
                 } catch (Exception e) {
                     log.error("Error creating combined track", e);

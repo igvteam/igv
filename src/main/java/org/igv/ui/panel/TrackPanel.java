@@ -333,29 +333,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         track = null;
     }
 
-    /**
-     * Insert the selectedTracks collection either before or after the target and return true.
-     *
-     * @param selectedTracks
-     * @param targetTrack
-     * @param before
-     */
-    public void moveSelectedTracksTo(Collection<? extends Track> selectedTracks,
-                                     Track targetTrack,
-                                     boolean before) {
-
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-
-//        for (TrackGroup tg : trackGroups) {
-//            if (tg.moveSelectedTracksTo(selectedTracks, targetTrack, before)) {
-//                return;
-//            }
-//        }
-    }
-
-
     public int getContentHeight() {
         return this.track.getContentHeight();
     }

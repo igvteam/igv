@@ -37,6 +37,27 @@ public interface Track  {
         return TrackType.annotation;
     }
 
+    /**
+     * Return an integer that defines the order of the track relative to other tracks.  Tracks are sorted by this value
+     * in ascending order.  The default is 0, so tracks with a positive order will be below tracks with a negative order.
+     * Note: Data type long is used to be compatible with igv.js, which uses MAX_SAFE_INTEGER, decidely not
+     * safe for Java int.
+     *
+     * @return
+     */
+    default long getOrder() {
+        return 0;
+    }
+
+    /**
+     * Set the order of the track relative to other tracks.
+     *
+     * @param order the order value
+     */
+    default void setOrder(long order) {
+        // default implementation does nothing
+    }
+
     void setViewport(TrackPanelScrollPane trackPanel);
 
     /**

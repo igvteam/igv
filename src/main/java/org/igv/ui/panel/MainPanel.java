@@ -225,11 +225,16 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     }
 
+    /**
+     * Add a track panel at the position determined by the track's order property.
+     * Tracks are inserted to maintain ascending order by the order property.
+     *
+     * @param track the track to add
+     * @return the TrackPanelScrollPane containing the track
+     */
     public synchronized TrackPanelScrollPane addTrackPanel(Track track) {
 
         final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
-
-        DataType dataType = track.getDataType();
 
         trackPanel.addTrack(track);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
@@ -237,25 +242,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
-            if (dataType == DataType.SEQUENCE) {
-                trackPanelContainer.add(sp, 0);
-            } else {
-                int position = 0;
-                Component[] components = trackPanelContainer.getComponents();
-                if (components.length > 0) {
-                    Component c = components[0];
-                    if (c instanceof TrackPanelScrollPane) {
-                        TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-                        if (!tsp.getTrackPanel().getTracks().isEmpty()) {
-                            Track firstTrack = tsp.getTrackPanel().getTracks().get(0);
-                            if (firstTrack.getDataType() == DataType.SEQUENCE) {
-                                position = 1;
-                            }
-                        }
-                    }
-                }
-                trackPanelContainer.add(sp, position);
-            }
+            int insertPosition = findInsertPosition(track.getOrder());
+            trackPanelContainer.add(sp, insertPosition);
         };
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);
@@ -264,30 +252,86 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     }
 
     /**
-     * Add a track panel at the specified index in the track panel container.
+     * Find the correct insertion position for a track with the given order value.
+     * Returns the index where the track should be inserted to maintain ascending order.
      *
-     * @param track the track to add
-     * @param index the index at which to insert the track panel
-     * @return the TrackPanelScrollPane containing the track
+     * @param order the order value of the track to insert
+     * @return the index at which to insert the track panel
      */
-    public synchronized TrackPanelScrollPane addTrackPanel(Track track, int index) {
+    private int findInsertPosition(long order) {
+        Component[] components = trackPanelContainer.getComponents();
+        for (int i = 0; i < components.length; i++) {
+            Component c = components[i];
+            if (c instanceof TrackPanelScrollPane) {
+                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                List<Track> tracks = tsp.getTrackPanel().getTracks();
+                if (!tracks.isEmpty()) {
+                    Track existingTrack = tracks.get(0);
+                    if (existingTrack.getOrder() > order) {
+                        return i;
+                    }
+                }
+            }
+        }
+        // If no track has a higher order, insert at the end
+        return components.length;
+    }
 
-        final TrackPanel trackPanel = new TrackPanel(track.getName(), this);
+    /**
+     * Updates the order property of a track that was moved via drag & drop.
+     * Calculates a new order value that places it between its new neighbors,
+     * preserving any pinned tracks with extreme order values.
+     *
+     * @param movedPanel the track panel that was moved
+     */
+    public void updateMovedTrackOrder(TrackPanel movedPanel) {
+        List<TrackPanel> trackPanels = getTrackPanels();
+        int newIndex = trackPanels.indexOf(movedPanel);
+        if (newIndex < 0) return;
 
-        trackPanel.addTrack(track);
-        final TrackPanelScrollPane sp = new TrackPanelScrollPane();
-        track.setViewport(sp);
+        Track movedTrack = movedPanel.getTrack();
+        if (movedTrack == null) return;
 
-        Runnable runnable = () -> {
-            sp.setViewportView(trackPanel);
-            int componentCount = trackPanelContainer.getComponentCount();
-            int insertIndex = Math.max(0, Math.min(index, componentCount));
-            trackPanelContainer.add(sp, insertIndex);
-        };
+        long prevOrder = Globals.JS_MIN_SAFE_INTEGER;
+        long nextOrder = Globals.JS_MAX_SAFE_INTEGER;
 
-        UIUtilities.invokeAndWaitOnEventThread(runnable);
+        // Get the order of the previous track (if any)
+        if (newIndex > 0) {
+            Track prevTrack = trackPanels.get(newIndex - 1).getTrack();
+            if (prevTrack != null) {
+                prevOrder = prevTrack.getOrder();
+            }
+        }
 
-        return sp;
+        // Get the order of the next track (if any)
+        if (newIndex < trackPanels.size() - 1) {
+            Track nextTrack = trackPanels.get(newIndex + 1).getTrack();
+            if (nextTrack != null) {
+                nextOrder = nextTrack.getOrder();
+            }
+        }
+
+        // Calculate new order as midpoint between neighbors
+        long newOrder;
+        if (prevOrder == Globals.JS_MIN_SAFE_INTEGER && nextOrder == Globals.JS_MAX_SAFE_INTEGER) {
+            // Only track, use 0
+            newOrder = 0;
+        } else if (prevOrder == Globals.JS_MIN_SAFE_INTEGER) {
+            // No previous track, place before next
+            newOrder = nextOrder - 1;
+        } else if (nextOrder == Globals.JS_MAX_SAFE_INTEGER) {
+            // No next track, place after previous
+            newOrder = prevOrder + 1;
+        } else {
+            // Between two tracks, use midpoint
+            newOrder = prevOrder + (nextOrder - prevOrder) / 2;
+            // If midpoint equals prevOrder (no room), just use prevOrder + 1
+            if (newOrder == prevOrder) {
+                newOrder = prevOrder + 1;
+            }
+        }
+
+        movedTrack.setOrder(newOrder);
     }
 
     /**

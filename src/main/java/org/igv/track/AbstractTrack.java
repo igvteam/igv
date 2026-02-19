@@ -75,7 +75,6 @@ public abstract class AbstractTrack implements Track {
     boolean drawYLine = false;
     float yLine = 0;
 
-
     private Map<String, String> attributes = new HashMap();
 
     private ContinuousColorScale colorScale;
@@ -94,6 +93,18 @@ public abstract class AbstractTrack implements Track {
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
     private String trackLine = null;
 
+    private long order = 0;
+
+    @Override
+    public long getOrder() {
+        return order;
+    }
+
+    @Override
+    public void setOrder(long order) {
+        this.order = order;
+    }
+
     public AbstractTrack() {
         this.darkMode = Globals.isDarkMode();
         defaultColor = darkMode ? Color.CYAN : Color.blue.darker();
@@ -108,6 +119,9 @@ public abstract class AbstractTrack implements Track {
         this.id = id;
         this.name = name;
         this.attributeKey = this.name;
+        if(dataResourceLocator != null) {
+            this.order = dataResourceLocator.getOrder();
+        }
         init();
     }
 
@@ -128,6 +142,7 @@ public abstract class AbstractTrack implements Track {
             displayMode = DisplayMode.EXPANDED;
         }
     }
+
 
     @Override
     public void setViewport(TrackPanelScrollPane viewport) {
@@ -1199,6 +1214,7 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
+        jsonObject.put("order", order);
         jsonObject.put("type", getType().toString());
         jsonObject.put("id", id);
         jsonObject.put("name", name);
@@ -1260,6 +1276,10 @@ public abstract class AbstractTrack implements Track {
 
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
+
+        if(jsonObject.has("order")) {
+            this.order = jsonObject.getLong("order");
+        }
 
         if (jsonObject.has("name")) {
             this.name = jsonObject.getString("name");

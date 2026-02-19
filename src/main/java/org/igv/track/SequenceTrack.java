@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.igv.Globals.JS_MAX_SAFE_INTEGER;
 import static org.igv.prefs.Constants.*;
 
 
@@ -65,6 +66,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         setSortable(false);
         showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+        setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top.
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
