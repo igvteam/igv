@@ -46,7 +46,7 @@ public class IGVPanel extends JPanel implements Paintable {
             int h = getHeight(); //getPreferredSize().height;
             Component[] children = getComponents();
 
-            int dragHandleWidth = DragHandlePanel.DRAG_HANDLE_WIDTH;
+            int leftOffset = mainPanel.getLeftOffset();
             int nw = mainPanel.getNamePanelWidth();
 
             Component dragHandleSpacer = children[0];
@@ -54,10 +54,10 @@ public class IGVPanel extends JPanel implements Paintable {
             Component attributePanel = children[2];
             Component dataPanel = children[3];
 
-            dragHandleSpacer.setBounds(0, 0, dragHandleWidth, h);
-            namePanel.setBounds(mainPanel.getNamePanelX() + dragHandleWidth, 0, nw, h);
-            attributePanel.setBounds(mainPanel.getAttributePanelX() + dragHandleWidth, 0, mainPanel.getAttributePanelWidth(), h);
-            dataPanel.setBounds(mainPanel.getDataPanelX() + dragHandleWidth, 0, mainPanel.getDataPanelWidth() - dragHandleWidth, h);
+            dragHandleSpacer.setBounds(0, 0, leftOffset, h);
+            namePanel.setBounds(mainPanel.getNamePanelX() + leftOffset, 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX() + leftOffset, 0, mainPanel.getAttributePanelWidth(), h);
+            dataPanel.setBounds(mainPanel.getDataPanelX() + leftOffset, 0, mainPanel.getDataPanelWidth() - leftOffset, h);
 
             dataPanel.doLayout();
         }

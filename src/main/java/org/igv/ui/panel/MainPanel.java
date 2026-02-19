@@ -480,6 +480,20 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return dataPanelWidth;
     }
 
+    /**
+     * Returns the total left offset for panels, which includes the drag handle width
+     * plus the selection panel width if selection panels are visible.
+     */
+    public int getLeftOffset() {
+        int offset = DragHandlePanel.DRAG_HANDLE_WIDTH;
+        // Check if any track panel has its selection panel visible
+        List<TrackPanel> trackPanels = getTrackPanels();
+        if (!trackPanels.isEmpty() && trackPanels.get(0).getSelectionPanel().isVisible()) {
+            offset += TrackSelectionPanel.SELECTION_PANEL_WIDTH;
+        }
+        return offset;
+    }
+
     public ScrollableTrackContainer getTrackPanelContainer() {
         return trackPanelContainer;
     }

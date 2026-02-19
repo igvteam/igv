@@ -30,6 +30,7 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.MainPanel;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
+import org.igv.ui.panel.TrackPanel;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
 import org.igv.util.BrowserLauncher;
@@ -70,7 +71,7 @@ public class IGVMenuBar extends JMenuBar  {
 
     private JMenu extrasMenu;
     private JMenu googleMenu;
-    private JMenu AWSMenu;
+    private JMenu awsMenu;
     private AutosaveMenu autosaveMenu;
     private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
@@ -128,6 +129,8 @@ public class IGVMenuBar extends JMenuBar  {
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
 
+        menus.add(createTracksMenu());
+
         hubsMenu = new JMenu("Track Hubs");
         menus.add(hubsMenu);
         menus.add(createSampleInfoMenu("Sample Info"));
@@ -154,9 +157,9 @@ public class IGVMenuBar extends JMenuBar  {
         }
 
 
-        AWSMenu = createAWSMenu();
-        AWSMenu.setVisible(false);
-        menus.add(AWSMenu);
+        awsMenu = createAWSMenu();
+        awsMenu.setVisible(false);
+        menus.add(awsMenu);
         //detecting the provider is slow, do it in another thread
         LongRunningTask.submit(this::updateAWSMenu);
 
@@ -166,7 +169,7 @@ public class IGVMenuBar extends JMenuBar  {
     }
 
     public void updateAWSMenu() {
-        UIUtilities.invokeOnEventThread(() -> AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
+        UIUtilities.invokeOnEventThread(() -> awsMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
     }
 
     /**
@@ -294,6 +297,25 @@ public class IGVMenuBar extends JMenuBar  {
         fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         return fileMenu;
+    }
+
+    JMenu createTracksMenu() {
+
+        JMenu tracksMenu = new JMenu("Tracks");
+
+        // Show/hide track selection checkboxes
+        JMenuItem selectTracksItem = new JMenuItem("Show Selection Checkboxes");
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.getText().startsWith("Show");
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                tp.setSelectionPanelVisible(show);
+            }
+            selectTracksItem.setText(show ? "Hide Selection Checkboxes" : "Show Selection Checkboxes");
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        tracksMenu.add(selectTracksItem);
+
+        return tracksMenu;
     }
 
     JMenu createSessionsMenu(String name) {
