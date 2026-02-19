@@ -119,7 +119,7 @@ public abstract class AbstractTrack implements Track {
         this.id = id;
         this.name = name;
         this.attributeKey = this.name;
-        if(dataResourceLocator != null) {
+        if (dataResourceLocator != null) {
             this.order = dataResourceLocator.getOrder();
         }
         init();
@@ -1025,6 +1025,7 @@ public abstract class AbstractTrack implements Track {
         if (showDataRange == false) {
             element.setAttribute("showDataRange", Boolean.toString(showDataRange));
         }
+
         if (isNumeric()) {
             if (autoscaleGroup != null) {
                 element.setAttribute("autoscaleGroup", this.autoscaleGroup);
@@ -1263,21 +1264,18 @@ public abstract class AbstractTrack implements Track {
             if (this.getWindowFunction() != null) {
                 jsonObject.put("windowFunction", String.valueOf(this.getWindowFunction()));
             }
-            // TODO -- convert this to "min, max, mid, etc"
-//            if (track.isNumeric() && track.getDataRange() != null) {
-//                JSONObject dataRangeJson = new JSONObject();
-//                track.getDataRange().marshalJSON(dataRangeJson);
-//                trackJson.put(SessionElement.DATA_RANGE, dataRangeJson);
-//            }
-        }
 
+            if(this.dataRange != null) {
+                this.dataRange.marshalJSON(jsonObject);
+            }
+        }
     }
 
 
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
 
-        if(jsonObject.has("order")) {
+        if (jsonObject.has("order")) {
             this.order = jsonObject.getLong("order");
         }
 
