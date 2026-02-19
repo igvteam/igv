@@ -4,7 +4,6 @@ import org.igv.feature.CachingFeatureSource;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.tools.motiffinder.MotifFinderSource;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MotifTrack extends FeatureTrack {
@@ -32,6 +31,12 @@ public class MotifTrack extends FeatureTrack {
         super.init(null, source);
         setSortable(false);
     }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.motif;
+    }
+
 
     @Override
     public void unmarshalXML(Element element, Integer version) {

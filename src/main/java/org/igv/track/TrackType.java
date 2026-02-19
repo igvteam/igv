@@ -21,5 +21,6 @@ public enum TrackType {
     arc,
     snp,
     eqtl,
-    blat
+    blat,
+    motif
 }

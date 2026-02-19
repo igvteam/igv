@@ -133,7 +133,7 @@ public class JSONSessionReader implements SessionReader {
 
                 } else if ("combined".equals(type)) {
                     // Combined track - defer creation until referenced tracks are loaded
-                    topLevelDescriptors.add(new TrackDescriptor(trackJson, i));
+                    topLevelDescriptors.add(new TrackDescriptor(trackJson, i, TrackDescriptor.Type.COMBINED));
 
                 } else if("blat".equals(type)) {
                     topLevelDescriptors.add(TrackDescriptor.createBlatDescriptor(trackJson, i));
@@ -153,9 +153,10 @@ public class JSONSessionReader implements SessionReader {
                     } else {
                         log.warn("Sequence track not found in genome tracks");
                     }
-                }
+                } else if("motif".equals(type)) {
+                    topLevelDescriptors.add(TrackDescriptor.createMotifDescriptor(trackJson, i));
 
-                else if (trackJson.has("url")) {
+                } else if (trackJson.has("url")) {
                     // Non-merged top-level track
                     String url = trackJson.getString("url");
                     ResourceLocator locator = new ResourceLocator(url);
@@ -207,6 +208,14 @@ public class JSONSessionReader implements SessionReader {
                         blatTrack.unmarshalJSON(descriptor.trackJson);
                         igv.addTrack(blatTrack);
                         trackById.put(getId(blatTrack), blatTrack);
+
+                    } else if (descriptor.isMotif()) {
+                        // Motif track - create, set order, and add
+                        MotifTrack motifTrack = new MotifTrack();
+                        motifTrack.setOrder(descriptor.order);
+                        motifTrack.unmarshalJSON(descriptor.trackJson);
+                        igv.addTrack(motifTrack);
+                        trackById.put(getId(motifTrack), motifTrack);
 
                     } else if (descriptor.isGenome()) {
                         // Genome track - set order, unmarshal, and add
@@ -351,7 +360,7 @@ public class JSONSessionReader implements SessionReader {
      * references to the futures that will provide the loaded tracks.
      */
     private static class TrackDescriptor {
-        enum Type {SINGLE, MERGED, COMBINED, BLAT, GENOME}
+        enum Type {SINGLE, MERGED, COMBINED, BLAT, MOTIF, GENOME}
 
         final Type type;
         final JSONObject trackJson;
@@ -387,8 +396,8 @@ public class JSONSessionReader implements SessionReader {
         }
 
         // Constructor for combined track (no futures, created after other tracks)
-        TrackDescriptor(JSONObject trackJson, int fileIndex) {
-            this.type = Type.COMBINED;
+        TrackDescriptor(JSONObject trackJson, int fileIndex, Type type) {
+            this.type = type;
             this.trackJson = trackJson;
             this.childFutureIndices = null;
             this.childJsons = null;
@@ -401,6 +410,11 @@ public class JSONSessionReader implements SessionReader {
         // Constructor for blat track (created inline, no url loading needed)
         static TrackDescriptor createBlatDescriptor(JSONObject trackJson, int fileIndex) {
             return new TrackDescriptor(Type.BLAT, trackJson, fileIndex);
+        }
+
+        // Constructor for motif track (created inline, no url loading needed)
+        static TrackDescriptor createMotifDescriptor(JSONObject trackJson, int fileIndex) {
+            return new TrackDescriptor(Type.MOTIF, trackJson, fileIndex);
         }
 
         // Private constructor for special track types
@@ -437,6 +451,10 @@ public class JSONSessionReader implements SessionReader {
 
         boolean isBlat() {
             return type == Type.BLAT;
+        }
+
+        boolean isMotif() {
+            return type == Type.MOTIF;
         }
 
         boolean isGenome() {

@@ -14,7 +14,6 @@ import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sam.mods.BaseModficationFilter;
-import org.igv.session.Persistable;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -30,7 +29,6 @@ import org.igv.util.StringUtils;
 import org.igv.util.blat.BlatClient;
 import org.igv.util.collections.CollUtils;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -1156,10 +1154,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             experimentType = ExperimentType.valueOf(jsonObject.getString("experimentType"));
         }
 
-        if (jsonObject.has("renderOptions")) {
-            renderOptions = new RenderOptions(this);
-            renderOptions.unmarshalJSON(jsonObject.getJSONObject("renderOptions"));
-        }
+        renderOptions = new RenderOptions(this);
+        renderOptions.unmarshalJSON(jsonObject);
     }
 
     @Override
@@ -1170,9 +1166,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             jsonObject.put("experimentType", experimentType.toString());
         }
 
-        JSONObject renderOptionsObject = new JSONObject();
-        renderOptions.marshalJSON(renderOptionsObject);
-        jsonObject.put("renderOptions", renderOptionsObject);
+        renderOptions.marshalJSON(jsonObject);
     }
 
     static class InsertionMenu extends IGVPopupMenu {
