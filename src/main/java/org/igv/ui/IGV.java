@@ -1363,9 +1363,12 @@ public class IGV implements IGVEventObserver {
     public void sortAllTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
         assert attributeNames.length == ascending.length;
 
-        for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.sortTracksByAttributes(attributeNames, ascending);
+        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
+
+        for(Track track : getAllTracks()) {
+            track.sortSamples   (comparator);
         }
+
     }
 
 

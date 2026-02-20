@@ -62,7 +62,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         super.paintComponent(g);
 
-        Rectangle trackRectangle = getVisibleRect();
+        Rectangle trackRectangle = new Rectangle(getBounds());
+        trackRectangle.x = 0; // getBounds returns a rectangle with x/y relative to the parent, we want relative to this component
+        trackRectangle.y = 0;
         Rectangle clipRect = g.getClipBounds();
 
         if (trackRectangle != null && trackRectangle.height > 10) {

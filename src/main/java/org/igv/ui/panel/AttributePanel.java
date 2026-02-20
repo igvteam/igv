@@ -60,9 +60,11 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
-        Rectangle visibleRect = getVisibleRect();
+        Rectangle trackRectangle = new Rectangle(getBounds());
+        trackRectangle.x = 0;
+        trackRectangle.y = 0;
         removeMousableRegions();
-        paintImpl((Graphics2D) g, visibleRect, false);
+        paintImpl((Graphics2D) g, trackRectangle, false);
 
     }
 
