@@ -9,7 +9,7 @@ import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
-import org.igv.ui.action.GroupTracksMenuAction;
+import org.igv.ui.action.GroupSamplesMenuAction;
 import org.igv.ui.panel.IGVPopupMenu;
 
 import javax.swing.*;
@@ -218,7 +218,7 @@ public class VariantMenu extends IGVPopupMenu {
     public JMenuItem getGenotypeGroupItem() {
 
         JMenuItem item = new JMenuItem("Group By...");
-        item.addActionListener(evt -> (new GroupTracksMenuAction("", 0, IGV.getInstance())).doGroupBy());
+        item.addActionListener(evt -> (new GroupSamplesMenuAction("", 0, IGV.getInstance())).doGroupBy());
         item.setEnabled(AttributeManager.getInstance().getVisibleAttributes().size() > 0);
 
         return item;

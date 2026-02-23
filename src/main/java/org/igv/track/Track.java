@@ -7,6 +7,7 @@ import org.igv.Globals;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
+import org.igv.sample.SampleGroup;
 import org.igv.ui.panel.*;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
@@ -17,6 +18,7 @@ import org.w3c.dom.Element;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -137,31 +139,6 @@ public interface Track  {
     default String getTooltipText(int y) {
         return getName();
     }
-
-    String getSample();
-
-    /**
-     * Return the number of samples in this track.  For most tracks this will be 1.
-     *
-     * @return
-     */
-    default int sampleCount() {
-        return 1;
-    }
-
-    default void sortSamples(Comparator<String> comparator) {
-        // no op, override in subclass if needed
-    }
-
-    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
-        // no op, override in subclass if needed
-    }
-
-    default void filterSamples(TrackFilter trackFilter) {
-        // no op, override in subclass if needed
-    }
-
-    void setFeatureInfoURL(String featureInfoURL);
 
     ResourceLocator getResourceLocator();
 
@@ -360,6 +337,41 @@ public interface Track  {
     default List<NamedFeature> search(String token) {
         return null;
     }
+
+
+    String getSample();
+
+    /**
+     * Return the number of samples in this track.  For most tracks this will be 1.
+     *
+     * @return
+     */
+    default int sampleCount() {
+        return 1;
+    }
+
+    default List<SampleGroup> getSampleGroups() {
+        return Collections.EMPTY_LIST;
+    }
+
+    default int getSampleHeight() {
+        return 15;
+    }
+
+    default void sortSamples(Comparator<String> comparator) {
+        // no op, override in subclass if needed
+    }
+
+    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
+        // no op, override in subclass if needed
+    }
+
+    default void filterSamples(TrackFilter trackFilter) {
+        // no op, override in subclass if needed
+    }
+
+    void setFeatureInfoURL(String featureInfoURL);
+
 
     default void groupSamplesByAttribute(String attributeKey) {
         // no op, override in subclass if needed

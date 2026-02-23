@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.List;
 
 import static org.igv.prefs.Constants.*;
+import static org.igv.ui.UIConstants.groupGap;
 
 /**
  * @author jrobinso
@@ -213,29 +214,37 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    @Override
     public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
-                                 List<String> names, List<MouseableRegion> mouseRegions) {
+                                 List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
-        int x = trackRectangle.x;
+        final var attributeManager = AttributeManager.getInstance();
+        Rectangle clipBounds = graphics.getClipBounds();
 
-        for (String name : names) {
-            String key = name.toUpperCase();
-            String attributeValue = getAttributeValue(key);
-            if (attributeValue != null) {
-                Rectangle rect = new Rectangle(x, trackRectangle.y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH,
-                        trackRectangle.height);
-                graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
-                graphics.fill(rect);
-                mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
-
-                // Border
-//                graphics.setColor(Color.lightGray);
-//                graphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, trackRectangle.y,
-//                        AttributeHeaderPanel.COLUMN_BORDER_WIDTH, trackRectangle.height);
-
+        var y = trackRectangle.y;
+        int sampleHeight = getSampleHeight();
+        for (var group : getSampleGroups()) {
+            for (String s : group.samples()) {
+                if(y > clipBounds.y + clipBounds.height) {
+                    break;
+                }
+                if (y + sampleHeight > clipBounds.y) {
+                    var x = trackRectangle.x;
+                    for (var name : attributeNames) {
+                        final var key = name.toUpperCase();
+                        var attributeValue = attributeManager.getAttribute(s, key);
+                        if (attributeValue != null) {
+                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
+                            graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
+                            graphics.fill(rect);
+                            mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+                        }
+                        x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+                    }
+                }
+                y += sampleHeight;
             }
-            x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-
+            y += groupGap; // Gap
         }
     }
 

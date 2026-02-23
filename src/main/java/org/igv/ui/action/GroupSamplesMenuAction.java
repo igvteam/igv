@@ -9,12 +9,12 @@ import java.awt.event.ActionEvent;
 /**
  * @author jrobinso
  */
-public class GroupTracksMenuAction extends MenuAction {
+public class GroupSamplesMenuAction extends MenuAction {
 
     //static Logger log = LogManager.getLogger(GroupTracksMenuAction.class);
     IGV igv;
 
-    public GroupTracksMenuAction(String label, int mnemonic, IGV igv) {
+    public GroupSamplesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
         this.igv = igv;
     }

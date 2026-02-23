@@ -1491,9 +1491,6 @@ public class IGV implements IGVEventObserver {
 
     private void resetGroups() {
         log.debug("Resetting Groups");
-//        for (TrackPanel trackPanel : getTrackPanels()) {
-//            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
-//        }
 
         for (Track t : getAllTracks()) {
             t.groupSamplesByAttribute(session.getGroupByAttribute());

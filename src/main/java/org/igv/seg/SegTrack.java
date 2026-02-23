@@ -5,6 +5,7 @@ import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
+import org.igv.sample.SampleGroup;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
@@ -75,6 +76,16 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public int getSampleHeight() {
+        return sampleHeight;
+    }
+
+    @Override
+    public List<SampleGroup> getSampleGroups() {
+        return sampleGroups;
+    }
+
+    @Override
     public void render(RenderContext context) {
 
         Rectangle clipBounds = context.getClipBounds();
@@ -96,16 +107,22 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
+
+
     @Override
     public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
         final var attributeManager = AttributeManager.getInstance();
+        Rectangle clipBounds = graphics.getClipBounds();
 
         var y = trackRectangle.y;
         for (var group : sampleGroups) {
             for (String s : group.samples()) {
-                if (y + sampleHeight > trackRectangle.y && y < trackRectangle.y + trackRectangle.height) {
+                if(y > clipBounds.y + clipBounds.height) {
+                    break;
+                }
+                if (y + sampleHeight > clipBounds.y) {
                     var x = trackRectangle.x;
                     for (var name : attributeNames) {
                         final var key = name.toUpperCase();
@@ -137,10 +154,10 @@ public class SegTrack extends AbstractTrack {
         var y = 0;
         for (var group : sampleGroups) {
             for (String s : group.samples()) {
-                if (y > visibleRect.y + visibleRect.height) {
+                if (y > clipRect.y + clipRect.height) {
                     break;
                 }
-                if (y + sampleHeight > visibleRect.y) {
+                if (y + sampleHeight > clipRect.y) {
                     var r = new Rectangle(0, y, visibleRect.width, sampleHeight);
                     GraphicUtils.drawWrappedText(s, r, g2D, false);
                 }

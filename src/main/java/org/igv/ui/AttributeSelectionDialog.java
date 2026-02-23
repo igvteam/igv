@@ -73,7 +73,7 @@ public class AttributeSelectionDialog extends org.igv.ui.IGVDialog  {
         JPanel attributeSelectionPanel = new JPanel();
         getContentPane().add(attributeSelectionPanel);
         attributeSelectionPanel.setLayout(new FlowLayout());
-        comboBoxLabel = new javax.swing.JLabel(action + " Tracks By:");
+        comboBoxLabel = new javax.swing.JLabel(action + " Samples By:");
         attributeSelectionPanel.add(comboBoxLabel);
         comboBox = new JComboBox();
         comboBox.setModel(new javax.swing.DefaultComboBoxModel(selArray));

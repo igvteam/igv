@@ -1,4 +1,4 @@
-package org.igv.seg;
+package org.igv.sample;
 
 import java.util.List;
 

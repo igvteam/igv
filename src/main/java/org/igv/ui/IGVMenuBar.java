@@ -81,7 +81,7 @@ public class IGVMenuBar extends JMenuBar  {
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu fileMenu;
-    private List<JComponent> tracksMenuAttributeComponents;
+    private List<JComponent> sampleMenuAttributeComponents;
     private JMenu hubsMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -185,7 +185,7 @@ public class IGVMenuBar extends JMenuBar  {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
+        menuAction = new SortSamplesMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
@@ -440,60 +440,43 @@ public class IGVMenuBar extends JMenuBar  {
     private JMenu createSampleInfoMenu(String name) {
 
         MenuAction menuAction;
-        JMenu tracksMenu = new JMenu(name);
+        JMenu sampleMenu = new JMenu(name);
 
         // Load menu items
         menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        sampleMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        sampleMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        tracksMenu.addSeparator();
+        sampleMenu.addSeparator();
 
-        tracksMenuAttributeComponents = new ArrayList<>();
-        // Sort Tracks
-        menuAction = new SortTracksMenuAction("Sort Samples by Attribute...", KeyEvent.VK_S, IGV.getInstance());
+        sampleMenuAttributeComponents = new ArrayList<>();
+
+        // Sort samples
+        menuAction = new SortSamplesMenuAction("Sort Samples by Attribute...", KeyEvent.VK_S, IGV.getInstance());
         JMenuItem sortTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(sortTracksMenuItem);
-        tracksMenuAttributeComponents.add(sortTracksMenuItem);
+        sampleMenu.add(sortTracksMenuItem);
+        sampleMenuAttributeComponents.add(sortTracksMenuItem);
 
         // Group Tracks
-        menuAction = new GroupTracksMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
+        menuAction = new GroupSamplesMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(groupTracksMenuItem);
-        tracksMenuAttributeComponents.add(groupTracksMenuItem);
+        sampleMenu.add(groupTracksMenuItem);
+        sampleMenuAttributeComponents.add(groupTracksMenuItem);
 
         // Filter Tracks
         filterTracksAction = new FilterTracksMenuAction("Filter Samples by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
-        tracksMenu.add(filterTracksMenuItem);
-        tracksMenuAttributeComponents.add(filterTracksMenuItem);
+        sampleMenu.add(filterTracksMenuItem);
+        sampleMenuAttributeComponents.add(filterTracksMenuItem);
 
-
-        // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Samples by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
-        JMenuItem renameTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(renameTracksMenuItem);
-        tracksMenuAttributeComponents.add(renameTracksMenuItem);
-
-        // Export track names and attributes -- if > 1 is selected export those, otherwise export all
-        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
-        exportNames.addActionListener(e12 -> {
-            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
-            if (exportTracks.size() <= 1) {
-                exportTracks = IGV.getInstance().getAllTracks();
-            }
-            exportTrackNames(exportTracks);
-        });
-        tracksMenu.add(exportNames);
-
-        tracksMenu.addMenuListener(new MenuListener() {
+        sampleMenu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
                 // Set visibility of trackMenuAttributeComponents based on attribute names
                 boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
-                for (JComponent comp : tracksMenuAttributeComponents) {
+                for (JComponent comp : sampleMenuAttributeComponents) {
                     comp.setEnabled(hasAttributes);
                 }
             }
@@ -507,7 +490,7 @@ public class IGVMenuBar extends JMenuBar  {
             }
         });
 
-        return tracksMenu;
+        return sampleMenu;
     }
 
     private JMenu createViewMenu(String name) {
