@@ -132,11 +132,6 @@ public class JSONSessionWriter {
                 filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
             }
 
-            if (IGV.getInstance().isFilterShowAllTracks()) {
-                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS, "true");
-            } else {    // Defaults
-                filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS, "false");
-            }
             globalElement.appendChild(filter);
 
             // Process FilterElement elements

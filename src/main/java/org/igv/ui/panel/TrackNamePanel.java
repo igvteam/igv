@@ -120,14 +120,14 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    private void paintImpl(Graphics2D g, Rectangle visibleRect, Rectangle clipRect, boolean snapshot) {
+    private void paintImpl(Graphics2D g, Rectangle trackRectangle, Rectangle clipRect, boolean snapshot) {
 
             Track track = getTrack();
             if (track.isVisible()) {
                 if (!snapshot && track.isSelected()) {
                     g.setBackground(Color.LIGHT_GRAY);
                 }
-                track.renderName(g, visibleRect, clipRect);
+                track.renderName(g, trackRectangle, clipRect);
             }
     }
 

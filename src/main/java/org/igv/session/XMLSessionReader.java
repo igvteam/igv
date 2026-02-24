@@ -655,7 +655,7 @@ public class XMLSessionReader implements SessionReader {
             }
         }
 
-        TrackFilter trackFilter = new TrackFilter(showAll, matchAll, filterElements);
+        TrackFilter trackFilter = showAll ? null : new TrackFilter(matchAll, filterElements);
         session.setFilter(trackFilter);
 
     }

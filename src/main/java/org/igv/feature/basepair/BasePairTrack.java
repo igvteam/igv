@@ -218,16 +218,6 @@ public class BasePairTrack extends AbstractTrack {
         return null;
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        Element renderElement = document.createElement("BPRenderOptions");
-        renderOptions.marshalXML(document, renderElement);
-        element.appendChild(renderElement);
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 

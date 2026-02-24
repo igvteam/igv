@@ -48,29 +48,11 @@ public class FilterTracksMenuAction extends MenuAction {
 
         if (!dialog.isCancelled()) {
             trackFilter = dialog.getFilter();
-            filterTracks(trackFilter);
-            igv.repaint();
-        }
-
-    }
-
-
-
-    private void filterTracks(TrackFilter trackFilter) {
-
-        if (trackFilter == null) {
-            List<Track> tracks = IGV.getInstance().getAllTracks();
-            IGV.getInstance().getSession().setFilter(null);
-            for (Track track : tracks) {
-                track.setVisible(true);
-            }
-        } else {
             IGV.getInstance().getSession().setFilter(trackFilter);
-            trackFilter.evaluate();
-        }
-
-        for(Track track : IGV.getInstance().getAllTracks()) {
-            track.filterSamples(trackFilter);
+            for(Track track : IGV.getInstance().getAllTracks()) {
+                track.groupSamplesByAttribute();
+            }
+            igv.repaint();
         }
     }
 

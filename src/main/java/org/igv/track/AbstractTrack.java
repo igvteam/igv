@@ -12,6 +12,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
+import org.igv.sample.SampleGroup;
 import org.igv.session.SessionAttribute;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -21,8 +22,8 @@ import org.igv.ui.panel.*;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.FileUtils;
 import org.igv.util.ResourceLocator;
+import org.igv.util.TrackFilter;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -32,7 +33,6 @@ import java.util.*;
 import java.util.List;
 
 import static org.igv.prefs.Constants.*;
-import static org.igv.ui.UIConstants.groupGap;
 
 /**
  * @author jrobinso
@@ -49,11 +49,13 @@ public abstract class AbstractTrack implements Track {
     protected final boolean darkMode;
 
     TrackPanelScrollPane viewport;
+    protected int groupGap = 10;
+
+    List<SampleGroup> sampleGroups;
 
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
-    private String attributeKey;
     private String name;
     private String featureInfoURL;
     private boolean itemRGB = true;
@@ -119,7 +121,6 @@ public abstract class AbstractTrack implements Track {
         this.resourceLocator = dataResourceLocator;
         this.id = id;
         this.name = name;
-        this.attributeKey = this.name;
         if (dataResourceLocator != null) {
             this.order = dataResourceLocator.getOrder();
         }
@@ -142,6 +143,10 @@ public abstract class AbstractTrack implements Track {
         if (PreferencesManager.getPreferences().getAsBoolean(EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
+
+        this.sampleGroups = new ArrayList<>();
+
+        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
     }
 
 
@@ -196,6 +201,11 @@ public abstract class AbstractTrack implements Track {
         this.sampleId = sampleId;
     }
 
+    @Override
+    public List<SampleGroup> getSampleGroups() {
+        return sampleGroups;
+    }
+
     // Implement the default rendering of the track name.  Subclasses may override.
     public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
 
@@ -221,11 +231,11 @@ public abstract class AbstractTrack implements Track {
         final var attributeManager = AttributeManager.getInstance();
         Rectangle clipBounds = graphics.getClipBounds();
 
-        var y = trackRectangle.y;
+        var y = trackRectangle.y + this.getSampleOffset();
         int sampleHeight = getSampleHeight();
         for (var group : getSampleGroups()) {
             for (String s : group.samples()) {
-                if(y > clipBounds.y + clipBounds.height) {
+                if (y > clipBounds.y + clipBounds.height) {
                     break;
                 }
                 if (y + sampleHeight > clipBounds.y) {
@@ -234,7 +244,7 @@ public abstract class AbstractTrack implements Track {
                         final var key = name.toUpperCase();
                         var attributeValue = attributeManager.getAttribute(s, key);
                         if (attributeValue != null) {
-                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
+                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight - 1);
                             graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
                             graphics.fill(rect);
                             mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
@@ -375,9 +385,6 @@ public abstract class AbstractTrack implements Track {
         String value = null;
         if (value == null && getSample() != null) {
             value = attributeManager.getAttribute(getSample(), key);
-        }
-        if (value == null) {
-            value = attributeManager.getAttribute(this.attributeKey, key);
         }
         if (value == null && getResourceLocator() != null && getResourceLocator().getPath() != null) {
             value = attributeManager.getAttribute(getResourceLocator().getPath(), key);
@@ -993,62 +1000,61 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    @Override
+    public int sampleCount() {
+        var count = 0;
+        for (var group : getSampleGroups()) {
+            count += group.samples().size();
+        }
+        return count;
+    }
+
+
+    @Override
+    public void filterSamples(TrackFilter trackFilter) {
+        groupSamplesByAttribute();
+    }
+
+    @Override
+    public void groupSamplesByAttribute() {
+
+        String attributeKey = IGV.getInstance().getGroupByAttribute();
+
+        final TrackFilter filter = IGV.getInstance().getSession().getFilter();
+        var filteredSampleNames = filter == null ? getSampleNames() : filter.evaluateSamples(getSampleNames());
+
+        this.sampleGroups.clear();
+
+        if (attributeKey == null) {
+            this.sampleGroups.add(new SampleGroup("", filteredSampleNames));
+            repaint();
+        } else {
+            var attributeManager = AttributeManager.getInstance();
+            var groupMap = new LinkedHashMap<String, List<String>>();
+            for (var sample : filteredSampleNames) {
+                var attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
+                if (attributeValue == null) {
+                    attributeValue = "";
+                }
+                var samples = groupMap.computeIfAbsent(attributeValue, k -> new ArrayList<>());
+                samples.add(sample);
+            }
+
+            // Create groups
+            for (var key : groupMap.keySet()) {
+                sampleGroups.add(new SampleGroup(key, groupMap.get(key)));
+            }
+        }
+
+        repaint();
+    }
+
     /**
      * Restore track from XML serialization -- work in progress
      * //        <renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count">
      *
      * @param element
      */
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        element.setAttribute("name", name);
-        element.setAttribute("attributeKey", attributeKey);
-        element.setAttribute("id", id);
-        element.setAttribute("fontSize", String.valueOf(fontSize));
-        element.setAttribute("visible", String.valueOf(visible));
-
-        if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
-            element.setAttribute("showFeatureNames", Boolean.toString(showFeatureNames));
-        }
-        if (color != null) {
-            element.setAttribute(SessionAttribute.COLOR, ColorUtilities.colorToString(color));
-        }
-        if (altColor != null) {
-            element.setAttribute(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
-        }
-        if (visibilityWindow != VISIBILITY_WINDOW) {
-            element.setAttribute("featureVisibilityWindow", String.valueOf(visibilityWindow));
-        }
-        if (displayMode != DEFAULT_DISPLAY_MODE) {
-            element.setAttribute(SessionAttribute.DISPLAY_MODE, displayMode.toString());
-        }
-        if (colorScale != null) {
-            //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
-            element.setAttribute("colorScale", colorScale.asString());
-        }
-        if (height != DEFAULT_HEIGHT) {
-            element.setAttribute("height", String.valueOf(this.height));
-        }
-        if (showDataRange == false) {
-            element.setAttribute("showDataRange", Boolean.toString(showDataRange));
-        }
-
-        if (isNumeric()) {
-            if (autoscaleGroup != null) {
-                element.setAttribute("autoscaleGroup", this.autoscaleGroup);
-            }
-
-            element.setAttribute("autoScale", String.valueOf(this.autoScale));
-
-            if (this.getWindowFunction() != null) {
-                element.setAttribute("windowFunction", String.valueOf(this.getWindowFunction()));
-            }
-        }
-
-    }
-
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -1059,12 +1065,6 @@ public abstract class AbstractTrack implements Track {
 
         if (element.hasAttribute("id")) {
             this.id = element.getAttribute("id");
-        }
-
-        if (element.hasAttribute("attributeKey")) {
-            this.attributeKey = element.getAttribute("attributeKey");
-        } else {
-            this.attributeKey = this.name;
         }
 
         if (element.hasAttribute("displayMode")) {
@@ -1228,9 +1228,6 @@ public abstract class AbstractTrack implements Track {
         jsonObject.put("type", getType().toString());
         jsonObject.put("id", id);
         jsonObject.put("name", name);
-        if (!attributeKey.equals(name)) {
-            jsonObject.put("attributeKey", attributeKey);
-        }
         if (fontSize != PreferencesManager.getPreferences().getAsInt(DEFAULT_FONT_SIZE)) {
             jsonObject.put("fontSize", String.valueOf(fontSize));
         }
@@ -1274,7 +1271,7 @@ public abstract class AbstractTrack implements Track {
                 jsonObject.put("windowFunction", String.valueOf(this.getWindowFunction()));
             }
 
-            if(this.dataRange != null) {
+            if (this.dataRange != null) {
                 this.dataRange.marshalJSON(jsonObject);
             }
         }
@@ -1294,12 +1291,6 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("id")) {
             this.id = jsonObject.getString("id");
-        }
-
-        if (jsonObject.has("attributeKey")) {
-            this.attributeKey = jsonObject.getString("attributeKey");
-        } else {
-            this.attributeKey = this.name;
         }
 
         if (jsonObject.has("displayMode")) {

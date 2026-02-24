@@ -5,19 +5,13 @@ import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
-import org.igv.sample.SampleGroup;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
-import org.igv.ui.IGV;
-import org.igv.ui.panel.AttributeHeaderPanel;
 import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.awt.*;
@@ -32,23 +26,18 @@ public class SegTrack extends AbstractTrack {
 
     SegmentedDataSet dataset;
     int sampleHeight = 15;
-    int groupGap = 15;
-    List<SampleGroup> sampleGroups;
     Renderer<LocusScore> renderer = new HeatmapRenderer();
 
 
     public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
         super(locator, id, name);
         this.dataset = dataset;
-        var sampleNames = new ArrayList<>(dataset.getSampleNames());
-        this.sampleGroups = new ArrayList<>();
-        this.sampleGroups.add(new SampleGroup("", sampleNames));
         setDataRange(new DataRange(0, 1, 2));
         setDataType(dataset.getType());
         initScale(dataset);
 
         // Groups by global attribute if it exists
-        groupSamplesByAttribute(null);
+        groupSamplesByAttribute();
     }
 
     void initScale(SegmentedDataSet dataset) {
@@ -68,11 +57,8 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int getContentHeight() {
-        var nSamples = 0;
-        for (var group : sampleGroups) {
-            nSamples += group.samples().size();
-        }
-        return nSamples * sampleHeight + (sampleGroups.size() - 1) * groupGap;
+        var nSamples = sampleCount();
+        return nSamples * sampleHeight + (getSampleGroups().size() - 1) * groupGap;
     }
 
     @Override
@@ -81,9 +67,10 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public List<SampleGroup> getSampleGroups() {
-        return sampleGroups;
+    public List<String> getSampleNames() {
+        return dataset.getSampleNames();
     }
+
 
     @Override
     public void render(RenderContext context) {
@@ -91,7 +78,7 @@ public class SegTrack extends AbstractTrack {
         Rectangle clipBounds = context.getClipBounds();
         Rectangle trackRect = context.getTrackRectangle();
         var y = 0;
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             for (String sample : group.samples()) {
                 if (y > clipBounds.y + clipBounds.height) {
                     break;
@@ -107,41 +94,6 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-
-
-    @Override
-    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
-                                 List<String> attributeNames, List<MouseableRegion> mouseRegions) {
-
-        final var attributeManager = AttributeManager.getInstance();
-        Rectangle clipBounds = graphics.getClipBounds();
-
-        var y = trackRectangle.y;
-        for (var group : sampleGroups) {
-            for (String s : group.samples()) {
-                if(y > clipBounds.y + clipBounds.height) {
-                    break;
-                }
-                if (y + sampleHeight > clipBounds.y) {
-                    var x = trackRectangle.x;
-                    for (var name : attributeNames) {
-                        final var key = name.toUpperCase();
-                        var attributeValue = attributeManager.getAttribute(s, key);
-                        if (attributeValue != null) {
-                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
-                            graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
-                            graphics.fill(rect);
-                            mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
-                        }
-                        x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-                    }
-                }
-                y += sampleHeight;
-            }
-            y += groupGap; // Gap
-        }
-    }
-
     @Override
     public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
 
@@ -152,7 +104,7 @@ public class SegTrack extends AbstractTrack {
         g2D.setFont(font);
 
         var y = 0;
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             for (String s : group.samples()) {
                 if (y > clipRect.y + clipRect.height) {
                     break;
@@ -174,7 +126,7 @@ public class SegTrack extends AbstractTrack {
      * @param comparator the comparator to sort by
      */
     public void sortSamples(Comparator<String> comparator) {
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             group.samples().sort(comparator);
         }
     }
@@ -213,7 +165,7 @@ public class SegTrack extends AbstractTrack {
 
         var trackY = mouseY - this.getY();
         var y = 0;
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             var groupPixelHeight = group.samples().size() * sampleHeight;
             if (trackY >= y && trackY < y + groupPixelHeight) {
                 var sampleIndex = (trackY - y) / sampleHeight;
@@ -239,15 +191,6 @@ public class SegTrack extends AbstractTrack {
         return null;
     }
 
-    @Override
-    public int sampleCount() {
-        var count = 0;
-        for (var group : sampleGroups) {
-            count += group.samples().size();
-        }
-        return count;
-    }
-
     /**
      * Get the score over the provided region for the given type. Different types
      * are processed differently. Results are cached according to the provided frameName,
@@ -265,7 +208,7 @@ public class SegTrack extends AbstractTrack {
             return;
         }
 
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             // Compute a value for each sample
             var sampleScores = new HashMap<String, Float>();
             for (String s : group.samples()) {
@@ -324,53 +267,6 @@ public class SegTrack extends AbstractTrack {
         return false;
     }
 
-    @Override
-    public void filterSamples(TrackFilter trackFilter) {
-        if (trackFilter == null || trackFilter.isShowAll()) {
-            var sampleNames = new ArrayList<>(dataset.getSampleNames());
-            this.sampleGroups.clear();
-            this.sampleGroups.add(new SampleGroup("All Samples", sampleNames));
-        } else {
-            var filteredSamples = trackFilter.evaluateSamples(dataset.getSampleNames());
-            this.sampleGroups.clear();
-            this.sampleGroups.add(new SampleGroup("Filtered Samples", filteredSamples));
-        }
-    }
-
-    @Override
-    public void groupSamplesByAttribute(String attributeKey) {
-
-        if (attributeKey == null && IGV.hasInstance()) {
-            attributeKey = IGV.getInstance().getGroupByAttribute();
-        }
-
-        this.sampleGroups.clear();
-
-        if (attributeKey == null) {
-            var sampleNames = new ArrayList<>(dataset.getSampleNames());
-            this.sampleGroups.add(new SampleGroup("", sampleNames));
-            repaint();
-        } else {
-            var attributeManager = AttributeManager.getInstance();
-            var groupMap = new LinkedHashMap<String, List<String>>();
-            for (var sample : dataset.getSampleNames()) {
-                var attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
-                if (attributeValue == null) {
-                    attributeValue = "";
-                }
-                var samples = groupMap.computeIfAbsent(attributeValue, k -> new ArrayList<>());
-                samples.add(sample);
-            }
-
-            // Create groups
-            for (var key : groupMap.keySet()) {
-                sampleGroups.add(new SampleGroup(key, groupMap.get(key)));
-            }
-        }
-
-        repaint();
-    }
-
     public static boolean isSegFile(String pathOrURL) {
         String path;
         try {
@@ -382,17 +278,6 @@ public class SegTrack extends AbstractTrack {
         }
         var lowerPath = path.toLowerCase();
         return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
-    }
-
-
-    public void marshalXML(Document document, Element element) {
-        super.marshalXML(document, element);
-        if (renderer != null) {
-            var type = RendererFactory.getRenderType(renderer);
-            if (type != null) {
-                element.setAttribute("renderer", type.name());
-            }
-        }
     }
 
     @Override

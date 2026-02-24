@@ -16,17 +16,15 @@ public class TrackFilter {
     private LinkedHashSet<FilterElement> elements;
     private boolean isEnabled = true;
 
-    boolean showAll = false; // If true, all tracks are shown regardless of filter
-    boolean matchAll = true; // If true, all elements must match for the track to be visible. If flase, any element match will make the track visible.
+     boolean matchAll = true; // If true, all elements must match for the track to be visible. If flase, any element match will make the track visible.
 
 
     public TrackFilter() {
         this.elements = new LinkedHashSet<>();
     }
 
-    public TrackFilter(boolean showAll, boolean matchAll, List<FilterElement> elements) {
+    public TrackFilter(boolean matchAll, List<FilterElement> elements) {
         this();
-        this.showAll = showAll;
         this.matchAll = matchAll;
         if (elements != null) {
             this.elements.addAll(elements);
@@ -38,7 +36,6 @@ public class TrackFilter {
         StringBuilder sb = new StringBuilder();
         sb.append("Filter[");
         sb.append("enabled=").append(isEnabled);
-        sb.append(", showAll=").append(showAll);
         sb.append(", matchAll=").append(matchAll);
         sb.append(", elements=[");
         for (FilterElement element : elements) {
@@ -54,10 +51,6 @@ public class TrackFilter {
 
     public boolean isMatchAll() {
         return matchAll;
-    }
-
-    public boolean isShowAll() {
-        return showAll;
     }
 
     public void removeAll() {

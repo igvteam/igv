@@ -17,7 +17,6 @@ public class TrackFilterDialog extends JDialog {
     JPanel trackFilterPane;
     JScrollPane scrollPane;
 
-    private JCheckBox showAllTracksFilterCheckBox;
     private JCheckBox matchAllCheckBox;
     private JCheckBox matchAnyCheckBox;
 
@@ -44,14 +43,6 @@ public class TrackFilterDialog extends JDialog {
         JPanel filterHeaderPanel = new JPanel();
         filterHeaderPanel.setLayout(new GridLayout(0, 1));
 
-        showAllTracksFilterCheckBox = new JCheckBox("Show all tracks");
-        showAllTracksFilterCheckBox.setSelected(trackFilter.isShowAll());
-        showAllTracksFilterCheckBox.addActionListener(e -> {
-            matchAllCheckBox.setEnabled(!showAllTracksFilterCheckBox.isSelected());
-            matchAnyCheckBox.setEnabled(!showAllTracksFilterCheckBox.isSelected());
-        });
-        filterHeaderPanel.add(showAllTracksFilterCheckBox);
-
         matchAllCheckBox = new JCheckBox("match all of the following");
         matchAnyCheckBox = new JCheckBox("match any of the following");
         matchAllCheckBox.setSelected(trackFilter.isMatchAll());
@@ -59,15 +50,6 @@ public class TrackFilterDialog extends JDialog {
         ButtonGroup booleanButtonGroup = new ButtonGroup();
         booleanButtonGroup.add(matchAllCheckBox);
         booleanButtonGroup.add(matchAnyCheckBox);
-
-
-        if (trackFilter.isShowAll()) {
-            matchAllCheckBox.setEnabled(false);
-            matchAnyCheckBox.setEnabled(false);
-        } else {
-            matchAllCheckBox.setEnabled(true);
-            matchAnyCheckBox.setEnabled(true);
-        }
 
         JPanel controls = new JPanel();
         FlowLayout layoutManager = new FlowLayout();
@@ -83,6 +65,12 @@ public class TrackFilterDialog extends JDialog {
             addComponent();
         });
         controls.add(addButton);
+
+        JButton clearButton = new JButton("Clear All");
+        clearButton.addActionListener(e -> {
+            clearFilters();
+        });
+        controls.add(clearButton);
 
         filterHeaderPanel.add(controls);
 
@@ -157,6 +145,26 @@ public class TrackFilterDialog extends JDialog {
 
     }
 
+    /**
+     * Clear all filters. Removes all FilterComponent children except the first,
+     * and clears the valueTextField of the remaining one.
+     */
+    public void clearFilters() {
+        Component[] components = trackFilterPane.getComponents();
+
+        // Remove all but the first component
+        for (int i = components.length - 1; i > 0; i--) {
+            trackFilterPane.remove(components[i]);
+        }
+
+        // Clear the value of the first component
+        if (components.length > 0 && components[0] instanceof FilterComponent) {
+            ((FilterComponent) components[0]).clearValue();
+        }
+
+        resizeFilterPane();
+    }
+
     private void resizeFilterPane() {
         int h = 0;
         int w = 0;
@@ -178,7 +186,6 @@ public class TrackFilterDialog extends JDialog {
 
     public TrackFilter getFilter() {
         boolean matchAll = matchAllCheckBox.isSelected();
-        boolean showAllTracks = showAllTracksFilterCheckBox.isSelected();
         List<FilterElement> filterElements = new ArrayList<>();
         for (Component component : trackFilterPane.getComponents()) {
             if (component instanceof FilterComponent) {
@@ -187,7 +194,7 @@ public class TrackFilterDialog extends JDialog {
                 }
             }
         }
-        return new TrackFilter(showAllTracks, matchAll, filterElements);
+        return new TrackFilter(matchAll, filterElements);
     }
 
 }
@@ -271,6 +278,10 @@ public class TrackFilterDialog extends JDialog {
 
      public boolean isComplete() {
          return valueTextField.getText() != null && !valueTextField.getText().isEmpty();
+     }
+
+     public void clearValue() {
+         valueTextField.setText("");
      }
 
      protected void remove() {

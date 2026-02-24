@@ -35,7 +35,6 @@ import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
 import org.igv.track.*;
 import org.igv.ui.WaitCursorManager.CursorToken;
-import org.igv.ui.dnd.GhostGlassPane;
 import org.igv.ui.panel.*;
 import org.igv.ui.util.*;
 import org.igv.util.*;
@@ -1239,7 +1238,7 @@ public class IGV implements IGVEventObserver {
 
     public boolean isFilterShowAllTracks() {
         TrackFilter trackFilter = session.getFilter();
-        return trackFilter != null && trackFilter.isShowAll();
+        return trackFilter == null;
     }
 
     /**
@@ -1493,7 +1492,7 @@ public class IGV implements IGVEventObserver {
         log.debug("Resetting Groups");
 
         for (Track t : getAllTracks()) {
-            t.groupSamplesByAttribute(session.getGroupByAttribute());
+            t.groupSamplesByAttribute();
         }
 
         // Some tracks need to respond to changes in grouping, fire notification event
