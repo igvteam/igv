@@ -32,6 +32,27 @@ public class Session implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(Session.class);
 
+    /**
+     * Stores sort attribute names and their ascending/descending order.
+     */
+    public static class SortAttributes {
+        private final String[] attributeNames;
+        private final boolean[] ascending;
+
+        public SortAttributes(String[] attributeNames, boolean[] ascending) {
+            this.attributeNames = attributeNames;
+            this.ascending = ascending;
+        }
+
+        public String[] getAttributeNames() {
+            return attributeNames;
+        }
+
+        public boolean[] getAscending() {
+            return ascending;
+        }
+    }
+
     //This doesn't mean genelist or not, the same way it does in FrameManager
     public enum GeneListMode {
         NORMAL, CURSOR
@@ -39,7 +60,7 @@ public class Session implements IGVEventObserver {
 
     private int version;
     private String path;
-    private String groupTracksBy;
+
     public boolean expandInsertions = false; //false;
     private int nextAutoscaleGroup;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
@@ -48,13 +69,12 @@ public class Session implements IGVEventObserver {
     private HashMap<DataType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
+    private SortAttributes sortAttributes;
 
     /**
      * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
      */
     private String groupByAttribute = null;
-
-
 
     private History history;
 
@@ -280,14 +300,6 @@ public class Session implements IGVEventObserver {
         this.trackFilter = trackFilter;
     }
 
-    public String getGroupTracksBy() {
-        return groupTracksBy;
-    }
-
-    public void setGroupTracksBy(String groupTracksBy) {
-        this.groupTracksBy = groupTracksBy;
-    }
-
     public ReferenceFrame getReferenceFrame() {
         return referenceFrame;
     }
@@ -490,6 +502,25 @@ public class Session implements IGVEventObserver {
      */
     public ObservableForObject<Map<String, Collection<RegionOfInterest>>> getRegionsOfInterestObservable() {
         return regionsOfInterestObservable;
+    }
+
+    /**
+     * Set the sort attributes for sample sorting.
+     *
+     * @param attributeNames the attribute names to sort by
+     * @param ascending      the sort order for each attribute (true = ascending, false = descending)
+     */
+    public void setSortAttributes(String[] attributeNames, boolean[] ascending) {
+        this.sortAttributes = new SortAttributes(attributeNames, ascending);
+    }
+
+    /**
+     * Get the current sort attributes.
+     *
+     * @return the current SortAttributes, or null if none set
+     */
+    public SortAttributes getSortAttributes() {
+        return sortAttributes;
     }
 }
 

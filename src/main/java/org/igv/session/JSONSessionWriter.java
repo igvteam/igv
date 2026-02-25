@@ -96,7 +96,7 @@ public class JSONSessionWriter {
 
         String groupBy = session.getGroupByAttribute();
         if (groupBy != null) {
-            sessionObject.put(SessionAttribute.GROUP_TRACKS_BY, groupBy);
+            sessionObject.put(SessionAttribute.GROUP_SAMPLES_ATTRIBUTE, groupBy);
         }
 
         int nextAutoscaleGroup = session.getNextAutoscaleGroup();
@@ -149,63 +149,54 @@ public class JSONSessionWriter {
             sessionObject.put("roi", roiArray);
         }
 
-        return sessionObject.toString(2);
-
-    }
-
-
-    private void writeFilters(Session session, Element globalElement, Document document) {
-        TrackFilter trackFilter = session.getFilter();
-        if (trackFilter != null) {
-
-            Element filter = document.createElement(SessionElement.FILTER);
-
+        TrackFilter filter = session.getFilter();
+        if(filter != null) {
+            JSONObject filterJson = new JSONObject();
             if (!IGV.getInstance().isFilterMatchAll()) {
-                filter.setAttribute(SessionAttribute.FILTER_MATCH, "any");
+                filterJson.put(SessionAttribute.FILTER_MATCH, "any");
             } else {    // Defaults to match all
-                filter.setAttribute(SessionAttribute.FILTER_MATCH, "all");
+                filterJson.put(SessionAttribute.FILTER_MATCH, "all");
             }
 
-            globalElement.appendChild(filter);
-
-            // Process FilterElement elements
+            JSONArray filterElements = new JSONArray();
             Iterator iterator = session.getFilter().getFilterElements();
             while (iterator.hasNext()) {
 
                 FilterElement trackFilterElement = (FilterElement) iterator.next();
 
-                Element filterElementElement =
-                        document.createElement(SessionElement.FILTER_ELEMENT);
-                filterElementElement.setAttribute(SessionAttribute.ITEM,
-                        trackFilterElement.getAttributeKey());
-                filterElementElement.setAttribute(
-                        SessionAttribute.OPERATOR,
-                        trackFilterElement.getComparisonOperator().getValue());
-                filterElementElement.setAttribute(SessionAttribute.VALUE,
-                        trackFilterElement.getValue());
+                JSONObject filterElementJson = new JSONObject();
+                filterElementJson.put(SessionAttribute.ITEM, trackFilterElement.getAttributeKey());
+                filterElementJson.put(SessionAttribute.OPERATOR, trackFilterElement.getComparisonOperator().getValue());
+                filterElementJson.put(SessionAttribute.VALUE, trackFilterElement.getValue());
 
-                filter.appendChild(filterElementElement);
+                filterElements.put(filterElementJson);
             }
+            filterJson.put("elements", filterElements);
+            sessionObject.put("filterSamples", filterJson);
         }
-    }
 
-    private void writeRegionsOfInterest(Element globalElement, Document document) {
-        Collection<RegionOfInterest> regions = session.getAllRegionsOfInterest();
-        if ((regions != null) && !regions.isEmpty()) {
+        // Save sort attributes
+        Session.SortAttributes sortAttributes = session.getSortAttributes();
+        if (sortAttributes != null && sortAttributes.getAttributeNames() != null && sortAttributes.getAttributeNames().length > 0) {
+            JSONObject sortJson = new JSONObject();
+            JSONArray attributeNamesArray = new JSONArray();
+            JSONArray ascendingArray = new JSONArray();
 
-            Element regionsElement = document.createElement(SessionElement.REGIONS);
-            for (RegionOfInterest region : regions) {
-                Element regionElement = document.createElement(SessionElement.REGION);
-                regionElement.setAttribute(SessionAttribute.CHROMOSOME, region.getChr());
-                regionElement.setAttribute(SessionAttribute.START_INDEX, String.valueOf(region.getStart()));
-                regionElement.setAttribute(SessionAttribute.END_INDEX, String.valueOf(region.getEnd()));
-                if (region.getDescription() != null) {
-                    regionElement.setAttribute(SessionAttribute.DESCRIPTION, region.getDescription());
-                }
-                regionsElement.appendChild(regionElement);
+            String[] attributeNames = sortAttributes.getAttributeNames();
+            boolean[] ascending = sortAttributes.getAscending();
+
+            for (int i = 0; i < attributeNames.length; i++) {
+                attributeNamesArray.put(attributeNames[i]);
+                ascendingArray.put(ascending[i]);
             }
-            globalElement.appendChild(regionsElement);
+
+            sortJson.put("attributeNames", attributeNamesArray);
+            sortJson.put("ascending", ascendingArray);
+            sessionObject.put("sortSamples", sortJson);
         }
+
+        return sessionObject.toString(2);
+
     }
 
     private void writeHiddenAttributes(Session session, Element globalElement, Document document) {

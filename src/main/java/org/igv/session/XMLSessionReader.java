@@ -138,10 +138,6 @@ public class XMLSessionReader implements SessionReader {
             }
         }
 
-        if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-            igv.setGroupByAttribute(session.getGroupTracksBy());
-        }
-
         if (session.isRemoveEmptyPanels()) {
             igv.getMainPanel().removeEmptyDataPanels();
         }
@@ -181,7 +177,7 @@ public class XMLSessionReader implements SessionReader {
         }
 
         session.setLocus(getAttribute(rootElement, SessionAttribute.LOCUS));
-        session.setGroupTracksBy(getAttribute(rootElement, SessionAttribute.GROUP_TRACKS_BY));
+        session.setGroupByAttribute(getAttribute(rootElement, SessionAttribute.GROUP_TRACKS_BY));
         setNextAutoscaleGroup(session, getAttribute(rootElement, SessionAttribute.NEXT_AUTOSCALE_GROUP));
         setRemoveEmptyTracks(session, getAttribute(rootElement, "removeEmptyTracks"));
 

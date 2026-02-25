@@ -137,6 +137,7 @@ public class TrackFilter {
                 filteredSamples.add(sampleName);
             }
         }
+
         return filteredSamples;
     }
 

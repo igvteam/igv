@@ -10,7 +10,9 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.track.*;
 import org.igv.ui.IGV;
+import org.igv.util.FilterElement;
 import org.igv.util.ResourceLocator;
+import org.igv.util.TrackFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -77,6 +79,12 @@ public class JSONSessionReader implements SessionReader {
                 // Single locus value (may be space-delimited)
                 igv.goToLocus(locusValue.toString());
             }
+        }
+
+        if(jsonObject.has("groupSampleAttribute")) {
+            session.setGroupByAttribute(jsonObject.getString("groupSampleAttribute"));
+        } else if(jsonObject.has("groupTracksBy")) {
+            session.setGroupByAttribute(jsonObject.getString("groupTracksBy"));
         }
 
         if (jsonObject.has("tracks")) {
@@ -327,6 +335,78 @@ public class JSONSessionReader implements SessionReader {
             }
         }
 
+        // Restore sort attributes after all tracks and sample info are loaded
+        if (jsonObject.has("sortSamples")) {
+            JSONObject sortJson = jsonObject.getJSONObject("sortSamples");
+            if (sortJson.has("attributeNames") && sortJson.has("ascending")) {
+                JSONArray attributeNamesArray = sortJson.getJSONArray("attributeNames");
+                JSONArray ascendingArray = sortJson.getJSONArray("ascending");
+
+                String[] attributeNames = new String[attributeNamesArray.length()];
+                boolean[] ascending = new boolean[ascendingArray.length()];
+
+                for (int i = 0; i < attributeNamesArray.length(); i++) {
+                    attributeNames[i] = attributeNamesArray.getString(i);
+                    ascending[i] = ascendingArray.getBoolean(i);
+                }
+
+                // Apply the sorting
+                IGV.getInstance().sortAllTracksByAttributes(attributeNames, ascending);
+            }
+        }
+
+        // Restore filter attributes after all tracks and sample info are loaded
+        if (jsonObject.has("filterSamples")) {
+            JSONObject filterJson = jsonObject.getJSONObject("filterSamples");
+
+            // Determine match mode (all or any)
+            String matchMode = filterJson.optString(SessionAttribute.FILTER_MATCH, "all");
+            boolean matchAll = "all".equalsIgnoreCase(matchMode);
+
+            // Read filter elements
+            List<FilterElement> filterElements = new ArrayList<>();
+            if (filterJson.has("elements")) {
+                JSONArray elementsArray = filterJson.getJSONArray("elements");
+                for (int i = 0; i < elementsArray.length(); i++) {
+                    JSONObject elementJson = elementsArray.getJSONObject(i);
+
+                    String attributeKey = elementJson.getString(SessionAttribute.ITEM);
+                    String operatorString = elementJson.getString(SessionAttribute.OPERATOR);
+                    String value = elementJson.getString(SessionAttribute.VALUE);
+
+                    // Convert operator string to Operator enum
+                    FilterElement.Operator operator = getOperatorFromValue(operatorString);
+                    if (operator != null) {
+                        filterElements.add(new FilterElement(attributeKey, operator, value));
+                    } else {
+                        log.warn("Unknown filter operator: " + operatorString);
+                    }
+                }
+            }
+
+            if (!filterElements.isEmpty()) {
+                TrackFilter trackFilter = new TrackFilter(matchAll, filterElements);
+                session.setFilter(trackFilter);
+
+                // Apply the filter to all tracks
+                for (Track track : IGV.getInstance().getAllTracks()) {
+                    track.groupSamplesByAttribute();
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Convert an operator value string to the corresponding Operator enum.
+     */
+    private static FilterElement.Operator getOperatorFromValue(String value) {
+        for (FilterElement.Operator op : FilterElement.Operator.values()) {
+            if (op.getValue().equalsIgnoreCase(value)) {
+                return op;
+            }
+        }
+        return null;
     }
 
     /**

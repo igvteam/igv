@@ -29,12 +29,9 @@ public class SortDialog extends org.igv.ui.IGVDialog  {
         if (data != null)
             setModel(data);
 
-        okButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                isCanceled = false;
-                setVisible(false);
-            }
+        okButton.addActionListener(e -> {
+            isCanceled = false;
+            setVisible(false);
         });
 
         cancelButton.addActionListener(new ActionListener() {

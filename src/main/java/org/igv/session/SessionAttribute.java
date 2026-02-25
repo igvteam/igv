@@ -19,6 +19,7 @@ public class SessionAttribute {
     public static final String GENOME = "genome";
     public static final String UCSC_ID = "ucscID";
     public static final String GROUP_TRACKS_BY = "groupTracksBy";
+    public static final String GROUP_SAMPLES_ATTRIBUTE = "groupSamplesAttribute";
     public static final String NEXT_AUTOSCALE_GROUP = "nextAutoscaleGroup";
     public static final String HEIGHT = "height";
     public static final String ID = "id";
