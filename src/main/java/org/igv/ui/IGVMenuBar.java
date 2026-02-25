@@ -128,13 +128,11 @@ public class IGVMenuBar extends JMenuBar  {
         fileMenu = new JMenu("File");
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
-
-        menus.add(createTracksMenu());
-
         hubsMenu = new JMenu("Track Hubs");
         menus.add(hubsMenu);
         menus.add(createSampleInfoMenu("Sample Info"));
         menus.add(createSessionsMenu("Sessions"));
+        menus.add(createTracksMenu());
         menus.add(createViewMenu("View"));
         menus.add(createRegionsMenu("Regions"));
         menus.add(createToolsMenu("Tools"));
@@ -459,13 +457,13 @@ public class IGVMenuBar extends JMenuBar  {
         sampleMenu.add(sortTracksMenuItem);
         sampleMenuAttributeComponents.add(sortTracksMenuItem);
 
-        // Group Tracks
+        // Group samples
         menuAction = new GroupSamplesMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         sampleMenu.add(groupTracksMenuItem);
         sampleMenuAttributeComponents.add(groupTracksMenuItem);
 
-        // Filter Tracks
+        // Filter samples
         filterTracksAction = new FilterTracksMenuAction("Filter Samples by Attribute...", KeyEvent.VK_F, IGV.getInstance());
         JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
         sampleMenu.add(filterTracksMenuItem);

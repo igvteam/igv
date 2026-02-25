@@ -1,0 +1,83 @@
+{
+  "reference": {
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",
+    "aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/hg19_alias.tab",
+    "chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes",
+    "name": "Human (GRCh37/hg19)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/cytoBand.txt.gz",
+    "maneBbURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/ncbiRefSeqSelect.bb",
+    "id": "hg19",
+    "wholeGenomeView": true,
+    "chromosomeOrder": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr8",
+      "chr9",
+      "chr10",
+      "chr11",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ],
+    "hubs": [
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/1kg/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/platinum_genomes/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/tutorials/hub.txt"
+    ]
+  },
+  "locus": "chr1:155156300-155164706",
+  "sampleinfo": [{
+    "format": "sampleInfo",
+    "url": "https://igv.org/genomes/data/hg19/igsr_samples.tsv"
+  }],
+  "nextAutoscaleGroup": "2",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991,
+      "height": "0"
+    },
+    {
+      "color": "0,0,150",
+      "featureVisibilityWindow": "10000",
+      "format": "vcf.list",
+      "name": "Phase 3 genotypes",
+      "id": "phase_3_genotypes",
+      "siteColorMode": "ALLELE_FREQUENCY",
+      "type": "variant",
+      "url": "https://igv.org/genomes/data/hg19/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list",
+      "displayMode": "EXPANDED",
+      "order": 5,
+      "height": "500"
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "refseqAll",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "order": 100000,
+      "height": "70"
+    }
+  ]
+}

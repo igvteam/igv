@@ -108,17 +108,29 @@ public class JSONSessionWriter {
         for (Track track : IGV.getInstance().getAllTracks()) {
 
             JSONObject trackJson = new JSONObject();
-
             track.marshalJSON(trackJson);
-
             tracks.put(trackJson);
         }
 
         sessionObject.put("tracks", tracks);
 
+        Set<ResourceLocator> sampleInfoLocators = AttributeManager.getInstance().getLoadedResources();
+        if(sampleInfoLocators != null && !sampleInfoLocators.isEmpty()) {
+            JSONArray sampleInfoArray = new JSONArray();
+            for(ResourceLocator locator : sampleInfoLocators) {
+                JSONObject sampleInfoJson = new JSONObject();
+                sampleInfoJson.put("name", locator.getName());
+                sampleInfoJson.put("url", locator.getPath());
+                sampleInfoJson.put("format", "sampleInfo");
+                sampleInfoArray.put(sampleInfoJson);
+            }
+            sessionObject.put("sampleinfo", sampleInfoArray);
+        }
+
         return sessionObject.toString(2);
 
     }
+
 
     private void writeFilters(Session session, Element globalElement, Document document) {
         TrackFilter trackFilter = session.getFilter();

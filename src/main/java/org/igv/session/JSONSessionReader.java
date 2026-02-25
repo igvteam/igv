@@ -286,6 +286,22 @@ public class JSONSessionReader implements SessionReader {
                 igv.addTrack(track);
             }
         }
+
+        if(jsonObject.has("sampleinfo")) {
+            JSONArray sampleInfoArray = jsonObject.getJSONArray("sampleinfo");
+            for (int i = 0; i < sampleInfoArray.length(); i++) {
+                JSONObject sampleInfoJson = sampleInfoArray.getJSONObject(i);
+                if (sampleInfoJson.has("url")) {
+                    String url = sampleInfoJson.getString("url");
+                    ResourceLocator locator = new ResourceLocator(url);
+                    try {
+                        AttributeManager.getInstance().loadSampleInfo(locator);
+                    } catch (Exception e) {
+                        log.error("Error loading sample info: " + url, e);
+                    }
+                }
+            }
+        }
     }
 
     /**
