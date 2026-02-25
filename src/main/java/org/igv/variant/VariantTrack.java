@@ -18,6 +18,7 @@ import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
+import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
@@ -385,22 +386,29 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
+    @Override
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> attributeNames, List<MouseableRegion> mouseRegions) {
+            super.renderAttributes(graphics, trackRectangle, visibleRect, attributeNames, mouseRegions);
+            renderBoundaryLines(graphics, trackRectangle);
+    }
 
     /**
      * Render the border between variants / genotypes and groups, if any.
      *
      * @param g2D
-     * @param visibleRectangle
+     * @param trackRectanble
      */
-    private void renderBoundaryLines(Graphics2D g2D, Rectangle visibleRectangle) {
+    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectanble) {
+
+        Rectangle clipBounds = g2D.getClipBounds();
 
         final int left = 0;
-        final int right = visibleRectangle.width;
+        final int right = trackRectanble.width;
 
         // Variant / Genotype border
         if (sampleCount() > 0 && showGenotypes) {
             int variantGenotypeBorderY = getVariantsHeight();
-            drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
+            drawVariantBandBorder(g2D, trackRectanble, variantGenotypeBorderY, left, right);
             List<SampleGroup> sampleGroups = getSampleGroups();
             if (sampleGroups.size() > 1) {
                 int genotypeBandHeight = getGenotypeBandHeight();
@@ -408,7 +416,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 int y = getVariantsHeight();
                 for (SampleGroup sampleGroup : sampleGroups) {
                     y += sampleGroup.samples().size() * genotypeBandHeight + groupGap;
-                    g2D.drawLine(0, y - groupGap / 2, visibleRectangle.width, y - groupGap / 2);
+                    if(y < clipBounds.y) {
+                        continue;
+                    } else if(y > clipBounds.y + clipBounds.height) {
+                        break;
+                    }
+                    g2D.drawLine(0, y - groupGap / 2, trackRectanble.width, y - groupGap / 2);
 
                 }
             }

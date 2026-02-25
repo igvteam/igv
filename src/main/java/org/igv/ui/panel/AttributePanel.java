@@ -95,18 +95,6 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
                 track.renderAttributes(g, rect, rect, names, mouseRegions);
             }
         }
-
-        // Border between columns
-        final Graphics2D columnBorderGraphics = (Graphics2D) g.create();
-        columnBorderGraphics.setColor(Color.lightGray);
-        final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-        for (int x = 1; x < rect.x + rect.width; x += colWidth) {
-            columnBorderGraphics.fillRect(
-                    x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y, AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
-        }
-
-        columnBorderGraphics.dispose();
-
     }
 
 
