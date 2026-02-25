@@ -127,6 +127,28 @@ public class JSONSessionWriter {
             sessionObject.put("sampleinfo", sampleInfoArray);
         }
 
+        Collection<RegionOfInterest> regions = session.getAllRegionsOfInterest();
+        if ((regions != null) && !regions.isEmpty()) {
+            JSONArray roiArray = new JSONArray();
+            JSONObject roiObject = new JSONObject();
+            JSONArray featuresArray = new JSONArray();
+
+            for (RegionOfInterest region : regions) {
+                JSONObject featureJson = new JSONObject();
+                featureJson.put("chr", region.getChr());
+                featureJson.put("start", region.getStart());
+                featureJson.put("end", region.getEnd());
+                if (region.getDescription() != null) {
+                    featureJson.put("description", region.getDescription());
+                }
+                featuresArray.put(featureJson);
+            }
+
+            roiObject.put("features", featuresArray);
+            roiArray.put(roiObject);
+            sessionObject.put("roi", roiArray);
+        }
+
         return sessionObject.toString(2);
 
     }

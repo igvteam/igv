@@ -341,7 +341,7 @@ public class Session implements IGVEventObserver {
     }
 
 
-    public void addRegionOfInterestWithNoListeners(RegionOfInterest roi) {
+    public void addRegionOfInterest(RegionOfInterest roi) {
         String chr = roi.getChr();
         Collection<RegionOfInterest> roiList = regionsOfInterest.get(chr);
         if (roiList == null) {

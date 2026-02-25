@@ -278,7 +278,7 @@ public class IGV implements IGVEventObserver {
 
 
     public void addRegionOfInterest(RegionOfInterest roi) {
-        session.addRegionOfInterestWithNoListeners(roi);
+        session.addRegionOfInterest(roi);
         RegionOfInterestPanel.setSelectedRegion(roi);
         repaint();
     }

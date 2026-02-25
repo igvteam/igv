@@ -2,6 +2,7 @@ package org.igv.session;
 
 import org.apache.commons.io.IOUtils;
 import org.igv.data.CombinedDataSource;
+import org.igv.feature.RegionOfInterest;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.GenomeConfig;
@@ -302,6 +303,30 @@ public class JSONSessionReader implements SessionReader {
                 }
             }
         }
+
+        if (jsonObject.has("roi")) {
+            JSONArray roiArray = jsonObject.getJSONArray("roi");
+            for (int i = 0; i < roiArray.length(); i++) {
+                JSONObject roiObject = roiArray.getJSONObject(i);
+                if (roiObject.has("features")) {
+                    JSONArray featuresArray = roiObject.getJSONArray("features");
+                    for (int j = 0; j < featuresArray.length(); j++) {
+                        JSONObject featureJson = featuresArray.getJSONObject(j);
+                        String chr = featureJson.getString("chr");
+                        int start = featureJson.getInt("start");
+                        int end = featureJson.getInt("end");
+                        String description = featureJson.optString("description", null);
+                        if(description == null) {
+                            // "name" is used for description in igv.js sessions
+                            description = featureJson.optString("name", null);
+                        }
+                        RegionOfInterest roi = new RegionOfInterest(chr, start, end, description);
+                        session.addRegionOfInterest(roi);
+                    }
+                }
+            }
+        }
+
     }
 
     /**
