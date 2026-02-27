@@ -3,6 +3,7 @@
 package org.igv.variant;
 
 import htsjdk.tribble.Feature;
+import htsjdk.tribble.TribbleException;
 import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
@@ -12,13 +13,13 @@ import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
+import org.igv.sample.AttributeComparator;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
@@ -57,12 +58,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
     private final static int MAX_FILTER_LINES = 15;
     private final static int WG_TRACK_HEIGHT = 40;
-
     private final int DEFAULT_SQUISHED_HEIGHT = 4;
 
 
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
+    private boolean samplesSorted;
+    private String groupBy;
 
     public static boolean isVCF(String format) {
         return (format.equals("vcf3") ||
@@ -91,11 +93,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The height of a single row in in squished mode
      */
     private int squishedHeight = DEFAULT_SQUISHED_HEIGHT;
-
-    /**
-     * List of all samples, in the order they appear in the file.
-     */
-    List<String> allSamples;
 
     /**
      * Current coloring option
@@ -153,7 +150,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 ColorMode.ALLELE_FRACTION;
 
         this.allSamples = samples;
-        this.groupSamplesByAttribute();
+        this.sampleGroups = new ArrayList<>();
+        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
+
+        // Restore grouping
+        //this.groupSamplesByAttribute();
 
         setDisplayMode(DisplayMode.EXPANDED);
 
@@ -190,19 +191,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private boolean defaultShowGenotypes() {
         return sampleCount() > 0;
     }
-
-
-    /**
-     * Sort samples.  Sort both the master list and groups, if any.
-     *
-     * @param comparator the comparator to sort by
-     */
-    public void sortSamples(Comparator<String> comparator) {
-        for (SampleGroup sampleGroup : getSampleGroups()) {
-            Collections.sort(sampleGroup.samples(), comparator);
-        }
-    }
-
 
     public boolean isEnableMethylationRateSupport() {
         return enableMethylationRateSupport;
@@ -263,6 +251,44 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private int getVariantsHeight() {
         return getVariantBandHeight() * getNumberOfFeatureLevels();
+    }
+
+
+    public void render(RenderContext context) {
+
+        // Draw entire track.  TODO use clipBounds or visibleRect.
+        Rectangle renderRect = context.getTrackRectangle();
+        renderFeatures(context, renderRect);
+    }
+
+    protected void renderFeatures(RenderContext context, Rectangle ignore) {
+
+        if (log.isTraceEnabled()) {
+            String msg = String.format("renderFeatures: %s frame: %s", getName(), context.getReferenceFrame().getName());
+            log.trace(msg);
+        }
+
+        PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame());
+
+        if (packedFeatures == null || !packedFeatures.overlapsInterval(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation() + 1)) {
+            return;
+        }
+
+        try {
+            renderFeatureImpl(context, packedFeatures);
+        } catch (TribbleException e) {
+            log.error("Tribble error", e);
+
+            //Error loading features.  We'll let the user decide if this is "fatal" or not.
+            boolean unload = MessageUtils.confirm("<html> Error loading features: " + e.getMessage() +
+                    "<br>Unload track " + getName() + "?");
+            if (unload) {
+                Collection<Track> tmp = Arrays.asList((Track) this);
+                IGV.getInstance().deleteTracks(tmp);
+                IGV.getInstance().repaint();
+            }
+
+        }
     }
 
 
@@ -386,29 +412,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
-    @Override
-    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> attributeNames, List<MouseableRegion> mouseRegions) {
-            super.renderAttributes(graphics, trackRectangle, visibleRect, attributeNames, mouseRegions);
-            renderBoundaryLines(graphics, trackRectangle);
-    }
 
     /**
      * Render the border between variants / genotypes and groups, if any.
      *
      * @param g2D
-     * @param trackRectanble
+     * @param visibleRectangle
      */
-    private void renderBoundaryLines(Graphics2D g2D, Rectangle trackRectanble) {
-
-        Rectangle clipBounds = g2D.getClipBounds();
+    private void renderBoundaryLines(Graphics2D g2D, Rectangle visibleRectangle) {
 
         final int left = 0;
-        final int right = trackRectanble.width;
+        final int right = visibleRectangle.width;
 
         // Variant / Genotype border
         if (sampleCount() > 0 && showGenotypes) {
             int variantGenotypeBorderY = getVariantsHeight();
-            drawVariantBandBorder(g2D, trackRectanble, variantGenotypeBorderY, left, right);
+            drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
             List<SampleGroup> sampleGroups = getSampleGroups();
             if (sampleGroups.size() > 1) {
                 int genotypeBandHeight = getGenotypeBandHeight();
@@ -416,12 +435,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 int y = getVariantsHeight();
                 for (SampleGroup sampleGroup : sampleGroups) {
                     y += sampleGroup.samples().size() * genotypeBandHeight + groupGap;
-                    if(y < clipBounds.y) {
-                        continue;
-                    } else if(y > clipBounds.y + clipBounds.height) {
-                        break;
-                    }
-                    g2D.drawLine(0, y - groupGap / 2, trackRectanble.width, y - groupGap / 2);
+                    g2D.drawLine(0, y - groupGap / 2, visibleRectangle.width, y - groupGap / 2);
 
                 }
             }
@@ -1141,6 +1155,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode != null) {
             json.put("siteColorMode", siteColorMode.toString());
         }
+        if (samplesSorted && allSamples != null) {
+            json.put("allSamples", allSamples);
+        }
+        if (groupBy != null) {
+            json.put("groupBy", groupBy);
+        }
     }
 
 
@@ -1165,5 +1185,30 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.siteColorMode = ColorMode.valueOf(json.getString("siteColorMode"));
         }
     }
+
+    @Override
+    public void sortSamples(Comparator<String> comparator) {
+        // Sort both master list and groups
+        allSamples.sort(comparator);
+        this.samplesSorted = true;
+        for (var group : getSampleGroups()) {
+            group.samples().sort(comparator);
+        }
+        repaint();
+    }
+
+    /**
+     * @param attributeNames
+     * @param ascending
+     */
+    public void sortByAttributes(final String attributeNames[], final boolean[] ascending) {
+
+        assert attributeNames.length == ascending.length;
+
+        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
+
+        sortSamples(comparator);
+    }
+
 
 }

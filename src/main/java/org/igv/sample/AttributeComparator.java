@@ -1,4 +1,7 @@
-package org.igv.track;
+package org.igv.sample;
+
+import org.igv.track.AttributeManager;
+import org.igv.track.Track;
 
 import java.util.Comparator;
 
@@ -14,6 +17,26 @@ public abstract class AttributeComparator<T> implements Comparator<T> {
         assert attributeNames.length == ascending.length;
         this.attributeNames = attributeNames;
         this.ascending = ascending;
+    }
+
+    public String toJSON() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"attributeNames\":[");
+        for (int i = 0; i < attributeNames.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append("\"").append(attributeNames[i]).append("\"");
+        }
+        sb.append("],\"ascending\":[");
+        for (int i = 0; i < ascending.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(ascending[i]);
+        }
+        sb.append("]}");
+        return sb.toString();
     }
 
     protected abstract String getAttributeValue(T track, String attName);

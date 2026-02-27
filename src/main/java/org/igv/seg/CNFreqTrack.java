@@ -59,7 +59,7 @@ public class CNFreqTrack extends AbstractTrack {
 
     @Override
     public TrackType getType() {
-        return TrackType.cnFreq;
+        return TrackType.cnfreq;
     }
 
     @Override

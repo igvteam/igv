@@ -1,9 +1,12 @@
 package org.igv.variant;
 
-import org.igv.logging.*;
 import org.igv.jbrowse.CircularViewUtilities;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
+import org.igv.sample.AttributeComparator;
+import org.igv.sample.SampleMenuUtils;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
@@ -11,6 +14,7 @@ import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
 import org.igv.ui.action.GroupSamplesMenuAction;
 import org.igv.ui.panel.IGVPopupMenu;
+import org.igv.ui.util.SortDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,11 +31,10 @@ public class VariantMenu extends IGVPopupMenu {
 
     private static Logger log = LogManager.getLogger(VariantMenu.class);
     private VariantTrack track;
-    static boolean depthSortingDirection;
-    static boolean genotypeSortingDirection;
-    static boolean sampleSortingDirection;
-    static boolean qualitySortingDirection;
-
+    private static boolean depthSortingDirection;
+    private static boolean genotypeSortingDirection;
+    private static boolean sampleSortingDirection;
+    private static boolean qualitySortingDirection;
 
     public VariantMenu(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
         super();
@@ -95,8 +98,10 @@ public class VariantMenu extends IGVPopupMenu {
         }
 
         if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
+            add(SampleMenuUtils.getSortByAttributeItem(track));
             addSeparator();
             add(getGenotypeGroupItem());
+            add(SampleMenuUtils.getGroupByAttributeItem(track));
         }
 
         //Variant Information
@@ -205,9 +210,8 @@ public class VariantMenu extends IGVPopupMenu {
         JMenuItem item = new JMenuItem("Sort By Genotype");
         if (variant != null) {
             item.addActionListener(evt -> {
-                GenotypeComparator compare = new GenotypeComparator(variant);
+                track.sortSamples(new GenotypeComparator(variant, genotypeSortingDirection));
                 genotypeSortingDirection = !genotypeSortingDirection;
-                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -228,17 +232,9 @@ public class VariantMenu extends IGVPopupMenu {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
         if (variant != null) {
             item.addActionListener(evt -> {
-                Comparator<String> compare = new Comparator<String>() {
-                    public int compare(String o, String o1) {
-                        if (sampleSortingDirection) {
-                            return o.compareTo(o1);
-                        } else {
-                            return o1.compareTo(o);
-                        }
-                    }
-                };
+                Comparator<String> comparator = sampleSortingDirection ? String::compareTo : (s1, s2) -> s2.compareTo(s1);
+                track.sortSamples(comparator);
                 sampleSortingDirection = !sampleSortingDirection;
-                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
         }
@@ -249,9 +245,8 @@ public class VariantMenu extends IGVPopupMenu {
         JMenuItem item = new JMenuItem("Sort By Depth");
         if (variant != null) {
             item.addActionListener(evt -> {
-                DepthComparator compare = new DepthComparator(variant);
+                track.sortSamples(new DepthComparator(variant, depthSortingDirection));
                 depthSortingDirection = !depthSortingDirection;
-                track.sortSamples(compare);
                 IGV.getInstance().getContentPane().repaint();
             });
 
@@ -265,9 +260,8 @@ public class VariantMenu extends IGVPopupMenu {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
                 item.addActionListener(evt -> {
-                    QualityComparator compare = new QualityComparator(variant);
+                    track.sortSamples(new QualityComparator(variant, qualitySortingDirection));
                     qualitySortingDirection = !qualitySortingDirection;
-                    track.sortSamples(compare);
                     IGV.getInstance().getContentPane().repaint();
                 });
             } else {
@@ -334,84 +328,6 @@ public class VariantMenu extends IGVPopupMenu {
         group.add(m3);
 
         return items;
-    }
-
-    static class GenotypeComparator implements Comparator<String> {
-
-        Variant variant;
-
-        GenotypeComparator(Variant variant) {
-            this.variant = variant;
-        }
-
-        public int compare(String e1, String e2) {
-
-            int genotype1 = classifyGenotype(variant.getGenotype(e1));
-            int genotype2 = classifyGenotype(variant.getGenotype(e2));
-
-            if (genotype2 == genotype1) {
-                return 0;
-            } else if (genotype2 > genotype1) {
-                return genotypeSortingDirection ? 1 : -1;
-            } else {
-                return genotypeSortingDirection ? -1 : 1;
-            }
-        }
-
-
-        private int classifyGenotype(Genotype genotype) {
-
-            if (genotype.isNoCall()) {
-                return genotypeSortingDirection ? 1 : 10;
-            } else if (genotype.isHomVar()) {
-                return 4;
-            } else if (genotype.isHet()) {
-                return 3;
-            } else if (genotype.isHomRef()) {
-                return genotypeSortingDirection ? 2 : 9;
-            }
-            return -1; //Unknown
-        }
-    }
-
-
-    static class DepthComparator implements Comparator<String> {
-
-        Variant variant;
-
-        DepthComparator(Variant variant) {
-            this.variant = variant;
-        }
-
-        public int compare(String s1, String s2) {
-
-
-            double readDepth1 = variant.getGenotype(s1).getAttributeAsDouble("DP");
-            double readDepth2 = variant.getGenotype(s2).getAttributeAsDouble("DP");
-
-            int sign = depthSortingDirection ? -1 : 1;
-            return sign * Double.compare(readDepth1, readDepth2);
-
-        }
-    }
-
-    static class QualityComparator implements Comparator<String> {
-
-        Variant variant;
-
-        QualityComparator(Variant variant) {
-            this.variant = variant;
-        }
-
-        public int compare(String s1, String s2) {
-
-            double qual1 = variant.getGenotype(s1).getPhredScaledQual();
-            double qual2 = variant.getGenotype(s2).getPhredScaledQual();
-
-            int sign = qualitySortingDirection ? -1 : 1;
-            return sign * Double.compare(qual1, qual2);
-
-        }
     }
 
 

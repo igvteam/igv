@@ -451,12 +451,6 @@ public class IGVMenuBar extends JMenuBar  {
 
         sampleMenuAttributeComponents = new ArrayList<>();
 
-        // Sort samples
-        menuAction = new SortSamplesMenuAction("Sort Samples by Attribute...", KeyEvent.VK_S, IGV.getInstance());
-        JMenuItem sortTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        sampleMenu.add(sortTracksMenuItem);
-        sampleMenuAttributeComponents.add(sortTracksMenuItem);
-
         // Group samples
         menuAction = new GroupSamplesMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
         JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);

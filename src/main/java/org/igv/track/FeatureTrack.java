@@ -740,10 +740,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         } else if (coverageRenderer != null) {
             if (getDisplayMode() != DisplayMode.COLLAPSED) {
                 // An ugly hack, but we want to prevent this for vcf tracks
-                if (!(this instanceof VariantTrack)) {
-                    lastFeatureMode = getDisplayMode();
-                    super.setDisplayMode(DisplayMode.COLLAPSED);
-                }
+                //if (!(this instanceof VariantTrack)) {
+                //    lastFeatureMode = getDisplayMode();
+                //    super.setDisplayMode(DisplayMode.COLLAPSED);
+                //}
             }
             renderCoverage(context, renderRect);
         }

@@ -8,7 +8,10 @@ import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
 import org.igv.sample.SampleGroup;
-import org.igv.ui.panel.*;
+import org.igv.ui.panel.IGVPopupMenu;
+import org.igv.ui.panel.MouseableRegion;
+import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TrackFilter;
 import org.json.JSONObject;
@@ -24,7 +27,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public interface Track  {
+public interface Track {
 
 
     enum DisplayMode {
@@ -341,6 +344,8 @@ public interface Track  {
 
     String getSample();
 
+    void repaint();
+
     /**
      * Return the number of samples in this track.  For most tracks this will be 1.
      *
@@ -367,7 +372,6 @@ public interface Track  {
     }
 
     default void sortSamples(Comparator<String> comparator) {
-        // no op, override in subclass if needed
     }
 
     default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
@@ -381,7 +385,7 @@ public interface Track  {
     void setFeatureInfoURL(String featureInfoURL);
 
 
-    default void groupSamplesByAttribute() {
+    default void groupSamplesByAttribute(String attribute) {
         // no op, override in subclass if needed
     }
 

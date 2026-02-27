@@ -5,6 +5,9 @@ import org.igv.feature.genome.Genome;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
+import org.igv.renderer.Renderer;
+import org.igv.sample.SampleGroup;
+import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
@@ -28,16 +31,21 @@ public class SegTrack extends AbstractTrack {
     int sampleHeight = 15;
     Renderer<LocusScore> renderer = new HeatmapRenderer();
 
-
     public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
+
         super(locator, id, name);
         this.dataset = dataset;
         setDataRange(new DataRange(0, 1, 2));
         setDataType(dataset.getType());
         initScale(dataset);
 
-        // Groups by global attribute if it exists
-        groupSamplesByAttribute();
+        this.allSamples = dataset.getSampleNames();
+        this.sampleGroups = new ArrayList<>();
+        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
+    }
+
+    public TrackType getType() {
+        return TrackType.seg;
     }
 
     void initScale(SegmentedDataSet dataset) {
@@ -68,7 +76,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public List<String> getSampleNames() {
-        return dataset.getSampleNames();
+        return allSamples;
     }
 
 
@@ -119,18 +127,6 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-
-    /**
-     * Sort samples.  Sort both the master list and groups, if any.
-     *
-     * @param comparator the comparator to sort by
-     */
-    public void sortSamples(Comparator<String> comparator) {
-        for (var group : getSampleGroups()) {
-            group.samples().sort(comparator);
-        }
-    }
-
     @Override
     public void setRendererClass(Class rc) {
         try {
@@ -146,6 +142,16 @@ public class SegTrack extends AbstractTrack {
         var menu = TrackMenuUtils.getPopupMenu(Collections.singletonList(this), "Menu", te);
         menu.addSeparator();
         TrackMenuUtils.addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this));
+
+
+        List<String> keys = AttributeManager.getInstance().getAttributeNames();
+
+        if(keys.size() > 0) {
+            menu.addSeparator();
+            menu.add(SampleMenuUtils.getSortByAttributeItem(this));
+            menu.add(SampleMenuUtils.getGroupByAttributeItem(this));
+        }
+
         return menu;
     }
 
@@ -189,6 +195,18 @@ public class SegTrack extends AbstractTrack {
             y += groupPixelHeight + groupGap;
         }
         return null;
+    }
+
+
+    @Override
+    public void sortSamples(Comparator<String> comparator) {
+        // Sort both master list and groups
+        allSamples.sort(comparator);
+        this.samplesSorted = true;
+        for (var group : getSampleGroups()) {
+            group.samples().sort(comparator);
+        }
+        repaint();
     }
 
     /**
@@ -295,6 +313,14 @@ public class SegTrack extends AbstractTrack {
                     log.error("Error instantiating renderer: " + rendererClass.getName(), e);
                 }
             }
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        if (renderer != null) {
+            json.put("renderer", renderer.getClass().getName());
         }
     }
 

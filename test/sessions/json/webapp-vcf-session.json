@@ -18,7 +18,7 @@
 			"https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/tutorials/hub.txt"
 		]
 	},
-	"locus": "all",
+	"locus": "chr1:155,157,300-155,163,706",
 	"roi": [],
 	"tracks": [
 		{
@@ -36,6 +36,11 @@
 			"visibilityWindow": 10000,
 			"order": 5,
 			"type": "variant",
+			"sort": {
+				"option": "ATTRIBUTE",
+				"attribute": "Population|name",
+				"direction": "DESC"
+			},
 			"color": "rgb(0,0,150)"
 		},
 		{

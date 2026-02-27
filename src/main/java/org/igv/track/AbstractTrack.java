@@ -6,12 +6,14 @@ import org.igv.Globals;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.IGVFeature;
+import org.igv.feature.RegionOfInterest;
 import org.igv.feature.Strand;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
+import org.igv.sample.AttributeComparator;
 import org.igv.sample.SampleGroup;
 import org.igv.session.SessionAttribute;
 import org.igv.ui.FontManager;
@@ -51,7 +53,8 @@ public abstract class AbstractTrack implements Track {
     TrackPanelScrollPane viewport;
     protected int groupGap = 10;
 
-    List<SampleGroup> sampleGroups;
+    protected List<SampleGroup> sampleGroups = new ArrayList<>();
+    protected List<String> allSamples;
 
     private ResourceLocator resourceLocator;
     private String id;
@@ -97,6 +100,10 @@ public abstract class AbstractTrack implements Track {
     private String trackLine = null;
 
     private long order = 0;
+
+    protected String groupBy;
+    protected boolean samplesSorted;
+
 
     @Override
     public long getOrder() {
@@ -144,9 +151,10 @@ public abstract class AbstractTrack implements Track {
             displayMode = DisplayMode.EXPANDED;
         }
 
+        this.allSamples = getSampleNames();
         this.sampleGroups = new ArrayList<>();
-
         this.sampleGroups.add(new SampleGroup("", getSampleNames()));
+
     }
 
 
@@ -993,6 +1001,7 @@ public abstract class AbstractTrack implements Track {
         return featureColor;
     }
 
+    @Override
     public void repaint() {
         if (this.viewport != null) {
             this.viewport.repaint(this.viewport.getVisibleRect());
@@ -1010,19 +1019,37 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // Sorting
+
+
+    /**
+        * Sort samples by the given attribute.
+     *
+     * @param attributeNames
+     * @param ascending
+     */
+    public void sortByAttributes(final String attributeNames[], final boolean[] ascending) {
+
+        assert attributeNames.length == ascending.length;
+        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
+        sortSamples(comparator);
+
+    }
+
+
     @Override
     public void filterSamples(TrackFilter trackFilter) {
-        groupSamplesByAttribute();
+        //groupSamplesByAttribute();
     }
 
     @Override
-    public void groupSamplesByAttribute() {
-
-        String attributeKey = IGV.getInstance().getGroupByAttribute();
+    public void groupSamplesByAttribute(String attributeKey) {
 
         final TrackFilter filter = IGV.getInstance().getSession().getFilter();
-        var filteredSampleNames = filter == null ? getSampleNames() : filter.evaluateSamples(getSampleNames());
+        var filteredSampleNames = filter == null ? allSamples : filter.evaluateSamples(allSamples);
 
+        this.groupBy = attributeKey;
         this.sampleGroups.clear();
 
         if (attributeKey == null) {
@@ -1275,6 +1302,14 @@ public abstract class AbstractTrack implements Track {
                 this.dataRange.marshalJSON(jsonObject);
             }
         }
+
+        if (samplesSorted && allSamples != null) {
+            jsonObject.put("allSamples", allSamples);
+        }
+
+        if(groupBy != null) {
+            jsonObject.put("groupBy", groupBy);
+        }
     }
 
 
@@ -1402,7 +1437,24 @@ public abstract class AbstractTrack implements Track {
             this.dataRange = DataRange.fromJson(jsonObject);
         }
 
-    }
+        if (jsonObject.has("allSamples")) {
+            this.allSamples = new ArrayList<>();
+            jsonObject.getJSONArray("allSamples").forEach(s -> allSamples.add((String) s));
+            this.samplesSorted = true;
+            if(jsonObject.has("groupBy")) {
+                this.groupBy = jsonObject.getString("groupBy");
+                this.groupSamplesByAttribute(this.groupBy);
+            } else {
+                this.sampleGroups = new ArrayList<>();
+                this.sampleGroups.add(new SampleGroup("", allSamples));
+            }
+        }
 
+        if(jsonObject.has("groupBy")) {
+            this.groupBy = jsonObject.getString("groupBy");
+            this.groupSamplesByAttribute(this.groupBy);
+        }
+
+    }
 
 }

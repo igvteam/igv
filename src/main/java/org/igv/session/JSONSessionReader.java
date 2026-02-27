@@ -55,9 +55,9 @@ public class JSONSessionReader implements SessionReader {
             throw new RuntimeException("Session file is missing required 'genome' or 'reference' property");
         }
 
-        // Cache genome tracks if provided, to avoid redundant genome queries during track loading.  Genome tracks
-        // will always include sequence, but may also include annotation tracks.  We remove them here and re-add
-        // after loading all other tracks to maintain the original track order.
+        // Cache genome tracks if provided.  Genome tracks will always include sequence, but may also include
+        // annotation tracks.  We remove them here and re-add after loading all other tracks to maintain the specified
+        // track order.
         Map<String, Track> genomeTrackMap = new HashMap<>();
         List<Track> genomeTracks = igv.getAllTracks();
         for (Track track : genomeTracks) {
@@ -76,7 +76,7 @@ public class JSONSessionReader implements SessionReader {
                 }
                 igv.goToLocus(String.join(" ", loci));
             } else {
-                // Single locus value (may be space-delimited)
+                // Single locus string (may be space-delimited string of multiple loci)
                 igv.goToLocus(locusValue.toString());
             }
         }
@@ -94,6 +94,9 @@ public class JSONSessionReader implements SessionReader {
             // Collect all individual track load futures (both top-level and merged children)
             List<CompletableFuture<List<Track>>> allTrackFutures = new ArrayList<>();
 
+            // Map URL to future index to avoid loading the same URL multiple times
+            Map<String, Integer> urlToFutureIndex = new HashMap<>();
+
             // Track descriptors maintain the order and structure of top-level tracks
             List<TrackDescriptor> topLevelDescriptors = new ArrayList<>();
 
@@ -101,7 +104,6 @@ public class JSONSessionReader implements SessionReader {
 
                 JSONObject trackJson = tracksArray.getJSONObject(i);
                 String type = trackJson.optString("type", null);
-
                 String id = getId(trackJson);
                 if (id != null && genomeTrackMap.containsKey(id)) {
 
@@ -121,20 +123,27 @@ public class JSONSessionReader implements SessionReader {
                         JSONObject childTrackJson = childTracksArray.getJSONObject(j);
                         if (childTrackJson.has("url")) {
                             String url = childTrackJson.getString("url");
-                            ResourceLocator locator = new ResourceLocator(url);
 
-                            int futureIndex = allTrackFutures.size();
+                            int futureIndex;
+                            if (urlToFutureIndex.containsKey(url)) {
+                                futureIndex = urlToFutureIndex.get(url);
+                            } else {
+                                ResourceLocator locator = new ResourceLocator(url);
+                                String format = childTrackJson.optString("format", null);
+                                if (format != null) {
+                                    locator.setFormat(format);
+                                }
+                                futureIndex = allTrackFutures.size();
+                                urlToFutureIndex.put(url, futureIndex);
+                                allTrackFutures.add(CompletableFuture.supplyAsync(() -> igv.load(locator))
+                                        .exceptionally(e -> {
+                                            log.error("Error loading child track: " + url, e);
+                                            return Collections.emptyList();
+                                        }));
+                            }
+
                             childFutureIndices.add(futureIndex);
                             childJsons.add(childTrackJson);
-
-                            allTrackFutures.add(CompletableFuture.supplyAsync(() -> {
-                                List<Track> tracks = igv.load(locator);
-                                tracks.forEach(track -> track.unmarshalJSON(childTrackJson));
-                                return tracks;
-                            }).exceptionally(e -> {
-                                log.error("Error loading child track: " + url, e);
-                                return Collections.emptyList();
-                            }));
                         }
                     }
 
@@ -168,25 +177,28 @@ public class JSONSessionReader implements SessionReader {
                 } else if (trackJson.has("url")) {
                     // Non-merged top-level track
                     String url = trackJson.getString("url");
-                    ResourceLocator locator = new ResourceLocator(url);
 
-                    if(trackJson.has("format")) {
-                        locator.setFormat(trackJson.getString("format"));
+                    int futureIndex;
+                    if (urlToFutureIndex.containsKey(url)) {
+                        // Reuse existing future for this URL
+                        futureIndex = urlToFutureIndex.get(url);
+                    } else {
+                        // Create new future for this URL
+                        ResourceLocator locator = new ResourceLocator(url);
+                        String format = trackJson.optString("format", null);
+                        if (format != null) {
+                            locator.setFormat(format);
+                        }
+                        futureIndex = allTrackFutures.size();
+                        urlToFutureIndex.put(url, futureIndex);
+                        allTrackFutures.add(CompletableFuture.supplyAsync(() -> igv.load(locator))
+                                .exceptionally(e -> {
+                                    log.error("Error loading track: " + url, e);
+                                    return Collections.emptyList();
+                                }));
                     }
 
-                    int futureIndex = allTrackFutures.size();
                     topLevelDescriptors.add(new TrackDescriptor(trackJson, futureIndex, i));
-
-                    allTrackFutures.add(CompletableFuture.supplyAsync(() -> {
-                        List<Track> tracks = igv.load(locator);
-                        for (Track t : tracks) {
-                            t.unmarshalJSON(trackJson);
-                        }
-                        return tracks;
-                    }).exceptionally(e -> {
-                        log.error("Error loading track: " + url, e);
-                        return Collections.emptyList();
-                    }));
                 }
             }
 
@@ -237,12 +249,15 @@ public class JSONSessionReader implements SessionReader {
                     } else if (descriptor.isMerged()) {
                         // Assemble merged track from loaded child tracks
                         Collection<DataTrack> childTracks = new ArrayList<>();
-                        for (int futureIndex : descriptor.childFutureIndices) {
+                        for (int j = 0; j < descriptor.childFutureIndices.size(); j++) {
+                            int futureIndex = descriptor.childFutureIndices.get(j);
+                            JSONObject childJson = descriptor.childJsons.get(j);
+
                             List<Track> loadedTracks = allTrackFutures.get(futureIndex).get();
                             for (Track track : loadedTracks) {
                                 if (track instanceof DataTrack) {
+                                    track.unmarshalJSON(childJson);
                                     childTracks.add((DataTrack) track);
-                                    trackById.put(getId(track), track);
                                 } else {
                                     log.warn("Expected DataTrack but got: " + track.getClass().getName());
                                 }
@@ -262,12 +277,34 @@ public class JSONSessionReader implements SessionReader {
                         }
 
                     } else {
-                        // Add non-merged track(s)
-                        List<Track> tracks = allTrackFutures.get(descriptor.singleFutureIndex).get();
+                        // Non-merged track(s) - match loaded tracks to trackJson using name, id, or type
+                        int futureIndex = descriptor.singleFutureIndex;
+                        List<Track> tracks = allTrackFutures.get(futureIndex).get();
+
+                        // Find the track that matches this descriptor's trackJson
+                        String jsonName = descriptor.trackJson.optString("name", null);
+                        String jsonId = descriptor.trackJson.optString("id", null);
+                        String jsonType = descriptor.trackJson.optString("type", null);
+                        String jsonFormat = descriptor.trackJson.optString("format", null);
+
                         for (Track t : tracks) {
-                            t.setOrder(descriptor.order);
-                            igv.addTrack(t);
-                            trackById.put(getId(t), t);
+                            // Match track to trackJson using name, id, type, or format
+                            boolean matches = (jsonName != null && jsonName.equals(t.getName())) ||
+                                    (jsonId != null && jsonId.equals(t.getId())) ||
+                                    (jsonType != null && jsonType.equalsIgnoreCase(t.getType().toString())) ||
+                                    (jsonFormat != null && jsonFormat.equalsIgnoreCase(t.getType().toString())) ||
+                                    (tracks.size() == 1);
+
+                            // Use a unique key that includes the track type to allow multiple tracks from same URL
+                            String trackKey = getId(t) + "|" + t.getType();
+
+                            if (matches && !trackById.containsKey(trackKey)) {
+                                t.unmarshalJSON(descriptor.trackJson);
+                                t.setOrder(descriptor.order);
+                                igv.addTrack(t);
+                                trackById.put(trackKey, t);
+                                break; // Only match one track per descriptor
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -390,11 +427,10 @@ public class JSONSessionReader implements SessionReader {
 
                 // Apply the filter to all tracks
                 for (Track track : IGV.getInstance().getAllTracks()) {
-                    track.groupSamplesByAttribute();
+              //      track.groupSamplesByAttribute();
                 }
             }
         }
-
     }
 
     /**
@@ -408,6 +444,7 @@ public class JSONSessionReader implements SessionReader {
         }
         return null;
     }
+
 
     /**
      * Return an identifier for a track JSON object. The "id" property is not reliable, so we check "url" and "path"

@@ -1046,6 +1046,7 @@ public class TrackLoader {
      */
     private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome,
                               SegmentedDataSet ds) {
+
         String path = locator.getPath();
 
         TrackProperties props = ds.getTrackProperties();

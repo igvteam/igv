@@ -7,6 +7,7 @@ package org.igv.track;
 public enum TrackType {
     wig,
     seg,
+    cnfreq,
     annotation,
     alignment,
     variant,
@@ -25,6 +26,5 @@ public enum TrackType {
     motif,
     gistic,
     maf,
-    coverage,
-    cnFreq
+    coverage
 }

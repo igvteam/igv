@@ -30,6 +30,7 @@ import org.igv.prefs.PreferencesEditor;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionSelectionEvent;
+import org.igv.sample.AttributeComparator;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
@@ -1495,7 +1496,7 @@ public class IGV implements IGVEventObserver {
         log.debug("Resetting Groups");
 
         for (Track t : getAllTracks()) {
-            t.groupSamplesByAttribute();
+         //   t.groupSamplesByAttribute();
         }
 
         // Some tracks need to respond to changes in grouping, fire notification event

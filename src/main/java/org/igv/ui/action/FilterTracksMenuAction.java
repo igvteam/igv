@@ -1,7 +1,5 @@
 package org.igv.ui.action;
 
-import org.igv.event.IGVEventBus;
-import org.igv.event.TrackFilterEvent;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
@@ -50,7 +48,7 @@ public class FilterTracksMenuAction extends MenuAction {
             trackFilter = dialog.getFilter();
             IGV.getInstance().getSession().setFilter(trackFilter);
             for(Track track : IGV.getInstance().getAllTracks()) {
-                track.groupSamplesByAttribute();
+              //  track.groupSamplesByAttribute();
             }
             igv.repaint();
         }

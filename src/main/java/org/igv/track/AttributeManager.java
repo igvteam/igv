@@ -138,7 +138,7 @@ public class AttributeManager implements AttributeSupplier {
      * be displayed.
      */
     public List<String> getAttributeNames() {
-        return new ArrayList<String>(attributeNames.values());
+        return new ArrayList<>(attributeNames.values());
     }
 
     /**
