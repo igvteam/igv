@@ -23,6 +23,7 @@ import org.igv.renderer.DataRange;
 import org.igv.sam.CoverageTrack;
 import org.igv.sam.EWigTrack;
 import org.igv.sam.SpliceJunctionTrack;
+import org.igv.sample.SampleFilter;
 import org.igv.seg.CNFreqTrack;
 import org.igv.seg.SegTrack;
 import org.igv.track.*;
@@ -651,8 +652,14 @@ public class XMLSessionReader implements SessionReader {
             }
         }
 
-        TrackFilter trackFilter = showAll ? null : new TrackFilter(matchAll, filterElements);
-        session.setFilter(trackFilter);
+        SampleFilter sampleFilter = showAll ? null : new SampleFilter(matchAll, filterElements);
+
+        for(Track t : igv.getAllTracks()) {
+            if(t instanceof AbstractTrack) {
+                ((AbstractTrack) t).setSampleFilter(sampleFilter);
+            }
+        }
+        session.setFilter(sampleFilter);
 
     }
 

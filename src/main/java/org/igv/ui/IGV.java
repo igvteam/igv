@@ -31,6 +31,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionSelectionEvent;
 import org.igv.sample.AttributeComparator;
+import org.igv.sample.SampleFilter;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
@@ -1233,13 +1234,13 @@ public class IGV implements IGVEventObserver {
 
 
     public boolean isFilterMatchAll() {
-        TrackFilter trackFilter = session.getFilter();
-        return trackFilter != null && trackFilter.isMatchAll();
+        SampleFilter sampleFilter = session.getFilter();
+        return sampleFilter != null && sampleFilter.isMatchAll();
     }
 
     public boolean isFilterShowAllTracks() {
-        TrackFilter trackFilter = session.getFilter();
-        return trackFilter == null;
+        SampleFilter sampleFilter = session.getFilter();
+        return sampleFilter == null;
     }
 
     /**
@@ -1369,7 +1370,9 @@ public class IGV implements IGVEventObserver {
         AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
 
         for(Track track : getAllTracks()) {
-            track.sortSamples   (comparator);
+            if(track instanceof AbstractTrack) {
+                ((AbstractTrack) track).sortSamples(comparator);
+            }
         }
 
     }

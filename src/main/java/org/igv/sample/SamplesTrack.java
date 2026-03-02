@@ -1,7 +1,6 @@
 package org.igv.sample;
 
 import org.igv.track.RegionScoreType;
-import org.igv.util.TrackFilter;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +40,7 @@ public interface SamplesTrack {
         // no op, override in subclass if needed
     }
 
-    default void filterSamples(TrackFilter trackFilter) {
+    default void filterSamples(SampleFilter sampleFilter) {
         // no op, override in subclass if needed
     }
 

@@ -39,9 +39,7 @@ public class SegTrack extends AbstractTrack {
         setDataType(dataset.getType());
         initScale(dataset);
 
-        this.allSamples = dataset.getSampleNames();
-        this.sampleGroups = new ArrayList<>();
-        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
+        this.initSamples(dataset.getSampleNames());
     }
 
     public TrackType getType() {
@@ -73,12 +71,6 @@ public class SegTrack extends AbstractTrack {
     public int getSampleHeight() {
         return sampleHeight;
     }
-
-    @Override
-    public List<String> getSampleNames() {
-        return allSamples;
-    }
-
 
     @Override
     public void render(RenderContext context) {
@@ -150,6 +142,7 @@ public class SegTrack extends AbstractTrack {
             menu.addSeparator();
             menu.add(SampleMenuUtils.getSortByAttributeItem(this));
             menu.add(SampleMenuUtils.getGroupByAttributeItem(this));
+            menu.add(SampleMenuUtils.getFilterByAttributeItem(this));
         }
 
         return menu;
@@ -197,17 +190,6 @@ public class SegTrack extends AbstractTrack {
         return null;
     }
 
-
-    @Override
-    public void sortSamples(Comparator<String> comparator) {
-        // Sort both master list and groups
-        allSamples.sort(comparator);
-        this.samplesSorted = true;
-        for (var group : getSampleGroups()) {
-            group.samples().sort(comparator);
-        }
-        repaint();
-    }
 
     /**
      * Get the score over the provided region for the given type. Different types

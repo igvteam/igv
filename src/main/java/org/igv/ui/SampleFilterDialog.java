@@ -1,7 +1,7 @@
 package org.igv.ui;
 
 import org.igv.track.AttributeManager;
-import org.igv.util.TrackFilter;
+import org.igv.sample.SampleFilter;
 import org.igv.util.FilterElement;
 
 import javax.swing.*;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class TrackFilterDialog extends JDialog {
+public class SampleFilterDialog extends JDialog {
 
     JPanel trackFilterPane;
     JScrollPane scrollPane;
@@ -24,18 +24,18 @@ public class TrackFilterDialog extends JDialog {
     private List<String> attributeKeys;
     private final int vgap = 5;
 
-    public TrackFilterDialog(Frame owner, String title, TrackFilter trackFilter) {
+    public SampleFilterDialog(Frame owner, String title, SampleFilter sampleFilter) {
         super(owner, title, true);
         setLocationRelativeTo(owner);
         setResizable(true);
-        init(trackFilter);
+        init(sampleFilter);
         setSize(700, 600);
     }
 
-    private void init(TrackFilter trackFilter) {
+    private void init(SampleFilter sampleFilter) {
 
-        if (trackFilter == null) {
-            trackFilter = new TrackFilter();
+        if (sampleFilter == null) {
+            sampleFilter = new SampleFilter();
         }
 
         setLayout(new BorderLayout());
@@ -45,8 +45,8 @@ public class TrackFilterDialog extends JDialog {
 
         matchAllCheckBox = new JCheckBox("match all of the following");
         matchAnyCheckBox = new JCheckBox("match any of the following");
-        matchAllCheckBox.setSelected(trackFilter.isMatchAll());
-        matchAnyCheckBox.setSelected(!trackFilter.isMatchAll());
+        matchAllCheckBox.setSelected(sampleFilter.isMatchAll());
+        matchAnyCheckBox.setSelected(!sampleFilter.isMatchAll());
         ButtonGroup booleanButtonGroup = new ButtonGroup();
         booleanButtonGroup.add(matchAllCheckBox);
         booleanButtonGroup.add(matchAnyCheckBox);
@@ -87,8 +87,8 @@ public class TrackFilterDialog extends JDialog {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         //scrollPane.setPreferredSize(new Dimension(700, 500));
 
-        if(trackFilter.getFilterElements().hasNext()) {
-            Iterator iterator = trackFilter.getFilterElements();
+        if(sampleFilter.getFilterElements().hasNext()) {
+            Iterator iterator = sampleFilter.getFilterElements();
             while (iterator.hasNext()) {
                 FilterElement element = (FilterElement) iterator.next();
                 trackFilterPane.add(new FilterComponent(this, uniqueAttributeKeys, element));
@@ -184,7 +184,7 @@ public class TrackFilterDialog extends JDialog {
         return cancelled;
     }
 
-    public TrackFilter getFilter() {
+    public SampleFilter getFilter() {
         boolean matchAll = matchAllCheckBox.isSelected();
         List<FilterElement> filterElements = new ArrayList<>();
         for (Component component : trackFilterPane.getComponents()) {
@@ -194,7 +194,7 @@ public class TrackFilterDialog extends JDialog {
                 }
             }
         }
-        return new TrackFilter(matchAll, filterElements);
+        return filterElements.isEmpty() ? null : new SampleFilter(matchAll, filterElements);
     }
 
 }
@@ -202,7 +202,7 @@ public class TrackFilterDialog extends JDialog {
  class FilterComponent extends JPanel {
 
 
-     private TrackFilterDialog filterDialog;
+     private SampleFilterDialog filterDialog;
 
      private JComboBox comparisonOperatorComboBox;
      private JComboBox itemComboBox;
@@ -210,7 +210,7 @@ public class TrackFilterDialog extends JDialog {
      private JTextField valueTextField;
 
 
-     public FilterComponent(TrackFilterDialog filterDialog, List<String> items, FilterElement element) {
+     public FilterComponent(SampleFilterDialog filterDialog, List<String> items, FilterElement element) {
 
          initComponents();
 

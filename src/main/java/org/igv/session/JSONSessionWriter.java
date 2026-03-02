@@ -104,16 +104,6 @@ public class JSONSessionWriter {
             sessionObject.put(SessionAttribute.NEXT_AUTOSCALE_GROUP, String.valueOf(nextAutoscaleGroup));
         }
 
-        JSONArray tracks = new JSONArray();
-        for (Track track : IGV.getInstance().getAllTracks()) {
-
-            JSONObject trackJson = new JSONObject();
-            track.marshalJSON(trackJson);
-            tracks.put(trackJson);
-        }
-
-        sessionObject.put("tracks", tracks);
-
         Set<ResourceLocator> sampleInfoLocators = AttributeManager.getInstance().getLoadedResources();
         if(sampleInfoLocators != null && !sampleInfoLocators.isEmpty()) {
             JSONArray sampleInfoArray = new JSONArray();
@@ -149,51 +139,14 @@ public class JSONSessionWriter {
             sessionObject.put("roi", roiArray);
         }
 
-        TrackFilter filter = session.getFilter();
-        if(filter != null) {
-            JSONObject filterJson = new JSONObject();
-            if (!IGV.getInstance().isFilterMatchAll()) {
-                filterJson.put(SessionAttribute.FILTER_MATCH, "any");
-            } else {    // Defaults to match all
-                filterJson.put(SessionAttribute.FILTER_MATCH, "all");
-            }
+        JSONArray tracks = new JSONArray();
+        for (Track track : IGV.getInstance().getAllTracks()) {
 
-            JSONArray filterElements = new JSONArray();
-            Iterator iterator = session.getFilter().getFilterElements();
-            while (iterator.hasNext()) {
-
-                FilterElement trackFilterElement = (FilterElement) iterator.next();
-
-                JSONObject filterElementJson = new JSONObject();
-                filterElementJson.put(SessionAttribute.ITEM, trackFilterElement.getAttributeKey());
-                filterElementJson.put(SessionAttribute.OPERATOR, trackFilterElement.getComparisonOperator().getValue());
-                filterElementJson.put(SessionAttribute.VALUE, trackFilterElement.getValue());
-
-                filterElements.put(filterElementJson);
-            }
-            filterJson.put("elements", filterElements);
-            sessionObject.put("filterSamples", filterJson);
+            JSONObject trackJson = new JSONObject();
+            track.marshalJSON(trackJson);
+            tracks.put(trackJson);
         }
-
-        // Save sort attributes
-        Session.SortAttributes sortAttributes = session.getSortAttributes();
-        if (sortAttributes != null && sortAttributes.getAttributeNames() != null && sortAttributes.getAttributeNames().length > 0) {
-            JSONObject sortJson = new JSONObject();
-            JSONArray attributeNamesArray = new JSONArray();
-            JSONArray ascendingArray = new JSONArray();
-
-            String[] attributeNames = sortAttributes.getAttributeNames();
-            boolean[] ascending = sortAttributes.getAscending();
-
-            for (int i = 0; i < attributeNames.length; i++) {
-                attributeNamesArray.put(attributeNames[i]);
-                ascendingArray.put(ascending[i]);
-            }
-
-            sortJson.put("attributeNames", attributeNamesArray);
-            sortJson.put("ascending", ascendingArray);
-            sessionObject.put("sortSamples", sortJson);
-        }
+        sessionObject.put("tracks", tracks);
 
         return sessionObject.toString(2);
 

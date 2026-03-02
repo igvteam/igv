@@ -5,16 +5,13 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.sample.AttributeComparator;
 import org.igv.sample.SampleMenuUtils;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
-import org.igv.ui.action.GroupSamplesMenuAction;
 import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.util.SortDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,8 +66,7 @@ public class VariantMenu extends IGVPopupMenu {
 //        add(colorItem);
 
         addSeparator();
-        JLabel colorSiteByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
-        add(colorSiteByItem);
+        add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
         add(getColorBandByAllelFrequency());
         add(getColorBandByAlleleFraction());
         //add(getColorByNone());
@@ -98,16 +94,15 @@ public class VariantMenu extends IGVPopupMenu {
         }
 
         if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
-            add(SampleMenuUtils.getSortByAttributeItem(track));
             addSeparator();
-            add(getGenotypeGroupItem());
+            add(SampleMenuUtils.getSortByAttributeItem(track));
             add(SampleMenuUtils.getGroupByAttributeItem(track));
+            add(SampleMenuUtils.getFilterByAttributeItem(track));
         }
 
         //Variant Information
         addSeparator();
-        JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
-        add(displayHeading);
+        add(new JLabel("<html>&nbsp;&nbsp;<b>Display Mode", JLabel.LEFT));
         for (JMenuItem item : getDisplayModeItems()) {
             add(item);
         }
@@ -219,15 +214,6 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    public JMenuItem getGenotypeGroupItem() {
-
-        JMenuItem item = new JMenuItem("Group By...");
-        item.addActionListener(evt -> (new GroupSamplesMenuAction("", 0, IGV.getInstance())).doGroupBy());
-        item.setEnabled(AttributeManager.getInstance().getVisibleAttributes().size() > 0);
-
-        return item;
-    }
-
     public JMenuItem getSampleNameSortItem(final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
         if (variant != null) {
@@ -290,42 +276,30 @@ public class VariantMenu extends IGVPopupMenu {
 
         List<JMenuItem> items = new ArrayList();
 
-        ButtonGroup group = new ButtonGroup();
-
         Track.DisplayMode displayMode = track.getDisplayMode();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapsed");
-        m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
+        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Collapsed", displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(evt -> {
             track.setDisplayMode(Track.DisplayMode.COLLAPSED);
             track.repaint();
         });
 
-        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
-        m2.setSelected(displayMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                track.repaint();
-            }
+        JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Squished", displayMode == Track.DisplayMode.SQUISHED);
+        m2.addActionListener(evt -> {
+            track.setDisplayMode(Track.DisplayMode.SQUISHED);
+            track.repaint();
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expanded");
-        m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
-        m3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                track.repaint();
-            }
+        JCheckBoxMenuItem m3 = new JCheckBoxMenuItem("Expanded", displayMode == Track.DisplayMode.EXPANDED);
+        m3.addActionListener(evt -> {
+            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+            track.repaint();
         });
 
 
         items.add(m1);
         items.add(m2);
         items.add(m3);
-        group.add(m1);
-        group.add(m2);
-        group.add(m3);
 
         return items;
     }

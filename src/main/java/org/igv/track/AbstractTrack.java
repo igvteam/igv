@@ -6,7 +6,6 @@ import org.igv.Globals;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.IGVFeature;
-import org.igv.feature.RegionOfInterest;
 import org.igv.feature.Strand;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -24,7 +23,7 @@ import org.igv.ui.panel.*;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.FileUtils;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
+import org.igv.sample.SampleFilter;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -53,8 +52,6 @@ public abstract class AbstractTrack implements Track {
     TrackPanelScrollPane viewport;
     protected int groupGap = 10;
 
-    protected List<SampleGroup> sampleGroups = new ArrayList<>();
-    protected List<String> allSamples;
 
     private ResourceLocator resourceLocator;
     private String id;
@@ -81,8 +78,6 @@ public abstract class AbstractTrack implements Track {
     boolean drawYLine = false;
     float yLine = 0;
 
-    private Map<String, String> attributes = new HashMap();
-
     private ContinuousColorScale colorScale;
 
     String autoscaleGroup;
@@ -101,8 +96,13 @@ public abstract class AbstractTrack implements Track {
 
     private long order = 0;
 
+    // Sample info related properties.
+    private Map<String, String> attributes = new HashMap();
+    protected List<SampleGroup> sampleGroups = new ArrayList<>();
+    protected List<String> allSamples;
     protected String groupBy;
     protected boolean samplesSorted;
+    private SampleFilter sampleFilter;
 
 
     @Override
@@ -151,10 +151,18 @@ public abstract class AbstractTrack implements Track {
             displayMode = DisplayMode.EXPANDED;
         }
 
-        this.allSamples = getSampleNames();
-        this.sampleGroups = new ArrayList<>();
-        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
+    }
 
+    /**
+     * Initializes sample names for this track.  This can't be done in the constructor as subclasses
+     * have differing ways of determining sample names.  This is called from subclass constructors.
+     *
+     *
+     * @param sampleNames
+     */
+    protected void initSamples(List<String> sampleNames) {
+        this.allSamples = sampleNames;
+        resetSampleGroups();
     }
 
 
@@ -1022,39 +1030,45 @@ public abstract class AbstractTrack implements Track {
     /////////////////////////////////////////////////////////////////////////////////////////
     // Sorting
 
+    public void sortSamples(Comparator<String> comparator) {
+        // Sort both master list and groups
+        allSamples.sort(comparator);
+        this.samplesSorted = true;
+        for (var group : getSampleGroups()) {
+            group.samples().sort(comparator);
+        }
+        repaint();
+    }
 
-    /**
-        * Sort samples by the given attribute.
-     *
-     * @param attributeNames
-     * @param ascending
-     */
-    public void sortByAttributes(final String attributeNames[], final boolean[] ascending) {
+    public SampleFilter getSampleFilter() {
+        return sampleFilter;
+    }
 
-        assert attributeNames.length == ascending.length;
-        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
-        sortSamples(comparator);
+    public void setSampleFilter(SampleFilter sampleFilter) {
+        this.sampleFilter = sampleFilter;
+        resetSampleGroups();
+    }
 
+    public List<String> getFilteredSamples() {
+        return sampleFilter == null ? allSamples : sampleFilter.evaluateSamples(allSamples);
+    }
+
+    public void setSampleGroupBy(String attribute) {
+        this.groupBy = attribute;
+        resetSampleGroups();
     }
 
 
-    @Override
-    public void filterSamples(TrackFilter trackFilter) {
-        //groupSamplesByAttribute();
-    }
+    private void resetSampleGroups() {
 
-    @Override
-    public void groupSamplesByAttribute(String attributeKey) {
+        var filteredSampleNames = getFilteredSamples();
 
-        final TrackFilter filter = IGV.getInstance().getSession().getFilter();
-        var filteredSampleNames = filter == null ? allSamples : filter.evaluateSamples(allSamples);
-
-        this.groupBy = attributeKey;
+        String attributeKey = this.groupBy;
         this.sampleGroups.clear();
 
         if (attributeKey == null) {
             this.sampleGroups.add(new SampleGroup("", filteredSampleNames));
-            repaint();
+
         } else {
             var attributeManager = AttributeManager.getInstance();
             var groupMap = new LinkedHashMap<String, List<String>>();
@@ -1304,12 +1318,17 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (samplesSorted && allSamples != null) {
-            jsonObject.put("allSamples", allSamples);
+            jsonObject.put("samples", allSamples);
         }
 
         if(groupBy != null) {
             jsonObject.put("groupBy", groupBy);
         }
+
+        if(sampleFilter != null) {
+            jsonObject.put("sampleFilter", sampleFilter.toJson());
+        }
+
     }
 
 
@@ -1437,24 +1456,31 @@ public abstract class AbstractTrack implements Track {
             this.dataRange = DataRange.fromJson(jsonObject);
         }
 
-        if (jsonObject.has("allSamples")) {
-            this.allSamples = new ArrayList<>();
-            jsonObject.getJSONArray("allSamples").forEach(s -> allSamples.add((String) s));
-            this.samplesSorted = true;
-            if(jsonObject.has("groupBy")) {
-                this.groupBy = jsonObject.getString("groupBy");
-                this.groupSamplesByAttribute(this.groupBy);
-            } else {
-                this.sampleGroups = new ArrayList<>();
-                this.sampleGroups.add(new SampleGroup("", allSamples));
+
+
+        if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")) {
+
+            if(jsonObject.has("samples")) {
+                // Samples are sorted
+                this.samplesSorted = true;
+                this.allSamples = new ArrayList<>();
+                jsonObject.getJSONArray("samples").forEach(s -> allSamples.add((String) s));
             }
-        }
 
-        if(jsonObject.has("groupBy")) {
-            this.groupBy = jsonObject.getString("groupBy");
-            this.groupSamplesByAttribute(this.groupBy);
-        }
+            if(jsonObject.has("groupBy")) {
+                // Samples are also grouped
+                this.groupBy = jsonObject.getString("groupBy");
+            }
 
+            if(jsonObject.has("sampleFilter")) {
+                try {
+                    this.sampleFilter = SampleFilter.fromJson(jsonObject.getJSONObject("sampleFilter"));
+                } catch (Exception e) {
+                    log.error("Unrecognized sampleFilter: " + jsonObject.getJSONObject("sampleFilter"));
+                }
+            }
+
+            resetSampleGroups();
+        }
     }
-
 }

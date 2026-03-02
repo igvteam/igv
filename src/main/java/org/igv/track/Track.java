@@ -13,7 +13,7 @@ import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
+import org.igv.sample.SampleFilter;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
 
@@ -367,27 +367,11 @@ public interface Track {
         return 0;
     }
 
-    default List<String> getSampleNames() {
-        return Collections.emptyList();
-    }
-
-    default void sortSamples(Comparator<String> comparator) {
-    }
-
     default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
         // no op, override in subclass if needed
     }
 
-    default void filterSamples(TrackFilter trackFilter) {
-        // no op, override in subclass if needed
-    }
-
     void setFeatureInfoURL(String featureInfoURL);
-
-
-    default void groupSamplesByAttribute(String attribute) {
-        // no op, override in subclass if needed
-    }
 
     /**
      * Restore object state from an XML element

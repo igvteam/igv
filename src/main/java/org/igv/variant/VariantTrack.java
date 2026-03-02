@@ -63,8 +63,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
-    private boolean samplesSorted;
-    private String groupBy;
 
     public static boolean isVCF(String format) {
         return (format.equals("vcf3") ||
@@ -149,16 +147,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 ColorMode.ALLELE_FREQUENCY :
                 ColorMode.ALLELE_FRACTION;
 
-        this.allSamples = samples;
-        this.sampleGroups = new ArrayList<>();
-        this.sampleGroups.add(new SampleGroup("", getSampleNames()));
-
-        // Restore grouping
-        //this.groupSamplesByAttribute();
+        this.initSamples(samples);
 
         setDisplayMode(DisplayMode.EXPANDED);
 
-        int sampleCount = sampleCount();
+        int sampleCount = samples.size();
         final int groupCount = getSampleGroups().size();
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
@@ -481,11 +474,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-    }
-
-    @Override
-    public List<String> getSampleNames() {
-        return allSamples;
     }
 
     @Override
@@ -1155,12 +1143,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode != null) {
             json.put("siteColorMode", siteColorMode.toString());
         }
-        if (samplesSorted && allSamples != null) {
-            json.put("allSamples", allSamples);
-        }
-        if (groupBy != null) {
-            json.put("groupBy", groupBy);
-        }
     }
 
 
@@ -1185,30 +1167,5 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.siteColorMode = ColorMode.valueOf(json.getString("siteColorMode"));
         }
     }
-
-    @Override
-    public void sortSamples(Comparator<String> comparator) {
-        // Sort both master list and groups
-        allSamples.sort(comparator);
-        this.samplesSorted = true;
-        for (var group : getSampleGroups()) {
-            group.samples().sort(comparator);
-        }
-        repaint();
-    }
-
-    /**
-     * @param attributeNames
-     * @param ascending
-     */
-    public void sortByAttributes(final String attributeNames[], final boolean[] ascending) {
-
-        assert attributeNames.length == ascending.length;
-
-        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
-
-        sortSamples(comparator);
-    }
-
 
 }

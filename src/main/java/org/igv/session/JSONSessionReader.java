@@ -12,7 +12,7 @@ import org.igv.track.*;
 import org.igv.ui.IGV;
 import org.igv.util.FilterElement;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
+import org.igv.sample.SampleFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -80,6 +80,24 @@ public class JSONSessionReader implements SessionReader {
                 igv.goToLocus(locusValue.toString());
             }
         }
+
+        // Sample information -- load this first
+        if(jsonObject.has("sampleinfo")) {
+            JSONArray sampleInfoArray = jsonObject.getJSONArray("sampleinfo");
+            for (int i = 0; i < sampleInfoArray.length(); i++) {
+                JSONObject sampleInfoJson = sampleInfoArray.getJSONObject(i);
+                if (sampleInfoJson.has("url")) {
+                    String url = sampleInfoJson.getString("url");
+                    ResourceLocator locator = new ResourceLocator(url);
+                    try {
+                        AttributeManager.getInstance().loadSampleInfo(locator);
+                    } catch (Exception e) {
+                        log.error("Error loading sample info: " + url, e);
+                    }
+                }
+            }
+        }
+
 
         if(jsonObject.has("groupSampleAttribute")) {
             session.setGroupByAttribute(jsonObject.getString("groupSampleAttribute"));
@@ -333,22 +351,6 @@ public class JSONSessionReader implements SessionReader {
             }
         }
 
-        if(jsonObject.has("sampleinfo")) {
-            JSONArray sampleInfoArray = jsonObject.getJSONArray("sampleinfo");
-            for (int i = 0; i < sampleInfoArray.length(); i++) {
-                JSONObject sampleInfoJson = sampleInfoArray.getJSONObject(i);
-                if (sampleInfoJson.has("url")) {
-                    String url = sampleInfoJson.getString("url");
-                    ResourceLocator locator = new ResourceLocator(url);
-                    try {
-                        AttributeManager.getInstance().loadSampleInfo(locator);
-                    } catch (Exception e) {
-                        log.error("Error loading sample info: " + url, e);
-                    }
-                }
-            }
-        }
-
         if (jsonObject.has("roi")) {
             JSONArray roiArray = jsonObject.getJSONArray("roi");
             for (int i = 0; i < roiArray.length(); i++) {
@@ -389,46 +391,6 @@ public class JSONSessionReader implements SessionReader {
 
                 // Apply the sorting
                 IGV.getInstance().sortAllTracksByAttributes(attributeNames, ascending);
-            }
-        }
-
-        // Restore filter attributes after all tracks and sample info are loaded
-        if (jsonObject.has("filterSamples")) {
-            JSONObject filterJson = jsonObject.getJSONObject("filterSamples");
-
-            // Determine match mode (all or any)
-            String matchMode = filterJson.optString(SessionAttribute.FILTER_MATCH, "all");
-            boolean matchAll = "all".equalsIgnoreCase(matchMode);
-
-            // Read filter elements
-            List<FilterElement> filterElements = new ArrayList<>();
-            if (filterJson.has("elements")) {
-                JSONArray elementsArray = filterJson.getJSONArray("elements");
-                for (int i = 0; i < elementsArray.length(); i++) {
-                    JSONObject elementJson = elementsArray.getJSONObject(i);
-
-                    String attributeKey = elementJson.getString(SessionAttribute.ITEM);
-                    String operatorString = elementJson.getString(SessionAttribute.OPERATOR);
-                    String value = elementJson.getString(SessionAttribute.VALUE);
-
-                    // Convert operator string to Operator enum
-                    FilterElement.Operator operator = getOperatorFromValue(operatorString);
-                    if (operator != null) {
-                        filterElements.add(new FilterElement(attributeKey, operator, value));
-                    } else {
-                        log.warn("Unknown filter operator: " + operatorString);
-                    }
-                }
-            }
-
-            if (!filterElements.isEmpty()) {
-                TrackFilter trackFilter = new TrackFilter(matchAll, filterElements);
-                session.setFilter(trackFilter);
-
-                // Apply the filter to all tracks
-                for (Track track : IGV.getInstance().getAllTracks()) {
-              //      track.groupSamplesByAttribute();
-                }
             }
         }
     }

@@ -73,7 +73,6 @@ public class IGVMenuBar extends JMenuBar  {
     private JMenu googleMenu;
     private JMenu awsMenu;
     private AutosaveMenu autosaveMenu;
-    private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
 
@@ -81,7 +80,6 @@ public class IGVMenuBar extends JMenuBar  {
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu fileMenu;
-    private List<JComponent> sampleMenuAttributeComponents;
     private JMenu hubsMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -183,7 +181,7 @@ public class IGVMenuBar extends JMenuBar  {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuAction = new SortSamplesMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
+        menuAction = new MenuAction("Run igvtools...", null, KeyEvent.VK_T) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
@@ -447,40 +445,6 @@ public class IGVMenuBar extends JMenuBar  {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
         sampleMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        sampleMenu.addSeparator();
-
-        sampleMenuAttributeComponents = new ArrayList<>();
-
-        // Group samples
-        menuAction = new GroupSamplesMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
-        JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        sampleMenu.add(groupTracksMenuItem);
-        sampleMenuAttributeComponents.add(groupTracksMenuItem);
-
-        // Filter samples
-        filterTracksAction = new FilterTracksMenuAction("Filter Samples by Attribute...", KeyEvent.VK_F, IGV.getInstance());
-        JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
-        sampleMenu.add(filterTracksMenuItem);
-        sampleMenuAttributeComponents.add(filterTracksMenuItem);
-
-        sampleMenu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                // Set visibility of trackMenuAttributeComponents based on attribute names
-                boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
-                for (JComponent comp : sampleMenuAttributeComponents) {
-                    comp.setEnabled(hasAttributes);
-                }
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-            }
-        });
 
         return sampleMenu;
     }
