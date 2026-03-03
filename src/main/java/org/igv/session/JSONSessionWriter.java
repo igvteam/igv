@@ -94,11 +94,6 @@ public class JSONSessionWriter {
             sessionObject.put(SessionAttribute.LOCUS, locus);
         }
 
-        String groupBy = session.getGroupByAttribute();
-        if (groupBy != null) {
-            sessionObject.put(SessionAttribute.GROUP_SAMPLES_ATTRIBUTE, groupBy);
-        }
-
         int nextAutoscaleGroup = session.getNextAutoscaleGroup();
         if (nextAutoscaleGroup > 1) {
             sessionObject.put(SessionAttribute.NEXT_AUTOSCALE_GROUP, String.valueOf(nextAutoscaleGroup));
@@ -148,98 +143,56 @@ public class JSONSessionWriter {
         }
         sessionObject.put("tracks", tracks);
 
+        // Gene list (multi-locus view)
+        if (FrameManager.isGeneListMode()) {
+            GeneList geneList = session.getCurrentGeneList();
+            if (geneList != null) {
+                JSONObject geneListJson = new JSONObject();
+                geneListJson.put("name", geneList.getName());
+
+                JSONArray lociArray = new JSONArray();
+                for (String l : geneList.getLoci()) {
+                    lociArray.put(l);
+                }
+                geneListJson.put("loci", lociArray);
+
+                // Store the current frame extents, which may differ from the original gene list loci
+                // (e.g. due to zooming or panning)
+                JSONArray framesArray = new JSONArray();
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    JSONObject frameJson = new JSONObject();
+                    frameJson.put("name", frame.getName());
+                    frameJson.put("chr", frame.getChrName());
+                    frameJson.put("start", frame.getOrigin());
+                    frameJson.put("end", frame.getEnd());
+                    framesArray.put(frameJson);
+                }
+                geneListJson.put("frames", framesArray);
+
+                sessionObject.put("geneList", geneListJson);
+            }
+        }
+
+        // Hidden attributes
+        Set<String> hiddenAttributes = session.getHiddenAttributes();
+        if (hiddenAttributes != null && !hiddenAttributes.isEmpty()) {
+            JSONArray hiddenArray = new JSONArray();
+            for (String attr : hiddenAttributes) {
+                hiddenArray.put(attr);
+            }
+            sessionObject.put("hiddenAttributes", hiddenArray);
+        }
+
         return sessionObject.toString(2);
 
     }
 
-    private void writeHiddenAttributes(Session session, Element globalElement, Document document) {
-        Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES);
-        for (String attribute : session.getHiddenAttributes()) {
-            Element regionElement = document.createElement(SessionElement.ATTRIBUTE);
-            regionElement.setAttribute(SessionAttribute.NAME, attribute);
-            hiddenAttributes.appendChild(regionElement);
-        }
-        globalElement.appendChild(hiddenAttributes);
-    }
-
-    private void writeGeneList(Element globalElement, Document document) {
-
-        GeneList geneList = session.getCurrentGeneList();
-
-        if (geneList != null) {
-
-            Element geneListElement = document.createElement(SessionElement.GENE_LIST);
-            geneListElement.setAttribute(SessionAttribute.NAME, geneList.getName());
-            StringBuffer genes = new StringBuffer();
-            for (String gene : geneList.getLoci()) {
-                genes.append(gene);
-                genes.append("\n");
-            }
-            geneListElement.setTextContent(genes.toString());
-            globalElement.appendChild(geneListElement);
 
 
-            // Now store the list of frames visible.  This seems redundant, but frame extent can be changed after
-            // "gene list" definition, for example by zooming out or panning in a frame
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                Element frameElement = document.createElement(SessionElement.FRAME);
-                frameElement.setAttribute(SessionAttribute.NAME, frame.getName());
-                frameElement.setAttribute(SessionAttribute.CHR, frame.getChrName());
-                frameElement.setAttribute(SessionAttribute.START, String.valueOf(frame.getOrigin()));
-                frameElement.setAttribute(SessionAttribute.END, String.valueOf(frame.getEnd()));
-
-                geneListElement.appendChild(frameElement);
-
-            }
-        }
-    }
 
     private boolean isUseRelative(File outputFile) {
         return outputFile != null &&
                 PreferencesManager.getPreferences().getAsBoolean(Constants.SESSION_RELATIVE_PATH);
-    }
-
-    private void writePanelLayout(Element globalElement, Document document) {
-
-    }
-
-    /**
-     * @return A set of the load data files.
-     */
-    public Collection<ResourceLocator> getResourceLocatorSet() {
-
-        Collection<ResourceLocator> locators = new ArrayList();
-
-        Collection<ResourceLocator> currentTrackFileLocators =
-                IGV.getInstance().getDataResourceLocators();
-
-        if (currentTrackFileLocators != null) {
-
-            // Filter data files that are included in genome annotations
-            final Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-            if (currentGenome != null) {
-                List<ResourceLocator> genomeResources = currentGenome.getAnnotationResources();
-                Set<String> absoluteGenomeAnnotationPaths = genomeResources == null ? Collections.emptySet() :
-                        genomeResources.stream().map(rl -> rl.getPath()).collect(Collectors.toSet());
-
-                for (ResourceLocator locator : currentTrackFileLocators) {
-                    if (!absoluteGenomeAnnotationPaths.contains(locator.getPath())) {
-                        locators.add(locator);
-                    }
-                }
-            }
-        }
-
-        Collection<ResourceLocator> loadedAttributeResources =
-                AttributeManager.getInstance().getLoadedResources();
-
-        if (loadedAttributeResources != null) {
-            for (ResourceLocator attributeLocator : loadedAttributeResources) {
-                locators.add(attributeLocator);
-            }
-        }
-
-        return locators;
     }
 
 }

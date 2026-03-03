@@ -1467,32 +1467,6 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////
-    // Groups
-    public String getGroupByAttribute() {
-        return session.getGroupByAttribute();
-    }
-
-
-    public void setGroupByAttribute(String attributeName) {
-        session.setGroupByAttribute(attributeName);
-        resetGroups();
-    }
-
-
-    private void resetGroups() {
-        log.debug("Resetting Groups");
-
-        for (Track t : getAllTracks()) {
-         //   t.groupSamplesByAttribute();
-        }
-
-        // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent());
-    }
-
-
     //////////////////////////////////////////////////////////////////////////////////////////
     // Startup
     public Future startUp(Main.IGVArgs igvArgs) {

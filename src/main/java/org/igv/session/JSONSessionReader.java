@@ -2,14 +2,19 @@ package org.igv.session;
 
 import org.apache.commons.io.IOUtils;
 import org.igv.data.CombinedDataSource;
+import org.igv.feature.Locus;
 import org.igv.feature.RegionOfInterest;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.GenomeConfig;
+import org.igv.lists.GeneList;
+import org.igv.lists.GeneListManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.track.*;
 import org.igv.ui.IGV;
+import org.igv.ui.panel.FrameManager;
+import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.FilterElement;
 import org.igv.util.ResourceLocator;
 import org.igv.sample.SampleFilter;
@@ -96,13 +101,6 @@ public class JSONSessionReader implements SessionReader {
                     }
                 }
             }
-        }
-
-
-        if (jsonObject.has("groupSampleAttribute")) {
-            session.setGroupByAttribute(jsonObject.getString("groupSampleAttribute"));
-        } else if (jsonObject.has("groupTracksBy")) {
-            session.setGroupByAttribute(jsonObject.getString("groupTracksBy"));
         }
 
         if (jsonObject.has("tracks")) {
@@ -372,6 +370,57 @@ public class JSONSessionReader implements SessionReader {
                     }
                 }
             }
+        }
+
+        // Gene list (multi-locus view)
+        if (jsonObject.has("geneList")) {
+            JSONObject geneListJson = jsonObject.getJSONObject("geneList");
+            String geneListName = geneListJson.optString("name", "");
+            JSONArray lociArray = geneListJson.getJSONArray("loci");
+            List<String> loci = new ArrayList<>();
+            for (int i = 0; i < lociArray.length(); i++) {
+                loci.add(lociArray.getString(i));
+            }
+            GeneList gl = new GeneList(geneListName, loci);
+            GeneListManager.getInstance().addGeneList(gl);
+            session.setCurrentGeneList(gl);
+
+            // Adjust frames if frame details are provided
+            if (geneListJson.has("frames")) {
+                JSONArray framesArray = geneListJson.getJSONArray("frames");
+                Map<String, ReferenceFrame> frameMap = new HashMap<>();
+                for (ReferenceFrame f : FrameManager.getFrames()) {
+                    frameMap.put(f.getName(), f);
+                }
+                List<ReferenceFrame> reorderedFrames = new ArrayList<>();
+                for (int i = 0; i < framesArray.length(); i++) {
+                    JSONObject frameJson = framesArray.getJSONObject(i);
+                    String frameName = frameJson.getString("name");
+                    ReferenceFrame f = frameMap.get(frameName);
+                    if (f != null) {
+                        reorderedFrames.add(f);
+                        String chr = frameJson.getString("chr");
+                        int start = (int) frameJson.getDouble("start");
+                        int end = (int) frameJson.getDouble("end");
+                        Locus locus = new Locus(chr, start, end);
+                        f.jumpTo(locus);
+                    }
+                }
+                if (!reorderedFrames.isEmpty()) {
+                    FrameManager.setFrames(reorderedFrames);
+                }
+                igv.resetFrames();
+            }
+        }
+
+        // Hidden attributes
+        if (jsonObject.has("hiddenAttributes")) {
+            JSONArray hiddenArray = jsonObject.getJSONArray("hiddenAttributes");
+            Set<String> hiddenAttributes = new HashSet<>();
+            for (int i = 0; i < hiddenArray.length(); i++) {
+                hiddenAttributes.add(hiddenArray.getString(i));
+            }
+            session.setHiddenAttributes(hiddenAttributes);
         }
     }
 

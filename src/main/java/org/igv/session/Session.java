@@ -48,13 +48,7 @@ public class Session implements IGVEventObserver {
     private HashMap<DataType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
-
-    /**
-     * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
-     */
-    private String groupByAttribute = null;
-
-    private History history;
+   private History history;
 
     /**
      * Map of chromosome -> regions of interest
@@ -76,7 +70,6 @@ public class Session implements IGVEventObserver {
     private void init(String path) {
         this.path = path;
         this.nextAutoscaleGroup = 1;
-        this.groupByAttribute = null;
         this.regionsOfInterest = new LinkedHashMap<>();
         this.regionsOfInterestObservable = new ObservableForObject<>(regionsOfInterest);
         this.preferences = new HashMap<>();
@@ -142,14 +135,6 @@ public class Session implements IGVEventObserver {
      */
     public String getPath() {
         return path;
-    }
-
-    public String getGroupByAttribute() {
-        return groupByAttribute;
-    }
-
-    public void setGroupByAttribute(String groupByAttribute) {
-        this.groupByAttribute = groupByAttribute;
     }
 
     /**

@@ -64,7 +64,8 @@ public class XMLSessionReader implements SessionReader {
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Flag indicating if "Panel" sections are present
 
-    private List<SampleFilter> sampleFilters = new ArrayList<>();
+    private String groupBy = null;
+    private SampleFilter sampleFilter = null;
     /**
      * Map of id -> track, for second pass through when tracks reference each other
      */
@@ -140,6 +141,18 @@ public class XMLSessionReader implements SessionReader {
             }
         }
 
+        // If a "groupBy" attribute was specified set it now
+        for (Track t : igv.getAllTracks()) {
+            if (t instanceof AbstractTrack) {
+                ((AbstractTrack) t).setSampleFilter(sampleFilter);
+            }
+        }
+        for (Track track : igv.getAllTracks()) {
+            if (track instanceof AbstractTrack) {
+                ((AbstractTrack) track).setSampleGroupBy(groupBy);
+            }
+        }
+
         if (session.isRemoveEmptyPanels()) {
             igv.getMainPanel().removeEmptyDataPanels();
         }
@@ -179,7 +192,7 @@ public class XMLSessionReader implements SessionReader {
         }
 
         session.setLocus(getAttribute(rootElement, SessionAttribute.LOCUS));
-        session.setGroupByAttribute(getAttribute(rootElement, SessionAttribute.GROUP_TRACKS_BY));
+        groupBy = getAttribute(rootElement, SessionAttribute.GROUP_TRACKS_BY);
         setNextAutoscaleGroup(session, getAttribute(rootElement, SessionAttribute.NEXT_AUTOSCALE_GROUP));
         setRemoveEmptyTracks(session, getAttribute(rootElement, "removeEmptyTracks"));
 
@@ -653,13 +666,9 @@ public class XMLSessionReader implements SessionReader {
             }
         }
 
-        SampleFilter sampleFilter = showAll ? null : new SampleFilter(matchAll, filterElements);
+        sampleFilter = showAll ? null : new SampleFilter(matchAll, filterElements);
 
-        for(Track t : igv.getAllTracks()) {
-            if(t instanceof AbstractTrack) {
-                ((AbstractTrack) t).setSampleFilter(sampleFilter);
-            }
-        }
+
     }
 
     private FilterElement processFilterElement(Element element) {
