@@ -1291,7 +1291,7 @@ public abstract class AbstractTrack implements Track {
             jsonObject.put(SessionAttribute.ALT_COLOR, ColorUtilities.colorToString(altColor));
         }
         if (visibilityWindow != VISIBILITY_WINDOW) {
-            jsonObject.put("featureVisibilityWindow", String.valueOf(visibilityWindow));
+            jsonObject.put("visibilityWindow", String.valueOf(visibilityWindow));
         }
         if (displayMode != DEFAULT_DISPLAY_MODE) {
             jsonObject.put(SessionAttribute.DISPLAY_MODE, displayMode.toString());
@@ -1311,7 +1311,7 @@ public abstract class AbstractTrack implements Track {
                 jsonObject.put("autoscaleGroup", this.autoscaleGroup);
             }
 
-            jsonObject.put("autoScale", String.valueOf(this.autoScale));
+            jsonObject.put("autoscale", String.valueOf(this.autoScale));
 
             if (this.getWindowFunction() != null) {
                 jsonObject.put("windowFunction", String.valueOf(this.getWindowFunction()));
@@ -1395,11 +1395,11 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        if (jsonObject.has("autoScale")) {
+        if (jsonObject.has("autoscale")) {
             try {
-                this.autoScale = Boolean.valueOf(jsonObject.getString("autoScale"));
+                this.autoScale = Boolean.valueOf(jsonObject.getString("autoscale"));
             } catch (Exception e) {
-                log.error("Unrecognized autoScale: " + jsonObject.getString("autoScale"));
+                log.error("Unrecognized autoScale: " + jsonObject.getString("autoscale"));
             }
         }
 
@@ -1416,11 +1416,11 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        if (jsonObject.has("featureVisibilityWindow")) {
+        if (jsonObject.has("visibilityWindow")) {
             try {
-                this.visibilityWindow = Integer.parseInt(jsonObject.getString("featureVisibilityWindow"));
+                this.visibilityWindow = Integer.parseInt(jsonObject.getString("visibilityWindow"));
             } catch (NumberFormatException e) {
-                log.error("Unrecognized featureVisibilityWindow: " + jsonObject.getString("featureVisibilityWindow"));
+                log.error("Unrecognized featureVisibilityWindow: " + jsonObject.getString("visibilityWindow"));
             }
         }
 

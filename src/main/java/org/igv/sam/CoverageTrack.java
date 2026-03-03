@@ -834,7 +834,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public void marshalJSON(JSONObject json) {
         super.marshalJSON(json);
-        json.put("snpThreshold", snpThreshold);
+        json.put("alleleFreqThreshold", snpThreshold);
         if (_color != null) {
             json.put("color", ColorUtilities.colorToString(_color));
         }
@@ -843,8 +843,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     @Override
     public void unmarshalJSON(JSONObject jsonObject) {
         super.unmarshalJSON(jsonObject);
-        if (jsonObject.has("snpThreshold")) {
-            snpThreshold = jsonObject.getFloat("snpThreshold");
+        if (jsonObject.has("alleleFreqThreshold")) {
+            snpThreshold = jsonObject.getFloat("alleleFreqThreshold");
         }
         if (jsonObject.has("color")) {
             _color = ColorUtilities.stringToColor(jsonObject.getString("_color"));

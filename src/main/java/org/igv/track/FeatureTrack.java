@@ -1025,7 +1025,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public void marshalJSON(JSONObject jsonObject) {
         super.marshalJSON(jsonObject);
         if (labelField != null) {
-            jsonObject.put("featureNameProperty", labelField);
+            jsonObject.put("nameField", labelField);
         }
         if (groupByStrand) {
             jsonObject.put("groupBy", "strand");
@@ -1037,8 +1037,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         super.unmarshalJSON(jsonObject);
 
-        if (jsonObject.has("featureNameProperty")) {
-            this.labelField = jsonObject.getString("featureNameProperty");
+        if (jsonObject.has("nameField")) {
+            this.labelField = jsonObject.getString("nameField");
         }
         if (jsonObject.has("groupBy")) {
             this.groupByStrand = "strand".equals(jsonObject.getString("groupBy"));

@@ -1632,111 +1632,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.basemodDistinguishStrands = basemodDistinguishStrands;
         }
 
-        public void marshalJSON(JSONObject jsonObject) {
-            if (shadeBasesOption != null) {
-                jsonObject.put("shadeBasesOption", shadeBasesOption);
-            }
-            if (shadeCenters != null) {
-                jsonObject.put("shadeCenters", shadeCenters);
-            }
-            if (flagUnmappedPairs != null) {
-                jsonObject.put("flagUnmappedPairs", flagUnmappedPairs);
-            }
-            if (showAllBases != null) {
-                jsonObject.put("showAllBases", showAllBases);
-            }
-            if (minInsertSize != null) {
-                jsonObject.put("minInsertSize", minInsertSize);
-            }
-            if (maxInsertSize != null) {
-                jsonObject.put("maxInsertSize", maxInsertSize);
-            }
-            if (colorOption != null) {
-                jsonObject.put("colorOption", colorOption.toString());
-            }
-            if (groupByOption != null) {
-                jsonObject.put("groupByOption", groupByOption.toString());
-            }
-            if (shadeAlignmentsOption != null) {
-                jsonObject.put("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
-            }
-            if (duplicatesOption != null) {
-                jsonObject.put("duplicatesOption", duplicatesOption.toString());
-            }
-            if (mappingQualityLow != null) {
-                jsonObject.put("mappingQualityLow", mappingQualityLow);
-            }
-            if (mappingQualityHigh != null) {
-                jsonObject.put("mappingQualityHigh", mappingQualityHigh);
-            }
-            if (viewPairs) {
-                jsonObject.put("viewPairs", viewPairs);
-            }
-            if (colorByTag != null) {
-                jsonObject.put("colorByTag", colorByTag);
-            }
-            if (groupByTag != null) {
-                jsonObject.put("groupByTag", groupByTag);
-            }
-            if (sortByTag != null) {
-                jsonObject.put("sortByTag", sortByTag);
-            }
-            if (linkByTag != null) {
-                jsonObject.put("linkByTag", linkByTag);
-            }
-            if (linkedReads != null) {
-                jsonObject.put("linkedReads", linkedReads);
-            }
-            if (quickConsensusMode != null) {
-                jsonObject.put("quickConsensusMode", quickConsensusMode);
-            }
-            if (showMismatches != null) {
-                jsonObject.put("showMismatches", showMismatches);
-            }
-            if (computeIsizes != null) {
-                jsonObject.put("computeIsizes", computeIsizes);
-            }
-            if (minInsertSizePercentile != null) {
-                jsonObject.put("minInsertSizePercentile", minInsertSizePercentile);
-            }
-            if (maxInsertSizePercentile != null) {
-                jsonObject.put("maxInsertSizePercentile", maxInsertSizePercentile);
-            }
-            if (pairedArcView != null) {
-                jsonObject.put("pairedArcView", pairedArcView);
-            }
-            if (flagZeroQualityAlignments != null) {
-                jsonObject.put("flagZeroQualityAlignments", flagZeroQualityAlignments);
-            }
-            if (groupByPos != null) {
-                jsonObject.put("groupByPos", groupByPos.toString());
-            }
-            if (invertSorting != null) {
-                jsonObject.put("invertSorting", invertSorting);
-            }
-            if (sortOption != null) {
-                jsonObject.put("sortOption", sortOption.toString());
-            }
-            if (invertGroupSorting) {
-                jsonObject.put("invertGroupSorting", invertGroupSorting);
-            }
-            if (hideSmallIndels != null) {
-                jsonObject.put("hideSmallIndels", hideSmallIndels);
-            }
-            if (smallIndelThreshold != null) {
-                jsonObject.put("smallIndelThreshold", smallIndelThreshold);
-            }
-            if (basemodFilter != null) {
-                jsonObject.put("basemodFilter", basemodFilter.toString());
-            }
-            if (basemodThreshold != null) {
-                jsonObject.put("basemodThreshold", basemodThreshold);
-            }
-            if (minJunctionCoverage != null) {
-                jsonObject.put("minJunctionCoverage", minJunctionCoverage);
-            }
-        }
-
         public void unmarshalXML(Element element, Integer version) {
             if (element.hasAttribute("shadeBasesOption")) {
                 String v = element.getAttribute("shadeBasesOption");
@@ -1867,6 +1762,111 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         }
 
+        public void marshalJSON(JSONObject jsonObject) {
+            if (shadeBasesOption != null) {
+                jsonObject.put("shadeBasesOption", shadeBasesOption);
+            }
+            if (shadeCenters != null) {
+                jsonObject.put("shadeCenters", shadeCenters);
+            }
+            if (flagUnmappedPairs != null) {
+                jsonObject.put("flagUnmappedPairs", flagUnmappedPairs);
+            }
+            if (showAllBases != null) {
+                jsonObject.put("showAllBases", showAllBases);
+            }
+            if (minInsertSize != null) {
+                jsonObject.put("minTLEN", minInsertSize);
+            }
+            if (maxInsertSize != null) {
+                jsonObject.put("maxTLEN", maxInsertSize);
+            }
+            if (colorOption != null) {
+                jsonObject.put("colorOption", colorOption.toString());
+            }
+            if (groupByOption != null) {
+                jsonObject.put("groupByOption", groupByOption.toString());
+            }
+            if (shadeAlignmentsOption != null) {
+                jsonObject.put("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
+            }
+            if (duplicatesOption != null) {
+                jsonObject.put("duplicatesOption", duplicatesOption.toString());
+            }
+            if (mappingQualityLow != null) {
+                jsonObject.put("mappingQualityLow", mappingQualityLow);
+            }
+            if (mappingQualityHigh != null) {
+                jsonObject.put("mappingQualityHigh", mappingQualityHigh);
+            }
+            if (viewPairs) {
+                jsonObject.put("viewPairs", viewPairs);
+            }
+            if (colorByTag != null) {
+                jsonObject.put("colorByTag", colorByTag);
+            }
+            if (groupByTag != null) {
+                jsonObject.put("groupByTag", groupByTag);
+            }
+            if (sortByTag != null) {
+                jsonObject.put("sortByTag", sortByTag);
+            }
+            if (linkByTag != null) {
+                jsonObject.put("linkByTag", linkByTag);
+            }
+            if (linkedReads != null) {
+                jsonObject.put("linkedReads", linkedReads);
+            }
+            if (quickConsensusMode != null) {
+                jsonObject.put("quickConsensusMode", quickConsensusMode);
+            }
+            if (showMismatches != null) {
+                jsonObject.put("showMismatches", showMismatches);
+            }
+            if (computeIsizes != null) {
+                jsonObject.put("computeIsizes", computeIsizes);
+            }
+            if (minInsertSizePercentile != null) {
+                jsonObject.put("minTLENPercentile", minInsertSizePercentile);
+            }
+            if (maxInsertSizePercentile != null) {
+                jsonObject.put("maxTLENPercentile", maxInsertSizePercentile);
+            }
+            if (pairedArcView != null) {
+                jsonObject.put("pairedArcView", pairedArcView);
+            }
+            if (flagZeroQualityAlignments != null) {
+                jsonObject.put("flagZeroQualityAlignments", flagZeroQualityAlignments);
+            }
+            if (groupByPos != null) {
+                jsonObject.put("groupByPos", groupByPos.toString());
+            }
+            if (invertSorting != null) {
+                jsonObject.put("invertSorting", invertSorting);
+            }
+            if (sortOption != null) {
+                jsonObject.put("sortOption", sortOption.toString());
+            }
+            if (invertGroupSorting) {
+                jsonObject.put("invertGroupSorting", invertGroupSorting);
+            }
+            if (hideSmallIndels != null) {
+                jsonObject.put("hideSmallIndels", hideSmallIndels);
+            }
+            if (smallIndelThreshold != null) {
+                jsonObject.put("indexlSizeThreshold", smallIndelThreshold);
+            }
+            if (basemodFilter != null) {
+                jsonObject.put("basemodFilter", basemodFilter.toString());
+            }
+            if (basemodThreshold != null) {
+                jsonObject.put("baseModificationThreshold", basemodThreshold);
+            }
+            if (minJunctionCoverage != null) {
+                jsonObject.put("minJunctionCoverage", minJunctionCoverage);
+            }
+        }
+
         public void unmarshalJSON(org.json.JSONObject json) {
             if (json.has("shadeBasesOption")) {
                 String v = json.getString("shadeBasesOption");
@@ -1884,11 +1884,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 flagUnmappedPairs = Boolean.parseBoolean(json.getString("flagUnmappedPairs"));
             }
 
-            if (json.has("minInsertSize")) {
-                minInsertSize = Integer.parseInt(json.getString("minInsertSize"));
+            if (json.has("minTLEN")) {
+                minInsertSize = Integer.parseInt(json.getString("minTLEN"));
             }
-            if (json.has("maxInsertSize")) {
-                maxInsertSize = Integer.parseInt(json.getString("maxInsertSize"));
+            if (json.has("maxTLEN")) {
+                maxInsertSize = Integer.parseInt(json.getString("maxTLEN"));
             }
             if (json.has("colorOption")) {
                 // Convert deprecated options
@@ -1955,11 +1955,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (json.has("computeIsizes")) {
                 computeIsizes = Boolean.parseBoolean(json.getString("computeIsizes"));
             }
-            if (json.has("minInsertSizePercentile")) {
-                minInsertSizePercentile = Double.parseDouble(json.getString("minInsertSizePercentile"));
+            if (json.has("minTLENPercentile")) {
+                minInsertSizePercentile = Double.parseDouble(json.getString("minTLENPercentile"));
             }
-            if (json.has("maxInsertSizePercentile")) {
-                maxInsertSizePercentile = Double.parseDouble(json.getString("maxInsertSizePercentile"));
+            if (json.has("maxTLENPercentile")) {
+                maxInsertSizePercentile = Double.parseDouble(json.getString("maxTLENPercentile"));
             }
             if (json.has("pairedArcView")) {
                 pairedArcView = Boolean.parseBoolean(json.getString("pairedArcView"));
@@ -1979,8 +1979,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (json.has("hideSmallIndels")) {
                 hideSmallIndels = Boolean.parseBoolean(json.getString("hideSmallIndels"));
             }
-            if (json.has("smallIndelThreshold")) {
-                smallIndelThreshold = Integer.parseInt(json.getString("smallIndelThreshold"));
+            if (json.has("indexlSizeThreshold")) {
+                smallIndelThreshold = Integer.parseInt(json.getString("indexlSizeThreshold"));
             }
             if (json.has("showInsertionMarkers")) {
                 // TODO -- something with this
@@ -1989,7 +1989,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             if (json.has("basemodFilter")) {
                 basemodFilter = BaseModficationFilter.fromString(json.getString("basemodFilter"));
             }
-            if (json.has("basemodThreshold")) {
+            if (json.has("baseModificationThreshold")) {
                 basemodFilter = BaseModficationFilter.fromString(json.getString("basemodThreshold"));
             }
             if (json.has("minJunctionCoverage")) {

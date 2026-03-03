@@ -104,7 +104,14 @@ public class DataRange {
         float maximum = (float) jsonObject.optDouble("max", 0);
         boolean drawBaseline = jsonObject.optBoolean("drawBaseline", true);
         boolean isLog = jsonObject.optBoolean("logScale", false);
-        return new DataRange(minimum, baseline, maximum, drawBaseline, isLog);
+        boolean flipAxis = jsonObject.optBoolean("flipAxis", false);
+        DataRange dr = new DataRange(minimum, baseline, maximum, drawBaseline, isLog);
+        dr.flipAxis = flipAxis;
+        return dr;
+    }
+
+    public static DataRange unmarshalJSON(JSONObject jsonObject) {
+        return fromJson(jsonObject);
     }
 
     public static DataRange getFromTracks(Collection<? extends Track> tracks) {
@@ -186,7 +193,7 @@ public class DataRange {
     }
 
     public void marshalJSON(JSONObject jsonObject) {
-        jsonObject.put("isLog", this.type == Type.LOG ? true : false);
+        jsonObject.put("logScale", this.type == Type.LOG ? true : false);
         jsonObject.put("min", this.minimum);
         jsonObject.put("mid", this.baseline);
         jsonObject.put("max", this.maximum);
