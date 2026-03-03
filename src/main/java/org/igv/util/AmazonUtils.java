@@ -1,6 +1,7 @@
 package org.igv.util;
 
 import org.igv.DirectoryManager;
+import org.igv.Globals;
 import org.igv.aws.IGVS3Object;
 import org.igv.oauth.OAuthProvider;
 import org.igv.oauth.OAuthUtils;
@@ -296,6 +297,20 @@ public class AmazonUtils {
     public static List<String> ListBucketsForUser() {
 
         if (bucketsFinalList.isEmpty()) {
+
+            String s3BucketsList = PreferencesManager.getPreferences().get(Constants.AWS_S3_BUCKETS);
+            if (s3BucketsList != null) {
+                String trimmed = s3BucketsList.trim();
+                if (!trimmed.isEmpty()) {
+                    bucketsFinalList = Arrays.stream(Globals.commaPattern.split(trimmed))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
+                    if (!bucketsFinalList.isEmpty()) {
+                        return bucketsFinalList;
+                    }
+                }
+            }
 
             S3Client s3Client = getS3Client();
 

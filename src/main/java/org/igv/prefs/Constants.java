@@ -61,6 +61,9 @@ final public class Constants {
     public static final String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
     public static final String AUXILLARY_HUBS_URL = "AUXILLARY_HUBS_URL";
 
+    // AWS settings
+    public static final String AWS_S3_BUCKETS = "AWS_S3_BUCKETS";
+
     public static final String CRAM_CACHE_SEQUENCES = "CRAM.CACHE_SEQUENCES";
     public static final String CRAM_CACHE_DIRECTORY = "CRAM.CACHE_DIRECTORY";
     public static final String CRAM_CACHE_SIZE = "CRAM.CACHE_SIZE";

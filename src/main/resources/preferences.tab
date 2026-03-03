@@ -300,6 +300,7 @@ PROVISIONING.URL	OAuth provisioning URL	string	null
 BLAT_URL	BLAT URL	string	https://genome.ucsc.edu/cgi-bin/hgBlat
 ---
 AWS_ENDPOINT_URL	AWS endpoint URL	string	null
+AWS_S3_BUCKETS	AWS S3 buckets list (comma-separated)	string	null
 
 ## Tooltip
 TOOLTIP.INITIAL_DELAY	Tooltip inital delay (ms)	integer	50
