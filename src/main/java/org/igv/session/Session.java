@@ -504,24 +504,6 @@ public class Session implements IGVEventObserver {
         return regionsOfInterestObservable;
     }
 
-    /**
-     * Set the sort attributes for sample sorting.
-     *
-     * @param attributeNames the attribute names to sort by
-     * @param ascending      the sort order for each attribute (true = ascending, false = descending)
-     */
-    public void setSortAttributes(String[] attributeNames, boolean[] ascending) {
-        this.sortAttributes = new SortAttributes(attributeNames, ascending);
-    }
-
-    /**
-     * Get the current sort attributes.
-     *
-     * @return the current SortAttributes, or null if none set
-     */
-    public SortAttributes getSortAttributes() {
-        return sortAttributes;
-    }
 }
 
 

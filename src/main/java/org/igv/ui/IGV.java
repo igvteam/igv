@@ -30,7 +30,7 @@ import org.igv.prefs.PreferencesEditor;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionSelectionEvent;
-import org.igv.sample.AttributeComparator;
+import org.igv.sample.SampleAttributeComparator;
 import org.igv.sample.SampleFilter;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
@@ -1363,14 +1363,12 @@ public class IGV implements IGVEventObserver {
      */
     public void sortAllTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
 
-        session.setSortAttributes(attributeNames, ascending);
-
         assert attributeNames.length == ascending.length;
 
-        AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
+        SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
 
         for(Track track : getAllTracks()) {
-            if(track instanceof AbstractTrack) {
+            if(track instanceof AbstractTrack && ((AbstractTrack) track).hasSamples()) {
                 ((AbstractTrack) track).sortSamples(comparator);
             }
         }

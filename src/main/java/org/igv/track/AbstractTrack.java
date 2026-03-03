@@ -1030,14 +1030,20 @@ public abstract class AbstractTrack implements Track {
     /////////////////////////////////////////////////////////////////////////////////////////
     // Sorting
 
+    public boolean hasSamples() {
+        return allSamples != null && !allSamples.isEmpty();
+    }
+
     public void sortSamples(Comparator<String> comparator) {
         // Sort both master list and groups
-        allSamples.sort(comparator);
-        this.samplesSorted = true;
-        for (var group : getSampleGroups()) {
-            group.samples().sort(comparator);
+        if(allSamples != null) {
+            allSamples.sort(comparator);
+            this.samplesSorted = true;
+            for (var group : getSampleGroups()) {
+                group.samples().sort(comparator);
+            }
+            repaint();
         }
-        repaint();
     }
 
     public SampleFilter getSampleFilter() {
@@ -1482,5 +1488,9 @@ public abstract class AbstractTrack implements Track {
 
             resetSampleGroups();
         }
+    }
+
+    public String getGroupBy() {
+        return groupBy;
     }
 }

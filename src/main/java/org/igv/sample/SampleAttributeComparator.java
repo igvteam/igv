@@ -1,30 +1,37 @@
 package org.igv.sample;
 
 import org.igv.track.AttributeManager;
-import org.igv.track.Track;
 
 import java.util.Comparator;
 
 /**
- * Sort tracks by attribute value
+ * Sort samples by attribute value
  */
-public abstract class AttributeComparator<T> implements Comparator<T> {
+public class SampleAttributeComparator implements Comparator<String> {
 
     private final String[] attributeNames;
     private final boolean[] ascending;
 
-    AttributeComparator(String[] attributeNames, boolean[] ascending) {
+    public SampleAttributeComparator(String[] attributeNames, boolean[] ascending) {
         assert attributeNames.length == ascending.length;
         this.attributeNames = attributeNames;
         this.ascending = ascending;
     }
 
 
-    protected abstract String getAttributeValue(T track, String attName);
+    protected String getAttributeValue(String sample, String attName) {
+        String value = AttributeManager.getInstance().getAttribute(sample, attName);
+        if (value == null) {
+            value = "";
+        }
+        return value.toLowerCase();
+    }
 
-    public int compare(T t1, T t2) {
+    public int compare(String t1, String t2) {
+
         // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
         // first attribute to yield a non-zero comparison wins
+
         for (int i = 0; i < attributeNames.length; i++) {
             String attName = attributeNames[i];
 
@@ -62,6 +69,5 @@ public abstract class AttributeComparator<T> implements Comparator<T> {
         // All compares are equal
         return 0;
     }
-
 
 }

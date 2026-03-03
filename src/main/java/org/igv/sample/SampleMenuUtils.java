@@ -2,7 +2,6 @@ package org.igv.sample;
 
 import org.igv.track.AbstractTrack;
 import org.igv.track.AttributeManager;
-import org.igv.track.Track;
 import org.igv.ui.AttributeSelectionDialog;
 import org.igv.ui.IGV;
 import org.igv.ui.SampleFilterDialog;
@@ -31,7 +30,7 @@ public class SampleMenuUtils {
             final String[] attributeNames = dialog.getSelectedSortKeys();
             if (attributeNames != null) {
                 final boolean[] ascending = dialog.isAscending();
-                AttributeComparator.SampleAttributeComparator comparator = new AttributeComparator.SampleAttributeComparator(attributeNames, ascending);
+                SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
                 track.sortSamples(comparator);
                 track.repaint();
             }
@@ -52,7 +51,7 @@ public class SampleMenuUtils {
                     "Group");
 
 
-            String currentSelection = IGV.getInstance().getGroupByAttribute();
+            String currentSelection = track.getGroupBy();
             if (currentSelection == null) {
                 dlg.setSelectedIndex(0);
             } else {
@@ -90,7 +89,7 @@ public class SampleMenuUtils {
                     return;
                 }
 
-            SampleFilter sampleFilter = IGV.getInstance().getSession().getFilter();
+            SampleFilter sampleFilter = track.getSampleFilter();
             SampleFilterDialog dialog = new SampleFilterDialog(IGV.getInstance().getMainFrame(), "Filter Tracks", sampleFilter);
             dialog.setVisible(true);
 

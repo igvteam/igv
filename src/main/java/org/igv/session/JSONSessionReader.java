@@ -82,7 +82,7 @@ public class JSONSessionReader implements SessionReader {
         }
 
         // Sample information -- load this first
-        if(jsonObject.has("sampleinfo")) {
+        if (jsonObject.has("sampleinfo")) {
             JSONArray sampleInfoArray = jsonObject.getJSONArray("sampleinfo");
             for (int i = 0; i < sampleInfoArray.length(); i++) {
                 JSONObject sampleInfoJson = sampleInfoArray.getJSONObject(i);
@@ -99,9 +99,9 @@ public class JSONSessionReader implements SessionReader {
         }
 
 
-        if(jsonObject.has("groupSampleAttribute")) {
+        if (jsonObject.has("groupSampleAttribute")) {
             session.setGroupByAttribute(jsonObject.getString("groupSampleAttribute"));
-        } else if(jsonObject.has("groupTracksBy")) {
+        } else if (jsonObject.has("groupTracksBy")) {
             session.setGroupByAttribute(jsonObject.getString("groupTracksBy"));
         }
 
@@ -171,10 +171,10 @@ public class JSONSessionReader implements SessionReader {
                     // Combined track - defer creation until referenced tracks are loaded
                     topLevelDescriptors.add(new TrackDescriptor(trackJson, i, TrackDescriptor.Type.COMBINED));
 
-                } else if("blat".equals(type)) {
+                } else if ("blat".equals(type)) {
                     topLevelDescriptors.add(TrackDescriptor.createBlatDescriptor(trackJson, i));
 
-                } else if("sequence".equals(type)) {
+                } else if ("sequence".equals(type)) {
                     // Sequence track - find in genomeTrackMap by type
                     Track sequenceTrack = null;
                     for (Map.Entry<String, Track> entry : genomeTrackMap.entrySet()) {
@@ -189,7 +189,7 @@ public class JSONSessionReader implements SessionReader {
                     } else {
                         log.warn("Sequence track not found in genome tracks");
                     }
-                } else if("motif".equals(type)) {
+                } else if ("motif".equals(type)) {
                     topLevelDescriptors.add(TrackDescriptor.createMotifDescriptor(trackJson, i));
 
                 } else if (trackJson.has("url")) {
@@ -363,7 +363,7 @@ public class JSONSessionReader implements SessionReader {
                         int start = featureJson.getInt("start");
                         int end = featureJson.getInt("end");
                         String description = featureJson.optString("description", null);
-                        if(description == null) {
+                        if (description == null) {
                             // "name" is used for description in igv.js sessions
                             description = featureJson.optString("name", null);
                         }
@@ -371,26 +371,6 @@ public class JSONSessionReader implements SessionReader {
                         session.addRegionOfInterest(roi);
                     }
                 }
-            }
-        }
-
-        // Restore sort attributes after all tracks and sample info are loaded
-        if (jsonObject.has("sortSamples")) {
-            JSONObject sortJson = jsonObject.getJSONObject("sortSamples");
-            if (sortJson.has("attributeNames") && sortJson.has("ascending")) {
-                JSONArray attributeNamesArray = sortJson.getJSONArray("attributeNames");
-                JSONArray ascendingArray = sortJson.getJSONArray("ascending");
-
-                String[] attributeNames = new String[attributeNamesArray.length()];
-                boolean[] ascending = new boolean[ascendingArray.length()];
-
-                for (int i = 0; i < attributeNamesArray.length(); i++) {
-                    attributeNames[i] = attributeNamesArray.getString(i);
-                    ascending[i] = ascendingArray.getBoolean(i);
-                }
-
-                // Apply the sorting
-                IGV.getInstance().sortAllTracksByAttributes(attributeNames, ascending);
             }
         }
     }
