@@ -1229,18 +1229,6 @@ public class IGV implements IGVEventObserver {
             log.error(message, e);
             MessageUtils.showMessage(message + ": " + e.getMessage());
         }
-
-    }
-
-
-    public boolean isFilterMatchAll() {
-        SampleFilter sampleFilter = session.getFilter();
-        return sampleFilter != null && sampleFilter.isMatchAll();
-    }
-
-    public boolean isFilterShowAllTracks() {
-        SampleFilter sampleFilter = session.getFilter();
-        return sampleFilter == null;
     }
 
     /**

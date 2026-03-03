@@ -134,7 +134,7 @@ public class SampleFilter {
     public JSONObject toJson() {
 
         JSONObject filterJson = new JSONObject();
-        if (!IGV.getInstance().isFilterMatchAll()) {
+        if (isMatchAll()) {
             filterJson.put(SessionAttribute.FILTER_MATCH, "any");
         } else {    // Defaults to match all
             filterJson.put(SessionAttribute.FILTER_MATCH, "all");

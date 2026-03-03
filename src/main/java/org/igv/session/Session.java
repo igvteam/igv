@@ -32,27 +32,6 @@ public class Session implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(Session.class);
 
-    /**
-     * Stores sort attribute names and their ascending/descending order.
-     */
-    public static class SortAttributes {
-        private final String[] attributeNames;
-        private final boolean[] ascending;
-
-        public SortAttributes(String[] attributeNames, boolean[] ascending) {
-            this.attributeNames = attributeNames;
-            this.ascending = ascending;
-        }
-
-        public String[] getAttributeNames() {
-            return attributeNames;
-        }
-
-        public boolean[] getAscending() {
-            return ascending;
-        }
-    }
-
     //This doesn't mean genelist or not, the same way it does in FrameManager
     public enum GeneListMode {
         NORMAL, CURSOR
@@ -69,7 +48,6 @@ public class Session implements IGVEventObserver {
     private HashMap<DataType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
     double[] dividerFractions = null;
-    private SortAttributes sortAttributes;
 
     /**
      * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
@@ -255,15 +233,6 @@ public class Session implements IGVEventObserver {
 
     }
 
-    public String getOverlayAttribute() {
-        final String key = OVERLAY_ATTRIBUTE_KEY;
-        if (preferences.containsKey(key)) {
-            return preferences.get(key);
-
-        }
-        return PreferencesManager.getPreferences().get(OVERLAY_ATTRIBUTE_KEY);
-    }
-
     public String getTrackAttributeName() {
         final String key = TRACK_ATTRIBUTE_NAME_KEY;
         if (preferences.containsKey(key)) {
@@ -290,14 +259,6 @@ public class Session implements IGVEventObserver {
 
     public String getLocus() {
         return locus;
-    }
-
-    public SampleFilter getFilter() {
-        return sampleFilter;
-    }
-
-    public void setFilter(SampleFilter sampleFilter) {
-        this.sampleFilter = sampleFilter;
     }
 
     public ReferenceFrame getReferenceFrame() {
@@ -439,60 +400,6 @@ public class Session implements IGVEventObserver {
 
     public void setRemoveEmptyPanels(boolean removeEmptyPanels) {
         this.removeEmptyPanels = removeEmptyPanels;
-    }
-
-
-    static class Locus {
-        String chr;
-        int start;
-        int end;
-
-        Locus(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-        }
-
-    }
-
-
-    /**
-     * Return the start and end positions as a 2 element array for the input
-     * position string.  UCSC conventions  are followed for coordinates,
-     * specifically the internal representation is "zero" based (first base is
-     * numbered 0) but the display representation is "one" based (first base is
-     * numbered 1).   Consequently, 1 is subtracted from the parsed positions
-     */
-    private static int[] getStartEnd(String posString) {
-        try {
-            String[] posTokens = posString.split("-");
-            String startString = posTokens[0].replaceAll(",", "");
-            int start = Math.max(0, Integer.parseInt(startString)) - 1;
-
-            // Default value for end
-
-            int end = start + 1;
-            if (posTokens.length > 1) {
-                String endString = posTokens[1].replaceAll(",", "");
-                end = Integer.parseInt(endString);
-            }
-
-            if (posTokens.length == 1 || (end - start) < 10) {
-                int center = (start + end) / 2;
-                start = center - 20;
-                end = center + 20;
-            } else {
-                String endString = posTokens[1].replaceAll(",", "");
-
-                // Add 1 bp to end position t make it "inclusive"
-                end = Integer.parseInt(endString);
-            }
-
-            return new int[]{Math.min(start, end), Math.max(start, end)};
-        } catch (NumberFormatException numberFormatException) {
-            return null;
-        }
-
     }
 
     /**

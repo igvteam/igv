@@ -12,7 +12,6 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
-import org.igv.sample.AttributeComparator;
 import org.igv.sample.SampleGroup;
 import org.igv.session.SessionAttribute;
 import org.igv.ui.FontManager;

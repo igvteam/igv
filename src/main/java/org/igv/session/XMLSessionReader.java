@@ -64,6 +64,7 @@ public class XMLSessionReader implements SessionReader {
     private Collection<ResourceLocator> missingDataFiles;
     private boolean panelElementPresent = false;    // Flag indicating if "Panel" sections are present
 
+    private List<SampleFilter> sampleFilters = new ArrayList<>();
     /**
      * Map of id -> track, for second pass through when tracks reference each other
      */
@@ -659,8 +660,6 @@ public class XMLSessionReader implements SessionReader {
                 ((AbstractTrack) t).setSampleFilter(sampleFilter);
             }
         }
-        session.setFilter(sampleFilter);
-
     }
 
     private FilterElement processFilterElement(Element element) {

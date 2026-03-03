@@ -13,7 +13,6 @@ import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
-import org.igv.sample.AttributeComparator;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;

@@ -42,7 +42,6 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
 
     private void init() {
 
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
             setSize(0, getHeight());
         }
@@ -174,6 +173,11 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
         }
 
         public void mouseMoved(MouseEvent e) {
+            setToolTipText(getMouseDoc(e.getX(), e.getY()));
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
             setToolTipText(getMouseDoc(e.getX(), e.getY()));
         }
     }
