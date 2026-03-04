@@ -55,8 +55,7 @@
       "shouldShowTranslation": false,
       "id": "Reference sequence",
       "type": "sequence",
-      "order": -9007199254740991,
-      "height": "0"
+      "order": -9007199254740991
     },
     {
       "format": "refgene",
@@ -64,8 +63,7 @@
       "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz",
       "type": "annotation",
       "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz",
-      "order": 0,
-      "height": "0"
+      "order": 0
     },
     {
       "ampThreshold": 0.1,
@@ -78,7 +76,7 @@
       "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
       "delThreshold": -0.1,
       "order": 0,
-      "height": "50"
+      "height": 50
     },
     {
       "renderer": "org.igv.renderer.HeatmapRenderer",
@@ -286,10 +284,9 @@
           "value": "95",
           "operator": "is greater than"
         }],
-        "match": "any"
+        "match": "all"
       },
-      "order": 0,
-      "height": "0"
+      "order": 0
     }
   ]
 }

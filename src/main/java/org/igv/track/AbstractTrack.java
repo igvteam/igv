@@ -88,7 +88,12 @@ public abstract class AbstractTrack implements Track {
     protected int visibilityWindow = VISIBILITY_WINDOW;
     private DisplayMode displayMode = DEFAULT_DISPLAY_MODE;
 
+    /**
+     * This is the visible height of the track viewport, not necessarily the content height of the track.
+     */
     protected int height;
+
+
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
     private String trackLine = null;
@@ -1300,8 +1305,8 @@ public abstract class AbstractTrack implements Track {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
             jsonObject.put("colorScale", colorScale.asString());
         }
-        if (height != DEFAULT_HEIGHT) {
-            jsonObject.put("height", String.valueOf(this.height));
+        if (height != DEFAULT_HEIGHT && height > 0) {
+            jsonObject.put("height", this.height);
         }
         if (showDataRange == false) {
             jsonObject.put("showDataRange", Boolean.toString(showDataRange));
