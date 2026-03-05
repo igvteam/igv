@@ -441,6 +441,21 @@ public class IGV implements IGVEventObserver {
         contentPane.getMainPanel().removeTrackPanel(trackPanel);
     }
 
+    /**
+     * Remove the track from the view.  In contrast to deleteTracks, the track is not disposed and can be added
+     * back to the view later.
+     * @param track
+     */
+    public void removeTrack(Track track) {
+        List<TrackPanel> panels = getTrackPanels();
+        for (TrackPanel trackPanel : panels) {
+            if(trackPanel.getTrack() == track) {
+                removeTrackPanel(trackPanel);
+                break;
+            }
+        }
+    }
+
 
     public void deleteTracksByPath(Set<String> paths) {
         List<Track> toRemove = getAllTracks().stream().filter(t -> {
@@ -459,7 +474,7 @@ public class IGV implements IGVEventObserver {
     public void deleteTracks(Collection<? extends Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
-        List<TrackPanel> panels = getTrackPanels();
+        List<TrackPanel> panels = new ArrayList<>(getTrackPanels());
         for (TrackPanel trackPanel : panels) {
             trackPanel.removeTracks(tracksToRemove);
             if (!trackPanel.hasTracks()) {

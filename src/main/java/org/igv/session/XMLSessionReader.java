@@ -128,7 +128,9 @@ public class XMLSessionReader implements SessionReader {
         processCombinedDataSourceTracks();
 
         // Add tracks explicitly enumerated in panel sections.
+        int order = 0;
         for (Track track : orderedTracks) {
+            track.setOrder(order++);
             igv.addTrack(track);
         }
 
@@ -753,39 +755,50 @@ public class XMLSessionReader implements SessionReader {
             // No match found, element represents either (1) a track from a file that errored during load, for example
             // a file that has been deleted, or (2) a track not created from "Resource" or genome load.  These include
             // reference sequence, combined,  and merged tracks.
+            //        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
 
             String className = getAttribute(element, "clazz");
             if (className != null && resourceIndpendentTracks.stream().anyMatch(c -> className.contains(c))) {
                 try {
-                    Track track = createTrack(className, element);
-                    if (track != null) {
 
-                        track.unmarshalXML(element, version);
-                        matchedTracks = Arrays.asList(track);
-                        allTracks.put(checkTrackId(track.getId()), matchedTracks);   // Important for second pass
-
-                        // Special tracks
-                        if (className.contains("CombinedDataTrack")) {
-                            combinedDataSourceTracks.add(new Pair(track, element));
-                        }
-
-                        if (className.contains("MergedTracks")) {
-                            List<DataTrack> memberTracks = processChildTracks(session, element, sessionPath);
-                            ((MergedTracks) track).setMemberTracks(memberTracks);
-
-                            NodeList nodeList = element.getElementsByTagName("DataRange");
-                            if (nodeList != null && nodeList.getLength() > 0) {
-                                Element dataRangeElement = (Element) nodeList.item(0);
-                                try {
-                                    DataRange dataRange = new DataRange(dataRangeElement, version);
-                                    track.setDataRange(dataRange);
-                                } catch (Exception e) {
-                                    log.error("Unrecognized DataRange");
-                                }
-                            }
+                    if (className.contains("SequenceTrack")) {
+                        final SequenceTrack sequenceTrack = igv.getSequenceTrack();
+                        if (sequenceTrack != null) {
+                            igv.removeTrack(sequenceTrack);
+                            orderedTracks.add(sequenceTrack);
+                            sequenceTrack.unmarshalXML(element, version);
                         }
                     } else {
-                        log.warn("Warning.  No tracks were found with id: " + id + " in session file");
+                        Track track = createTrack(className, element);
+                        if (track != null) {
+
+                            track.unmarshalXML(element, version);
+                            matchedTracks = Arrays.asList(track);
+                            allTracks.put(checkTrackId(track.getId()), matchedTracks);   // Important for second pass
+
+                            // Special tracks
+                            if (className.contains("CombinedDataTrack")) {
+                                combinedDataSourceTracks.add(new Pair(track, element));
+                            }
+
+                            if (className.contains("MergedTracks")) {
+                                List<DataTrack> memberTracks = processChildTracks(session, element, sessionPath);
+                                ((MergedTracks) track).setMemberTracks(memberTracks);
+
+                                NodeList nodeList = element.getElementsByTagName("DataRange");
+                                if (nodeList != null && nodeList.getLength() > 0) {
+                                    Element dataRangeElement = (Element) nodeList.item(0);
+                                    try {
+                                        DataRange dataRange = new DataRange(dataRangeElement, version);
+                                        track.setDataRange(dataRange);
+                                    } catch (Exception e) {
+                                        log.error("Unrecognized DataRange");
+                                    }
+                                }
+                            }
+                        } else {
+                            log.warn("Warning.  No tracks were found with id: " + id + " in session file");
+                        }
                     }
                 } catch (Exception e) {
                     log.error("Error restoring track: " + element.toString(), e);
