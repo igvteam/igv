@@ -31,7 +31,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionSelectionEvent;
 import org.igv.sample.SampleAttributeComparator;
-import org.igv.sample.SampleFilter;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
@@ -449,7 +448,8 @@ public class IGV implements IGVEventObserver {
     public void removeTrack(Track track) {
         List<TrackPanel> panels = getTrackPanels();
         for (TrackPanel trackPanel : panels) {
-            if(trackPanel.getTrack() == track) {
+            if (trackPanel.getTrack() == track) {
+                track.setVisible(false);
                 removeTrackPanel(trackPanel);
                 break;
             }
@@ -542,7 +542,6 @@ public class IGV implements IGVEventObserver {
     public void addTrackPanel(Track track) {
         contentPane.getMainPanel().addTrackPanel(track);
     }
-
 
 
     public int getVisibleTrackCount() {
@@ -1318,8 +1317,8 @@ public class IGV implements IGVEventObserver {
 
         SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
 
-        for(Track track : getAllTracks()) {
-            if(track instanceof AbstractTrack && ((AbstractTrack) track).hasSamples()) {
+        for (Track track : getAllTracks()) {
+            if (track instanceof AbstractTrack && ((AbstractTrack) track).hasSamples()) {
                 ((AbstractTrack) track).sortSamples(comparator);
             }
         }

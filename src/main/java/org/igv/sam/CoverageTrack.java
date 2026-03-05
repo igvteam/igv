@@ -661,7 +661,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         if (alignmentTrack != null) {
             popupMenu.addSeparator();
-            addShowItems(popupMenu);
+            AlignmentTrackMenu.addShowItems(popupMenu, alignmentTrack);
         }
 
         return popupMenu;
@@ -742,45 +742,7 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         return maxValItem;
     }
 
-    public void addShowItems(JPopupMenu menu) {
 
-        final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
-
-        final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
-        item.setSelected(true);
-        item.addActionListener(e -> {
-            CoverageTrack.this.setVisible(item.isSelected());
-            IGV.getInstance().repaint(Arrays.asList(CoverageTrack.this));
-        });
-        //If this is the only track visible, disable option to hide it.
-        if (!(alignmentTrack.isVisible() ||
-                (spliceJunctionTrack != null && spliceJunctionTrack.isVisible()))) {
-            item.setEnabled(false);
-        }
-        menu.add(item);
-
-        if (spliceJunctionTrack != null) {
-            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
-            junctionItem.setSelected(spliceJunctionTrack.isVisible());
-            junctionItem.setEnabled(!spliceJunctionTrack.isRemoved());
-            junctionItem.addActionListener(e -> {
-                spliceJunctionTrack.setVisible(junctionItem.isSelected());
-                IGV.getInstance().repaint(Arrays.asList(spliceJunctionTrack));
-            });
-            menu.add(junctionItem);
-        }
-
-        if (alignmentTrack != null) {
-            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
-            alignmentItem.setSelected(alignmentTrack.isVisible());
-            alignmentItem.setEnabled(!alignmentTrack.isRemoved());
-            alignmentItem.addActionListener(e -> {
-                alignmentTrack.setVisible(alignmentItem.isSelected());
-                IGV.getInstance().repaint(Arrays.asList(alignmentTrack));
-            });
-            menu.add(alignmentItem);
-        }
-    }
 
 
     public void addLoadCoverageDataItem(JPopupMenu menu) {

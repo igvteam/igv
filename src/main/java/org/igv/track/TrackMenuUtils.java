@@ -984,7 +984,6 @@ public class TrackMenuUtils {
             return;
         }
         IGV.getInstance().deleteTracks(selectedTracks);
-        IGV.getInstance().repaint();
     }
 
 

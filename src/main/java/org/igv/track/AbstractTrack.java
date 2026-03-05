@@ -51,7 +51,6 @@ public abstract class AbstractTrack implements Track {
     TrackPanelScrollPane viewport;
     protected int groupGap = 10;
 
-
     private ResourceLocator resourceLocator;
     private String id;
     private String sampleId;
@@ -451,26 +450,13 @@ public abstract class AbstractTrack implements Track {
     }
 
     public boolean isVisible() {
-
-        if (visible && getDataType() == DataType.MUTATION) {
-            // Special rules for mutations.  If display as overlays == true, only show if not overlaid on another
-            // track and "show orphaned" is true
-            boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
-            if (displayOverlays) {
-                if (overlaid) {
-                    return false;
-                } else {
-                    return PreferencesManager.getPreferences().getAsBoolean(SHOW_ORPHANED_MUTATIONS);
-                }
-            }
-        }
         return visible;
     }
 
     public void setVisible(boolean visible) {
         if (this.visible != visible) {
             this.visible = visible;
-            if (IGV.hasInstance()) IGV.getInstance().getMainPanel().revalidate();
+            if (IGV.hasInstance()) IGV.getInstance().revalidateTrackPanels();
         }
     }
 
@@ -1282,7 +1268,7 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (showFeatureNames != DEFAULT_SHOW_FEATURE_NAMES) {
-            jsonObject.put("showFeatureNames", Boolean.toString(showFeatureNames));
+            jsonObject.put("showFeatureNames", showFeatureNames);
         }
         if (color != null && color != getDefaultColor()) {
             jsonObject.put(SessionAttribute.COLOR, ColorUtilities.colorToString(color));
@@ -1304,7 +1290,7 @@ public abstract class AbstractTrack implements Track {
             jsonObject.put("height", this.height);
         }
         if (showDataRange == false) {
-            jsonObject.put("showDataRange", Boolean.toString(showDataRange));
+            jsonObject.put("showDataRange", showDataRange);
         }
         if (isNumeric()) {
             if (autoscaleGroup != null) {
@@ -1389,7 +1375,7 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("visible")) {
             try {
-                this.setVisible(Boolean.parseBoolean(jsonObject.getString("visible")));
+                this.setVisible(jsonObject.getBoolean("visible"));
             } catch (Exception e) {
                 log.error("Unrecognized visisbilty: " + jsonObject.getString("visible"));
             }
@@ -1397,7 +1383,7 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("autoscale")) {
             try {
-                this.autoScale = Boolean.valueOf(jsonObject.getString("autoscale"));
+                this.autoScale = jsonObject.getBoolean("autoscale");
             } catch (Exception e) {
                 log.error("Unrecognized autoScale: " + jsonObject.getString("autoscale"));
             }
@@ -1410,7 +1396,7 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("showDataRange")) {
             try {
-                this.showDataRange = Boolean.valueOf(jsonObject.getString("showDataRange"));
+                this.showDataRange = jsonObject.getBoolean("showDataRange");
             } catch (Exception e) {
                 log.error("Unrecognized showDataRange: " + jsonObject.getString("showDataRange"));
             }
@@ -1426,7 +1412,7 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("showFeatureNames")) {
             try {
-                this.showFeatureNames = Boolean.valueOf(jsonObject.getString("showFeatureNames"));
+                this.showFeatureNames = jsonObject.getBoolean("showFeatureNames");
             } catch (Exception e) {
                 log.error("Unrecognized showDataRange: " + jsonObject.getString("showFeatureNames"));
             }

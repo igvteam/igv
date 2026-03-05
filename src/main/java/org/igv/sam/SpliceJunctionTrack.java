@@ -23,7 +23,6 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -151,16 +150,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
     public void clear() {
         this.packedFeaturesMap.clear();
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        if (visible != isVisible()) {
-            super.setVisible(visible);
-            if (IGV.hasInstance()) {
-                IGV.getInstance().getMainPanel().revalidate();
-            }
-        }
     }
 
     public boolean isLogNormalized() {
@@ -310,41 +299,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
         // Hide/show items
         if (alignmentTrack != null) {
-
             menu.addSeparator();
-
-            final CoverageTrack coverageTrack = alignmentTrack.getCoverageTrack();
-            if (coverageTrack != null) {
-                final JMenuItem item = new JCheckBoxMenuItem("Show Coverage Track");
-                item.setSelected(coverageTrack.isVisible());
-                item.setEnabled(!coverageTrack.isRemoved());
-                item.addActionListener(e -> {
-                    coverageTrack.setVisible(item.isSelected());
-                    IGV.getInstance().repaint(Arrays.asList(coverageTrack));
-                });
-                menu.add(item);
-            }
-
-            final JMenuItem junctionItem = new JCheckBoxMenuItem("Show Splice Junction Track");
-            junctionItem.setSelected(true);
-            junctionItem.addActionListener(e -> {
-                SpliceJunctionTrack.this.setVisible(junctionItem.isSelected());
-                IGV.getInstance().repaint(Arrays.asList(SpliceJunctionTrack.this));
-            });
-            menu.add(junctionItem);
-            // Disable if this is the only visible track
-            if (!((coverageTrack != null && coverageTrack.isVisible()) || alignmentTrack.isVisible())) {
-                junctionItem.setEnabled(false);
-            }
-
-            final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
-            alignmentItem.setSelected(alignmentTrack.isVisible());
-            alignmentItem.setEnabled(!alignmentTrack.isRemoved());
-            alignmentItem.addActionListener(e -> {
-                alignmentTrack.setVisible(alignmentItem.isSelected());
-                IGV.getInstance().repaint(Arrays.asList(alignmentTrack));
-            });
-            menu.add(alignmentItem);
+            AlignmentTrackMenu.addShowItems(menu, alignmentTrack);
         }
 
         return menu;

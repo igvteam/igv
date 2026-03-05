@@ -41,7 +41,7 @@ public class Globals {
     /**
      * Field description
      */
-    final public static String SESSION_FILE_EXTENSION = ".xml";
+    final public static String SESSION_FILE_EXTENSION = ".json";
     /**
      * GENOME ARCHIVE CONSTANTS
      */

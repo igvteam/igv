@@ -342,7 +342,7 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     }
 
     public int getContentHeight() {
-        return this.track.getContentHeight();
+        return this.track.isVisible() ? this.track.getContentHeight() : 0;
     }
 
     @Override
