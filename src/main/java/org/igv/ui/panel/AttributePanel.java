@@ -21,7 +21,6 @@ import org.igv.ui.IGV;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -90,7 +89,7 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
             final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
             if (hiddenAttributes != null) names.removeAll(hiddenAttributes);
 
-            if (names.size() > 0) {
+            if (names.size() > 0 && track.getSampleGroups() != null) {
                 track.renderAttributes(g, rect, rect, names, mouseRegions);
             }
         }
@@ -110,19 +109,17 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
      * @return
      */
     public String getPopupMenuTitle(int x, int y) {
-        Collection<Track> selectedTracks = getSelectedTracks();
-        int selectedTrackCount = selectedTracks.size();
-        if (selectedTrackCount == 1) {
-            return selectedTracks.iterator().next().getName();
-        } else {
-            String keyValue = "";
-            for (MouseableRegion region : this.getMouseRegions()) {
-                if (region.containsPoint(x, y)) {
-                    keyValue = region.getText();
-                }
-            }
-            return keyValue + " (" + selectedTrackCount + " tracks)";
+        Track track = getTrack();
+        if (track != null) {
+            return track.getName();
         }
+        String keyValue = "";
+        for (MouseableRegion region : this.getMouseRegions()) {
+            if (region.containsPoint(x, y)) {
+                keyValue = region.getText();
+            }
+        }
+        return keyValue;
     }
 
     /**
@@ -153,14 +150,11 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
             if (log.isDebugEnabled()) {
                 log.debug("Enter mousePressed");
             }
-            clearTrackSelections();
-            selectTracks(e);
             if (e.isPopupTrigger()) {
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
 
             }
-            IGV.getInstance().repaintNamePanels();
         }
 
         public void mouseReleased(MouseEvent e) {

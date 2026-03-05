@@ -95,21 +95,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         return frame.getCurrentRange().getLength() <= dataManager.getVisibilityWindow();
     }
 
-    @Override
-    public void render(RenderContext context) {
-        if (!isShowFeatures(context.getReferenceFrame())) {
-            Rectangle visibleRect = context.getVisibleRect();
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
-                    "Select a chromosome and zoom in to see features." :
-                    "Zoom in to see features.";
-            GraphicUtils.drawCenteredText(message, visibleRect, g);
-        } else {
-            super.render(context);
-        }
-    }
-
-
     /**
      * The ScalableTrack interface.  Return a Range object reflecting min/max of the data (splice junction counts
      * in this case.  Used for autoscaling.

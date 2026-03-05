@@ -12,6 +12,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
+import org.igv.sample.SampleFilter;
 import org.igv.sample.SampleGroup;
 import org.igv.session.SessionAttribute;
 import org.igv.ui.FontManager;
@@ -22,7 +23,6 @@ import org.igv.ui.panel.*;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.FileUtils;
 import org.igv.util.ResourceLocator;
-import org.igv.sample.SampleFilter;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -103,7 +103,7 @@ public abstract class AbstractTrack implements Track {
     // Sample info related properties.
     private Map<String, String> attributes = new HashMap();
     protected List<SampleGroup> sampleGroups = new ArrayList<>();
-    protected List<String> allSamples;
+    protected List<String> sampleNames;
     protected String groupBy;
     protected boolean samplesSorted;
     private SampleFilter sampleFilter;
@@ -155,6 +155,11 @@ public abstract class AbstractTrack implements Track {
             displayMode = DisplayMode.EXPANDED;
         }
 
+        // By default, all tracks have a single implied sample.  This will get overwritten for certain track types
+        // in initSample()
+        sampleNames = Collections.singletonList(getName());
+        this.sampleGroups.add(new SampleGroup("", sampleNames));
+
     }
 
     /**
@@ -165,7 +170,7 @@ public abstract class AbstractTrack implements Track {
      * @param sampleNames
      */
     protected void initSamples(List<String> sampleNames) {
-        this.allSamples = sampleNames;
+        this.sampleNames = sampleNames;
         resetSampleGroups();
     }
 
@@ -471,14 +476,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setOverlayed(boolean bool) {
         this.overlaid = bool;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isSelected() {
-        return selected;
     }
 
 
@@ -1033,15 +1030,14 @@ public abstract class AbstractTrack implements Track {
 
     /////////////////////////////////////////////////////////////////////////////////////////
     // Sorting
-
     public boolean hasSamples() {
-        return allSamples != null && !allSamples.isEmpty();
+        return sampleNames != null && !sampleNames.isEmpty();
     }
 
     public void sortSamples(Comparator<String> comparator) {
         // Sort both master list and groups
-        if(allSamples != null) {
-            allSamples.sort(comparator);
+        if (sampleNames != null) {
+            sampleNames.sort(comparator);
             this.samplesSorted = true;
             for (var group : getSampleGroups()) {
                 group.samples().sort(comparator);
@@ -1060,7 +1056,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public List<String> getFilteredSamples() {
-        return sampleFilter == null ? allSamples : sampleFilter.evaluateSamples(allSamples);
+        return sampleFilter == null ? sampleNames : sampleFilter.evaluateSamples(sampleNames);
     }
 
     public void setSampleGroupBy(String attribute) {
@@ -1078,7 +1074,6 @@ public abstract class AbstractTrack implements Track {
 
         if (attributeKey == null) {
             this.sampleGroups.add(new SampleGroup("", filteredSampleNames));
-
         } else {
             var attributeManager = AttributeManager.getInstance();
             var groupMap = new LinkedHashMap<String, List<String>>();
@@ -1327,15 +1322,15 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        if (samplesSorted && allSamples != null) {
-            jsonObject.put("samples", allSamples);
+        if (samplesSorted && sampleNames != null) {
+            jsonObject.put("samples", sampleNames);
         }
 
-        if(groupBy != null) {
+        if (groupBy != null) {
             jsonObject.put("groupBy", groupBy);
         }
 
-        if(sampleFilter != null) {
+        if (sampleFilter != null) {
             jsonObject.put("sampleFilter", sampleFilter.toJson());
         }
 
@@ -1467,22 +1462,21 @@ public abstract class AbstractTrack implements Track {
         }
 
 
-
         if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")) {
 
-            if(jsonObject.has("samples")) {
+            if (jsonObject.has("samples")) {
                 // Samples are sorted
                 this.samplesSorted = true;
-                this.allSamples = new ArrayList<>();
-                jsonObject.getJSONArray("samples").forEach(s -> allSamples.add((String) s));
+                this.sampleNames = new ArrayList<>();
+                jsonObject.getJSONArray("samples").forEach(s -> sampleNames.add((String) s));
             }
 
-            if(jsonObject.has("groupBy")) {
+            if (jsonObject.has("groupBy")) {
                 // Samples are also grouped
                 this.groupBy = jsonObject.getString("groupBy");
             }
 
-            if(jsonObject.has("sampleFilter")) {
+            if (jsonObject.has("sampleFilter")) {
                 try {
                     this.sampleFilter = SampleFilter.fromJson(jsonObject.getJSONObject("sampleFilter"));
                 } catch (Exception e) {

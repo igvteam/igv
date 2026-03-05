@@ -567,58 +567,6 @@ public class IGV implements IGVEventObserver {
         return Lists.newArrayList(Iterables.filter(getAllTracks(), AlignmentTrack.class));
     }
 
-    public void clearSelections() {
-        for (Track t : getAllTracks()) {
-            if (t != null)
-                t.setSelected(false);
-        }
-    }
-
-    public void setTrackSelections(Iterable<Track> selectedTracks) {
-        for (Track t : selectedTracks) {
-            t.setSelected(true);
-        }
-    }
-
-    public void shiftSelectTracks(Track track) {
-        List<Track> allTracks = getAllTracks();
-        int clickedTrackIndex = allTracks.indexOf(track);
-        // Find another track that is already selected.  The semantics of this
-        // are not well defined, so any track will do
-        int otherIndex = clickedTrackIndex;
-        for (int i = 0; i < allTracks.size(); i++) {
-            if (allTracks.get(i).isSelected() && i != clickedTrackIndex) {
-                otherIndex = i;
-                break;
-            }
-        }
-
-        int left = Math.min(otherIndex, clickedTrackIndex);
-        int right = Math.max(otherIndex, clickedTrackIndex);
-        for (int i = left; i <= right; i++) {
-            Track t = allTracks.get(i);
-            if (t.isVisible()) {
-                t.setSelected(true);
-            }
-        }
-    }
-
-    public void toggleTrackSelections(Iterable<Track> selectedTracks) {
-        for (Track t : selectedTracks) {
-            t.setSelected(!t.isSelected());
-        }
-    }
-
-    public List<Track> getSelectedTracks() {
-        ArrayList<Track> selectedTracks = new ArrayList();
-        for (Track t : getAllTracks()) {
-            if (t != null && t.isSelected()) {
-                selectedTracks.add(t);
-            }
-        }
-        return selectedTracks;
-
-    }
 
     /**
      * Return the complete set of unique DataResourceLocators currently loaded
@@ -2038,14 +1986,6 @@ public class IGV implements IGVEventObserver {
                 mainPanel.repaint();
             });
         }
-    }
-
-
-    public List<Track> visibleTracks(DataPanelContainer dataPanelContainer) {
-        return dataPanelContainer.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                collect(Collectors.toList());
     }
 
     /**

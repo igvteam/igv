@@ -60,6 +60,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     private String tooltipText = "";
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
+
         init();
         this.darkMode = Globals.isDarkMode();
         this.defaultTool = new PanTool(this);
@@ -123,6 +124,24 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             graphics2D.setColor(getBackground());
             graphics2D.fillRect(clip.x, clip.y, clip.width, clip.height);
         }
+        final Rectangle visibleRect = getVisibleRect();
+        int visibilityWindow = getTrack().getVisibilityWindow();
+        double bpwidth = getBounds().width * frame.getScale();
+
+        if(visibilityWindow >= 0 && (bpwidth > visibilityWindow || frame.getChrName().equals(Globals.CHR_ALL))) {
+
+            graphics2D.setColor(darkMode ? Color.white : Color.GRAY);
+            String msg = frame.getChrName().equals(Globals.CHR_ALL) ?
+                    "Select a chromosome and zoom in to see data." :
+                    "Zoom in to see data, or right-click to increase Feature Visibility Window.";
+            FontMetrics fm = graphics2D.getFontMetrics();
+            int msgWidth = fm.stringWidth(msg);
+            int msgHeight = fm.getHeight();
+            int x = (getWidth() - msgWidth) / 2;
+            int y = (visibleRect.height + msgHeight) / 2;
+            graphics2D.drawString(msg, x, y);
+            return;
+        }
 
         RenderContext context = null;
         try {
@@ -131,7 +150,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             trackRectangle.x = 0;               // Adjust to be relative to the panel, not the parent
             trackRectangle.y = 0;
             final Rectangle clipBounds = g.getClipBounds();
-            final Rectangle visibleRect = getVisibleRect();
+
             context = new RenderContext(this, graphics2D, frame, trackRectangle, visibleRect, clipBounds);
 
             painter.paint(getTrack(), context);
@@ -184,7 +203,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         try {
             context = new RenderContext(null, g, frame, rect, rect, rect);
-            final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             Insets insets = getInsets();
             Rectangle contentRect = new Rectangle(
                     rect.x + insets.left,
@@ -523,8 +541,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
 
         private void doPopupMenu(MouseEvent e) {
-            IGV.getInstance().clearSelections();
-            parent.selectTracks(e);
             TrackClickEvent te = new TrackClickEvent(e, frame);
             parent.openPopupMenu(te);
         }

@@ -38,7 +38,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
-    private List<TrackGroup> trackGroups;
     private Track track;
 
     transient int lastHeight = 0;
@@ -156,20 +155,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         return name;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public List<TrackGroup> getGroups() {
-        return trackGroups;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean hasTracks() {
         return track != null;
     }
@@ -205,49 +190,49 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         DataPanelContainer dataPanel = this.getScrollPane().getDataPanel();
         boolean success = true;
 
-        int availableHeight = dataPanel.getVisibleHeight();
-        int visibleSampleCount = 0;
-
-        // Process data tracks first
-        Collection<TrackGroup> groups = dataPanel.getTrackGroups();
-
-
-        // Count visible samples.
-        for (TrackGroup group : groups) {
-            List<Track> tracks = group.getVisibleTracks();
-            for (Track track : tracks) {
-                if (track.isVisible()) {
-                    visibleSampleCount += track.sampleCount();
-                }
-            }
-        }
-
-
-        // Auto resize the height of the visible tracks
-        if (visibleSampleCount > 0) {
-            int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
-            double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
-
-            double delta = adjustedAvailableHeight / visibleSampleCount;
-
-            // Minimum track height is 1
-            if (delta < 1) {
-                delta = 1;
-            }
-
-            int iTotal = 0;
-            double target = 0;
-            for (TrackGroup group : groups) {
-                List<Track> tracks = group.getVisibleTracks();
-                for (Track track : tracks) {
-                    target += delta * track.sampleCount();
-                    int height = (int) (target - iTotal);
-                    track.setHeight(height);
-                    iTotal += height;
-                }
-            }
-
-        }
+//        int availableHeight = dataPanel.getVisibleHeight();
+//        int visibleSampleCount = 0;
+//
+//        // Process data tracks first
+//        Collection<TrackGroup> groups = dataPanel.getTrackGroups();
+//
+//
+//        // Count visible samples.
+//        for (TrackGroup group : groups) {
+//            List<Track> tracks = group.getVisibleTracks();
+//            for (Track track : tracks) {
+//                if (track.isVisible()) {
+//                    visibleSampleCount += track.sampleCount();
+//                }
+//            }
+//        }
+//
+//
+//        // Auto resize the height of the visible tracks
+//        if (visibleSampleCount > 0) {
+//            int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
+//            double adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
+//
+//            double delta = adjustedAvailableHeight / visibleSampleCount;
+//
+//            // Minimum track height is 1
+//            if (delta < 1) {
+//                delta = 1;
+//            }
+//
+//            int iTotal = 0;
+//            double target = 0;
+//            for (TrackGroup group : groups) {
+//                List<Track> tracks = group.getVisibleTracks();
+//                for (Track track : tracks) {
+//                    target += delta * track.sampleCount();
+//                    int height = (int) (target - iTotal);
+//                    track.setHeight(height);
+//                    iTotal += height;
+//                }
+//            }
+//
+//        }
 
         return success;
     }
@@ -302,12 +287,13 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     public void sortByRegionsScore(final RegionOfInterest region, final RegionScoreType type,
                                    final ReferenceFrame frame, List<String> sortedSamples) {
 
-        sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
+        //sortGroupsByRegionScore(trackGroups, region, type, frame.getZoom(), frame.getName());
         //for (TrackGroup group : trackGroups) {
         // If there is a non-null linking attribute
         // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
         //group.sortGroup(type, sortedSamples);
         //}
+
     }
 
     /**
@@ -409,17 +395,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     @Override
     public int getSnapshotHeight(boolean batch) {
         return getHeight();
-    }
-
-    public static TrackPanel getParentPanel(Track track) {
-        for (TrackPanel panel : IGV.getInstance().getTrackPanels()) {
-            for (TrackGroup group : panel.getGroups()) {
-                if (group.contains(track)) {
-                    return panel;
-                }
-            }
-        }
-        return null;
     }
 
     // ---- Transferable interface implementation ----

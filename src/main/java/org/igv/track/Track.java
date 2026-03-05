@@ -250,9 +250,6 @@ public interface Track {
 
     Renderer getRenderer();
 
-    void setSelected(boolean selected);
-
-    boolean isSelected();
 
     boolean isSortable();
 

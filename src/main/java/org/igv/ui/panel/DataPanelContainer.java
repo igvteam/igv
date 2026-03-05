@@ -73,17 +73,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         }
     }
 
-
-    public Collection<TrackGroup> getTrackGroups() {
-        TrackPanel dataTrackView = (TrackPanel) getParent();
-        return dataTrackView.getGroups();
-    }
-
-    public int getVisibleHeight() {
-        TrackPanel dataTrackView = (TrackPanel) getParent();
-        return dataTrackView.getVisibleRect().height;
-    }
-
     public void setCurrentTool(RegionOfInterestTool regionOfInterestTool) {
         for (Component c : this.getComponents()) {
             if (c instanceof DataPanel) {

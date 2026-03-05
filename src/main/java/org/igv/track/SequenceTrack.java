@@ -19,7 +19,6 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
 import org.igv.renderer.SequenceRenderer;
 import org.igv.ui.FontManager;
-import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -317,7 +316,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private void flipStrand() {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
-        IGV.getInstance().clearSelections();
         repaint();
 
     }
@@ -325,7 +323,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setStrand(Strand strandValue) {
         strand = strandValue;
         PreferencesManager.getPreferences().put(SEQUENCE_TRANSLATION_STRAND, strand.toString());
-        IGV.getInstance().clearSelections();
         repaint();
     }
 
@@ -353,7 +350,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         m2.setSelected(showTranslation);
         m2.addActionListener(e -> {
             setShowTranslation(m2.isSelected());
-            IGV.getInstance().clearSelections();
         });
 
         menu.add(m1);

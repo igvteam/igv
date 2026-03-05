@@ -535,12 +535,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow()) {
-            Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
-            String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
-                    "Select a chromosome and zoom in to see alignments." :
-                    "Zoom in to see alignments.";
-
-            GraphicUtils.drawCenteredText(message, context.getVisibleRect(), g2);
             return;
         }
 

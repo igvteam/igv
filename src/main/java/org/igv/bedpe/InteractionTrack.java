@@ -195,8 +195,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
         if (!isShowFeatures(referenceFrame)) {
-            String message = "Zoom in to see features, or right-click to increase Feature Visibility Window.";
-            GraphicUtils.drawCenteredText(message, context.getVisibleRect(), context.getGraphics());
             return;
         }
 

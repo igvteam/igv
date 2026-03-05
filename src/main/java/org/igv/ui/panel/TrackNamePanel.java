@@ -16,7 +16,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackGroup;
-import org.igv.ui.IGV;
 import org.igv.ui.dnd.AbstractGhostDropManager;
 import org.igv.ui.util.IGVMouseInputAdapter;
 import org.igv.ui.util.UIUtilities;
@@ -41,21 +40,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     List<GroupExtent> groupExtents = new ArrayList();
 
-    TrackGroup selectedGroup = null;
-
     public TrackNamePanel(TrackPanel trackPanel) {
         super(trackPanel);
         init();
     }
-
-    Collection<TrackGroup> getGroups() {
-        return getTrackPanel().getGroups();
-    }
-
-    private boolean isGrouped() {
-        return getGroups().size() > 1;
-    }
-
 
     @Override
     public void paintComponent(Graphics g) {
@@ -124,9 +112,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
             Track track = getTrack();
             if (track.isVisible()) {
-                if (!snapshot && track.isSelected()) {
-                    g.setBackground(Color.LIGHT_GRAY);
-                }
                 track.renderName(g, trackRectangle, clipRect);
             }
     }
@@ -169,23 +154,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         return text;
     }
 
-    /**
-     * Shift-click,  used to select a range of tracks.
-     *
-     * @param e
-     */
-    protected void shiftSelectTracks(MouseEvent e) {
-        for (MouseableRegion mouseRegion : mouseRegions) {
-            if (mouseRegion.containsPoint(e.getX(), e.getY())) {
-                Collection<Track> clickedTracks = mouseRegion.getTracks();
-                if (clickedTracks != null && clickedTracks.size() > 0) {
-                    Track t = clickedTracks.iterator().next();
-                    IGV.getInstance().shiftSelectTracks(t);
-                }
-                return;
-            }
-        }
-    }
 
 
     private TrackGroup getGroup(int y) {
@@ -214,32 +182,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             grabFocus();
 
             if (e.isPopupTrigger()) {
-                clearTrackSelections();
-                selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
-            } // meta (mac) or control,  toggle selection]
-            else if (e.getButton() == MouseEvent.BUTTON1) {
-
-                if (e.isMetaDown() || e.isControlDown()) {
-                    toggleTrackSelections(e);
-                } else if (e.isShiftDown()) {
-                    shiftSelectTracks(e);
-                } else if (!isTrackSelected(e)) {
-                    clearTrackSelections();
-                    selectTracks(e);
-                }
-
-            } else {
-                if (!isTrackSelected(e)) {
-                    clearTrackSelections();
-                    selectTracks(e);
-                }
             }
-
-
-            IGV.getInstance().repaintNamePanels();
-
         }
 
         @Override
@@ -248,17 +193,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             super.mouseReleased(e);
 
             if (e.isPopupTrigger()) {
-                clearTrackSelections();
-                selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, null);
                 openPopupMenu(te);
-            } else {
-                if (!e.isMetaDown() && !e.isControlDown() &&
-                        !e.isShiftDown()) {
-                    clearTrackSelections();
-                    selectTracks(e);
-                    IGV.getInstance().repaintNamePanels();
-                }
             }
         }
 
@@ -287,16 +223,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         }
 
     }
-
-    private void selectGroup(TrackGroup group) {
-        selectedGroup = group;
-        if (selectedGroup != null) {
-            for (Track t : selectedGroup.getVisibleTracks()) {
-                t.setSelected(true);
-            }
-        }
-    }
-
 
     class GroupExtent {
         TrackGroup group;

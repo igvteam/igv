@@ -553,13 +553,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         // Toggle selection of row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             int i = getFeatureRow(e.getY());
-            if (i == selectedFeatureRowIndex)
+            if (i == selectedFeatureRowIndex) {
                 setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
-            else {
-                //make this track selected
-                setSelected(true);
-                //select the appropriate row
-                setSelectedFeatureRowIndex(i);
             }
         }
 
@@ -723,8 +718,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void render(RenderContext context) {
 
-        // Draw entire track.  TODO use clipBounds or visibleRect.
+        // Draw entire track.
         Rectangle renderRect = context.getTrackRectangle();
+
+        context.getReferenceFrame().getCurrentRange();
 
         renderRect.y = renderRect.y + margin;
         renderRect.height -= margin;
@@ -767,16 +764,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                         (int) context.getEndLocation(), context.getZoom()) :
                 null;
 
-        if (scores == null) {
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            Rectangle textRect = new Rectangle(inputRect);
-
-            // Keep text near the top of the track rectangle
-            textRect.height = Math.min(inputRect.height, 20);
-            String message = getZoomInMessage(chr);
-            GraphicUtils.drawCenteredText(message, textRect, g);
-
-        } else {
+        if (scores != null) {
             float max = getMaxEstimate(scores);
             if (this.dataRange == null) {
                 setDataRange(new DataRange(0, 0, max));

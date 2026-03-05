@@ -122,11 +122,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
 
         this.visibleNameRect = visibleRect;
-        if (isSelected()) {
-            g2D.setBackground(Color.LIGHT_GRAY);
-        } else {
-            g2D.setBackground(Color.WHITE);
-        }
+        g2D.setBackground(Color.WHITE);
 
         Rectangle rect = new Rectangle(visibleRect);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);

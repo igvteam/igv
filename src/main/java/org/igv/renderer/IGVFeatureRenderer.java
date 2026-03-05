@@ -88,8 +88,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         final Track.DisplayMode displayMode = track.getDisplayMode();
         blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
         thinBlockHeight = displayMode == Track.DisplayMode.SQUISHED ? THIN_BLOCK_HEIGHT / 2 : THIN_BLOCK_HEIGHT;
-
-        // TODO -- use enum instead of string "Color"
+        
         if ((featureList != null) && (featureList.size() > 0)) {
 
             // Create a graphics object to draw font names.  Graphics are not cached
