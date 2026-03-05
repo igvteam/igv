@@ -51,7 +51,9 @@ class TrackPanelDropTargetListener implements DropTargetListener {
                 dtde.acceptDrop(DnDConstants.ACTION_MOVE);
                 transferableObj = transferable.getTransferData(trackPanelFlavor);
             } else {
-                dtde.rejectDrop();
+                // Not a TrackPanel drag — delegate to MainPanel for file/URL drops
+                MainPanel mainPanel = IGV.getInstance().getMainPanel();
+                mainPanel.drop(dtde);
                 return;
             }
         } catch (Exception ex) {

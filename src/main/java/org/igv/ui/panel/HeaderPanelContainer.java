@@ -180,6 +180,8 @@ class HeaderDropTargetListener implements DropTargetListener {
 
         // If didn't find an item, bail
         if (transferableObj == null) {
+            // Not a HeaderPanel drag — delegate to MainPanel for file/URL drops
+            IGV.getInstance().getMainPanel().drop(dtde);
             return;
         }
 

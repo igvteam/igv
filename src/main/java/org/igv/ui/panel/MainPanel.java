@@ -9,6 +9,7 @@ import org.igv.track.Track;
 import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
+import org.igv.util.LongRunningTask;
 import org.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -18,6 +19,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.io.File;
 import java.net.URI;
 import java.util.*;
@@ -59,8 +62,12 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         this.igv = igv;
         initComponents();
 
-        // Enable drag-and-drop for files and URLs
+        // Enable drag-and-drop for files and URLs.
+        // DropTarget events don't bubble from child to parent in AWT/Swing, so we
+        // install MainPanel's own DropTarget first, then recursively install
+        // forwarding DropTargets on all descendants that don't already have one.
         new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this, true);
+        installDropTargetRecursively(this);
 
         //Load IGV logo
 //        try {
@@ -681,8 +688,23 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
                 }
             }
 
-            // Load dropped files and URLs as tracks
+            // Load dropped files and URLs as tracks or sessions
             List<ResourceLocator> locators = new ArrayList<>();
+
+            // First check for a session
+            String sessionPath = null;
+            if(droppedFiles.size() == 1 && droppedFiles.get(0).getName().endsWith(".xml")) {
+                // If it's a single XML file, treat it as a session file
+                sessionPath = droppedFiles.get(0).getAbsolutePath();
+            } else if(droppedUrls.size() == 1 && droppedUrls.get(0).endsWith(".xml")) {
+                // If it's a single URL ending in .xml, treat it as a session URL
+                sessionPath = droppedUrls.get(0);
+            }
+            if(sessionPath != null) {
+                final String sp = sessionPath;
+                LongRunningTask.submit(() -> this.igv.loadSession(sp, null));
+                return;
+            }
 
             // Add file locators
             if (!droppedFiles.isEmpty()) {
@@ -717,5 +739,71 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
                 lower.startsWith("ftp://") ||
                 lower.startsWith("s3://") ||
                 lower.startsWith("gs://");
+    }
+
+    /**
+     * Recursively install a DropTarget on the given component and all its
+     * descendants so that drop events anywhere in the UI are handled.
+     * <p>
+     * Components that already have their own DropTarget (e.g. TrackPanel for reorder D&D,
+     * HeaderPanel for frame reorder D&D) are left untouched — their listeners already
+     * delegate unhandled flavors (like file drops) to {@link #drop}.
+     * <p>
+     * For components without a DropTarget, a forwarding listener is installed that
+     * locates the nearest ancestor with a DropTarget and dispatches the event there.
+     * This preserves the existing D&D behaviour (e.g. track reorder) while also making
+     * file drops work everywhere.
+     * <p>
+     * A ContainerListener is added to every Container so that dynamically added
+     * children (e.g. new track panels) are handled automatically.
+     */
+    private void installDropTargetRecursively(Component comp) {
+        if (comp.getDropTarget() == null) {
+            // Install a forwarding DropTarget that bubbles the event up to the nearest
+            // ancestor that has its own DropTarget (ultimately reaching MainPanel).
+            DropTargetListener forwarder = new DropTargetAdapter() {
+                @Override
+                public void drop(DropTargetDropEvent dtde) {
+                    DropTarget ancestorDt = findAncestorDropTarget(comp);
+                    if (ancestorDt != null) {
+                        ancestorDt.drop(dtde);
+                    }
+                }
+            };
+            new DropTarget(comp, DnDConstants.ACTION_COPY_OR_MOVE, forwarder, true);
+        }
+        if (comp instanceof Container) {
+            Container container = (Container) comp;
+            for (Component child : container.getComponents()) {
+                installDropTargetRecursively(child);
+            }
+            container.addContainerListener(new ContainerListener() {
+                @Override
+                public void componentAdded(ContainerEvent e) {
+                    installDropTargetRecursively(e.getChild());
+                }
+
+                @Override
+                public void componentRemoved(ContainerEvent e) {
+                    // No action needed on removal
+                }
+            });
+        }
+    }
+
+    /**
+     * Walk up the component hierarchy and return the DropTarget of the first
+     * ancestor that has one.  Returns {@code null} if none is found.
+     */
+    private static DropTarget findAncestorDropTarget(Component comp) {
+        Container parent = comp.getParent();
+        while (parent != null) {
+            DropTarget dt = parent.getDropTarget();
+            if (dt != null) {
+                return dt;
+            }
+            parent = parent.getParent();
+        }
+        return null;
     }
 }
