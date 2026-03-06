@@ -384,7 +384,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     packAlignments();
                 }
                 // Don't autosort on completion of a track pan (drag)
-                if (getPreferences().getAsBoolean(SAM_AUTO_SORT) && !viewChange.fromPanning) {
+                if (getPreferences().getAsBoolean(SAM_AUTO_SORT) && !viewChange.panning) {
                     sortRows(viewChange.referenceFrame);
                 }
             }

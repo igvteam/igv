@@ -133,7 +133,7 @@ final public class Constants {
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
     public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";
-    public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
+    public static final String SAM_AUTO_SORT = "SAM.AUTO_SORT";
     public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
     public static final String SAM_SHOW_CENTER_LINE = "SAM.SHOW_CENTER_LINE";
     public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";

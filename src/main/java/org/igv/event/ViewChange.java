@@ -25,7 +25,6 @@ public final class ViewChange implements IGVEvent{
     final public double end;
     final public ReferenceFrame referenceFrame;
     public boolean panning = false;
-    public boolean fromPanning = false;
 
     private ViewChange(Type type, ReferenceFrame referenceFrame, String chrName, double start, double end, boolean recordHistory) {
         this.type = type;

@@ -139,7 +139,6 @@ public class ReferenceFrame {
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
         final ViewChange event = ViewChange.LocusChangeResult(this, chrName, origin, getEnd(), false);
-        event.fromPanning = true;
         eventBus.post(event);
     }
 
