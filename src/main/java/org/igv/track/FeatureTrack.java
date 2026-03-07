@@ -7,6 +7,7 @@ import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
+import org.igv.event.ViewChange;
 import org.igv.feature.*;
 import org.igv.feature.Range;
 import org.igv.feature.genome.Genome;
@@ -26,7 +27,6 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.variant.VariantTrack;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -57,9 +57,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
-
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
+    private transient int maxFeatureRow = 1;
 
     boolean fatalLoadError = false;
 
@@ -186,6 +186,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
 
     }
 
@@ -210,7 +211,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             synchronized (packedFeaturesMap) {
                 packedFeaturesMap.keySet().removeIf(frame -> !currentFrames.contains(frame));
             }
-
+        } else if (e instanceof ViewChange) {
+            if (!((ViewChange) e).panning) {
+                updateMaxFeatureRow();
+            }
         } else {
             log.warn("Unknown event type: " + e.getClass());
         }
@@ -222,8 +226,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             return 0;
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-        int minHeight = margin + rowHeight * Math.max(1, getNumberOfFeatureLevels());
+        int minHeight = margin + rowHeight * Math.max(1, maxFeatureRow);
         return Math.max(minHeight, super.getContentHeight());
+    }
+
+    private void updateMaxFeatureRow() {
+        maxFeatureRow = 1;
+        if(getDisplayMode() != DisplayMode.COLLAPSED) {
+            if (packedFeaturesMap.size() > 0) {
+                for (ReferenceFrame frame : packedFeaturesMap.keySet()) {
+                    PackedFeatures pf = packedFeaturesMap.get(frame);
+                    maxFeatureRow = Math.max(maxFeatureRow, pf.getMaxPackedRow((int) frame.getOrigin(), (int) frame.getEnd()));
+                }
+            }
+        }
     }
 
     public int getExpandedRowHeight() {
@@ -527,7 +543,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<Feature> possFeatures = rows.get(featureRow).getFeatures();
+        List<IGVFeature> possFeatures = rows.get(featureRow).getFeatures();
 
 
         List<Feature> featureList = null;
@@ -621,14 +637,17 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void setDisplayMode(DisplayMode mode) {
+
+        super.setDisplayMode(mode);
+
         // Explicity setting the display mode overrides the automatic switch
         lastFeatureMode = null;
 
         for (PackedFeatures pf : packedFeaturesMap.values()) {
             pf.pack(mode, groupByStrand);
         }
+        updateMaxFeatureRow();
 
-        super.setDisplayMode(mode);
     }
 
     @Override
@@ -647,6 +666,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public void load(ReferenceFrame frame) {
         loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
+        updateMaxFeatureRow();
     }
 
     /**

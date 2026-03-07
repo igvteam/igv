@@ -1,6 +1,5 @@
 package org.igv.feature;
 
-import org.igv.feature.genome.ChromAlias;
 
 import java.awt.*;
 import java.util.Collections;
@@ -33,7 +32,8 @@ public interface IGVFeature extends LocusScore, IGVNamedFeature {
         return null;
     }
 
-    default void removeAttribute(String key) {}
+    default void removeAttribute(String key) {
+    }
 
     /**
      * Return true if the given feature is completely contained within the bounds of this
@@ -72,7 +72,16 @@ public interface IGVFeature extends LocusScore, IGVNamedFeature {
         return null;
     }
 
-   default Map<String, String> getAttributes() {
+    default Map<String, String> getAttributes() {
         return Collections.emptyMap();
     }
+
+    default void setPackedRow(int rowIndex) {
+
+    }
+
+    default int getPackedRow() {
+        return 0;
+    }
+
 }

@@ -101,7 +101,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
         features.clear();
         for (int i=0; i<numRows; i++)
         {
-            List<Feature> posAndNegFeatures = new ArrayList<Feature>();
+            List<IGVFeature> posAndNegFeatures = new ArrayList<>();
             if (negativeRows.size() > i)
                 posAndNegFeatures.addAll(negativeRows.get(i).getFeatures());
             if (posRows.size() > i)
@@ -111,7 +111,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
             {
                 Collections.sort(posAndNegFeatures, startComparator);
                 FeatureRow resultRow = new FeatureRow();
-                for (Feature feature : posAndNegFeatures)
+                for (IGVFeature feature : posAndNegFeatures)
                     resultRow.addFeature(feature);
                 result.add(resultRow);
                 features.addAll(posAndNegFeatures);
@@ -196,7 +196,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
                     if (bucket.isEmpty()) {
                         emptyBucketKeys.add(key);
                     }
-                    currentRow.addFeature(feature);
+                    currentRow.addFeature((IGVFeature) feature);
                     nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
                     allocatedCount++;
                 }

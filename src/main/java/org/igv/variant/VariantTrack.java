@@ -7,6 +7,7 @@ import htsjdk.tribble.TribbleException;
 import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
+import org.igv.feature.IGVFeature;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -317,8 +318,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             for (PackedFeatures.FeatureRow row : rows) {
 
-                List<Feature> features = row.getFeatures();
-                for (Feature feature : features) {
+                List<IGVFeature> features = row.getFeatures();
+                for (IGVFeature feature : features) {
                     Variant variant = (Variant) feature;
 
                     if (hideFiltered && variant.isFiltered()) {
@@ -702,7 +703,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         Feature feature = null;
-        List<Feature> features;
+        List<? extends Feature> features;
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
