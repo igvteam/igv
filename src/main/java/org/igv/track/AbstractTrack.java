@@ -249,7 +249,7 @@ public abstract class AbstractTrack implements Track {
 
 
     @Override
-    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle,
                                  List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
         final var attributeManager = AttributeManager.getInstance();

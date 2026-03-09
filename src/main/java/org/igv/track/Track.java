@@ -13,7 +13,6 @@ import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.util.ResourceLocator;
-import org.igv.sample.SampleFilter;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
 
@@ -21,7 +20,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -130,7 +128,7 @@ public interface Track {
      */
     void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle clipRect);
 
-    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle,
                           List<String> names, List<MouseableRegion> mouseRegions);
 
     void setName(String name);
@@ -357,7 +355,7 @@ public interface Track {
     }
 
     default int getSampleHeight() {
-        return 15;
+        return getHeight();
     }
 
     default int getSampleOffset() {

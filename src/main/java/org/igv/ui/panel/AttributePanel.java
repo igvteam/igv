@@ -62,13 +62,13 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
         trackRectangle.x = 0;
         trackRectangle.y = 0;
         removeMousableRegions();
-        paintImpl((Graphics2D) g, trackRectangle, false);
+        paintImpl((Graphics2D) g, trackRectangle);
 
     }
 
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
-        paintImpl(g, rect, batch);
+        paintImpl(g, rect);
         Graphics2D borderGraphics = (Graphics2D) g.create();
         borderGraphics.setColor(Color.lightGray);
         rect.height -= 1;
@@ -76,7 +76,7 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
         borderGraphics.dispose();
     }
 
-    public void paintImpl(Graphics2D g, Rectangle rect, boolean batch) {
+    public void paintImpl(Graphics2D g, Rectangle rect) {
 
         Track track = getTrack();
         if (track.isVisible()) {
@@ -90,7 +90,7 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
             if (hiddenAttributes != null) names.removeAll(hiddenAttributes);
 
             if (names.size() > 0 && track.getSampleGroups() != null) {
-                track.renderAttributes(g, rect, rect, names, mouseRegions);
+                track.renderAttributes(g, rect, names, mouseRegions);
             }
         }
     }
