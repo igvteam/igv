@@ -21,8 +21,7 @@ public class DataPanelPainter {
     public static final int TRACK_BORDER_HEIGHT = 3;
     private static Logger log = LogManager.getLogger(DataPanelPainter.class);
 
-    public synchronized void paint(Track track,
-                                   RenderContext context) {
+    public synchronized void paint(Track track, RenderContext context) {
         try {
 
             // Paint tracks, handling expanded insertion if present
@@ -101,8 +100,6 @@ public class DataPanelPainter {
 
     private void paintFrame(Track track, RenderContext context) {
 
-        Rectangle visibleRect = context.getVisibleRect();
-
         if (track.isVisible()) {
             try {
                 track.render(context);
@@ -113,25 +110,6 @@ public class DataPanelPainter {
         }
     }
 
-
-    // TODO -- replace this with JPanel border?  Must work for offscreen rendering too.
-    private void drawTrackBorders(RenderContext context) {
-
-        Rectangle dRect = context.getVisibleRect();
-        if (dRect == null) return;
-
-        Graphics2D borderGraphics = (Graphics2D) context.getGraphics().create();
-        Color borderColor = PreferencesManager.getPreferences().getAsColor(Constants.TRACK_BORDER_COLOR);
-        borderGraphics.setColor(borderColor);
-
-        try {
-            borderGraphics.drawLine(0, dRect.height, dRect.width, dRect.height);
-        } finally {
-            if (borderGraphics != null) {
-                borderGraphics.dispose();
-            }
-        }
-    }
 
     private void paintExpandedInsertion(InsertionMarker insertionMarker, Track track, RenderContext context) {
         if (track instanceof AlignmentTrack && track.isVisible()) {

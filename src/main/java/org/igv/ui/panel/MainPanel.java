@@ -524,8 +524,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         headerGraphics.dispose();
 
         // Now loop through track panels
-        Rectangle r = trackPanelContainer.getBounds();
-        g.translate(0, r.y);
+        g.translate(0, height);
 
         // Get the components of the center pane and sort by Y position.
         Component[] components = trackPanelContainer.getComponents();
@@ -539,11 +538,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
             if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-
-                //Skip if panel has no tracks
-                if (tsp.getTrackPanel().getTracks().size() == 0) {
-                    continue;
-                }
 
                 int panelHeight = tsp.getSnapshotHeight(batch);
 
@@ -562,9 +556,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             g2d.dispose();
 
         }
-
-//        //super.paintBorder(g);
-
     }
 
     /**
