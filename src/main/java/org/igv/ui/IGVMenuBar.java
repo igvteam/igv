@@ -31,6 +31,7 @@ import org.igv.ui.panel.MainPanel;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
 import org.igv.ui.panel.TrackPanel;
+import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
 import org.igv.util.BrowserLauncher;
@@ -300,13 +301,13 @@ public class IGVMenuBar extends JMenuBar  {
         JMenu tracksMenu = new JMenu("Tracks");
 
         // Show/hide track selection checkboxes
-        JMenuItem selectTracksItem = new JMenuItem("Show Selection Checkboxes");
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
         selectTracksItem.addActionListener(e -> {
-            boolean show = selectTracksItem.getText().startsWith("Show");
+            boolean show = selectTracksItem.isSelected();
             for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
                 tp.setSelectionPanelVisible(show);
             }
-            selectTracksItem.setText(show ? "Hide Selection Checkboxes" : "Show Selection Checkboxes");
             igv.getMainPanel().revalidateTrackPanels();
         });
         tracksMenu.add(selectTracksItem);

@@ -62,6 +62,9 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
 
+        // Respect the global selection mode state
+        selectionPanel.setVisible(TrackSelectionPanel.isSelectionModeActive());
+
         add(selectionPanel);
         add(dragHandlePanel);
         add(namePanel);
@@ -71,6 +74,8 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         // Setup drag and drop
         this.setTransferHandler(new TrackPanelTransferHandler());
         this.setDropTarget(new DropTarget(this, new TrackPanelDropTargetListener(this)));
+
+
     }
 
 
@@ -121,10 +126,12 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     }
 
     /**
-     * Show or hide the selection panel (checkbox panel)
+     * Show or hide the selection panel (checkbox panel).
+     * Also updates the global selection mode state so that new panels respect the current setting.
      * @param visible true to show, false to hide
      */
     public void setSelectionPanelVisible(boolean visible) {
+        TrackSelectionPanel.setSelectionModeActive(visible);
         selectionPanel.setVisible(visible);
         doLayout();
         revalidate();
