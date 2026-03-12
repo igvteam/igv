@@ -124,9 +124,9 @@ public interface Track {
      *
      * @param graphics
      * @param trackRectangle
-     * @param clipRect
+     * @param visibleRect
      */
-    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle clipRect);
+    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect);
 
     void renderAttributes(Graphics2D graphics, Rectangle trackRectangle,
                           List<String> names, List<MouseableRegion> mouseRegions);

@@ -6,7 +6,6 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
 import org.igv.renderer.Renderer;
-import org.igv.sample.SampleGroup;
 import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
@@ -95,13 +94,14 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
         // Calculate fontsize
         var gap = Math.min(4, sampleHeight / 3);
         var fs = Math.min(fontSize, sampleHeight - gap);
         var font = FontManager.getFont(fs);
         g2D.setFont(font);
+        Rectangle clipRect = g2D.getClipBounds();
 
         var y = 0;
         for (var group : getSampleGroups()) {

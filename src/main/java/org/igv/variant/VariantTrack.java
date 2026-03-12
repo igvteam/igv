@@ -442,18 +442,18 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      *
      * @param g
      * @param trackRectangle
-     * @param clipRect
+     * @param visibleRect
      */
     @Override
-    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle clipRect) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect) {
 
         Graphics2D g2D = null;
         Color backupColor = g.getBackground();
 
         try {
             g2D = (Graphics2D) g.create();
+            Rectangle clipRect = g2D.getClipBounds();
 
-            Rectangle rect = new Rectangle(trackRectangle);
             g2D.setFont(FontManager.getFont(getFontSize()));
             g2D.setColor(Color.black);
 

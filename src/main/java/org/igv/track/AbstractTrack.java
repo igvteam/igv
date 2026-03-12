@@ -231,13 +231,12 @@ public abstract class AbstractTrack implements Track {
     }
 
     // Implement the default rendering of the track name.  Subclasses may override.
-    public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
         String trackName = getDisplayName();
         if ((trackName != null)) {
 
             if (visibleRect.getHeight() > 3) {
-
                 Font font = FontManager.getFont(fontSize);
                 g2D.setFont(font);
                 GraphicUtils.drawWrappedText(trackName, visibleRect, g2D, true);

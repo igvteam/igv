@@ -16,18 +16,14 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackGroup;
-import org.igv.ui.dnd.AbstractGhostDropManager;
 import org.igv.ui.util.IGVMouseInputAdapter;
-import org.igv.ui.util.UIUtilities;
 import org.jdesktop.layout.GroupLayout;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -51,9 +47,9 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         super.paintComponent(g);
 
         Rectangle trackRectangle = new Rectangle(getBounds());
+        Rectangle visibleRect = getVisibleRect();
         trackRectangle.x = 0; // getBounds returns a rectangle with x/y relative to the parent, we want relative to this component
         trackRectangle.y = 0;
-        Rectangle clipRect = g.getClipBounds();
 
         if (trackRectangle != null && trackRectangle.height > 10) {
 
@@ -71,7 +67,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
                 fontGraphics.setBackground(backgroundColor);
                 fontGraphics.setColor(backgroundColor);
-                fontGraphics.fillRect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
+                fontGraphics.fillRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
 
                 fontGraphics.setColor(darkMode ? Color.white : Color.BLACK);
 
@@ -81,7 +77,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                 removeMousableRegions();
 
-                paintImpl(fontGraphics, trackRectangle, clipRect,false);
+                paintImpl(fontGraphics, trackRectangle, getVisibleRect(),false);
             } finally {
                 fontGraphics.dispose();
             }
@@ -108,11 +104,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
 
-    private void paintImpl(Graphics2D g, Rectangle trackRectangle, Rectangle clipRect, boolean snapshot) {
+    private void paintImpl(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect, boolean snapshot) {
 
             Track track = getTrack();
             if (track.isVisible()) {
-                track.renderName(g, trackRectangle, clipRect);
+                track.renderName(g, trackRectangle, visibleRect);
             }
     }
 

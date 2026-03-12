@@ -23,7 +23,6 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.UIUtilities;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
@@ -145,7 +144,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void renderName(Graphics2D g, Rectangle visibleRect, Rectangle clipRect) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect) {
 
         // Use local graphics -- this method corrupts graphics context when exporting to "png" files
         Graphics2D graphics = (Graphics2D) g.create();

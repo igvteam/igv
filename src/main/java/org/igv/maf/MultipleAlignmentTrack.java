@@ -119,7 +119,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle visibleRect, Rectangle clipRect) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
         this.visibleNameRect = visibleRect;
         g2D.setBackground(Color.WHITE);
