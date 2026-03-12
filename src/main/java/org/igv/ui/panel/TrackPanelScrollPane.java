@@ -21,7 +21,7 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
     TrackPanel trackPanel;
 
     public TrackPanelScrollPane() {
-        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
+        
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);

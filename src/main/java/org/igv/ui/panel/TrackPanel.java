@@ -55,7 +55,7 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
 
 
     private void init() {
-        setBackground(Color.white);
+
         selectionPanel = new TrackSelectionPanel(this);
         dragHandlePanel = new DragHandlePanel(this);
         namePanel = new TrackNamePanel(this);
