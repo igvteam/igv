@@ -240,8 +240,6 @@ public abstract class AbstractTrack implements Track {
                 Font font = FontManager.getFont(fontSize);
                 g2D.setFont(font);
                 GraphicUtils.drawWrappedText(trackName, visibleRect, g2D, true);
-
-                //g2D.dispose();
             }
         }
     }
