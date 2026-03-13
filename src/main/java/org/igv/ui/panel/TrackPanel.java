@@ -89,7 +89,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
             // Use preferred height (content height) instead of actual height
             // This ensures the panel is sized correctly for scrolling
             int h = getPreferredSize().height;
-
             int selectionPanelWidth = selectionPanel.getEffectiveWidth();
             int dragHandleWidth = DragHandlePanel.DRAG_HANDLE_WIDTH;
             int leftOffset = selectionPanelWidth + dragHandleWidth;

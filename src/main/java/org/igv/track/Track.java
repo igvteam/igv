@@ -214,7 +214,7 @@ public interface Track {
      * @return
      */
     default int getContentHeight() {
-        return 20;
+        return 25;
     }
 
 
