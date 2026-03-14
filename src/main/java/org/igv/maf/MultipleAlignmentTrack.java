@@ -269,30 +269,27 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
-        IGVPopupMenu menu = new IGVPopupMenu();
-
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        List<Component> items = new ArrayList<>();
 
         if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
-            menu.addSeparator();
+            items.add(null); // separator
             JMenuItem configTrack = new JMenuItem("Configure track...");
             configTrack.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent) {
                     configureTrack();
                 }
             });
-            menu.add(configTrack);
-            menu.addSeparator();
+            items.add(configTrack);
+            items.add(null); // separator
         }
 
-        List<Track> selfAsList = Arrays.asList((Track) this);
-
-        return menu;
+        return items;
     }
 
 

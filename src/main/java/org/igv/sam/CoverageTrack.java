@@ -638,36 +638,36 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
         Collection<Track> tmp = new ArrayList<Track>();
         tmp.add(this);
 
-        IGVPopupMenu popupMenu = TrackMenuUtils.getPopupMenu(tmp, getName(), te);
+        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(tmp, getName(), te));
 
-        popupMenu.addSeparator();
-        this.addSnpTresholdItem(popupMenu);
+        items.add(null); // separator
+        items.add(createSnpThresholdItem());
 
-        popupMenu.addSeparator();
-        addLoadCoverageDataItem(popupMenu);
+        items.add(null); // separator
+        items.add(createLoadCoverageDataItem());
 
-        popupMenu.addSeparator();
-        addCopyDetailsItem(popupMenu, te);
+        items.add(null); // separator
+        items.add(createCopyDetailsItem(te));
 
         if (alignmentTrack != null) {
-            popupMenu.addSeparator();
-            AlignmentTrackMenu.addShowItems(popupMenu, alignmentTrack);
+            items.add(null); // separator
+            items.addAll(AlignmentTrackMenu.getShowMenuItems(alignmentTrack));
         }
 
-        return popupMenu;
+        return items;
     }
 
-    private void addCopyDetailsItem(IGVPopupMenu popupMenu, TrackClickEvent te) {
+    private JMenuItem createCopyDetailsItem(TrackClickEvent te) {
         JMenuItem copyDetails = new JMenuItem("Copy Details to Clipboard");
         copyDetails.setEnabled(false);
         if (te.getFrame() != null) {
@@ -683,9 +683,49 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
             });
             copyDetails.setEnabled(details != null);
         }
-        popupMenu.add(copyDetails);
+        return copyDetails;
     }
 
+    private JMenuItem createSnpThresholdItem() {
+        JMenuItem maxValItem = new JMenuItem("Set allele frequency threshold...");
+        maxValItem.addActionListener(e -> {
+            String value = JOptionPane.showInputDialog("Allele frequency threshold: ", Float.valueOf(snpThreshold));
+            if (value == null) {
+                return;
+            }
+            try {
+                float tmp = Float.parseFloat(value);
+                snpThreshold = tmp;
+                repaint();
+            } catch (Exception exc) {
+                //log
+            }
+        });
+        return maxValItem;
+    }
+
+    private JMenuItem createLoadCoverageDataItem() {
+        final JMenuItem item = new JCheckBoxMenuItem("Load pre-computed coverage data...");
+        item.addActionListener(e -> {
+            final IGVPreferences prefs = PreferencesManager.getPreferences();
+            File initDirectory = prefs.getLastTrackDirectory();
+            File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
+            if (file != null) {
+                prefs.setLastTrackDirectory(file.getParentFile());
+                String path = file.getAbsolutePath();
+                if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
+                    TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
+                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
+                    setDataSource(ds);
+                    repaint();
+                } else {
+                    if (igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
+                }
+            }
+        });
+        item.setEnabled(dataSource == null);
+        return item;
+    }
 
     public static JMenuItem addDataRangeItem(final Frame parentFrame, JPopupMenu menu, final Collection<? extends Track> selectedTracks) {
         JMenuItem maxValItem = new JMenuItem("Set Data Range");
@@ -721,54 +761,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         if (menu != null) menu.add(maxValItem);
 
         return maxValItem;
-    }
-
-    public JMenuItem addSnpTresholdItem(JPopupMenu menu) {
-        JMenuItem maxValItem = new JMenuItem("Set allele frequency threshold...");
-        maxValItem.addActionListener(e -> {
-            String value = JOptionPane.showInputDialog("Allele frequency threshold: ", Float.valueOf(snpThreshold));
-            if (value == null) {
-                return;
-            }
-            try {
-                float tmp = Float.parseFloat(value);
-                snpThreshold = tmp;
-                repaint();
-            } catch (Exception exc) {
-                //log
-            }
-        });
-        menu.add(maxValItem);
-        return maxValItem;
-    }
-
-
-
-
-    public void addLoadCoverageDataItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Load pre-computed coverage data...");
-        item.addActionListener(e -> {
-            final IGVPreferences prefs = PreferencesManager.getPreferences();
-            File initDirectory = prefs.getLastTrackDirectory();
-            File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
-            if (file != null) {
-                prefs.setLastTrackDirectory(file.getParentFile());
-                String path = file.getAbsolutePath();
-                if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-                    TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
-                    setDataSource(ds);
-                    repaint();
-                } else {
-                    if (igv != null) MessageUtils.showMessage("Coverage data must be in .tdf format");
-                }
-            }
-        });
-
-        item.setEnabled(dataSource == null);
-        menu.add(item);
-
     }
 
 

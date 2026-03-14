@@ -91,8 +91,9 @@ public class BlatTrack extends FeatureTrack {
         return true;
     }
 
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(Arrays.asList(this), "Menu", te);
+    @Override
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(Arrays.asList(this), "Menu", te));
 
         JMenuItem item = new JMenuItem("Open table view");
         item.addActionListener(new ActionListener() {
@@ -101,10 +102,10 @@ public class BlatTrack extends FeatureTrack {
             }
         });
 
-        menu.addSeparator();
-        menu.add(item);
+        items.add(null); // separator
+        items.add(item);
 
-        return menu;
+        return items;
     }
 
     @Override

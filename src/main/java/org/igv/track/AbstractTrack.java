@@ -793,12 +793,36 @@ public abstract class AbstractTrack implements Track {
     }
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the track's popup menu.  Null entries in the list
+     * represent separators.  Subclasses should override this method rather than getPopupMenu.
+     *
+     * @return list of Components (JMenuItem, JLabel, JMenu, etc.), with null entries as separators
+     */
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        return null;
+    }
+
+    /**
+     * Returns a popup menu for this track. If getPopupMenuItems() returns a non-null list,
+     * builds the menu from that list (null entries in the list represent separators).
+     * If getPopupMenuItems() returns null, returns null, which signals the caller to use a default menu.
      *
      * @return
      */
     public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        return null;
+        List<Component> items = getPopupMenuItems(te);
+        if (items == null) {
+            return null;
+        }
+        IGVPopupMenu menu = new IGVPopupMenu();
+        for (Component item : items) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
+        }
+        return menu;
     }
 
     public DisplayMode getDisplayMode() {

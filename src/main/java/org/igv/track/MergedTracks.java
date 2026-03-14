@@ -278,12 +278,12 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         final List<Track> selfAsList = Arrays.asList((Track) this);
-        menu.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
+        items.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
 
         //Give users the ability to set the color of each track individually
         JMenu setPosColorMenu = new JMenu("Change Track Color (Positive Values)");
@@ -300,15 +300,18 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             negItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.NEGATIVE));
             setNegColorMenu.add(negItem);
         }
-        menu.add(setPosColorMenu);
-        menu.add(setNegColorMenu);
+        items.add(setPosColorMenu);
+        items.add(setNegColorMenu);
 
-        menu.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
-        menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
+        items.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
+        items.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
-        menu.addSeparator();
-        TrackMenuUtils.addDataItems(menu, selfAsList, true);
-        for (Component c : menu.getComponents()) {
+        items.add(null); // separator
+
+        items.addAll(TrackMenuUtils.getDataMenuItems(selfAsList, true));
+
+        // Disable heatmap items
+        for (Component c : items) {
             if (c instanceof JMenuItem) {
                 String text = ((JMenuItem) c).getText();
                 text = text != null ? text.toLowerCase() : "null";
@@ -316,10 +319,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
                     c.setEnabled(false);
                 }
             }
-
         }
 
-        return menu;
+        return items;
     }
 
     @Override

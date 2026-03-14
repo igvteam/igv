@@ -293,6 +293,17 @@ public interface Track {
 
     IGVPopupMenu getPopupMenu(final TrackClickEvent te);
 
+    /**
+     * Return a list of menu items for the track's popup menu.  Null entries in the list
+     * represent separators.  Subclasses should override this method rather than getPopupMenu.
+     *
+     * @param te
+     * @return list of menu items, or null if no custom menu items
+     */
+    default List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        return null;
+    }
+
     boolean isDrawYLine();
 
     float getYLine();

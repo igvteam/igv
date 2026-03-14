@@ -286,30 +286,30 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
+        items.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
 
         JMenuItem item = new JMenuItem("Set Track Height...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
-        menu.add(item);
+        items.add(item);
 
         item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
-        menu.add(item);
+        items.add(item);
 
         item = new JMenuItem("Unset Track Color");
         item.addActionListener(evt -> {
             this.setColor(null);
             repaint();
         });
-        menu.add(item);
+        items.add(item);
 
         if (!isHIC) {
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Graph Type</b>"));
+            items.add(null); // separator
+            items.add(new JLabel("<html><b>Graph Type</b>"));
             //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
             ButtonGroup group = new ButtonGroup();
             Map<String, GraphType> modes = new LinkedHashMap<>(4);
@@ -328,17 +328,16 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     repaint();
                 });
                 group.add(mm);
-                menu.add(mm);
+                items.add(mm);
             }
 
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Arcs</b>"));
+            items.add(null); // separator
+            items.add(new JLabel("<html><b>Arcs</b>"));
             ButtonGroup group2 = new ButtonGroup();
             Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
             modes2.put("All", ArcOption.ALL);
             modes2.put("One End In View", ArcOption.ONE_END);
             modes2.put("Both Ends In View", ArcOption.BOTH_ENDS);
-            //modes.put("Blocks", GraphType.BLOCK);
 
             for (final Map.Entry<String, ArcOption> entry : modes2.entrySet()) {
                 JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
@@ -348,11 +347,11 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     repaint();
                 });
                 group2.add(mm);
-                menu.add(mm);
+                items.add(mm);
             }
         }
 
-        menu.addSeparator();
+        items.add(null); // separator
         JCheckBoxMenuItem showBlocksCB = new JCheckBoxMenuItem("Show Blocks");
         showBlocksCB.setSelected(showBlocks);
         showBlocksCB.addActionListener(e -> {
@@ -360,17 +359,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             PreferencesManager.getPreferences().put(Constants.ARC_BLOCKS, String.valueOf(showBlocksCB.isSelected()));
             repaint();
         });
-        menu.add(showBlocksCB);
+        items.add(showBlocksCB);
 
         if (!isHIC) {
-            menu.addSeparator();
+            items.add(null); // separator
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
             autoscaleCB.addActionListener(e -> {
                 autoscale = autoscaleCB.isSelected();
                 repaint();
             });
-            menu.add(autoscaleCB);
+            items.add(autoscaleCB);
 
             maxScoreItem = new JMenuItem("Set Max Score...");
             maxScoreItem.addActionListener(e -> {
@@ -390,13 +389,13 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     }
                 }
             });
-            menu.add(maxScoreItem);
+            items.add(maxScoreItem);
 
             autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
             maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
         }
 
-        menu.addSeparator();
+        items.add(null); // separator
         item = new JMenuItem("Toggle Arc Orientation");
         item.addActionListener(evt -> {
             if (direction == UP) {
@@ -406,7 +405,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             }
             repaint();
         });
-        menu.add(item);
+        items.add(item);
 
         item = new JMenuItem("Set Line Thickness...");
         item.addActionListener(e -> {
@@ -420,22 +419,22 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 }
             }
         });
-        menu.add(item);
+        items.add(item);
 
 
         if (isHIC) {
-            addHICItems(te, menu);
+            addHICItems(te, items);
 
         } else {
             // Not hic
-            menu.addSeparator();
-            menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
+            items.add(null); // separator
+            items.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
 
 
             // Experimental JBrowse.
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
                     CircularViewUtilities.ping()) {
-                menu.addSeparator();
+                items.add(null); // separator
                 JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
                 circViewItem.addActionListener(e -> {
                     List<ReferenceFrame> frames = te.getFrame() != null ?
@@ -444,15 +443,15 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
                     CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
                 });
-                menu.add(circViewItem);
-                menu.addSeparator();
+                items.add(circViewItem);
+                items.add(null); // separator
             }
         }
 
-        return menu;
+        return items;
     }
 
-    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+    void addHICItems(TrackClickEvent te, List<Component> items) {
         // Override in HIC subclass
     }
 

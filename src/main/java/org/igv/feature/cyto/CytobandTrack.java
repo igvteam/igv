@@ -60,8 +60,8 @@ public class CytobandTrack extends AbstractTrack {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        return new IGVPopupMenu();
+    public java.util.List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        return java.util.Collections.emptyList();
     }
 
 }

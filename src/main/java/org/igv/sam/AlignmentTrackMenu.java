@@ -1054,14 +1054,22 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         addShowItems(this, alignmentTrack);
     }
 
+    static void addShowItems(JPopupMenu menu, AlignmentTrack alignmentTrack) {
+        for (Component item : getShowMenuItems(alignmentTrack)) {
+            menu.add(item);
+        }
+    }
+
     /**
-     * Add "Show Coverage Track", "Show Splice Junction Track", and "Show Alignment Track" menu items.
+     * Return a list of "Show Coverage/Splice Junction/Alignment Track" menu items.
      * This static method is shared by AlignmentTrackMenu, CoverageTrack, and SpliceJunctionTrack.
      *
-     * @param menu           the popup menu to add items to
      * @param alignmentTrack the alignment track whose associated tracks are toggled
+     * @return list of menu items
      */
-    static void addShowItems(JPopupMenu menu, AlignmentTrack alignmentTrack) {
+    static List<Component> getShowMenuItems(AlignmentTrack alignmentTrack) {
+
+        List<Component> items = new ArrayList<>();
 
         final CoverageTrack coverageTrack = alignmentTrack.getCoverageTrack();
         final SpliceJunctionTrack spliceJunctionTrack = alignmentTrack.getSpliceJunctionTrack();
@@ -1081,7 +1089,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             item.addActionListener(aEvt -> {
                 coverageTrack.setVisible(item.isSelected());
             });
-            menu.add(item);
+            items.add(item);
         }
 
         if (spliceJunctionTrack != null) {
@@ -1094,7 +1102,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
                 spliceJunctionTrack.setVisible(item.isSelected());
 
             });
-            menu.add(item);
+            items.add(item);
         }
 
         final JMenuItem alignmentItem = new JCheckBoxMenuItem("Show Alignment Track");
@@ -1106,7 +1114,9 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             alignmentTrack.setVisible(alignmentItem.isSelected());
         });
 
-        menu.add(alignmentItem);
+        items.add(alignmentItem);
+
+        return items;
     }
 
 

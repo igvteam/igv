@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -136,9 +136,9 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         final JMenuItem ampThresholdItem = new JMenuItem("Set amplification threshold (" + ampThreshold + ")");
         ampThresholdItem.addActionListener(e -> {
@@ -153,7 +153,7 @@ public class CNFreqTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(ampThresholdItem);
+        items.add(ampThresholdItem);
 
         final JMenuItem delThresholdItem = new JMenuItem("Set deletion threshold (" + delThreshold + ")");
         delThresholdItem.addActionListener(new ActionListener() {
@@ -170,14 +170,14 @@ public class CNFreqTrack extends AbstractTrack {
             }
         });
 
-        menu.add(delThresholdItem);
+        items.add(delThresholdItem);
 
-        menu.addSeparator();
+        items.add(null); // separator
 
         List<Track> selfAsList = Arrays.asList((Track) this);
-        TrackMenuUtils.addSharedItems(menu, selfAsList);
+        items.addAll(TrackMenuUtils.getSharedMenuItems(selfAsList));
 
-        return menu;
+        return items;
     }
 
     @Override

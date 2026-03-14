@@ -225,30 +225,26 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     }
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
+        popupTitle.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 12));
+        items.add(popupTitle);
+        items.add(null); // separator
 
-        Font newFont = menu.getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        if (popupTitle != null) {
-            menu.add(popupTitle);
-        }
-        menu.addSeparator();
+        items.addAll(TrackMenuUtils.getSharedMenuItems(Collections.singletonList(this)));
 
-        TrackMenuUtils.addSharedItems(menu, Collections.singletonList(this));
+        items.add(null); // separator
+        items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(this)));
 
-        menu.addSeparator();
-        TrackMenuUtils.addDisplayModeItems(Collections.singletonList(this), menu);
-
-        menu.addSeparator();
+        items.add(null); // separator
         final JMenuItem setScaleItem = new JMenuItem("Set Maximum Depth");
         final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
 
@@ -261,7 +257,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
                 this.repaint();
             }
         });
-        menu.add(setScaleItem);
+        items.add(setScaleItem);
 
         autoscaleItem.setSelected(getAutoScale());
         autoscaleItem.addActionListener(evt -> {
@@ -274,7 +270,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
             }
             this.repaint();
         });
-        menu.add(autoscaleItem);
+        items.add(autoscaleItem);
 
         JMenuItem minJunctionCoverageItem = new JMenuItem("Set Junction Coverage Min");
         minJunctionCoverageItem.setToolTipText("Junctions below this threshold will be removed from view");
@@ -289,21 +285,21 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
                 MessageUtils.showMessage("" + input + " is not an integer");
             }
         });
-        menu.add(minJunctionCoverageItem);
+        items.add(minJunctionCoverageItem);
 
-        menu.addSeparator();
+        items.add(null); // separator
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
         sashimi.addActionListener(e -> SashimiPlot.openSashimiPlot());
-        menu.add(sashimi);
+        items.add(sashimi);
 
 
         // Hide/show items
         if (alignmentTrack != null) {
-            menu.addSeparator();
-            AlignmentTrackMenu.addShowItems(menu, alignmentTrack);
+            items.add(null); // separator
+            items.addAll(AlignmentTrackMenu.getShowMenuItems(alignmentTrack));
         }
 
-        return menu;
+        return items;
     }
 
     @Override

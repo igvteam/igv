@@ -177,11 +177,11 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
+        items.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
 
         final JMenuItem binSizeItem = new JMenuItem("Set Bin Size...");
         binSizeItem.addActionListener(e -> {
@@ -196,7 +196,7 @@ public class ClusterTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(binSizeItem);
+        items.add(binSizeItem);
 
         final JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(e -> {
@@ -211,13 +211,13 @@ public class ClusterTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(rowHeightItem);
+        items.add(rowHeightItem);
 
         JMenuItem item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(ClusterTrack.this)));
-        menu.add(item);
+        items.add(item);
 
-        return menu;
+        return items;
     }
 
     @Override

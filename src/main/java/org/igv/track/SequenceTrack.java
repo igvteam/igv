@@ -28,10 +28,8 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 import static org.igv.Globals.JS_MAX_SAFE_INTEGER;
 import static org.igv.prefs.Constants.*;
@@ -333,14 +331,14 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         JMenuItem m1 = new JMenuItem("Flip strand");
         m1.addActionListener(e -> flipStrand());
@@ -351,8 +349,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             setShowTranslation(m2.isSelected());
         });
 
-        menu.add(m1);
-        menu.add(m2);
+        items.add(m1);
+        items.add(m2);
 
         final JMenu transTableMenu = new JMenu("Translation Table");
         transTableMenu.add(getCodonTableMenuItem(null));   // The "null" or default item
@@ -360,9 +358,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             JMenuItem item = getCodonTableMenuItem(codonTable);
             transTableMenu.add(item);
         }
-        menu.add(transTableMenu);
+        items.add(transTableMenu);
 
-        return menu;
+        return items;
     }
 
     private JCheckBoxMenuItem getCodonTableMenuItem(CodonTable codonTable) {

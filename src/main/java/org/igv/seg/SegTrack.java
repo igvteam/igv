@@ -16,6 +16,7 @@ import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
 
+import javax.swing.*;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -130,22 +131,22 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        var menu = TrackMenuUtils.getPopupMenu(Collections.singletonList(this), "Menu", te);
-        menu.addSeparator();
-        TrackMenuUtils.addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this));
-
+    @Override
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(Collections.singletonList(this), "Menu", te));
+        items.add(null); // separator
+        items.addAll(TrackMenuUtils.getDataRendererMenuItems(Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this)));
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
         if(keys.size() > 0) {
-            menu.addSeparator();
-            menu.add(SampleMenuUtils.getSortByAttributeItem(this));
-            menu.add(SampleMenuUtils.getGroupByAttributeItem(this));
-            menu.add(SampleMenuUtils.getFilterByAttributeItem(this));
+            items.add(null); // separator
+            items.add(SampleMenuUtils.getSortByAttributeItem(this));
+            items.add(SampleMenuUtils.getGroupByAttributeItem(this));
+            items.add(SampleMenuUtils.getFilterByAttributeItem(this));
         }
 
-        return menu;
+        return items;
     }
 
     /**

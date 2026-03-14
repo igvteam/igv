@@ -57,7 +57,7 @@ public class HicInteractionTrack extends InteractionTrack {
         return features;
     }
 
-    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+    void addHICItems(TrackClickEvent te, List<Component> items) {
 
         final JMenuItem transparencyItem = new JMenuItem("Set Transparency...");
         transparencyItem.addActionListener(e -> {
@@ -83,7 +83,7 @@ public class HicInteractionTrack extends InteractionTrack {
             final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             JOptionPane.showMessageDialog(parent, panel, "Set Transparency for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
         });
-        menu.add(transparencyItem);
+        items.add(transparencyItem);
 
 
         final JMenuItem maxFeatureCountItem = new JMenuItem("Set Maximum Feature Count...");
@@ -110,13 +110,13 @@ public class HicInteractionTrack extends InteractionTrack {
             final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
         });
-        menu.add(maxFeatureCountItem);
+        items.add(maxFeatureCountItem);
 
         // Add normalization options for HiC tracks
         List<String> normalizationTypes = featureSource.getNormalizationTypes();
         if (normalizationTypes != null && normalizationTypes.size() > 1) {
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Normalization</b>"));
+            items.add(null); // separator
+            items.add(new JLabel("<html><b>Normalization</b>"));
             ButtonGroup normGroup = new ButtonGroup();
             for (String type : normalizationTypes) {
                 String label = normalizationLabels.getOrDefault(type, type);
@@ -130,11 +130,11 @@ public class HicInteractionTrack extends InteractionTrack {
                     this.repaint();
                 });
                 normGroup.add(normItem);
-                menu.add(normItem);
+                items.add(normItem);
             }
         }
 
-        menu.addSeparator();
+        items.add(null); // separator
         JMenuItem mapItem = new JMenuItem("Contact Map View...");
         mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
         mapItem.addActionListener(e -> {
@@ -145,7 +145,7 @@ public class HicInteractionTrack extends InteractionTrack {
                 ContactMapView.showPopup(this, hicFile, normalization, frame, colorScale.getMaxColor());
             }
         });
-        menu.add(mapItem);
+        items.add(mapItem);
     }
 
 

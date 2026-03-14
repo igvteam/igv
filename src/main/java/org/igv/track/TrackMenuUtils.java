@@ -115,13 +115,28 @@ public class TrackMenuUtils {
     }
 
     public static void addStandardItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {
+        for (Component item : getStandardItemsList(tracks, te)) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
+        }
+    }
+
+    /**
+     * Return the standard menu items (shared items + data or feature items) as a list.
+     * Null entries represent separators.
+     */
+    private static List<Component> getStandardItemsList(Collection<Track> tracks, TrackClickEvent te) {
+
+        List<Component> items = new ArrayList<>();
 
         boolean hasDataTracks = false;
         boolean hasFeatureTracks = false;
         boolean hasOtherTracks = false;
         boolean hasCoverageTracks = false;
         for (Track track : tracks) {
-
             if (track instanceof DataTrack) {
                 hasDataTracks = true;
             } else if (track instanceof CoverageTrack) {
@@ -145,21 +160,78 @@ public class TrackMenuUtils {
             }
         }
         if (hasBasePairTracks) {
-            addBasePairItems(menu, tracks);
+            items.addAll(getBasePairMenuItems(tracks));
         }
 
         boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
 
-        addSharedItems(menu, tracks);
-        menu.addSeparator();
+        items.addAll(getSharedMenuItems(tracks));
+        items.add(null); // separator
         if (dataTracksOnly) {
-            addDataItems(menu, tracks, hasCoverageTracks);
+            items.addAll(getDataMenuItems(tracks, hasCoverageTracks));
         } else if (featureTracksOnly) {
-            addFeatureItems(menu, tracks, te);
+            items.addAll(getFeatureMenuItems(tracks, te));
         }
 
+        return items;
+    }
 
+    /**
+     * Return a list of standard menu items applicable to the collection of tracks.
+     * Null entries represent separators.
+     *
+     * @param tracks
+     * @param title
+     * @param te
+     * @return
+     */
+    public static List<Component> getStandardMenuItems(final Collection<Track> tracks, String title, TrackClickEvent te) {
+        List<Component> items = new ArrayList<>();
+        JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
+        popupTitle.setFont(FontManager.getFont(Font.BOLD, 12));
+        items.add(popupTitle);
+        items.add(null); // separator
+        items.addAll(getStandardItemsList(tracks, te));
+        return items;
+    }
+
+    /**
+     * Return a list of shared menu items (rename, color, height, font size).
+     * These are items applicable to both feature and data tracks.
+     *
+     * @param tracks
+     * @return
+     */
+    public static List<Component> getSharedMenuItems(final Collection<Track> tracks) {
+        List<Component> items = new ArrayList<>();
+
+        items.add(getTrackRenameItem(tracks));
+
+        String colorLabel = "Set Track Color...";
+        JMenuItem item = new JMenuItem(colorLabel);
+        item.addActionListener(evt -> changeTrackColor(tracks));
+        items.add(item);
+
+        item = new JMenuItem("Set Track Color (Negative Values or Strand)...");
+        item.setToolTipText(
+                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
+        item.addActionListener(evt -> changeAltTrackColor(tracks));
+        items.add(item);
+
+        item = new JMenuItem("Unset Track Color");
+        item.setToolTipText("Revert track color to default.");
+        item.addActionListener(evt -> {
+            tracks.forEach(track -> track.setColor(null));
+            IGV.getInstance().repaint(tracks);
+        });
+        item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
+        items.add(item);
+
+        items.add(getChangeTrackHeightItem(tracks));
+        items.add(getChangeFontSizeItem(tracks));
+
+        return items;
     }
 
     public static void addZoomItems(JPopupMenu menu, final ReferenceFrame frame) {
@@ -204,6 +276,22 @@ public class TrackMenuUtils {
      * @return
      */
     public static void addDataItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasCoverageTracks) {
+        for (Component item : getDataMenuItems(tracks, hasCoverageTracks)) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
+        }
+    }
+
+    /**
+     * Return a list of menu items applicable to data tracks.
+     * Null entries represent separators.
+     */
+    public static List<Component> getDataMenuItems(final Collection<Track> tracks, boolean hasCoverageTracks) {
+
+        List<Component> items = new ArrayList<>();
 
         if (log.isTraceEnabled()) {
             log.trace("enter getDataPopupMenu");
@@ -211,8 +299,8 @@ public class TrackMenuUtils {
 
         if (!hasCoverageTracks) {
 
-            addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot", "DynSeq"), tracks);
-            menu.addSeparator();
+            items.addAll(getDataRendererMenuItems(Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot", "DynSeq"), tracks));
+            items.add(null); // separator
 
             // Get intersection of all valid window functions for selected tracks
             Set<WindowFunction> avaibleWindowFunctions = new LinkedHashSet<>();
@@ -221,8 +309,6 @@ public class TrackMenuUtils {
                 avaibleWindowFunctions.retainAll(track.getAvailableWindowFunctions());
             }
 
-            // dataPopupMenu.addSeparator();
-            // Collection all window functions for selected tracks
             WindowFunction currentWindowFunction = null;
             for (Track track : tracks) {
                 final WindowFunction twf = track.getWindowFunction();
@@ -230,7 +316,7 @@ public class TrackMenuUtils {
                     currentWindowFunction = twf;
                 } else {
                     if (twf != currentWindowFunction) {
-                        currentWindowFunction = null;     // Multiple window functions
+                        currentWindowFunction = null;
                         break;
                     }
                 }
@@ -239,50 +325,42 @@ public class TrackMenuUtils {
             if (avaibleWindowFunctions.size() > 0) {
                 JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
                 statisticsHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-                menu.add(statisticsHeading);
+                items.add(statisticsHeading);
 
                 for (final WindowFunction wf : avaibleWindowFunctions) {
                     JCheckBoxMenuItem item = new JCheckBoxMenuItem(wf.getValue());
-
                     item.setSelected(currentWindowFunction == wf);
-
-                    item.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent evt) {
-                            changeStatType(wf.toString(), tracks);
-                        }
-                    });
-                    menu.add(item);
+                    item.addActionListener(evt -> changeStatType(wf.toString(), tracks));
+                    items.add(item);
                 }
 
-                menu.addSeparator();
+                items.add(null); // separator
             }
         }
 
 
-        menu.add(getDataRangeItem(tracks));
+        items.add(getDataRangeItem(tracks));
 
-        if (!hasCoverageTracks) menu.add(getHeatmapScaleItem(tracks));
+        if (!hasCoverageTracks) items.add(getHeatmapScaleItem(tracks));
 
         if (tracks.size() > 0) {
-            menu.add(getLogScaleItem(tracks));
+            items.add(getLogScaleItem(tracks));
         }
 
-        menu.add(getAutoscaleItem(tracks));
+        items.add(getAutoscaleItem(tracks));
 
         if (tracks.size() > 1 || (tracks.size() == 1 && tracks.iterator().next() instanceof MergedTracks)) {
-            menu.add(getGroupAutoscaleItem(tracks));
+            items.add(getGroupAutoscaleItem(tracks));
         }
 
-        menu.add(getShowDataRangeItem(tracks));
+        items.add(getShowDataRangeItem(tracks));
 
         //Optionally add overlay track options
         Track firstTrack = tracks.iterator().next();
         boolean merged = (tracks.size() == 1 && firstTrack instanceof MergedTracks);
 
         if (tracks.size() > 1 || merged) {
-            menu.addSeparator();
+            items.add(null); // separator
 
             final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
             final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
@@ -293,12 +371,9 @@ public class TrackMenuUtils {
 
             int numDataTracks = dataTrackList.size();
             overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
-            menu.add(overlayGroups);
-
-            // Enable "separateTracks" menu if selection is a single track, and that track is merged.
+            items.add(overlayGroups);
 
             JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
-            menu.add(unmergeItem);
             if (merged) {
                 unmergeItem.addActionListener(e -> {
                     OverlayTracksMenuAction.unmerge(tracks);
@@ -307,8 +382,8 @@ public class TrackMenuUtils {
             } else {
                 unmergeItem.setEnabled(false);
             }
+            items.add(unmergeItem);
 
-            // Add color transparency item if merged
             if (merged) {
                 Track firstTrack1 = tracks.iterator().next();
                 final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
@@ -318,13 +393,25 @@ public class TrackMenuUtils {
                     JDialog alphaDialog = mergedTracks.getAlphaDialog();
                     alphaDialog.setVisible(true);
                 });
-                menu.add(alphaItem);
-
+                items.add(alphaItem);
             }
         }
+
+        return items;
     }
 
     public static void addDataRendererItems(JPopupMenu menu, List<String> labels, Collection<Track> tracks) {
+        for (Component item : getDataRendererMenuItems(labels, tracks)) {
+            menu.add(item);
+        }
+    }
+
+    /**
+     * Return a list of data renderer menu items (graph type selection).
+     */
+    public static List<Component> getDataRendererMenuItems(List<String> labels, Collection<Track> tracks) {
+
+        List<Component> items = new ArrayList<>();
 
         final Map<String, Class> rendererMap = new LinkedHashMap<>();
         rendererMap.put("Heatmap", HeatmapRenderer.class);
@@ -335,8 +422,7 @@ public class TrackMenuUtils {
 
         JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
         rendererHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-        menu.add(rendererHeading);
+        items.add(rendererHeading);
 
         // Get existing selections
         Set<Class> currentRenderers = new HashSet<Class>();
@@ -354,8 +440,10 @@ public class TrackMenuUtils {
                 item.setSelected(true);
             }
             item.addActionListener(evt -> changeRendererClass(tracks, rendererClass));
-            menu.add(item);
+            items.add(item);
         }
+
+        return items;
     }
 
     /**
@@ -364,11 +452,27 @@ public class TrackMenuUtils {
      * @return
      */
     private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
+        for (Component item : getFeatureMenuItems(tracks, te)) {
+            if (item == null) {
+                featurePopupMenu.addSeparator();
+            } else {
+                featurePopupMenu.add(item);
+            }
+        }
+    }
 
-        TrackMenuUtils.addGroupByStrandItem(tracks, featurePopupMenu);
-        featurePopupMenu.addSeparator();
+    /**
+     * Return a list of menu items applicable to feature tracks.
+     * Null entries represent separators.
+     */
+    public static List<Component> getFeatureMenuItems(final Collection<Track> tracks, TrackClickEvent te) {
 
-        addDisplayModeItems(tracks, featurePopupMenu);
+        List<Component> items = new ArrayList<>();
+
+        items.add(getGroupByStrandItem(tracks));
+        items.add(null); // separator
+
+        items.addAll(getDisplayModeMenuItems(tracks));
 
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
@@ -381,10 +485,9 @@ public class TrackMenuUtils {
 
             String featureName = "";
             if (f != null) {
-                featurePopupMenu.addSeparator();
-                featurePopupMenu.add(getCopyDetailsItem(f, te));
+                items.add(null); // separator
+                items.add(getCopyDetailsItem(f, te));
 
-                // If we are over an exon, copy its sequence instead of the entire feature.
                 Feature sequenceFeature = f;
                 if (sequenceFeature instanceof IGVFeature) {
                     featureName = ((IGVFeature) sequenceFeature).getName();
@@ -400,24 +503,25 @@ public class TrackMenuUtils {
                     }
                 }
 
-                featurePopupMenu.add(getCopySequenceItem(sequenceFeature));
+                items.add(getCopySequenceItem(sequenceFeature));
 
                 if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
                     Range r = frame.getCurrentRange();
-                    featurePopupMenu.add(getExtendViewItem(featureName, sequenceFeature, r));
+                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
                 }
 
-                final JMenuItem blatItem = getBlatItem(sequenceFeature);
-                featurePopupMenu.add(blatItem);
+                items.add(getBlatItem(sequenceFeature));
             }
         }
 
-        featurePopupMenu.addSeparator();
-        featurePopupMenu.add(getChangeFeatureWindow(tracks));
+        items.add(null); // separator
+        items.add(getChangeFeatureWindow(tracks));
 
-        featurePopupMenu.addSeparator();
-        featurePopupMenu.add(getShowFeatureNames(tracks));
-        featurePopupMenu.add(getFeatureNameAttribute(tracks));
+        items.add(null); // separator
+        items.add(getShowFeatureNames(tracks));
+        items.add(getFeatureNameAttribute(tracks));
+
+        return items;
     }
 
     /**
@@ -426,6 +530,22 @@ public class TrackMenuUtils {
      * @author stevenbusan
      */
     public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
+        for (Component item : getBasePairMenuItems(tracks)) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
+        }
+    }
+
+    /**
+     * Return a list of menu items applicable to BasePairTrack(s).
+     * Null entries represent separators.
+     */
+    public static List<Component> getBasePairMenuItems(final Collection<Track> tracks) {
+
+        List<Component> items = new ArrayList<>();
 
         final ArrayList<BasePairTrack> bpTracks = new ArrayList<BasePairTrack>();
         for (Track track : tracks) {
@@ -436,8 +556,7 @@ public class TrackMenuUtils {
 
         JLabel arcColorHeading = new JLabel(LEADING_HEADING_SPACER + "Arc colors (click to change)", JLabel.LEFT);
         arcColorHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-        menu.add(arcColorHeading);
+        items.add(arcColorHeading);
 
         // aggregate arc color selector/legends for multiple selected tracks
         ArrayList<Pair<Color, String>> legendList = new ArrayList<Pair<Color, String>>();
@@ -445,7 +564,6 @@ public class TrackMenuUtils {
         for (BasePairTrack track : bpTracks) {
             List<String> colors = track.getRenderOptions().getColors();
             List<String> colorLabels = track.getRenderOptions().getColorLabels();
-            // iterate in reverse order so colors appearing first in list are the ones rendered on top
             for (int i = colors.size() - 1; i >= 0; --i) {
                 String key = colors.get(i) + ' ' + colorLabels.get(i);
                 if (!keys.contains(key)) {
@@ -485,15 +603,14 @@ public class TrackMenuUtils {
                 }
             });
 
-            menu.add(item);
+            items.add(item);
         }
 
-        menu.addSeparator();
+        items.add(null); // separator
 
         JLabel arcDirectionHeading = new JLabel(LEADING_HEADING_SPACER + "Arc direction", JLabel.LEFT);
         arcDirectionHeading.setFont(FontManager.getFont(Font.BOLD, 12));
-
-        menu.add(arcDirectionHeading);
+        items.add(arcDirectionHeading);
 
         // preselect up or down if all selected tracks have the same arc direction
         int upCount = 0;
@@ -523,9 +640,11 @@ public class TrackMenuUtils {
                 IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
-            menu.add(mm);
+            items.add(mm);
         }
-        menu.addSeparator();
+        items.add(null); // separator
+
+        return items;
     }
 
     /**
@@ -652,37 +771,13 @@ public class TrackMenuUtils {
      * @return
      */
     public static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks) {
-
-        //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
-        //trackSettingsHeading.setFont(boldFont);
-        //menu.add(trackSettingsHeading);
-
-        menu.add(getTrackRenameItem(tracks));
-
-        String colorLabel = "Set Track Color...";
-        JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(evt -> changeTrackColor(tracks));
-        menu.add(item);
-
-        // Change track color by attribute
-        item = new JMenuItem("Set Track Color (Negative Values or Strand)...");
-        item.setToolTipText(
-                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
-        item.addActionListener(evt -> changeAltTrackColor(tracks));
-        menu.add(item);
-
-        item = new JMenuItem("Unset Track Color");
-        item.setToolTipText("Revert track color to default.");
-        item.addActionListener(evt -> {
-            tracks.forEach(track -> track.setColor(null));
-            IGV.getInstance().repaint(tracks);
-        });
-        // Enable only if at least one track has a non-null color
-        item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
-        menu.add(item);
-
-        menu.add(getChangeTrackHeightItem(tracks));
-        menu.add(getChangeFontSizeItem(tracks));
+        for (Component item : getSharedMenuItems(tracks)) {
+            if (item == null) {
+                menu.addSeparator();
+            } else {
+                menu.add(item);
+            }
+        }
     }
 
 
@@ -891,6 +986,17 @@ public class TrackMenuUtils {
 
 
     public static void addDisplayModeItems(final Collection<Track> tracks, JPopupMenu menu) {
+        for (Component item : getDisplayModeMenuItems(tracks)) {
+            menu.add(item);
+        }
+    }
+
+    /**
+     * Return a list of display mode radio button menu items.
+     */
+    public static List<Component> getDisplayModeMenuItems(final Collection<Track> tracks) {
+
+        List<Component> items = new ArrayList<>();
 
         // Find "most representative" state from track collection
         Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
@@ -934,13 +1040,20 @@ public class TrackMenuUtils {
                 IGV.getInstance().repaint(tracks);
             });
             group.add(mm);
-            menu.add(mm);
+            items.add(mm);
         }
+
+        return items;
     }
 
     public static void addGroupByStrandItem(final Collection<Track> tracks, JPopupMenu menu) {
+        menu.add(getGroupByStrandItem(tracks));
+    }
 
-        // Find "most representative" state from track collection
+    /**
+     * Return a "Group by strand" menu item.
+     */
+    public static JRadioButtonMenuItem getGroupByStrandItem(final Collection<Track> tracks) {
         boolean allGrouped = tracks.stream().allMatch(track -> {
             return track instanceof FeatureTrack && ((FeatureTrack) track).isGroupByStrand();
         });
@@ -956,7 +1069,7 @@ public class TrackMenuUtils {
             IGV.getInstance().repaint(tracks);
         });
 
-        menu.add(groupByItem);
+        return groupByItem;
     }
 
     public static JMenuItem getRemoveMenuItem(final Collection<Track> selectedTracks) {
