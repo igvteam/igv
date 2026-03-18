@@ -255,6 +255,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         UIUtilities.invokeAndWaitOnEventThread(runnable);
 
+        rebuildDividers();
+
         return sp;
     }
 
@@ -363,6 +365,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     public void clearTrackPanels() {
         trackPanelContainer.removeAll();
+        rebuildDividers();
     }
 
     /**
@@ -395,8 +398,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         for (String name : names) {
             trackPanelContainer.add(panes.get(name));
         }
-        trackPanelContainer.revalidate();
-        trackPanelContainer.repaint();
+        rebuildDividers();
     }
 
     public void removeEmptyDataPanels() {
@@ -410,6 +412,9 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             if (panel != null) {
                 trackPanelContainer.remove(panel);
             }
+        }
+        if (!emptyPanels.isEmpty()) {
+            rebuildDividers();
         }
     }
 
@@ -427,6 +432,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         TrackPanelScrollPane sp = trackPanel.getScrollPane();
         if (sp != null) {
             trackPanelContainer.remove(sp);
+            rebuildDividers();
             trackPanelContainer.revalidate();
         }
     }
@@ -434,6 +440,34 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     public boolean panelIsRemovable(TrackPanel trackPanel) {
         return true;
+    }
+
+    /**
+     * Rebuild dividers between TrackPanelScrollPanes. Removes all existing
+     * {@link TrackPanelDivider} instances from the container and inserts a new
+     * divider between each consecutive pair of TrackPanelScrollPanes.
+     */
+    private void rebuildDividers() {
+        // Collect the current TrackPanelScrollPanes in order
+        List<TrackPanelScrollPane> panes = new ArrayList<>();
+        for (Component c : trackPanelContainer.getComponents()) {
+            if (c instanceof TrackPanelScrollPane) {
+                panes.add((TrackPanelScrollPane) c);
+            }
+        }
+
+
+        // Re-add panes interleaved with dividers
+        trackPanelContainer.removeAll();
+        for (int i = 0; i < panes.size(); i++) {
+            trackPanelContainer.add(panes.get(i));
+            if (i < panes.size() - 1) {
+                trackPanelContainer.add(new TrackPanelDivider(panes.get(i), panes.get(i + 1)));
+            }
+        }
+
+        trackPanelContainer.revalidate();
+        trackPanelContainer.repaint();
     }
 
     public void updatePanelDimensions() {
