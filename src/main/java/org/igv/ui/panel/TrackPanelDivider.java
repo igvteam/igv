@@ -11,23 +11,35 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * A thin draggable divider between TrackPanelScrollPanes. Dragging the divider
- * resizes the panel above (expanding or shrinking) and the panel below
- * (shrinking or expanding correspondingly). Height changes are persisted via
- * {@link Track#setHeight(int)}.
+ * A thin draggable divider placed below a TrackPanelScrollPane. Dragging works
+ * like Google Sheets row resizing:
+ * <ul>
+ *   <li><b>Drag down</b> – increases the height of the track above; everything
+ *       below simply shifts down.</li>
+ *   <li><b>Drag up</b> – decreases the height of the track above (down to
+ *       {@link Track#getMinimumHeight()}) and transfers the reclaimed pixels
+ *       to the track below (if one exists).</li>
+ * </ul>
+ * Height changes are persisted via {@link Track#setHeight(int)}.
  */
 public class TrackPanelDivider extends JPanel {
 
     public static final int DIVIDER_HEIGHT = 5;
-    private static final int MIN_TRACK_HEIGHT = 20;
 
+    /** The pane above this divider (whose height shrinks/grows). */
     private final TrackPanelScrollPane abovePane;
+
+    /** The pane below this divider (receives reclaimed pixels on drag-up). May be {@code null} for the trailing divider. */
     private final TrackPanelScrollPane belowPane;
 
     private int dragStartY;
     private int originalAboveHeight;
     private int originalBelowHeight;
 
+    /**
+     * @param abovePane the scroll pane above this divider, or {@code null} if none
+     * @param belowPane the scroll pane below this divider, or {@code null} for the trailing divider
+     */
     public TrackPanelDivider(TrackPanelScrollPane abovePane, TrackPanelScrollPane belowPane) {
         this.abovePane = abovePane;
         this.belowPane = belowPane;
@@ -41,38 +53,41 @@ public class TrackPanelDivider extends JPanel {
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                // Don't allow resizing in single-track-pane mode (content-driven heights)
+                if (abovePane == null) return;
                 if (PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY)) {
                     return;
                 }
                 dragStartY = e.getYOnScreen();
                 originalAboveHeight = getTrackHeight(abovePane);
-                originalBelowHeight = getTrackHeight(belowPane);
+                originalBelowHeight = belowPane != null ? getTrackHeight(belowPane) : 0;
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (abovePane == null) return;
                 if (PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY)) {
                     return;
                 }
                 int delta = e.getYOnScreen() - dragStartY;
 
-                int newAboveHeight = originalAboveHeight + delta;
-                int newBelowHeight = originalBelowHeight - delta;
-
-                // Clamp to minimum heights
-                if (newAboveHeight < MIN_TRACK_HEIGHT) {
-                    newBelowHeight += (MIN_TRACK_HEIGHT - newAboveHeight);
-                    newAboveHeight = MIN_TRACK_HEIGHT;
+                if (delta >= 0) {
+                    // --- Drag down: only grow the track above, everything below shifts ---
+                    int newAboveHeight = originalAboveHeight + delta;
+                    setTrackHeight(abovePane, newAboveHeight);
+                    // Restore below track to its original height (undo any prior drag-up in this gesture)
+                    if (belowPane != null) {
+                        setTrackHeight(belowPane, originalBelowHeight);
+                    }
+                } else {
+                    // --- Drag up: shrink the track above, give reclaimed pixels to below ---
+                    int minAbove = getTrackMinimumHeight(abovePane);
+                    int newAboveHeight = Math.max(minAbove, originalAboveHeight + delta);
+                    int reclaimed = originalAboveHeight - newAboveHeight; // always >= 0
+                    setTrackHeight(abovePane, newAboveHeight);
+                    if (belowPane != null) {
+                        setTrackHeight(belowPane, originalBelowHeight + reclaimed);
+                    }
                 }
-                if (newBelowHeight < MIN_TRACK_HEIGHT) {
-                    newAboveHeight += (MIN_TRACK_HEIGHT - newBelowHeight);
-                    newBelowHeight = MIN_TRACK_HEIGHT;
-                }
-
-                // Set the heights on the Track objects — this persists in sessions
-                setTrackHeight(abovePane, newAboveHeight);
-                setTrackHeight(belowPane, newBelowHeight);
             }
         };
 
@@ -83,6 +98,11 @@ public class TrackPanelDivider extends JPanel {
     private static int getTrackHeight(TrackPanelScrollPane pane) {
         Track track = pane.getTrackPanel().getTrack();
         return track != null ? track.getHeight() : 0;
+    }
+
+    private static int getTrackMinimumHeight(TrackPanelScrollPane pane) {
+        Track track = pane.getTrackPanel().getTrack();
+        return track != null ? track.getMinimumHeight() : 10;
     }
 
     private static void setTrackHeight(TrackPanelScrollPane pane, int height) {

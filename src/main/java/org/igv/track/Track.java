@@ -208,6 +208,15 @@ public interface Track {
     }
 
     /**
+     * Return the minimum height for this track. Tracks should not be resized below this value.
+     *
+     * @return the minimum height in pixels
+     */
+    default int getMinimumHeight() {
+        return 10;
+    }
+
+    /**
      * Return the content height of the track.  For tracks with variable numbers of rows this is calculated.
      *
      * @return

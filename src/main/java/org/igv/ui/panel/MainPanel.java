@@ -445,7 +445,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     /**
      * Rebuild dividers between TrackPanelScrollPanes. Removes all existing
      * {@link TrackPanelDivider} instances from the container and inserts a new
-     * divider between each consecutive pair of TrackPanelScrollPanes.
+     * divider after each TrackPanelScrollPane (including the last one, so that
+     * the last track can also be resized).
      */
     private void rebuildDividers() {
         // Collect the current TrackPanelScrollPanes in order
@@ -456,14 +457,13 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             }
         }
 
-
-        // Re-add panes interleaved with dividers
+        // Re-add panes, each followed by a divider
         trackPanelContainer.removeAll();
         for (int i = 0; i < panes.size(); i++) {
-            trackPanelContainer.add(panes.get(i));
-            if (i < panes.size() - 1) {
-                trackPanelContainer.add(new TrackPanelDivider(panes.get(i), panes.get(i + 1)));
-            }
+            TrackPanelScrollPane above = panes.get(i);
+            TrackPanelScrollPane below = (i + 1 < panes.size()) ? panes.get(i + 1) : null;
+            trackPanelContainer.add(above);
+            trackPanelContainer.add(new TrackPanelDivider(above, below));
         }
 
         trackPanelContainer.revalidate();
