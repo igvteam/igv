@@ -237,14 +237,14 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
         popupTitle.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 12));
         items.add(popupTitle);
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         items.addAll(TrackMenuUtils.getSharedMenuItems(Collections.singletonList(this)));
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(this)));
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         final JMenuItem setScaleItem = new JMenuItem("Set Maximum Depth");
         final JCheckBoxMenuItem autoscaleItem = new JCheckBoxMenuItem("Autoscale");
 
@@ -287,7 +287,7 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         });
         items.add(minJunctionCoverageItem);
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         JMenuItem sashimi = new JMenuItem("Sashimi Plot");
         sashimi.addActionListener(e -> SashimiPlot.openSashimiPlot());
         items.add(sashimi);
@@ -295,8 +295,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
 
         // Hide/show items
         if (alignmentTrack != null) {
-            items.add(null); // separator
-            items.addAll(AlignmentTrackMenu.getShowMenuItems(alignmentTrack));
+            items.add(new JPopupMenu.Separator());
+            items.addAll(AlignmentTrackMenuHelper.getShowMenuItems(alignmentTrack));
         }
 
         return items;

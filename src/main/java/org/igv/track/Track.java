@@ -8,7 +8,6 @@ import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
 import org.igv.sample.SampleGroup;
-import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.TrackPanelScrollPane;
@@ -287,15 +286,17 @@ public interface Track {
 
     boolean isUseScore();
 
+    default boolean hasDisplayMode() {
+        return false;
+    }
+
     DisplayMode getDisplayMode();
 
     void setDisplayMode(DisplayMode mode);
 
-    IGVPopupMenu getPopupMenu(final TrackClickEvent te);
-
     /**
-     * Return a list of menu items for the track's popup menu.  Null entries in the list
-     * represent separators.  Subclasses should override this method rather than getPopupMenu.
+     * Return a list of menu items for the track's popup menu.  Separators can be
+     * included with {@code new JPopupMenu.Separator()}.
      *
      * @param te
      * @return list of menu items, or null if no custom menu items

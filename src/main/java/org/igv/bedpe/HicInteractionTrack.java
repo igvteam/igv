@@ -115,7 +115,7 @@ public class HicInteractionTrack extends InteractionTrack {
         // Add normalization options for HiC tracks
         List<String> normalizationTypes = featureSource.getNormalizationTypes();
         if (normalizationTypes != null && normalizationTypes.size() > 1) {
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             items.add(new JLabel("<html><b>Normalization</b>"));
             ButtonGroup normGroup = new ButtonGroup();
             for (String type : normalizationTypes) {
@@ -134,7 +134,7 @@ public class HicInteractionTrack extends InteractionTrack {
             }
         }
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         JMenuItem mapItem = new JMenuItem("Contact Map View...");
         mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
         mapItem.addActionListener(e -> {

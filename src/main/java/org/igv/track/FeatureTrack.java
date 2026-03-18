@@ -221,6 +221,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
+    public boolean hasDisplayMode() {
+        return true;
+    }
+
+    @Override
     public int getContentHeight() {
         if (!isVisible()) {
             return 0;
@@ -232,7 +237,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     private void updateMaxFeatureRow() {
         maxFeatureRow = 1;
-        if(getDisplayMode() != DisplayMode.COLLAPSED) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
             if (packedFeaturesMap.size() > 0) {
                 for (ReferenceFrame frame : packedFeaturesMap.keySet()) {
                     PackedFeatures pf = packedFeaturesMap.get(frame);

@@ -42,8 +42,8 @@ public class MAFParser implements MAFReader {
             if (ParsingUtils.fileExists(indexPath)) {
                 index = MAFIndex.loadIndex(indexPath);
             } else {
-                index = MAFIndex.createIndex(path);
-                MAFIndex.writeIndex(index, indexPath);
+              //  index = MAFIndex.createIndex(path);
+              //  MAFIndex.writeIndex(index, indexPath);
             }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

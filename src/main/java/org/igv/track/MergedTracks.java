@@ -306,9 +306,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         items.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
         items.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
-        items.addAll(TrackMenuUtils.getDataMenuItems(selfAsList, true));
+        items.addAll(TrackMenuUtils.getDataMenuItems(selfAsList));
 
         // Disable heatmap items
         for (Component c : items) {

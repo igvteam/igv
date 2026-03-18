@@ -154,23 +154,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         }
     }
 
-
-    public void overlay(RenderContext context, Rectangle rect) {
-
-        List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
-
-        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
-            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
-        } else if (inViewScores != null) {
-            synchronized (inViewScores) {
-                getRenderer().renderScores(this, inViewScores, context, rect);
-            }
-        }
-        getRenderer().renderGuides(this, context, rect);
-    }
-
-
     public List<LocusScore> getInViewScores(ReferenceFrame referenceFrame) {
 
         LoadedDataInterval<List<LocusScore>> interval = loadedIntervalCache.get(referenceFrame.getName());

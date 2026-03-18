@@ -356,30 +356,30 @@ public class GWASTrack extends AbstractTrack {
         Collection<Track> tmpTracks = new ArrayList<>();
         tmpTracks.add(this);
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         items.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         items.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
         items.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         items.add(new JLabel("Color scheme", JLabel.LEFT));
 
         items.add(addChrColorItem(null));
         items.add(addSingleColorItem(null));
         items.add(addAlternatingColorItem(null));
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         items.add(addPrimaryColorItem(null));
         items.add(addSecondaryColorItem(null));
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.add(addMinPointSizeItem(null));
         items.add(addMaxPointSizeItem(null));
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.add(addShowAxisItem(null));
 
         return items;

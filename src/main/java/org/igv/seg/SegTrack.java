@@ -35,6 +35,7 @@ public class SegTrack extends AbstractTrack {
 
         super(locator, id, name);
         this.dataset = dataset;
+        renderer = new HeatmapRenderer();
         setDataRange(new DataRange(0, 1, 2));
         setDataType(dataset.getType());
         initScale(dataset);
@@ -121,6 +122,11 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public Renderer<LocusScore> getRenderer() {
+        return renderer;
+    }
+
+    @Override
     public void setRendererClass(Class rc) {
         try {
             if (Renderer.class.isAssignableFrom(rc)) {
@@ -133,14 +139,13 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public List<Component> getPopupMenuItems(final TrackClickEvent te) {
-        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(Collections.singletonList(this), "Menu", te));
-        items.add(null); // separator
-        items.addAll(TrackMenuUtils.getDataRendererMenuItems(Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this)));
+
+        List<Component> items = new ArrayList<>();
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
         if(keys.size() > 0) {
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             items.add(SampleMenuUtils.getSortByAttributeItem(this));
             items.add(SampleMenuUtils.getGroupByAttributeItem(this));
             items.add(SampleMenuUtils.getFilterByAttributeItem(this));

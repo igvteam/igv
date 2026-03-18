@@ -458,8 +458,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
-        return new AlignmentTrackMenu(this, te);
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return AlignmentTrackMenuHelper.getMenuItems(this, te);
+    }
+
+    @Override
+    public boolean hasDisplayMode() {
+        return true;
     }
 
     @Override

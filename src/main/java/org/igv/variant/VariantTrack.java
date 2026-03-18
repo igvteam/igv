@@ -19,7 +19,6 @@ import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
-import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
@@ -989,12 +988,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
 
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
+    @Override
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
         selectedVariant = getSelectedVariant(te);
         if (selectedVariant != null) {
             repaint();
         }
-        return new VariantMenu(this, selectedVariant, te);
+        return VariantTrackMenuHelper.getMenuItems(this, selectedVariant, te);
     }
 
     /**

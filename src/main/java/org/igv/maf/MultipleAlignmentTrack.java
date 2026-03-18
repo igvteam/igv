@@ -278,7 +278,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         List<Component> items = new ArrayList<>();
 
         if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             JMenuItem configTrack = new JMenuItem("Configure track...");
             configTrack.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -286,7 +286,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 }
             });
             items.add(configTrack);
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
         }
 
         return items;

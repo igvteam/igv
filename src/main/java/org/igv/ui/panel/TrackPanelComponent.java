@@ -8,7 +8,6 @@ import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,51 +103,26 @@ abstract public class TrackPanelComponent extends JPanel {
         IGVPopupMenu menu = null;
 
         Track track = getTrack();
-        if (track == null) {
-            // If this panel is empty (no tracks), and is removable, present option to remove it
-            if (getAllTracks().size() == 0) {
-                menu = new IGVPopupMenu();
-                JMenuItem item = new JMenuItem("Remove panel");
-                item.addActionListener(e12 -> {
-                    IGV.getInstance().removeTrackPanel(getTrackPanel());
-                });
-                menu.add(item);
-            }
-        } else {
-            Collection<Track> tracks = Collections.singletonList(track);
 
-            // Give the track an opportunity to provide the popup menu
-            menu = track.getPopupMenu(te);
 
-            // If still no menu, create a generic one with common items
-            if (menu == null) {
-                String title = track.getName();
-                menu = TrackMenuUtils.getPopupMenu(tracks, title, te);
-            }
+        menu = TrackMenuUtils.getPopupMenu(track, track.getName(), te);
 
-            // Add additional items, if any
-            if (menu.includeStandardItems()) {
+        // Add saveImage items
+        menu.addSeparator();
+        JMenuItem savePng = new JMenuItem("Save PNG image...");
+        savePng.addActionListener(e1 -> saveImage("png"));
+        menu.add(savePng);
+        JMenuItem saveSvg = new JMenuItem("Save SVG image...");
+        saveSvg.addActionListener(e1 -> saveImage("svg"));
+        menu.add(saveSvg);
 
-                TrackMenuUtils.addPluginItems(menu, tracks, te);
+        // Add export features
+        ReferenceFrame frame = FrameManager.getDefaultFrame();
+        JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(track, frame);
+        if (exportFeats != null) menu.add(exportFeats);
 
-                // Add saveImage items
-                menu.addSeparator();
-                JMenuItem savePng = new JMenuItem("Save PNG image...");
-                savePng.addActionListener(e1 -> saveImage("png"));
-                menu.add(savePng);
-                JMenuItem saveSvg = new JMenuItem("Save SVG image...");
-                saveSvg.addActionListener(e1 -> saveImage("svg"));
-                menu.add(saveSvg);
-
-                // Add export features
-                ReferenceFrame frame = FrameManager.getDefaultFrame();
-                JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(tracks, frame);
-                if (exportFeats != null) menu.add(exportFeats);
-
-                menu.addSeparator();
-                menu.add(TrackMenuUtils.getRemoveMenuItem(tracks));
-            }
-        }
+        menu.addSeparator();
+        menu.add(TrackMenuUtils.getRemoveMenuItem(Collections.singleton(track)));
 
         if (menu != null) {
             menu.show(e.getComponent(), e.getX(), e.getY());

@@ -648,20 +648,20 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
         Collection<Track> tmp = new ArrayList<Track>();
         tmp.add(this);
 
-        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(tmp, getName(), te));
+        List<Component> items = new ArrayList<>();
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.add(createSnpThresholdItem());
 
-        items.add(null); // separator
-        items.add(createLoadCoverageDataItem());
+        //items.add(new JPopupMenu.Separator());
+        //items.add(createLoadCoverageDataItem());
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.add(createCopyDetailsItem(te));
 
         if (alignmentTrack != null) {
-            items.add(null); // separator
-            items.addAll(AlignmentTrackMenu.getShowMenuItems(alignmentTrack));
+            items.add(new JPopupMenu.Separator());
+            items.addAll(AlignmentTrackMenuHelper.getShowMenuItems(alignmentTrack));
         }
 
         return items;

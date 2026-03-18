@@ -23,7 +23,6 @@ import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
 import org.igv.ui.InsertSizeSettingsDialog;
 import org.igv.ui.panel.FrameManager;
-import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.supdiagram.SupplementaryAlignmentDiagramDialog;
 import org.igv.ui.util.MessageUtils;
@@ -48,30 +47,46 @@ import java.util.stream.Collectors;
 import static org.igv.prefs.Constants.*;
 
 /**
- * Popup menu class for AlignmentTrack.  The menu gets instantiated from TrackPanelComponent on right-click in the
- * alignment track or its associated name panel.
+ * Helper class that builds popup menu items for AlignmentTrack.
  */
-class AlignmentTrackMenu extends IGVPopupMenu {
+class AlignmentTrackMenuHelper {
 
-    private static final Logger log = LogManager.getLogger(AlignmentTrackMenu.class);
+    private static final Logger log = LogManager.getLogger(AlignmentTrackMenuHelper.class);
 
     private final AlignmentTrack alignmentTrack;
     private final AlignmentDataManager dataManager;
     private final AlignmentTrack.RenderOptions renderOptions;
     private static int nClusters = 2;
 
-    AlignmentTrackMenu(AlignmentTrack alignmentTrack, final TrackClickEvent e) {
+    private final List<Component> items = new ArrayList<>();
+
+    /**
+     * Return the list of menu items for an alignment track popup menu.
+     */
+    static List<Component> getMenuItems(AlignmentTrack alignmentTrack, TrackClickEvent e) {
+        AlignmentTrackMenuHelper builder = new AlignmentTrackMenuHelper(alignmentTrack, e);
+        return builder.items;
+    }
+
+    // Wrapper methods to build the items list
+    private void add(Component c) {
+        items.add(c);
+    }
+
+    private void addSeparator() {
+        items.add(new JPopupMenu.Separator());
+    }
+
+    private Font getFont() {
+        return UIManager.getFont("Label.font");
+    }
+
+    private AlignmentTrackMenuHelper(AlignmentTrack alignmentTrack, final TrackClickEvent e) {
 
         this.alignmentTrack = alignmentTrack;
         this.dataManager = alignmentTrack.getDataManager();
         this.renderOptions = alignmentTrack.getRenderOptions();
         final Alignment clickedAlignment = alignmentTrack.getAlignmentAt(e);
-
-        // Title
-        JLabel popupTitle = new JLabel("  " + alignmentTrack.getName(), JLabel.CENTER);
-        Font newFont = getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        add(popupTitle);
 
         // Circular view items -- optional
         if (CircularViewUtilities.ping()) {
@@ -86,16 +101,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
             item2.addActionListener(ae -> alignmentTrack.sendSplitToCircularView(e));
         }
 
-        // Some generic items from TrackMenuUtils
-        Collection<Track> tracks = Collections.singleton(alignmentTrack);
-        addSeparator();
-        add(TrackMenuUtils.getTrackRenameItem(tracks));
-
-        add(TrackMenuUtils.getChangeTrackHeightItem(tracks));
-
-        JMenuItem item = new JMenuItem("Change Track Color...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(tracks));
-        add(item);
 
         // Experiment type  (RNA, THIRD GEN, OTHER)
         addSeparator();
@@ -181,10 +186,6 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         if (AlignmentTrack.ExperimentType.SBX == alignmentTrack.getExperimentType()) {
             addSBXItems(clickedAlignment, e);
         }
-
-        // Display mode items
-        addSeparator();
-        TrackMenuUtils.addDisplayModeItems(tracks, this);
 
         // Select alignment items
         addSeparator();
@@ -611,7 +612,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         group.add(newGroupByInsOption);
 
 
-        groupMenu.add(new Separator());
+        groupMenu.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("Reverse group order");
         invertGroupNameSortingOption.setSelected(renderOptions.isInvertGroupSorting());
         invertGroupNameSortingOption.addActionListener(aEvt -> {
@@ -698,7 +699,7 @@ class AlignmentTrackMenu extends IGVPopupMenu {
         sortMenu.add(tagOption);
         group.add(tagOption);
 
-        sortMenu.add(new Separator());
+        sortMenu.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse sorting");
         invertGroupNameSortingOption.setSelected(renderOptions.isInvertSorting());
         invertGroupNameSortingOption.addActionListener(aEvt -> {
@@ -1051,18 +1052,13 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
     void addShowItems() {
-        addShowItems(this, alignmentTrack);
+        items.addAll(getShowMenuItems(alignmentTrack));
     }
 
-    static void addShowItems(JPopupMenu menu, AlignmentTrack alignmentTrack) {
-        for (Component item : getShowMenuItems(alignmentTrack)) {
-            menu.add(item);
-        }
-    }
 
     /**
      * Return a list of "Show Coverage/Splice Junction/Alignment Track" menu items.
-     * This static method is shared by AlignmentTrackMenu, CoverageTrack, and SpliceJunctionTrack.
+     * This static method is shared by AlignmentTrackMenuHelper, CoverageTrack, and SpliceJunctionTrack.
      *
      * @param alignmentTrack the alignment track whose associated tracks are toggled
      * @return list of menu items
@@ -1540,4 +1536,5 @@ class AlignmentTrackMenu extends IGVPopupMenu {
     }
 
 }
+
 

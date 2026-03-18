@@ -172,7 +172,7 @@ public class CNFreqTrack extends AbstractTrack {
 
         items.add(delThresholdItem);
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
 
         List<Track> selfAsList = Arrays.asList((Track) this);
         items.addAll(TrackMenuUtils.getSharedMenuItems(selfAsList));

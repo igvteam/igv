@@ -290,25 +290,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         List<Component> items = new ArrayList<>();
 
-        items.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
-
-        JMenuItem item = new JMenuItem("Set Track Height...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
-        items.add(item);
-
-        item = new JMenuItem("Set Track Color...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
-        items.add(item);
-
-        item = new JMenuItem("Unset Track Color");
-        item.addActionListener(evt -> {
-            this.setColor(null);
-            repaint();
-        });
-        items.add(item);
-
         if (!isHIC) {
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             items.add(new JLabel("<html><b>Graph Type</b>"));
             //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
             ButtonGroup group = new ButtonGroup();
@@ -331,7 +314,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 items.add(mm);
             }
 
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             items.add(new JLabel("<html><b>Arcs</b>"));
             ButtonGroup group2 = new ButtonGroup();
             Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
@@ -351,7 +334,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             }
         }
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem showBlocksCB = new JCheckBoxMenuItem("Show Blocks");
         showBlocksCB.setSelected(showBlocks);
         showBlocksCB.addActionListener(e -> {
@@ -362,7 +345,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
         items.add(showBlocksCB);
 
         if (!isHIC) {
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
             autoscaleCB.addActionListener(e -> {
@@ -395,8 +378,8 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
         }
 
-        items.add(null); // separator
-        item = new JMenuItem("Toggle Arc Orientation");
+        items.add(new JPopupMenu.Separator());
+        JMenuItem item = new JMenuItem("Toggle Arc Orientation");
         item.addActionListener(evt -> {
             if (direction == UP) {
                 direction = Direction.DOWN;
@@ -427,14 +410,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         } else {
             // Not hic
-            items.add(null); // separator
+            items.add(new JPopupMenu.Separator());
             items.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
 
 
             // Experimental JBrowse.
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
                     CircularViewUtilities.ping()) {
-                items.add(null); // separator
+                items.add(new JPopupMenu.Separator());
                 JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
                 circViewItem.addActionListener(e -> {
                     List<ReferenceFrame> frames = te.getFrame() != null ?
@@ -444,7 +427,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
                 });
                 items.add(circViewItem);
-                items.add(null); // separator
+                items.add(new JPopupMenu.Separator());
             }
         }
 

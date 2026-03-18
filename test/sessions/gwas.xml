@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" version="8">
+    <Resources>
+        <Resource path="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gwas/gwas_sample.gwas.gz" type="gwas"/>
+    </Resources>
+    <Panel height="667" name="DataPanel" width="1246">
+        <Track alternatingColors="false" attributeKey="gwas_sample.gwas.gz" autoScale="true" clazz="org.broad.igv.gwas.GWASTrack" fontSize="10" height="200" id="https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gwas/gwas_sample.gwas.gz" maxPointSize="7" minPointSize="3" name="gwas_sample.gwas.gz" primaryColor="69,101,183" secondaryColor="250,169,10" showAxis="true" singleColor="false" useChrColors="true" visible="true">
+            <DataRange baseline="5.0" drawBaseline="true" flipAxis="false" maximum="25.0" minimum="5.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="129" name="FeaturePanel" width="1246">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;696.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8331257783312578"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

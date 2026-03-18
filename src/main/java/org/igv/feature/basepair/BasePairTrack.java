@@ -45,6 +45,7 @@ public class BasePairTrack extends AbstractTrack {
         BasePairFileParser.loadData(locator, genome,
                 basePairData, renderOptions);
         this.genome = genome;
+        this.setHeight(300);
     }
 
     public BasePairTrack() {

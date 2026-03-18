@@ -34,9 +34,8 @@ public abstract class XYPlotRenderer extends DataRenderer {
      * @param locusScores
      * @param context
      */
-    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle ignore) {
+    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle rect) {
 
-        Rectangle rect = context.getTrackRectangle();
         double origin = context.getOrigin();
         double locScale = context.getScale();
 

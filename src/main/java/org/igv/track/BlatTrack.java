@@ -93,7 +93,7 @@ public class BlatTrack extends FeatureTrack {
 
     @Override
     public List<Component> getPopupMenuItems(final TrackClickEvent te) {
-        List<Component> items = new ArrayList<>(TrackMenuUtils.getStandardMenuItems(Arrays.asList(this), "Menu", te));
+        List<Component> items = new ArrayList<>();
 
         JMenuItem item = new JMenuItem("Open table view");
         item.addActionListener(new ActionListener() {
@@ -102,7 +102,7 @@ public class BlatTrack extends FeatureTrack {
             }
         });
 
-        items.add(null); // separator
+        items.add(new JPopupMenu.Separator());
         items.add(item);
 
         return items;

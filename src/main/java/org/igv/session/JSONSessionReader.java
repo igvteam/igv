@@ -15,7 +15,9 @@ import org.igv.track.*;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
+import org.igv.util.FileUtils;
 import org.igv.util.FilterElement;
+import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.sample.SampleFilter;
 import org.json.JSONArray;
@@ -33,12 +35,20 @@ public class JSONSessionReader implements SessionReader {
 
     private final IGV igv;
 
+    /**
+     * A local file path or url to the session file being loaded.  This is used to resolve relative paths in the
+     * session file.
+     */
+    private String sessionPath;
+
     public JSONSessionReader(IGV igv) {
         this.igv = igv;
     }
 
     @Override
     public void loadSession(InputStream inputStream, Session session, String sessionPath) throws IOException {
+
+        this.sessionPath = sessionPath;
 
         String jsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = new JSONObject(jsonString);
@@ -138,7 +148,7 @@ public class JSONSessionReader implements SessionReader {
                     for (int j = 0; j < childTracksArray.length(); j++) {
                         JSONObject childTrackJson = childTracksArray.getJSONObject(j);
                         if (childTrackJson.has("url")) {
-                            String url = childTrackJson.getString("url");
+                            String url = resolvePath(childTrackJson.getString("url"));
 
                             int futureIndex;
                             if (urlToFutureIndex.containsKey(url)) {
@@ -190,26 +200,27 @@ public class JSONSessionReader implements SessionReader {
                 } else if ("motif".equals(type)) {
                     topLevelDescriptors.add(TrackDescriptor.createMotifDescriptor(trackJson, i));
 
-                } else if (trackJson.has("url")) {
+                } else if (trackJson.has("url") || trackJson.has("path")) {
+
                     // Non-merged top-level track
-                    String url = trackJson.getString("url");
+                    String path = resolvePath(trackJson.has("url") ? trackJson.getString("url") : trackJson.getString("path"));
 
                     int futureIndex;
-                    if (urlToFutureIndex.containsKey(url)) {
+                    if (urlToFutureIndex.containsKey(path)) {
                         // Reuse existing future for this URL
-                        futureIndex = urlToFutureIndex.get(url);
+                        futureIndex = urlToFutureIndex.get(path);
                     } else {
                         // Create new future for this URL
-                        ResourceLocator locator = new ResourceLocator(url);
+                        ResourceLocator locator = new ResourceLocator(path);
                         String format = trackJson.optString("format", null);
                         if (format != null) {
                             locator.setFormat(format);
                         }
                         futureIndex = allTrackFutures.size();
-                        urlToFutureIndex.put(url, futureIndex);
+                        urlToFutureIndex.put(path, futureIndex);
                         allTrackFutures.add(CompletableFuture.supplyAsync(() -> igv.load(locator))
                                 .exceptionally(e -> {
-                                    log.error("Error loading track: " + url, e);
+                                    log.error("Error loading track: " + path, e);
                                     return Collections.emptyList();
                                 }));
                     }
@@ -460,6 +471,20 @@ public class JSONSessionReader implements SessionReader {
     private static String getId(Track track) {
         ResourceLocator locator = track.getResourceLocator();
         return locator != null && locator.getPath() != null ? locator.getPath() : track.getId();
+    }
+
+    /**
+     * Resolve a path that might be relative to the session file.  If the path is absolute or a URL it is returned
+     * unchanged.  If relative, it is resolved against the sessionPath.
+     *
+     * @param path a local file path or URL, possibly relative to the session file
+     * @return the resolved absolute path
+     */
+    private String resolvePath(String path) {
+        if (sessionPath == null || ParsingUtils.isDataURL(path)) {
+            return path;
+        }
+        return FileUtils.getAbsolutePath(path, sessionPath);
     }
 
 

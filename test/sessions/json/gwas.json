@@ -41,16 +41,13 @@
       "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/tutorials/hub.txt"
     ]
   },
-  "locus": "chr8:128745680-128757197",
+  "locus": "All",
+  "hiddenAttributes": [
+    "DATA FILE",
+    "DATA TYPE",
+    "NAME"
+  ],
   "tracks": [
-    {
-      "sequenceTranslationStrandValue": "+",
-      "name": "Reference sequence",
-      "shouldShowTranslation": false,
-      "id": "Reference sequence",
-      "type": "sequence",
-      "order": -9007199254740991
-    },
     {
       "format": "refgene",
       "name": "Refseq All",
@@ -60,45 +57,36 @@
       "order": 0
     },
     {
+      "singleColor": false,
       "flipAxis": false,
       "drawBaseline": true,
-      "max": 217,
-      "format": "bam",
-      "mid": 0,
-      "type": "coverage",
+      "max": 25,
+      "useChrColors": true,
+      "maxPointSize": 7,
+      "format": "gwas",
+      "primaryColor": "69,101,183",
+      "mid": 5,
+      "type": "gwas",
       "autoscale": "true",
-      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gwas/gwas_sample.gwas.gz",
+      "minPointSize": 3,
+      "alternatingColors": false,
       "logScale": false,
-      "min": 0,
-      "name": "HG01879 exome Coverage",
-      "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam_coverage",
-      "alleleFreqThreshold": 0.2,
-      "order": 0
+      "min": 5,
+      "name": "gwas_sample.gwas.gz",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gwas/gwas_sample.gwas.gz",
+      "showAxis": true,
+      "order": 0,
+      "height": 200,
+      "secondaryColor": "250,169,10"
     },
     {
-      "visible": "false",
-      "format": "bam",
-      "name": "HG01879 exome Junctions",
-      "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam_junctions",
-      "type": "junction",
-      "maxdepth": 50,
-      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "order": 0,
-      "height": 60,
-      "autoScale": "true"
-    },
-    {
-      "color": "185,185,185",
-      "duplicatesOption": "FILTER",
-      "format": "bam",
-      "name": "HG01879 exome",
-      "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "type": "alignment",
-      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "displayMode": "EXPANDED",
-      "experimentType": "OTHER",
-      "order": 0,
-      "height": 300
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": 1
     }
   ]
 }

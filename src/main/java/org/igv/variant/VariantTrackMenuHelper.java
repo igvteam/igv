@@ -11,12 +11,9 @@ import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
-import org.igv.ui.panel.IGVPopupMenu;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -24,116 +21,98 @@ import java.util.List;
  * User: Jesse Whitworth
  * Date: Jul 16, 2010
  */
-public class VariantMenu extends IGVPopupMenu {
+public class VariantTrackMenuHelper {
 
-    private static Logger log = LogManager.getLogger(VariantMenu.class);
+    private static Logger log = LogManager.getLogger(VariantTrackMenuHelper.class);
     private VariantTrack track;
     private static boolean depthSortingDirection;
     private static boolean genotypeSortingDirection;
     private static boolean sampleSortingDirection;
     private static boolean qualitySortingDirection;
 
-    public VariantMenu(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
-        super();
-        this.track = variantTrack;
+    /**
+     * Return menu items for the variant track popup menu.
+     */
+    static List<Component> getMenuItems(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
 
-        //Title
-        JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.LEFT);
-        Font newFont = getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        add(popupTitle);
-
+        List<Component> items = new ArrayList<>();
 
         if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-            addSeparator();
+            items.add(new JPopupMenu.Separator());
             JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
-            circItem.addActionListener(e1 -> track.sendToCircularView(e));
-            add(circItem);
+            circItem.addActionListener(e1 -> variantTrack.sendToCircularView(e));
+            items.add(circItem);
         }
 
+        items.add(new JPopupMenu.Separator());
+        items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
+        items.add(getColorBandByAllelFrequency(variantTrack));
+        items.add(getColorBandByAlleleFraction(variantTrack));
 
-        //Change Track Settings
-        addSeparator();
-
-        List<Track> selectedTracks = Arrays.asList(variantTrack);
-        add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
-        add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
-
-        // Color items
-//        addSeparator();
-//        JMenuItem colorItem = new JMenuItem("Set Track Color...");
-//        colorItem.addActionListener(evt -> TrackMenuUtils.changeTrackColor(selectedTracks));
-//        add(colorItem);
-
-        addSeparator();
-        add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
-        add(getColorBandByAllelFrequency());
-        add(getColorBandByAlleleFraction());
-        //add(getColorByNone());
-
-        //Hides
-        if (track.isEnableMethylationRateSupport()) {
-            addSeparator();
-            JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color Samples By", JLabel.LEFT);
-            add(colorByItem);
-            add(getColorByGenotype());
-            add(getColorByMethylationRate());
+        // Methylation color options
+        if (variantTrack.isEnableMethylationRateSupport()) {
+            items.add(new JPopupMenu.Separator());
+            items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color Samples By", JLabel.LEFT));
+            items.add(getColorByGenotype(variantTrack));
+            items.add(getColorByMethylationRate(variantTrack));
         }
 
         // Show genotypes
-        if (track.sampleCount() > 0) {
-            addSeparator();
-            add(getShowGenotypes());
+        if (variantTrack.sampleCount() > 0) {
+            items.add(new JPopupMenu.Separator());
+            items.add(getShowGenotypes(variantTrack));
         }
 
         //Sorter
-        addSeparator();
-        for (JMenuItem item : getSortMenuItems(variant)) {
-            add(item);
+        items.add(new JPopupMenu.Separator());
+        for (JMenuItem item : getSortMenuItems(variantTrack, variant)) {
+            items.add(item);
             item.setEnabled(variant != null);
         }
 
         if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
-            addSeparator();
-            add(SampleMenuUtils.getSortByAttributeItem(track));
-            add(SampleMenuUtils.getGroupByAttributeItem(track));
-            add(SampleMenuUtils.getFilterByAttributeItem(track));
+            items.add(new JPopupMenu.Separator());
+            items.add(SampleMenuUtils.getSortByAttributeItem(variantTrack));
+            items.add(SampleMenuUtils.getGroupByAttributeItem(variantTrack));
+            items.add(SampleMenuUtils.getFilterByAttributeItem(variantTrack));
         }
 
         //Variant Information
-        addSeparator();
-        add(new JLabel("<html>&nbsp;&nbsp;<b>Display Mode", JLabel.LEFT));
-        for (JMenuItem item : getDisplayModeItems()) {
-            add(item);
+        items.add(new JPopupMenu.Separator());
+        items.add(new JLabel("<html>&nbsp;&nbsp;<b>Display Mode", JLabel.LEFT));
+        for (JMenuItem item : getDisplayModeItems(variantTrack)) {
+            items.add(item);
         }
 
-        addSeparator();
+        items.add(new JPopupMenu.Separator());
         JMenuItem item = new JMenuItem("Change Squished Row Height...");
         item.addActionListener(evt -> {
-            int currentValue = track.getSquishedHeight();
+            int currentValue = variantTrack.getSquishedHeight();
             Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
             if (newValue != null) {
-                track.setSquishedHeight(newValue);
+                variantTrack.setSquishedHeight(newValue);
                 IGV.getInstance().getContentPane().repaint();
             }
         });
-        add(item);
+        items.add(item);
 
-        add(getHideFilteredItem());
-        add(getFeatureVisibilityItem());
+        items.add(getHideFilteredItem(variantTrack));
+        items.add(getFeatureVisibilityItem(variantTrack));
+
+        return items;
     }
 
-    private JMenuItem getFeatureVisibilityItem() {
+    private static JMenuItem getFeatureVisibilityItem(VariantTrack track) {
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");
         item.addActionListener(evt -> {
-            changeVisibilityWindow();
+            changeVisibilityWindow(track);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
     }
 
 
-    private JMenuItem getColorBandByAllelFrequency() {
+    private static JMenuItem getColorBandByAllelFrequency(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Frequency", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FREQUENCY);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
@@ -143,7 +122,7 @@ public class VariantMenu extends IGVPopupMenu {
     }
 
 
-    private JMenuItem getColorBandByAlleleFraction() {
+    private static JMenuItem getColorBandByAlleleFraction(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
@@ -152,7 +131,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getColorByNone() {
+    private static JMenuItem getColorByNone(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("None", track.getSiteColorMode() == VariantTrack.ColorMode.NONE);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.NONE);
@@ -161,7 +140,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getShowGenotypes() {
+    private static JMenuItem getShowGenotypes(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.isShowGenotypes());
         item.addActionListener(evt -> {
             track.setShowGenotypes(item.isSelected());
@@ -171,7 +150,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getColorByGenotype() {
+    private static JMenuItem getColorByGenotype(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getGenotypeColorMode() == VariantTrack.ColorMode.GENOTYPE);
         item.addActionListener(evt -> {
             track.setGenotypeColorMode(VariantTrack.ColorMode.GENOTYPE);
@@ -180,7 +159,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getColorByMethylationRate() {
+    private static JMenuItem getColorByMethylationRate(VariantTrack track) {
         final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getGenotypeColorMode() == VariantTrack.ColorMode.METHYLATION_RATE);
         item.addActionListener(evt -> {
             track.setGenotypeColorMode(VariantTrack.ColorMode.METHYLATION_RATE);
@@ -190,7 +169,7 @@ public class VariantMenu extends IGVPopupMenu {
     }
 
 
-    private JMenuItem getHideFilteredItem() {
+    private static JMenuItem getHideFilteredItem(VariantTrack track) {
         JMenuItem item = new JCheckBoxMenuItem("Hide Filtered Sites", track.getHideFiltered());
         item.addActionListener(evt -> {
             track.setHideFiltered(!track.getHideFiltered());
@@ -200,7 +179,7 @@ public class VariantMenu extends IGVPopupMenu {
     }
 
 
-    public JMenuItem getGenotypeSortItem(final Variant variant) {
+    public static JMenuItem getGenotypeSortItem(VariantTrack track, final Variant variant) {
 
         JMenuItem item = new JMenuItem("Sort By Genotype");
         if (variant != null) {
@@ -214,7 +193,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    public JMenuItem getSampleNameSortItem(final Variant variant) {
+    public static JMenuItem getSampleNameSortItem(VariantTrack track, final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
         if (variant != null) {
             item.addActionListener(evt -> {
@@ -227,7 +206,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    public JMenuItem getDepthSortItem(final Variant variant) {
+    public static JMenuItem getDepthSortItem(VariantTrack track, final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Depth");
         if (variant != null) {
             item.addActionListener(evt -> {
@@ -240,7 +219,7 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    public JMenuItem getQualitySortItem(final Variant variant) {
+    public static JMenuItem getQualitySortItem(VariantTrack track, final Variant variant) {
         JMenuItem item = new JMenuItem("Sort By Quality");
         if (variant != null) {
             double quality = variant.getPhredScaledQual();
@@ -258,21 +237,21 @@ public class VariantMenu extends IGVPopupMenu {
         return item;
     }
 
-    public void changeVisibilityWindow() {
+    public static void changeVisibilityWindow(VariantTrack track) {
         TrackMenuUtils.changeFeatureVisibilityWindow(Arrays.asList((Track) track));
     }
 
-    public Collection<JMenuItem> getSortMenuItems(Variant variant) {
+    public static Collection<JMenuItem> getSortMenuItems(VariantTrack track, Variant variant) {
 
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
-        items.add(getGenotypeSortItem(variant));
-        items.add(getSampleNameSortItem(variant));
-        items.add(getDepthSortItem(variant));
-        items.add(getQualitySortItem(variant));
+        items.add(getGenotypeSortItem(track, variant));
+        items.add(getSampleNameSortItem(track, variant));
+        items.add(getDepthSortItem(track, variant));
+        items.add(getQualitySortItem(track, variant));
         return items;
     }
 
-    public List<JMenuItem> getDisplayModeItems() {
+    public static List<JMenuItem> getDisplayModeItems(VariantTrack track) {
 
         List<JMenuItem> items = new ArrayList();
 

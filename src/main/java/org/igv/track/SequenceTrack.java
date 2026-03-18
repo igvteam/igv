@@ -19,6 +19,7 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
 import org.igv.renderer.SequenceRenderer;
 import org.igv.ui.FontManager;
+import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -326,7 +327,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setShowTranslation(boolean showTranslation) {
         this.showTranslation = showTranslation;
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
-        repaint();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
 
