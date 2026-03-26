@@ -7,6 +7,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
 import org.igv.renderer.Renderer;
+import org.igv.sample.SampleGroup;
 import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
@@ -43,7 +44,7 @@ public class SegTrack extends AbstractTrack {
         setDataType(dataset.getType());
         initScale(dataset);
 
-        if(type == TrackType.mut) {
+        if (type == TrackType.mut) {
             visibilityWindow = 0; // Disable whole-genome view for mutation tracks
         }
 
@@ -84,20 +85,44 @@ public class SegTrack extends AbstractTrack {
     public void render(RenderContext context) {
 
         Rectangle clipBounds = context.getClipBounds();
+        Rectangle trackRectangle = context.getTrackRectangle();
+
+        final boolean hasGroups = getSampleGroups().size() > 0;
+        if (hasGroups) {
+            // Expand the clip bounds to be sure we clear previous labels, but not outside the bounds
+            // of the visible rectangle
+            Rectangle visibleRect = context.getVisibleRect();
+            int expandedTop = Math.max(visibleRect.y, clipBounds.y - 10);
+            int expandedBottom = Math.min(visibleRect.y + visibleRect.height, clipBounds.y + clipBounds.height + 10);
+            clipBounds.y = expandedTop;
+            clipBounds.height = expandedBottom - expandedTop;
+            context.getGraphics().setClip(clipBounds);
+        }
+
         Rectangle trackRect = context.getTrackRectangle();
         var y = 0;
-        for (var group : getSampleGroups()) {
+        for (SampleGroup group : getSampleGroups()) {
+            var yLabel = y;
+
             for (String sample : group.samples()) {
                 if (y > clipBounds.y + clipBounds.height) {
                     break;
                 }
                 if (y + sampleHeight > clipBounds.y) {
-                    var r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
-                    var features = dataset.getSegments(sample, context.getChr());
+                    Rectangle r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
+                    var features = dataset.getFeatures(sample, context.getChr());
                     this.renderer.render(features, context, r, this);
                 }
                 y += sampleHeight;
             }
+
+            String label = group.label();
+            if (hasGroups && label != null) {
+                var r = new Rectangle(trackRect.x, yLabel, trackRect.width, Math.min(20, y - yLabel));
+                GraphicUtils.drawVerticallyCenteredText(label, 10, r, context.getGraphics(), false, true);
+                drawGroupDivider(context.getGraphics(), trackRect, y);
+            }
+
             y += groupGap; // Gap between groups
         }
     }
@@ -112,6 +137,7 @@ public class SegTrack extends AbstractTrack {
         g2D.setFont(font);
         Rectangle clipRect = g2D.getClipBounds();
 
+        boolean hasGroups = getSampleGroups().size() > 1;
         var y = 0;
         for (var group : getSampleGroups()) {
             for (String s : group.samples()) {
@@ -123,6 +149,9 @@ public class SegTrack extends AbstractTrack {
                     GraphicUtils.drawWrappedText(s, r, g2D, false);
                 }
                 y += sampleHeight;
+            }
+            if (hasGroups) {
+                drawGroupDivider(g2D, trackRectangle, y);
             }
             y += groupGap; // Gap between groups
         }
@@ -183,7 +212,7 @@ public class SegTrack extends AbstractTrack {
                 var sampleIndex = (trackY - y) / sampleHeight;
                 var sampleName = group.samples().get(sampleIndex);
                 var buf = new StringBuilder();
-                var score = dataset.getSegmentAt(sampleName, chr, position, frame);
+                var score = dataset.getFeatureAt(sampleName, chr, position, frame);
                 // If there is no value here, return null to signal no popup
                 if (score == null) {
                     return null;
@@ -225,7 +254,7 @@ public class SegTrack extends AbstractTrack {
             // Compute a value for each sample
             var sampleScores = new HashMap<String, Float>();
             for (String s : group.samples()) {
-                var scores = dataset.getSegments(s, chr);
+                var scores = dataset.getFeatures(s, chr);
                 var regionScore = 0f;
                 var intervalSum = 0;
                 var hasNan = false;

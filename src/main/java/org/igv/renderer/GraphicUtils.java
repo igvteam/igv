@@ -98,17 +98,34 @@ public class GraphicUtils {
              Graphics g2D,
              boolean rightJustify,
              boolean clear) {
+
+        boolean darkMode = Globals.isDarkMode();
+
+        Color originalColor = g2D.getColor();
+
         FontMetrics fontMetrics = g2D.getFontMetrics();
         Rectangle2D textBounds = fontMetrics.getStringBounds(text, g2D);
 
         int yOffset = (int) ((rect.getHeight() - textBounds.getHeight()) / 2);
         int yPos = (rect.y + rect.height) - yOffset - (int) (textBounds.getHeight() / 4);
 
+        int xPos = rightJustify ? rect.x + rect.width - margin - (int) textBounds.getWidth() : margin;
+
+        if (clear) {
+            g2D.setColor(darkMode ? Color.BLACK : Color.WHITE);
+            int th = (int) textBounds.getHeight();
+            g2D.fillRect(xPos, yPos - 3 * th / 4, (int) textBounds.getWidth(), th);
+        }
+
+        g2D.setColor(darkMode ? Color.WHITE : Color.BLACK);
+
         if (rightJustify) {
             drawRightJustifiedText(text, rect.x + rect.width - margin, yPos, g2D);
         } else {
             g2D.drawString(text, margin, yPos);
         }
+
+        g2D.setColor(originalColor);
     }
 
     /**

@@ -231,6 +231,14 @@ public abstract class AbstractTrack implements Track {
         return sampleGroups;
     }
 
+    protected void drawGroupDivider(Graphics2D graphics, Rectangle trackRect, int y) {
+        Color c = graphics.getColor();
+        Color lineColor = Globals.isDarkMode() ? Color.white : Color.black;
+        graphics.setColor(lineColor);
+        GraphicUtils.drawDashedLine(graphics, trackRect.x, y + groupGap / 2, trackRect.x + trackRect.width, y + groupGap / 2);
+        graphics.setColor(c);
+    }
+
     // Implement the default rendering of the track name.  Subclasses may override.
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
@@ -253,6 +261,7 @@ public abstract class AbstractTrack implements Track {
         final var attributeManager = AttributeManager.getInstance();
         Rectangle clipBounds = graphics.getClipBounds();
 
+        boolean hasGroups = getSampleGroups().size() > 0;
         var y = trackRectangle.y + this.getSampleOffset();
         int sampleHeight = getSampleHeight();
         for (var group : getSampleGroups()) {
@@ -275,6 +284,9 @@ public abstract class AbstractTrack implements Track {
                     }
                 }
                 y += sampleHeight;
+            }
+            if(hasGroups) {
+                drawGroupDivider(graphics, trackRectangle, y);
             }
             y += groupGap; // Gap
         }

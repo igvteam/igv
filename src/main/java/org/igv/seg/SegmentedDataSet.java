@@ -118,7 +118,7 @@ public class SegmentedDataSet implements SegmentedDataSource {
      * @param chr
      * @return
      */
-    public List<LocusScore> getSegments(String sample, String chr) {
+    public List<LocusScore> getFeatures(String sample, String chr) {
 
         if (Globals.CHR_ALL.equals(chr)) {
             return getWholeGenomeScores(sample);
@@ -181,7 +181,7 @@ public class SegmentedDataSet implements SegmentedDataSource {
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             wholeGenomeScores = new ArrayList(1000);
             for (String chr : genome.getLongChromosomeNames()) {
-                List<LocusScore> chrSegments = getSegments(sample, chr);
+                List<LocusScore> chrSegments = getFeatures(sample, chr);
                 if (chrSegments != null) {
                     int lastgEnd = -1;
                     for (LocusScore score : chrSegments) {
@@ -222,9 +222,9 @@ public class SegmentedDataSet implements SegmentedDataSource {
         return trackProperties;
     }
 
-    public LocusScore getSegmentAt(String sample, String chr, double position, ReferenceFrame frame) {
+    public LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame) {
 
-        List<LocusScore> scores = getSegments(sample, chr);
+        List<LocusScore> scores = getFeatures(sample, chr);
 
         if (scores == null) {
             return null;

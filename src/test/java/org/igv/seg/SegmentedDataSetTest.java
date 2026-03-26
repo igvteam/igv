@@ -32,7 +32,7 @@ public class SegmentedDataSetTest {
     }
 
     @Test
-    public void getSegments() {
+    public void getFeatures() {
 
     }
 

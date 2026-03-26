@@ -48,7 +48,7 @@ public class MutationFeatureSource implements SegmentedDataSource {
     }
 
     @Override
-    public List<LocusScore> getSegments(String sample, String chr) {
+    public List<LocusScore> getFeatures(String sample, String chr) {
         FeatureCollectionSource<Mutation> source = featureCollectionSourceMap.get(sample);
         if (source == null) return List.of();
         List<LocusScore> result = new ArrayList<>();
@@ -60,7 +60,7 @@ public class MutationFeatureSource implements SegmentedDataSource {
     }
 
     @Override
-    public LocusScore getSegmentAt(String sample, String chr, double position, ReferenceFrame frame) {
+    public LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame) {
         FeatureCollectionSource<Mutation> source = featureCollectionSourceMap.get(sample);
         if (source == null) return null;
         // Add a 3 pixel tolerance

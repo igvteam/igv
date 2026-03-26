@@ -6,7 +6,6 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -33,7 +32,7 @@ public class MutationFeatureSourceTest extends AbstractHeadlessTest {
         //Look for the feature at line 4 of the file:
         //A2M	2	genome.wustl.edu	36	12	9150104	9150104	+	Missense_Mutation	SNP	C	C	G	Unknown	Unknown	TCGA-02-0024-01B-01W	TCGA-02-0024-10A-01W	C	C	C	G	C	C	Valid	Valid	Somatic	Phase_I
 
-        List<LocusScore> features = track.getSegments(testSampleId, testChr);
+        List<LocusScore> features = track.getFeatures(testSampleId, testChr);
 
         boolean found = false;
        for(LocusScore feature : features) {

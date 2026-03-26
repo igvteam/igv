@@ -16,8 +16,8 @@ public interface SegmentedDataSource {
 
     List<String> getSampleNames();
 
-    List<LocusScore> getSegments(String sample, String chr);
+    List<LocusScore> getFeatures(String sample, String chr);
 
-    LocusScore getSegmentAt(String sample, String chr, double position, ReferenceFrame frame);
+    LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame);
 }
 

@@ -7,7 +7,6 @@ import htsjdk.tribble.TribbleException;
 import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
-import org.igv.feature.IGVFeature;
 import org.igv.feature.PackedFeature;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
@@ -367,8 +366,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
                         // Reset y position for each variant, it will be incremented as we loop through the samples
                         genotypeRect.y = trackRectangle.y + getVariantsHeight();
+                        boolean hasGroups = getSampleGroups().size() > 1;
+
+                        if (hasGroups) {
+                            // Expand the clip bounds to be sure we clear previous labels, but not outside the bounds
+                            // of the visible rectangle
+                            Rectangle visibleRect = context.getVisibleRect();
+                            int expandedTop = Math.max(visibleRect.y, clipBounds.y - 10);
+                            int expandedBottom = Math.min(visibleRect.y + visibleRect.height,
+                                    clipBounds.y + clipBounds.height + 10);
+                            clipBounds.y = expandedTop;
+                            clipBounds.height = expandedBottom - expandedTop;
+                            context.getGraphics().setClip(clipBounds);
+                        }
 
                         for (SampleGroup sampleGroup : getSampleGroups()) {
+                            int yLabel = genotypeRect.y;
                             for (String sample : sampleGroup.samples()) {
                                 if (genotypeRect.y > clipBounds.y + clipBounds.height) {
                                     break;
@@ -378,6 +391,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                                 }
                                 genotypeRect.y += genotypeRect.height;
                             }
+
+                            String label = sampleGroup.label();
+                            if (hasGroups && label != null) {
+                                var r = new Rectangle(variantRect.x, yLabel, genotypeRect.width, Math.min(20, genotypeRect.y - yLabel));
+                                GraphicUtils.drawVerticallyCenteredText(label, 0, r, context.getGraphics(), false, true);
+                                drawGroupDivider(context.getGraphics(), genotypeRect, genotypeRect.y);
+                            }
+
                             genotypeRect.y += groupGap;
                         }
 
@@ -399,23 +420,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     }
 
-    private void drawLineIfVisible(Graphics2D g2D, Rectangle visibleRectangle, Color color, int yLoc, int left, int right) {
-        if (yLoc >= visibleRectangle.y && yLoc <= visibleRectangle.getMaxY()) {
-            if (color != null) g2D.setColor(color);
-            g2D.drawLine(left, yLoc, right, yLoc);
-        }
-    }
-
     private void drawVariantBandBorder(Graphics2D g2D, Rectangle visibleRectangle, int variantBandY, int left, int right) {
-        if (sampleCount() > 0 && showGenotypes) {
-            drawLineIfVisible(g2D, visibleRectangle, Color.lightGray, variantBandY, left, right);
+        if (sampleCount() > 0 && showGenotypes && variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
+            g2D.setColor(Color.lightGray);
+            g2D.drawLine(left, variantBandY, right, variantBandY);
         }
+
     }
 
 
     /**
-     * Render the border between variants / genotypes and groups, if any.
-     *
+     * Render the border between variants / genotypes
      * @param g2D
      * @param visibleRectangle
      */
@@ -428,17 +443,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (sampleCount() > 0 && showGenotypes) {
             int variantGenotypeBorderY = getVariantsHeight();
             drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
-            List<SampleGroup> sampleGroups = getSampleGroups();
-            if (sampleGroups.size() > 1) {
-                int genotypeBandHeight = getGenotypeBandHeight();
-                g2D.setColor(darkMode ? Color.white : Color.black);
-                int y = getVariantsHeight();
-                for (SampleGroup sampleGroup : sampleGroups) {
-                    y += sampleGroup.samples().size() * genotypeBandHeight + groupGap;
-                    g2D.drawLine(0, y - groupGap / 2, visibleRectangle.width, y - groupGap / 2);
-
-                }
-            }
         }
     }
 
@@ -520,7 +524,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         g2D.setFont(font);
 
         boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
-
+        boolean hasGroups = getSampleGroups().size() > 1;
         boolean b = true;
         for (SampleGroup sampleGroup : getSampleGroups()) {
 
@@ -552,6 +556,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 }
 
                 bandRectangle.y += bandRectangle.height;
+            }
+            if (hasGroups) {
+                drawGroupDivider(g2D, trackRectangle, bandRectangle.y);
             }
             bandRectangle.y += groupGap;
         }
