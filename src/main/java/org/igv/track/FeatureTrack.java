@@ -68,7 +68,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Map of reference frame -> packed features
      */
-    protected Map<ReferenceFrame, PackedFeatures<Feature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<ReferenceFrame, PackedFeatures<PackedFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
 
     protected Renderer renderer;
 
@@ -535,20 +535,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public List<Feature> getFeaturesAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
+        PackedFeatures<PackedFeature> packedFeatures = packedFeaturesMap.get(frame);
 
         if (packedFeatures == null) {
             return null;
         }
 
-        List<PackedFeatures<Feature>.FeatureRow> rows = packedFeatures.getRows();
+        List<PackedFeatures<PackedFeature>.FeatureRow> rows = packedFeatures.getRows();
         if (featureRow < 0 || featureRow >= rows.size()) {
             return null;
         }
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<IGVFeature> possFeatures = rows.get(featureRow).getFeatures();
+        List<PackedFeature> possFeatures = rows.get(featureRow).getFeatures();
 
 
         List<Feature> featureList = null;
@@ -635,10 +635,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return true;
     }
 
-
-    public void overlay(RenderContext context, Rectangle rect) {
-        renderFeatures(context, rect);
-    }
 
     @Override
     public void setDisplayMode(DisplayMode mode) {
@@ -977,7 +973,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
+        PackedFeatures<PackedFeature> packedFeatures = packedFeaturesMap.get(frame);
         if (packedFeatures == null) {
             return Collections.emptyList();
         } else {

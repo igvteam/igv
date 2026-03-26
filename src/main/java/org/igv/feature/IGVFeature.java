@@ -10,7 +10,7 @@ import java.util.Map;
  * Interface for features in IGV annotation tracks  (FeatureTrack and derived classes).
  */
 
-public interface IGVFeature extends LocusScore, IGVNamedFeature {
+public interface IGVFeature extends LocusScore, IGVNamedFeature, PackedFeature {
 
     default String getIdentifier() {
         return null;
@@ -33,6 +33,16 @@ public interface IGVFeature extends LocusScore, IGVNamedFeature {
     }
 
     default void removeAttribute(String key) {
+    }
+
+    @Override
+    default void setPackedRow(int rowIndex) {
+
+    }
+
+    @Override
+    default int getPackedRow() {
+        return 0;
     }
 
     /**
@@ -74,14 +84,6 @@ public interface IGVFeature extends LocusScore, IGVNamedFeature {
 
     default Map<String, String> getAttributes() {
         return Collections.emptyMap();
-    }
-
-    default void setPackedRow(int rowIndex) {
-
-    }
-
-    default int getPackedRow() {
-        return 0;
     }
 
 }

@@ -239,6 +239,9 @@ public class JSONSessionReader implements SessionReader {
             // Map to store id -> track for combined track creation
             Map<String, Track> trackById = new HashMap<>();
 
+            // Identity set to track which Track objects have already been claimed by a descriptor
+            Set<Track> claimedTracks = Collections.newSetFromMap(new IdentityHashMap<>());
+
             // Track combined descriptors for second pass (combined tracks depend on other tracks being loaded first)
             List<TrackDescriptor> combinedDescriptors = new ArrayList<>();
 
@@ -304,34 +307,79 @@ public class JSONSessionReader implements SessionReader {
                         }
 
                     } else {
-                        // Non-merged track(s) - match loaded tracks to trackJson using name, id, or type
+                        // Non-merged track(s) - match loaded tracks to trackJson using name, id, or type.
+                        // A single URL load can produce multiple tracks that share the same locator path.
+                        // For alignment files (BAM) the tracks differ by type (AlignmentTrack, CoverageTrack,
+                        // SpliceJunctionTrack).  For multi-column files (IGV, TDF) the tracks all share the
+                        // same type but differ by name.  We therefore try several matching strategies in
+                        // order from most specific to least specific.
                         int futureIndex = descriptor.singleFutureIndex;
                         List<Track> tracks = allTrackFutures.get(futureIndex).get();
 
-                        // Find the track that matches this descriptor's trackJson
                         String jsonName = descriptor.trackJson.optString("name", null);
                         String jsonId = descriptor.trackJson.optString("id", null);
                         String jsonType = descriptor.trackJson.optString("type", null);
                         String jsonFormat = descriptor.trackJson.optString("format", null);
 
-                        for (Track t : tracks) {
-                            // Match track to trackJson using name, id, type, or format
-                            boolean matches = (jsonName != null && jsonName.equals(t.getName())) ||
-                                    (jsonId != null && jsonId.equals(t.getId())) ||
-                                    (jsonType != null && jsonType.equalsIgnoreCase(t.getType().toString())) ||
-                                    (jsonFormat != null && jsonFormat.equalsIgnoreCase(t.getType().toString())) ||
-                                    (tracks.size() == 1);
+                        Track matchedTrack = null;
 
-                            // Use a unique key that includes the track type to allow multiple tracks from same URL
-                            String trackKey = getId(t) + "|" + t.getType();
-
-                            if (matches && !trackById.containsKey(trackKey)) {
-                                t.unmarshalJSON(descriptor.trackJson);
-                                t.setOrder(descriptor.order);
-                                igv.addTrack(t);
-                                trackById.put(trackKey, t);
-                                break; // Only match one track per descriptor
+                        // 1) Match by name (most specific for multi-column files like IGV/TDF)
+                        if (jsonName != null) {
+                            for (Track t : tracks) {
+                                if (!claimedTracks.contains(t) && jsonName.equals(t.getName())) {
+                                    matchedTrack = t;
+                                    break;
+                                }
                             }
+                        }
+
+                        // 2) Match by id
+                        if (matchedTrack == null && jsonId != null) {
+                            for (Track t : tracks) {
+                                if (!claimedTracks.contains(t) && jsonId.equals(t.getId())) {
+                                    matchedTrack = t;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 3) Match by type (useful for alignment files where tracks differ by type)
+                        if (matchedTrack == null && jsonType != null) {
+                            for (Track t : tracks) {
+                                if (!claimedTracks.contains(t) && jsonType.equalsIgnoreCase(t.getType().toString())) {
+                                    matchedTrack = t;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 4) Match by format
+                        if (matchedTrack == null && jsonFormat != null) {
+                            for (Track t : tracks) {
+                                if (!claimedTracks.contains(t) && jsonFormat.equalsIgnoreCase(t.getType().toString())) {
+                                    matchedTrack = t;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 5) Last resort: if there is exactly one unclaimed track, use it
+                        if (matchedTrack == null) {
+                            List<Track> unclaimed = new ArrayList<>();
+                            for (Track t : tracks) {
+                                if (!claimedTracks.contains(t)) unclaimed.add(t);
+                            }
+                            if (unclaimed.size() == 1) {
+                                matchedTrack = unclaimed.get(0);
+                            }
+                        }
+
+                        if (matchedTrack != null) {
+                            claimedTracks.add(matchedTrack);
+                            matchedTrack.unmarshalJSON(descriptor.trackJson);
+                            matchedTrack.setOrder(descriptor.order);
+                            igv.addTrack(matchedTrack);
+                            trackById.put(matchedTrack.getId(), matchedTrack);
                         }
                     }
                 } catch (Exception e) {

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg18" locus="All" version="8">
+    <Resources>
+        <Resource path="../data/igv/recombRate.igv.txt.tdf" type="tdf"/>
+    </Resources>
+    <Panel height="538" name="DataPanel" width="1138">
+        <Track attributeKey="decodeAvg" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_decodeAvg" name="decodeAvg" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="3.9636617" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="decodeFemale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_decodeFemale" name="decodeFemale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="4.119518" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="decodeMale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_decodeMale" name="decodeMale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="5.306626" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="marshfieldAvg" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_marshfieldAvg" name="marshfieldAvg" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="4.5907283" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="marshfieldFemale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_marshfieldFemale" name="marshfieldFemale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="5.044216" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="marshfieldMale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_marshfieldMale" name="marshfieldMale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="5.65768" minimum="-0.0012495001" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="genethonAvg" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_genethonAvg" name="genethonAvg" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="4.3485904" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="genethonFemale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_genethonFemale" name="genethonFemale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="4.8157334" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="genethonMale" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" fontSize="10" id="../data/igv/recombRate.igv.txt.tdf_genethonMale" name="genethonMale" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="6.211974" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="67" name="FeaturePanel" width="1138">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="RefSeq Genes" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;510.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz" name="RefSeq Genes" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8823529411764706"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

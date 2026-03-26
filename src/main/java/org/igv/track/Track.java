@@ -109,16 +109,6 @@ public interface Track {
     void render(RenderContext context);
 
     /**
-     * Render the track as an overlay, presumably on another track.
-     *
-     * @param context the render context
-     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
-     */
-    default void overlay(RenderContext context, Rectangle rect) {
-        // do nothing, overlay is optional
-    }
-
-    /**
      * Render the name of the track.
      *
      * @param graphics

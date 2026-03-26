@@ -1,14 +1,15 @@
 package org.igv.variant.vcf;
 
-import org.igv.logging.*;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.igv.feature.PackedFeature;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.variant.Allele;
 import org.igv.variant.Genotype;
 import org.igv.variant.Variant;
 import org.igv.variant.VariantTrack;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.VariantContextBuilder;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.*;
  * @author Jim Robinson, jacob
  * @date Aug 1, 2011
  */
-public class VCFVariant implements Variant {
+public class VCFVariant implements Variant, PackedFeature {
 
     private static Logger log = LogManager.getLogger(Variant.class);
 
@@ -32,6 +33,7 @@ public class VCFVariant implements Variant {
     private int[] alleleCounts;
     private double methylationRate = Double.NaN;  // <= signals unknown / not applicable
     private double coveredSampleFraction = Double.NaN;
+    private int packedRow = 0;
 
     Map<String, VCFGenotype> genotypeMap;
 
@@ -87,7 +89,7 @@ public class VCFVariant implements Variant {
 
         String anKey = "AN";
         String anString = variantContext.getAttributeAsString(anKey, null);
-        if(anString != null) {
+        if (anString != null) {
             try {
                 totalAlleleCount = Integer.parseInt(anString);
             } catch (NumberFormatException e) {
@@ -96,8 +98,8 @@ public class VCFVariant implements Variant {
         }
 
         // The variant is considered "NON_REF" if all of the alternate alleles are non-ref
-        for(htsjdk.variant.variantcontext.Allele a : variantContext.getAlternateAlleles()){
-            if(a.isNonRefAllele()) {
+        for (htsjdk.variant.variantcontext.Allele a : variantContext.getAlternateAlleles()) {
+            if (a.isNonRefAllele()) {
                 nonRef = true;
             } else {
                 nonRef = false;
@@ -236,14 +238,13 @@ public class VCFVariant implements Variant {
     }
 
     public double getAlleleFraction() {
-        if(alleleCounts != null && alleleCounts.length > 0 && totalAlleleCount > 0) {
+        if (alleleCounts != null && alleleCounts.length > 0 && totalAlleleCount > 0) {
             double ac = 0;
-            for(int i=0; i<alleleCounts.length; i++) {
+            for (int i = 0; i < alleleCounts.length; i++) {
                 ac += alleleCounts[i];
             }
             return ac / totalAlleleCount;
-        }
-        else {
+        } else {
             return -1;
         }
     }
@@ -305,14 +306,13 @@ public class VCFVariant implements Variant {
     @Override
     public int getEnd() {
         String chr2 = variantContext.getAttributeAsString("CHR2", null);
-        if(chr2 != null) {
+        if (chr2 != null) {
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
             chr2 = genome == null ? chr2 : genome.getCanonicalChrName(chr2);
         }
-        if(chr2 == null || chr2.equals(getChr())) {
+        if (chr2 == null || chr2.equals(getChr())) {
             return variantContext.getEnd();
-        }
-        else {
+        } else {
             return this.start + 1;   // An inter-chr variant
         }
     }
@@ -328,13 +328,12 @@ public class VCFVariant implements Variant {
             return numFormat.format(variantContext.getStart());
         } else {
             String chr2 = variantContext.getAttributeAsString("CHR2", null);
-            if(chr2 == null || chr2.equals(getChr())) {
-             return   numFormat.format( variantContext.getStart()) + "-" + numFormat.format(variantContext.getEnd());
-            }
-            else {
+            if (chr2 == null || chr2.equals(getChr())) {
+                return numFormat.format(variantContext.getStart()) + "-" + numFormat.format(variantContext.getEnd());
+            } else {
                 // TODO -- I'm not sure this is correct
                 return getChr() + ":" + numFormat.format(variantContext.getStart()) + " " +
-                        chr2 + ":"  + numFormat.format(variantContext.getEnd());
+                        chr2 + ":" + numFormat.format(variantContext.getEnd());
             }
         }
 
@@ -398,5 +397,15 @@ public class VCFVariant implements Variant {
             }
         }
         return prefixLength;
+    }
+
+    @Override
+    public void setPackedRow(int rowIndex) {
+        this.packedRow = rowIndex;
+    }
+
+    @Override
+    public int getPackedRow() {
+        return packedRow;
     }
 }

@@ -22,6 +22,7 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
 
     public TrackPanelScrollPane() {
 
+        setBorder(BorderFactory.createEmptyBorder());
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -91,10 +92,13 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
     public Dimension getPreferredSize() {
         int height = PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY) ?
                 trackPanel.getTrack().getContentHeight() : trackPanel.getTrack().getHeight();
-        // Account for scroll pane insets (border) so the viewport has the full content height
-        Insets insets = getInsets();
-        if (insets != null) {
-            height += insets.top + insets.bottom;
+        // If the track is invisible (height 0), collapse the scroll pane entirely
+        if (height > 0) {
+            // Account for scroll pane insets (border) so the viewport has the full content height
+            Insets insets = getInsets();
+            if (insets != null) {
+                height += insets.top + insets.bottom;
+            }
         }
         return new Dimension(super.getPreferredSize().width, height);
     }

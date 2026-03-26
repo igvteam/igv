@@ -295,17 +295,6 @@ public abstract class AbstractTrack implements Track {
 
     }
 
-
-    /**
-     * Called to overlay a track on another, presumably previously rendered,
-     * track. The default behavior is to do nothing.
-     *
-     * @param context
-     * @param rect
-     */
-    public void overlay(RenderContext context, Rectangle rect) {
-    }
-
     @Override
     public void setColor(Color color) {
         this.color = color;

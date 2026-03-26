@@ -11,6 +11,7 @@ import org.igv.feature.dsi.DSITrack;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.sprite.ClusterTrack;
+import org.igv.feature.tribble.MUTCodec;
 import org.igv.lists.GeneList;
 import org.igv.lists.GeneListManager;
 import org.igv.logging.LogManager;
@@ -349,7 +350,7 @@ public class XMLSessionReader implements SessionReader {
                     continue;
                 }
 
-                if (SegTrack.isSegFile(locator.getPath())) {
+                if (SegTrack.isSegFile(locator.getPath()) || MUTCodec.isMutationAnnotationFile(locator)) {
                     // Legacy support for seg files which created a track per sample
                     segPaths.add(locator.getPath());
                 }
@@ -1040,8 +1041,6 @@ public class XMLSessionReader implements SessionReader {
             return new CombinedDataTrack(id, name);
         } else if (className.contains("MultipleAlignmentTrack")) {
             return new MultipleAlignmentTrack();
-        } else if (className.contains("MutationTrack")) {
-            return new MutationTrack();
         } else if (className.contains("SelectableFeatureTrack")) {
             return new SelectableFeatureTrack();
         } else if (className.contains("SpliceJunctionTrack")) {

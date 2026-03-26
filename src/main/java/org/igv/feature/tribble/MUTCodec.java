@@ -7,7 +7,7 @@ import htsjdk.tribble.readers.LineIteratorImpl;
 import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
-import org.igv.feature.Mutation;
+import org.igv.feature.mut.Mutation;
 import org.igv.feature.genome.Genome;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.TrackProperties;

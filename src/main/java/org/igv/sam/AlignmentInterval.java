@@ -112,8 +112,10 @@ public class AlignmentInterval extends Locus {
         byte referenceBase = this.getReference(center);
         Comparator<Row> rowComparator = option.getComparator(center, referenceBase, tag, invertSort);
 
-        for (List<Row> alignmentRows : packedAlignments.values()) {
-            alignmentRows.sort(rowComparator);
+        synchronized (packedAlignments) {
+            for (List<Row> alignmentRows : new ArrayList<>(packedAlignments.values())) {
+                alignmentRows.sort(rowComparator);
+            }
         }
     }
 

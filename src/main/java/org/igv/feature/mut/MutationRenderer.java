@@ -1,16 +1,20 @@
-package org.igv.renderer;
+package org.igv.feature.mut;
 
 import org.igv.logging.*;
-import org.igv.feature.IGVFeature;
+import org.igv.prefs.PreferencesManager;
+import org.igv.renderer.Renderer;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
 import org.igv.ui.FontManager;
+import org.igv.ui.color.ColorPalette;
+import org.igv.ui.color.ColorTable;
+import org.igv.ui.color.PaletteColorTable;
 
 import java.awt.*;
 import java.util.List;
 
-public class MutationRenderer extends FeatureRenderer {
+public class MutationRenderer implements Renderer<Mutation> {
 
     private static Logger log = LogManager.getLogger(MutationRenderer.class);
 
@@ -18,21 +22,22 @@ public class MutationRenderer extends FeatureRenderer {
         return "Mutation";
     }
 
+    ColorTable colorTable = PreferencesManager.getPreferences().getMutationColorScheme();
+
     /**
      * Note:  assumption is that featureList is sorted by start position.
      */
-    public void render(List<IGVFeature> featureList, RenderContext context, Rectangle trackRectangle, Track track) {
+    public void render(List<Mutation> featureList, RenderContext context, Rectangle trackRectangle, Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
+        Graphics2D graphics = (Graphics2D) context.getGraphics().create();
+
         if (featureList != null && featureList.size() > 0) {
 
-
             Rectangle lastRect = null;
-
-            boolean colorOverlay = IGV.getInstance().getSession().getColorOverlay();
-            for (IGVFeature feature : featureList) {
+            for (Mutation feature : featureList) {
                 // Note -- don't cast these to an int until the range is checked.
                 // could get an overflow.
                 double pixelStart = ((feature.getStart() - origin) / locScale);
@@ -61,17 +66,16 @@ public class MutationRenderer extends FeatureRenderer {
 
                     Rectangle mutRect = new Rectangle((int) pixelStart, mutY, w, mutHeight);
 
-                    Graphics2D gRect = (colorOverlay ? g : context.getGraphic2DForColor(Color.BLACK));
-                    gRect.draw(mutRect);
+                    graphics.setColor(colorTable.get(feature.getMutationType()));
                     mutRect.x--;
                     mutRect.width += 2;
-                    gRect.draw(mutRect);
-
+                    graphics.fill(mutRect);
 
                     lastRect = mutRect;
                 }
             }
 
         }
+        graphics.dispose();
     }
 }

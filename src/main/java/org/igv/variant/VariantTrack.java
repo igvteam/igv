@@ -8,6 +8,7 @@ import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.IGVFeature;
+import org.igv.feature.PackedFeature;
 import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -24,6 +25,7 @@ import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.variant.vcf.MateVariant;
+import org.igv.variant.vcf.VCFVariant;
 import org.w3c.dom.Element;
 
 import java.awt.*;
@@ -43,6 +45,7 @@ import static org.igv.prefs.Constants.VARIANT_COLOR_BY_ALLELE_FREQ;
 public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
+    public static final int DEFAULT_MAX_HEIGHT = 300;
     private static Logger log = LogManager.getLogger(VariantTrack.class);
 
     static final DecimalFormat numFormat = new DecimalFormat("#.###");
@@ -168,6 +171,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 setVisibilityWindow(vw);
             }
         }
+    }
+
+    @Override
+    public int getHeight() {
+        return !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
     }
 
     @Override
@@ -317,9 +325,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             for (PackedFeatures.FeatureRow row : rows) {
 
-                List<IGVFeature> features = row.getFeatures();
-                for (IGVFeature feature : features) {
-                    Variant variant = (Variant) feature;
+                List<VCFVariant> features = row.getFeatures();
+                for (VCFVariant feature : features) {
+                    VCFVariant variant = feature;
 
                     if (hideFiltered && variant.isFiltered()) {
                         continue;
@@ -695,7 +703,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     protected Variant getFeatureClosest(double position, int y, ReferenceFrame frame, double maxDistance) {
 
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
+        PackedFeatures<PackedFeature> packedFeatures = packedFeaturesMap.get(frame);
 
         if (packedFeatures == null) {
             return null;

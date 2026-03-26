@@ -23,7 +23,7 @@ import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
 import org.igv.feature.FeatureFileUtils;
 import org.igv.feature.GFFParser;
-import org.igv.feature.Mutation;
+import org.igv.feature.mut.Mutation;
 import org.igv.feature.genome.*;
 import org.igv.feature.genome.fasta.FastaUtils;
 import org.igv.feature.genome.load.GenomeDescriptor;

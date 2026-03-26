@@ -1,57 +1,23 @@
-package org.igv.renderer;
+package org.igv.feature.mut;
 
-import org.igv.logging.*;
 import org.igv.feature.LocusScore;
-import org.igv.prefs.Constants;
-import org.igv.prefs.PreferencesManager;
+import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.Renderer;
+import org.igv.track.DataType;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
-import org.igv.track.DataType;
 
 import java.awt.*;
 import java.util.List;
 
-import static org.igv.prefs.Constants.CHART_SHOW_ALL_HEATMAP;
+public class MutRenderer implements Renderer<Mutation> {
 
-/**
- * @author jrobinso
- */
-public class HeatmapRenderer extends DataRenderer {
+    @Override
+    public void render(List<Mutation> features, RenderContext context, Rectangle rect, Track track) {
 
-    private static Logger log = LogManager.getLogger(HeatmapRenderer.class);
-
-    public String getDisplayName() {
-        return "Heatmap";
-    }
-
-    /**
-     * Render the data track as a heat map.
-     * <p/>
-     * This method has gotten quite complicated,  most of it from the option to join adjacent
-     * copy number segments.
-     *
-     * @param track
-     * @param scores
-     * @param context
-     * @param rect
-     */
-    public void renderScores(Track track, List<LocusScore> scores, RenderContext context, Rectangle rect) {
-
-        AbstractColorScale colorScale = track.getColorScale();
+        //AbstractColorScale colorScale = track.getColorScale();
         double origin = context.getOrigin();
         double locScale = context.getScale();
-
-        Color noCallColor;
-        try {
-            noCallColor = PreferencesManager.getPreferences().getAsColor(Constants.NO_CALL_COLOR);
-        } catch (Exception e) {
-            log.error("Error parsing color string: " + PreferencesManager.getPreferences().get(Constants.NO_DATA_COLOR));
-            noCallColor = Color.DARK_GRAY;
-        }
-
-        Color bgColor = colorScale.getNoDataColor();
-        context.getGraphic2DForColor(bgColor).fill(rect);
-        boolean showAllFeatures = PreferencesManager.getPreferences().getAsBoolean(CHART_SHOW_ALL_HEATMAP);
 
         double maxX = rect.getMaxX();
         int minY = (int) rect.getMinY();
@@ -60,7 +26,7 @@ public class HeatmapRenderer extends DataRenderer {
         int lastPStart = 0;
         int lastW = 0;
 
-        for (LocusScore score : scores) {
+        for (LocusScore score : features) {
             if (lastPStart > maxX) {
                 break;
             }
@@ -73,22 +39,10 @@ public class HeatmapRenderer extends DataRenderer {
             int pStart = (int) fStart;
             int pEnd = (int) fEnd;
 
-            int min;
-            if (showAllFeatures) {
-                min = 1;
-            } else {
-                min = Math.min(pStart - lastPEnd, 1);
-            }
-
+            int min = 1;
             int w = Math.max(min, pEnd - pStart);
 
-            Color graphColor;
-            float scoreValue = score.getScore();
-            if (Float.isNaN(scoreValue)) {
-                graphColor = noCallColor;
-            } else {
-                graphColor = colorScale.getColor(track.logScaleData(score.getScore()));
-            }
+            Color graphColor = Color.blue; //colorScale.getColor(track.logScaleData(score.getScore()));
 
             if ((pStart + w) >= 0 && (lastPStart <= maxX)) {
 

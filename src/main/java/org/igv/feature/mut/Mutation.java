@@ -1,6 +1,10 @@
-package org.igv.feature;
+package org.igv.feature.mut;
 
 
+import org.igv.feature.FormatUtils;
+import org.igv.feature.IGVFeature;
+import org.igv.feature.LocusScore;
+import org.igv.feature.Strand;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.*;
 import org.igv.feature.aa.AminoAcidSequence;
@@ -18,7 +22,7 @@ import java.util.Map;
  *
  * @author jrobinso
  */
-public class Mutation implements IGVFeature {
+public class Mutation implements LocusScore {
 
     private static Logger log = LogManager.getLogger(Mutation.class);
     private static Map<String, Color> colors;

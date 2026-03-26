@@ -1,5 +1,6 @@
 package org.igv.session;
 
+import org.igv.feature.mut.MutationRenderer;
 import org.igv.renderer.*;
 
 /**

@@ -10,8 +10,8 @@ import org.igv.Globals;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackProperties;
 import org.igv.track.DataType;
+import org.igv.track.TrackProperties;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
@@ -21,16 +21,15 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class SegmentedDataSet {
+public class SegmentedDataSet implements SegmentedDataSource {
 
     //SegFileParser parser;
     DataType dataType = DataType.COPY_NUMBER;
     float dataMax = -Float.MAX_VALUE;
     float dataMin = Float.MAX_VALUE;
     /**
-     * Assume data is non-log value until suggested otherwise by the precense
-     * of negative numbers.  TODO This is a fragile assumption, the user should
-     * input this information directly.
+     * Assume data is non-log value until suggested otherwise by the presence
+     * of negative numbers.
      */
     private boolean logNormalized = false;
     /**
@@ -60,6 +59,7 @@ public class SegmentedDataSet {
 
 
     }
+
     /**
      * Sort all segment lists.  This is done automatically after loading.
      */
@@ -120,7 +120,7 @@ public class SegmentedDataSet {
      */
     public List<LocusScore> getSegments(String sample, String chr) {
 
-        if(Globals.CHR_ALL.equals(chr)) {
+        if (Globals.CHR_ALL.equals(chr)) {
             return getWholeGenomeScores(sample);
         }
 
@@ -204,18 +204,9 @@ public class SegmentedDataSet {
     /**
      * Method description
      *
-     * @return
-     */
-    public DataType getTrackType() {
-        return dataType;
-    }
-
-    /**
-     * Method description
-     *
      * @param dataType
      */
-    public void setTrackType(DataType dataType) {
+    public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
 
@@ -241,7 +232,7 @@ public class SegmentedDataSet {
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             int buffer = (int) (2 * bpPerPixel);    /* * */
-            return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
+            return FeatureUtils.getFeatureAt(position, buffer, scores);
         }
     }
 

@@ -21,12 +21,16 @@ import java.awt.event.MouseEvent;
  * </ul>
  * Only the track above the divider is resized; tracks below are never modified.
  * Height changes are persisted via {@link Track#setHeight(int)}.
+ * <p>
+ * If the immediate pane above this divider is invisible (preferred height&nbsp;≤&nbsp;0),
+ * the divider walks upward through siblings to find the nearest visible pane. If no
+ * visible pane exists above, the divider hides itself.
  */
 public class TrackPanelDivider extends JPanel {
 
     public static final int DIVIDER_HEIGHT = 5;
 
-    /** The pane above this divider (whose height shrinks/grows). */
+    /** The immediate pane above this divider. */
     private final TrackPanelScrollPane abovePane;
 
     private int dragStartY;
@@ -40,38 +44,79 @@ public class TrackPanelDivider extends JPanel {
         this.abovePane = abovePane;
 
         setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
-        setPreferredSize(new Dimension(Integer.MAX_VALUE, DIVIDER_HEIGHT));
-        setMinimumSize(new Dimension(0, DIVIDER_HEIGHT));
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, DIVIDER_HEIGHT));
         updateBackground();
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (abovePane == null) return;
+                TrackPanelScrollPane effective = getEffectiveAbovePane();
+                if (effective == null) return;
                 if (PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY)) {
                     return;
                 }
                 dragStartY = e.getYOnScreen();
-                originalAboveHeight = getTrackHeight(abovePane);
+                originalAboveHeight = getTrackHeight(effective);
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (abovePane == null) return;
+                TrackPanelScrollPane effective = getEffectiveAbovePane();
+                if (effective == null) return;
                 if (PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY)) {
                     return;
                 }
                 int delta = e.getYOnScreen() - dragStartY;
 
-                int minAbove = getTrackMinimumHeight(abovePane);
+                int minAbove = getTrackMinimumHeight(effective);
                 int newAboveHeight = Math.max(minAbove, originalAboveHeight + delta);
-                setTrackHeight(abovePane, newAboveHeight);
+                setTrackHeight(effective, newAboveHeight);
             }
         };
 
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
+    }
+
+    /**
+     * Returns the nearest visible (preferred height &gt; 0) TrackPanelScrollPane
+     * above this divider, walking upward through siblings if the immediate pane
+     * above has zero height. Returns {@code null} if no visible pane is found.
+     */
+    private TrackPanelScrollPane getEffectiveAbovePane() {
+        Container parent = getParent();
+        if (parent == null) return isPaneVisible(abovePane) ? abovePane : null;
+
+        Component[] siblings = parent.getComponents();
+        // Find our index
+        int myIndex = -1;
+        for (int i = 0; i < siblings.length; i++) {
+            if (siblings[i] == this) {
+                myIndex = i;
+                break;
+            }
+        }
+        if (myIndex < 0) return isPaneVisible(abovePane) ? abovePane : null;
+
+        // Walk backwards from just before this divider to find the nearest visible pane
+        for (int i = myIndex - 1; i >= 0; i--) {
+            if (siblings[i] instanceof TrackPanelScrollPane) {
+                TrackPanelScrollPane pane = (TrackPanelScrollPane) siblings[i];
+                if (isPaneVisible(pane)) {
+                    return pane;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if the given pane is non-null and contains a visible
+     * track (i.e. the track's height is greater than zero).
+     */
+    private static boolean isPaneVisible(TrackPanelScrollPane pane) {
+        if (pane == null) return false;
+        Track track = pane.getTrackPanel().getTrack();
+        return track != null && track.getHeight() > 0;
     }
 
     private static int getTrackHeight(TrackPanelScrollPane pane) {
@@ -91,6 +136,34 @@ public class TrackPanelDivider extends JPanel {
         }
     }
 
+    /**
+     * Returns {@code true} if this divider should be shown. The divider is hidden
+     * when its immediate above pane is not visible (preferred height ≤ 0), because
+     * the divider before the invisible pane already provides resize control for
+     * the nearest visible track above.
+     */
+    private boolean shouldBeVisible() {
+        return isPaneVisible(abovePane);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        int h = shouldBeVisible() ? DIVIDER_HEIGHT : 0;
+        return new Dimension(Integer.MAX_VALUE, h);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        int h = shouldBeVisible() ? DIVIDER_HEIGHT : 0;
+        return new Dimension(0, h);
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        int h = shouldBeVisible() ? DIVIDER_HEIGHT : 0;
+        return new Dimension(Integer.MAX_VALUE, h);
+    }
+
     private void updateBackground() {
         if (Globals.isDarkMode()) {
             setBackground(UIManager.getColor("Panel.background"));
@@ -101,6 +174,7 @@ public class TrackPanelDivider extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
+        if (!shouldBeVisible()) return;
         updateBackground();
         super.paintComponent(g);
 
@@ -109,10 +183,9 @@ public class TrackPanelDivider extends JPanel {
         int h = getHeight();
         int centerY = h / 2;
 
-        // Draw a subtle grip line in the center
+        // Draw a subtle grip line across the full width
         g2d.setColor(Globals.isDarkMode() ? new Color(120, 120, 120) : new Color(180, 180, 180));
-        int lineMargin = Math.max(4, w / 4);
-        g2d.drawLine(lineMargin, centerY, w - lineMargin, centerY);
+        g2d.drawLine(0, centerY, w, centerY);
 
         g2d.dispose();
     }

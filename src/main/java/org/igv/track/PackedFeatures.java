@@ -2,6 +2,7 @@ package org.igv.track;
 
 import org.igv.logging.*;
 import org.igv.feature.IGVFeature;
+import org.igv.feature.PackedFeature;
 import org.igv.feature.Strand;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MessageUtils;
@@ -105,7 +106,7 @@ public class PackedFeatures<T extends Feature> {
         }
 
         for(int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
-            for(IGVFeature f : rows.get(rowIndex).getFeatures()) {
+            for(PackedFeature f : rows.get(rowIndex).getFeatures()) {
                 f.setPackedRow(rowIndex);
             }
         }
@@ -219,7 +220,7 @@ public class PackedFeatures<T extends Feature> {
                     if (bucket.isEmpty()) {
                         emptyBucketKeys.add(key);
                     }
-                    currentRow.addFeature((IGVFeature) feature);
+                    currentRow.addFeature((PackedFeature) feature);
                     nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
                     allocatedCount++;
                 }
@@ -315,7 +316,7 @@ public class PackedFeatures<T extends Feature> {
                 break;  // No more features can overlap since list is sorted by start
             }
             if (f.getEnd() >= start) {
-                maxRow = Math.max(maxRow, ((IGVFeature) f).getPackedRow());
+                maxRow = Math.max(maxRow, ((PackedFeature) f).getPackedRow());
             }
         }
         return maxRow;
@@ -324,17 +325,17 @@ public class PackedFeatures<T extends Feature> {
     public class FeatureRow {
         int start;
         int end;
-        List<IGVFeature> features;
+        List<PackedFeature> features;
 
         public FeatureRow() {
             this.features = new ArrayList(100);
         }
 
-        public FeatureRow(List<? extends IGVFeature> features) {
+        public FeatureRow(List<? extends PackedFeature> features) {
             this.features = new ArrayList<>(features);
         }
 
-        public void addFeature(IGVFeature feature) {
+        public void addFeature(PackedFeature feature) {
             if (features.isEmpty()) {
                 this.start = getFeatureStartForPacking(feature);
             }
@@ -342,7 +343,7 @@ public class PackedFeatures<T extends Feature> {
             end = getFeatureEndForPacking(feature);
         }
 
-        public List<IGVFeature> getFeatures() {
+        public List<PackedFeature> getFeatures() {
             return features;
         }
 

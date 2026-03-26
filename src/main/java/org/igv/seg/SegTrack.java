@@ -2,6 +2,7 @@ package org.igv.seg;
 
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.mut.MutationRenderer;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
@@ -10,7 +11,6 @@ import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
-import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
@@ -20,34 +20,41 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SegTrack extends AbstractTrack {
 
     private static final Logger log = LogManager.getLogger(SegTrack.class);
 
-    SegmentedDataSet dataset;
+    SegmentedDataSource dataset;
     int sampleHeight = 15;
-    Renderer<LocusScore> renderer = new HeatmapRenderer();
+    Renderer renderer;
+    TrackType type;
 
-    public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
+    public SegTrack(ResourceLocator locator, TrackType type, String id, SegmentedDataSource dataset, Genome genome) {
 
-        super(locator, id, name);
+        super(locator, id, id);
         this.dataset = dataset;
-        renderer = new HeatmapRenderer();
+        this.type = type;
+        renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();
         setDataRange(new DataRange(0, 1, 2));
         setDataType(dataset.getType());
         initScale(dataset);
+
+        if(type == TrackType.mut) {
+            visibilityWindow = 0; // Disable whole-genome view for mutation tracks
+        }
 
         this.initSamples(dataset.getSampleNames());
     }
 
     public TrackType getType() {
-        return TrackType.seg;
+        return type;
     }
 
-    void initScale(SegmentedDataSet dataset) {
+    void initScale(SegmentedDataSource dataset) {
 
         var min = (float) dataset.getDataMin();
         var max = (float) dataset.getDataMax();
@@ -86,8 +93,8 @@ public class SegTrack extends AbstractTrack {
                 }
                 if (y + sampleHeight > clipBounds.y) {
                     var r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
-                    var scores = dataset.getSegments(sample, context.getChr());
-                    this.renderer.render(scores, context, r, this);
+                    var features = dataset.getSegments(sample, context.getChr());
+                    this.renderer.render(features, context, r, this);
                 }
                 y += sampleHeight;
             }
@@ -144,7 +151,7 @@ public class SegTrack extends AbstractTrack {
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
-        if(keys.size() > 0) {
+        if (keys.size() > 0) {
             items.add(new JPopupMenu.Separator());
             items.add(SampleMenuUtils.getSortByAttributeItem(this));
             items.add(SampleMenuUtils.getGroupByAttributeItem(this));
@@ -283,7 +290,8 @@ public class SegTrack extends AbstractTrack {
             path = pathOrURL;
         }
         var lowerPath = path.toLowerCase();
-        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
+        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz") || lowerPath.endsWith(".seg.txt") ||
+                lowerPath.endsWith(".seg.txt.gz");
     }
 
     @Override

@@ -21,7 +21,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
-import org.igv.track.TrackGroup;
 import org.igv.ui.AbstractDataPanelTool;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
@@ -37,8 +36,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Collection;
 import java.util.List;
+import java.util.TimerTask;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -128,7 +128,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         int visibilityWindow = getTrack().getVisibilityWindow();
         double bpwidth = getBounds().width * frame.getScale();
 
-        if(visibilityWindow >= 0 && (bpwidth > visibilityWindow || frame.getChrName().equals(Globals.CHR_ALL))) {
+        if ((visibilityWindow == 0 && frame.getChrName().equals(Globals.CHR_ALL)) ||
+                (visibilityWindow > 0 && bpwidth > visibilityWindow)) {
 
             graphics2D.setColor(darkMode ? Color.white : Color.GRAY);
             String msg = frame.getChrName().equals(Globals.CHR_ALL) ?

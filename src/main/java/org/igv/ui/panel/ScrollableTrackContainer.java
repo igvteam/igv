@@ -1,5 +1,9 @@
 package org.igv.ui.panel;
 
+import org.igv.Globals;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -11,6 +15,11 @@ public class ScrollableTrackContainer extends JPanel implements Scrollable {
 
     public ScrollableTrackContainer() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        if (Globals.isDarkMode() && !PreferencesManager.getPreferences().hasExplicitValue(Constants.BACKGROUND_COLOR)) {
+            setBackground(UIManager.getColor("Panel.background"));
+        } else {
+            setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
+        }
     }
 
     // Scrollable implementation

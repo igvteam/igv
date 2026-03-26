@@ -49,7 +49,7 @@ public class SegmentFileParser {
         boolean birdsuite = (locator.getPath().toLowerCase().endsWith("birdseye_canary_calls"));
 
         if (birdsuite) {
-            dataset.setTrackType(DataType.CNV);
+            dataset.setDataType(DataType.CNV);
         }
 
         AsciiLineReader reader = null;
@@ -189,7 +189,7 @@ public class SegmentFileParser {
                     return;
                 }
                 try {
-                    dataset.setTrackType(DataType.valueOf(tokens[1].trim().toUpperCase()));
+                    dataset.setDataType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
                     log.error("Unknown track type: " + tokens[1].trim().toUpperCase());
                 }
