@@ -77,13 +77,6 @@ public class VariantTrackMenuHelper {
             items.add(SampleMenuUtils.getFilterByAttributeItem(variantTrack));
         }
 
-        //Variant Information
-        items.add(new JPopupMenu.Separator());
-        items.add(new JLabel("<html>&nbsp;&nbsp;<b>Display Mode", JLabel.LEFT));
-        for (JMenuItem item : getDisplayModeItems(variantTrack)) {
-            items.add(item);
-        }
-
         items.add(new JPopupMenu.Separator());
         JMenuItem item = new JMenuItem("Change Squished Row Height...");
         item.addActionListener(evt -> {

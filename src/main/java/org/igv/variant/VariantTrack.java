@@ -64,6 +64,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
+    private transient Rectangle lastClipBounds;
 
     public static boolean isVCF(String format) {
         return (format.equals("vcf3") ||
@@ -174,7 +175,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public int getHeight() {
-        return !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
+        int i = !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
+        System.out.println(i);
+        return i;
     }
 
     @Override
@@ -306,7 +309,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         Graphics2D g2D = context.getGraphics();
 
         Rectangle trackRectangle = context.trackRectangle;
-        Rectangle clipBounds = context.getClipBounds();
+        Rectangle clipBounds = new Rectangle(context.getClipBounds());
 
         Rectangle variantRect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, getVariantsHeight());
         Rectangle genotypeRect = new Rectangle(trackRectangle.x, trackRectangle.y + getVariantsHeight(), trackRectangle.width, getGenotypeBandHeight());
@@ -368,13 +371,15 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         genotypeRect.y = trackRectangle.y + getVariantsHeight();
                         boolean hasGroups = getSampleGroups().size() > 1;
 
-                        if (hasGroups) {
+
+                        if (hasGroups && lastClipBounds != null) {
                             // Expand the clip bounds to be sure we clear previous labels, but not outside the bounds
                             // of the visible rectangle
                             Rectangle visibleRect = context.getVisibleRect();
-                            int expandedTop = Math.max(visibleRect.y, clipBounds.y - 10);
+
+                            int expandedTop = Math.max(visibleRect.y, Math.min(lastClipBounds.y, clipBounds.y));
                             int expandedBottom = Math.min(visibleRect.y + visibleRect.height,
-                                    clipBounds.y + clipBounds.height + 10);
+                                    Math.max(clipBounds.y + clipBounds.height, lastClipBounds.y + lastClipBounds.height));
                             clipBounds.y = expandedTop;
                             clipBounds.height = expandedBottom - expandedTop;
                             context.getGraphics().setClip(clipBounds);
@@ -409,6 +414,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         }
                     }
 
+                    lastClipBounds = context.getClipBounds();
+
                 }
             }
         } else {
@@ -431,6 +438,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     /**
      * Render the border between variants / genotypes
+     *
      * @param g2D
      * @param visibleRectangle
      */
@@ -525,7 +533,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
         boolean hasGroups = getSampleGroups().size() > 1;
-        boolean b = true;
+        boolean b = false;
+
         for (SampleGroup sampleGroup : getSampleGroups()) {
 
             for (String sample : sampleGroup.samples()) {
@@ -533,10 +542,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 if (bandRectangle.y > clipBounds.y + clipBounds.height) {
                     break;
                 }
+
+                Color bgColor = b ? BAND1_COLOR : BAND2_COLOR;
+                b = !b;
+
                 if (bandRectangle.y + bandRectangle.height > clipBounds.y) {
 
-                    Color bgColor = b ? BAND1_COLOR : BAND2_COLOR;
-                    b = !b;
                     g2D.setColor(bgColor); //darkMode ? UIManager.getColor("Panel.background") : Color.white);
 
                     if (!supressFill) {

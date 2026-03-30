@@ -33,6 +33,7 @@ public class SegTrack extends AbstractTrack {
     int sampleHeight = 15;
     Renderer renderer;
     TrackType type;
+    private transient Rectangle lastClipBounds;
 
     public SegTrack(ResourceLocator locator, TrackType type, String id, SegmentedDataSource dataset, Genome genome) {
 
@@ -84,16 +85,17 @@ public class SegTrack extends AbstractTrack {
     @Override
     public void render(RenderContext context) {
 
-        Rectangle clipBounds = context.getClipBounds();
+        Rectangle clipBounds = new Rectangle(context.getClipBounds());
         Rectangle trackRectangle = context.getTrackRectangle();
 
         final boolean hasGroups = getSampleGroups().size() > 0;
-        if (hasGroups) {
+        if (hasGroups && lastClipBounds != null) {
             // Expand the clip bounds to be sure we clear previous labels, but not outside the bounds
             // of the visible rectangle
             Rectangle visibleRect = context.getVisibleRect();
-            int expandedTop = Math.max(visibleRect.y, clipBounds.y - 10);
-            int expandedBottom = Math.min(visibleRect.y + visibleRect.height, clipBounds.y + clipBounds.height + 10);
+            int expandedTop = Math.max(visibleRect.y, Math.min(clipBounds.y, lastClipBounds.y));
+            int expandedBottom = Math.min(visibleRect.y + visibleRect.height,
+                    Math.max(clipBounds.y + clipBounds.height, lastClipBounds.y + clipBounds.height));
             clipBounds.y = expandedTop;
             clipBounds.height = expandedBottom - expandedTop;
             context.getGraphics().setClip(clipBounds);
@@ -125,6 +127,8 @@ public class SegTrack extends AbstractTrack {
 
             y += groupGap; // Gap between groups
         }
+
+        lastClipBounds = context.getClipBounds();
     }
 
     @Override
