@@ -309,7 +309,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         if (arrowRect != null && arrowRect.contains(e.getPoint())) {
             flipStrand();
         }
-
     }
 
     private void flipStrand() {

@@ -208,14 +208,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
          */
         @Override
         public void igvMouseClicked(final MouseEvent e) {
-            for (MouseableRegion mouseRegion : mouseRegions) {
-                if (mouseRegion.containsPoint(e.getX(), e.getY())) {
-                    for (Track t : mouseRegion.getTracks()) {
-                        t.handleNameClick(e);
-                        return;
-                    }
-                }
-            }
+            getTrack().handleNameClick(e);
         }
 
     }

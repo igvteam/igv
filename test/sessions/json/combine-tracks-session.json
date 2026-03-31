@@ -1,13 +1,9 @@
 {
   "reference": {
-    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
-    "maneTrixURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.ix",
-    "aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg38/hg38_alias.tab",
     "chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes",
-    "name": "Human (hg38)",
-    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz",
     "maneBbURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
-    "id": "hg38",
+    "indexURL": "https://igv.org/genomes/data/hg38/hg38.fa.fai",
+    "fastaURL": "https://igv.org/genomes/data/hg38/hg38.fa",
     "wholeGenomeView": true,
     "chromosomeOrder": [
       "chr1",
@@ -35,34 +31,79 @@
       "chrX",
       "chrY"
     ],
-    "hubs": ["https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg38/hub.txt"]
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+    "maneTrixURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.ix",
+    "aliasURL": "https://igv.org/genomes/data/hg38/hg38_alias.tab",
+    "name": "Human (GRCh38/hg38)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz",
+    "id": "hg38"
   },
-  "locus": "chr7:55029817-55029857",
+  "locus": "All",
   "tracks": [
     {
-      "altColor": "0,150,0",
-      "color": "0,150,0",
-      "format": "bigwig",
-      "name": "Homo sapiens GM12878 H3K4me3",
-      "colorScale": "ContinuousColorScale;0.0;3.3990800380706787;255,255,255;0,150,0",
-      "windowFunction": "mean",
-      "id": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
-      "type": "wig",
-      "url": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
-      "height": "40",
-      "autoScale": "true"
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
     },
     {
-      "altColor": "0,0,150",
-      "color": "0,0,150",
+      "flipAxis": false,
+      "drawBaseline": true,
+      "graphType": "BAR_CHART",
+      "max": 1.1614603,
       "format": "bigwig",
-      "name": "Homo sapiens GM12878 H3K36me3",
-      "windowFunction": "mean",
-      "id": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
+      "colorScale": "ContinuousColorScale;0.0;1.161460280418396;255,255,255;0,0,178",
+      "mid": 0,
       "type": "wig",
-      "url": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
-      "height": "40",
-      "autoScale": "true"
+      "autoscale": "true",
+      "url": "https://www.encodeproject.org/files/ENCFF125GYW/@@download/ENCFF125GYW.bigWig",
+      "logScale": false,
+      "min": 0,
+      "name": "GM12878 GABPA ChIP-seq signal p-value",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF125GYW/@@download/ENCFF125GYW.bigWig",
+      "order": 0,
+      "height": 40
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "graphType": "BAR_CHART",
+      "max": 0.8999721,
+      "format": "bigwig",
+      "mid": 0,
+      "type": "wig",
+      "autoscale": "true",
+      "url": "https://www.encodeproject.org/files/ENCFF836RED/@@download/ENCFF836RED.bigWig",
+      "logScale": false,
+      "min": 0,
+      "name": "HepG2 POLR2A ChIP-seq signal p-value",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF836RED/@@download/ENCFF836RED.bigWig",
+      "order": 0,
+      "height": 40
+    },
+    {
+      "track1": "https://www.encodeproject.org/files/ENCFF125GYW/@@download/ENCFF125GYW.bigWig",
+      "flipAxis": false,
+      "drawBaseline": true,
+      "track2": "https://www.encodeproject.org/files/ENCFF836RED/@@download/ENCFF836RED.bigWig",
+      "op": "ADD",
+      "graphType": "BAR_CHART",
+      "max": 1.7916217,
+      "colorScale": "ContinuousColorScale;0.0;1.161460280418396;255,255,255;0,0,178",
+      "mid": 0,
+      "type": "wig",
+      "autoscale": "true",
+      "logScale": false,
+      "min": 0,
+      "name": "Sum",
+      "windowFunction": "none",
+      "id": "1774973102162",
+      "order": 0,
+      "height": 40
     },
     {
       "format": "refgene",
@@ -70,26 +111,7 @@
       "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
       "type": "annotation",
       "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
-      "height": "0"
-    },
-    {
-      "name": "Reference sequence",
-      "id": "Reference sequence",
-      "type": "sequence",
-      "height": "0"
-    },
-    {
-      "altColor": "200,0,0",
-      "color": "200,0,0",
-      "format": "bigwig",
-      "name": "Homo sapiens GM12878 H3K27ac",
-      "colorScale": "ContinuousColorScale;0.0;7.462679862976074;255,255,255;200,0,0",
-      "windowFunction": "mean",
-      "id": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
-      "type": "wig",
-      "url": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
-      "height": "40",
-      "autoScale": "true"
+      "order": 1000001
     }
   ]
 }

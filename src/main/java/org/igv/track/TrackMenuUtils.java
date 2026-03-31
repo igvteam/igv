@@ -84,6 +84,7 @@ public class TrackMenuUtils {
             menu.addSeparator();
         }
 
+        // Items all tracks share
         for (Component item : getSharedMenuItems(Collections.singleton(track))) {
             menu.add(item);
         }
@@ -980,7 +981,9 @@ public class TrackMenuUtils {
 
         ButtonGroup group = new ButtonGroup();
         Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
-        modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
+        if(tracks.stream().allMatch(t -> "annotation".equals(t.getType()))) {
+            modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
+        }
         modes.put("Expanded", Track.DisplayMode.EXPANDED);
         modes.put("Squished", Track.DisplayMode.SQUISHED);
 

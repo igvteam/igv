@@ -1023,6 +1023,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return VariantTrackMenuHelper.getMenuItems(this, selectedVariant, te);
     }
 
+    @Override
+    public boolean hasDisplayMode() {
+        return true;
+    }
+
     /**
      * Return the index for the sample.  This is a very inefficient implementation, but we don't care because
      * these lists are tiny.

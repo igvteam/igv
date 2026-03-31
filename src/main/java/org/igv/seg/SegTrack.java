@@ -29,8 +29,10 @@ public class SegTrack extends AbstractTrack {
 
     private static final Logger log = LogManager.getLogger(SegTrack.class);
 
+    private static final int EXPANDED_SAMPLE_HEIGHT = 15;
+    private static final int SQUISHED_SAMPLE_HEIGHT = 2;
+
     SegmentedDataSource dataset;
-    int sampleHeight = 15;
     Renderer renderer;
     TrackType type;
     private transient Rectangle lastClipBounds;
@@ -74,12 +76,12 @@ public class SegTrack extends AbstractTrack {
     @Override
     public int getContentHeight() {
         var nSamples = sampleCount();
-        return nSamples * sampleHeight + (getSampleGroups().size() - 1) * groupGap;
+        return nSamples * getSampleHeight() + (getSampleGroups().size() - 1) * groupGap;
     }
 
     @Override
     public int getSampleHeight() {
-        return sampleHeight;
+        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : EXPANDED_SAMPLE_HEIGHT;
     }
 
     @Override
@@ -110,12 +112,12 @@ public class SegTrack extends AbstractTrack {
                 if (y > clipBounds.y + clipBounds.height) {
                     break;
                 }
-                if (y + sampleHeight > clipBounds.y) {
-                    Rectangle r = new Rectangle(trackRect.x, y, trackRect.width, sampleHeight);
+                if (y + getSampleHeight() > clipBounds.y) {
+                    Rectangle r = new Rectangle(trackRect.x, y, trackRect.width, getSampleHeight());
                     var features = dataset.getFeatures(sample, context.getChr());
                     this.renderer.render(features, context, r, this);
                 }
-                y += sampleHeight;
+                y += getSampleHeight();
             }
 
             String label = group.label();
@@ -135,8 +137,8 @@ public class SegTrack extends AbstractTrack {
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
         // Calculate fontsize
-        var gap = Math.min(4, sampleHeight / 3);
-        var fs = Math.min(fontSize, sampleHeight - gap);
+        var gap = Math.min(4, getSampleHeight() / 3);
+        var fs = Math.min(fontSize, getSampleHeight() - gap);
         var font = FontManager.getFont(fs);
         g2D.setFont(font);
         Rectangle clipRect = g2D.getClipBounds();
@@ -148,11 +150,11 @@ public class SegTrack extends AbstractTrack {
                 if (y > clipRect.y + clipRect.height) {
                     break;
                 }
-                if (y + sampleHeight > clipRect.y) {
-                    var r = new Rectangle(0, y, visibleRect.width, sampleHeight);
+                if (y + getSampleHeight() > clipRect.y) {
+                    var r = new Rectangle(0, y, visibleRect.width, getSampleHeight());
                     GraphicUtils.drawWrappedText(s, r, g2D, false);
                 }
-                y += sampleHeight;
+                y += getSampleHeight();
             }
             if (hasGroups) {
                 drawGroupDivider(g2D, trackRectangle, y);
@@ -194,6 +196,11 @@ public class SegTrack extends AbstractTrack {
         return items;
     }
 
+    @Override
+    public boolean hasDisplayMode() {
+        return true;
+    }
+
     /**
      * Return a value string for the tooltip window at the given location, or null to signal there is no value
      * at that location
@@ -211,9 +218,9 @@ public class SegTrack extends AbstractTrack {
         var trackY = mouseY - this.getY();
         var y = 0;
         for (var group : getSampleGroups()) {
-            var groupPixelHeight = group.samples().size() * sampleHeight;
+            var groupPixelHeight = group.samples().size() * getSampleHeight();
             if (trackY >= y && trackY < y + groupPixelHeight) {
-                var sampleIndex = (trackY - y) / sampleHeight;
+                var sampleIndex = (trackY - y) / getSampleHeight();
                 var sampleName = group.samples().get(sampleIndex);
                 var buf = new StringBuilder();
                 var score = dataset.getFeatureAt(sampleName, chr, position, frame);
