@@ -725,16 +725,7 @@ public class XMLSessionReader implements SessionReader {
 
 
         String id = checkTrackId(getAttribute(element, SessionAttribute.ID));
-
-        // Fix for legacy sessions with seg files -- seg files created a track per sample, with ids like segPath_sampleID
-        // We'll take the first such track as representative of the now single copy number track
-        if (segPaths.size() > 0) {
-            final String originalId = id;
-            Optional<String> segPath = segPaths.stream().filter(p -> originalId.startsWith(p + "_")).findFirst();
-            if (segPath.isPresent()) {
-                id = segPath.get() + "_cn";      // Take first sample match as representative
-            }
-        }
+        
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
         // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.

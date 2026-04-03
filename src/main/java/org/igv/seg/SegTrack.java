@@ -37,9 +37,14 @@ public class SegTrack extends AbstractTrack {
     TrackType type;
     private transient Rectangle lastClipBounds;
 
-    public SegTrack(ResourceLocator locator, TrackType type, String id, SegmentedDataSource dataset, Genome genome) {
+    public SegTrack(ResourceLocator locator,
+                    TrackType type,
+                    String id,
+                    String name,
+                    SegmentedDataSource dataset,
+                    Genome genome) {
 
-        super(locator, id, id);
+        super(locator, id, name);
         this.dataset = dataset;
         this.type = type;
         renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();

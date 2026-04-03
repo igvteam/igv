@@ -989,8 +989,9 @@ public class TrackLoader {
        // MutationTrack track = loader.loadMutationTrack(locator, genome);
        // newTracks.add(track);
         String trackId = locator.getPath();
+        String trackName = locator.getTrackName();
         MutationFeatureSource ds = new MutationFeatureSource(locator, genome);
-        SegTrack segTrack = new SegTrack(locator, TrackType.mut, trackId, ds, genome);
+        SegTrack segTrack = new SegTrack(locator, TrackType.mut, trackId, trackName,ds, genome);
         newTracks.add(segTrack);
     }
 
@@ -1021,8 +1022,9 @@ public class TrackLoader {
             newTracks.add(freqTrack);
         }
 
-        String trackId = path + "_cn"; // + "_" + trackName;
-        SegTrack track = new SegTrack(locator, TrackType.seg, trackId, ds, genome);
+        String trackId = path + "_cn"; //
+        String trackName = locator.getTrackName();// ;
+        SegTrack track = new SegTrack(locator, TrackType.seg, trackId, trackName, ds, genome);
         track.setRenderer(new HeatmapRenderer());
         track.setDataType(ds.getType());
 
