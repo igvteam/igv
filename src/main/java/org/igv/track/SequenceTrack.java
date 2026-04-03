@@ -43,7 +43,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(SequenceTrack.class);
 
-    private static final int SEQUENCE_HEIGHT = 14;
+    private static final int SEQUENCE_HEIGHT = 17;
 
     private static String NAME = "Sequence";
 
@@ -63,7 +63,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         setSortable(false);
         showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
-        setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top.
+        setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top of track list
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
