@@ -63,7 +63,7 @@ import static org.igv.ui.UIConstants.*;
  * @author jrobinso
  * @date Apr 4, 2011
  */
-public class IGVMenuBar extends JMenuBar  {
+public class IGVMenuBar extends JMenuBar {
 
     private static Logger log = LogManager.getLogger(IGVMenuBar.class);
 
@@ -129,9 +129,7 @@ public class IGVMenuBar extends JMenuBar  {
         menus.add(createGenomesMenu());
         hubsMenu = new JMenu("Track Hubs");
         menus.add(hubsMenu);
-        menus.add(createSampleInfoMenu("Sample Info"));
         menus.add(createSessionsMenu("Sessions"));
-        menus.add(createTracksMenu());
         menus.add(createViewMenu("View"));
         menus.add(createRegionsMenu("Regions"));
         menus.add(createToolsMenu("Tools"));
@@ -249,6 +247,14 @@ public class IGVMenuBar extends JMenuBar  {
 //        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
 //        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
 //        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
+        // Sample info Load menu items
+        fileMenu.addSeparator();
+        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         // ***** Snapshots
@@ -434,22 +440,6 @@ public class IGVMenuBar extends JMenuBar  {
     }
 
 
-    private JMenu createSampleInfoMenu(String name) {
-
-        MenuAction menuAction;
-        JMenu sampleMenu = new JMenu(name);
-
-        // Load menu items
-        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
-        sampleMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
-        sampleMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        return sampleMenu;
-    }
-
     private JMenu createViewMenu(String name) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
@@ -471,7 +461,6 @@ public class IGVMenuBar extends JMenuBar  {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
-
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -554,6 +543,18 @@ public class IGVMenuBar extends JMenuBar  {
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
+
+        // Show/hide track selection checkboxes
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.isSelected();
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                tp.setSelectionPanelVisible(show);
+            }
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        menuItems.add(selectTracksItem);
 
         menuAction =
                 new MenuAction("Reorder Tracks...", null, KeyEvent.VK_S) {
