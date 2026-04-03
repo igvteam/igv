@@ -165,18 +165,17 @@ public class TrackSelectionDialog extends JDialog {
             this.revalidate();
         });
         expandButtonPanel.add(collapseAllButton);
-        topButtonPanel.add(expandButtonPanel, BorderLayout.WEST);
+        topButtonPanel.add(expandButtonPanel, BorderLayout.EAST);
 
-//        JPanel clearAllPanel = new JPanel();
-//        clearAllPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-//        JButton clearAllButton = new JButton("Clear All");
-//        clearAllPanel.add(clearAllButton);
-//        clearAllButton.addActionListener(e -> {
-//            for (CollapsiblePanel collapsiblePanel : categoryPanels) {
-//                collapsiblePanel.clearSelections();
-//            }
-//        });
-//        topButtonPanel.add(clearAllPanel, BorderLayout.EAST);
+        // Search button.
+        JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
+            categoryPanels.stream().forEach(p -> p.updateLabel());
+            return null;
+        });
+        JPanel searchButtonPanel = new JPanel();
+        searchButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        searchButtonPanel.add(searchButton);
+        topButtonPanel.add(searchButtonPanel, BorderLayout.WEST);
 
         topPanel.add(topButtonPanel);
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -187,29 +186,15 @@ public class TrackSelectionDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(categoryContainer);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Get total track count
-        int count = 0;
-        for (TrackConfigContainer cp : trackConfigContainers) {
-            count += cp.countTracks();
-        }
-
         // Loop through track groups
-        boolean catSearch = count > 10000;
         for (TrackConfigContainer configGroup : trackConfigContainers) {
             categoryContainer.add(Box.createVerticalStrut(10));
-            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup, catSearch);
+            CollapsiblePanel categoryPanel = createCategoryPanel(configGroup, false);
             categoryContainer.add(categoryPanel);
             categoryPanels.add(categoryPanel);
         }
 
-        // Search button.
-        if (!catSearch) {
-            JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
-                categoryPanels.stream().forEach(p -> p.updateLabel());
-                return null;
-            });
-            topButtonPanel.add(searchButton, BorderLayout.EAST);
-        }
+
 
         JPanel buttonPanel = new JPanel();
         ((FlowLayout) buttonPanel.getLayout()).setAlignment(FlowLayout.RIGHT);
@@ -238,6 +223,7 @@ public class TrackSelectionDialog extends JDialog {
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
+
     private JPanel getLabeledHyperlink(String label, String url) {
         JPanel hubURLPanel = new JPanel();
         ((FlowLayout) hubURLPanel.getLayout()).setAlignment(FlowLayout.LEFT);

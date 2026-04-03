@@ -799,17 +799,6 @@ public abstract class AbstractTrack implements Track {
         return visibilityWindow;
     }
 
-    /**
-     * Override to return a list of menu items for the track's popup menu.  Separators can be
-     * included with {@code new JPopupMenu.Separator()}.  Subclasses should override this method
-     * rather than getPopupMenu.
-     *
-     * @return list of Components (JMenuItem, JLabel, JMenu, JPopupMenu.Separator, etc.)
-     */
-    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
-        return null;
-    }
-
     public DisplayMode getDisplayMode() {
         return displayMode;
     }

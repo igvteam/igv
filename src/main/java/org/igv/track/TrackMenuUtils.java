@@ -53,6 +53,8 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 
+import static org.igv.prefs.Constants.SHOW_SINGLE_TRACK_PANE_KEY;
+
 /**
  * @author jrobinso
  */
@@ -117,6 +119,7 @@ public class TrackMenuUtils {
         }
 
         // Add track specific items
+        menu.add(new JPopupMenu.Separator());
         List<Component> items = track.getPopupMenuItems(te);
         if (items != null) {
             for (Component item : items) {
@@ -233,7 +236,12 @@ public class TrackMenuUtils {
         item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
         items.add(item);
 
-        items.add(getChangeTrackHeightItem(tracks));
+        JMenuItem changeTrackHeightItem = getChangeTrackHeightItem(tracks);
+        if(PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            changeTrackHeightItem.setEnabled(false);
+        }
+        items.add(changeTrackHeightItem);
+
         items.add(getChangeFontSizeItem(tracks));
 
         return items;
