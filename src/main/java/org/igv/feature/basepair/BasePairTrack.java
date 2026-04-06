@@ -7,6 +7,8 @@ import org.igv.session.Persistable;
 
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
+import org.igv.track.TrackClickEvent;
+import org.igv.track.TrackMenuUtils;
 import org.igv.track.TrackType;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.ReferenceFrame;
@@ -18,6 +20,7 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,6 +58,11 @@ public class BasePairTrack extends AbstractTrack {
     @Override
     public TrackType getType() {
         return TrackType.arc;
+    }
+
+    @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getBasePairMenuItems(Collections.singleton(this));
     }
 
     @Override

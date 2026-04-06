@@ -166,7 +166,6 @@ public abstract class AbstractTrack implements Track {
      * Initializes sample names for this track.  This can't be done in the constructor as subclasses
      * have differing ways of determining sample names.  This is called from subclass constructors.
      *
-     *
      * @param sampleNames
      */
     protected void initSamples(List<String> sampleNames) {
@@ -178,6 +177,11 @@ public abstract class AbstractTrack implements Track {
     @Override
     public void setViewport(TrackPanelScrollPane viewport) {
         this.viewport = viewport;
+    }
+
+    @Override
+    public TrackPanelScrollPane getViewport() {
+        return this.viewport;
     }
 
     public void setRendererClass(Class rc) {
@@ -285,7 +289,7 @@ public abstract class AbstractTrack implements Track {
                 }
                 y += sampleHeight;
             }
-            if(hasGroups) {
+            if (hasGroups) {
                 drawGroupDivider(graphics, trackRectangle, y);
             }
             y += groupGap; // Gap
@@ -1009,7 +1013,7 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////
     // Sorting
     public boolean hasSamples() {
         return sampleNames != null && !sampleNames.isEmpty();

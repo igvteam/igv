@@ -650,6 +650,11 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
 
         List<Component> items = new ArrayList<>();
 
+        items.add(TrackMenuUtils.getDataRangeItem(tmp));
+        items.add(TrackMenuUtils.getLogScaleItem(tmp));
+        items.add(TrackMenuUtils.getAutoscaleItem(tmp));
+        items.add(TrackMenuUtils.getShowDataRangeItem(tmp));
+
         items.add(new JPopupMenu.Separator());
         items.add(createSnpThresholdItem());
 

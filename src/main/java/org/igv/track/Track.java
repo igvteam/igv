@@ -33,6 +33,7 @@ public interface Track {
 
     /**
      * Return the igv.js compatible track type.  This is used for session export.
+     *
      * @return
      */
     default TrackType getType() {
@@ -61,6 +62,8 @@ public interface Track {
     }
 
     void setViewport(TrackPanelScrollPane trackPanel);
+
+    TrackPanelScrollPane getViewport();
 
     /**
      * Return an identifier for the track.   The identifier should be unique in the context of a session.  For

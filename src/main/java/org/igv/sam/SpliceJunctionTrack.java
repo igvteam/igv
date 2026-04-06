@@ -239,8 +239,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         items.add(popupTitle);
         items.add(new JPopupMenu.Separator());
 
-        items.addAll(TrackMenuUtils.getSharedMenuItems(Collections.singletonList(this)));
-
         items.add(new JPopupMenu.Separator());
         items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(this)));
 

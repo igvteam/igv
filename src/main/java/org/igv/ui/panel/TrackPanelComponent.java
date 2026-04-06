@@ -100,29 +100,10 @@ abstract public class TrackPanelComponent extends JPanel {
     protected void openPopupMenu(TrackClickEvent te) {
 
         MouseEvent e = te.getMouseEvent();
-        IGVPopupMenu menu = null;
 
         Track track = getTrack();
 
-
-        menu = TrackMenuUtils.getPopupMenu(track, track.getName(), te);
-
-        // Add saveImage items
-        menu.addSeparator();
-        JMenuItem savePng = new JMenuItem("Save PNG image...");
-        savePng.addActionListener(e1 -> saveImage("png"));
-        menu.add(savePng);
-        JMenuItem saveSvg = new JMenuItem("Save SVG image...");
-        saveSvg.addActionListener(e1 -> saveImage("svg"));
-        menu.add(saveSvg);
-
-        // Add export features
-        ReferenceFrame frame = FrameManager.getDefaultFrame();
-        JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(track, frame);
-        if (exportFeats != null) menu.add(exportFeats);
-
-        menu.addSeparator();
-        menu.add(TrackMenuUtils.getRemoveMenuItem(Collections.singleton(track)));
+        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(track, track.getName(), te);
 
         if (menu != null) {
             menu.show(e.getComponent(), e.getX(), e.getY());

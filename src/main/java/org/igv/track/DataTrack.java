@@ -70,6 +70,11 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
     @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getDataMenuItems(Collections.singleton(this));
+    }
+
+    @Override
     public int getContentHeight() {
         return height;
     }

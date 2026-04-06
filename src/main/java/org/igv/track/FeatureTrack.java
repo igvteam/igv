@@ -101,6 +101,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return TrackType.annotation;
     }
 
+    @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getFeatureMenuItems(Collections.singleton(this), te);
+    }
+
     // TODO -- there are WAY too many constructors for this class
 
     /**
