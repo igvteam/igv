@@ -4,6 +4,7 @@ import org.igv.Globals;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.Track;
+import org.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,6 +76,16 @@ public class TrackPanelDivider extends JPanel {
 
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
+    }
+
+    /**
+     * Returns the width of the name panel region, or 0 if unavailable.
+     */
+    private int getNamePanelWidth() {
+        if (IGV.hasInstance()) {
+            return IGV.getInstance().getMainPanel().getNamePanelWidth();
+        }
+        return 0;
     }
 
     /**
@@ -179,13 +190,15 @@ public class TrackPanelDivider extends JPanel {
         super.paintComponent(g);
 
         Graphics2D g2d = (Graphics2D) g.create();
-        int w = getWidth();
         int h = getHeight();
         int centerY = h / 2;
 
-        // Draw a subtle grip line across the full width
-        g2d.setColor(Globals.isDarkMode() ? new Color(120, 120, 120) : new Color(180, 180, 180));
-        g2d.drawLine(0, centerY, w, centerY);
+        int npWidth = getNamePanelWidth();
+        int lineWidth = npWidth > 0 ? npWidth : getWidth();
+
+        // Draw a subtle grip line across the name panel region
+       // g2d.setColor(Globals.isDarkMode() ? new Color(120, 120, 120) : new Color(180, 180, 180));
+       // g2d.drawLine(0, centerY, lineWidth, centerY);
 
         g2d.dispose();
     }
