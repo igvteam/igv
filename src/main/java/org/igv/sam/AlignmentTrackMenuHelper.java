@@ -103,7 +103,6 @@ class AlignmentTrackMenuHelper {
 
 
         // Experiment type  (RNA, THIRD GEN, OTHER)
-        addSeparator();
         addExperimentTypeMenuItem();
 
         // Group, sort, color, shade, and pack

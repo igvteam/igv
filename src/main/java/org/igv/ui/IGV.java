@@ -1773,16 +1773,6 @@ public class IGV implements IGVEventObserver {
         return completed;
     }
 
-    /**
-     * Post an event to this instance's event bus
-     * // TODO -- replace the reference to the global event bus with a local one (member if IGV)
-     *
-     * @param event
-     */
-    public void postEvent(IGVEvent event) {
-        IGVEventBus.getInstance().post(event);
-    }
-
 
     public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
