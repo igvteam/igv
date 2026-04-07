@@ -467,11 +467,12 @@ public class IGV implements IGVEventObserver {
     }
 
     /**
-     * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
+     * Remove tracks from the view.  In contrast to deleteTracks, the tracks are not disposed and can be added
+     * back to the view later.
      *
      * @param tracksToRemove
      */
-    public void deleteTracks(Collection<? extends Track> tracksToRemove) {
+    public void removeTracks(Collection<? extends Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
         List<TrackPanel> panels = new ArrayList<>(getTrackPanels());
@@ -488,7 +489,21 @@ public class IGV implements IGVEventObserver {
             }
             t.unload();
         }
+
         revalidateTrackPanels();
+    }
+
+    /**
+     * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
+     *
+     * @param tracksToRemove
+     */
+    public void deleteTracks(Collection<? extends Track> tracksToRemove) {
+
+        for (Track t : tracksToRemove) {
+            t.unload();
+        }
+        removeTracks(tracksToRemove);
     }
 
 

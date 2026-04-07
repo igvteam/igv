@@ -9,6 +9,8 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -47,6 +49,11 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     public MergedTracks() {
         this.alpha = DEFAULT_ALPHA;
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.merged;
     }
 
     public void setMemberTracks(Collection<DataTrack> inputTracks) {
@@ -356,6 +363,28 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             this.alpha = Double.valueOf(element.getAttribute("alpha"));
         }
         // Un-marshalling handled in IGVSessionReader
+    }
+
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        json.put("alpha", this.alpha);
+
+        JSONArray tracksArray = new JSONArray();
+        for (DataTrack track : memberTracks) {
+            JSONObject trackJson = new JSONObject();
+            track.marshalJSON(trackJson);
+            tracksArray.put(trackJson);
+        }
+        json.put("tracks", tracksArray);
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("alpha")) {
+            this.alpha = jsonObject.getDouble("alpha");
+        }
     }
 
     private enum ChangeTrackMethod {

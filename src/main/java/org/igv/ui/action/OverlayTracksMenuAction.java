@@ -63,12 +63,11 @@ public class OverlayTracksMenuAction extends MenuAction {
     }
 
     public static void merge(List<DataTrack> dataTrackList, String name) {
-//        MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), name, dataTrackList);
-//        Track firstTrack = dataTrackList.iterator().next();
-//        TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
-//        panel.addTrack(mergedTracks);
-//       // panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
-//        panel.removeTracks(dataTrackList);
+        if(dataTrackList.size() < 2) return;
+        MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), name, dataTrackList);
+        mergedTracks.setOrder(dataTrackList.get(0).getOrder());
+        IGV.getInstance().removeTracks(dataTrackList);
+        IGV.getInstance().addTracks(List.of(mergedTracks));
     }
 
     public static void unmerge(Collection<Track> tracks) {

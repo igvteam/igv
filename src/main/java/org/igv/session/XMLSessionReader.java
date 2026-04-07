@@ -77,6 +77,8 @@ public class XMLSessionReader implements SessionReader {
      */
     private LinkedHashSet<Track> orderedTracks = new LinkedHashSet<>();
 
+    private Set<Track> mergedTracks = new HashSet<>();
+
     /**
      * List of combined data source tracks.  Processing of combined data sources has to be deferred until all tracks
      * are loaded
@@ -131,14 +133,16 @@ public class XMLSessionReader implements SessionReader {
         // Add tracks explicitly enumerated in panel sections.
         int order = 0;
         for (Track track : orderedTracks) {
-            track.setOrder(order++);
-            igv.addTrack(track);
+            if(!mergedTracks.contains(track)) {
+                track.setOrder(order++);
+                igv.addTrack(track);
+            }
         }
 
         // Now add tracks that were not explicitly enumerated in panel sections.
         for (List<Track> tracks : allTracks.values()) {
             for (Track t : tracks) {
-                if (orderedTracks == null || !orderedTracks.contains(t)) {
+                if (!mergedTracks.contains(t) && !orderedTracks.contains(t)) {
                     igv.addTrack(t);
                 }
             }
@@ -725,7 +729,7 @@ public class XMLSessionReader implements SessionReader {
 
 
         String id = checkTrackId(getAttribute(element, SessionAttribute.ID));
-        
+
 
         // Find track matching element id, created earlier from "Resource or File" elements, or during genome load.
         // Normally this is a single track, but that can't be assumed as uniqueness of "id" is not enforced.
@@ -776,6 +780,8 @@ public class XMLSessionReader implements SessionReader {
                             if (className.contains("MergedTracks")) {
                                 List<DataTrack> memberTracks = processChildTracks(session, element, sessionPath);
                                 ((MergedTracks) track).setMemberTracks(memberTracks);
+
+                                mergedTracks.addAll(memberTracks);
 
                                 NodeList nodeList = element.getElementsByTagName("DataRange");
                                 if (nodeList != null && nodeList.getLength() > 0) {
