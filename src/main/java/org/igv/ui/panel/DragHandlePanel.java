@@ -59,21 +59,24 @@ public class DragHandlePanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Draw grip lines (horizontal lines) as a visual indicator for drag handle
+        // DragHandlePanel is outside the scrollable viewport, so getHeight()
+        // directly gives the visible height — no getVisibleRect() workaround needed.
         int width = getWidth();
-        int height = getHeight();
+        int panelHeight = getHeight();
 
         g2d.setColor(new Color(180, 180, 180));
 
-        // Draw grip pattern in the center
-        int gripHeight = Math.min(24, height - 8);
-        int startY = (height - gripHeight) / 2;
-        int lineSpacing = 4;
-        int lineWidth = width - 4;
-        int startX = 2;
+        // Draw grip pattern centered vertically
+        int gripHeight = Math.min(24, panelHeight - 8);
+        if (gripHeight > 0) {
+            int startY = (panelHeight - gripHeight) / 2;
+            int lineSpacing = 4;
+            int lineWidth = width - 4;
+            int startX = 2;
 
-        for (int y = startY; y < startY + gripHeight; y += lineSpacing) {
-            g2d.drawLine(startX, y, startX + lineWidth, y);
+            for (int y = startY; y < startY + gripHeight; y += lineSpacing) {
+                g2d.drawLine(startX, y, startX + lineWidth, y);
+            }
         }
 
         g2d.dispose();

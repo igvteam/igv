@@ -8,69 +8,135 @@ import org.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 
 /**
- * @author jrobinso
+ * A panel that wraps a track in a scrollable view with a fixed left strip
+ * containing the drag handle and selection checkbox. The left strip stays
+ * visible regardless of vertical scroll position.
+ * <p>
+ * Layout (null layout, manual positioning):
+ * <pre>
+ *   [SelectionPanel][DragHandle][ innerScrollPane (viewport → TrackPanel) ]
+ * </pre>
  */
-public class TrackPanelScrollPane extends JScrollPane implements Paintable {
+public class TrackPanelScrollPane extends JPanel implements Paintable {
 
     private static Logger log = LogManager.getLogger(TrackPanelScrollPane.class);
 
     TrackPanel trackPanel;
+    private JScrollPane innerScrollPane;
+    private DragHandlePanel dragHandlePanel;
+    private TrackSelectionPanel selectionPanel;
 
     public TrackPanelScrollPane() {
-
+        setLayout(null);
         setBorder(BorderFactory.createEmptyBorder());
-        setForeground(new java.awt.Color(153, 153, 153));
-        setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        getVerticalScrollBar().setUnitIncrement(16);
+
+        // Create the inner scroll pane for the track content
+        innerScrollPane = new JScrollPane();
+        innerScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        innerScrollPane.setForeground(new Color(153, 153, 153));
+        innerScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        innerScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        innerScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         // Repaint name panels on end of scroll to center the text in the visible window.
-        getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-            @Override
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    trackPanel.getNamePanel().repaint();
-                }
+        innerScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
+            if (!e.getValueIsAdjusting() && trackPanel != null) {
+                trackPanel.getNamePanel().repaint();
             }
         });
+
+        add(innerScrollPane);
     }
 
+    // ---- Layout ----
+
+    @Override
+    public void doLayout() {
+        int h = getHeight();
+        int w = getWidth();
+        int selW = (selectionPanel != null && selectionPanel.isVisible())
+                ? TrackSelectionPanel.SELECTION_PANEL_WIDTH : 0;
+        int dragW = DragHandlePanel.DRAG_HANDLE_WIDTH;
+        int leftW = selW + dragW;
+
+        if (selectionPanel != null) {
+            selectionPanel.setBounds(0, 0, selW, h);
+        }
+        if (dragHandlePanel != null) {
+            dragHandlePanel.setBounds(selW, 0, dragW, h);
+        }
+        innerScrollPane.setBounds(leftW, 0, w - leftW, h);
+    }
+
+    // ---- Scroll pane delegation ----
+
+    public JScrollBar getVerticalScrollBar() {
+        return innerScrollPane.getVerticalScrollBar();
+    }
+
+    public int getVerticalScrollBarPolicy() {
+        return innerScrollPane.getVerticalScrollBarPolicy();
+    }
+
+    public void setVerticalScrollBarPolicy(int policy) {
+        innerScrollPane.setVerticalScrollBarPolicy(policy);
+    }
+
+    public JViewport getViewport() {
+        return innerScrollPane.getViewport();
+    }
+
+    public Rectangle getViewportBorderBounds() {
+        return innerScrollPane.getViewportBorderBounds();
+    }
+
+    // ---- Track panel management ----
+
+    public void setViewportView(Component trackSetView) {
+        if (!(trackSetView instanceof TrackPanel)) {
+            throw new IllegalArgumentException("Class TrackPanelScrollPane can only contain a TrackPanel");
+        }
+        this.trackPanel = (TrackPanel) trackSetView;
+        innerScrollPane.setViewportView(trackSetView);
+
+        // Create left-strip components (fixed, outside the scrollable viewport)
+        if (selectionPanel != null) remove(selectionPanel);
+        if (dragHandlePanel != null) remove(dragHandlePanel);
+
+        selectionPanel = new TrackSelectionPanel(trackPanel);
+        selectionPanel.setVisible(TrackSelectionPanel.isSelectionModeActive());
+        dragHandlePanel = new DragHandlePanel(trackPanel);
+
+        add(selectionPanel);
+        add(dragHandlePanel);
+
+        updateScrollbarPolicy();
+    }
+
+    // ---- Sizing ----
+
     /**
-     * Set an explicit height for this scroll pane. This overrides the content-based sizing
-     * and locks the scroll pane to this height until changed by another call to this method.
-     *
+     * Validates track height and triggers a full layout pass.
      */
     public void validateTrackHeight() {
-
-        // Update scrollbar visibility based on new height
         updateScrollbarPolicy();
-
-        // Invalidate ourselves first
         invalidate();
-
-        // Revalidate the parent container to trigger BoxLayout recalculation
-        // This will resize us to the new explicit height
         Container parent = getParent();
         if (parent != null) {
             parent.invalidate();
-            // Get the root container to force a complete layout pass
             Component root = SwingUtilities.getRoot(this);
             if (root instanceof Container) {
                 ((Container) root).validate();
             }
         }
-
         repaint();
     }
 
     /**
      * Updates the vertical scrollbar policy based on whether the content height
-     * exceeds the scroll pane's preferred height. Call this when the track's
-     * content height may have changed.
+     * exceeds the scroll pane's preferred height.
      */
     public void updateScrollbarPolicy() {
         if (trackPanel != null && trackPanel.getTrack() != null) {
@@ -82,50 +148,29 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
                     ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
                     : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 
-            if (getVerticalScrollBarPolicy() != newPolicy) {
-                setVerticalScrollBarPolicy(newPolicy);
+            if (innerScrollPane.getVerticalScrollBarPolicy() != newPolicy) {
+                innerScrollPane.setVerticalScrollBarPolicy(newPolicy);
             }
         }
     }
 
     @Override
     public Dimension getPreferredSize() {
+        if (trackPanel == null || trackPanel.getTrack() == null) {
+            return new Dimension(0, 0);
+        }
         int height = PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SINGLE_TRACK_PANE_KEY) ?
                 trackPanel.getTrack().getContentHeight() : trackPanel.getTrack().getHeight();
-        // If the track is invisible (height 0), collapse the scroll pane entirely
-        if (height > 0) {
-            // Account for scroll pane insets (border) so the viewport has the full content height
-            Insets insets = getInsets();
-            if (insets != null) {
-                height += insets.top + insets.bottom;
-            }
-        }
         return new Dimension(super.getPreferredSize().width, height);
     }
 
     @Override
     public Dimension getMaximumSize() {
-        // Limit maximum height to preferred height so BoxLayout doesn't stretch
         Dimension pref = getPreferredSize();
         return new Dimension(Integer.MAX_VALUE, pref.height);
     }
 
-    @Override
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        if (trackPanel != null)
-            trackPanel.setBackground(color);
-    }
-
-    @Override
-    public void setViewportView(Component trackSetView) {
-        if (!(trackSetView instanceof TrackPanel)) {
-            throw new IllegalArgumentException("Class TrackPanelScrollPane can only contain a TrackPanel");
-        }
-        super.setViewportView(trackSetView);
-        this.trackPanel = (TrackPanel) trackSetView;
-        updateScrollbarPolicy();
-    }
+    // ---- Accessors ----
 
     public TrackPanel getTrackPanel() {
         return trackPanel;
@@ -147,25 +192,69 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
         return trackPanel.getNamePanel();
     }
 
+    public DragHandlePanel getDragHandlePanel() {
+        return dragHandlePanel;
+    }
+
+    public TrackSelectionPanel getSelectionPanel() {
+        return selectionPanel;
+    }
+
+    /**
+     * Show or hide the selection panel (checkbox panel).
+     */
+    public void setSelectionPanelVisible(boolean visible) {
+        TrackSelectionPanel.setSelectionModeActive(visible);
+        if (selectionPanel != null) {
+            selectionPanel.setVisible(visible);
+        }
+        doLayout();
+        revalidate();
+        repaint();
+    }
+
+    /** Returns the width of the fixed left strip (drag handle + optional selection). */
+    int getLeftStripWidth() {
+        int w = DragHandlePanel.DRAG_HANDLE_WIDTH;
+        if (selectionPanel != null && selectionPanel.isVisible()) {
+            w += TrackSelectionPanel.SELECTION_PANEL_WIDTH;
+        }
+        return w;
+    }
+
+    // ---- Appearance ----
+
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (innerScrollPane != null) innerScrollPane.setBackground(color);
+        if (dragHandlePanel != null) dragHandlePanel.setBackground(color);
+        if (selectionPanel != null) selectionPanel.setBackground(color);
+        if (trackPanel != null) trackPanel.setBackground(color);
+    }
+
+    // ---- Offscreen rendering ----
+
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle tspRect, boolean batch) {
         Graphics2D panelGraphics = (Graphics2D) g.create();
+        // Shift right to account for the fixed left strip
+        int leftW = getLeftStripWidth();
+        panelGraphics.translate(leftW, 0);
         int yOffset = getViewport().getViewPosition().y;
         panelGraphics.translate(0, -yOffset);
         Rectangle panelRect = getViewportBorderBounds();
-        panelRect.y = yOffset;//new Rectangle(0, 0, trackPanel.getWidth(), getViewport().getHeight());
-        panelRect.height = tspRect.height;    // Offscreen images can exceed viewport bounds
+        panelRect.y = yOffset;
+        panelRect.height = tspRect.height;
         trackPanel.paintOffscreen(panelGraphics, panelRect, batch);
         panelGraphics.dispose();
     }
 
     @Override
     public int getSnapshotHeight(boolean batch) {
-
-        if (trackPanel.getTracks().size() == 0) {
+        if (trackPanel.getTracks().isEmpty()) {
             return 0;
         }
-
         if (batch) {
             int panelHeight;
             int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
@@ -178,7 +267,7 @@ public class TrackPanelScrollPane extends JScrollPane implements Paintable {
             }
             return panelHeight;
         } else {
-            return getHeight();  // This is the height of the scroll pane, the visible height in the UI
+            return getHeight();
         }
     }
 }

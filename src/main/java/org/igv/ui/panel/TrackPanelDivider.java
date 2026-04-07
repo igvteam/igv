@@ -8,8 +8,13 @@ import org.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A thin draggable divider placed below a TrackPanelScrollPane. Dragging works
@@ -76,6 +81,77 @@ public class TrackPanelDivider extends JPanel {
 
         addMouseListener(mouseAdapter);
         addMouseMotionListener(mouseAdapter);
+
+        // Accept TrackPanel drops on the divider — place the dropped track after the track above this divider
+        new DropTarget(this, DnDConstants.ACTION_MOVE, new DropTargetAdapter() {
+            @Override
+            public void drop(DropTargetDropEvent dtde) {
+                handleTrackPanelDrop(dtde);
+            }
+        }, true);
+    }
+
+    /**
+     * Handles a TrackPanel being dropped onto this divider. The dropped track is
+     * placed immediately after the track above this divider (i.e. at the divider's
+     * position in the track list).
+     */
+    private void handleTrackPanelDrop(DropTargetDropEvent dtde) {
+        try {
+            DataFlavor trackPanelFlavor = TrackPanel.getTrackPanelDataFlavor();
+            Transferable transferable = dtde.getTransferable();
+
+            if (!transferable.isDataFlavorSupported(trackPanelFlavor)) {
+                // Not a TrackPanel drag — delegate to MainPanel for file/URL drops
+                MainPanel mainPanel = IGV.getInstance().getMainPanel();
+                mainPanel.drop(dtde);
+                return;
+            }
+
+            dtde.acceptDrop(DnDConstants.ACTION_MOVE);
+            Object transferableObj = transferable.getTransferData(trackPanelFlavor);
+            if (transferableObj == null) {
+                dtde.dropComplete(false);
+                return;
+            }
+
+            TrackPanel droppedPanel = (TrackPanel) transferableObj;
+            MainPanel mainPanel = IGV.getInstance().getMainPanel();
+            List<TrackPanel> panels = mainPanel.getTrackPanels();
+
+            // Find the track panel above this divider
+            TrackPanel aboveTrackPanel = abovePane != null ? abovePane.getTrackPanel() : null;
+
+            // If dropped right back next to itself, do nothing
+            if (droppedPanel == aboveTrackPanel) {
+                dtde.dropComplete(true);
+                return;
+            }
+
+            // Build the new order using direct scroll pane references
+            List<TrackPanelScrollPane> orderedPanes = new ArrayList<>(panels.size());
+            for (TrackPanel panel : panels) {
+                if (panel == droppedPanel) continue; // skip dropped panel in its old position
+                orderedPanes.add(panel.getScrollPane());
+                if (panel == aboveTrackPanel) {
+                    orderedPanes.add(droppedPanel.getScrollPane()); // insert after abovePanel
+                }
+            }
+            // If abovePane is null (divider is at top), insert at position 0
+            if (aboveTrackPanel == null) {
+                TrackPanelScrollPane droppedSp = droppedPanel.getScrollPane();
+                if (!orderedPanes.contains(droppedSp)) {
+                    orderedPanes.add(0, droppedSp);
+                }
+            }
+
+            mainPanel.reorderPanels(orderedPanes);
+            mainPanel.updateMovedTrackOrder(droppedPanel);
+            dtde.dropComplete(true);
+
+        } catch (Exception ex) {
+            dtde.rejectDrop();
+        }
     }
 
     /**

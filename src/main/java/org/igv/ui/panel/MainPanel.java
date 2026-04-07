@@ -249,6 +249,10 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
+            long trackOrder = track.getOrder();
+            if(trackOrder == 0) {
+                track.setOrder(getTrackPanels().size());
+            }
             int insertPosition = findInsertPosition(track.getOrder());
             trackPanelContainer.add(sp, insertPosition);
         };
@@ -384,21 +388,45 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return panels;
     }
 
-    public void reorderPanels(java.util.List<String> names) {
+    /**
+     * Reorder track panels using direct scroll pane references.
+     * This avoids any name-matching issues that could cause panels to be lost.
+     *
+     * @param orderedPanes the scroll panes in the desired order
+     */
+    public void reorderPanels(java.util.List<TrackPanelScrollPane> orderedPanes) {
+        trackPanelContainer.removeAll();
+        for (TrackPanelScrollPane pane : orderedPanes) {
+            if (pane != null) {
+                trackPanelContainer.add(pane);
+            }
+        }
+        rebuildDividers();
+    }
 
-        Map<String, TrackPanelScrollPane> panes = new HashMap();
+    /**
+     * Reorder track panels by name. Used by {@link ReorderPanelsDialog}.
+     * Delegates to {@link #reorderPanels(List)} with resolved scroll pane references.
+     *
+     * @param names the panel names in the desired order
+     */
+    public void reorderPanelsByName(java.util.List<String> names) {
+        Map<String, TrackPanelScrollPane> panesByName = new HashMap<>();
         for (Component c : trackPanelContainer.getComponents()) {
             if (c instanceof TrackPanelScrollPane) {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
-                panes.put(tsp.getTrackPanelName(), tsp);
+                panesByName.put(tsp.getTrackPanelName(), tsp);
             }
         }
 
-        trackPanelContainer.removeAll();
+        java.util.List<TrackPanelScrollPane> orderedPanes = new ArrayList<>();
         for (String name : names) {
-            trackPanelContainer.add(panes.get(name));
+            TrackPanelScrollPane pane = panesByName.get(name);
+            if (pane != null) {
+                orderedPanes.add(pane);
+            }
         }
-        rebuildDividers();
+        reorderPanels(orderedPanes);
     }
 
     public void removeEmptyDataPanels() {
@@ -527,9 +555,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
      */
     public int getLeftOffset() {
         int offset = DragHandlePanel.DRAG_HANDLE_WIDTH;
-        // Check if any track panel has its selection panel visible
-        List<TrackPanel> trackPanels = getTrackPanels();
-        if (!trackPanels.isEmpty() && trackPanels.get(0).getSelectionPanel().isVisible()) {
+        if (TrackSelectionPanel.isSelectionModeActive()) {
             offset += TrackSelectionPanel.SELECTION_PANEL_WIDTH;
         }
         return offset;
@@ -718,14 +744,14 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
             // First check for a session
             String sessionPath = null;
-            if(droppedFiles.size() == 1 && droppedFiles.get(0).getName().endsWith(".xml")) {
+            if (droppedFiles.size() == 1 && droppedFiles.get(0).getName().endsWith(".xml")) {
                 // If it's a single XML file, treat it as a session file
                 sessionPath = droppedFiles.get(0).getAbsolutePath();
-            } else if(droppedUrls.size() == 1 && droppedUrls.get(0).endsWith(".xml")) {
+            } else if (droppedUrls.size() == 1 && droppedUrls.get(0).endsWith(".xml")) {
                 // If it's a single URL ending in .xml, treat it as a session URL
                 sessionPath = droppedUrls.get(0);
             }
-            if(sessionPath != null) {
+            if (sessionPath != null) {
                 final String sp = sessionPath;
                 LongRunningTask.submit(() -> this.igv.loadSession(sp, null));
                 return;

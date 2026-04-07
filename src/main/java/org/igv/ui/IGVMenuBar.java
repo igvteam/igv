@@ -31,6 +31,7 @@ import org.igv.ui.panel.MainPanel;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
 import org.igv.ui.panel.TrackPanel;
+import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
@@ -313,7 +314,10 @@ public class IGVMenuBar extends JMenuBar {
         selectTracksItem.addActionListener(e -> {
             boolean show = selectTracksItem.isSelected();
             for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                tp.setSelectionPanelVisible(show);
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
             }
             igv.getMainPanel().revalidateTrackPanels();
         });
@@ -551,7 +555,10 @@ public class IGVMenuBar extends JMenuBar {
         selectTracksItem.addActionListener(e -> {
             boolean show = selectTracksItem.isSelected();
             for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                tp.setSelectionPanelVisible(show);
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
             }
             igv.getMainPanel().revalidateTrackPanels();
         });

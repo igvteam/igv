@@ -74,34 +74,42 @@ class TrackPanelDropTargetListener implements DropTargetListener {
             return;
         }
 
-        // Determine if drop is in top or bottom half of target panel
+        // Determine if drop is in top or bottom half of the *visible* viewport.
+        // targetPanel.getHeight() returns the full content height (which can be very
+        // large for alignment tracks), so we must use the viewport's visible rectangle.
         int dropYLoc = dtde.getLocation().y;
-        boolean before = dropYLoc < targetPanel.getHeight() / 2;
+        TrackPanelScrollPane scrollPane = targetPanel.getScrollPane();
+        boolean before;
+        if (scrollPane != null) {
+            java.awt.Rectangle viewRect = scrollPane.getViewport().getViewRect();
+            before = dropYLoc < viewRect.y + viewRect.height / 2;
+        } else {
+            before = dropYLoc < targetPanel.getHeight() / 2;
+        }
 
-        // Reorder the panels
+        // Reorder the panels using direct scroll pane references
         MainPanel mainPanel = IGV.getInstance().getMainPanel();
         List<TrackPanel> panels = mainPanel.getTrackPanels();
-        List<String> orderedNames = new ArrayList<>(panels.size());
+        List<TrackPanelScrollPane> orderedPanes = new ArrayList<>(panels.size());
 
-        // Remove the dropped panel from its current position
+        // Remove the dropped panel from its current position and insert at target
         for (TrackPanel panel : panels) {
-            if (panel != droppedPanel) {
-                if (panel == targetPanel) {
-                    if (before) {
-                        orderedNames.add(droppedPanel.getName());
-                        orderedNames.add(panel.getName());
-                    } else {
-                        orderedNames.add(panel.getName());
-                        orderedNames.add(droppedPanel.getName());
-                    }
+            if (panel == droppedPanel) continue;
+            if (panel == targetPanel) {
+                if (before) {
+                    orderedPanes.add(droppedPanel.getScrollPane());
+                    orderedPanes.add(panel.getScrollPane());
                 } else {
-                    orderedNames.add(panel.getName());
+                    orderedPanes.add(panel.getScrollPane());
+                    orderedPanes.add(droppedPanel.getScrollPane());
                 }
+            } else {
+                orderedPanes.add(panel.getScrollPane());
             }
         }
 
         // Reorder the panels in the MainPanel
-        mainPanel.reorderPanels(orderedNames);
+        mainPanel.reorderPanels(orderedPanes);
 
         // Update the moved track's order property to reflect its new position
         mainPanel.updateMovedTrackOrder(droppedPanel);

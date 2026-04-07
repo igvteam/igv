@@ -44,7 +44,7 @@ public class ReorderPanelsDialog extends org.igv.ui.IGVDialog  {
             Wrapper w = (Wrapper) obj;
             orderedNames.add(w.panelName);
         }
-        IGV.getInstance().getMainPanel().reorderPanels(orderedNames);
+        IGV.getInstance().getMainPanel().reorderPanelsByName(orderedNames);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {

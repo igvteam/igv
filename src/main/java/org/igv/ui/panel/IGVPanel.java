@@ -28,14 +28,14 @@ public class IGVPanel extends JPanel implements Paintable {
     }
 
     public TrackPanelScrollPane getScrollPane() {
-
-        TrackPanelScrollPane scollpane = null;
         Container parent = getParent();
-
-        if (parent instanceof JViewport) {
-            scollpane = (TrackPanelScrollPane) ((JViewport) parent).getParent();
+        while (parent != null) {
+            if (parent instanceof TrackPanelScrollPane) {
+                return (TrackPanelScrollPane) parent;
+            }
+            parent = parent.getParent();
         }
-        return scollpane;
+        return null;
     }
 
     @Override

@@ -33,8 +33,6 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     static DataFlavor trackPanelDataFlavor;
 
     private String name = null;
-    private TrackSelectionPanel selectionPanel;
-    private DragHandlePanel dragHandlePanel;
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
@@ -56,17 +54,10 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
 
     private void init() {
 
-        selectionPanel = new TrackSelectionPanel(this);
-        dragHandlePanel = new DragHandlePanel(this);
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
 
-        // Respect the global selection mode state
-        selectionPanel.setVisible(TrackSelectionPanel.isSelectionModeActive());
-
-        add(selectionPanel);
-        add(dragHandlePanel);
         add(namePanel);
         add(attributePanel);
         add(dataPanelContainer);
@@ -89,16 +80,13 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
             // Use preferred height (content height) instead of actual height
             // This ensures the panel is sized correctly for scrolling
             int h = getPreferredSize().height;
-            int selectionPanelWidth = selectionPanel.getEffectiveWidth();
-            int dragHandleWidth = DragHandlePanel.DRAG_HANDLE_WIDTH;
-            int leftOffset = selectionPanelWidth + dragHandleWidth;
             int nw = mainPanel.getNamePanelWidth();
 
-            selectionPanel.setBounds(0, 0, selectionPanelWidth, h);
-            dragHandlePanel.setBounds(selectionPanelWidth, 0, dragHandleWidth, h);
-            namePanel.setBounds(mainPanel.getNamePanelX() + leftOffset, 0, nw, h);
-            attributePanel.setBounds(mainPanel.getAttributePanelX() + leftOffset, 0, mainPanel.getAttributePanelWidth(), h);
-            dataPanelContainer.setBounds(mainPanel.getDataPanelX() + leftOffset, 0, mainPanel.getDataPanelWidth() - leftOffset, h);
+            // DragHandlePanel and SelectionPanel are now outside the scroll viewport
+            // (in TrackPanelScrollPane's left strip), so no leftOffset needed here.
+            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
+            dataPanelContainer.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth() - mainPanel.getLeftOffset(), h);
 
             dataPanelContainer.doLayout();
         }
@@ -108,34 +96,12 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
     public void setBackground(Color color) {
         super.setBackground(color);
         if (namePanel != null) {
-            selectionPanel.setBackground(color);
-            dragHandlePanel.setBackground(color);
             namePanel.setBackground(color);
             attributePanel.setBackground(color);
             dataPanelContainer.setBackground(color);
         }
     }
 
-    public DragHandlePanel getDragHandlePanel() {
-        return dragHandlePanel;
-    }
-
-    public TrackSelectionPanel getSelectionPanel() {
-        return selectionPanel;
-    }
-
-    /**
-     * Show or hide the selection panel (checkbox panel).
-     * Also updates the global selection mode state so that new panels respect the current setting.
-     * @param visible true to show, false to hide
-     */
-    public void setSelectionPanelVisible(boolean visible) {
-        TrackSelectionPanel.setSelectionModeActive(visible);
-        selectionPanel.setVisible(visible);
-        doLayout();
-        revalidate();
-        repaint();
-    }
 
     public Track getTrack() {
         return track;
