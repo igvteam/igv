@@ -36,7 +36,9 @@ public class TrackPanelDivider extends JPanel {
 
     public static final int DIVIDER_HEIGHT = 5;
 
-    /** The immediate pane above this divider. */
+    /**
+     * The immediate pane above this divider.
+     */
     private final TrackPanelScrollPane abovePane;
 
     private int dragStartY;
@@ -50,7 +52,9 @@ public class TrackPanelDivider extends JPanel {
         this.abovePane = abovePane;
 
         setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
-        updateBackground();
+        setBackground(Globals.isDarkMode() ?
+                new Color(200, 200, 200) :
+                new Color(230, 230, 230));  
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
@@ -251,18 +255,10 @@ public class TrackPanelDivider extends JPanel {
         return new Dimension(Integer.MAX_VALUE, h);
     }
 
-    private void updateBackground() {
-        if (Globals.isDarkMode()) {
-            setBackground(UIManager.getColor("Panel.background"));
-        } else {
-            setBackground(new Color(230, 230, 230));
-        }
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         if (!shouldBeVisible()) return;
-        updateBackground();
+
         super.paintComponent(g);
 
         Graphics2D g2d = (Graphics2D) g.create();
@@ -273,8 +269,8 @@ public class TrackPanelDivider extends JPanel {
         int lineWidth = npWidth > 0 ? npWidth : getWidth();
 
         // Draw a subtle grip line across the name panel region
-       // g2d.setColor(Globals.isDarkMode() ? new Color(120, 120, 120) : new Color(180, 180, 180));
-       // g2d.drawLine(0, centerY, lineWidth, centerY);
+        // g2d.setColor(Globals.isDarkMode() ? new Color(120, 120, 120) : new Color(180, 180, 180));
+        // g2d.drawLine(0, centerY, lineWidth, centerY);
 
         g2d.dispose();
     }
