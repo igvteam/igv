@@ -54,7 +54,7 @@ public class TrackPanelDivider extends JPanel {
         setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
         setBackground(Globals.isDarkMode() ?
                 new Color(200, 200, 200) :
-                new Color(230, 230, 230));  
+                new Color(230, 230, 230));
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override

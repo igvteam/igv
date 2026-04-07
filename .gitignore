@@ -5,3 +5,4 @@
 
 #JENV local config file
 .java-version
+/test/batch/snapshots/
