@@ -1788,6 +1788,11 @@ public class IGV implements IGVEventObserver {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             repaint();
         } else if (event instanceof GenomeChangeEvent) {
+            if (IGV.hasInstance()) {
+                Genome currentGenome = ((GenomeChangeEvent) event).genome();
+                menuBar.updateMenus(currentGenome);
+                menuBar.setAllMenusEnabled(true);
+            }
             repaint();
         } else {
             log.warn("Unknown event type: " + event.getClass());

@@ -113,6 +113,7 @@ public class IGVMenuBar extends JMenuBar {
             DesktopIntegration.setAboutHandler(this);
             DesktopIntegration.setQuitHandler();
         }
+
     }
 
     public void showAboutDialog() {

@@ -178,8 +178,6 @@ public class GenomeManager {
             throw new RuntimeException("Server connection error", e);
         } finally {
             if (IGV.hasInstance()) {
-                IGVMenuBar.getInstance().updateMenus(currentGenome);
-                IGVMenuBar.getInstance().setAllMenusEnabled(true);
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
