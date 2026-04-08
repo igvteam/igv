@@ -2,8 +2,8 @@
 snapshotDirectory $SCRIPT_DIR/snapshots
 version
 new
-genome hg19
-load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+genome hg38_1kg
+load https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12877/alignment/NA12877.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 # Sort by base
 goto chr17:7,579,801
 sort BASE chr17:7,579,801

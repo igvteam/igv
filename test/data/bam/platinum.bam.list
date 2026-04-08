@@ -1,3 +1,2 @@
-gs://genomics-public-data/platinum-genomes/bam/NA12889_S1.bam
-gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
-gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12877/alignment/NA12877.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
+https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12878/alignment/NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram

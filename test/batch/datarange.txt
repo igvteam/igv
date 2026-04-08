@@ -1,11 +1,11 @@
 snapshotDirectory $SCRIPT_DIR/snapshots
-genome hg19
+genome hg38_1kg
 new
 goto myc
 load http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig
 load http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig
-load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
+load https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12877/alignment/NA12877.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 setDataRange 0,50 wgEncodeBroadHistoneA549H2azDex100nmSig.bigWig
 setDataRange auto wgEncodeBroadHistoneA549H3k04me2Dex100nmSig.bigWig
-setDataRange 0,25 "NA12877_S1.bam Coverage"
+setDataRange 0,25 "NA12877.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram Coverage"
 snapshot datarange.png

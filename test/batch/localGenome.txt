@@ -1,0 +1,3 @@
+# Test genome in quoted string
+genome "../data/genomes/hg18.unittest.genome"
+snapshot "genome in quoted string.png"
