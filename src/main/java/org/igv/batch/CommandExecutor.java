@@ -628,6 +628,10 @@ public class CommandExecutor {
         String genomeIDorPath = param1;
 
         try {
+            File file = new File(resolveFileReference(genomeIDorPath));
+            if (file.exists()) {
+                genomeIDorPath = file.getAbsolutePath();
+            }
             GenomeManager.getInstance().loadGenomeById(genomeIDorPath);
             result = "OK";
         } catch (IOException e) {
