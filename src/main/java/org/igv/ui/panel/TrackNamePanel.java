@@ -77,7 +77,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                 removeMousableRegions();
 
-                paintImpl(fontGraphics, trackRectangle, getVisibleRect(),false);
+                paintImpl(fontGraphics, trackRectangle, getVisibleRect(), false);
             } finally {
                 fontGraphics.dispose();
             }
@@ -86,16 +86,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
-
-        Graphics borderGraphics = g.create();
-        borderGraphics.setColor(Color.lightGray);
-
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        paintImpl(g, rect, rect,true);
-
-        borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
-        borderGraphics.dispose();
+        paintImpl(g, rect, rect, true);
     }
 
     @Override
@@ -103,19 +94,15 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         return getHeight();
     }
 
-
     private void paintImpl(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect, boolean snapshot) {
-
-            Track track = getTrack();
-            if (track.isVisible()) {
-                track.renderName(g, trackRectangle, visibleRect);
-            }
+        Track track = getTrack();
+        if (track.isVisible()) {
+            track.renderName(g, trackRectangle, visibleRect);
+        }
     }
 
     private void init() {
 
-        //    setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
-        //    setBackground(new java.awt.Color(255, 255, 255));
         GroupLayout dataTrackNamePanelLayout = new GroupLayout(this);
         setLayout(dataTrackNamePanelLayout);
         dataTrackNamePanelLayout.setHorizontalGroup(
@@ -149,7 +136,6 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         }
         return text;
     }
-
 
 
     private TrackGroup getGroup(int y) {

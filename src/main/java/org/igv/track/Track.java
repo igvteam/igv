@@ -75,6 +75,16 @@ public interface Track {
     String getId();
 
     /**
+     * Supports the whole genome view.  Default to true, but some tracks and data sources do not provide
+     * whole genome features or scores.
+     *
+     * @return
+     */
+    default boolean supportsWholeGenome() {
+        return true;
+    }
+
+    /**
      * Return true if the track is ready to paint (has all required data loaded).
      *
      * @param frame

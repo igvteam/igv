@@ -128,7 +128,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         int visibilityWindow = getTrack().getVisibilityWindow();
         double bpwidth = getBounds().width * frame.getScale();
 
-        if ((visibilityWindow == 0 && frame.getChrName().equals(Globals.CHR_ALL)) ||
+        if ((!getTrack().supportsWholeGenome() && frame.getChrName().equals(Globals.CHR_ALL)) ||
+                (visibilityWindow == 0 && frame.getChrName().equals(Globals.CHR_ALL)) ||
                 (visibilityWindow > 0 && bpwidth > visibilityWindow)) {
 
             graphics2D.setColor(darkMode ? Color.white : Color.GRAY);

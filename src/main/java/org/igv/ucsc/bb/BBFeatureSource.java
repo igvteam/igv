@@ -46,6 +46,11 @@ public class BBFeatureSource implements FeatureSource {
     }
 
     @Override
+    public boolean supportsWholeGenome() {
+        return false;
+    }
+
+    @Override
     public int getFeatureWindowSize() {
         return featureVisiblityWindow;
     }

@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Session genome="hg19" hasGeneTrack="false" hasSequenceTrack="true" locus="All" nextAutoscaleGroup="2" version="8">
+<Session genome="hg19" locus="All" version="8">
     <Resources>
-        <Resource name="GM12878 H3K27me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf" trackLine="viewLimits=0:25" type="tdf"/>
-        <Resource name="GM12878 H3K4me1" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf" trackLine="viewLimits=0:25" type="tdf"/>
-        <Resource name="GM12878 H3K36me3" path="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf" trackLine="viewLimits=0:25" type="tdf"/>
+        <Resource name="ENCFF000ATI.bigBed" path="https://www.encodeproject.org/files/ENCFF000ATI/@@download/ENCFF000ATI.bigBed" type="bigbed"/>
+        <Resource name="ENCFF144WAQ.bigWig" path="https://www.encodeproject.org/files/ENCFF144WAQ/@@download/ENCFF144WAQ.bigWig" type="bigwig"/>
+        <Resource name="ENCFF999VQV.bigWig" path="https://www.encodeproject.org/files/ENCFF999VQV/@@download/ENCFF999VQV.bigWig" type="bigwig"/>
+        <Resource name="ENCFF001EXU.bigBed" path="https://www.encodeproject.org/files/ENCFF001EXU/@@download/ENCFF001EXU.bigBed" type="bigbed"/>
+        <Resource name="ENCFF850KGH.bigWig" path="https://www.encodeproject.org/files/ENCFF850KGH/@@download/ENCFF850KGH.bigWig" type="bigwig"/>
     </Resources>
-    <Panel height="428" name="DataPanel" width="1133">
-        <Track attributeKey="GM12878 H3K27me3" autoScale="false" autoscaleGroup="1" clazz="org.igv.track.DataSourceTrack" color="255,0,0" fontSize="10" id="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k27me3StdSig.wig.tdf" name="GM12878 H3K27me3" renderer="BAR_CHART" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.390965" minimum="0.0" type="LINEAR"/>
+    <Panel height="289" name="DataPanel" width="1133">
+        <Track attributeKey="ENCFF850KGH.bigWig" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,150" fontSize="10" id="https://www.encodeproject.org/files/ENCFF850KGH/@@download/ENCFF850KGH.bigWig" name="ENCFF850KGH.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0641518" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="GM12878 H3K36me3" autoScale="false" autoscaleGroup="1" clazz="org.igv.track.DataSourceTrack" color="0,0,150" fontSize="10" id="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k36me3StdSig.wig.tdf" name="GM12878 H3K36me3" renderer="BAR_CHART" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.390965" minimum="0.0" type="LINEAR"/>
+        <Track attributeKey="ENCFF999VQV.bigWig" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="200,0,0" fontSize="10" id="https://www.encodeproject.org/files/ENCFF999VQV/@@download/ENCFF999VQV.bigWig" name="ENCFF999VQV.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.75505483" minimum="0.0" type="LINEAR"/>
         </Track>
-        <Track attributeKey="GM12878 H3K4me1" autoScale="false" autoscaleGroup="1" clazz="org.igv.track.DataSourceTrack" color="0,150,0" fontSize="10" id="http://www.broadinstitute.org/igvdata/encode/hg19/broadHistone//wgEncodeBroadHistoneGm12878H3k4me1StdSig.wig.tdf" name="GM12878 H3K4me1" renderer="BAR_CHART" visible="true" windowFunction="mean">
-            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="24.390965" minimum="0.0" type="LINEAR"/>
+        <Track attributeKey="ENCFF144WAQ.bigWig" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,150,0" fontSize="10" id="https://www.encodeproject.org/files/ENCFF144WAQ/@@download/ENCFF144WAQ.bigWig" name="ENCFF144WAQ.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.4159367" minimum="0.0" type="LINEAR"/>
         </Track>
     </Panel>
-    <Panel height="125" name="FeaturePanel" width="1133">
-        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="POSITIVE" shouldShowTranslation="false" visible="true"/>
-        <Track attributeKey="Refseq Genes" clazz="org.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://s3.amazonaws.com/igv.org.genomes/hg19/ncbiRefSeq.sorted.txt.gz" name="Refseq Genes" visible="true"/>
+    <Panel height="286" name="FeaturePanel" width="1133">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;696.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+        <Track attributeKey="ENCFF000ATI.bigBed" clazz="org.broad.igv.track.FeatureTrack" color="0,150,0" featureVisibilityWindow="381086143" fontSize="10" groupByStrand="false" id="https://www.encodeproject.org/files/ENCFF000ATI/@@download/ENCFF000ATI.bigBed" name="ENCFF000ATI.bigBed" visible="true"/>
+        <Track attributeKey="ENCFF001EXU.bigBed" clazz="org.broad.igv.track.FeatureTrack" color="0,150,0" featureVisibilityWindow="407721746" fontSize="10" groupByStrand="false" id="https://www.encodeproject.org/files/ENCFF001EXU/@@download/ENCFF001EXU.bigBed" name="ENCFF001EXU.bigBed" visible="true"/>
     </Panel>
-    <PanelLayout dividerFractions="0.7678571428571429"/>
+    <PanelLayout dividerFractions="0.5"/>
     <HiddenAttributes>
         <Attribute name="DATA FILE"/>
         <Attribute name="DATA TYPE"/>

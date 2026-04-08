@@ -771,6 +771,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
+    @Override
+    public boolean supportsWholeGenome() {
+        return source.supportsWholeGenome();
+    }
+
     protected boolean isShowFeatures(ReferenceFrame frame) {
 
         if (frame.getChrName().equals(Globals.CHR_ALL)) {
