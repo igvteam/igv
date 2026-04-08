@@ -1,6 +1,7 @@
 package org.igv.ui.panel;
 
 
+import org.igv.Globals;
 import org.igv.lists.GeneList;
 import org.igv.ui.IGV;
 
@@ -54,7 +55,10 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
         Collection<ReferenceFrame> frames = FrameManager.getFrames();
         contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS)); //    new DataPanelLayout());
-        contentPanel.setBackground(new Color(250, 250, 250));
+        // The background will show between frames in multi-locus mode
+        contentPanel.setBackground(Globals.isDarkMode() ?
+                new Color(5, 5, 5) :
+                new Color(250, 250, 250));
         int hgap = DataPanelContainer.default_hgap;
         if(frames.size() > 10) {
             hgap = 1 + 20 / frames.size();

@@ -501,9 +501,14 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     public void updatePanelDimensions() {
         Insets insets = applicationHeaderPanel.getInsets();
         namePanelX = insets.left;
-        attributePanelX = namePanelX + namePanelWidth + hgap;
         attributePanelWidth = calculateAttributeWidth();
-        dataPanelX = attributePanelX + attributePanelWidth + hgap;
+        if (attributePanelWidth > 0) {
+            attributePanelX = namePanelX + namePanelWidth + hgap;
+            dataPanelX = attributePanelX + attributePanelWidth + hgap;
+        } else {
+            attributePanelX = namePanelX + namePanelWidth;
+            dataPanelX = attributePanelX;
+        }
         dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
     }
 
@@ -514,6 +519,9 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         }
         Collection<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
         int attributeCount = attributeKeys.size();
+        if (attributeCount == 0) {
+            return 0;
+        }
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
                 AttributeHeaderPanel.COLUMN_BORDER_WIDTH) + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
         return packWidth;
