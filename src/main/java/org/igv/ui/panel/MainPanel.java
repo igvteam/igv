@@ -156,8 +156,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             nameHeaderPanel.setBackground(color);
             attributeHeaderPanel.setBackground(color);
             headerPanelContainer.setBackground(color);
-            nameHeaderPanel.setBackground(color);
-            attributeHeaderPanel.setBackground(color);
             for (TrackPanel tsp : getTrackPanels()) {
                 tsp.setBackground(color);
             }
@@ -506,7 +504,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             attributePanelX = namePanelX + namePanelWidth + hgap;
             dataPanelX = attributePanelX + attributePanelWidth + hgap;
         } else {
-            attributePanelX = namePanelX + namePanelWidth;
+            attributePanelX = namePanelX + namePanelWidth + hgap;
             dataPanelX = attributePanelX;
         }
         dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
