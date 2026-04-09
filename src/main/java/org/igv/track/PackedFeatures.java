@@ -19,7 +19,7 @@ import static org.igv.feature.FeatureUtils.FEATURE_CENTER_COMPARATOR;
  * @author jrobinso
  * @date Oct 7, 2010
  */
-public class PackedFeatures<T extends Feature> {
+public class PackedFeatures<T extends PackedFeature> {
     protected String trackName;
     protected String chr;
     protected int start;
