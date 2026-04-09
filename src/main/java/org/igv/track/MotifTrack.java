@@ -29,7 +29,18 @@ public class MotifTrack extends FeatureTrack {
         MotifFinderSource src = new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome());
         CachingFeatureSource source = new CachingFeatureSource(src);
         super.init(null, source);
+        setVisibilityWindow(1000000);  // Must be done after super.init()
         setSortable(false);
+    }
+
+    @Override
+    public void setVisibilityWindow(int windowSize) {
+        super.setVisibilityWindow(windowSize);
+    }
+
+    @Override
+    public int getVisibilityWindow() {
+        return super.getVisibilityWindow();
     }
 
     @Override
@@ -37,6 +48,10 @@ public class MotifTrack extends FeatureTrack {
         return TrackType.motif;
     }
 
+    @Override
+    public boolean supportsWholeGenome() {
+        return false;
+    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
