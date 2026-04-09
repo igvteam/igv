@@ -41,8 +41,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
     public AttributeHeaderPanel() {
         this.darkMode = Globals.isDarkMode();
-        setBackground(darkMode ? UIManager.getColor("Panel.background") : new java.awt.Color(255, 255, 255));
-        //setBorder(javax.swing.BorderFactory.createLineBorder(Color.lightGray));
         setBorder(null);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener();
@@ -114,17 +112,11 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                     int stringOffset = 2;
                     graphics2.drawString(key, stringOffset, x);
                 }
+
+
             } finally {
                 graphics2.dispose();
             }
-        }
-
-        // Draw border when attribute header panel has content
-        if (getWidth() > 0 && getHeight() > 0) {
-            Graphics2D borderG = (Graphics2D) graphics.create();
-            borderG.setColor(Color.lightGray);
-            borderG.drawRect(0, 0, getWidth() , getHeight() );
-            borderG.dispose();
         }
     }
 

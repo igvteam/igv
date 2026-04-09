@@ -16,22 +16,15 @@ public class NameHeaderPanel extends JPanel implements Paintable {
     private final boolean darkMode;
 
     public NameHeaderPanel() {
-
         this.darkMode = Globals.isDarkMode();
+        setBorder(null);
+        //if(darkMode){
+        //    setBackground(UIManager.getColor("Panel.background"));
+        //}
     }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
         paintComponent(g);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        if(darkMode){
-            setBackground(UIManager.getColor("Panel.background"));
-        }
-
     }
 
     @Override

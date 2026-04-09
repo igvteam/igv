@@ -60,6 +60,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     public MainPanel(IGV igv) {
         this.igv = igv;
+
         initComponents();
 
         // Enable drag-and-drop for files and URLs.
@@ -148,20 +149,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         }
     }
 
-    @Override
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        if (headerPanelContainer != null) {
-            applicationHeaderPanel.setBackground(color);
-            nameHeaderPanel.setBackground(color);
-            attributeHeaderPanel.setBackground(color);
-            headerPanelContainer.setBackground(color);
-            for (TrackPanel tsp : getTrackPanels()) {
-                tsp.setBackground(color);
-            }
-        }
-
-    }
 
     private void initComponents() {
 
@@ -169,7 +156,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         setLayout(new java.awt.BorderLayout());
 
         nameHeaderPanel = new NameHeaderPanel();
-        nameHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
@@ -181,8 +167,8 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         headerPanelContainer = new HeaderPanelContainer();
         headerScrollPane = new JScrollPane();
-        headerScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        headerScrollPane.setForeground(new java.awt.Color(153, 153, 153));
+        headerScrollPane.setBorder(null);
+        // headerScrollPane.setForeground(new java.awt.Color(153, 153, 153));
         headerScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         headerScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         headerScrollPane.setPreferredSize(new java.awt.Dimension(1021, 130));
@@ -192,7 +178,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         // Add spacer panel to align with drag handle in TrackPanel
         JPanel dragHandleSpacer = new JPanel();
-        dragHandleSpacer.setBackground(new java.awt.Color(255, 255, 255));
+        //dragHandleSpacer.setBackground(new java.awt.Color(255, 255, 255));
         dragHandleSpacer.setPreferredSize(new java.awt.Dimension(DragHandlePanel.DRAG_HANDLE_WIDTH, 0));
         applicationHeaderPanel.add(dragHandleSpacer);
 
@@ -203,7 +189,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
 
         // Custom panel that implements Scrollable to prevent viewport from stretching it
-        trackPanelContainer = new ScrollableTrackContainer();
+        trackPanelContainer = new ScrollableTrackContainer(this);
 
         trackPanelScrollPane = new JScrollPane(trackPanelContainer);
         trackPanelScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -248,7 +234,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         Runnable runnable = () -> {
             sp.setViewportView(trackPanel);
             long trackOrder = track.getOrder();
-            if(trackOrder == 0) {
+            if (trackOrder == 0) {
                 track.setOrder(getTrackPanels().size());
             }
             int insertPosition = findInsertPosition(track.getOrder());
@@ -571,11 +557,15 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return trackPanelContainer;
     }
 
+
     @Override
-    protected void paintComponent(Graphics g) {
-        if (Globals.isDarkMode()) {
-            setBackground(UIManager.getColor("Panel.background"));
-        }
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        // Draw a horizontal separator line between the header and track areas
+        int y = headerScrollPane.getY() + headerScrollPane.getHeight();
+        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
+        g.setColor(dividerColor);
+        g.drawLine(0, y, getWidth(), y);
     }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {

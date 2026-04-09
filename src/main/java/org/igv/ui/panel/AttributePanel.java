@@ -44,7 +44,6 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
         if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_ATTRIBUTE_VIEWS_KEY)) {
             setSize(0, getHeight());
         }
-        setBackground(new java.awt.Color(255, 255, 255));
         setBorder(null);
         setPreferredSize(new java.awt.Dimension(0, 0));
         setVerifyInputWhenFocusTarget(false);
@@ -64,25 +63,11 @@ public class AttributePanel extends TrackPanelComponent implements Paintable {
         removeMousableRegions();
         paintImpl((Graphics2D) g, trackRectangle);
 
-        // Draw border when attribute panel has content
-//        if (getWidth() > 0 && getHeight() > 0) {
-//            Graphics2D borderG = (Graphics2D) g.create();
-//            borderG.setColor(Color.lightGray);
-//            borderG.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-//            borderG.dispose();
-//        }
     }
 
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
         paintImpl(g, rect);
-        // Draw border when attribute panel has content
-        if (rect.width > 0 && rect.height > 0) {
-            Graphics2D borderG = (Graphics2D) g.create();
-            borderG.setColor(Color.GRAY);
-            borderG.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
-            borderG.dispose();
-        }
     }
 
     public void paintImpl(Graphics2D g, Rectangle rect) {

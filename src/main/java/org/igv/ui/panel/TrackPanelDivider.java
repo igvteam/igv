@@ -80,6 +80,12 @@ public class TrackPanelDivider extends JPanel {
                 int minAbove = getTrackMinimumHeight(effective);
                 int newAboveHeight = Math.max(minAbove, originalAboveHeight + delta);
                 setTrackHeight(effective, newAboveHeight);
+
+                // Repaint the parent container so vertical divider lines are redrawn
+                Container parent = TrackPanelDivider.this.getParent();
+                if (parent != null) {
+                    parent.repaint();
+                }
             }
         };
 

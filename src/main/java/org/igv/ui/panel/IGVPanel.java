@@ -1,5 +1,6 @@
 package org.igv.ui.panel;
 
+import org.igv.Globals;
 import org.igv.logging.*;
 
 import javax.swing.*;
@@ -37,6 +38,37 @@ public class IGVPanel extends JPanel implements Paintable {
         }
         return null;
     }
+
+    @Override
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        // Only draw dividers on the header IGVPanel, not on TrackPanel subclasses.
+        // TrackPanel positions children without leftOffset (drag handle is outside),
+        // and track area dividers are drawn by ScrollableTrackContainer instead.
+        if (!(this instanceof TrackPanel)) {
+            drawPanelDividers(g);
+        }
+    }
+
+    /**
+     * Draw vertical divider lines at the boundaries between name, attribute, and data panels.
+     * Uses the same coordinate computation as ScrollableTrackContainer for exact alignment.
+     */
+    private void drawPanelDividers(Graphics g) {
+        int leftOffset = mainPanel.getLeftOffset();
+        int nameRight = leftOffset + mainPanel.getNamePanelX() + mainPanel.getNamePanelWidth();
+        int dataLeft = leftOffset + mainPanel.getDataPanelX();
+
+        int h = getHeight();
+        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
+        g.setColor(dividerColor);
+
+        g.drawLine(nameRight, 0, nameRight, h);
+        if (dataLeft != nameRight) {
+            g.drawLine(dataLeft, 0, dataLeft, h);
+        }
+    }
+
 
     @Override
     public void doLayout() {
