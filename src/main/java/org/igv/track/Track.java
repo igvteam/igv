@@ -7,28 +7,63 @@ import org.igv.Globals;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
-import org.igv.session.Persistable;
-import org.igv.ui.IGV;
-import org.igv.ui.panel.IGVPopupMenu;
+import org.igv.sample.SampleGroup;
 import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
+import org.json.JSONObject;
+import org.w3c.dom.Element;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author jrobinso
  */
-public interface Track extends Persistable, AttributeSupplier {
+public interface Track {
+
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED, FULL
     }
+
+    /**
+     * Return the igv.js compatible track type.  This is used for session export.
+     *
+     * @return
+     */
+    default TrackType getType() {
+        return TrackType.annotation;
+    }
+
+    /**
+     * Return an integer that defines the order of the track relative to other tracks.  Tracks are sorted by this value
+     * in ascending order.  The default is 0, so tracks with a positive order will be below tracks with a negative order.
+     * Note: Data type long is used to be compatible with igv.js, which uses MAX_SAFE_INTEGER, decidely not
+     * safe for Java int.
+     *
+     * @return
+     */
+    default long getOrder() {
+        return 0;
+    }
+
+    /**
+     * Set the order of the track relative to other tracks.
+     *
+     * @param order the order value
+     */
+    default void setOrder(long order) {
+        // default implementation does nothing
+    }
+
+    void setViewport(TrackPanelScrollPane trackPanel);
+
+    TrackPanelScrollPane getViewport();
 
     /**
      * Return an identifier for the track.   The identifier should be unique in the context of a session.  For
@@ -38,6 +73,16 @@ public interface Track extends Persistable, AttributeSupplier {
      * @return
      */
     String getId();
+
+    /**
+     * Supports the whole genome view.  Default to true, but some tracks and data sources do not provide
+     * whole genome features or scores.
+     *
+     * @return
+     */
+    default boolean supportsWholeGenome() {
+        return true;
+    }
 
     /**
      * Return true if the track is ready to paint (has all required data loaded).
@@ -69,36 +114,23 @@ public interface Track extends Persistable, AttributeSupplier {
 
 
     /**
-     * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
-     * bounds of the rectangle.
+     * Render the portion of the track overlapping visitbleRect.  In many cases visibleRect cover the entire track,
+     * but in the case of scrolling it may not.
      *
      * @param context the render context
-     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
      */
-    void render(RenderContext context, Rectangle rect);
+    void render(RenderContext context);
 
     /**
-     * Render the track as an overlay, presumably on another track.
-     *
-     * @param context the render context
-     * @param rect    the track bounds, relative to the enclosing DataPanel bounds.
-     */
-    default void overlay(RenderContext context, Rectangle rect) {
-        // do nothing, overlay is optional
-    }
-
-    /**
-     * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
-     * can adjust the placing of the name based on the current viewport.  This is used to center track names
-     * on the viewport for large tracks that extend outside the viewport.
+     * Render the name of the track.
      *
      * @param graphics
-     * @param trackRectangle   the track bounds, relative to the enclosing DataPanel bounds.
-     * @param visibleRectangle
+     * @param trackRectangle
+     * @param visibleRect
      */
-    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
+    void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect);
 
-    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle,
                           List<String> names, List<MouseableRegion> mouseRegions);
 
     void setName(String name);
@@ -110,31 +142,6 @@ public interface Track extends Persistable, AttributeSupplier {
     default String getTooltipText(int y) {
         return getName();
     }
-
-    String getSample();
-
-    /**
-     * Return the number of samples in this track.  For most tracks this will be 1.
-     *
-     * @return
-     */
-    default int sampleCount() {
-        return 1;
-    }
-
-    default void sortSamplesByAttribute(Comparator<String> comparator) {
-        // no op, override in subclass if needed
-    }
-
-    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
-        // no op, override in subclass if needed
-    }
-
-    default void filterSamples(TrackFilter trackFilter) {
-        // no op, override in subclass if needed
-    }
-
-    void setFeatureInfoURL(String featureInfoURL);
 
     ResourceLocator getResourceLocator();
 
@@ -171,13 +178,10 @@ public interface Track extends Persistable, AttributeSupplier {
 
     void setOverlayed(boolean overlayVisible);
 
-    void setTrackType(TrackType type);
+    void setDataType(DataType type);
 
-    TrackType getTrackType();
+    DataType getDataType();
 
-    void setHeight(int preferredHeight);
-
-    void setHeight(int preferredHeight, boolean force);
 
     void setY(int top);
 
@@ -187,9 +191,43 @@ public interface Track extends Persistable, AttributeSupplier {
 
     ContinuousColorScale getColorScale();
 
+    /**
+     * Set the viewport height of the track.   This is the visible height of the track, not necessarily the content height.
+     *
+     * @param height
+     */
+    void setHeight(int height);
+
+    /**
+     * Return the visible (viewport) height of the tracks.  For some tracks this can differ from the content height,
+     * in which case scrollbars will be shown.
+     *
+     * @return
+     */
     int getHeight();
 
-    int getMinimumHeight();
+    default int getDefaultHeight() {
+        return 50;
+    }
+
+    /**
+     * Return the minimum height for this track. Tracks should not be resized below this value.
+     *
+     * @return the minimum height in pixels
+     */
+    default int getMinimumHeight() {
+        return 10;
+    }
+
+    /**
+     * Return the content height of the track.  For tracks with variable numbers of rows this is calculated.
+     *
+     * @return
+     */
+    default int getContentHeight() {
+        return 25;
+    }
+
 
     /**
      * Manually specify the data range.
@@ -221,9 +259,6 @@ public interface Track extends Persistable, AttributeSupplier {
 
     Renderer getRenderer();
 
-    void setSelected(boolean selected);
-
-    boolean isSelected();
 
     boolean isSortable();
 
@@ -263,11 +298,24 @@ public interface Track extends Persistable, AttributeSupplier {
 
     boolean isUseScore();
 
+    default boolean hasDisplayMode() {
+        return false;
+    }
+
     DisplayMode getDisplayMode();
 
     void setDisplayMode(DisplayMode mode);
 
-    IGVPopupMenu getPopupMenu(final TrackClickEvent te);
+    /**
+     * Return a list of menu items for the track's popup menu.  Separators can be
+     * included with {@code new JPopupMenu.Separator()}.
+     *
+     * @param te
+     * @return list of menu items, or null if no custom menu items
+     */
+    default List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        return null;
+    }
 
     boolean isDrawYLine();
 
@@ -312,14 +360,51 @@ public interface Track extends Persistable, AttributeSupplier {
         return null;
     }
 
-    default void groupSamplesByAttribute(String attributeKey) {
+
+    String getSample();
+
+    void repaint();
+
+    /**
+     * Return the number of samples in this track.  For most tracks this will be 1.
+     *
+     * @return
+     */
+    default int sampleCount() {
+        return 1;
+    }
+
+    default List<SampleGroup> getSampleGroups() {
+        return Collections.EMPTY_LIST;
+    }
+
+    default int getSampleHeight() {
+        return getHeight();
+    }
+
+    default int getSampleOffset() {
+        return 0;
+    }
+
+    default void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
         // no op, override in subclass if needed
     }
 
-    default void repaint() {
-        if(IGV.hasInstance()) {
-            IGV.getInstance().repaint(this);
-        }
+    void setFeatureInfoURL(String featureInfoURL);
+
+    /**
+     * Restore object state from an XML element
+     */
+
+    default void unmarshalXML(Element element, Integer version) {
     }
+
+    default void marshalJSON(JSONObject trackJson) {
+
+    }
+
+    default void unmarshalJSON(JSONObject jsonObject) {
+    }
+
 
 }

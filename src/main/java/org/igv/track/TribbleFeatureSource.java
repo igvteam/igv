@@ -27,7 +27,7 @@ import java.util.*;
  * @author jrobinso
  * @date Jun 27, 2010
  */
-abstract public class TribbleFeatureSource implements org.igv.track.FeatureSource {
+abstract public class TribbleFeatureSource implements FeatureSource {
 
     IGVFeatureReader reader;
     FeatureReader wrappedReader;
@@ -432,8 +432,8 @@ abstract public class TribbleFeatureSource implements org.igv.track.FeatureSourc
                 return dataMin;
             }
 
-            public TrackType getTrackType() {
-                return TrackType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
+            public DataType getDataType() {
+                return DataType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             // This won't work for large track!

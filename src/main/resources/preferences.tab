@@ -1,6 +1,6 @@
 #General
 SESSION.RELATIVE_PATH	Use relative paths in session files	boolean	FALSE
-IGV.single.track.pane	Display annotation and data tracks in a single panel	boolean	FALSE
+IGV.single.track.pane	Display all tracks at full height in a single panel	boolean	FALSE
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
@@ -30,6 +30,7 @@ USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLAT
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
 IGV.track.height	Default feature track height (pixels)	integer	15
+IGV.interact.track.height	Default interaction track height (pixels)	integer	250
 TRACK.DRAW_BORDERS	Draw borders between tracks	boolean	FALSE
 TRACK.BORDER_COLOR	Border color	color	192,192,192
 TRACK_ATTRIBUTE_NAME_KEY	Sample attribute key for track names	string	null
@@ -93,6 +94,7 @@ info	Default settings for alignment tracks.  A subset of these properties can be
 info	See also the RNA and Third Gen tabs.
 
 ##Track Display
+ALIGNMENT_TRACK_HEIGHT	Default alignment track height (pixels)	integer	300
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE
@@ -116,6 +118,7 @@ SAM.COLOR_BY_TAG	Color by TAG	string
 SAM.SORT_OPTION	Sort alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY|SELECTED|DUPLICATE
 SAM.SORT_BY_TAG	Sort by TAG	string
 SAM.SORT_ALL	Syncronize sort across all alignment tracks	boolean	TRUE
+SAM.AUTO_SORT	Automatically sort alignments when loading or changing locus	boolean	FALSE
 ---
 SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY|SELECTED|DUPLICATE
 SAM.GROUP_BY_TAG	Group by TAG	string

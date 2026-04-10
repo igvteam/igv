@@ -53,7 +53,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
                 renderAxis(track, context, rect);
             }
         }
-        renderBorder(track, context, rect);
+        renderGuides(track, context, rect);
 
     }
 
@@ -64,7 +64,7 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
      * @param context
      * @param rect
      */
-    public void renderBorder(Track track, RenderContext context, Rectangle rect) {
+    public void renderGuides(Track track, RenderContext context, Rectangle rect) {
     }
 
     /**

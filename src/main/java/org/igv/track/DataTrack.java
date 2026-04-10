@@ -8,9 +8,8 @@
  */
 package org.igv.track;
 
-import org.igv.event.IGVEvent;
-import org.igv.logging.*;
 import org.igv.Globals;
+import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.Chromosome;
@@ -18,6 +17,8 @@ import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.DataRenderer;
@@ -25,11 +26,10 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
 import org.igv.renderer.XYPlotRenderer;
 import org.igv.session.RendererFactory;
-import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
-import org.w3c.dom.Document;
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 
 import java.awt.*;
@@ -54,10 +54,29 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+
+        setHeight(PreferencesManager.getPreferences().getAsInt(Constants.CHART_TRACK_HEIGHT_KEY));
+
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
     public DataTrack() {
+    }
+
+
+    @Override
+    public TrackType getType() {
+        return TrackType.wig;
+    }
+
+    @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getDataMenuItems(Collections.singleton(this));
+    }
+
+    @Override
+    public int getContentHeight() {
+        return height;
     }
 
     public void receiveEvent(IGVEvent event) {
@@ -117,7 +136,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         int delta = multiLocus ? 1 : (end - start) / 2;
         int expandedStart = Math.max(0, start - delta);
         int expandedEnd = Math.min(maxEnd, end + delta);
-        if(expandedEnd < 0) {
+        if (expandedEnd < 0) {
             // overflow
             expandedEnd = Integer.MAX_VALUE;
         }
@@ -127,35 +146,18 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
         List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
 
         if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
             Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", rect, g);
+            Rectangle visibleRect = context.getVisibleRect();
+            GraphicUtils.drawCenteredText("Data not available for whole genome view; zoom in to see data", visibleRect, g);
         } else {
-            getRenderer().render(inViewScores, context, rect, this);
+            getRenderer().render(inViewScores, context, context.getTrackRectangle(), this);
         }
-
     }
-
-
-    public void overlay(RenderContext context, Rectangle rect) {
-
-        List<LocusScore> inViewScores = getInViewScores(context.getReferenceFrame());
-
-        if ((inViewScores == null || inViewScores.size() == 0) && Globals.CHR_ALL.equals(context.getChr())) {
-            Graphics2D g = context.getGraphic2DForColor(ZOOM_IN_TEXT_COLOR);
-            GraphicUtils.drawCenteredText("Data not available for whole genome view; select chromosome to see data", rect, g);
-        } else if (inViewScores != null) {
-            synchronized (inViewScores) {
-                getRenderer().renderScores(this, inViewScores, context, rect);
-            }
-        }
-        getRenderer().renderBorder(this, context, rect);
-    }
-
 
     public List<LocusScore> getInViewScores(ReferenceFrame referenceFrame) {
 
@@ -342,15 +344,11 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                // Sort by overlaid mutation count.
-                if (!Globals.isHeadless() && tracks == null) {
-                    tracks = IGV.getInstance().getOverlayTracks(this);
-                }
                 float count = 0;
                 String tSamp = this.getSample();
                 if (tracks != null && tSamp != null) {
                     for (Track t : tracks) {
-                        if (t.getTrackType() == TrackType.MUTATION && tSamp.equals(t.getSample())) {
+                        if (t.getDataType() == DataType.MUTATION && tSamp.equals(t.getSample())) {
                             count += t.getRegionScore(chr, start, end, zoom, type, frameName);
                         }
                     }
@@ -420,18 +418,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         return regionScore;
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (renderer != null) {
-            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
-            if (type != null) {
-                element.setAttribute("renderer", type.name());
-            }
-        }
-
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -450,7 +436,37 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
                 }
             }
         }
-
     }
 
+    @Override
+    public void marshalJSON(JSONObject json) {
+
+        super.marshalJSON(json);
+
+        if (renderer != null) {
+            RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
+            if (type != null) {
+                json.put("graphType", type.name());
+            }
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+
+        super.unmarshalJSON(jsonObject);
+
+        if (jsonObject.has("graphType")) {
+
+            Class rendererClass = RendererFactory.getRendererClass(jsonObject.getString("graphType"));
+
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
+        }
+    }
 }

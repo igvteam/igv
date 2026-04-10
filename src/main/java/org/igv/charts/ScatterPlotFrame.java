@@ -4,7 +4,7 @@
 
 package org.igv.charts;
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -119,9 +119,9 @@ public class ScatterPlotFrame extends JFrame {
         int[] mutationCount = scatterPlotData.getMutationCount();
 
 
-        double[] methylation = scatterPlotData.getDataValues(TrackType.DNA_METHYLATION.toString());
-        double[] expression = scatterPlotData.getDataValues(TrackType.GENE_EXPRESSION.toString());
-        double[] copyNumber = scatterPlotData.getDataValues(TrackType.COPY_NUMBER.toString());
+        double[] methylation = scatterPlotData.getDataValues(DataType.DNA_METHYLATION.toString());
+        double[] expression = scatterPlotData.getDataValues(DataType.GENE_EXPRESSION.toString());
+        double[] copyNumber = scatterPlotData.getDataValues(DataType.COPY_NUMBER.toString());
 
         // check for valid data and axis selection - and if error, return null
         if (yValues == null | xValues == null | yValues.length != xValues.length)

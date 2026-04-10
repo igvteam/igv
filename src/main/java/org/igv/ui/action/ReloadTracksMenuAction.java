@@ -3,7 +3,7 @@ package org.igv.ui.action;
 
 import org.igv.logging.*;
 import org.igv.session.Session;
-import org.igv.session.SessionWriter;
+import org.igv.session.JSONSessionWriter;
 import org.igv.ui.IGV;
 import org.igv.util.LongRunningTask;
 
@@ -41,14 +41,14 @@ public class ReloadTracksMenuAction extends MenuAction {
         String currentSessionFilePath = igv.getSession().getPath();
         Session currentSession = igv.getSession();
         currentSession.setPath(currentSessionFilePath);
-        String xml = (new SessionWriter()).createXmlFromSession(currentSession, null);
+        String json = (new JSONSessionWriter(igv)).createJsonFromSession(currentSession);
 
         igv.resetSession(currentSessionFilePath);
-        final InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+        final InputStream inputStream = new ByteArrayInputStream(json.getBytes());
 
         Runnable runnable = () -> {
             try {
-                igv.loadSessionFromStream(currentSessionFilePath, inputStream);
+                igv.loadSessionFromStream("tmp.json", inputStream);
             } catch (IOException ex) {
                 log.error("Error reloading tracks", ex);
             }

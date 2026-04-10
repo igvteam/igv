@@ -32,6 +32,14 @@ public interface FeatureSource<T extends Feature> {
      */
     Iterator<T> getFeatures(String chr, int start, int end) throws IOException;
 
+    /**
+     * Return true if the source can provide features or coverage information for the whole genome.
+     *
+     * @return
+     */
+    default boolean supportsWholeGenome() {
+        return true;
+    }
 
     /**
      * Return a list of coverage values spanning the given interval.  This can be null if coverage is not known

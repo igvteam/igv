@@ -1,13 +1,13 @@
 package org.igv.track;
 
-import org.igv.logging.LogManager;
-import org.igv.logging.Logger;
 import org.igv.event.DataLoadedEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.feature.PSLRecord;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.tribble.PSLCodec;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
 import org.igv.renderer.IGVFeatureRenderer;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.IGVPopupMenu;
@@ -15,6 +15,7 @@ import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.blat.BlatClient;
 import org.igv.util.blat.BlatQueryWindow;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -71,6 +72,10 @@ public class BlatTrack extends FeatureTrack {
         IGVEventBus.getInstance().subscribe(DataLoadedEvent.class, this);
     }
 
+    public TrackType getType() {
+        return TrackType.blat;
+    }
+
     private void openTableView() {
 
         BlatQueryWindow win = new BlatQueryWindow(IGV.getInstance().getMainFrame(), sequence, features);
@@ -86,8 +91,9 @@ public class BlatTrack extends FeatureTrack {
         return true;
     }
 
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        IGVPopupMenu menu = TrackMenuUtils.getPopupMenu(Arrays.asList(this), "Menu", te);
+    @Override
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        List<Component> items = new ArrayList<>();
 
         JMenuItem item = new JMenuItem("Open table view");
         item.addActionListener(new ActionListener() {
@@ -96,19 +102,10 @@ public class BlatTrack extends FeatureTrack {
             }
         });
 
-        menu.addSeparator();
-        menu.add(item);
+        items.add(new JPopupMenu.Separator());
+        items.add(item);
 
-        return menu;
-    }
-
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-        element.setAttribute("db", this.db);
-        element.setAttribute("sequence", this.sequence);
+        return items;
     }
 
     @Override
@@ -125,7 +122,7 @@ public class BlatTrack extends FeatureTrack {
             String db = element.getAttribute("db");
             if (db == null || db.length() == 0) {
                 db = GenomeManager.getInstance().getCurrentGenome().getBlatDB();
-                if(db == null) {
+                if (db == null) {
                     db = GenomeManager.getInstance().getCurrentGenome().getId();
                 }
             }
@@ -152,6 +149,35 @@ public class BlatTrack extends FeatureTrack {
 
         init();
 
+    }
+
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        jsonObject.put("db", this.db);
+        jsonObject.put("sequence", this.sequence);
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+
+        if (jsonObject.has("sequence")) {
+            String sequence = jsonObject.getString("sequence");
+            this.sequence = sequence;
+            String db = jsonObject.optString("db", GenomeManager.getInstance().getCurrentGenome().getBlatDB());
+            if (db == null || db.length() == 0) {
+                db = GenomeManager.getInstance().getCurrentGenome().getId();
+            }
+            try {
+                this.features = BlatClient.blat(db, sequence);
+            } catch (Exception e) {
+                MessageUtils.showMessage("Error restoring blat track: " + e.getMessage());
+                log.error("Error restoring blat track", e);
+            }
+        }
+
+        init();
     }
 
     private static String guid() {

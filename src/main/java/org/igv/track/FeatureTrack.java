@@ -7,6 +7,7 @@ import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.event.IGVEventObserver;
+import org.igv.event.ViewChange;
 import org.igv.feature.*;
 import org.igv.feature.Range;
 import org.igv.feature.genome.Genome;
@@ -25,7 +26,7 @@ import org.igv.util.BrowserLauncher;
 import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.variant.VariantTrack;
-import org.w3c.dom.Document;
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -56,9 +57,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
-
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
+    private transient int maxFeatureRow = 1;
 
     boolean fatalLoadError = false;
 
@@ -67,7 +68,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     /**
      * Map of reference frame -> packed features
      */
-    protected Map<ReferenceFrame, PackedFeatures<Feature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<ReferenceFrame, PackedFeatures<PackedFeature>> packedFeaturesMap = Collections.synchronizedMap(new HashMap<>());
 
     protected Renderer renderer;
 
@@ -93,6 +94,16 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public FeatureTrack() {
 
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.annotation;
+    }
+
+    @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getFeatureMenuItems(Collections.singleton(this), te);
     }
 
     // TODO -- there are WAY too many constructors for this class
@@ -180,6 +191,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 new SpliceJunctionRenderer() : new IGVFeatureRenderer();
 
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+        IGVEventBus.getInstance().subscribe(ViewChange.class, this);
 
     }
 
@@ -204,20 +216,40 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             synchronized (packedFeaturesMap) {
                 packedFeaturesMap.keySet().removeIf(frame -> !currentFrames.contains(frame));
             }
-
+        } else if (e instanceof ViewChange) {
+            if (!((ViewChange) e).panning) {
+                updateMaxFeatureRow();
+            }
         } else {
             log.warn("Unknown event type: " + e.getClass());
         }
     }
 
     @Override
-    public int getHeight() {
+    public boolean hasDisplayMode() {
+        return true;
+    }
+
+    @Override
+    public int getContentHeight() {
         if (!isVisible()) {
             return 0;
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-        int minHeight = margin + rowHeight * Math.max(1, getNumberOfFeatureLevels());
-        return Math.max(minHeight, super.getHeight());
+        int minHeight = margin + rowHeight * Math.max(1, maxFeatureRow);
+        return Math.max(minHeight, super.getContentHeight());
+    }
+
+    private void updateMaxFeatureRow() {
+        maxFeatureRow = 1;
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
+            if (packedFeaturesMap.size() > 0) {
+                for (ReferenceFrame frame : packedFeaturesMap.keySet()) {
+                    PackedFeatures pf = packedFeaturesMap.get(frame);
+                    maxFeatureRow = Math.max(maxFeatureRow, pf.getMaxPackedRow((int) frame.getOrigin(), (int) frame.getEnd()));
+                }
+            }
+        }
     }
 
     public int getExpandedRowHeight() {
@@ -293,7 +325,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         try {
             Iterator<Feature> features = source.getFeatures(chr, start, end);
             if (features != null) {
-                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getTrackType() == TrackType.MUTATION) {
+                if (scoreType == RegionScoreType.MUTATION_COUNT && this.getDataType() == DataType.MUTATION) {
                     int count = 0;
                     while (features.hasNext()) {
                         Feature f = features.next();
@@ -491,7 +523,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 rowHeight = getExpandedRowHeight();
                 break;
             default:
-                rowHeight = getHeight();
+                rowHeight = this.getContentHeight();
         }
 
         return Math.max(0, (y - this.getY() - this.margin) / rowHeight);
@@ -508,20 +540,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public List<Feature> getFeaturesAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
+        PackedFeatures<PackedFeature> packedFeatures = packedFeaturesMap.get(frame);
 
         if (packedFeatures == null) {
             return null;
         }
 
-        List<PackedFeatures<Feature>.FeatureRow> rows = packedFeatures.getRows();
+        List<PackedFeatures<PackedFeature>.FeatureRow> rows = packedFeatures.getRows();
         if (featureRow < 0 || featureRow >= rows.size()) {
             return null;
         }
 
         //If features are stacked we look at only the row.
         //If they are collapsed on top of each other, we get all features in all rows
-        List<Feature> possFeatures = rows.get(featureRow).getFeatures();
+        List<PackedFeature> possFeatures = rows.get(featureRow).getFeatures();
 
 
         List<Feature> featureList = null;
@@ -547,13 +579,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         // Toggle selection of row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
             int i = getFeatureRow(e.getY());
-            if (i == selectedFeatureRowIndex)
+            if (i == selectedFeatureRowIndex) {
                 setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
-            else {
-                //make this track selected
-                setSelected(true);
-                //select the appropriate row
-                setSelectedFeatureRowIndex(i);
             }
         }
 
@@ -614,20 +641,19 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    public void overlay(RenderContext context, Rectangle rect) {
-        renderFeatures(context, rect);
-    }
-
     @Override
     public void setDisplayMode(DisplayMode mode) {
+
+        super.setDisplayMode(mode);
+
         // Explicity setting the display mode overrides the automatic switch
         lastFeatureMode = null;
 
         for (PackedFeatures pf : packedFeaturesMap.values()) {
             pf.pack(mode, groupByStrand);
         }
+        updateMaxFeatureRow();
 
-        super.setDisplayMode(mode);
     }
 
     @Override
@@ -646,6 +672,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public void load(ReferenceFrame frame) {
         loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
+        updateMaxFeatureRow();
     }
 
     /**
@@ -663,7 +690,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         try {
-
             int expandedStart;
             int expandedEnd;
             int vw = getVisibilityWindow();
@@ -716,11 +742,15 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
-        Rectangle renderRect = new Rectangle(rect);
+    public void render(RenderContext context) {
+
+        // Draw entire track.
+        Rectangle renderRect = context.getTrackRectangle();
+
+        context.getReferenceFrame().getCurrentRange();
+
         renderRect.y = renderRect.y + margin;
         renderRect.height -= margin;
-
 
         showFeatures = isShowFeatures(context.getReferenceFrame());
         if (showFeatures) {
@@ -739,6 +769,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             }
             renderCoverage(context, renderRect);
         }
+    }
+
+    @Override
+    public boolean supportsWholeGenome() {
+        return source.supportsWholeGenome();
     }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
@@ -760,16 +795,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                         (int) context.getEndLocation(), context.getZoom()) :
                 null;
 
-        if (scores == null) {
-            Graphics2D g = context.getGraphic2DForColor(Color.gray);
-            Rectangle textRect = new Rectangle(inputRect);
-
-            // Keep text near the top of the track rectangle
-            textRect.height = Math.min(inputRect.height, 20);
-            String message = getZoomInMessage(chr);
-            GraphicUtils.drawCenteredText(message, textRect, g);
-
-        } else {
+        if (scores != null) {
             float max = getMaxEstimate(scores);
             if (this.dataRange == null) {
                 setDataRange(new DataRange(0, 0, max));
@@ -798,9 +824,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Render features in the given input rectangle.
      *
      * @param context
-     * @param inputRect
+     * @param ignore - deprecated
      */
-    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+    protected void renderFeatures(RenderContext context, Rectangle ignore) {
 
         if (log.isTraceEnabled()) {
             String msg = String.format("renderFeatures: %s frame: %s", getName(), context.getReferenceFrame().getName());
@@ -814,7 +840,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
 
         try {
-            renderFeatureImpl(context, inputRect, packedFeatures);
+            renderFeatureImpl(context, packedFeatures);
         } catch (TribbleException e) {
             log.error("Tribble error", e);
             //Error loading features.  We'll let the user decide if this is "fatal" or not.
@@ -833,15 +859,17 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
+    protected void renderFeatureImpl(RenderContext context, PackedFeatures packedFeatures) {
 
+        Rectangle trackRectangle = context.getTrackRectangle();
+        Rectangle clipBounds = context.getClipBounds();
 
         Renderer renderer = getRenderer();
 
         if (getDisplayMode() == DisplayMode.COLLAPSED && !isGroupByStrand()) {
             List<Feature> features = packedFeatures.getFeatures();
             if (features != null) {
-                renderer.render(features, context, inputRect, this);
+                renderer.render(features, context, trackRectangle, this);
             }
         } else {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
@@ -849,18 +877,28 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
                 // Divide rectangle into equal height levels
                 double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-                Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
+                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, (int) h);
                 int i = 0;
 
                 if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
                 for (PackedFeatures.FeatureRow row : rows) {
 
-                    renderer.render(row.features, context, new Rectangle(rect), this);
-
-                    if (selectedFeatureRowIndex == i) {
-                        Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
-                        fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    if (rect.y > clipBounds.y + clipBounds.height) {
+                        break;  // Gone past clip bounds
                     }
+                    if (rect.y + rect.height < clipBounds.y) {
+                        // Not yet in clip bounds
+                        rect.y += h;
+                        i++;
+                        continue;
+                    }
+
+                    renderer.render(row.features, context, rect, this);
+
+                    //  if (selectedFeatureRowIndex == i) {
+                    //     Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
+                    //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    //  }
 
                     rect.y += h;
                     i++;
@@ -929,17 +967,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     /**
-     * This method exists for Plugin tracks. When restoring a session there is no guarantee of track
-     * order, so arguments referring to other tracks may fail to resolve. We update those references
-     * here after all tracks have been processed
-     *
-     * @param allTracks
-     */
-    public void updateTrackReferences(List<Track> allTracks) {
-
-    }
-
-    /**
      * Features are packed upon loading, effectively a cache.
      * This clears that cache. Used to force a refresh
      *
@@ -956,7 +983,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     public List<Feature> getVisibleFeatures(ReferenceFrame frame) {
-        PackedFeatures<Feature> packedFeatures = packedFeaturesMap.get(frame);
+        PackedFeatures<PackedFeature> packedFeatures = packedFeaturesMap.get(frame);
         if (packedFeatures == null) {
             return Collections.emptyList();
         } else {
@@ -980,16 +1007,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     public boolean isGroupByStrand() {
         return groupByStrand;
-    }
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("groupByStrand", String.valueOf(groupByStrand));
-        if (labelField != null) {
-            element.setAttribute("featureNameProperty", labelField);
-        }
-        super.marshalXML(document, element);
-
     }
 
     @Override
@@ -1020,8 +1037,30 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             source.unmarshalXML(sourceElement, version);
             this.source = source;
         }
-
     }
 
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        if (labelField != null) {
+            jsonObject.put("nameField", labelField);
+        }
+        if (groupByStrand) {
+            jsonObject.put("groupBy", "strand");
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+
+        super.unmarshalJSON(jsonObject);
+
+        if (jsonObject.has("nameField")) {
+            this.labelField = jsonObject.getString("nameField");
+        }
+        if (jsonObject.has("groupBy")) {
+            this.groupByStrand = "strand".equals(jsonObject.getString("groupBy"));
+        }
+    }
 }
 

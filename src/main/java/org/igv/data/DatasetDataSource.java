@@ -6,7 +6,7 @@ import org.igv.Globals;
 import org.igv.feature.Chromosome;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 
 import java.util.HashMap;
@@ -131,11 +131,11 @@ public class DatasetDataSource extends AbstractDataSource {
     }
 
 
-    public TrackType getTrackType() {
+    public DataType getDataType() {
         try {
             return dataset.getType();
         } catch (Exception exception) {
-            return TrackType.OTHER;
+            return DataType.OTHER;
         }
     }
 

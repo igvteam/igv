@@ -2,54 +2,68 @@ package org.igv.seg;
 
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.mut.MutationRenderer;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.*;
+import org.igv.renderer.Renderer;
+import org.igv.sample.SampleGroup;
+import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
-import org.igv.ui.IGV;
-import org.igv.ui.panel.AttributeHeaderPanel;
-import org.igv.ui.panel.IGVPopupMenu;
-import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
-import org.igv.util.TrackFilter;
-import org.w3c.dom.Document;
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 
+import javax.swing.*;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SegTrack extends AbstractTrack {
 
     private static final Logger log = LogManager.getLogger(SegTrack.class);
 
-    SegmentedDataSet dataset;
-    int sampleHeight = 15;
-    int groupGap = 15;
-    List<SampleGroup> sampleGroups;
-    Renderer<LocusScore> renderer = new HeatmapRenderer();
+    private static final int EXPANDED_SAMPLE_HEIGHT = 15;
+    private static final int SQUISHED_SAMPLE_HEIGHT = 2;
 
+    SegmentedDataSource dataset;
+    Renderer renderer;
+    TrackType type;
+    private transient Rectangle lastClipBounds;
 
-    public SegTrack(ResourceLocator locator, String id, String name, SegmentedDataSet dataset, Genome genome) {
+    public SegTrack(ResourceLocator locator,
+                    TrackType type,
+                    String id,
+                    String name,
+                    SegmentedDataSource dataset,
+                    Genome genome) {
+
         super(locator, id, name);
         this.dataset = dataset;
-        var sampleNames = new ArrayList<>(dataset.getSampleNames());
-        this.sampleGroups = new ArrayList<>();
-        this.sampleGroups.add(new SampleGroup("", sampleNames));
+        this.type = type;
+        renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();
         setDataRange(new DataRange(0, 1, 2));
-        setTrackType(dataset.getType());
+        setDataType(dataset.getType());
         initScale(dataset);
 
-        // Groups by global attribute if it exists
-        groupSamplesByAttribute(null);
+        if (type == TrackType.mut) {
+            visibilityWindow = 0; // Disable whole-genome view for mutation tracks
+        }
+
+        this.initSamples(dataset.getSampleNames());
     }
 
-    void initScale(SegmentedDataSet dataset) {
+    public TrackType getType() {
+        return type;
+    }
+
+    void initScale(SegmentedDataSource dataset) {
 
         var min = (float) dataset.getDataMin();
         var max = (float) dataset.getDataMax();
@@ -63,106 +77,100 @@ public class SegTrack extends AbstractTrack {
         setDataRange(new DataRange(min, baseline, max));
     }
 
+
     @Override
-    public void setHeight(int height) {
-        if (height <= 0) {
-            return;
+    public int getContentHeight() {
+        var nSamples = sampleCount();
+        return nSamples * getSampleHeight() + (getSampleGroups().size() - 1) * groupGap;
+    }
+
+    @Override
+    public int getSampleHeight() {
+        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : EXPANDED_SAMPLE_HEIGHT;
+    }
+
+    @Override
+    public void render(RenderContext context) {
+
+        Rectangle clipBounds = new Rectangle(context.getClipBounds());
+        Rectangle trackRectangle = context.getTrackRectangle();
+
+        final boolean hasGroups = getSampleGroups().size() > 0;
+        if (hasGroups && lastClipBounds != null) {
+            // Expand the clip bounds to be sure we clear previous labels, but not outside the bounds
+            // of the visible rectangle
+            Rectangle visibleRect = context.getVisibleRect();
+            int expandedTop = Math.max(visibleRect.y, Math.min(clipBounds.y, lastClipBounds.y));
+            int expandedBottom = Math.min(visibleRect.y + visibleRect.height,
+                    Math.max(clipBounds.y + clipBounds.height, lastClipBounds.y + clipBounds.height));
+            clipBounds.y = expandedTop;
+            clipBounds.height = expandedBottom - expandedTop;
+            context.getGraphics().setClip(clipBounds);
         }
-        var nSamples = 0;
-        for (var group : sampleGroups) {
-            nSamples += group.samples().size();
-        }
-        if (nSamples > 0) {
-            this.sampleHeight = (height - (sampleGroups.size() - 1) * groupGap) / nSamples;
-            if (this.sampleHeight < 1) {
-                this.sampleHeight = 1;
+
+        Rectangle trackRect = context.getTrackRectangle();
+        var y = 0;
+        for (SampleGroup group : getSampleGroups()) {
+            var yLabel = y;
+
+            for (String sample : group.samples()) {
+                if (y > clipBounds.y + clipBounds.height) {
+                    break;
+                }
+                if (y + getSampleHeight() > clipBounds.y) {
+                    Rectangle r = new Rectangle(trackRect.x, y, trackRect.width, getSampleHeight());
+                    var features = dataset.getFeatures(sample, context.getChr());
+                    this.renderer.render(features, context, r, this);
+                }
+                y += getSampleHeight();
             }
+
+            String label = group.label();
+            if (hasGroups && label != null) {
+                var r = new Rectangle(trackRect.x, yLabel, trackRect.width, Math.min(20, y - yLabel));
+                GraphicUtils.drawVerticallyCenteredText(label, 10, r, context.getGraphics(), false, true);
+                drawGroupDivider(context.getGraphics(), trackRect, y);
+            }
+
+            y += groupGap; // Gap between groups
         }
+
+        lastClipBounds = context.getClipBounds();
     }
 
     @Override
-    public int getHeight() {
-        var nSamples = 0;
-        for (var group : sampleGroups) {
-            nSamples += group.samples().size();
-        }
-        return nSamples * sampleHeight + (sampleGroups.size() - 1) * groupGap;
-    }
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
-    @Override
-    public void render(RenderContext context, Rectangle rect) {
+        // Calculate fontsize
+        var gap = Math.min(4, getSampleHeight() / 3);
+        var fs = Math.min(fontSize, getSampleHeight() - gap);
+        var font = FontManager.getFont(fs);
+        g2D.setFont(font);
+        Rectangle clipRect = g2D.getClipBounds();
 
-        var y = rect.y;
-        for (var group : sampleGroups) {
+        boolean hasGroups = getSampleGroups().size() > 1;
+        var y = 0;
+        for (var group : getSampleGroups()) {
             for (String s : group.samples()) {
-                var r = new Rectangle(rect.x, y, rect.width, sampleHeight);
-                var scores = dataset.getSegments(s, context.getChr());
-                this.renderer.render(scores, context, r, this);
-                y += sampleHeight;
+                if (y > clipRect.y + clipRect.height) {
+                    break;
+                }
+                if (y + getSampleHeight() > clipRect.y) {
+                    var r = new Rectangle(0, y, visibleRect.width, getSampleHeight());
+                    GraphicUtils.drawWrappedText(s, r, g2D, false);
+                }
+                y += getSampleHeight();
+            }
+            if (hasGroups) {
+                drawGroupDivider(g2D, trackRectangle, y);
             }
             y += groupGap; // Gap between groups
         }
     }
 
     @Override
-    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
-                                 List<String> attributeNames, List<MouseableRegion> mouseRegions) {
-
-        final var attributeManager = AttributeManager.getInstance();
-
-        var y = trackRectangle.y;
-        for (var group : sampleGroups) {
-            for (String s : group.samples()) {
-                if (y + sampleHeight > trackRectangle.y && y < trackRectangle.y + trackRectangle.height) {
-                    var x = trackRectangle.x;
-                    for (var name : attributeNames) {
-                        final var key = name.toUpperCase();
-                        var attributeValue = attributeManager.getAttribute(s, key);
-                        if (attributeValue != null) {
-                            var rect = new Rectangle(x, y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, sampleHeight);
-                            graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
-                            graphics.fill(rect);
-                            mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
-                        }
-                        x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-                    }
-                }
-                y += sampleHeight;
-            }
-            y += groupGap; // Gap
-        }
-    }
-
-    @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
-
-        // Calculate fontsize
-        var gap = Math.min(4, sampleHeight / 3);
-        var fs = Math.min(fontSize, sampleHeight - gap);
-        var font = FontManager.getFont(fs);
-        g2D.setFont(font);
-
-        var y = trackRectangle.y;
-        for (var group : sampleGroups) {
-            for (String s : group.samples()) {
-                var r = new Rectangle(trackRectangle.x, y, trackRectangle.width, sampleHeight);
-                GraphicUtils.drawWrappedText(s, r, g2D, false);
-                y += sampleHeight;
-            }
-            y += groupGap; // Gap
-        }
-    }
-
-
-    /**
-     * Sort samples.  Sort both the master list and groups, if any.
-     *
-     * @param comparator the comparator to sort by
-     */
-    public void sortSamplesByAttribute(Comparator<String> comparator) {
-        for (var group : sampleGroups) {
-            group.samples().sort(comparator);
-        }
+    public Renderer<LocusScore> getRenderer() {
+        return renderer;
     }
 
     @Override
@@ -176,11 +184,26 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        var menu = TrackMenuUtils.getPopupMenu(Collections.singletonList(this), "Menu", te);
-        menu.addSeparator();
-        TrackMenuUtils.addDataRendererItems(menu, Arrays.asList("Heatmap", "Bar Chart", "Points", "Line Plot"), Collections.singletonList(this));
-        return menu;
+    @Override
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
+
+        List<Component> items = new ArrayList<>();
+
+        List<String> keys = AttributeManager.getInstance().getAttributeNames();
+
+        if (keys.size() > 0) {
+            items.add(new JPopupMenu.Separator());
+            items.add(SampleMenuUtils.getSortByAttributeItem(this));
+            items.add(SampleMenuUtils.getGroupByAttributeItem(this));
+            items.add(SampleMenuUtils.getFilterByAttributeItem(this));
+        }
+
+        return items;
+    }
+
+    @Override
+    public boolean hasDisplayMode() {
+        return true;
     }
 
     /**
@@ -199,13 +222,13 @@ public class SegTrack extends AbstractTrack {
 
         var trackY = mouseY - this.getY();
         var y = 0;
-        for (var group : sampleGroups) {
-            var groupPixelHeight = group.samples().size() * sampleHeight;
+        for (var group : getSampleGroups()) {
+            var groupPixelHeight = group.samples().size() * getSampleHeight();
             if (trackY >= y && trackY < y + groupPixelHeight) {
-                var sampleIndex = (trackY - y) / sampleHeight;
+                var sampleIndex = (trackY - y) / getSampleHeight();
                 var sampleName = group.samples().get(sampleIndex);
                 var buf = new StringBuilder();
-                var score = dataset.getSegmentAt(sampleName, chr, position, frame);
+                var score = dataset.getFeatureAt(sampleName, chr, position, frame);
                 // If there is no value here, return null to signal no popup
                 if (score == null) {
                     return null;
@@ -225,14 +248,6 @@ public class SegTrack extends AbstractTrack {
         return null;
     }
 
-    @Override
-    public int sampleCount() {
-        var count = 0;
-        for (var group : sampleGroups) {
-            count += group.samples().size();
-        }
-        return count;
-    }
 
     /**
      * Get the score over the provided region for the given type. Different types
@@ -251,11 +266,11 @@ public class SegTrack extends AbstractTrack {
             return;
         }
 
-        for (var group : sampleGroups) {
+        for (var group : getSampleGroups()) {
             // Compute a value for each sample
             var sampleScores = new HashMap<String, Float>();
             for (String s : group.samples()) {
-                var scores = dataset.getSegments(s, chr);
+                var scores = dataset.getFeatures(s, chr);
                 var regionScore = 0f;
                 var intervalSum = 0;
                 var hasNan = false;
@@ -310,61 +325,18 @@ public class SegTrack extends AbstractTrack {
         return false;
     }
 
-    @Override
-    public void filterSamples(TrackFilter trackFilter) {
-        if (trackFilter == null || trackFilter.isShowAll()) {
-            var sampleNames = new ArrayList<>(dataset.getSampleNames());
-            this.sampleGroups.clear();
-            this.sampleGroups.add(new SampleGroup("All Samples", sampleNames));
-        } else {
-            var filteredSamples = trackFilter.evaluateSamples(dataset.getSampleNames());
-            this.sampleGroups.clear();
-            this.sampleGroups.add(new SampleGroup("Filtered Samples", filteredSamples));
+    public static boolean isSegFile(String pathOrURL) {
+        String path;
+        try {
+            var url = new URL(pathOrURL);
+            path = url.getPath();
+        } catch (MalformedURLException e) {
+            // Not a valid URL, assume it's a file path
+            path = pathOrURL;
         }
-    }
-
-    @Override
-    public void groupSamplesByAttribute(String attributeKey) {
-
-        if(attributeKey == null && IGV.hasInstance()) {
-            attributeKey = IGV.getInstance().getGroupByAttribute();
-        }
-
-        this.sampleGroups.clear();
-
-        if (attributeKey == null) {
-            var sampleNames = new ArrayList<>(dataset.getSampleNames());
-            this.sampleGroups.add(new SampleGroup("", sampleNames));
-            repaint();
-        } else {
-            var attributeManager = AttributeManager.getInstance();
-            var groupMap = new LinkedHashMap<String, List<String>>();
-            for (var sample : dataset.getSampleNames()) {
-                var attributeValue = attributeManager.getAttribute(sample, attributeKey.toUpperCase());
-                if (attributeValue == null) {
-                    attributeValue = "";
-                }
-                var samples = groupMap.computeIfAbsent(attributeValue, k -> new ArrayList<>());
-                samples.add(sample);
-            }
-
-            // Create groups
-            for (var key : groupMap.keySet()) {
-                sampleGroups.add(new SampleGroup(key, groupMap.get(key)));
-            }
-        }
-
-        repaint();
-    }
-
-    public void marshalXML(Document document, Element element) {
-        super.marshalXML(document, element);
-        if (renderer != null) {
-            var type = RendererFactory.getRenderType(renderer);
-            if (type != null) {
-                element.setAttribute("renderer", type.name());
-            }
-        }
+        var lowerPath = path.toLowerCase();
+        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz") || lowerPath.endsWith(".seg.txt") ||
+                lowerPath.endsWith(".seg.txt.gz");
     }
 
     @Override
@@ -385,17 +357,26 @@ public class SegTrack extends AbstractTrack {
         }
     }
 
-    public static boolean isSegFile(String pathOrURL) {
-        String path;
-        try {
-            var url = new URL(pathOrURL);
-            path = url.getPath();
-        } catch (MalformedURLException e) {
-            // Not a valid URL, assume it's a file path
-            path = pathOrURL;
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        if (renderer != null) {
+            json.put("renderer", renderer.getClass().getName());
         }
-        var lowerPath = path.toLowerCase();
-        return lowerPath.endsWith(".seg") || lowerPath.endsWith(".seg.gz");
     }
 
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("renderer")) {
+            Class rendererClass = RendererFactory.getRendererClass(jsonObject.getString("renderer"));
+            if (rendererClass != null) {
+                try {
+                    renderer = (DataRenderer) rendererClass.newInstance();
+                } catch (Exception e) {
+                    log.error("Error instantiating renderer: " + rendererClass.getName(), e);
+                }
+            }
+        }
+    }
 }

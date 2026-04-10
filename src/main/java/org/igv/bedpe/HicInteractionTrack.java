@@ -8,6 +8,7 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -31,6 +32,7 @@ public class HicInteractionTrack extends InteractionTrack {
         maxFeatureCount = 5000;
         graphType = GraphType.NESTED_ARC;
         isHIC = true;
+        transparency = 0.1f;
         setUseScore(false);   // Alpha score is set in the renderer based
         setDefaultColor(Color.red);
     }
@@ -55,7 +57,7 @@ public class HicInteractionTrack extends InteractionTrack {
         return features;
     }
 
-    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+    void addHICItems(TrackClickEvent te, List<Component> items) {
 
         final JMenuItem transparencyItem = new JMenuItem("Set Transparency...");
         transparencyItem.addActionListener(e -> {
@@ -81,7 +83,7 @@ public class HicInteractionTrack extends InteractionTrack {
             final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             JOptionPane.showMessageDialog(parent, panel, "Set Transparency for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
         });
-        menu.add(transparencyItem);
+        items.add(transparencyItem);
 
 
         final JMenuItem maxFeatureCountItem = new JMenuItem("Set Maximum Feature Count...");
@@ -108,13 +110,13 @@ public class HicInteractionTrack extends InteractionTrack {
             final Frame parent = IGV.hasInstance() ? IGV.getInstance().getMainFrame() : null;
             JOptionPane.showMessageDialog(parent, panel, "Set Max Feature Count for " + this.getDisplayName(), JOptionPane.PLAIN_MESSAGE);
         });
-        menu.add(maxFeatureCountItem);
+        items.add(maxFeatureCountItem);
 
         // Add normalization options for HiC tracks
         List<String> normalizationTypes = featureSource.getNormalizationTypes();
         if (normalizationTypes != null && normalizationTypes.size() > 1) {
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Normalization</b>"));
+            items.add(new JPopupMenu.Separator());
+            items.add(new JLabel("<html><b>Normalization</b>"));
             ButtonGroup normGroup = new ButtonGroup();
             for (String type : normalizationTypes) {
                 String label = normalizationLabels.getOrDefault(type, type);
@@ -128,11 +130,11 @@ public class HicInteractionTrack extends InteractionTrack {
                     this.repaint();
                 });
                 normGroup.add(normItem);
-                menu.add(normItem);
+                items.add(normItem);
             }
         }
 
-        menu.addSeparator();
+        items.add(new JPopupMenu.Separator());
         JMenuItem mapItem = new JMenuItem("Contact Map View...");
         mapItem.setEnabled(contactMapView == null && !FrameManager.isGeneListMode());
         mapItem.addActionListener(e -> {
@@ -143,18 +145,9 @@ public class HicInteractionTrack extends InteractionTrack {
                 ContactMapView.showPopup(this, hicFile, normalization, frame, colorScale.getMaxColor());
             }
         });
-        menu.add(mapItem);
+        items.add(mapItem);
     }
 
-    @Override
-    public void marshalXML(Document document, Element element) {
-        super.marshalXML(document, element);
-
-        String nviString = ((HicSource) featureSource).getNVIString();
-        if (nviString != null) {
-            element.setAttribute("nvi", nviString);
-        }
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -163,6 +156,29 @@ public class HicInteractionTrack extends InteractionTrack {
         if (element.hasAttribute("nvi")) {
             String nviString = element.getAttribute("nvi");
             ((HicSource) featureSource).setNVIString(nviString);
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        String nviString = ((HicSource) featureSource).getNVIString();
+        if (nviString != null) {
+            json.put("nvi", nviString);
+        }
+        if(!"NONE".equals(normalization)) {
+            json.put("normalization", normalization);
+        }
+    }
+
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("nvi")) {
+            String nviString = jsonObject.getString("nvi");
+            ((HicSource) featureSource).setNVIString(nviString);
+        }
+        if(jsonObject.has("normalization")) {
+            this.normalization = jsonObject.getString("normalization");
         }
     }
 }

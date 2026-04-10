@@ -138,7 +138,7 @@ public class AttributeManager implements AttributeSupplier {
      * be displayed.
      */
     public List<String> getAttributeNames() {
-        return new ArrayList<String>(attributeNames.values());
+        return new ArrayList<>(attributeNames.values());
     }
 
     /**
@@ -266,7 +266,6 @@ public class AttributeManager implements AttributeSupplier {
             loadedResources.add(locator);
 
             if (!Globals.isHeadless()) {
-                IGV.getInstance().resetOverlayTracks();
                 IGV.getInstance().repaint();
             }
 

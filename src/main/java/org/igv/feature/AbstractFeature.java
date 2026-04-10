@@ -1,9 +1,10 @@
 package org.igv.feature;
 
 
-import org.igv.logging.*;
-import org.igv.ui.IGV;
 import htsjdk.tribble.Feature;
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.ui.IGV;
 
 import java.awt.*;
 import java.util.*;
@@ -24,6 +25,7 @@ abstract public class AbstractFeature implements IGVFeature {
     protected String description;
     protected Map<String, String> attributes;
     protected String name = "";
+    int packedRow = 0;
 
     /**
      * The 0-based reading frame offset from start position.
@@ -163,7 +165,7 @@ abstract public class AbstractFeature implements IGVFeature {
 
     @Override
     public void removeAttribute(String key) {
-        if(attributes != null) attributes.remove(key);
+        if (attributes != null) attributes.remove(key);
     }
 
     public void setAttributes(Map<String, String> attributes) {
@@ -230,5 +232,15 @@ abstract public class AbstractFeature implements IGVFeature {
 
     public int getReadingFrame() {
         return this.readingFrame;
+    }
+
+    @Override
+    public void setPackedRow(int rowIndex) {
+        this.packedRow = rowIndex;
+    }
+
+    @Override
+    public int getPackedRow() {
+        return packedRow;
     }
 }

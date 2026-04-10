@@ -23,16 +23,13 @@ import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.GenbankParser;
 import org.igv.feature.gff.GFFFeatureSource;
+import org.igv.feature.mut.MutationFeatureSource;
 import org.igv.feature.sprite.ClusterParser;
 import org.igv.feature.sprite.ClusterTrack;
-import org.igv.feature.tribble.CodecFactory;
-import org.igv.feature.tribble.FeatureFileHeader;
-import org.igv.feature.tribble.GFFCodec;
-import org.igv.feature.tribble.TribbleIndexNotFoundException;
+import org.igv.feature.tribble.*;
 import org.igv.gwas.GWASData;
 import org.igv.gwas.GWASParser;
 import org.igv.gwas.GWASTrack;
-import org.igv.bedpe.HicSource;
 import org.igv.htsget.HtsgetUtils;
 import org.igv.htsget.HtsgetVariantSource;
 import org.igv.lists.GeneList;
@@ -42,7 +39,6 @@ import org.igv.logging.Logger;
 import org.igv.maf.MultipleAlignmentTrack;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.HeatmapRenderer;
-import org.igv.renderer.MutationRenderer;
 import org.igv.renderer.PointsRenderer;
 import org.igv.sam.AlignmentDataManager;
 import org.igv.sam.AlignmentTrack;
@@ -50,6 +46,7 @@ import org.igv.sam.EWigTrack;
 import org.igv.sam.reader.IndexNotFoundException;
 import org.igv.seg.CNFreqTrack;
 import org.igv.seg.FreqData;
+import org.igv.seg.SegTrack;
 import org.igv.seg.SegmentedDataSet;
 import org.igv.tdf.TDFDataSource;
 import org.igv.tdf.TDFReader;
@@ -61,7 +58,10 @@ import org.igv.ui.util.ConfirmDialog;
 import org.igv.ui.util.ConvertFileDialog;
 import org.igv.ui.util.ConvertOptions;
 import org.igv.ui.util.MessageUtils;
-import org.igv.util.*;
+import org.igv.util.FileUtils;
+import org.igv.util.HttpUtils;
+import org.igv.util.ParsingUtils;
+import org.igv.util.ResourceLocator;
 import org.igv.variant.VariantTrack;
 import org.igv.variant.util.PedigreeUtils;
 
@@ -70,9 +70,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import static org.igv.prefs.Constants.*;
+import static org.igv.prefs.Constants.SAM_SHOW_ALIGNMENT_TRACK;
+import static org.igv.prefs.Constants.SHOW_SIZE_WARNING;
 import static org.igv.track.AttributeManager.GROUP_AUTOSCALE;
 
 /**
@@ -217,7 +221,7 @@ public class TrackLoader {
                 loadClusterFile(locator, newTracks, genome);
             } else if (CodecFactory.hasCodec(locator, genome) && !forceNotTribble(format)) {
                 loadTribbleFile(locator, newTracks, genome);
-            } else if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+            } else if (MUTCodec.isMutationAnnotationFile(locator)) {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
@@ -412,7 +416,7 @@ public class TrackLoader {
 
         String format = locator.getFormat();
 
-        if("hic".equals(format)) {
+        if ("hic".equals(format)) {
             HicSource source = new HicSource(locator.getPath(), genome);
             newTracks.add(new HicInteractionTrack(locator, source));
         } else {
@@ -442,7 +446,7 @@ public class TrackLoader {
         String format = locator.getFormat();
 
         // Mutation (mut, maf, vcf) files are handled special.  Check here, rather than depend on order in giant case statement.
-        if (MutationTrackLoader.isMutationAnnotationFile(locator)) {
+        if (MUTCodec.isMutationAnnotationFile(locator)) {
             loadMutFile(locator, newTracks, genome); // Must be tried before generic "loadIndexed" below
         } else if (VariantTrack.isVCF(format)) {
             loadVCF(locator, newTracks, genome);
@@ -472,7 +476,7 @@ public class TrackLoader {
 
             // Create feature source and track
             AbstractTrack t =
-                    "interact".equals(locator.format) ?
+                    "interact".equals(locator.getFormat()) ?
                             new InteractionTrack(locator, new WrappedInteractionSource(src)) :
                             new FeatureTrack(locator, src);
 
@@ -483,14 +487,14 @@ public class TrackLoader {
             if (header != null && header instanceof FeatureFileHeader) {
                 FeatureFileHeader ffh = (FeatureFileHeader) header;
                 if (ffh.getTrackType() != null) {
-                    t.setTrackType(ffh.getTrackType());
+                    t.setDataType(ffh.getTrackType());
                 }
                 if (ffh.getTrackProperties() != null) {
                     TrackProperties tp = ffh.getTrackProperties();
                     t.setProperties(tp);
                     t.setTrackLine(tp.getTrackLine());
                 }
-                if (ffh.getTrackType() == TrackType.REPMASK) {
+                if (ffh.getTrackType() == DataType.REPMASK) {
                     t.setHeight(15);
                 }
             }
@@ -618,14 +622,13 @@ public class TrackLoader {
             }
         }
 
-
         String dsName = locator.getTrackName();
         IGVDataset ds = new IGVDataset(locator, genome);
         ds.setName(dsName);
 
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
-        TrackType type = ds.getType();
+        DataType type = ds.getType();
         for (String trackName : ds.getTrackNames()) {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
@@ -633,10 +636,10 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             // track.setRendererClass(HeatmapRenderer.class);
-            track.setTrackType(ds.getType());
+            track.setDataType(ds.getType());
             track.setProperties(trackProperties);
 
-            if (type == TrackType.ALLELE_FREQUENCY) {
+            if (type == DataType.ALLELE_FREQUENCY) {
                 track.setRenderer(new PointsRenderer());
                 track.setHeight(40);
             }
@@ -670,7 +673,7 @@ public class TrackLoader {
         }
 
         for (DataTrack track : cuffTracks) {
-            track.setTrackType(TrackType.FPKM);
+            track.setDataType(DataType.FPKM);
             CufflinksTrack.setCufflinksScale(track);
             newTracks.add(track);
         }
@@ -753,9 +756,9 @@ public class TrackLoader {
             track.setName(displayName);
             track.setProperties(props);
 
-            track.setTrackType(ds.getType());
+            track.setDataType(ds.getType());
 
-            if (ds.getType() == TrackType.EXPR) {
+            if (ds.getType() == DataType.EXPR) {
                 track.setWindowFunction(WindowFunction.none);
             }
 
@@ -768,7 +771,7 @@ public class TrackLoader {
 
         log.debug("Loading TDF file " + locator.getPath());
         TDFReader reader = TDFReader.getReader(locator);
-        TrackType type = reader.getTrackType();
+        DataType type = reader.getTrackType();
 
         TrackProperties props = null;
         String trackLine = reader.getTrackLine();
@@ -795,7 +798,7 @@ public class TrackLoader {
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
-            track.setTrackType(type);
+            track.setDataType(type);
             if (props != null) {
                 track.setProperties(props);
             }
@@ -926,35 +929,6 @@ public class TrackLoader {
             alignmentTrack.setVisible(PreferencesManager.getPreferences().getAsBoolean(SAM_SHOW_ALIGNMENT_TRACK));
             newTracks.add(alignmentTrack.getCoverageTrack());
 
-            //  Precalculated coverage data (can be null)
-            String covPath = locator.getCoverage();
-
-            // Search for precalculated coverage data by naming convention.  Bypass for certain cloud resources
-            if (covPath == null || covPath.equals(".")) {
-                String path = locator.getPath();
-                boolean bypassFileAutoDiscovery =
-                        PreferencesManager.getPreferences().getAsBoolean(BYPASS_FILE_AUTO_DISCOVERY) ||
-                                GoogleUtils.isGoogleURL(locator.getPath()) ||
-                                path.contains("dropbox.com") ||
-                                path.contains("dataformat=.bam") ||
-                                path.contains("/query.cgi?");
-                if (!bypassFileAutoDiscovery) {
-                    covPath = ResourceLocator.appendToPath(locator, ".tdf");
-                }
-            }
-
-            if (covPath != null && !covPath.equals(".")) {
-                if (FileUtils.resourceExists(covPath)) {
-                    log.debug("Loading TDF for coverage: " + covPath);
-                    try {
-                        TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, dsName + " coverage", genome);
-                        alignmentTrack.getCoverageTrack().setDataSource(ds);
-                    } catch (Exception e) {
-                        log.error("Error loading coverage TDF file", e);
-                    }
-                }
-            }
 
             // Splice junction track
             newTracks.add(alignmentTrack.getSpliceJunctionTrack());
@@ -1011,13 +985,14 @@ public class TrackLoader {
      */
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
 
-        MutationTrackLoader loader = new MutationTrackLoader();
-        List<FeatureTrack> mutationTracks = loader.loadMutationTracks(locator, genome);
-        for (FeatureTrack track : mutationTracks) {
-            track.setTrackType(TrackType.MUTATION);
-            track.setRenderer(new MutationRenderer());
-            newTracks.add(track);
-        }
+       // MutationTrackLoader loader = new MutationTrackLoader();
+       // MutationTrack track = loader.loadMutationTrack(locator, genome);
+       // newTracks.add(track);
+        String trackId = locator.getPath();
+        String trackName = locator.getTrackName();
+        MutationFeatureSource ds = new MutationFeatureSource(locator, genome);
+        SegTrack segTrack = new SegTrack(locator, TrackType.mut, trackId, trackName,ds, genome);
+        newTracks.add(segTrack);
     }
 
 
@@ -1025,33 +1000,15 @@ public class TrackLoader {
 
         // TODO - -handle remote resource
         SegmentedDataSet ds;
-        String path = locator.getPath().toLowerCase();
-
-        if (path.endsWith("seg.zip")) {
-            throw new DataLoadException("Binary seg (.seg.zip) files are no longer supported", locator.getPath());
-        }
+        String path = locator.getPath();
 
         ds = org.igv.seg.SegmentFileParser.loadSegments(locator, genome);
-        loadSegTrack(locator, newTracks, genome, ds);
-    }
 
-    /**
-     * Add the provided SegmentedDataSet to the list of tracks,
-     * set other relevant properties
-     *
-     * @param locator
-     * @param newTracks
-     * @param genome
-     * @param ds
-     */
-    private void loadSegTrack(ResourceLocator locator, List<Track> newTracks, Genome genome,
-                              SegmentedDataSet ds) {
-        String path = locator.getPath();
 
         TrackProperties props = ds.getTrackProperties();
 
         // The "freq" track.
-        if ((ds.getType() == TrackType.COPY_NUMBER || ds.getType() == TrackType.CNV) &&
+        if ((ds.getType() == DataType.COPY_NUMBER || ds.getType() == DataType.CNV) &&
                 ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
@@ -1065,10 +1022,11 @@ public class TrackLoader {
             newTracks.add(freqTrack);
         }
 
-        String trackId = path + "_cn"; // + "_" + trackName;
-        org.igv.seg.SegTrack track = new org.igv.seg.SegTrack(locator, trackId, trackId, ds, genome);
+        String trackId = path + "_cn"; //
+        String trackName = locator.getTrackName();// ;
+        SegTrack track = new SegTrack(locator, TrackType.seg, trackId, trackName, ds, genome);
         track.setRenderer(new HeatmapRenderer());
-        track.setTrackType(ds.getType());
+        track.setDataType(ds.getType());
 
         if (props != null) {
             track.setProperties(props);

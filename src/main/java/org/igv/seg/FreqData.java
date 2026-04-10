@@ -90,7 +90,7 @@ public class FreqData {
         final boolean logNormalized = dataset.isLogNormalized();
         for (String sample : sampleNames) {
             for (String chr : genome.getLongChromosomeNames()) {
-                List<LocusScore> segments = dataset.getSegments(sample, chr);
+                List<LocusScore> segments = dataset.getFeatures(sample, chr);
                 if (segments != null) {
 
                     for (LocusScore seg : segments) {

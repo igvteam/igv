@@ -17,7 +17,7 @@ import org.igv.exceptions.ParserException;
 import org.igv.feature.Locus;
 import org.igv.feature.genome.Genome;
 import org.igv.tools.StatusMonitor;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MagetabSignalDialog;
 import org.igv.util.ParsingUtils;
@@ -165,7 +165,7 @@ public class ExpressionFileParser {
         // Create a buffer for the string split utility.  We use  a custom utility as opposed
         // to String.split() for performance.
 
-        dataset.setType(TrackType.GENE_EXPRESSION);
+        dataset.setType(DataType.GENE_EXPRESSION);
 
         BufferedReader reader = null;
         String nextLine = null;
@@ -201,7 +201,7 @@ public class ExpressionFileParser {
 
                 if (type == FileType.MAGE_TAB && probeId.startsWith("cg")) {
                     // TODO -- this is a very ugly and fragile method to determine data type! Change this!
-                    dataset.setType(TrackType.DNA_METHYLATION);
+                    dataset.setType(DataType.DNA_METHYLATION);
                 }
 
                 for (int i = 0; i < nDataColumns; i++) {
@@ -392,7 +392,7 @@ public class ExpressionFileParser {
             } else if (key.equals("type")) {
 
                 try {
-                    dataset.setType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                    dataset.setType(DataType.valueOf(tokens[1].trim().toUpperCase()));
                 } catch (Exception exception) {
                     // Ignore
                 }

@@ -51,17 +51,17 @@ public class CytobandTrack extends AbstractTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
         List<Cytoband> cytobands = chrCytoMap.get(context.getChr());
         if (cytobands != null) {
-            Rectangle trackRect = context.getVisibleRect().intersection(rect);
+            Rectangle trackRect = context.getTrackRectangle();
             renderer.drawTrack(cytobands, context.getGraphics(), trackRect, context.getReferenceFrame());
         }
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
-        return new IGVPopupMenu();
+    public java.util.List<Component> getPopupMenuItems(final TrackClickEvent te) {
+        return java.util.Collections.emptyList();
     }
 
 }

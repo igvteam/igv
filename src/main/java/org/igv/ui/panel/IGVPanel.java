@@ -1,5 +1,6 @@
 package org.igv.ui.panel;
 
+import org.igv.Globals;
 import org.igv.logging.*;
 
 import javax.swing.*;
@@ -28,15 +29,46 @@ public class IGVPanel extends JPanel implements Paintable {
     }
 
     public TrackPanelScrollPane getScrollPane() {
-
-        TrackPanelScrollPane scollpane = null;
         Container parent = getParent();
-
-        if (parent instanceof JViewport) {
-            scollpane = (TrackPanelScrollPane) ((JViewport) parent).getParent();
+        while (parent != null) {
+            if (parent instanceof TrackPanelScrollPane) {
+                return (TrackPanelScrollPane) parent;
+            }
+            parent = parent.getParent();
         }
-        return scollpane;
+        return null;
     }
+
+    @Override
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        // Only draw dividers on the header IGVPanel, not on TrackPanel subclasses.
+        // TrackPanel positions children without leftOffset (drag handle is outside),
+        // and track area dividers are drawn by ScrollableTrackContainer instead.
+        if (!(this instanceof TrackPanel)) {
+            drawPanelDividers(g);
+        }
+    }
+
+    /**
+     * Draw vertical divider lines at the boundaries between name, attribute, and data panels.
+     * Uses the same coordinate computation as ScrollableTrackContainer for exact alignment.
+     */
+    private void drawPanelDividers(Graphics g) {
+        int leftOffset = mainPanel.getLeftOffset();
+        int nameRight = leftOffset + mainPanel.getNamePanelX() + mainPanel.getNamePanelWidth();
+        int dataLeft = leftOffset + mainPanel.getDataPanelX();
+
+        int h = getHeight();
+        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
+        g.setColor(dividerColor);
+
+        g.drawLine(nameRight, 0, nameRight, h);
+        if (dataLeft != nameRight) {
+            g.drawLine(dataLeft, 0, dataLeft, h);
+        }
+    }
+
 
     @Override
     public void doLayout() {
@@ -46,15 +78,18 @@ public class IGVPanel extends JPanel implements Paintable {
             int h = getHeight(); //getPreferredSize().height;
             Component[] children = getComponents();
 
+            int leftOffset = mainPanel.getLeftOffset();
             int nw = mainPanel.getNamePanelWidth();
 
-            Component namePanel = children[0];
-            Component attributePanel = children[1];
-            Component dataPanel = children[2];
-            namePanel.setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+            Component dragHandleSpacer = children[0];
+            Component namePanel = children[1];
+            Component attributePanel = children[2];
+            Component dataPanel = children[3];
 
-            attributePanel.setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);  // Attributes
-            dataPanel.setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+            dragHandleSpacer.setBounds(0, 0, leftOffset, h);
+            namePanel.setBounds(mainPanel.getNamePanelX() + leftOffset, 0, nw, h);
+            attributePanel.setBounds(mainPanel.getAttributePanelX() + leftOffset, 0, mainPanel.getAttributePanelWidth(), h);
+            dataPanel.setBounds(mainPanel.getDataPanelX() + leftOffset, 0, mainPanel.getDataPanelWidth() - leftOffset, h);
 
             dataPanel.doLayout();
         }

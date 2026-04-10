@@ -38,6 +38,7 @@ public class TrackConfig implements Cloneable {
     public String autoscaleGroup;
     public String[] filterTypes;
     public String stanzaParent; // For supporting track hubs
+    public long order;
     public Map<String, String> attributes;
 
     public TrackConfig() {
@@ -81,6 +82,7 @@ public class TrackConfig implements Cloneable {
         config.panelName = jsonObject.optString("panelName", null);
         config.labelField = jsonObject.optString("labelField", null);
         config.autoscaleGroup = jsonObject.optString("autoscaleGroup", null);
+        config.order = jsonObject.has("order") ? jsonObject.getLong("order") : 0l;
         if (jsonObject.has("filterTypes")) {
             org.json.JSONArray arr = jsonObject.optJSONArray("filterTypes");
             if (arr != null) {

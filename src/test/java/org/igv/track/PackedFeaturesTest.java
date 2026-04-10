@@ -2,6 +2,7 @@ package org.igv.track;
 
 import htsjdk.tribble.Feature;
 import org.igv.AbstractHeadlessTest;
+import org.igv.feature.PackedFeature;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -36,10 +37,11 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
 
     }
 
-    static class TestFeature implements Feature {
+    static class TestFeature implements PackedFeature {
         String chr;
         int start;
         int end;
+        private int row;
 
         TestFeature(String chr, int start, int end) {
             this.chr = chr;
@@ -62,6 +64,16 @@ public class PackedFeaturesTest extends AbstractHeadlessTest {
 
         public int getEnd() {
             return end;
+        }
+
+        @Override
+        public void setPackedRow(int rowIndex) {
+            this.row = rowIndex;
+        }
+
+        @Override
+        public int getPackedRow() {
+            return this.row;
         }
     }
 

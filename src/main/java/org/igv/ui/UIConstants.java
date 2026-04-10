@@ -2,7 +2,7 @@ package org.igv.ui;
 
 import org.igv.logging.*;
 import org.igv.Globals;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.awt.*;
 
@@ -18,7 +18,7 @@ public class UIConstants {
     final public static Dimension preferredSize = new Dimension(1000, 750);
 
     // To support mutation track overlay.  Generalize later.  Cancer specific option.
-    public static TrackType overlayTrackType = TrackType.MUTATION;
+    public static DataType overlayDataType = DataType.MUTATION;
 
     private static int doubleClickInterval = -1;
 

@@ -15,9 +15,10 @@ public class PEBlockRenderer implements BedPERenderer {
     }
 
     @Override
-    public void render(List<BedPE> features, RenderContext context, Rectangle trackRectangle, InteractionTrack.ArcOption arcOption) {
+    public void render(List<BedPE> features, RenderContext context, InteractionTrack.ArcOption arcOption) {
 
         Graphics2D g = null;
+        Rectangle trackRectangle = context.getTrackRectangle();
 
         try {
             g = (Graphics2D) context.getGraphics().create();

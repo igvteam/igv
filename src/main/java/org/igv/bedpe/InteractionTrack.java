@@ -9,10 +9,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
-import org.igv.track.AbstractTrack;
-import org.igv.track.RenderContext;
-import org.igv.track.TrackClickEvent;
-import org.igv.track.TrackMenuUtils;
+import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
@@ -20,6 +17,7 @@ import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -94,7 +92,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         this.featureSource = src;
 
-        setHeight(250, true);
+        setHeight(PreferencesManager.getPreferences().getAsInt(Constants.INTERACT_TRACK_HEIGHT));
         setDefaultColor( new Color(180, 25, 137));
 
         renderers = new HashMap<>();
@@ -131,6 +129,15 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 log.error("Illegal arc blocks option: " + blockString, e);
             }
         }
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.interact;
+    }
+
+    public int getContentHeight() {
+        return height;
     }
 
     void setContactMapView(ContactMapView contactMapView) {
@@ -182,18 +189,12 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
     }
 
     @Override
-    public void render(RenderContext context, Rectangle trackRectangle) {
+    public void render(RenderContext context) {
 
-
-        Graphics2D g2d = context.getGraphics();
-        Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(trackRectangle.intersection(clip.getBounds()));
         context.clearGraphicsCache();
 
         final ReferenceFrame referenceFrame = context.getReferenceFrame();
         if (!isShowFeatures(referenceFrame)) {
-            String message = "Zoom in to see features, or right-click to increase Feature Visibility Window.";
-            GraphicUtils.drawCenteredText(message, trackRectangle, context.getGraphics());
             return;
         }
 
@@ -222,20 +223,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     if (autoscale || maxScore <= 0) {
                         maxScore = autoscale(features);
                     }
-                    drawScale(context, trackRectangle);
+                    drawScale(context, context.getTrackRectangle());
                 }
 
-                renderers.get(graphType).render(filteredFeatures, context, trackRectangle, this.arcOption);
+                renderers.get(graphType).render(filteredFeatures, context, this.arcOption);
             }
             if (showBlocks) {
-                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, trackRectangle, this.arcOption);
-            }
-            if (contactMapView != null && !FrameManager.isGeneListMode()) {
+                renderers.get(GraphType.BLOCK).render(filteredFeatures, context, this.arcOption);
             }
 
         } finally {
             context.clearGraphicsCache();
-            g2d.setClip(clip);
         }
     }
 
@@ -288,30 +286,13 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
-
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(InteractionTrack.this)));
-
-        JMenuItem item = new JMenuItem("Set Track Height...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackHeight(Collections.singleton(InteractionTrack.this)));
-        menu.add(item);
-
-        item = new JMenuItem("Set Track Color...");
-        item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(InteractionTrack.this)));
-        menu.add(item);
-
-        item = new JMenuItem("Unset Track Color");
-        item.addActionListener(evt -> {
-            this.setColor(null);
-            repaint();
-        });
-        menu.add(item);
+        List<Component> items = new ArrayList<>();
 
         if (!isHIC) {
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Graph Type</b>"));
+            items.add(new JPopupMenu.Separator());
+            items.add(new JLabel("<html><b>Graph Type</b>"));
             //enum GraphType {BLOCK, ARC, PROPORTIONAL_ARC}
             ButtonGroup group = new ButtonGroup();
             Map<String, GraphType> modes = new LinkedHashMap<>(4);
@@ -330,17 +311,16 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     repaint();
                 });
                 group.add(mm);
-                menu.add(mm);
+                items.add(mm);
             }
 
-            menu.addSeparator();
-            menu.add(new JLabel("<html><b>Arcs</b>"));
+            items.add(new JPopupMenu.Separator());
+            items.add(new JLabel("<html><b>Arcs</b>"));
             ButtonGroup group2 = new ButtonGroup();
             Map<String, ArcOption> modes2 = new LinkedHashMap<>(4);
             modes2.put("All", ArcOption.ALL);
             modes2.put("One End In View", ArcOption.ONE_END);
             modes2.put("Both Ends In View", ArcOption.BOTH_ENDS);
-            //modes.put("Blocks", GraphType.BLOCK);
 
             for (final Map.Entry<String, ArcOption> entry : modes2.entrySet()) {
                 JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
@@ -350,11 +330,11 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     repaint();
                 });
                 group2.add(mm);
-                menu.add(mm);
+                items.add(mm);
             }
         }
 
-        menu.addSeparator();
+        items.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem showBlocksCB = new JCheckBoxMenuItem("Show Blocks");
         showBlocksCB.setSelected(showBlocks);
         showBlocksCB.addActionListener(e -> {
@@ -362,17 +342,17 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             PreferencesManager.getPreferences().put(Constants.ARC_BLOCKS, String.valueOf(showBlocksCB.isSelected()));
             repaint();
         });
-        menu.add(showBlocksCB);
+        items.add(showBlocksCB);
 
         if (!isHIC) {
-            menu.addSeparator();
+            items.add(new JPopupMenu.Separator());
             autoscaleCB = new JCheckBoxMenuItem("Autoscale");
             autoscaleCB.setSelected(autoscale);
             autoscaleCB.addActionListener(e -> {
                 autoscale = autoscaleCB.isSelected();
                 repaint();
             });
-            menu.add(autoscaleCB);
+            items.add(autoscaleCB);
 
             maxScoreItem = new JMenuItem("Set Max Score...");
             maxScoreItem.addActionListener(e -> {
@@ -392,14 +372,14 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     }
                 }
             });
-            menu.add(maxScoreItem);
+            items.add(maxScoreItem);
 
             autoscaleCB.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
             maxScoreItem.setEnabled(graphType == GraphType.PROPORTIONAL_ARC);
         }
 
-        menu.addSeparator();
-        item = new JMenuItem("Toggle Arc Orientation");
+        items.add(new JPopupMenu.Separator());
+        JMenuItem item = new JMenuItem("Toggle Arc Orientation");
         item.addActionListener(evt -> {
             if (direction == UP) {
                 direction = Direction.DOWN;
@@ -408,7 +388,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             }
             repaint();
         });
-        menu.add(item);
+        items.add(item);
 
         item = new JMenuItem("Set Line Thickness...");
         item.addActionListener(e -> {
@@ -422,22 +402,22 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                 }
             }
         });
-        menu.add(item);
+        items.add(item);
 
 
         if (isHIC) {
-            addHICItems(te, menu);
+            addHICItems(te, items);
 
         } else {
             // Not hic
-            menu.addSeparator();
-            menu.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
+            items.add(new JPopupMenu.Separator());
+            items.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
 
 
             // Experimental JBrowse.
             if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
                     CircularViewUtilities.ping()) {
-                menu.addSeparator();
+                items.add(new JPopupMenu.Separator());
                 JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
                 circViewItem.addActionListener(e -> {
                     List<ReferenceFrame> frames = te.getFrame() != null ?
@@ -446,15 +426,15 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
                     CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
                 });
-                menu.add(circViewItem);
-                menu.addSeparator();
+                items.add(circViewItem);
+                items.add(new JPopupMenu.Separator());
             }
         }
 
-        return menu;
+        return items;
     }
 
-    void addHICItems(TrackClickEvent te, IGVPopupMenu menu) {
+    void addHICItems(TrackClickEvent te, List<Component> items) {
         // Override in HIC subclass
     }
 
@@ -498,58 +478,6 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
 
         return super.getValueStringAt(chr, position, mouseX, mouseY, frame);
     }
-
-    @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("direction", String.valueOf(direction));
-        element.setAttribute("thickness", String.valueOf(thickness));
-        element.setAttribute("graphType", String.valueOf(graphType));
-        element.setAttribute("arcOption", String.valueOf(arcOption));
-        element.setAttribute("showBlocks", String.valueOf(showBlocks));
-        element.setAttribute("autoscale", String.valueOf(autoscale));
-        if (transparency != 1.0f) {
-            element.setAttribute("transparency", String.valueOf(transparency));
-        }
-        if (!autoscale) {
-            element.setAttribute("maxScore", String.valueOf(maxScore));
-        }
-
-    }
-
-    @Override
-    public void unmarshalXML(Element element, Integer version) {
-
-        super.unmarshalXML(element, version);
-
-        if (element.hasAttribute("arcOption")) {
-            String typeString = element.getAttribute("arcOption").toUpperCase();
-            this.arcOption = ArcOption.valueOf(typeString);
-        }
-        if (element.hasAttribute("direction"))
-            this.direction = Direction.valueOf(element.getAttribute("direction"));
-        if (element.hasAttribute("thickness"))
-            this.thickness = Integer.parseInt(element.getAttribute("thickness"));
-        if (element.hasAttribute("graphType")) {
-            String typeString = element.getAttribute("graphType").toUpperCase();
-            if (typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
-            this.graphType = GraphType.valueOf(typeString);
-        }
-        if (element.hasAttribute("showBlocks"))
-            this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
-        if (element.hasAttribute("autoscale")) {
-            this.autoscale = Boolean.parseBoolean(element.getAttribute("autoscale"));
-        }
-        if (element.hasAttribute("maxScore")) {
-            this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
-        }
-        if (element.hasAttribute("transparency")) {
-            this.transparency = Float.parseFloat(element.getAttribute("transparency"));
-        }
-    }
-
 
     /**
      * Return features visible in the supplied frames
@@ -604,4 +532,70 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
                     (this.normalization == null || this.normalization.equals(normalization));
         }
     }
+
+    /**
+     height: 250,
+     theta: Math.PI / 4,
+     arcOrientation: "UP",
+     showBlocks: true,
+     blockHeight: 3,
+     thickness: 1,
+     alpha: 0.02,
+     logScale: true,
+     colorBy: undefined,
+     transparency: 1,
+     normalization: "NONE"
+     * @param jsonObject
+     */
+
+    @Override
+    public void marshalJSON(JSONObject  jsonObject) {
+        super.marshalJSON(jsonObject);
+
+        jsonObject.put("direction", String.valueOf(direction));
+        jsonObject.put("thickness", String.valueOf(thickness));
+        jsonObject.put("graphType", String.valueOf(graphType));
+        jsonObject.put("arcOption", String.valueOf(arcOption));
+        jsonObject.put("showBlocks", String.valueOf(showBlocks));
+        jsonObject.put("autoscale", String.valueOf(autoscale));
+        if (transparency != 1.0f) {
+            jsonObject.put("transparency", String.valueOf(transparency));
+        }
+        if (!autoscale) {
+            jsonObject.put("maxScore", String.valueOf(maxScore));
+        }
+    }
+
+    @Override
+    public void unmarshalXML(Element element, Integer version) {
+
+        super.unmarshalXML(element, version);
+
+        if (element.hasAttribute("arcOption")) {
+            String typeString = element.getAttribute("arcOption").toUpperCase();
+            this.arcOption = ArcOption.valueOf(typeString);
+        }
+        if (element.hasAttribute("direction"))
+            this.direction = Direction.valueOf(element.getAttribute("direction"));
+        if (element.hasAttribute("thickness"))
+            this.thickness = Integer.parseInt(element.getAttribute("thickness"));
+        if (element.hasAttribute("graphType")) {
+            String typeString = element.getAttribute("graphType").toUpperCase();
+            if (typeString.equals("ARC")) typeString = "NESTED_ARC";  // backward compatibility
+            this.graphType = GraphType.valueOf(typeString);
+        }
+        if (element.hasAttribute("showBlocks"))
+            this.showBlocks = Boolean.parseBoolean(element.getAttribute("showBlocks"));
+        if (element.hasAttribute("autoscale")) {
+            this.autoscale = Boolean.parseBoolean(element.getAttribute("autoscale"));
+        }
+        if (element.hasAttribute("maxScore")) {
+            this.maxScore = Double.parseDouble(element.getAttribute("maxScore"));
+        }
+        if (element.hasAttribute("transparency")) {
+            this.transparency = Float.parseFloat(element.getAttribute("transparency"));
+        }
+    }
+
+
 }

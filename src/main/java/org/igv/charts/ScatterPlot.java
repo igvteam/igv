@@ -2,7 +2,7 @@ package org.igv.charts;
 
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.color.PaletteColorTable;
 
@@ -37,9 +37,9 @@ public class ScatterPlot {
     HashSet<String> filteredSeries = new HashSet<String>();
 
     public static boolean isDataCategory(String selectedCategory) {
-        return selectedCategory.equals(TrackType.COPY_NUMBER.toString()) ||
-                selectedCategory.equals(TrackType.GENE_EXPRESSION.toString()) ||
-                selectedCategory.equals(TrackType.DNA_METHYLATION.toString());
+        return selectedCategory.equals(DataType.COPY_NUMBER.toString()) ||
+                selectedCategory.equals(DataType.GENE_EXPRESSION.toString()) ||
+                selectedCategory.equals(DataType.DNA_METHYLATION.toString());
     }
 
 
@@ -184,10 +184,10 @@ public class ScatterPlot {
     }
 
 
-    Map<TrackType, ContinuousColorScale> colorScales = new HashMap<TrackType, ContinuousColorScale>();
+    Map<DataType, ContinuousColorScale> colorScales = new HashMap<DataType, ContinuousColorScale>();
 
     private Color getDataColor(String categoryName, double categoryValue) {
-        TrackType tt = TrackType.valueOf(categoryName);
+        DataType tt = DataType.valueOf(categoryName);
         ContinuousColorScale scale = colorScales.get(tt);
         if (scale == null) {
             scale = PreferencesManager.getPreferences().getColorScale(tt);// IGV.getInstance().getSession().getColorScale(tt);

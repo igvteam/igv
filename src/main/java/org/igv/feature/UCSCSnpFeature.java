@@ -26,6 +26,7 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
     String submitters;
     String alleles;
     String alleleFreqs;
+    int packedRow = 0;
 
     public UCSCSnpFeature(String chr, int start, int end, String[] tokens) {
         this.chr = chr;
@@ -73,12 +74,10 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         return this.score;
     }
 
-
     @Override
     public String getValueString(double position, int mouseX, WindowFunction windowFunction) {
         return getDescription();
     }
-
 
     public String getDescription() {
 
@@ -114,4 +113,13 @@ public class UCSCSnpFeature implements IGVFeature, htsjdk.tribble.Feature {
         return Color.black;
     }
 
+    @Override
+    public void setPackedRow(int rowIndex) {
+        this.packedRow = rowIndex;
+    }
+
+    @Override
+    public int getPackedRow() {
+        return packedRow;
+    }
 }

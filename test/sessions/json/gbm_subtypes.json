@@ -1,0 +1,82 @@
+{
+  "reference": {
+    "name": "Human (hg18)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/cytoBandIdeo.txt.gz",
+    "indexURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta.fai",
+    "id": "hg18",
+    "fastaURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg18/hg18.fasta",
+    "wholeGenomeView": true,
+    "chromosomeOrder": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr8",
+      "chr9",
+      "chr10",
+      "chr11",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ]
+  },
+  "sampleinfo": [{
+    "format": "sampleInfo",
+    "url": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/sampleTable.txt"
+  }],
+  "locus": "All",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
+    },
+    {
+      "path": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "ampThreshold": 0.1,
+      "altColor": "0,0,255",
+      "color": "255,0,0",
+      "format": "seg",
+      "name": "CNV Summary",
+      "id": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "type": "cnfreq",
+      "delThreshold": -0.1,
+      "order": 0,
+      "height": 50
+    },
+    {
+      "path": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "renderer": "org.igv.renderer.HeatmapRenderer",
+      "format": "seg",
+      "name": "Broad.080528.subtypes.seg.gz",
+      "id": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz_cn",
+      "groupBy": "Subtype",
+      "type": "seg",
+      "order": 0
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq Genes",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg18/database/refGene.txt.gz",
+      "order": 1000000
+    }
+  ]
+}

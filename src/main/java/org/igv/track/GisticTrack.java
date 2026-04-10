@@ -20,7 +20,6 @@ import org.igv.renderer.Renderer;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +64,11 @@ public class GisticTrack extends AbstractTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.gistic;
+    }
+
+    @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
         return hasScores;
     }
@@ -72,11 +76,6 @@ public class GisticTrack extends AbstractTrack {
     @Override
     public void load(ReferenceFrame referenceFrame) {
         //
-    }
-
-    @Override
-    public int getMinimumHeight() {
-        return 25;
     }
 
 
@@ -146,18 +145,12 @@ public class GisticTrack extends AbstractTrack {
         return maxGScore;
     }
 
-    /**
-     * Method description
-     *
-     * @param context
-     * @param rect
-     */
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
         if (renderer == null) {
             log.error("Null renderer !!");
 
         } else {
-            renderer.render(this, context, rect);
+            renderer.render(this, context);
         }
     }
 

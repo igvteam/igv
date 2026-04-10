@@ -1,0 +1,105 @@
+{
+	"version": "3.7.3",
+	"reference": {
+		"id": "hg38",
+		"name": "Human (GRCh38/hg38)",
+		"twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+		"wholeGenomeView": true,
+		"cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz",
+		"aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg38/hg38_alias.tab",
+		"chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes",
+		"chromosomeOrder": "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY",
+		"maneBbURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
+		"maneTrixURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.ix",
+		"rsdbURL": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/ncbiRefSeq/refSeqHistorical.bb",
+		"hubs": [
+			"https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg38/hub.txt"
+		]
+	},
+	"locus": "chr7:55,018,017-55,212,628",
+	"roi": [],
+	"tracks": [
+		{
+			"type": "sequence",
+			"order": -9007199254740991
+		},
+		{
+			"name": "Homo sapiens GM12878 ARID3A",
+			"url": "https://www.encodeproject.org/files/ENCFF905ETV/@@download/ENCFF905ETV.bigWig",
+			"metadata": {
+				"Biosample": "Homo sapiens GM12878",
+				"AssayType": "ChIP-seq",
+				"Target": "ARID3A",
+				"BioRep": "5",
+				"TechRep": "5_1",
+				"OutputType": "signal p-value",
+				"Format": "bigWig",
+				"Lab": "Michael Snyder, Stanford",
+				"Accession": "ENCFF905ETV",
+				"Experiment": "ENCSR778UBR"
+			},
+			"order": 5,
+			"format": "bigwig",
+			"type": "wig",
+			"color": "rgb(0, 46, 255)",
+			"min": 0,
+			"max": 10
+		},
+		{
+			"name": "Homo sapiens GM12878 ATF2",
+			"url": "https://www.encodeproject.org/files/ENCFF126YRP/@@download/ENCFF126YRP.bigWig",
+			"metadata": {
+				"Biosample": "Homo sapiens GM12878",
+				"AssayType": "ChIP-seq",
+				"Target": "ATF2",
+				"BioRep": "2",
+				"TechRep": "2_1",
+				"OutputType": "signal p-value",
+				"Format": "bigWig",
+				"Lab": "Michael Snyder, Stanford",
+				"Accession": "ENCFF126YRP",
+				"Experiment": "ENCSR961PPA"
+			},
+			"order": 6,
+			"format": "bigwig",
+			"type": "wig",
+			"color": "rgb(69, 132, 1)",
+			"logScale": true,
+			"min": 0,
+			"max": 100,
+			"windowFunction": "max"
+		},
+		{
+			"name": "Homo sapiens GM12878 BCL3",
+			"url": "https://www.encodeproject.org/files/ENCFF503JPY/@@download/ENCFF503JPY.bigWig",
+			"metadata": {
+				"Biosample": "Homo sapiens GM12878",
+				"AssayType": "ChIP-seq",
+				"Target": "BCL3",
+				"BioRep": "1",
+				"TechRep": "1_1",
+				"OutputType": "signal p-value",
+				"Format": "bigWig",
+				"Lab": "Richard Myers, HAIB",
+				"Accession": "ENCFF503JPY",
+				"Experiment": "ENCSR000BNQ"
+			},
+			"order": 7,
+			"format": "bigwig",
+			"type": "wig",
+			"color": "rgb(210, 120, 255)",
+			"logScale": true
+		},
+		{
+			"id": "refseqAll",
+			"name": "Refseq All",
+			"url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+			"format": "refgene",
+			"html": "https://www.ncbi.nlm.nih.gov/refseq/",
+			"infoURL": "https://www.ncbi.nlm.nih.gov/gene/?term=$$",
+			"order": 100000,
+			"type": "annotation",
+			"height": 70
+		}
+	]
+}

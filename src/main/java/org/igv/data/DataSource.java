@@ -2,8 +2,7 @@
 package org.igv.data;
 
 import org.igv.feature.LocusScore;
-import org.igv.renderer.DataRange;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 
 import java.util.Collection;
@@ -25,15 +24,15 @@ public interface DataSource {
             int endLocation,
             int zoom);
 
-    TrackType getTrackType();
+    DataType getDataType();
 
     void setWindowFunction(WindowFunction statType);
 
     boolean isLogNormalized();
 
-    public WindowFunction getWindowFunction();
+    WindowFunction getWindowFunction();
 
-    public default Collection<WindowFunction> getAvailableWindowFunctions() {
+    default Collection<WindowFunction> getAvailableWindowFunctions() {
         return Collections.EMPTY_LIST;
     }
 

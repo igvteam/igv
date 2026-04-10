@@ -3,7 +3,7 @@ package org.igv.ui.panel;
 import org.igv.charts.ScatterPlotUtils;
 import org.igv.feature.RegionOfInterest;
 import org.igv.track.RegionScoreType;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 
 import javax.swing.*;
@@ -37,11 +37,11 @@ public class RegionMenu extends JPopupMenu {
         }
 
 
-        Set<TrackType> loadedTypes = IGV.getInstance().getLoadedTypes();
+        Set<DataType> loadedTypes = IGV.getInstance().getLoadedTypes();
 
-        if (loadedTypes.contains(TrackType.COPY_NUMBER) ||
-                loadedTypes.contains(TrackType.ALLELE_SPECIFIC_COPY_NUMBER) ||
-                loadedTypes.contains(TrackType.CNV)) {
+        if (loadedTypes.contains(DataType.COPY_NUMBER) ||
+                loadedTypes.contains(DataType.ALLELE_SPECIFIC_COPY_NUMBER) ||
+                loadedTypes.contains(DataType.CNV)) {
             JMenuItem item = new JMenuItem("Sort by amplification");
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -74,7 +74,7 @@ public class RegionMenu extends JPopupMenu {
             add(item);
         }
 
-        if (loadedTypes.contains(TrackType.GENE_EXPRESSION)) {
+        if (loadedTypes.contains(DataType.GENE_EXPRESSION)) {
             JMenuItem item = new JMenuItem("Sort by expression");
             item.addActionListener(new ActionListener() {
 
@@ -89,7 +89,7 @@ public class RegionMenu extends JPopupMenu {
             add(item);
         }
 
-        if (loadedTypes.contains(TrackType.MUTATION)) {
+        if (loadedTypes.contains(DataType.MUTATION)) {
             JMenuItem item = new JMenuItem("Sort by mutation count");
             item.addActionListener(new ActionListener() {
 

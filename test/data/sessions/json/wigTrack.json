@@ -1,0 +1,24 @@
+{
+  "name": "Homo sapiens GM12878 ATF2",
+  "url": "https://www.encodeproject.org/files/ENCFF126YRP/@@download/ENCFF126YRP.bigWig",
+  "metadata": {
+    "Biosample": "Homo sapiens GM12878",
+    "AssayType": "ChIP-seq",
+    "Target": "ATF2",
+    "BioRep": "2",
+    "TechRep": "2_1",
+    "OutputType": "signal p-value",
+    "Format": "bigWig",
+    "Lab": "Michael Snyder, Stanford",
+    "Accession": "ENCFF126YRP",
+    "Experiment": "ENCSR961PPA"
+  },
+  "order": 6,
+  "format": "bigwig",
+  "type": "wig",
+  "color": "rgb(69, 132, 1)",
+  "logScale": true,
+  "min": 0,
+  "max": 100,
+  "windowFunction": "max"
+}

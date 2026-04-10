@@ -2,21 +2,21 @@
 snapshotDirectory $SCRIPT_DIR/snapshots
 version
 new
-genome hg19
-load gs://genomics-public-data/platinum-genomes/bam/NA12877_S1.bam
-load gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam
+genome hg38_1kg
+load https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12877/alignment/NA12877.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
+load https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/illumina_platinum_pedigree/data/CEU/NA12878/alignment/NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot loadBams.png
 goto myc
 snapshot myc.png
-collapse NA12878_S1.bam
+collapse NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot collapsed_NA12898.png
-squish NA12878_S1.bam
+squish NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot squish_NA12878.png
-expand NA12878_S1.bam
+expand NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot expand.png
-viewAsPairs true NA12878_S1.bam
+viewAsPairs true NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot viewAsPairs.png
-viewAsPairs false NA12878_S1.bam
+viewAsPairs false NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
 snapshot viewAsPairsOff.png
 squish
 group STRAND
@@ -31,8 +31,8 @@ setSequenceStrand -
 snapshot minusStrang.png
 setSequenceShowTranslation true
 snapshot showTranslation.png
-setTrackHeight 30 NA12878_S1.bam
-setLogScale true NA12878_S1.bam%20Coverage
-setDataRange 0,1000 NA12878_S1.bam%20Coverage
-setColor 0,0,100 NA12878_S1.bam%20Coverage
+setTrackHeight 30 NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram
+setLogScale true NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram%20Coverage
+setDataRange 0,1000 NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram%20Coverage
+setColor 0,0,100 NA12878.alt_bwamem_GRCh38DH.20150706.CEU.illumina_platinum_ped.cram%20Coverage
 snapshot blueCoverage.png

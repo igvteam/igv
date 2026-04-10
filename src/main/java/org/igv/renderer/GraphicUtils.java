@@ -98,30 +98,34 @@ public class GraphicUtils {
              Graphics g2D,
              boolean rightJustify,
              boolean clear) {
+
+        boolean darkMode = Globals.isDarkMode();
+
+        Color originalColor = g2D.getColor();
+
         FontMetrics fontMetrics = g2D.getFontMetrics();
         Rectangle2D textBounds = fontMetrics.getStringBounds(text, g2D);
 
         int yOffset = (int) ((rect.getHeight() - textBounds.getHeight()) / 2);
         int yPos = (rect.y + rect.height) - yOffset - (int) (textBounds.getHeight() / 4);
 
+        int xPos = rightJustify ? rect.x + rect.width - margin - (int) textBounds.getWidth() : margin;
+
         if (clear) {
-            int h = 2 * (int) textBounds.getHeight();
-            //Color c = g2D.getColor();
-            //Globals.isHeadless();
-            //g2D.setColor(Globals.VERY_LIGHT_GREY);
-            int y = Math.max(rect.y, yPos - h);
-            int h2 = Math.min(rect.height, 2 * h);
-            Color c = g2D.getColor();
-            g2D.setColor(((Graphics2D) g2D).getBackground());
-            g2D.fillRect(rect.x, y, rect.width, h2);
-            g2D.setColor(c);
+            g2D.setColor(darkMode ? Color.BLACK : Color.WHITE);
+            int th = (int) textBounds.getHeight();
+            g2D.fillRect(xPos, yPos - 3 * th / 4, (int) textBounds.getWidth(), th);
         }
+
+        g2D.setColor(darkMode ? Color.WHITE : Color.BLACK);
 
         if (rightJustify) {
             drawRightJustifiedText(text, rect.x + rect.width - margin, yPos, g2D);
         } else {
             g2D.drawString(text, margin, yPos);
         }
+
+        g2D.setColor(originalColor);
     }
 
     /**
@@ -169,37 +173,48 @@ public class GraphicUtils {
         Rectangle2D stringBounds = fontMetrics.getStringBounds(string, g2D);
         final int margin = 5;
         int textHeight = (int) stringBounds.getHeight() + margin;
-        double textWidth = stringBounds.getWidth() + 10;
-        if (textWidth < rect.width) {
+        int availableWidth = rect.width - 2 * margin;
+        double textWidth = stringBounds.getWidth();
+        if (textWidth <= availableWidth) {
             GraphicUtils.drawVerticallyCenteredText(string, margin, rect, g2D, false, clear);
         } else {
-            int charWidth = (int) (stringBounds.getWidth() / string.length());
-            int charsPerLine = rect.width / charWidth;
-            int nStrings = (string.length() / charsPerLine) + 1;
-            if (nStrings * textHeight > rect.height) {
-                // Shorten string to fit in space.  Try a max of 5 times,  progressivley shortening string
-                int nChars = (rect.width - 2 * margin) / charWidth + 1;
-                int nTries = 0;
-                String shortString;
-                double w;
-                do {
-                    shortString = StringUtils.checkLength(string, nChars);
-                    w = fontMetrics.getStringBounds(shortString, g2D).getWidth() + 2 * margin;
-                    nTries++;
-                    nChars--;
-                } while (w > rect.width && nTries <= 5 && nChars > 1);
+            // Break the string into lines that fit within the available width using actual font metrics
+            java.util.List<String> lines = new java.util.ArrayList<>();
+            int start = 0;
+            while (start < string.length()) {
+                // Find the maximum number of characters that fit in the available width
+                int end = start + 1;
+                while (end <= string.length() &&
+                        fontMetrics.getStringBounds(string, start, end, g2D).getWidth() <= availableWidth) {
+                    end++;
+                }
+                end = Math.min(end - 1, string.length());
+                if (end == start) {
+                    end = start + 1; // at least one character per line
+                }
+                lines.add(string.substring(start, end));
+                start = end;
+            }
 
-                GraphicUtils.drawVerticallyCenteredText(shortString, margin, rect, g2D, false, clear);
-            } else {
-                int breakPoint = 0;
+            int nLines = lines.size();
+            if (nLines * textHeight <= rect.height) {
+                // Enough vertical space -- draw wrapped lines centered vertically
                 Rectangle tmp = new Rectangle(rect);
-                tmp.y -= ((nStrings - 1) * textHeight) / 2;
-                while (breakPoint < string.length()) {
-                    int end = Math.min(string.length(), breakPoint + charsPerLine);
-                    GraphicUtils.drawVerticallyCenteredText(string.substring(breakPoint, end), margin, tmp, g2D, false);
-                    breakPoint += charsPerLine;
+                tmp.y -= ((nLines - 1) * textHeight) / 2;
+                for (String line : lines) {
+                    GraphicUtils.drawVerticallyCenteredText(line, margin, tmp, g2D, false, nLines == 1 && clear);
                     tmp.y += textHeight;
                 }
+            } else {
+                // Not enough room to wrap -- shorten the string in the middle with "..."
+                int nChars = string.length();
+                String shortString;
+                do {
+                    nChars--;
+                    shortString = StringUtils.checkLength(string, nChars);
+                } while (fontMetrics.getStringBounds(shortString, g2D).getWidth() > availableWidth && nChars > 1);
+
+                GraphicUtils.drawVerticallyCenteredText(shortString, margin, rect, g2D, false, clear);
             }
         }
     }

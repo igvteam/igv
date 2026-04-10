@@ -676,7 +676,7 @@ public class RegionNavigatorDialog extends org.igv.ui.IGVDialog  implements Obse
             } else {
                 Range r = FrameManager.getDefaultFrame().getCurrentRange();
                 RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
-                IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
+                IGV.getInstance().getSession().addRegionOfInterest(newRegion);
             }
             updateButtonsEnabled();
         }

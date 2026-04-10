@@ -1,0 +1,94 @@
+{
+	"version": "3.7.3",
+	"showSampleNames": false,
+	"genome": "hg38",
+	"locus": "chr7:55,018,017-55,212,628",
+	"roi": [],
+	"tracks": [
+		{
+			"type": "sequence",
+			"order": -9007199254740991
+		},
+		{
+			"name": "Overlay",
+			"type": "merged",
+			"autoscale": false,
+			"alpha": 0.5,
+			"height": 50,
+			"order": 5,
+			"tracks": [
+				{
+					"name": "Homo sapiens GM12878 H3K27ac",
+					"url": "https://www.encodeproject.org/files/ENCFF756UOJ/@@download/ENCFF756UOJ.bigWig",
+					"color": "rgb(200,0,0)",
+					"metadata": {
+						"Biosample": "Homo sapiens GM12878",
+						"AssayType": "ChIP-seq",
+						"Target": "H3K27ac",
+						"BioRep": "2",
+						"TechRep": "2_1",
+						"OutputType": "signal p-value",
+						"Format": "bigWig",
+						"Lab": "Bradley Bernstein, Broad",
+						"Accession": "ENCFF756UOJ",
+						"Experiment": "ENCSR000AKC"
+					},
+					"order": 5,
+					"format": "bigwig",
+					"type": "wig"
+				},
+				{
+					"name": "Homo sapiens GM12878 H3K36me3",
+					"url": "https://www.encodeproject.org/files/ENCFF515KHH/@@download/ENCFF515KHH.bigWig",
+					"color": "rgb(0,0,150)",
+					"metadata": {
+						"Biosample": "Homo sapiens GM12878",
+						"AssayType": "ChIP-seq",
+						"Target": "H3K36me3",
+						"BioRep": "2",
+						"TechRep": "2_1",
+						"OutputType": "signal p-value",
+						"Format": "bigWig",
+						"Lab": "Bradley Bernstein, Broad",
+						"Accession": "ENCFF515KHH",
+						"Experiment": "ENCSR000AKE"
+					},
+					"order": 6,
+					"format": "bigwig",
+					"type": "wig"
+				},
+				{
+					"name": "Homo sapiens GM12878 H3K4me3",
+					"url": "https://www.encodeproject.org/files/ENCFF298HKK/@@download/ENCFF298HKK.bigWig",
+					"color": "rgb(0,150,0)",
+					"metadata": {
+						"Biosample": "Homo sapiens GM12878",
+						"AssayType": "ChIP-seq",
+						"Target": "H3K4me3",
+						"BioRep": "2",
+						"TechRep": "2_1",
+						"OutputType": "signal p-value",
+						"Format": "bigWig",
+						"Lab": "Bradley Bernstein, Broad",
+						"Accession": "ENCFF298HKK",
+						"Experiment": "ENCSR057BWO"
+					},
+					"order": 7,
+					"format": "bigwig",
+					"type": "wig"
+				}
+			]
+		},
+		{
+			"id": "refseqAll",
+			"name": "Refseq All",
+			"url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+			"format": "refgene",
+			"html": "https://www.ncbi.nlm.nih.gov/refseq/",
+			"infoURL": "https://www.ncbi.nlm.nih.gov/gene/?term=$$",
+			"order": 100000,
+			"type": "annotation",
+			"height": 70
+		}
+	]
+}

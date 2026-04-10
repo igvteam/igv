@@ -22,11 +22,11 @@ import java.util.*;
  * User: jrobinso
  * Date: Jan 31, 2010
  */
-public class FeatureCollectionSource implements FeatureSource {
+public class FeatureCollectionSource<T extends Feature> implements FeatureSource<T> {
 
-    private TrackType type;
+    private DataType type;
 
-    private Map<String, List<htsjdk.tribble.Feature>> featureMap;
+    private Map<String, List<T>> featureMap;
 
     CoverageDataSource coverageData;
 
@@ -34,12 +34,12 @@ public class FeatureCollectionSource implements FeatureSource {
 
     Object header;  // usually null
 
-    public FeatureCollectionSource(Iterable<? extends Feature> allFeatures, Genome genome) {
+    public FeatureCollectionSource(Iterable<T> allFeatures, Genome genome) {
         this.genome = genome;
         initFeatures(allFeatures);
         coverageData = new CoverageDataSource(genome);
         coverageData.computeGenomeCoverage();
-        sampleGenomeFeatures();
+      //  sampleGenomeFeatures();
     }
 
     public List<LocusScore> getCoverageScores(String chr, int startLocation, int endLocation, int zoom) {
@@ -54,21 +54,21 @@ public class FeatureCollectionSource implements FeatureSource {
      * @param end
      * @return
      */
-    public Iterator<Feature> getFeatures(String chr, int start, int end) {
+    public Iterator<T> getFeatures(String chr, int start, int end) {
         return getFeatureList(chr, start, end).iterator();
     }
 
-    public List<Feature> getFeatureList(String chr, int start, int end) {
+    public List<T> getFeatureList(String chr, int start, int end) {
 
-        List<Feature> features = featureMap.get(chr);
+        List<T> features = featureMap.get(chr);
         if (features == null) {
-            return Collections.<Feature>emptyList();
+            return Collections.emptyList();
         }
-        List<Feature> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
+        List<T> filteredFeatures = CollUtils.filter(features, FeatureUtils.getOverlapPredicate(chr, start, end));
         return filteredFeatures;
     }
 
-    public List<Feature> getFeatures(String chr) {
+    public List<T> getFeatures(String chr) {
         return featureMap.get(chr);
     }
 
@@ -77,42 +77,42 @@ public class FeatureCollectionSource implements FeatureSource {
         return FeatureSource.super.getFeatureWindowSize();
     }
 
-    private void initFeatures(Iterable<? extends Feature> allFeatures) {
+    private void initFeatures(Iterable<T> allFeatures) {
         // Separate features by chromosome
 
-            featureMap = new HashMap();
-            for (Feature f : allFeatures) {
+            featureMap = new HashMap<>();
+            for (T f : allFeatures) {
 
                 String chr = genome != null ? genome.getCanonicalChrName(f.getChr()) : f.getChr();
 
-                List<Feature> fList = featureMap.get(chr);
+                List<T> fList = featureMap.get(chr);
                 if (fList == null) {
-                    fList = new ArrayList();
+                    fList = new ArrayList<>();
                     featureMap.put(chr, fList);
                 }
                 fList.add(f);
             }
 
-            for (List<Feature> featureList : featureMap.values()) {
+            for (List<T> featureList : featureMap.values()) {
                 FeatureUtils.sortFeatureList(featureList);
             }
 
             if (featureMap.size() < 100 && genome != null && genome.supportsWholeGenomeView()) {
-                sampleGenomeFeatures();
+             //   sampleGenomeFeatures();
             }
     }
 
 
-    private void setFeatures(String chr, List<Feature> features) {
+    private void setFeatures(String chr, List<T> features) {
         FeatureUtils.sortFeatureList(features);
         featureMap.put(chr, features);
     }
 
-    public TrackType getType() {
+    public DataType getType() {
         return type;
     }
 
-    public void setType(TrackType type) {
+    public void setType(DataType type) {
         this.type = type;
     }
 
@@ -125,18 +125,19 @@ public class FeatureCollectionSource implements FeatureSource {
         this.header = header;
     }
 
+    @SuppressWarnings("unchecked")
     protected void sampleGenomeFeatures() {
 
         if(genome == null) return;
 
-        List<Feature> chrAllFeatures = new ArrayList(1000);
+        List<T> chrAllFeatures = new ArrayList<>(1000);
         int sampleLength = (int) ((double) genome.getWGLength() / (1000 * 700));
         int lastFeaturePosition = -1;
         for (String chr : genome.getLongChromosomeNames()) {
-            List<Feature> features = getFeatures(chr);
+            List<T> features = getFeatures(chr);
             if (features != null) {
                 long offset = genome.getCumulativeOffset(chr);
-                for (Feature feature : features) {
+                for (T feature : features) {
                     if (feature instanceof IGVFeature) {
                         IGVFeature f = (IGVFeature) feature;
                         int genStart = (int) ((offset + f.getStart()) / 1000);
@@ -149,7 +150,7 @@ public class FeatureCollectionSource implements FeatureSource {
                                 f2.setThickStart((int) ((offset + bf.getThickStart()) / 1000));
                                 f2.setName(f.getName());
                             }
-                            chrAllFeatures.add(f2);
+                            chrAllFeatures.add((T) f2);
 
                             lastFeaturePosition = genEnd;
                         }
@@ -205,8 +206,8 @@ public class FeatureCollectionSource implements FeatureSource {
             return dataMin;
         }
 
-        public TrackType getTrackType() {
-            return TrackType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
+        public DataType getDataType() {
+            return DataType.OTHER;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
         // This won't work for large track!
@@ -221,7 +222,7 @@ public class FeatureCollectionSource implements FeatureSource {
                 ends[i] = starts[i] + windowSize;
             }
             float[] values = new float[nBins];
-            List<Feature> features = featureMap.get(chr);
+            List<T> features = featureMap.get(chr);
             if (features != null) {
                 for (Feature f : features) {
                     int startBin = f.getStart() / windowSize;
@@ -252,7 +253,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
 
             for (String chr : genome.getLongChromosomeNames()) {
-                List<Feature> features = featureMap.get(chr);
+                List<T> features = featureMap.get(chr);
                 if (features != null) {
                     long offset = genome.getCumulativeOffset(chr);
                     for (Feature f : features) {

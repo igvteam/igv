@@ -14,7 +14,6 @@ import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sam.mods.BaseModficationFilter;
-import org.igv.session.Persistable;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -29,7 +28,7 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
 import org.igv.util.blat.BlatClient;
 import org.igv.util.collections.CollUtils;
-import org.w3c.dom.Document;
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -274,12 +273,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private int expandedHeight = 14;
     private int collapsedHeight = 9;
     private final int maxSquishedHeight = 5;
-    private int squishedHeight = maxSquishedHeight;
+    private int squishedHeight = 2;
     private final int minHeight = 50;
 
-    private Rectangle alignmentsRect;
     private Rectangle downsampleRect;
-    private Rectangle insertionRect;
     private ColorTable readNamePalette;
     private final HashMap<String, Color> selectedReadNames = new HashMap<>();
 
@@ -304,6 +301,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         dataManager.subscribe(this);
 
         IGVPreferences prefs = getPreferences();
+        setHeight(PreferencesManager.getPreferences().getAsInt(ALIGNMENT_TRACK_HEIGHT));
         minimumHeight = 50;
         showGroupLine = prefs.getAsBoolean(SAM_SHOW_GROUP_SEPARATOR);
         try {
@@ -352,6 +350,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.alignment;
+    }
+
+    @Override
     public boolean isAlignment() {
         return true;
     }
@@ -372,14 +375,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 case REFRESH -> repaint();
             }
         } else if (event instanceof DataLoadedEvent dataLoaded) {
-            sortRows(dataLoaded.referenceFrame());
+            if (getPreferences().getAsBoolean(SAM_AUTO_SORT)) {
+                sortRows(dataLoaded.referenceFrame());
+            }
         } else if (event instanceof ViewChange viewChange) {
             if (viewChange.type == ViewChange.Type.LocusChange && !viewChange.panning) {
                 if (getDisplayMode() == DisplayMode.FULL) {
                     packAlignments();
                 }
                 // Don't autosort on completion of a track pan (drag)
-                if (!viewChange.fromPanning) {
+                if (getPreferences().getAsBoolean(SAM_AUTO_SORT) && !viewChange.panning) {
                     sortRows(viewChange.referenceFrame);
                 }
             }
@@ -453,8 +458,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
-        return new AlignmentTrackMenu(this, te);
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return AlignmentTrackMenuHelper.getMenuItems(this, te);
+    }
+
+    @Override
+    public boolean hasDisplayMode() {
+        return true;
     }
 
     @Override
@@ -466,14 +476,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    @Override
-    public void setHeight(int preferredHeight) {
-        super.setHeight(preferredHeight);
-        minimumHeight = preferredHeight;
-    }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
 
         int nGroups = dataManager.getMaxGroupCount();
         int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
@@ -522,50 +527,60 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return (int) dataManager.getVisibilityWindow();
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+
+    /**
+     * Draw that portion of the alignments track overlapping visibleRect.  This is the subset of the track visible
+     * in the current viewport.
+     *
+     * @param context
+     */
+
+
+    public void render(RenderContext context) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow()) {
-            Rectangle visibleRect = context.getVisibleRect().intersection(rect);
-            Graphics2D g2 = context.getGraphic2DForColor(Color.gray);
-            String message = context.getReferenceFrame().getChrName().equals(Globals.CHR_ALL) ?
-                    "Select a chromosome and zoom in to see alignments." :
-                    "Zoom in to see alignments.";
-
-            GraphicUtils.drawCenteredText(message, visibleRect, g2);
             return;
         }
 
+        Rectangle trackRect = context.getTrackRectangle();
+        Rectangle clipBounds = context.getClipBounds();
         context.getGraphics2D("LABEL").setFont(FontManager.getFont(GROUP_LABEL_HEIGHT));
 
-        // Split track rectangle into sections.
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
-        if (seqHeight > 0) {
-            Rectangle seqRect = new Rectangle(rect);
-            seqRect.height = seqHeight;
-            sequenceTrack.render(context, seqRect);
+        int yOffset = seqHeight;
+        if (clipBounds.y < seqHeight) {
+            if (seqHeight > 0) {
+                Rectangle seqRect = new Rectangle(0, 0, trackRect.width, seqHeight);
+                sequenceTrack.render(context);
+            }
         }
 
         // Top gap.
-        rect.y += DS_MARGIN_0;
-
-        downsampleRect = new Rectangle(rect);
-        downsampleRect.height = DOWNSAMPLED_ROW_HEIGHT;
-        boolean downsampled = renderDownsampledIntervals(context, downsampleRect);
-
-        alignmentsRect = new Rectangle(rect);
-        if(downsampled) {
-            alignmentsRect.y += DOWNSAMPLED_ROW_HEIGHT;
+        boolean downsampled = false;
+        if (clipBounds.y < yOffset + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT) {
+            Rectangle dsRect = new Rectangle(trackRect);
+            dsRect.y = yOffset + DS_MARGIN_0;
+            dsRect.height = DOWNSAMPLED_ROW_HEIGHT;
+            downsampled = renderDownsampledIntervals(context, dsRect);
         }
-        alignmentsRect.y +=  2;
-        alignmentsRect.height -= (alignmentsRect.y - rect.y);
+        if (downsampled) {
+            yOffset += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT;
+            this.downsampleRect = downsampleRect;
+        } else {
+            this.downsampleRect = null;
+        }
+        yOffset += DS_MARGIN_0;
+
+        Rectangle alignmentsRect = new Rectangle(trackRect);
+        alignmentsRect.y = yOffset;
+        alignmentsRect.height -= yOffset;
         renderAlignments(context, alignmentsRect);
     }
 
     private boolean renderDownsampledIntervals(RenderContext context, Rectangle downsampleRect) {
 
         // Might be offscreen
-        if (!context.getVisibleRect().intersects(downsampleRect)) return false;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame());
         if (loadedInterval == null) return false;
@@ -591,7 +606,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
 
-    private void renderAlignments(RenderContext context, Rectangle inputRect) {
+    private void renderAlignments(RenderContext context, Rectangle alignmentsRect) {
+
+        Rectangle clipBounds = context.getClipBounds();
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
         if (loadedInterval == null) {
@@ -600,11 +617,9 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         final AlignmentCounts alignmentCounts = loadedInterval.getCounts();
 
-        //log.debug("Render features");
         PackedAlignments groups = dataManager.getGroups(loadedInterval, renderOptions);
         if (groups == null) {
             //Assume we are still loading.
-            //This might not always be true
             return;
         }
 
@@ -618,10 +633,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.peStats = peStats;
         }
 
-        Rectangle visibleRect = context.getVisibleRect();
 
-        // Divide rectangle into equal height levels
-        double y = inputRect.getY();
         double h;
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
@@ -629,19 +641,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else if (displayMode == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
-
-            int visHeight = visibleRect.height;
-            int depth = dataManager.getNLevels();
-            if (depth == 0) {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-            } else {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-            }
             h = squishedHeight;
         }
 
 
         // Loop through groups
+        double y = alignmentsRect.y;
         Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
         int nGroups = groups.size();
         int groupNumber = 0;
@@ -655,13 +660,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Create a snapshot to avoid ConcurrentModificationException from background loading threads
             List<Row> rows = new ArrayList<>(entry.getValue());
             for (Row row : rows) {
-                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                if (y > clipBounds.getMaxY()) {
                     break;
                 }
 
-                assert visibleRect != null;
-                if (y + h > visibleRect.getY()) {
-                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                if (y + h > clipBounds.y) {
+                    Rectangle rowRectangle = new Rectangle(alignmentsRect.x, (int) y, alignmentsRect.width, (int) h);
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
                     row.h = h;
@@ -674,7 +678,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 if (showGroupLine) {
                     if (groupNumber < nGroups) {
                         int borderY = (int) y + GROUP_MARGIN / 2;
-                        GraphicUtils.drawDottedDashLine(groupBorderGraphics, inputRect.x, borderY, inputRect.width, borderY);
+                        GraphicUtils.drawDottedDashLine(groupBorderGraphics, alignmentsRect.x, borderY, alignmentsRect.width, borderY);
                     }
                 }
 
@@ -689,16 +693,15 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     Graphics2D g = context.getGraphics2D("LABEL");
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
-                    Rectangle rect = new Rectangle(inputRect.x, (int) yGroup,
-                            (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
+                    Rectangle rect = new Rectangle(alignmentsRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());
                     GraphicUtils.drawVerticallyCenteredText(groupName, 5, rect, g, false, true);
                 }
             }
             y += GROUP_MARGIN;
         }
 
-        final int bottom = inputRect.y + inputRect.height;
-        groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
+        final int bottom = alignmentsRect.y + alignmentsRect.height;
+        groupBorderGraphics.drawLine(alignmentsRect.x, bottom, alignmentsRect.width, bottom);
     }
 
     /**
@@ -721,7 +724,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             return;
         }
 
-        Rectangle visibleRect = context.getVisibleRect();
+        Rectangle clipBounds = context.getClipBounds();
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY() - 3;
@@ -731,13 +734,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
-            int visHeight = visibleRect.height;
-            int depth = dataManager.getNLevels();
-            if (depth == 0) {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, expandedHeight));
-            } else {
-                squishedHeight = Math.min(maxSquishedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
-            }
             h = squishedHeight;
         }
 
@@ -745,12 +741,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             // Loop through the alignment rows for this group
             List<Row> rows = entry.getValue();
             for (Row row : rows) {
-                if ((visibleRect != null && y > visibleRect.getMaxY())) {
+                if ((clipBounds != null && y > clipBounds.getMaxY())) {
                     return;
                 }
 
-                assert visibleRect != null;
-                if (y + h > visibleRect.getY()) {
+                assert clipBounds != null;
+                if (y + h > clipBounds.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     if (row.alignments != null)  // TODO -- not sure this is needed
                         BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);
@@ -869,7 +865,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
         } else {
             Alignment feature = getAlignmentAt(position, mouseY, frame);
-
             if (feature != null) {
                 return feature.getAlignmentValueString(position, mouseX, renderOptions);
             }
@@ -886,7 +881,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {
 
-        if (alignmentsRect == null || dataManager == null) {
+        if (dataManager == null) {
             return null;   // <= not loaded yet
         }
         PackedAlignments groups = dataManager.getGroupedAlignmentsContaining(position, frame);
@@ -1150,20 +1145,27 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-
     @Override
-    public void marshalXML(Document document, Element element) {
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
 
-        super.marshalXML(document, element);
-
-        if (experimentType != null) {
-            element.setAttribute("experimentType", experimentType.toString());
+        if (jsonObject.has("experimentType")) {
+            experimentType = ExperimentType.valueOf(jsonObject.getString("experimentType"));
         }
 
-        Element sourceElement = document.createElement("RenderOptions");
-        renderOptions.marshalXML(document, sourceElement);
-        element.appendChild(sourceElement);
+        renderOptions = new RenderOptions(this);
+        renderOptions.unmarshalJSON(jsonObject);
+    }
 
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+
+        if (experimentType != null) {
+            jsonObject.put("experimentType", experimentType.toString());
+        }
+
+        renderOptions.marshalJSON(jsonObject);
     }
 
     static class InsertionMenu extends IGVPopupMenu {
@@ -1207,7 +1209,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public static class RenderOptions implements Cloneable, Persistable {
+    public static class RenderOptions implements Cloneable {
 
         public static final String NAME = "RenderOptions";
         private static final Logger log = LogManager.getLogger(RenderOptions.class);
@@ -1629,117 +1631,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             this.basemodDistinguishStrands = basemodDistinguishStrands;
         }
 
-
-        @Override
-        public void marshalXML(Document document, Element element) {
-
-            if (shadeBasesOption != null) {
-                element.setAttribute("shadeBasesOption", shadeBasesOption.toString());
-            }
-            if (shadeCenters != null) {
-                element.setAttribute("shadeCenters", shadeCenters.toString());
-            }
-            if (flagUnmappedPairs != null) {
-                element.setAttribute("flagUnmappedPairs", flagUnmappedPairs.toString());
-            }
-            if (showAllBases != null) {
-                element.setAttribute("showAllBases", showAllBases.toString());
-            }
-            if (minInsertSize != null) {
-                element.setAttribute("minInsertSize", minInsertSize.toString());
-            }
-            if (maxInsertSize != null) {
-                element.setAttribute("maxInsertSize", maxInsertSize.toString());
-            }
-            if (colorOption != null) {
-                element.setAttribute("colorOption", colorOption.toString());
-            }
-            if (groupByOption != null) {
-                element.setAttribute("groupByOption", groupByOption.toString());
-            }
-            if (shadeAlignmentsOption != null) {
-                element.setAttribute("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
-            }
-            if (duplicatesOption != null) {
-                element.setAttribute("duplicatesOption", duplicatesOption.toString());
-            }
-            if (mappingQualityLow != null) {
-                element.setAttribute("mappingQualityLow", mappingQualityLow.toString());
-            }
-            if (mappingQualityHigh != null) {
-                element.setAttribute("mappingQualityHigh", mappingQualityHigh.toString());
-            }
-            if (viewPairs != false) {
-                element.setAttribute("viewPairs", Boolean.toString(viewPairs));
-            }
-            if (colorByTag != null) {
-                element.setAttribute("colorByTag", colorByTag);
-            }
-            if (groupByTag != null) {
-                element.setAttribute("groupByTag", groupByTag);
-            }
-            if (sortByTag != null) {
-                element.setAttribute("sortByTag", sortByTag);
-            }
-            if (linkByTag != null) {
-                element.setAttribute("linkByTag", linkByTag);
-            }
-            if (linkedReads != null) {
-                element.setAttribute("linkedReads", linkedReads.toString());
-            }
-            if (quickConsensusMode != null) {
-                element.setAttribute("quickConsensusMode", quickConsensusMode.toString());
-            }
-            if (showMismatches != null) {
-                element.setAttribute("showMismatches", showMismatches.toString());
-            }
-            if (computeIsizes != null) {
-                element.setAttribute("computeIsizes", computeIsizes.toString());
-            }
-            if (minInsertSizePercentile != null) {
-                element.setAttribute("minInsertSizePercentile", minInsertSizePercentile.toString());
-            }
-            if (maxInsertSizePercentile != null) {
-                element.setAttribute("maxInsertSizePercentile", maxInsertSizePercentile.toString());
-            }
-            if (pairedArcView != null) {
-                element.setAttribute("pairedArcView", pairedArcView.toString());
-            }
-            if (flagZeroQualityAlignments != null) {
-                element.setAttribute("flagZeroQualityAlignments", flagZeroQualityAlignments.toString());
-            }
-            if (groupByPos != null) {
-                element.setAttribute("groupByPos", groupByPos.toString());
-            }
-            if (invertSorting != null) {
-                element.setAttribute("invertSorting", Boolean.toString(invertSorting));
-            }
-            if (sortOption != null) {
-                element.setAttribute("sortOption", sortOption.toString());
-            }
-            if (invertGroupSorting) {
-                element.setAttribute("invertGroupSorting", Boolean.toString(invertGroupSorting));
-            }
-            if (hideSmallIndels != null) {
-                element.setAttribute("hideSmallIndels", hideSmallIndels.toString());
-            }
-            if (smallIndelThreshold != null) {
-                element.setAttribute("smallIndelThreshold", smallIndelThreshold.toString());
-            }
-            if (basemodFilter != null) {
-                element.setAttribute("basemodFilter", basemodFilter.toString());
-            }
-            if (basemodThreshold != null) {
-                element.setAttribute("basemodThredhold", String.valueOf(basemodThreshold));
-            }
-            if (minJunctionCoverage != null) {
-                element.setAttribute("minJunctionCoverage", String.valueOf(minJunctionCoverage));
-            }
-
-        }
-
-
-        @Override
         public void unmarshalXML(Element element, Integer version) {
             if (element.hasAttribute("shadeBasesOption")) {
                 String v = element.getAttribute("shadeBasesOption");
@@ -1867,6 +1758,241 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             if (element.hasAttribute("minJunctionCoverage")) {
                 minJunctionCoverage = Integer.parseInt(element.getAttribute("minJunctionCoverage"));
+            }
+        }
+
+        public void marshalJSON(JSONObject jsonObject) {
+            if (shadeBasesOption != null) {
+                jsonObject.put("shadeBasesOption", shadeBasesOption);
+            }
+            if (shadeCenters != null) {
+                jsonObject.put("shadeCenters", shadeCenters);
+            }
+            if (flagUnmappedPairs != null) {
+                jsonObject.put("flagUnmappedPairs", flagUnmappedPairs);
+            }
+            if (showAllBases != null) {
+                jsonObject.put("showAllBases", showAllBases);
+            }
+            if (minInsertSize != null) {
+                jsonObject.put("minTLEN", minInsertSize);
+            }
+            if (maxInsertSize != null) {
+                jsonObject.put("maxTLEN", maxInsertSize);
+            }
+            if (colorOption != null) {
+                jsonObject.put("colorOption", colorOption.toString());
+            }
+            if (groupByOption != null) {
+                jsonObject.put("groupByOption", groupByOption.toString());
+            }
+            if (shadeAlignmentsOption != null) {
+                jsonObject.put("shadeAlignmentsByOption", shadeAlignmentsOption.toString());
+            }
+            if (duplicatesOption != null) {
+                jsonObject.put("duplicatesOption", duplicatesOption.toString());
+            }
+            if (mappingQualityLow != null) {
+                jsonObject.put("mappingQualityLow", mappingQualityLow);
+            }
+            if (mappingQualityHigh != null) {
+                jsonObject.put("mappingQualityHigh", mappingQualityHigh);
+            }
+            if (viewPairs) {
+                jsonObject.put("viewPairs", viewPairs);
+            }
+            if (colorByTag != null) {
+                jsonObject.put("colorByTag", colorByTag);
+            }
+            if (groupByTag != null) {
+                jsonObject.put("groupByTag", groupByTag);
+            }
+            if (sortByTag != null) {
+                jsonObject.put("sortByTag", sortByTag);
+            }
+            if (linkByTag != null) {
+                jsonObject.put("linkByTag", linkByTag);
+            }
+            if (linkedReads != null) {
+                jsonObject.put("linkedReads", linkedReads);
+            }
+            if (quickConsensusMode != null) {
+                jsonObject.put("quickConsensusMode", quickConsensusMode);
+            }
+            if (showMismatches != null) {
+                jsonObject.put("showMismatches", showMismatches);
+            }
+            if (computeIsizes != null) {
+                jsonObject.put("computeIsizes", computeIsizes);
+            }
+            if (minInsertSizePercentile != null) {
+                jsonObject.put("minTLENPercentile", minInsertSizePercentile);
+            }
+            if (maxInsertSizePercentile != null) {
+                jsonObject.put("maxTLENPercentile", maxInsertSizePercentile);
+            }
+            if (pairedArcView != null) {
+                jsonObject.put("pairedArcView", pairedArcView);
+            }
+            if (flagZeroQualityAlignments != null) {
+                jsonObject.put("flagZeroQualityAlignments", flagZeroQualityAlignments);
+            }
+            if (groupByPos != null) {
+                jsonObject.put("groupByPos", groupByPos.toString());
+            }
+            if (invertSorting != null) {
+                jsonObject.put("invertSorting", invertSorting);
+            }
+            if (sortOption != null) {
+                jsonObject.put("sortOption", sortOption.toString());
+            }
+            if (invertGroupSorting) {
+                jsonObject.put("invertGroupSorting", invertGroupSorting);
+            }
+            if (hideSmallIndels != null) {
+                jsonObject.put("hideSmallIndels", hideSmallIndels);
+            }
+            if (smallIndelThreshold != null) {
+                jsonObject.put("indexlSizeThreshold", smallIndelThreshold);
+            }
+            if (basemodFilter != null) {
+                jsonObject.put("basemodFilter", basemodFilter.toString());
+            }
+            if (basemodThreshold != null) {
+                jsonObject.put("baseModificationThreshold", basemodThreshold);
+            }
+            if (minJunctionCoverage != null) {
+                jsonObject.put("minJunctionCoverage", minJunctionCoverage);
+            }
+        }
+
+        public void unmarshalJSON(org.json.JSONObject json) {
+            if (json.has("shadeBasesOption")) {
+                String v = json.getString("shadeBasesOption");
+                if (v != null) {
+                    shadeBasesOption = v.equalsIgnoreCase("quality") || v.equalsIgnoreCase("true");
+                }
+            }
+            if (json.has("shadeCenters")) {
+                shadeCenters = Boolean.parseBoolean(json.getString("shadeCenters"));
+            }
+            if (json.has("showAllBases")) {
+                showAllBases = Boolean.parseBoolean(json.getString("showAllBases"));
+            }
+            if (json.has("flagUnmappedPairs")) {
+                flagUnmappedPairs = Boolean.parseBoolean(json.getString("flagUnmappedPairs"));
+            }
+
+            if (json.has("minTLEN")) {
+                minInsertSize = Integer.parseInt(json.getString("minTLEN"));
+            }
+            if (json.has("maxTLEN")) {
+                maxInsertSize = Integer.parseInt(json.getString("maxTLEN"));
+            }
+            if (json.has("colorOption")) {
+                // Convert deprecated options
+                final String attributeValue = json.getString("colorOption");
+                if ("BASE_MODIFICATION_6MA".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    basemodFilter = new BaseModficationFilter("a");
+                } else if ("BASE_MODIFICATION_5MC".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION_2COLOR;
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else if ("BASE_MODIFICATION_C".equals(attributeValue)) {
+                    colorOption = ColorOption.BASE_MODIFICATION;
+                    // basemodFilter = new BaseModficationFilter(null, 'C');
+                } else {
+                    colorOption = ColorOption.valueOf(attributeValue);
+                }
+            }
+            if (json.has("sortOption")) {
+                sortOption = SortOption.fromString((json.getString("sortOption")));
+            }
+            if (json.has("groupByOption")) {
+                String value = json.getString("groupByOption");
+                if (value.equals("HAPLOTYPE")) {
+                    value = "CLUSTER";  // Backward compatibility
+                }
+                groupByOption = GroupOption.valueOf(value);
+            }
+            if (json.has("shadeAlignmentsByOption")) {
+                shadeAlignmentsOption = ShadeAlignmentsOption.valueOf(json.getString("shadeAlignmentsByOption"));
+            }
+            if (json.has("duplicatesOption")) {
+                duplicatesOption = CollUtils.valueOf(DuplicatesOption.class, json.getString("duplicatesOption"), null);
+            }
+            if (json.has("mappingQualityLow")) {
+                mappingQualityLow = Integer.parseInt(json.getString("mappingQualityLow"));
+            }
+            if (json.has("mappingQualityHigh")) {
+                mappingQualityHigh = Integer.parseInt(json.getString("mappingQualityHigh"));
+            }
+            if (json.has("viewPairs")) {
+                viewPairs = Boolean.parseBoolean(json.getString("viewPairs"));
+            }
+            if (json.has("colorByTag")) {
+                colorByTag = json.getString("colorByTag");
+            }
+            if (json.has("groupByTag")) {
+                groupByTag = json.getString("groupByTag");
+            }
+            if (json.has("sortByTag")) {
+                sortByTag = json.getString("sortByTag");
+            }
+            if (json.has("linkByTag")) {
+                linkByTag = json.getString("linkByTag");
+            }
+            if (json.has("linkedReads")) {
+                linkedReads = Boolean.parseBoolean(json.getString("linkedReads"));
+            }
+            if (json.has("quickConsensusMode")) {
+                quickConsensusMode = Boolean.parseBoolean(json.getString("quickConsensusMode"));
+            }
+            if (json.has("showMismatches")) {
+                showMismatches = Boolean.parseBoolean(json.getString("showMismatches"));
+            }
+            if (json.has("computeIsizes")) {
+                computeIsizes = Boolean.parseBoolean(json.getString("computeIsizes"));
+            }
+            if (json.has("minTLENPercentile")) {
+                minInsertSizePercentile = Double.parseDouble(json.getString("minTLENPercentile"));
+            }
+            if (json.has("maxTLENPercentile")) {
+                maxInsertSizePercentile = Double.parseDouble(json.getString("maxTLENPercentile"));
+            }
+            if (json.has("pairedArcView")) {
+                pairedArcView = Boolean.parseBoolean(json.getString("pairedArcView"));
+            }
+            if (json.has("flagZeroQualityAlignments")) {
+                flagZeroQualityAlignments = Boolean.parseBoolean(json.getString("flagZeroQualityAlignments"));
+            }
+            if (json.has("groupByPos")) {
+                groupByPos = Range.fromString(json.getString("groupByPos"));
+            }
+            if (json.has("invertSorting")) {
+                invertSorting = Boolean.parseBoolean(json.getString("invertSorting"));
+            }
+            if (json.has("invertGroupSorting")) {
+                invertGroupSorting = Boolean.parseBoolean(json.getString("invertGroupSorting"));
+            }
+            if (json.has("hideSmallIndels")) {
+                hideSmallIndels = Boolean.parseBoolean(json.getString("hideSmallIndels"));
+            }
+            if (json.has("indexlSizeThreshold")) {
+                smallIndelThreshold = Integer.parseInt(json.getString("indexlSizeThreshold"));
+            }
+            if (json.has("showInsertionMarkers")) {
+                // TODO -- something with this
+                // showInsertionMarkers = Boolean.parseBoolean(json.getString("showInsertionMarkers"));
+            }
+            if (json.has("basemodFilter")) {
+                basemodFilter = BaseModficationFilter.fromString(json.getString("basemodFilter"));
+            }
+            if (json.has("baseModificationThreshold")) {
+                basemodFilter = BaseModficationFilter.fromString(json.getString("basemodThreshold"));
+            }
+            if (json.has("minJunctionCoverage")) {
+                minJunctionCoverage = Integer.parseInt(json.getString("minJunctionCoverage"));
             }
         }
 

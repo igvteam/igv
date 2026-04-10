@@ -12,7 +12,7 @@ import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 
 import java.util.*;
@@ -416,7 +416,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
-    public TrackType getTrackType() {
+    public DataType getDataType() {
         return reader.getTrackType();
     }
 

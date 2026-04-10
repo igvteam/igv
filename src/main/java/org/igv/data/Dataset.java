@@ -1,7 +1,7 @@
 package org.igv.data;
 
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 /**
  * A dataset is an in-memory representation of a numerical dataset.  It is used for non-indexed data formats that are
@@ -15,7 +15,7 @@ public interface Dataset {
 
     public String getName();
 
-    public TrackType getType();
+    public DataType getType();
 
     public TrackProperties getTrackProperties();
     

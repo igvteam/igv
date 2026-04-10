@@ -191,7 +191,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
         geneTrack.clearPackedFeatures();
-        RenderContext context = new RenderContext(geneComponent, null, referenceFrame, null);
+        RenderContext context = new RenderContext(geneComponent, null, referenceFrame, null, null, null);
         geneTrack.load(context.getReferenceFrame());
 
         GeneTrackMouseAdapter ad2 = new GeneTrackMouseAdapter(geneComponent);
@@ -262,13 +262,13 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             super.paintComponent(g);
             Rectangle bounds = new Rectangle(getBounds());
             bounds.y = 0;
-            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds);
-            track.render(context, bounds);
+            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, bounds, bounds, bounds);
+            track.render(context);
         }
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(100, track.getHeight());
+            return new Dimension(100, track.getContentHeight());
         }
     }
 
@@ -658,7 +658,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Rectangle visibleRect = getVisibleRect();
-            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect);
+            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect, visibleRect, visibleRect);
             drawGenomicAxis(context, visibleRect);
         }
 

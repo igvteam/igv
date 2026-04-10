@@ -4,7 +4,6 @@ import org.igv.feature.CachingFeatureSource;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.tools.motiffinder.MotifFinderSource;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MotifTrack extends FeatureTrack {
@@ -30,14 +29,28 @@ public class MotifTrack extends FeatureTrack {
         MotifFinderSource src = new MotifFinderSource(pattern, strand, GenomeManager.getInstance().getCurrentGenome());
         CachingFeatureSource source = new CachingFeatureSource(src);
         super.init(null, source);
+        setVisibilityWindow(1000000);  // Must be done after super.init()
         setSortable(false);
     }
 
     @Override
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("pattern", pattern);
-        element.setAttribute("strand", String.valueOf(strand));
-        super.marshalXML(document, element);
+    public void setVisibilityWindow(int windowSize) {
+        super.setVisibilityWindow(windowSize);
+    }
+
+    @Override
+    public int getVisibilityWindow() {
+        return super.getVisibilityWindow();
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.motif;
+    }
+
+    @Override
+    public boolean supportsWholeGenome() {
+        return false;
     }
 
     @Override
@@ -45,6 +58,21 @@ public class MotifTrack extends FeatureTrack {
         super.unmarshalXML(element, version);
         this.pattern = element.getAttribute("pattern");
         this.strand = Strand.fromString(element.getAttribute("strand"));
+        init();
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        jsonObject.put("pattern", pattern);
+        jsonObject.put("strand", strand.toString());
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        this.pattern = jsonObject.getString("pattern");
+        this.strand = Strand.fromString(jsonObject.getString("strand"));
         init();
     }
 }

@@ -21,7 +21,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
-import org.igv.track.TrackGroup;
 import org.igv.ui.AbstractDataPanelTool;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
@@ -37,8 +36,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Collection;
 import java.util.List;
+import java.util.TimerTask;
 
 /**
  * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
@@ -60,6 +60,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     private String tooltipText = "";
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
+
         init();
         this.darkMode = Globals.isDarkMode();
         this.defaultTool = new PanTool(this);
@@ -68,6 +69,8 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         this.parent = parent;
         setFocusable(true);
         setAutoscrolls(true);
+        setOpaque(true);
+        setDoubleBuffered(true);
         setToolTipText("");
         painter = new DataPanelPainter();
 
@@ -108,28 +111,51 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
     }
 
+
     @Override
     public void paintComponent(final Graphics g) {
 
         super.paintComponent(g);
 
+        // Explicitly fill background - JComponent without UI delegate doesn't do this automatically
+        Graphics2D graphics2D = (Graphics2D) g;
+        Rectangle clip = graphics2D.getClipBounds();
+        if (clip != null) {
+            graphics2D.setColor(getBackground());
+            graphics2D.fillRect(clip.x, clip.y, clip.width, clip.height);
+        }
+        final Rectangle visibleRect = getVisibleRect();
+        int visibilityWindow = getTrack().getVisibilityWindow();
+        double bpwidth = getBounds().width * frame.getScale();
+
+        if ((!getTrack().supportsWholeGenome() && frame.getChrName().equals(Globals.CHR_ALL)) ||
+                (visibilityWindow == 0 && frame.getChrName().equals(Globals.CHR_ALL)) ||
+                (visibilityWindow > 0 && bpwidth > visibilityWindow)) {
+
+            graphics2D.setColor(darkMode ? Color.white : Color.GRAY);
+            String msg = frame.getChrName().equals(Globals.CHR_ALL) ?
+                    "Select a chromosome and zoom in to see data." :
+                    "Zoom in to see data, or right-click to increase Feature Visibility Window.";
+            FontMetrics fm = graphics2D.getFontMetrics();
+            int msgWidth = fm.stringWidth(msg);
+            int msgHeight = fm.getHeight();
+            int x = (getWidth() - msgWidth) / 2;
+            int y = (visibleRect.height + msgHeight) / 2;
+            graphics2D.drawString(msg, x, y);
+            return;
+        }
+
         RenderContext context = null;
         try {
 
-            Rectangle clipBounds = g.getClipBounds();
-            final Rectangle visibleRect = getVisibleRect();
-            final Rectangle damageRect = clipBounds == null ? visibleRect : clipBounds.intersection(visibleRect);
-            Graphics2D graphics2D = (Graphics2D) g;
+            final Rectangle trackRectangle = new Rectangle(getBounds());
+            trackRectangle.x = 0;               // Adjust to be relative to the panel, not the parent
+            trackRectangle.y = 0;
+            final Rectangle clipBounds = g.getClipBounds();
 
-            context = new RenderContext(this, graphics2D, frame, visibleRect);
+            context = new RenderContext(this, graphics2D, frame, trackRectangle, visibleRect, clipBounds);
 
-            final Collection<TrackGroup> groups = parent.getTrackGroups();
-
-            int trackWidth = getWidth();
-
-            computeMousableRegions(groups, trackWidth);
-
-            painter.paint(groups, context, getBackground(), damageRect);
+            painter.paint(getTrack(), context);
 
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
@@ -166,43 +192,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
     }
 
     /**
-     * TODO -- move this to a "layout" command, to layout tracks and assign positions
-     */
-    private void computeMousableRegions(Collection<TrackGroup> groups, int width) {
-
-        final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
-        mouseableRegions.clear();
-        int trackX = 0;
-        int trackY = 0;
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
-            TrackGroup group = groupIter.next();
-
-
-            if (group.isVisible()) {
-                if (groups.size() > 1) {
-                    trackY += UIConstants.groupGap;
-                }
-
-                List<Track> trackList = group.getVisibleTracks();
-                for (Track track : trackList) {
-                    if (track == null) continue;
-                    int trackHeight = track.getHeight();
-
-                    if (track.isVisible()) {
-                        Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
-                        if (mouseableRegions != null) {
-                            mouseableRegions.add(new MouseableRegion(rect, track));
-                        }
-                        trackY += trackHeight;
-                    }
-                }
-
-            }
-        }
-
-    }
-
-    /**
      * Paint method designed to paint to an offscreen image
      *
      * @param g
@@ -215,8 +204,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
 
         try {
-            context = new RenderContext(null, g, frame, rect);
-            final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
+            context = new RenderContext(null, g, frame, rect, rect, rect);
             Insets insets = getInsets();
             Rectangle contentRect = new Rectangle(
                     rect.x + insets.left,
@@ -224,7 +212,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     rect.width - (insets.left + insets.right),
                     rect.height - (insets.top + insets.bottom));
             context.getGraphics().setClip(contentRect);
-            painter.paint(groups, context, getBackground(), contentRect);
+            painter.paint(getTrack(), context);
             drawAllRegions(g);
 
         } finally {
@@ -331,21 +319,9 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
      */
     static DecimalFormat locationFormatter = new DecimalFormat();
 
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     * @return
-     */
-    public Track getTrack(int x, int y) {
-        for (MouseableRegion mouseRegion : parent.getMouseRegions()) {
-            if (mouseRegion.containsPoint(x, y)) {
-                return mouseRegion.getTracks().iterator().next();
-            }
-        }
-        return null;
 
+    public Track getTrack() {
+        return parent.getTrack();
     }
 
 
@@ -400,35 +376,11 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
             if (mouseRegion.containsPoint(x, y)) {
                 track = mouseRegion.getTracks().iterator().next();
                 if (track != null) {
-
-                    // First see if there is an overlay track.  If there is, give
-                    // it first crack
-                    List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
-                    boolean foundOverlaidFeature = false;
-                    if (overlays != null) {
-                        for (Track overlay : overlays) {
-                            if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), position, x, y, frame) != null)) {
-                                String valueString = overlay.getValueStringAt(frame.getChrName(), position, x, y, frame);
-                                if (valueString != null) {
-                                    popupTextBuffer.append(valueString);
-                                    popupTextBuffer.append("<br>");
-                                    foundOverlaidFeature = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!foundOverlaidFeature) {
-                        String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
-                        if (valueString != null) {
-                            if (foundOverlaidFeature) {
-                                popupTextBuffer.append("---------------------<br>");
-                            }
-                            popupTextBuffer.append(valueString);
-                            popupTextBuffer.append("<br>");
-                            break;
-                        }
+                    String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
+                    if (valueString != null) {
+                        popupTextBuffer.append(valueString);
+                        popupTextBuffer.append("<br>");
+                        break;
                     }
                 }
             }
@@ -591,8 +543,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         }
 
         private void doPopupMenu(MouseEvent e) {
-            IGV.getInstance().clearSelections();
-            parent.selectTracks(e);
             TrackClickEvent te = new TrackClickEvent(e, frame);
             parent.openPopupMenu(te);
         }
@@ -689,7 +639,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             Object source = e.getSource();
             if (source instanceof DataPanel && e.getButton() == MouseEvent.BUTTON1) {
-                final Track track = ((DataPanel) e.getSource()).getTrack(e.getX(), e.getY());
+                final Track track = ((DataPanel) e.getSource()).getTrack();
 
                 if (e.isShiftDown()) {
                     final double locationClicked = frame.getChromosomePosition(e);
@@ -730,31 +680,14 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
                                     if (track != null) {
                                         TrackClickEvent te = new TrackClickEvent(e, frame);
-                                        List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
-                                        boolean handled = false;
-                                        if (overlays != null) {
-                                            for (Track overlay : overlays) {
-                                                if (overlay.getFeatureAtMousePosition(te) != null) {
-                                                    overlay.handleDataClick(te);
-                                                    handled = true;
-                                                }
-                                            }
-                                        }
-                                        if (!handled) {
-                                            handled = track.handleDataClick(te);
-                                        }
 
+                                        boolean handled = track.handleDataClick(te);
 
-                                        if (handled) {
-                                            return;
-                                        } else {
-                                            if (currentTool != null)
-                                                currentTool.mouseClicked(e);
-                                        }
+                                        if (!handled && currentTool != null)
+                                            currentTool.mouseClicked(e);
                                     }
                                 }
                             }
-
                         };
                         clickScheduler.scheduleClickTask(clickTask);
                     }

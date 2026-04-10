@@ -9,7 +9,7 @@ import org.igv.tools.parsers.CNParser;
 import org.igv.tools.parsers.DataConsumer;
 import org.igv.tools.parsers.ToolsWiggleParser;
 import org.igv.tools.parsers.UnsortedException;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.util.collections.FloatArrayList;
 import org.igv.util.collections.IntArrayList;
@@ -87,22 +87,22 @@ public class Preprocessor implements DataConsumer {
      * Called to set initial parameters.  It is required that this be called
      * prior to writing the file
      */
-    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
-        setTrackParameters(trackType, trackLine, trackNames, true);
+    public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames) {
+        setTrackParameters(dataType, trackLine, trackNames, true);
     }
 
     /**
      * Called to set initial parameters.  It is required that this be called
      * prior to writing the file
      */
-    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
+    public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
 
         if (trackLine != null) {
             // log.warn(trackLine);
         }
 
         if (outputFile != null && writer == null) {
-            writer = new TDFWriter(outputFile, genome.getId(), trackType, trackLine, trackNames, windowFunctions, compressed);
+            writer = new TDFWriter(outputFile, genome.getId(), dataType, trackLine, trackNames, windowFunctions, compressed);
             nTracks = trackNames.length;
 
             // Convert genome coordinates from bp to kbp

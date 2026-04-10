@@ -29,7 +29,6 @@ import org.igv.ucsc.hub.HubParser;
 import org.igv.ucsc.hub.TrackSelectionDialog;
 import org.igv.ui.IGV;
 import org.igv.ui.IGVMenuBar;
-import org.igv.ui.PanelName;
 import org.igv.ui.WaitCursorManager;
 import org.igv.ui.genome.GenomeListItem;
 import org.igv.ui.genome.GenomeListManager;
@@ -179,8 +178,6 @@ public class GenomeManager {
             throw new RuntimeException("Server connection error", e);
         } finally {
             if (IGV.hasInstance()) {
-                IGVMenuBar.getInstance().updateMenus(currentGenome);
-                IGVMenuBar.getInstance().setAllMenusEnabled(true);
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
@@ -224,7 +221,7 @@ public class GenomeManager {
         // Fetch the gene track, defined by .genome files.  In this format the genome data is encoded in the .genome file
         FeatureTrack geneFeatureTrack = genome.getGeneTrack();   // Used for .genome and .gbk formats.  Otherwise null
         if (geneFeatureTrack != null) {
-            IGV.getInstance().addTrack(geneFeatureTrack, PanelName.ANNOTATION_PANEL.getName());
+            IGV.getInstance().addTrack(geneFeatureTrack);
         }
 
         List<ResourceLocator> resources = genome.getAnnotationResources();
@@ -233,7 +230,6 @@ public class GenomeManager {
             for (ResourceLocator locator : resources) {
                 try {
                     if (locator != null) {
-                        locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
                         List<Track> tracks = IGV.getInstance().load(locator);
                         annotationTracks.addAll(tracks);
                     }
@@ -313,9 +309,6 @@ public class GenomeManager {
                         .collect(Collectors.toList());
 
                 List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
-                for (ResourceLocator locator : locators) {
-                    locator.setPanelName(PanelName.ANNOTATION_PANEL.getName());
-                }
 
                 IGV.getInstance().loadTracks(locators);
             }

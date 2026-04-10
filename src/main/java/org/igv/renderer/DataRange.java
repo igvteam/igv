@@ -2,6 +2,7 @@ package org.igv.renderer;
 
 import org.igv.session.Persistable;
 import org.igv.track.Track;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -13,7 +14,7 @@ import java.util.Collection;
  * @author jrobinso
  */
 
-public class DataRange implements Persistable {
+public class DataRange {
 
 
     /**
@@ -97,6 +98,22 @@ public class DataRange implements Persistable {
 
     }
 
+    public static DataRange fromJson(JSONObject jsonObject) {
+        float minimum = (float) jsonObject.optDouble("min", 0);
+        float baseline = (float) jsonObject.optDouble("mid", 0);
+        float maximum = (float) jsonObject.optDouble("max", 0);
+        boolean drawBaseline = jsonObject.optBoolean("drawBaseline", true);
+        boolean isLog = jsonObject.optBoolean("logScale", false);
+        boolean flipAxis = jsonObject.optBoolean("flipAxis", false);
+        DataRange dr = new DataRange(minimum, baseline, maximum, drawBaseline, isLog);
+        dr.flipAxis = flipAxis;
+        return dr;
+    }
+
+    public static DataRange unmarshalJSON(JSONObject jsonObject) {
+        return fromJson(jsonObject);
+    }
+
     public static DataRange getFromTracks(Collection<? extends Track> tracks) {
         float min = Float.MAX_VALUE;
         float max = -Float.MAX_VALUE;
@@ -161,20 +178,6 @@ public class DataRange implements Persistable {
         this.drawBaseline = drawBaseline;
     }
 
-    /**
-     * Marshal object state in XML element
-     *
-     * @return
-     */
-
-    public void marshalXML(Document document, Element element) {
-        element.setAttribute("baseline", String.valueOf(this.baseline));
-        element.setAttribute("drawBaseline", String.valueOf(this.drawBaseline));
-        element.setAttribute("flipAxis", String.valueOf(this.flipAxis));
-        element.setAttribute("maximum", String.valueOf(this.maximum));
-        element.setAttribute("minimum", String.valueOf(this.minimum));
-        element.setAttribute("type", this.type.toString());
-    }
 
     /**
      * Restore object state from an XML element
@@ -189,7 +192,15 @@ public class DataRange implements Persistable {
         this.minimum = Float.parseFloat(element.getAttribute("minimum"));
     }
 
-    ;
+    public void marshalJSON(JSONObject jsonObject) {
+        jsonObject.put("logScale", this.type == Type.LOG ? true : false);
+        jsonObject.put("min", this.minimum);
+        jsonObject.put("mid", this.baseline);
+        jsonObject.put("max", this.maximum);
+        jsonObject.put("flipAxis", this.flipAxis);
+        jsonObject.put("drawBaseline", this.drawBaseline);
+    }
+
 
     public enum Type {
         LOG, LINEAR

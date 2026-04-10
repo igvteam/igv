@@ -17,9 +17,9 @@ public class BasePairRenderer {
 
     public void draw(BasePairData data,
                      RenderContext context,
-                     Rectangle trackRectangle,
                      RenderOptions renderOptions){
 
+        Rectangle trackRectangle = context.getTrackRectangle();
         double nucsPerPixel = context.getScale();
         double origin = context.getOrigin();
         //The location of the first base that is loaded

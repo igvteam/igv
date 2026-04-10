@@ -1,0 +1,50 @@
+{
+  "reference": {
+    "defaultPos": "ADWP02015454.1:24166-34166",
+    "organism": "Tc_SX10_v2.0",
+    "chromSizesURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/GCA_000188675.2.chrom.sizes.txt",
+    "scientificName": "Trypanosoma",
+    "description": "Trypanosoma",
+    "cytobandBbURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/bbi/GCA_000188675.2_Tc_SX10_v2.0.cytoBand.bb",
+    "accession": "GCA_000188675.2",
+    "wholeGenomeView": false,
+    "hubs": ["https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/hub.txt"],
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/GCA_000188675.2.2bit",
+    "twoBitBptURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/GCA_000188675.2.2bit.bpt",
+    "blat": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/dynablat-01.soe.ucsc.edu",
+    "nameSet": "ucsc",
+    "infoURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/html/GCA_000188675.2_Tc_SX10_v2.0.description.html",
+    "taxId": "5693",
+    "chromAliasBbURL": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/GCA_000188675.2.chromAlias.bb",
+    "name": "Trypanosoma cruzi (Sylvio X10/1 2012)",
+    "id": "GCA_000188675.2"
+  },
+  "locus": "ADWP02015454.1:1-72500",
+  "tracks": [
+    {
+      "name": "Reference sequence",
+      "id": "Reference sequence",
+      "type": "sequence",
+      "height": "0"
+    },
+    {
+      "featureVisibilityWindow": "12885012",
+      "format": "bigbed",
+      "name": "CpG Islands",
+      "id": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/bbi/GCA_000188675.2_Tc_SX10_v2.0.cpgIslandExt.bb",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/bbi/GCA_000188675.2_Tc_SX10_v2.0.cpgIslandExt.bb",
+      "height": "0"
+    },
+    {
+      "color": "180,0,0",
+      "featureVisibilityWindow": "26912610",
+      "format": "biggenepred",
+      "name": "Augustus",
+      "id": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/bbi/GCA_000188675.2_Tc_SX10_v2.0.augustus.bb",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/hubs/GCA/000/188/675/GCA_000188675.2/bbi/GCA_000188675.2_Tc_SX10_v2.0.augustus.bb",
+      "height": "0"
+    }
+  ]
+}

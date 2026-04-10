@@ -1,5 +1,6 @@
 package org.igv.event;
 
+import org.igv.track.Track;
 import org.igv.ui.panel.ReferenceFrame;
 
 /**

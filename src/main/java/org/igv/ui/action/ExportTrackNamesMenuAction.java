@@ -3,7 +3,7 @@ package org.igv.ui.action;
 import org.igv.logging.*;
 import org.igv.track.RegionScoreType;
 import org.igv.track.Track;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 import org.igv.ui.panel.FrameManager;
@@ -62,7 +62,7 @@ public class ExportTrackNamesMenuAction extends MenuAction {
             }
 
             for (Track t : igv.getAllTracks()) {
-                if (t.getTrackType() == TrackType.COPY_NUMBER || t.getTrackType() == TrackType.CNV) {
+                if (t.getDataType() == DataType.COPY_NUMBER || t.getDataType() == DataType.CNV) {
                     pw.print(t.getName());
                     for (ReferenceFrame frame : referenceFrames) {
                         //track.getRegionScore(chr, start, end, zoom, type, frame));

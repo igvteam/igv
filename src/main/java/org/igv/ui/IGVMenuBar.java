@@ -30,6 +30,9 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.MainPanel;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
+import org.igv.ui.panel.TrackPanel;
+import org.igv.ui.panel.TrackPanelScrollPane;
+import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
 import org.igv.util.BrowserLauncher;
@@ -61,7 +64,7 @@ import static org.igv.ui.UIConstants.*;
  * @author jrobinso
  * @date Apr 4, 2011
  */
-public class IGVMenuBar extends JMenuBar  {
+public class IGVMenuBar extends JMenuBar {
 
     private static Logger log = LogManager.getLogger(IGVMenuBar.class);
 
@@ -70,9 +73,8 @@ public class IGVMenuBar extends JMenuBar  {
 
     private JMenu extrasMenu;
     private JMenu googleMenu;
-    private JMenu AWSMenu;
+    private JMenu awsMenu;
     private AutosaveMenu autosaveMenu;
-    private FilterTracksMenuAction filterTracksAction;
     private JMenu viewMenu;
     private IGV igv;
 
@@ -80,7 +82,6 @@ public class IGVMenuBar extends JMenuBar  {
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu fileMenu;
-    private List<JComponent> tracksMenuAttributeComponents;
     private JMenu hubsMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
@@ -113,6 +114,7 @@ public class IGVMenuBar extends JMenuBar  {
             DesktopIntegration.setAboutHandler(this);
             DesktopIntegration.setQuitHandler();
         }
+
     }
 
     public void showAboutDialog() {
@@ -127,10 +129,8 @@ public class IGVMenuBar extends JMenuBar  {
         fileMenu = new JMenu("File");
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
-
         hubsMenu = new JMenu("Track Hubs");
         menus.add(hubsMenu);
-        menus.add(createSampleInfoMenu("Sample Info"));
         menus.add(createSessionsMenu("Sessions"));
         menus.add(createViewMenu("View"));
         menus.add(createRegionsMenu("Regions"));
@@ -154,9 +154,9 @@ public class IGVMenuBar extends JMenuBar  {
         }
 
 
-        AWSMenu = createAWSMenu();
-        AWSMenu.setVisible(false);
-        menus.add(AWSMenu);
+        awsMenu = createAWSMenu();
+        awsMenu.setVisible(false);
+        menus.add(awsMenu);
         //detecting the provider is slow, do it in another thread
         LongRunningTask.submit(this::updateAWSMenu);
 
@@ -166,7 +166,7 @@ public class IGVMenuBar extends JMenuBar  {
     }
 
     public void updateAWSMenu() {
-        UIUtilities.invokeOnEventThread(() -> AWSMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
+        UIUtilities.invokeOnEventThread(() -> awsMenu.setVisible(AmazonUtils.isAwsProviderPresent()));
     }
 
     /**
@@ -182,7 +182,7 @@ public class IGVMenuBar extends JMenuBar  {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, igv) {
+        menuAction = new MenuAction("Run igvtools...", null, KeyEvent.VK_T) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
@@ -251,6 +251,14 @@ public class IGVMenuBar extends JMenuBar  {
 //        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
+        // Sample info Load menu items
+        fileMenu.addSeparator();
+        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
         // ***** Snapshots
         fileMenu.addSeparator();
 
@@ -294,6 +302,28 @@ public class IGVMenuBar extends JMenuBar  {
         fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         return fileMenu;
+    }
+
+    JMenu createTracksMenu() {
+
+        JMenu tracksMenu = new JMenu("Tracks");
+
+        // Show/hide track selection checkboxes
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.isSelected();
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
+            }
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        tracksMenu.add(selectTracksItem);
+
+        return tracksMenu;
     }
 
     JMenu createSessionsMenu(String name) {
@@ -415,79 +445,6 @@ public class IGVMenuBar extends JMenuBar  {
     }
 
 
-    private JMenu createSampleInfoMenu(String name) {
-
-        MenuAction menuAction;
-        JMenu tracksMenu = new JMenu(name);
-
-        // Load menu items
-        menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
-        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        tracksMenu.addSeparator();
-
-        tracksMenuAttributeComponents = new ArrayList<>();
-        // Sort Tracks
-        menuAction = new SortTracksMenuAction("Sort Samples by Attribute...", KeyEvent.VK_S, IGV.getInstance());
-        JMenuItem sortTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(sortTracksMenuItem);
-        tracksMenuAttributeComponents.add(sortTracksMenuItem);
-
-        // Group Tracks
-        menuAction = new GroupTracksMenuAction("Group Samples by Attribute... ", KeyEvent.VK_G, IGV.getInstance());
-        JMenuItem groupTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(groupTracksMenuItem);
-        tracksMenuAttributeComponents.add(groupTracksMenuItem);
-
-        // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Samples by Attribute...", KeyEvent.VK_F, IGV.getInstance());
-        JMenuItem filterTracksMenuItem = MenuAndToolbarUtils.createMenuItem(filterTracksAction);
-        tracksMenu.add(filterTracksMenuItem);
-        tracksMenuAttributeComponents.add(filterTracksMenuItem);
-
-
-        // Rename tracks
-        menuAction = new RenameTracksMenuAction("Rename Samples by Attribute... ", KeyEvent.VK_R, IGV.getInstance());
-        JMenuItem renameTracksMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-        tracksMenu.add(renameTracksMenuItem);
-        tracksMenuAttributeComponents.add(renameTracksMenuItem);
-
-        // Export track names and attributes -- if > 1 is selected export those, otherwise export all
-        JMenuItem exportNames = new JMenuItem("Export Track Names and Attributes...");
-        exportNames.addActionListener(e12 -> {
-            Collection<Track> exportTracks = IGV.getInstance().getSelectedTracks();
-            if (exportTracks.size() <= 1) {
-                exportTracks = IGV.getInstance().getAllTracks();
-            }
-            exportTrackNames(exportTracks);
-        });
-        tracksMenu.add(exportNames);
-
-        tracksMenu.addMenuListener(new MenuListener() {
-            @Override
-            public void menuSelected(MenuEvent e) {
-                // Set visibility of trackMenuAttributeComponents based on attribute names
-                boolean hasAttributes = AttributeManager.getInstance().getAttributeNames().size() > 0;
-                for (JComponent comp : tracksMenuAttributeComponents) {
-                    comp.setEnabled(hasAttributes);
-                }
-            }
-
-            @Override
-            public void menuDeselected(MenuEvent e) {
-            }
-
-            @Override
-            public void menuCanceled(MenuEvent e) {
-            }
-        });
-
-        return tracksMenu;
-    }
-
     private JMenu createViewMenu(String name) {
 
         List<JComponent> menuItems = new ArrayList<JComponent>();
@@ -509,7 +466,6 @@ public class IGVMenuBar extends JMenuBar  {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
-
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -593,25 +549,28 @@ public class IGVMenuBar extends JMenuBar  {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
 
-        menuItems.add(new JSeparator());
+        // Show/hide track selection checkboxes
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.isSelected();
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
+            }
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        menuItems.add(selectTracksItem);
+
         menuAction =
-                new MenuAction("Reorder Panels...", null, KeyEvent.VK_S) {
+                new MenuAction("Reorder Tracks...", null, KeyEvent.VK_S) {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         ReorderPanelsDialog dlg = new ReorderPanelsDialog(igv.getMainFrame());
                         dlg.setVisible(true);
-                    }
-                };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction =
-                new MenuAction("Add New Panel", null, KeyEvent.VK_S) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String newPanelName = "Panel" + System.currentTimeMillis();
-                        igv.addDataPanel(newPanelName);
                     }
                 };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));

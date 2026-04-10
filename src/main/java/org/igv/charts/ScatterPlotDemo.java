@@ -1,7 +1,7 @@
 package org.igv.charts;
 
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.util.UIUtilities;
 
 import java.util.LinkedHashMap;
@@ -60,9 +60,9 @@ public class ScatterPlotDemo /*extends ApplicationFrame*/ {
         }
 
         Map<String, double[]> dataMap = new LinkedHashMap<String, double[]>();
-        dataMap.put(TrackType.COPY_NUMBER.toString(), cnData);
-        dataMap.put(TrackType.GENE_EXPRESSION.toString(), exprData);
-        dataMap.put(TrackType.DNA_METHYLATION.toString(), methData);
+        dataMap.put(DataType.COPY_NUMBER.toString(), cnData);
+        dataMap.put(DataType.GENE_EXPRESSION.toString(), exprData);
+        dataMap.put(DataType.DNA_METHYLATION.toString(), methData);
 
         // sample attributes (categorical)
         String [] treated = new String[sampleCount];

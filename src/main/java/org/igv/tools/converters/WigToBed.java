@@ -2,7 +2,7 @@ package org.igv.tools.converters;
 
 import org.igv.tools.parsers.DataConsumer;
 import org.igv.tools.parsers.ToolsWiggleParser;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -106,11 +106,11 @@ public class WigToBed implements DataConsumer {
         bedWriter.close();
     }
 
-    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
+    public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b) {
+    public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames, boolean b) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -1,7 +1,6 @@
 package org.igv.track;
 
 
-import org.igv.Globals;
 import org.igv.data.CombinedDataSource;
 import org.igv.data.CoverageDataSource;
 import org.igv.data.DataSource;
@@ -10,6 +9,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.DataRange;
 import org.igv.util.ResourceLocator;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -28,6 +28,9 @@ public class DataSourceTrack extends DataTrack {
 
     public DataSource dataSource;
 
+    public DataSourceTrack() {
+    }
+
     public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
         super(locator, id, name);
         if(dataSource == null && locator != null) {
@@ -41,14 +44,9 @@ public class DataSourceTrack extends DataTrack {
     public void setDatasource(DataSource dataSource) {
         this.dataSource = dataSource;
         if (this.dataSource != null) {
-            setTrackType(dataSource.getTrackType());
+            setDataType(dataSource.getDataType());
         }
     }
-
-    public DataSourceTrack() {
-
-    }
-
 
     void initScale(DataSource dataSource, List<LocusScore> scores) {
 
@@ -107,18 +105,6 @@ public class DataSourceTrack extends DataTrack {
         }
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (dataSource != null && dataSource instanceof CoverageDataSource){
-            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
-            if (normalize) {
-                element.setAttribute("normalize", "true");
-            }
-        }
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -127,6 +113,27 @@ public class DataSourceTrack extends DataTrack {
         if (dataSource != null) {
             if (dataSource instanceof CoverageDataSource && element.hasAttribute("normalize")) {
                 ((CoverageDataSource) dataSource).setNormalize(Boolean.parseBoolean(element.getAttribute("normalize")));
+            }
+        }
+    }
+
+    @Override
+    public void marshalJSON(JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        if (dataSource != null && dataSource instanceof CoverageDataSource){
+            boolean normalize = ((CoverageDataSource) dataSource).getNormalize();
+            if (normalize) {
+                jsonObject.put("normalize", true);
+            }
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (dataSource != null) {
+            if (dataSource instanceof CoverageDataSource && jsonObject.has("normalize")) {
+                ((CoverageDataSource) dataSource).setNormalize(jsonObject.getBoolean("normalize"));
             }
         }
     }

@@ -16,6 +16,10 @@ import java.util.regex.Pattern;
  * Date: Feb 3, 2010
  */
 public class Globals {
+
+    public static final long JS_MAX_SAFE_INTEGER = 9007199254740991L;
+    public static final long JS_MIN_SAFE_INTEGER = -9007199254740991L;
+
     public static final Color DULL_BLUE = new Color(0, 0, 200);
     public static final Color DULL_RED = new Color(200, 0, 0);
     private static Logger log = LogManager.getLogger(Globals.class);
@@ -37,7 +41,7 @@ public class Globals {
     /**
      * Field description
      */
-    final public static String SESSION_FILE_EXTENSION = ".xml";
+    final public static String SESSION_FILE_EXTENSION = ".json";
     /**
      * GENOME ARCHIVE CONSTANTS
      */

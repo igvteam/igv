@@ -10,8 +10,8 @@ import org.igv.Globals;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
+import org.igv.track.DataType;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
@@ -21,16 +21,15 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class SegmentedDataSet {
+public class SegmentedDataSet implements SegmentedDataSource {
 
     //SegFileParser parser;
-    TrackType trackType = TrackType.COPY_NUMBER;
+    DataType dataType = DataType.COPY_NUMBER;
     float dataMax = -Float.MAX_VALUE;
     float dataMin = Float.MAX_VALUE;
     /**
-     * Assume data is non-log value until suggested otherwise by the precense
-     * of negative numbers.  TODO This is a fragile assumption, the user should
-     * input this information directly.
+     * Assume data is non-log value until suggested otherwise by the presence
+     * of negative numbers.
      */
     private boolean logNormalized = false;
     /**
@@ -60,6 +59,7 @@ public class SegmentedDataSet {
 
 
     }
+
     /**
      * Sort all segment lists.  This is done automatically after loading.
      */
@@ -118,9 +118,9 @@ public class SegmentedDataSet {
      * @param chr
      * @return
      */
-    public List<LocusScore> getSegments(String sample, String chr) {
+    public List<LocusScore> getFeatures(String sample, String chr) {
 
-        if(Globals.CHR_ALL.equals(chr)) {
+        if (Globals.CHR_ALL.equals(chr)) {
             return getWholeGenomeScores(sample);
         }
 
@@ -137,8 +137,8 @@ public class SegmentedDataSet {
      *
      * @return
      */
-    public TrackType getType() {
-        return trackType;
+    public DataType getType() {
+        return dataType;
     }
 
     /**
@@ -181,7 +181,7 @@ public class SegmentedDataSet {
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             wholeGenomeScores = new ArrayList(1000);
             for (String chr : genome.getLongChromosomeNames()) {
-                List<LocusScore> chrSegments = getSegments(sample, chr);
+                List<LocusScore> chrSegments = getFeatures(sample, chr);
                 if (chrSegments != null) {
                     int lastgEnd = -1;
                     for (LocusScore score : chrSegments) {
@@ -204,19 +204,10 @@ public class SegmentedDataSet {
     /**
      * Method description
      *
-     * @return
+     * @param dataType
      */
-    public TrackType getTrackType() {
-        return trackType;
-    }
-
-    /**
-     * Method description
-     *
-     * @param trackType
-     */
-    public void setTrackType(TrackType trackType) {
-        this.trackType = trackType;
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
     }
 
 
@@ -231,9 +222,9 @@ public class SegmentedDataSet {
         return trackProperties;
     }
 
-    public LocusScore getSegmentAt(String sample, String chr, double position, ReferenceFrame frame) {
+    public LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame) {
 
-        List<LocusScore> scores = getSegments(sample, chr);
+        List<LocusScore> scores = getFeatures(sample, chr);
 
         if (scores == null) {
             return null;
@@ -241,7 +232,7 @@ public class SegmentedDataSet {
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             int buffer = (int) (2 * bpPerPixel);    /* * */
-            return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
+            return FeatureUtils.getFeatureAt(position, buffer, scores);
         }
     }
 

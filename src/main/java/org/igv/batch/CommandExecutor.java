@@ -17,7 +17,7 @@ import org.igv.sam.AlignmentTrackUtils;
 import org.igv.sam.SortOption;
 import org.igv.session.Session;
 import org.igv.session.SessionReader;
-import org.igv.session.SessionWriter;
+import org.igv.session.JSONSessionWriter;
 import org.igv.track.*;
 import org.igv.ui.IGV;
 import org.igv.ui.action.OverlayTracksMenuAction;
@@ -159,7 +159,7 @@ public class CommandExecutor {
             String trackName = parseTrackName(param1);
             result = removeTrack(trackName);
         } else if (cmd.equalsIgnoreCase("tweakdivider")) {
-            igv.tweakPanelDivider();
+            //igv.tweakPanelDivider();
         } else if (cmd.equalsIgnoreCase("setDataRange")) {
             result = this.setDataRange(param1, param2);
         } else if (cmd.equalsIgnoreCase("setLogScale")) {
@@ -530,7 +530,7 @@ public class CommandExecutor {
         List<Track> tracks = tracksMatchingName(trackName);
         if (tracks.size() > 0) {
             for (Track track : tracks) {
-                track.setHeight(height, true);
+                track.setHeight(height);
                 igv.repaint(track);
             }
             return "OK";
@@ -628,6 +628,10 @@ public class CommandExecutor {
         String genomeIDorPath = param1;
 
         try {
+            File file = new File(resolveFileReference(genomeIDorPath));
+            if (file.exists()) {
+                genomeIDorPath = file.getAbsolutePath();
+            }
             GenomeManager.getInstance().loadGenomeById(genomeIDorPath);
             result = "OK";
         } catch (IOException e) {
@@ -1126,7 +1130,7 @@ public class CommandExecutor {
         if (region == null || region.trim().length() == 0) {
             target = this.igv.getContentPane().getMainPanel();
         } else if ("trackpanels".equalsIgnoreCase(region)) {
-            target = this.igv.getMainPanel().getCenterSplitPane();
+            target = this.igv.getMainPanel().getTrackPanelContainer();
         }
 
         if (target == null) {
@@ -1145,14 +1149,14 @@ public class CommandExecutor {
 
     private String saveSession(String filename) {
         Session currentSession = igv.getSession();
-        if (!filename.endsWith(".xml")) {
-            filename = filename + ".xml";
+        if (!filename.endsWith(".json")) {
+            filename = filename + ".json";
         }
         File targetFile = getFile(filename);
         if (targetFile.getParentFile().exists()) {
             currentSession.setPath(targetFile.getAbsolutePath());
             try {
-                (new SessionWriter()).saveSession(currentSession, targetFile);
+                (new JSONSessionWriter(igv)).saveSession(currentSession, targetFile);
                 return "OK";
             } catch (Exception e) {
                 return "Error writingin sesssion: " + e.getMessage();

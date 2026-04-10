@@ -77,7 +77,7 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return binnedClusters.size() * rowHeight;
     }
 
@@ -92,7 +92,7 @@ public class ClusterTrack extends AbstractTrack {
     }
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
         String chr = context.getReferenceFrame().getChrName();
         double origin = context.getOrigin();
@@ -102,6 +102,7 @@ public class ClusterTrack extends AbstractTrack {
 
         int y = 0;
 
+        Rectangle trackRectangle = context.getTrackRectangle();
         for (Cluster c : binnedClusters) {
 
             List<Integer> loci = c.posMap.get(chr);
@@ -112,8 +113,8 @@ public class ClusterTrack extends AbstractTrack {
                     double pixelStart = ((position - origin) / locScale);
                     double pixelEnd = ((position + binSize - origin) / locScale);
 
-                    // If the any part of the feature fits in the Track rectangle draw it
-                    if (pixelEnd >= rect.getX() && pixelStart <= rect.getMaxX()) {
+                    // If  any part of the feature fits in the Track rectangle draw it
+                    if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
 
                         Color color = this.getColor();
                         Graphics2D g = context.getGraphic2DForColor(color);
@@ -176,11 +177,11 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
-        menu.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
+        items.add(TrackMenuUtils.getTrackRenameItem(Collections.singleton(ClusterTrack.this)));
 
         final JMenuItem binSizeItem = new JMenuItem("Set Bin Size...");
         binSizeItem.addActionListener(e -> {
@@ -195,7 +196,7 @@ public class ClusterTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(binSizeItem);
+        items.add(binSizeItem);
 
         final JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(e -> {
@@ -210,13 +211,13 @@ public class ClusterTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(rowHeightItem);
+        items.add(rowHeightItem);
 
         JMenuItem item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> TrackMenuUtils.changeTrackColor(Collections.singleton(ClusterTrack.this)));
-        menu.add(item);
+        items.add(item);
 
-        return menu;
+        return items;
     }
 
     @Override
@@ -234,22 +235,28 @@ public class ClusterTrack extends AbstractTrack {
 
 
     @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("binSize", String.valueOf(binSize));
-        element.setAttribute("sequence", String.valueOf(rowHeight));
-
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        json.put("binSize", binSize);
+        json.put("rowHeight", rowHeight);
     }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
-
         this.binSize = Integer.parseInt(element.getAttribute("binSize"));
         this.rowHeight = Integer.parseInt(element.getAttribute("rowHeight"));
+    }
 
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("binSize")) {
+            this.binSize = jsonObject.getInt("binSize");
+        }
+        if (jsonObject.has("rowHeight")) {
+            this.rowHeight = jsonObject.getInt("rowHeight");
+        }
     }
 }

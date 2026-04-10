@@ -6,7 +6,7 @@ import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 import java.awt.*;
 import java.util.List;
@@ -37,7 +37,7 @@ public class HeatmapRenderer extends DataRenderer {
      */
     public void renderScores(Track track, List<LocusScore> scores, RenderContext context, Rectangle rect) {
 
-        ContinuousColorScale colorScale = track.getColorScale();
+        AbstractColorScale colorScale = track.getColorScale();
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -93,7 +93,7 @@ public class HeatmapRenderer extends DataRenderer {
             if ((pStart + w) >= 0 && (lastPStart <= maxX)) {
 
                 // Minimum width for DNA methylation
-                if (track.getTrackType() == TrackType.DNA_METHYLATION) {
+                if (track.getDataType() == DataType.DNA_METHYLATION) {
                     if (w < 6) {
                         int pMid = (pStart + pEnd) / 2;
                         pStart = pMid - 3;

@@ -41,8 +41,7 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
     public AttributeHeaderPanel() {
         this.darkMode = Globals.isDarkMode();
-        setBackground(darkMode ? UIManager.getColor("Panel.background") : new java.awt.Color(255, 255, 255));
-        setBorder(javax.swing.BorderFactory.createLineBorder(Color.lightGray));
+        setBorder(null);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener();
     }
@@ -113,6 +112,8 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
                     int stringOffset = 2;
                     graphics2.drawString(key, stringOffset, x);
                 }
+
+
             } finally {
                 graphics2.dispose();
             }
@@ -176,11 +177,13 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
-        Graphics2D borderGraphics = (Graphics2D) g.create();
         paintComponent(g);
-        borderGraphics.setColor(Color.lightGray);
-        borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
-        borderGraphics.dispose();
+//        if (rect.width > 0 && rect.height > 0) {
+//            Graphics2D borderGraphics = (Graphics2D) g.create();
+//            borderGraphics.setColor(Color.lightGray);
+//            borderGraphics.drawRect(rect.x, rect.y, rect.width - 1, rect.height - 1);
+//            borderGraphics.dispose();
+//        }
     }
 
     @Override

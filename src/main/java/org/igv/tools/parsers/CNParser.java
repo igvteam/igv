@@ -3,7 +3,7 @@ package org.igv.tools.parsers;
 import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import htsjdk.tribble.readers.AsciiLineReader;
@@ -69,7 +69,7 @@ public class CNParser extends AbstractParser {
             hasEndLocations = true;
             hasCalls = false;
             type = FileType.IGV;
-            setTrackType(TrackType.OTHER);
+            setTrackType(DataType.OTHER);
         } else {
             probeColumn = 0;
             chrColumn = 1;
@@ -117,9 +117,9 @@ public class CNParser extends AbstractParser {
             // Infer datatype from extension.  This can be overriden in the
             // comment section
             if (isCopyNumberFileExt(resourceLocator.getPath())) {
-                setTrackType(TrackType.COPY_NUMBER);
+                setTrackType(DataType.COPY_NUMBER);
             } else if (isLOHFileExt(resourceLocator.getPath())) {
-                setTrackType(TrackType.LOH);
+                setTrackType(DataType.LOH);
             }
 
             // Parse comments, if any

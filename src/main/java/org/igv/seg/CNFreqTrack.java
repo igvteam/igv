@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -34,9 +34,7 @@ public class CNFreqTrack extends AbstractTrack {
     FreqData data;
     BarChartRenderer renderer;
 
-
     float ampThreshold;
-
     float delThreshold;
 
     public CNFreqTrack() {
@@ -57,7 +55,16 @@ public class CNFreqTrack extends AbstractTrack {
         this.setMinimumHeight(25);
         this.setHeight(50);
         this.setSortable(false);
+    }
 
+    @Override
+    public TrackType getType() {
+        return TrackType.cnfreq;
+    }
+
+    @Override
+    public int getContentHeight() {
+        return this.height;
     }
 
     @Override
@@ -83,23 +90,16 @@ public class CNFreqTrack extends AbstractTrack {
         this.delThreshold = delThreshold;
     }
 
-    public float getAmpThreshold() {
-        return ampThreshold;
-    }
 
-    public float getDelThreshold() {
-        return delThreshold;
-    }
+    public void render(RenderContext context) {
 
+        // TODO -- generalize.  This track doesn't scroll, we don't need to account for visibleRect or clipBounds
+        Rectangle trackRect = context.getTrackRectangle();
 
-    public void render(RenderContext context, Rectangle rect) {
         data.compute(ampThreshold, delThreshold);
-        renderer.render(data.getDelCounts(context.getChr()), context, rect, this);
-        renderer.render(data.getAmpCounts(context.getChr()), context, rect, this);
-        renderer.setMarginFraction(0);
-        renderer.renderBorder(this, context, rect);
-        context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height - 1);
-
+        renderer.render(data.getDelCounts(context.getChr()), context, trackRect, this);
+        renderer.render(data.getAmpCounts(context.getChr()), context, trackRect, this);
+        renderer.renderGuides(this, context, trackRect);
     }
 
 
@@ -136,9 +136,9 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         final JMenuItem ampThresholdItem = new JMenuItem("Set amplification threshold (" + ampThreshold + ")");
         ampThresholdItem.addActionListener(e -> {
@@ -153,7 +153,7 @@ public class CNFreqTrack extends AbstractTrack {
                 }
             }
         });
-        menu.add(ampThresholdItem);
+        items.add(ampThresholdItem);
 
         final JMenuItem delThresholdItem = new JMenuItem("Set deletion threshold (" + delThreshold + ")");
         delThresholdItem.addActionListener(new ActionListener() {
@@ -170,25 +170,11 @@ public class CNFreqTrack extends AbstractTrack {
             }
         });
 
-        menu.add(delThresholdItem);
+        items.add(delThresholdItem);
 
-        menu.addSeparator();
+        items.add(new JPopupMenu.Separator());
 
-        List<Track> selfAsList = Arrays.asList((Track) this);
-        TrackMenuUtils.addSharedItems(menu, selfAsList);
-
-        return menu;
-    }
-
-
-    @Override
-    public void marshalXML(Document document, Element parentElement) {
-
-        super.marshalXML(document, parentElement);
-
-        parentElement.setAttribute("ampThreshold", String.valueOf(ampThreshold));
-        parentElement.setAttribute("delThreshold", String.valueOf(delThreshold));
-
+        return items;
     }
 
     @Override
@@ -199,5 +185,19 @@ public class CNFreqTrack extends AbstractTrack {
         this.ampThreshold = Float.parseFloat(element.getAttribute("ampThreshold"));
         this.delThreshold = Float.parseFloat(element.getAttribute("delThreshold"));
 
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject jsonObject) {
+        super.marshalJSON(jsonObject);
+        jsonObject.put("ampThreshold", ampThreshold);
+        jsonObject.put("delThreshold", delThreshold);
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        this.ampThreshold = (float) jsonObject.optDouble("ampThreshold", ampThreshold);
+        this.delThreshold = (float) jsonObject.optDouble("delThreshold", delThreshold);
     }
 }

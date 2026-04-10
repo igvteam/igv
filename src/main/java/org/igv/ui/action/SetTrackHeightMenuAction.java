@@ -114,7 +114,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
 
         double[] heights = new double[tracks.size()];
         for (int i = 0; i < tracks.size(); i++) {
-            heights[i] = tracks.get(i).getHeight();
+            heights[i] = tracks.get(i).getContentHeight();
         }
         int medianTrackHeight = (int) Math.round(StatUtils.percentile(heights, 50));
         if (medianTrackHeight > 0) {

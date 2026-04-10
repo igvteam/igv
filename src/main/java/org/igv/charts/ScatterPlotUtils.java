@@ -22,13 +22,13 @@ public class ScatterPlotUtils {
      * ALLELE_SPECIFIC_COPY_NUMBER, LOH, MUTATION, RNAI, POOLED_RNAI, CHIP_CHIP, CNV,
      * ALLELE_FREQUENCY, COVERAGE, REPMASK, EXPR
      */
-    static HashSet<TrackType> plottableTypes = new HashSet();
+    static HashSet<DataType> plottableTypes = new HashSet();
     public static final String MUTATION_COUNT = "Mutation Count";
 
     static {
-        plottableTypes.add(TrackType.COPY_NUMBER);
-        plottableTypes.add(TrackType.GENE_EXPRESSION);
-        plottableTypes.add(TrackType.DNA_METHYLATION);
+        plottableTypes.add(DataType.COPY_NUMBER);
+        plottableTypes.add(DataType.GENE_EXPRESSION);
+        plottableTypes.add(DataType.DNA_METHYLATION);
     }
 
     public static void openPlot(String chr, int start, int end, int zoom) {
@@ -45,7 +45,7 @@ public class ScatterPlotUtils {
     public static boolean hasPlottableTracks() {
         List<Track> tracks = IGV.getInstance().getAllTracks();
         for (Track t : tracks) {
-            if (plottableTypes.contains(t.getTrackType())) {
+            if (plottableTypes.contains(t.getDataType())) {
                 return true;
             }
         }
@@ -57,7 +57,7 @@ public class ScatterPlotUtils {
         List<Track> tracks = IGV.getInstance().getAllTracks();
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
         LinkedHashMap<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
-        LinkedHashSet<TrackType> types = new LinkedHashSet<TrackType>();
+        LinkedHashSet<DataType> types = new LinkedHashSet<DataType>();
 
         // Create a map to keep track of the set of all attribute values for each attribute category.
         LinkedHashMap<String, Set<String>> uniqueAttributeValues = new LinkedHashMap<String, Set<String>>();
@@ -71,9 +71,9 @@ public class ScatterPlotUtils {
         for (Track t : tracks) {
 
             String sample = t.getSample();
-            TrackType type = t.getTrackType();
+            DataType type = t.getDataType();
 
-            if (type == TrackType.MUTATION) {
+            if (type == DataType.MUTATION) {
                 // Classify sample by mutation count
                 SampleData sampleData = sampleDataMap.get(sample);
                 if (sampleData != null) {
@@ -133,9 +133,9 @@ public class ScatterPlotUtils {
         Map<String, double[]> dataMap = new HashMap<String, double[]>(types.size());
 
         // Loop through track (data) types
-        Map<TrackType, Integer> typeCounts = new HashMap<TrackType, Integer>();
+        Map<DataType, Integer> typeCounts = new HashMap<DataType, Integer>();
 
-        for (TrackType type : types) {
+        for (DataType type : types) {
             double[] data = new double[sampleNames.length];
             for (int i = 0; i < sampleNames.length; i++) {
                 SampleData sd = sampleDataMap.get(sampleNames[i]);
@@ -218,11 +218,11 @@ public class ScatterPlotUtils {
      */
     public static class SampleData {
 
-        Map<TrackType, DoubleArrayList> valueMap = new HashMap<TrackType, DoubleArrayList>();
+        Map<DataType, DoubleArrayList> valueMap = new HashMap<DataType, DoubleArrayList>();
         Map<String, String> attributesMap = new HashMap<String, String>();
         int mutationCount;
 
-        public void addDataValue(TrackType type, double value) {
+        public void addDataValue(DataType type, double value) {
 
             DoubleArrayList valueArray = valueMap.get(type);
             if (valueArray == null) {
@@ -232,7 +232,7 @@ public class ScatterPlotUtils {
             valueArray.add(value);
         }
 
-        public DoubleArrayList getData(TrackType type) {
+        public DoubleArrayList getData(DataType type) {
             return valueMap.get(type);
         }
 

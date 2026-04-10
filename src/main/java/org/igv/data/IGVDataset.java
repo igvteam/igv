@@ -2,7 +2,7 @@ package org.igv.data;
 
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ObjectCache;
 import org.igv.util.ResourceLocator;
 
@@ -17,7 +17,7 @@ public class IGVDataset implements Dataset {
 
     private String name;
 
-    private TrackType type = TrackType.OTHER;
+    private DataType type = DataType.OTHER;
 
     private boolean logNormalized;
     private String[] dataHeadings;
@@ -56,11 +56,11 @@ public class IGVDataset implements Dataset {
         this.genomeSummary = genomeSummary;
     }
 
-    public void setTrackType(TrackType type) {
+    public void setTrackType(DataType type) {
         this.type = type;
     }
 
-    public TrackType getType() {
+    public DataType getType() {
         return type;
     }
 

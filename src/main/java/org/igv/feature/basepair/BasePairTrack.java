@@ -7,6 +7,9 @@ import org.igv.session.Persistable;
 
 import org.igv.track.AbstractTrack;
 import org.igv.track.RenderContext;
+import org.igv.track.TrackClickEvent;
+import org.igv.track.TrackMenuUtils;
+import org.igv.track.TrackType;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
@@ -17,6 +20,7 @@ import org.w3c.dom.NodeList;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,10 +48,26 @@ public class BasePairTrack extends AbstractTrack {
         BasePairFileParser.loadData(locator, genome,
                 basePairData, renderOptions);
         this.genome = genome;
+        this.setHeight(300);
     }
 
     public BasePairTrack() {
         this.genome = GenomeManager.getInstance().getCurrentGenome();
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.arc;
+    }
+
+    @Override
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        return TrackMenuUtils.getBasePairMenuItems(Collections.singleton(this));
+    }
+
+    @Override
+    public int getContentHeight() {
+        return this.height;
     }
 
     @Override
@@ -61,19 +81,11 @@ public class BasePairTrack extends AbstractTrack {
                 genome, basePairData, renderOptions);
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
-        Graphics2D g2d = context.getGraphics();
-        Rectangle clip = new Rectangle(g2d.getClip().getBounds());
-        g2d.setClip(rect.intersection(clip.getBounds()));
-        context.clearGraphicsCache();
-
-        try {
-            basePairRenderer.draw(basePairData, context, rect, renderOptions);
+            basePairRenderer.draw(basePairData, context, renderOptions);
             context.clearGraphicsCache();
-        } finally {
-            g2d.setClip(clip);
-        }
+
     }
 
 
@@ -85,7 +97,7 @@ public class BasePairTrack extends AbstractTrack {
         return this.renderOptions;
     }
 
-    public static class RenderOptions implements Persistable  {
+    public static class RenderOptions  {
 
         public static final String NAME = "BPRenderOptions";
 
@@ -155,7 +167,7 @@ public class BasePairTrack extends AbstractTrack {
             this.colorLabels.set(i, s);
         }
 
-        @Override
+
         public void marshalXML(Document document, Element element) {
 
             if(arcDirection != ArcDirection.DOWN) {
@@ -170,7 +182,27 @@ public class BasePairTrack extends AbstractTrack {
             }
         }
 
-        @Override
+
+        public void marshalJSON(org.json.JSONObject json) {
+            json.put("arcDirection", arcDirection.toString());
+            json.put("colors", colors);
+        }
+
+
+        public void unmarshalJSON(org.json.JSONObject json) {
+            if(json.has("arcDirection")) {
+                this.arcDirection = ArcDirection.valueOf(json.getString("arcDirection"));
+            }
+            if(json.has("colors")) {
+                this.colors = new ArrayList<>();
+                org.json.JSONArray colorArray = json.getJSONArray("colors");
+                for(int i=0; i<colorArray.length(); i++) {
+                    this.colors.add(colorArray.getString(i));
+                }
+            }
+        }
+
+
         public void unmarshalXML(Element element, Integer version) {
 
             if(element.hasAttribute("arcDirection")) {
@@ -195,17 +227,6 @@ public class BasePairTrack extends AbstractTrack {
         return null;
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        Element renderElement = document.createElement("BPRenderOptions");
-        renderOptions.marshalXML(document, renderElement);
-
-        element.appendChild(renderElement);
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -216,7 +237,13 @@ public class BasePairTrack extends AbstractTrack {
             Element renderElement = (Element) tmp.item(0);
             this.renderOptions.unmarshalXML(renderElement, version);
         }
+    }
 
-
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        org.json.JSONObject renderOptionsJSON = new org.json.JSONObject();
+        renderOptions.marshalJSON(renderOptionsJSON);
+        json.put("renderOptions", renderOptionsJSON);
     }
 }

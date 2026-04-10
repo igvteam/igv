@@ -63,23 +63,25 @@ public class OverlayTracksMenuAction extends MenuAction {
     }
 
     public static void merge(List<DataTrack> dataTrackList, String name) {
+        if(dataTrackList.size() < 2) return;
         MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), name, dataTrackList);
-        Track firstTrack = dataTrackList.iterator().next();
-        TrackPanel panel = TrackPanel.getParentPanel(firstTrack);
-        panel.addTrack(mergedTracks);
-        panel.moveSelectedTracksTo(Arrays.asList(mergedTracks), firstTrack, false);
-        panel.removeTracks(dataTrackList);
+        mergedTracks.setOrder(dataTrackList.get(0).getOrder());
+        IGV.getInstance().removeTracks(dataTrackList);
+        IGV.getInstance().addTracks(List.of(mergedTracks));
     }
 
     public static void unmerge(Collection<Track> tracks) {
         for (Track t : tracks) {
-            if (t instanceof MergedTracks) {
-                TrackPanel panel = TrackPanel.getParentPanel(t);
-                MergedTracks mergedTracks = (MergedTracks) t;
+
+            if (t instanceof MergedTracks mergedTracks) {
+                long order = mergedTracks.getOrder();
                 mergedTracks.setTrackAlphas(1.0);
-                panel.addTracks(mergedTracks.getMemberTracks());
-                panel.moveSelectedTracksTo(mergedTracks.getMemberTracks(), mergedTracks, true);
-                IGV.getInstance().deleteTracks(Arrays.asList(mergedTracks));
+                // Set the order of member tracks to match the merged track's order
+                for (Track memberTrack : mergedTracks.getMemberTracks()) {
+                    memberTrack.setOrder(order);
+                }
+                IGV.getInstance().deleteTracks(List.of(mergedTracks));
+                IGV.getInstance().addTracks(new ArrayList<>(mergedTracks.getMemberTracks()));
             }
         }
         IGV.getInstance().repaint();

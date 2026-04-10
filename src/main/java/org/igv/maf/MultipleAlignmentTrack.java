@@ -2,7 +2,6 @@ package org.igv.maf;
 
 import org.igv.logging.*;
 import org.igv.feature.genome.Genome;
-import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
@@ -92,6 +91,10 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         selectedSpecies.addAll(reader.getSpecies());
     }
 
+    @Override
+    public TrackType getType() {
+        return TrackType.maf;
+    }
 
     public List<String> getSelectedSpecies() {
         return selectedSpecies;
@@ -111,27 +114,23 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return GAPS_HEIGHT + (getSelectedSpecies().size() + 1) * EXPANDED_HEIGHT;
     }
 
     @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
-        this.visibleNameRect = trackRectangle;
-        if (isSelected()) {
-            g2D.setBackground(Color.LIGHT_GRAY);
-        } else {
-            g2D.setBackground(Color.WHITE);
-        }
+        this.visibleNameRect = visibleRect;
+        g2D.setBackground(Color.WHITE);
 
-        Rectangle rect = new Rectangle(trackRectangle);
+        Rectangle rect = new Rectangle(visibleRect);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
 
         Font font = FontManager.getFont(getFontSize());
         g2D.setFont(font);
 
-        int y = trackRectangle.y;
+        int y = visibleRect.y;
 
         rect.height = GAPS_HEIGHT;
         rect.y = y;
@@ -149,7 +148,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 name = sp;
             }
 
-            if (visibleRectangle.intersects(rect)) {
+            if (visibleRect.intersects(rect)) {
 
                 GraphicUtils.drawVerticallyCenteredText(name, margin, rect, g2D, true);
             }
@@ -191,12 +190,12 @@ public class MultipleAlignmentTrack extends AbstractTrack {
         loadedAlignments = new MAFCache(chr, start, end, alignments);
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
         double locScale = context.getScale();
 
         if (locScale > 10) {
-            Rectangle r = new Rectangle(rect);
+            Rectangle r = new Rectangle(context.getTrackRectangle());
             if (visibleNameRect != null) {
                 r.y = visibleNameRect.y;
                 r.height = visibleNameRect.height;
@@ -218,14 +217,15 @@ public class MultipleAlignmentTrack extends AbstractTrack {
             alignments = loadedAlignments.getAlignments();
             if (alignments != null) {
                 for (MultipleAlignmentBlock ma : alignments) {
-                    renderAlignment(context, rect, ma);
+                    renderAlignment(context, ma);
                 }
             }
         }
     }
 
-    private void renderAlignment(RenderContext context, Rectangle trackRectangle, MultipleAlignmentBlock ma) {
+    private void renderAlignment(RenderContext context, MultipleAlignmentBlock ma) {
 
+        Rectangle trackRectangle = context.getTrackRectangle();
         int y = trackRectangle.y;
 
         MultipleAlignmentBlock.Sequence reference = ma.getRefSequence();
@@ -269,30 +269,27 @@ public class MultipleAlignmentTrack extends AbstractTrack {
 
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
-        IGVPopupMenu menu = new IGVPopupMenu();
-
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
+        List<Component> items = new ArrayList<>();
 
         if (getId().endsWith("hg18.maf.dict") || getId().endsWith("hg19.maf.dict")) {
-            menu.addSeparator();
+            items.add(new JPopupMenu.Separator());
             JMenuItem configTrack = new JMenuItem("Configure track...");
             configTrack.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent) {
                     configureTrack();
                 }
             });
-            menu.add(configTrack);
-            menu.addSeparator();
+            items.add(configTrack);
+            items.add(new JPopupMenu.Separator());
         }
 
-        List<Track> selfAsList = Arrays.asList((Track) this);
-
-        return menu;
+        return items;
     }
 
 

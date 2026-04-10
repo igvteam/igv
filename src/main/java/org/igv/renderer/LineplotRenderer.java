@@ -27,15 +27,12 @@ public class LineplotRenderer extends XYPlotRenderer {
      * @param track
      * @param locusScores
      * @param context
-     * @param arect
+     * @param rect
      */
     @Override
-    public void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
+    public void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle rect) {
 
         if (locusScores.size() == 0) return;
-
-        Rectangle adjustedRect = calculateDrawingRect(arect);
-
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -54,11 +51,11 @@ public class LineplotRenderer extends XYPlotRenderer {
         float minValue = (float) axisDefinition.getMinimum();
 
         // Calculate the Y scale factor.
-        double yScaleFactor = adjustedRect.getHeight() / (maxValue - minValue);
+        double yScaleFactor = rect.getHeight() / (maxValue - minValue);
 
 
         int lastPx = (int) ((locusScores.get(0).getStart() - origin) / locScale);
-        int lastPy = (int) (adjustedRect.getY() + (maxValue - 0) * yScaleFactor);
+        int lastPy = (int) (rect.getY() + (maxValue - 0) * yScaleFactor);
 
         for (LocusScore score : locusScores) {
 
@@ -69,13 +66,13 @@ public class LineplotRenderer extends XYPlotRenderer {
                 double x = ((score.getStart() - origin) / locScale);
                 double dx = (score.getEnd() - score.getStart()) / locScale;
                 int pX = (int) x;
-                int pY = (int) (adjustedRect.getY() + (maxValue - dataY) * yScaleFactor);
+                int pY = (int) (rect.getY() + (maxValue - dataY) * yScaleFactor);
                 double slope = ((double) pY - lastPy) / (pX - lastPx);
 
                 int clippedLastPX = lastPx;
                 int clippedLastPY = lastPy;
-                if (lastPy < adjustedRect.y || lastPy > (adjustedRect.y + adjustedRect.height)) {
-                    clippedLastPY = (lastPy < adjustedRect.y) ? adjustedRect.y : adjustedRect.y + adjustedRect.height;
+                if (lastPy < rect.y || lastPy > (rect.y + rect.height)) {
+                    clippedLastPY = (lastPy < rect.y) ? rect.y : rect.y + rect.height;
                     clippedLastPX = lastPx + (int) ((clippedLastPY - lastPy) / slope);
                 }
 
@@ -83,8 +80,8 @@ public class LineplotRenderer extends XYPlotRenderer {
                 int clippedPY = pY;
 
                 // Clip and interpolate if neccessary
-                if (pY < adjustedRect.y || pY > (adjustedRect.y + adjustedRect.height)) {
-                    clippedPY = (pY < adjustedRect.getMinY()) ? adjustedRect.y : adjustedRect.y + adjustedRect.height;
+                if (pY < rect.y || pY > (rect.y + rect.height)) {
+                    clippedPY = (pY < rect.getMinY()) ? rect.y : rect.y + rect.height;
                     clippedPX = lastPx + (int) ((clippedPY - lastPy) / slope);
                 }
 
@@ -99,7 +96,7 @@ public class LineplotRenderer extends XYPlotRenderer {
                 lastPx = (int) (pX + dx);
                 lastPy = (int) pY;
 
-                if (lastPx > adjustedRect.getMaxX()) {
+                if (lastPx > rect.getMaxX()) {
                     break;
                 }
             }

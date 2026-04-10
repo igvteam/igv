@@ -1,6 +1,6 @@
 package org.igv.tools.parsers;
 
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 
 /**
  * @author jrobinso
@@ -13,9 +13,9 @@ public interface DataConsumer {
 
     public void parsingComplete();
 
-    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames);
+    public void setTrackParameters(DataType dataType, String trackLine, String[] trackNames);
 
-    void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b);
+    void setTrackParameters(DataType dataType, String trackLine, String[] trackNames, boolean b);
 
     /**
      * Set a tolerance for "sortedness" of the data.  A start position can be less than

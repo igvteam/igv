@@ -8,7 +8,7 @@ import org.igv.data.GenomeSummaryData;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.track.WindowFunction;
 import org.igv.util.collections.DownsampledDoubleArrayList;
 
@@ -149,8 +149,8 @@ public class CufflinksDataSource implements DataSource {
     }
 
     @Override
-    public TrackType getTrackType() {
-        return TrackType.FPKM;
+    public DataType getDataType() {
+        return DataType.FPKM;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.igv.gwas;
 
 import org.igv.logging.*;
-import org.igv.Globals;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.prefs.Constants;
@@ -29,7 +28,6 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author jussi
@@ -102,6 +100,11 @@ public class GWASTrack extends AbstractTrack {
     }
 
     @Override
+    public TrackType getType() {
+        return TrackType.gwas;
+    }
+
+    @Override
     public boolean isNumeric() {
         return true;
     }
@@ -116,7 +119,7 @@ public class GWASTrack extends AbstractTrack {
         // Nothing to do, track is initialized with all data
     }
 
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -127,9 +130,8 @@ public class GWASTrack extends AbstractTrack {
 
         try {
             g = (Graphics2D) context.getGraphics().create();
-            g.setClip(rect);
 
-            Rectangle plotRect = calculateDrawingRect(rect);
+            Rectangle plotRect = context.getTrackRectangle();
 
             DataRange dataRange = this.getDataRange();
             float maxValue = dataRange.getMaximum();
@@ -267,14 +269,6 @@ public class GWASTrack extends AbstractTrack {
     }
 
 
-    Rectangle calculateDrawingRect(Rectangle arect) {
-        double buffer = Math.min(arect.getHeight() * 0.2, 10);
-        Rectangle adjustedRect = new Rectangle(arect);
-        adjustedRect.y = (int) (arect.getY() + buffer);
-        adjustedRect.height = (int) (arect.height - (adjustedRect.y - arect.getY()));
-        return adjustedRect;
-    }
-
     /**
      * Find index of data point closest to given chromosomal location and y-coordinate
      */
@@ -346,53 +340,49 @@ public class GWASTrack extends AbstractTrack {
     }
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu popupMenu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
+        popupTitle.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 12));
+        items.add(popupTitle);
 
-        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        popupMenu.add(popupTitle);
-
-        Collection<Track> tmpTracks = new ArrayList();
+        Collection<Track> tmpTracks = new ArrayList<>();
         tmpTracks.add(this);
 
+        items.add(new JPopupMenu.Separator());
 
-        popupMenu.addSeparator();
+        items.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
+        items.add(new JPopupMenu.Separator());
 
+        items.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
+        items.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
+        items.add(new JPopupMenu.Separator());
 
-        popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
-        popupMenu.addSeparator();
+        items.add(new JLabel("Color scheme", JLabel.LEFT));
 
-        popupMenu.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
-        popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
-        popupMenu.addSeparator();
+        items.add(addChrColorItem(null));
+        items.add(addSingleColorItem(null));
+        items.add(addAlternatingColorItem(null));
+        items.add(new JPopupMenu.Separator());
 
-        popupMenu.add(new JLabel("Color scheme", JLabel.LEFT));
+        items.add(addPrimaryColorItem(null));
+        items.add(addSecondaryColorItem(null));
 
-        popupMenu.add(addChrColorItem(popupMenu));
-        popupMenu.add(addSingleColorItem(popupMenu));
-        popupMenu.add(addAlternatingColorItem(popupMenu));
-        popupMenu.addSeparator();
+        items.add(new JPopupMenu.Separator());
+        items.add(addMinPointSizeItem(null));
+        items.add(addMaxPointSizeItem(null));
 
-        popupMenu.add(addPrimaryColorItem(popupMenu));
-        popupMenu.add(addSecondaryColorItem(popupMenu));
+        items.add(new JPopupMenu.Separator());
+        items.add(addShowAxisItem(null));
 
-        popupMenu.addSeparator();
-        popupMenu.add(addMinPointSizeItem(popupMenu));
-        popupMenu.add(addMaxPointSizeItem(popupMenu));
-
-        popupMenu.addSeparator();
-        addShowAxisItem(popupMenu);
-
-        return popupMenu;
+        return items;
     }
 
 
@@ -408,7 +398,7 @@ public class GWASTrack extends AbstractTrack {
             PreferencesManager.getPreferences().put(Constants.GWAS_SHOW_AXIS, String.valueOf(showAxis));
             repaint();
         });
-        menu.add(axisItem);
+        if (menu != null) menu.add(axisItem);
         return axisItem;
     }
 
@@ -421,7 +411,7 @@ public class GWASTrack extends AbstractTrack {
             updateColorPreferences();
             repaint();
         });
-        menu.add(colorItem);
+        if (menu != null) menu.add(colorItem);
 
         return colorItem;
     }
@@ -437,7 +427,7 @@ public class GWASTrack extends AbstractTrack {
                 repaint();
             }
         });
-        menu.add(colorItem);
+        if (menu != null) menu.add(colorItem);
 
         return colorItem;
     }
@@ -451,7 +441,7 @@ public class GWASTrack extends AbstractTrack {
             updateColorPreferences();
             repaint();
         });
-        menu.add(colorItem);
+        if (menu != null) menu.add(colorItem);
         return colorItem;
     }
 
@@ -472,7 +462,7 @@ public class GWASTrack extends AbstractTrack {
                 repaint();
             }
         });
-        menu.add(colorItem);
+        if (menu != null) menu.add(colorItem);
         return colorItem;
     }
 
@@ -490,7 +480,7 @@ public class GWASTrack extends AbstractTrack {
 
             }
         });
-        menu.add(colorItem);
+        if (menu != null) menu.add(colorItem);
         return colorItem;
     }
 
@@ -502,7 +492,7 @@ public class GWASTrack extends AbstractTrack {
                 changeMinPointSizeValue();
             }
         });
-        menu.add(menuItem);
+        if (menu != null) menu.add(menuItem);
         return menuItem;
     }
 
@@ -513,7 +503,7 @@ public class GWASTrack extends AbstractTrack {
                 changeMaxPointSizeValue();
             }
         });
-        menu.add(menuItem);
+        if (menu != null) menu.add(menuItem);
         return menuItem;
     }
 
@@ -585,25 +575,6 @@ public class GWASTrack extends AbstractTrack {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("maxPointSize", String.valueOf(maxPointSize));
-        element.setAttribute("minPointSize", String.valueOf(minPointSize));
-        element.setAttribute("useChrColors", String.valueOf(useChrColors));
-        element.setAttribute("singleColor", String.valueOf(singleColor));
-        element.setAttribute("showAxis", String.valueOf(showAxis));
-        element.setAttribute("alternatingColors", String.valueOf(alternatingColors));
-        if (primaryColor != null) {
-            element.setAttribute("primaryColor", ColorUtilities.colorToString(primaryColor));
-        }
-        if (secondaryColor != null) {
-            element.setAttribute("secondaryColor", ColorUtilities.colorToString(secondaryColor));
-        }
-
-
-    }
 
     @Override
     public void unmarshalXML(Element element, Integer version) {
@@ -621,6 +592,40 @@ public class GWASTrack extends AbstractTrack {
         }
         if (element.hasAttribute("secondaryColor ")) {
             secondaryColor = ColorUtilities.stringToColor(element.getAttribute("secondaryColor"));
+        }
+    }
+
+    @Override
+    public void marshalJSON(org.json.JSONObject json) {
+        super.marshalJSON(json);
+        json.put("maxPointSize", maxPointSize);
+        json.put("minPointSize", minPointSize);
+        json.put("useChrColors", useChrColors);
+        json.put("singleColor", singleColor);
+        json.put("showAxis", showAxis);
+        json.put("alternatingColors", alternatingColors);
+        if (primaryColor != null) {
+            json.put("primaryColor", ColorUtilities.colorToString(primaryColor));
+        }
+        if (secondaryColor != null) {
+            json.put("secondaryColor", ColorUtilities.colorToString(secondaryColor));
+        }
+    }
+
+    @Override
+    public void unmarshalJSON(org.json.JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        maxPointSize = jsonObject.getInt("maxPointSize");
+        minPointSize = jsonObject.getInt("minPointSize");
+        useChrColors = jsonObject.getBoolean("useChrColors");
+        singleColor = jsonObject.getBoolean("singleColor");
+        showAxis = jsonObject.getBoolean("showAxis");
+        alternatingColors = jsonObject.getBoolean("alternatingColors");
+        if (jsonObject.has("primaryColor")) {
+            primaryColor = ColorUtilities.stringToColor(jsonObject.getString("primaryColor"));
+        }
+        if (jsonObject.has("secondaryColor")) {
+            secondaryColor = ColorUtilities.stringToColor(jsonObject.getString("secondaryColor"));
         }
     }
 }

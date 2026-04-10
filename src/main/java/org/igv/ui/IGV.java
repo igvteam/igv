@@ -10,7 +10,6 @@ package org.igv.ui;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.jidesoft.swing.JideSplitPane;
 import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.batch.BatchRunner;
@@ -31,16 +30,15 @@ import org.igv.prefs.PreferencesEditor;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sam.AlignmentTrack;
 import org.igv.sam.InsertionSelectionEvent;
+import org.igv.sample.SampleAttributeComparator;
 import org.igv.session.*;
 import org.igv.session.autosave.AutosaveTimerTask;
 import org.igv.session.autosave.SessionAutosaveManager;
 import org.igv.track.*;
 import org.igv.ui.WaitCursorManager.CursorToken;
-import org.igv.ui.dnd.GhostGlassPane;
 import org.igv.ui.panel.*;
 import org.igv.ui.util.*;
 import org.igv.util.*;
-import org.igv.variant.VariantTrack;
 
 import javax.swing.*;
 import java.awt.*;
@@ -87,7 +85,6 @@ public class IGV implements IGVEventObserver {
 
     // Glass panes
     Component glassPane;
-    GhostGlassPane dNdGlassPane;
 
     // Cursors
     public static Cursor fistCursor;
@@ -107,8 +104,7 @@ public class IGV implements IGVEventObserver {
     private Timer sessionAutosaveTimer = new Timer();
 
     // Misc state
-    private Map<String, List<Track>> overlayTracksMap = new HashMap<>();
-    private Set<Track> overlaidTracks = new HashSet<>();
+
     private RecentFileSet recentSessionList;
     private RecentUrlsSet recentUrlsList;
 
@@ -197,8 +193,9 @@ public class IGV implements IGVEventObserver {
         } else {
             rootPane = new JRootPane();
             mainFrame.add(rootPane);
-
         }
+        rootPane.setDoubleBuffered(true);
+
         contentPane = new IGVContentPane(this);
         menuBar = IGVMenuBar.createInstance(this);
 
@@ -207,8 +204,6 @@ public class IGV implements IGVEventObserver {
         glassPane = rootPane.getGlassPane();
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // consumeEvents(glassPane);
-
-        dNdGlassPane = new GhostGlassPane();
 
         mainFrame.pack();
 
@@ -278,27 +273,13 @@ public class IGV implements IGVEventObserver {
         return mainFrame;
     }
 
-    public GhostGlassPane getDnDGlassPane() {
-        return dNdGlassPane;
-    }
-
-    public void startDnD() {
-        rootPane.setGlassPane(dNdGlassPane);
-        dNdGlassPane.setVisible(true);
-    }
-
-    public void endDnD() {
-        rootPane.setGlassPane(glassPane);
-        glassPane.setVisible(false);
-    }
-
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
     }
 
 
     public void addRegionOfInterest(RegionOfInterest roi) {
-        session.addRegionOfInterestWithNoListeners(roi);
+        session.addRegionOfInterest(roi);
         RegionOfInterestPanel.setSelectedRegion(roi);
         repaint();
     }
@@ -315,8 +296,6 @@ public class IGV implements IGVEventObserver {
                 }
             }
         }
-
-
     }
 
     public void endROI() {
@@ -345,16 +324,6 @@ public class IGV implements IGVEventObserver {
      * @param locators
      */
     public Future loadTracks(final Collection<ResourceLocator> locators) {
-        return loadTracks(locators, null);
-
-    }
-    /**
-     * Load a collection of tracks in a background thread placing them in a specified panel.
-     * Used by drag and drop.
-     *
-     * @param locators collection of resource locators
-     */
-    public Future loadTracks(final Collection<ResourceLocator> locators, final TrackPanel panel) {
 
         Future toRet = null;
         if (locators != null && !locators.isEmpty()) {
@@ -381,12 +350,7 @@ public class IGV implements IGVEventObserver {
 
                         try {
                             List<Track> tracks = load(locator);
-                            if(panel == null) {
-                                addTracks(tracks);
-                            } else {
-                                panel.addTracks(tracks);
-                            }
-
+                            addTracks(tracks);
                         } catch (Exception e) {
                             log.error("Error loading track", e);
                             messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -401,7 +365,7 @@ public class IGV implements IGVEventObserver {
                         }
                     }
 
-                    resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
+                    //resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
                     revalidateTrackPanels();
                 }
@@ -450,6 +414,385 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+
+    /**
+     * Add gene and sequence tracks.  This is called upon switching genomes.
+     *
+     * @param
+     */
+    public void setSequenceTrack() {
+
+        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
+        addTrackPanel(newSeqTrack);
+    }
+
+    /**
+     * @return First SequenceTrack found, or null if none
+     */
+    public SequenceTrack getSequenceTrack() {
+        for (Track t : getAllTracks()) {
+            if (t instanceof SequenceTrack) return (SequenceTrack) t;
+        }
+        return null;
+    }
+
+    public void removeTrackPanel(TrackPanel trackPanel) {
+        contentPane.getMainPanel().removeTrackPanel(trackPanel);
+    }
+
+    /**
+     * Remove the track from the view.  In contrast to deleteTracks, the track is not disposed and can be added
+     * back to the view later.
+     * @param track
+     */
+    public void removeTrack(Track track) {
+        List<TrackPanel> panels = getTrackPanels();
+        for (TrackPanel trackPanel : panels) {
+            if (trackPanel.getTrack() == track) {
+                track.setVisible(false);
+                removeTrackPanel(trackPanel);
+                break;
+            }
+        }
+    }
+
+
+    public void deleteTracksByPath(Set<String> paths) {
+        List<Track> toRemove = getAllTracks().stream().filter(t -> {
+            ResourceLocator locator = t.getResourceLocator();
+            String path = locator == null ? null : locator.getPath();
+            return path != null && paths.contains(path);
+        }).collect(Collectors.toList());
+        deleteTracks(toRemove);
+    }
+
+    /**
+     * Remove tracks from the view.  In contrast to deleteTracks, the tracks are not disposed and can be added
+     * back to the view later.
+     *
+     * @param tracksToRemove
+     */
+    public void removeTracks(Collection<? extends Track> tracksToRemove) {
+
+        // Make copy of list as we will be modifying the original in the loop
+        List<TrackPanel> panels = new ArrayList<>(getTrackPanels());
+        for (TrackPanel trackPanel : panels) {
+            trackPanel.removeTracks(tracksToRemove);
+            if (!trackPanel.hasTracks()) {
+                removeTrackPanel(trackPanel);
+            }
+        }
+
+        for (Track t : tracksToRemove) {
+            if (t instanceof IGVEventObserver) {
+                IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
+            }
+            t.unload();
+        }
+
+        revalidateTrackPanels();
+    }
+
+    /**
+     * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
+     *
+     * @param tracksToRemove
+     */
+    public void deleteTracks(Collection<? extends Track> tracksToRemove) {
+
+        for (Track t : tracksToRemove) {
+            t.unload();
+        }
+        removeTracks(tracksToRemove);
+    }
+
+
+    /**
+     * Return the panel with the given name.  This is called infrequently, and doesn't need to be fast (linear
+     * search is fine).
+     *
+     * @param name
+     * @return
+     */
+    public TrackPanel getTrackPanel(String name) {
+//        for (TrackPanel sp : getTrackPanels()) {
+//            if (name.equals(sp.getName())) {
+//                return sp;
+//            }
+//        }
+//
+//        // If we get this far this is a new panel
+//        TrackPanelScrollPane sp = addDataPanel(name);
+//        return sp.getTrackPanel();
+        throw new RuntimeException("Not implemented");
+    }
+
+
+    /**
+     * Return an ordered list of track panels.
+     */
+    public List<TrackPanel> getTrackPanels() {
+        return contentPane.getMainPanel().getTrackPanels();
+    }
+
+
+    /**
+     * Add the specified tracks to the appropriate panel. Tracks are inserted at positions based on their
+     * order property, maintaining ascending order.
+     */
+    public void addTracks(List<Track> trackList) {
+        for (var track : trackList) {
+            addTrackPanel(track);
+        }
+    }
+
+    public void addTrack(Track track) {
+        addTrackPanel(track);
+    }
+
+    /**
+     * Add a track panel at the position determined by the track's order property.
+     * Tracks are inserted to maintain ascending order by the order property.
+     */
+    public void addTrackPanel(Track track) {
+        contentPane.getMainPanel().addTrackPanel(track);
+    }
+
+
+    public int getVisibleTrackCount() {
+        int count = 0;
+        for (TrackPanel tsv : getTrackPanels()) {
+            count += tsv.getVisibleTrackCount();
+        }
+        return count;
+    }
+
+    /**
+     * Return the list of all tracks in the order they appear on the screen
+     *
+     * @return
+     */
+    public List<Track> getAllTracks() {
+        List<Track> allTracks = new ArrayList<Track>();
+        for (TrackPanel tp : getTrackPanels()) {
+            allTracks.addAll(tp.getTracks());
+        }
+        return allTracks;
+    }
+
+    public void clearTrackPanels() {
+        contentPane.getMainPanel().clearTrackPanels();
+    }
+
+    public List<FeatureTrack> getFeatureTracks() {
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), FeatureTrack.class));
+    }
+
+    public List<DataTrack> getDataTracks() {
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), DataTrack.class));
+    }
+
+    public List<AlignmentTrack> getAlignmentTracks() {
+        return Lists.newArrayList(Iterables.filter(getAllTracks(), AlignmentTrack.class));
+    }
+
+
+    /**
+     * Return the complete set of unique DataResourceLocators currently loaded
+     *
+     * @return
+     */
+    public Set<ResourceLocator> getDataResourceLocators() {
+        HashSet<ResourceLocator> locators = new HashSet();
+
+        for (Track track : getAllTracks()) {
+            Collection<ResourceLocator> tlocators = track.getResourceLocators();
+
+            if (tlocators != null) {
+                locators.addAll(tlocators);
+            }
+        }
+        locators.remove(null);
+        return locators;
+
+    }
+
+
+    public Set<DataType> getLoadedTypes() {
+        Set<DataType> types = new HashSet<>();
+        for (Track t : getAllTracks()) {
+            if (t != null) {
+                DataType type = t.getDataType();
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
+
+    public Set<String> getLoadedPaths() {
+        return getDataResourceLocators().stream()
+                .map(rl -> rl.getPath())
+                .collect(Collectors.toSet());
+    }
+
+
+    public void setAllTrackHeights(int newHeight) {
+        for (Track track : getAllTracks()) {
+            track.setHeight(newHeight);
+        }
+
+    }
+
+
+    public Session getSession() {
+        return session;
+    }
+
+
+    /**
+     * Reset session state, and associate the session object with the given path to a session file.
+     *
+     * @param sessionPath
+     */
+    public void resetSession(String sessionPath) {
+
+
+        session.reset(sessionPath);
+        AttributeManager.getInstance().clearAllAttributes();
+        mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
+        menuBar.resetSessionActions();
+
+        contentPane.getMainPanel().clearTrackPanels();
+        revalidateTrackPanels();
+    }
+
+
+    /**
+     * Creates a new IGV session
+     */
+    public void newSession() {
+        resetSession(null);
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        if (currentGenome != null) {
+            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
+        }
+        this.menuBar.disableReloadSession();
+        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
+        revalidateTrackPanels();
+    }
+
+
+    /**
+     * Load a session file, then jump to the specified locus if supplied.  This runs in the current thread, and should
+     * not be called from the event dispatch thread.
+     *
+     * @param sessionPath
+     * @param locus
+     * @return true if successful
+     */
+    public boolean loadSession(String sessionPath, String locus) {
+
+        InputStream inputStream = null;
+        try {
+            setStatusBarMessage("Opening session...");
+
+            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
+            boolean success = loadSessionFromStream(sessionPath, inputStream);
+
+            if (success) {
+
+                session.setPath(sessionPath);
+
+                String searchText = locus == null ? session.getLocus() : locus;
+                if (!FrameManager.isGeneListMode() && searchText != null && searchText.trim().length() > 0) {
+                    goToLocus(searchText);
+                }
+
+                mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+
+                getRecentSessionList().add(sessionPath);
+                this.menuBar.enableReloadSession();
+
+                //If there's a RegionNavigatorDialog, kill it.
+                //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+                RegionNavigatorDialog.destroyInstance();
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            String message = "Error loading session session: " + e.getMessage();
+            MessageUtils.showMessage(message);
+            getRecentSessionList().remove(sessionPath);
+            log.error(e);
+            return false;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException iOException) {
+                    log.error("Error closing session stream", iOException);
+                }
+            }
+            resetStatusMessage();
+        }
+    }
+
+    /**
+     * Load a session from the input stream.  Currently there are
+     * 2 sources for the input stream (1) a local or remote file, and (2) an in memory byte array.  The latter is
+     * used to support the "reloadTracks" menu function.
+     *
+     * @param sessionPath
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+
+    public boolean loadSessionFromStream(String sessionPath, InputStream inputStream) throws IOException {
+
+        final SessionReader sessionReader;
+        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+            sessionReader = new UCSCSessionReader(this);
+        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+            sessionReader = new IndexAwareSessionReader(this);
+        } else if (sessionPath != null && sessionPath.endsWith(".json")) {
+            sessionReader = new JSONSessionReader(this);
+        } else {
+            sessionReader = new XMLSessionReader(this);
+        }
+
+        sessionReader.loadSession(inputStream, session, sessionPath);
+
+        revalidateTrackPanels();
+        return true;
+    }
+
+
+    /**
+     * Saves current session to {@code targetFile}. As a side effect,
+     * sets the current sessions path (does NOT set the last session directory)
+     *
+     * @param targetFile
+     * @throws IOException
+     */
+    public void saveSession(File targetFile) throws IOException {
+        (new JSONSessionWriter(this)).saveSession(session, targetFile);
+
+        String sessionPath = targetFile.getAbsolutePath();
+        session.setPath(sessionPath);
+        mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+
+        getRecentSessionList().add(sessionPath);
+        this.menuBar.enableReloadSession();
+
+        // No errors so save last location
+        PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
+
+    }
+
+
     /**
      * Cet current track count per panel.  Needed to detect which panels
      * changed.  Also record panel sizes
@@ -493,26 +836,7 @@ public class IGV implements IGVEventObserver {
                 }
                 // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
                 if (sp.getTrackPanel().getTracks().size() > 0)
-                    totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-            }
-
-            // Adjust dividers for data panel.  The data panel divider can be
-            // zero if there are no data tracks loaded.
-            final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-            int htotal = centerSplitPane.getHeight();
-            int y = 0;
-            int i = 0;
-            for (Component c : centerSplitPane.getComponents()) {
-                if (c instanceof TrackPanelScrollPane) {
-                    final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                    if (trackPanel.getTracks().size() > 0) {
-                        int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                        int dh = (int) ((panelWeight / totalHeight) * htotal);
-                        y += dh;
-                    }
-                    centerSplitPane.setDividerLocation(i, y);
-                    i++;
-                }
+                    totalHeight += Math.min(300, sp.getTrackPanel().getContentHeight());
             }
 
             contentPane.getMainPanel().invalidate();
@@ -882,57 +1206,7 @@ public class IGV implements IGVEventObserver {
             log.error(message, e);
             MessageUtils.showMessage(message + ": " + e.getMessage());
         }
-
     }
-
-
-    public boolean isFilterMatchAll() {
-        TrackFilter trackFilter = session.getFilter();
-        return trackFilter != null && trackFilter.isMatchAll();
-    }
-
-    public boolean isFilterShowAllTracks() {
-        TrackFilter trackFilter = session.getFilter();
-        return trackFilter != null && trackFilter.isShowAll();
-    }
-
-    /**
-     * Add a new data panel set
-     */
-    public TrackPanelScrollPane addDataPanel(String name) {
-
-        return contentPane.getMainPanel().addDataPanel(name);
-    }
-
-
-    /**
-     * Return the panel with the given name.  This is called infrequently, and doesn't need to be fast (linear
-     * search is fine).
-     *
-     * @param name
-     * @return
-     */
-    public TrackPanel getTrackPanel(String name) {
-        for (TrackPanel sp : getTrackPanels()) {
-            if (name.equals(sp.getName())) {
-                return sp;
-            }
-        }
-
-        // If we get this far this is a new panel
-        TrackPanelScrollPane sp = addDataPanel(name);
-        return sp.getTrackPanel();
-    }
-
-
-    /**
-     * Return an ordered list of track panels.  This method is provided primarily for storing sessions, where
-     * the track panels need to be stored in order.
-     */
-    public List<TrackPanel> getTrackPanels() {
-        return contentPane.getMainPanel().getTrackPanels();
-    }
-
 
     /**
      * Scroll panel(s) containing track with specified name to the top.  Supports batch command "scrolltotrack" *
@@ -961,157 +1235,6 @@ public class IGV implements IGVEventObserver {
             tp.getScrollPane().getNamePanel().scrollToPosition(0);
 
         }
-    }
-
-
-    public Session getSession() {
-        return session;
-    }
-
-
-    /**
-     * Reset session state, and associate the session object with the given path to a session file.
-     *
-     * @param sessionPath
-     */
-    public void resetSession(String sessionPath) {
-
-        session.reset(sessionPath);
-        AttributeManager.getInstance().clearAllAttributes();
-        mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
-        menuBar.resetSessionActions();
-
-        getMainPanel().resetPanels();   // Also clears all tracks
-        getMainPanel().updatePanelDimensions();
-        revalidateTrackPanels();
-    }
-
-
-    /**
-     * Creates a new IGV session
-     */
-    public void newSession() {
-        resetSession(null);
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome != null) {
-            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
-        }
-        this.menuBar.disableReloadSession();
-        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
-        revalidateTrackPanels();
-    }
-
-
-    /**
-     * Load a session file, then jump to the specified locus if supplied.  This runs in the current thread, and should
-     * not be called from the event dispatch thread.
-     *
-     * @param sessionPath
-     * @param locus
-     * @return true if successful
-     */
-    public boolean loadSession(String sessionPath, String locus) {
-
-        InputStream inputStream = null;
-        try {
-            setStatusBarMessage("Opening session...");
-
-            inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
-            boolean success = loadSessionFromStream(sessionPath, inputStream);
-
-            if (success) {
-
-                session.setPath(sessionPath);
-
-                String searchText = locus == null ? session.getLocus() : locus;
-                if (!FrameManager.isGeneListMode() && searchText != null && searchText.trim().length() > 0) {
-                    goToLocus(searchText);
-                }
-
-                mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-
-                getRecentSessionList().add(sessionPath);
-                this.menuBar.enableReloadSession();
-
-                //If there's a RegionNavigatorDialog, kill it.
-                //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-                RegionNavigatorDialog.destroyInstance();
-            }
-
-            return success;
-
-        } catch (Exception e) {
-            String message = "Error loading session session: " + e.getMessage();
-            MessageUtils.showMessage(message);
-            getRecentSessionList().remove(sessionPath);
-            log.error(e);
-            return false;
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException iOException) {
-                    log.error("Error closing session stream", iOException);
-                }
-            }
-            resetStatusMessage();
-        }
-    }
-
-    /**
-     * Load a session from the input stream.  Currently there are
-     * 2 sources for the input stream (1) a local or remote file, and (2) an in memory byte array.  The latter is
-     * used to support the "reloadTracks" menu function.
-     *
-     * @param sessionPath
-     * @param inputStream
-     * @return
-     * @throws IOException
-     */
-
-    public boolean loadSessionFromStream(String sessionPath, InputStream inputStream) throws IOException {
-
-        final SessionReader sessionReader;
-        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
-            sessionReader = new UCSCSessionReader(this);
-        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
-            sessionReader = new IndexAwareSessionReader(this);
-        } else {
-            sessionReader = new IGVSessionReader(this);
-        }
-
-        sessionReader.loadSession(inputStream, session, sessionPath);
-
-        double[] dividerFractions = session.getDividerFractions();
-        if (dividerFractions != null) {
-            contentPane.getMainPanel().setDividerFractions(dividerFractions);
-        }
-        session.clearDividerLocations();
-
-        revalidateTrackPanels();
-        return true;
-    }
-
-    /**
-     * Saves current session to {@code targetFile}. As a side effect,
-     * sets the current sessions path (does NOT set the last session directory)
-     *
-     * @param targetFile
-     * @throws IOException
-     */
-    public void saveSession(File targetFile) throws IOException {
-        (new SessionWriter()).saveSession(session, targetFile);
-
-        String sessionPath = targetFile.getAbsolutePath();
-        session.setPath(sessionPath);
-        mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-
-        getRecentSessionList().add(sessionPath);
-        this.menuBar.enableReloadSession();
-
-        // No errors so save last location
-        PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
-
     }
 
     /**
@@ -1144,22 +1267,6 @@ public class IGV implements IGVEventObserver {
      */
     public void goToLocus(String locus) {
         contentPane.getCommandBar().searchByLocus(locus);
-    }
-
-    public void tweakPanelDivider() {
-        contentPane.getMainPanel().tweakPanelDivider();
-    }
-
-    public void removeDataPanel(String name) {
-        contentPane.getMainPanel().removeDataPanel(name);
-    }
-
-    public void removeTrackPanel(TrackPanel trackPanel) {
-        contentPane.getMainPanel().removeTrackPanel(trackPanel);
-    }
-
-    public boolean panelIsRemovable(TrackPanel trackPanel) {
-        return contentPane.getMainPanel().panelIsRemovable(trackPanel);
     }
 
     public MainPanel getMainPanel() {
@@ -1208,359 +1315,6 @@ public class IGV implements IGVEventObserver {
         return contentPane != null && contentPane.getCommandBar().getDetailsBehavior() == ShowDetailsBehavior.HOVER;
     }
 
-    /**
-     * Add the specified tracks to the appropriate panel. The list of tracks share a common file (locator).  Panel
-     * is chosen based on characteristics of the {@code locator}.
-     */
-    public void addTracks(List<Track> trackList) {
-        // Group tracks by locator.
-        Map<String, List<Track>> map = trackList.stream().collect(Collectors.groupingBy(t -> t.getResourceLocator().getPath()));
-        for (List<Track> tracks : map.values()) {
-            Track representativeTrack = tracks.get(0);
-            TrackPanel panel = getPanelFor(representativeTrack);
-            panel.addTracks(tracks);
-        }
-    }
-
-    public void addTrack(Track track) {
-        getPanelFor(track).addTrack(track);
-    }
-
-    /**
-     * Add the specified tracks to the specified panel.  This method is used to support legacy genome formats
-     * (.genome and .gbk)
-     */
-    public void addTrack(Track track, String panelName) {
-        TrackPanel panel = getTrackPanel(panelName);
-        panel.addTracks(Collections.singleton(track));
-    }
-
-
-    /**
-     * Return a DataPanel for the given track.
-     *
-     * @param track
-     * @return
-     */
-    public TrackPanel getPanelFor(Track track) {
-
-        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-
-        ResourceLocator locator = track.getResourceLocator();
-        if (locator == null) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else if (locator.getPanelName() != null) {
-            return getTrackPanel(locator.getPanelName());
-        } else if ("alist".equals(locator.getFormat())) {
-            return getVcfBamPanel();
-        } else if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return getTrackPanel(DATA_PANEL_NAME);
-        } else if (TrackLoader.isAlignmentTrack(locator.getFormat())) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else if (track instanceof VariantTrack && ((VariantTrack) track).sampleCount() > 10) {
-            String newPanelName = "Panel" + System.currentTimeMillis();
-            return addDataPanel(newPanelName).getTrackPanel();
-        } else {
-            // Default
-            return getTrackPanel(DATA_PANEL_NAME);
-        }
-    }
-
-    /**
-     * Experimental method to support VCF -> BAM coupling
-     *
-     * @return
-     */
-    public TrackPanel getVcfBamPanel() {
-        String panelName = "VCF_BAM";
-        TrackPanel panel = getTrackPanel(panelName);
-        if (panel != null) {
-            return panel;
-        } else {
-            return addDataPanel(panelName).getTrackPanel();
-        }
-    }
-
-    private boolean isAnnotationFile(String format) {
-        Set<String> annotationFormats = new HashSet<>(Arrays.asList("refflat", "ucscgene",
-                "genepred", "ensgene", "refgene", "gff", "gtf", "gff3", "embl", "bed", "gistic",
-                "bedz", "repmask", "dranger", "ucscsnp", "genepredext", "bigbed"));
-        return annotationFormats.contains(format);
-    }
-
-    /**
-     * Reset the overlay tracks collection.  Currently the only overlayable track
-     * type is Mutation.  This method finds all mutation tracks and builds a map
-     * of key -> mutation track,  where the key is the specified attribute value
-     * for linking tracks for overlay.
-     */
-    public void resetOverlayTracks() {
-        log.debug("Resetting Overlay Tracks");
-        overlayTracksMap.clear();
-        overlaidTracks.clear();
-
-
-        // Old option to allow overlaying based on an arbitrary attribute.
-        // String overlayAttribute = igv.getSession().getOverlayAttribute();
-
-        for (Track track : getAllTracks()) {
-            if (track != null && track.getTrackType() == TrackType.MUTATION) {
-
-                String sample = track.getSample();
-
-                if (sample != null) {
-                    List<Track> trackList = overlayTracksMap.get(sample);
-
-                    if (trackList == null) {
-                        trackList = new ArrayList();
-                        overlayTracksMap.put(sample, trackList);
-                    }
-
-                    trackList.add(track);
-                }
-            }
-
-        }
-
-        for (Track track : getAllTracks()) {
-            if (track != null) {  // <= this should not be neccessary
-                if (track.getTrackType() != TrackType.MUTATION) {
-                    String sample = track.getSample();
-                    if (sample != null) {
-                        List<Track> trackList = overlayTracksMap.get(sample);
-                        if (trackList != null) overlaidTracks.addAll(trackList);
-                    }
-                }
-            }
-        }
-
-        boolean displayOverlays = getSession().getOverlayMutationTracks();
-        for (Track track : getAllTracks()) {
-            if (track != null) {
-                if (track.getTrackType() == TrackType.MUTATION) {
-                    track.setOverlayed(displayOverlays && overlaidTracks.contains(track));
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Return tracks overlaid on "track"
-     * // TODO -- why aren't overlaid tracks stored in a track member?  This seems unnecessarily complex
-     *
-     * @param track
-     * @return
-     */
-    public List<Track> getOverlayTracks(Track track) {
-        String sample = track.getSample();
-        if (sample != null) {
-            return overlayTracksMap.get(sample);
-        }
-        return null;
-    }
-
-    public int getVisibleTrackCount() {
-        int count = 0;
-        for (TrackPanel tsv : getTrackPanels()) {
-            count += tsv.getVisibleTrackCount();
-
-        }
-        return count;
-    }
-
-    /**
-     * Return the list of all tracks in the order they appear on the screen
-     *
-     * @return
-     */
-    public List<Track> getAllTracks() {
-        List<Track> allTracks = new ArrayList<Track>();
-        for (TrackPanel tp : getTrackPanels()) {
-            allTracks.addAll(tp.getTracks());
-        }
-        return allTracks;
-    }
-
-    public List<FeatureTrack> getFeatureTracks() {
-        return Lists.newArrayList(Iterables.filter(getAllTracks(), FeatureTrack.class));
-    }
-
-    public List<DataTrack> getDataTracks() {
-        return Lists.newArrayList(Iterables.filter(getAllTracks(), DataTrack.class));
-    }
-
-    public List<AlignmentTrack> getAlignmentTracks() {
-        return Lists.newArrayList(Iterables.filter(getAllTracks(), AlignmentTrack.class));
-    }
-
-    public void clearSelections() {
-        for (Track t : getAllTracks()) {
-            if (t != null)
-                t.setSelected(false);
-        }
-    }
-
-    public void setTrackSelections(Iterable<Track> selectedTracks) {
-        for (Track t : selectedTracks) {
-            t.setSelected(true);
-        }
-    }
-
-    public void shiftSelectTracks(Track track) {
-        List<Track> allTracks = getAllTracks();
-        int clickedTrackIndex = allTracks.indexOf(track);
-        // Find another track that is already selected.  The semantics of this
-        // are not well defined, so any track will do
-        int otherIndex = clickedTrackIndex;
-        for (int i = 0; i < allTracks.size(); i++) {
-            if (allTracks.get(i).isSelected() && i != clickedTrackIndex) {
-                otherIndex = i;
-                break;
-            }
-        }
-
-        int left = Math.min(otherIndex, clickedTrackIndex);
-        int right = Math.max(otherIndex, clickedTrackIndex);
-        for (int i = left; i <= right; i++) {
-            Track t = allTracks.get(i);
-            if (t.isVisible()) {
-                t.setSelected(true);
-            }
-        }
-    }
-
-    public void toggleTrackSelections(Iterable<Track> selectedTracks) {
-        for (Track t : selectedTracks) {
-            t.setSelected(!t.isSelected());
-        }
-    }
-
-    public List<Track> getSelectedTracks() {
-        ArrayList<Track> selectedTracks = new ArrayList();
-        for (Track t : getAllTracks()) {
-            if (t != null && t.isSelected()) {
-                selectedTracks.add(t);
-            }
-        }
-        return selectedTracks;
-
-    }
-
-    /**
-     * Return the complete set of unique DataResourceLocators currently loaded
-     *
-     * @return
-     */
-    public Set<ResourceLocator> getDataResourceLocators() {
-        HashSet<ResourceLocator> locators = new HashSet();
-
-        for (Track track : getAllTracks()) {
-            Collection<ResourceLocator> tlocators = track.getResourceLocators();
-
-            if (tlocators != null) {
-                locators.addAll(tlocators);
-            }
-        }
-        locators.remove(null);
-        return locators;
-
-    }
-
-
-    public Set<TrackType> getLoadedTypes() {
-        Set<TrackType> types = new HashSet<>();
-        for (Track t : getAllTracks()) {
-            if (t != null) {
-                TrackType type = t.getTrackType();
-                types.add(type);
-            }
-        }
-        return types;
-    }
-
-
-    public Set<String> getLoadedPaths() {
-        return getDataResourceLocators().stream()
-                .map(rl -> rl.getPath())
-                .collect(Collectors.toSet());
-    }
-
-
-    public void setAllTrackHeights(int newHeight) {
-        for (Track track : getAllTracks()) {
-            track.setHeight(newHeight, true);
-        }
-
-    }
-
-    public void deleteTracksByPath(Set<String> paths) {
-        List<Track> toRemove = getAllTracks().stream().filter(t -> {
-            ResourceLocator locator = t.getResourceLocator();
-            String path = locator == null ? null : locator.getPath();
-            return path != null && paths.contains(path);
-        }).collect(Collectors.toList());
-        deleteTracks(toRemove);
-    }
-
-    /**
-     * Remove and dispose of tracks.  Removed tracks will not be usable afterwards.
-     *
-     * @param tracksToRemove
-     */
-    public void deleteTracks(Collection<? extends Track> tracksToRemove) {
-
-        // Make copy of list as we will be modifying the original in the loop
-        List<TrackPanel> panels = getTrackPanels();
-        for (TrackPanel trackPanel : panels) {
-            trackPanel.removeTracks(tracksToRemove);
-            if (!trackPanel.hasTracks()) {
-                removeDataPanel(trackPanel.getName());
-            }
-        }
-
-        for (Track t : tracksToRemove) {
-            if (t instanceof IGVEventObserver) {
-                IGVEventBus.getInstance().unsubscribe((IGVEventObserver) t);
-            }
-            t.unload();
-        }
-        revalidateTrackPanels();
-    }
-
-    /**
-     * Add gene and sequence tracks.  This is called upon switching genomes.
-     *
-     * @param
-     */
-    public void setSequenceTrack() {
-
-        TrackPanel panel = PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY) ?
-                getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
-        SequenceTrack newSeqTrack = new SequenceTrack("Reference sequence");
-        panel.addTrack(newSeqTrack);
-
-//        if (newGeneTrack != null) {
-//            newGeneTrack.setAttributeValue(Globals.TRACK_NAME_ATTRIBUTE, newGeneTrack.getName());
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_FILE_ATTRIBUTE, "");
-//            newGeneTrack.setAttributeValue(Globals.TRACK_DATA_TYPE_ATTRIBUTE, newGeneTrack.getTrackType().toString());
-//            panel.addTrack(newGeneTrack);
-//        }
-    }
-
-    /**
-     * @return First SequenceTrack found, or null if none
-     */
-    public SequenceTrack getSequenceTrack() {
-        for (Track t : getAllTracks()) {
-            if (t instanceof SequenceTrack) return (SequenceTrack) t;
-        }
-        return null;
-    }
-
     /////////////////////////////////////////////////////////////////////////////////////////
     // Sorting
 
@@ -1573,11 +1327,17 @@ public class IGV implements IGVEventObserver {
      * @param ascending
      */
     public void sortAllTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
+
         assert attributeNames.length == ascending.length;
 
-        for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.sortTracksByAttributes(attributeNames, ascending);
+        SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
+
+        for (Track track : getAllTracks()) {
+            if (track instanceof AbstractTrack && ((AbstractTrack) track).hasSamples()) {
+                ((AbstractTrack) track).sortSamples(comparator);
+            }
         }
+
     }
 
 
@@ -1683,35 +1443,6 @@ public class IGV implements IGVEventObserver {
 
         }
     }
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////
-    // Groups
-    public String getGroupByAttribute() {
-        return session.getGroupByAttribute();
-    }
-
-
-    public void setGroupByAttribute(String attributeName) {
-        session.setGroupByAttribute(attributeName);
-        resetGroups();
-    }
-
-
-    private void resetGroups() {
-        log.debug("Resetting Groups");
-        for (TrackPanel trackPanel : getTrackPanels()) {
-            trackPanel.groupTracksByAttribute(session.getGroupByAttribute());
-        }
-
-        for (Track t : getAllTracks()) {
-            t.groupSamplesByAttribute(session.getGroupByAttribute());
-        }
-
-        // Some tracks need to respond to changes in grouping, fire notification event
-        IGVEventBus.getInstance().post(new TrackGroupEvent());
-    }
-
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Startup
@@ -2042,21 +1773,16 @@ public class IGV implements IGVEventObserver {
         return completed;
     }
 
-    /**
-     * Post an event to this instance's event bus
-     * // TODO -- replace the reference to the global event bus with a local one (member if IGV)
-     *
-     * @param event
-     */
-    public void postEvent(IGVEvent event) {
-        IGVEventBus.getInstance().post(event);
-    }
-
 
     public void receiveEvent(IGVEvent event) {
         if (event instanceof ViewChange || event instanceof InsertionSelectionEvent) {
             repaint();
         } else if (event instanceof GenomeChangeEvent) {
+            if (IGV.hasInstance()) {
+                Genome currentGenome = ((GenomeChangeEvent) event).genome();
+                menuBar.updateMenus(currentGenome);
+                menuBar.setAllMenusEnabled(true);
+            }
             repaint();
         } else {
             log.warn("Unknown event type: " + event.getClass());
@@ -2109,9 +1835,8 @@ public class IGV implements IGVEventObserver {
     public void repaint() {
         Collection<Track> trackList = new ArrayList<>();
         for (TrackPanel tp : getTrackPanels()) {
-            trackList.addAll(visibleTracks(tp.getDataPanelContainer()));
+            trackList.add(tp.getTrack());
         }
-        getAllTracks();
         repaint(contentPane, trackList);
     }
 
@@ -2258,19 +1983,33 @@ public class IGV implements IGVEventObserver {
      * Note: This method should be called from the EDT.
      */
     private void checkPanelLayouts() {
+        boolean heightChanged = false;
         for (TrackPanel tp : getTrackPanels()) {
             if (tp.isHeightChanged()) {
-                tp.revalidate();
+                heightChanged = true;
+
+                TrackPanelScrollPane scrollPane = tp.getScrollPane();
+                if (scrollPane != null) {
+                    JViewport viewport = scrollPane.getViewport();
+
+                    // Update the scrollbar policy based on new content height
+                    scrollPane.updateScrollbarPolicy();
+
+                    // Invalidate the entire hierarchy to mark it as needing layout
+                    tp.invalidate();
+                    viewport.invalidate();
+                    scrollPane.invalidate();
+                }
             }
         }
-    }
-
-
-    public List<Track> visibleTracks(DataPanelContainer dataPanelContainer) {
-        return dataPanelContainer.getTrackGroups().stream().
-                filter(TrackGroup::isVisible).
-                flatMap(trackGroup -> trackGroup.getVisibleTracks().stream()).
-                collect(Collectors.toList());
+        if (heightChanged) {
+            // Use invokeLater to ensure the revalidation happens after current processing
+            final MainPanel mainPanel = getMainPanel();
+            SwingUtilities.invokeLater(() -> {
+                mainPanel.revalidate();
+                mainPanel.repaint();
+            });
+        }
     }
 
     /**

@@ -9,6 +9,8 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,7 +36,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
     private static double DEFAULT_ALPHA = 0.5;
 
-    private Collection<DataTrack> memberTracks;
+    private List<DataTrack> memberTracks;
     private double alpha;
 
 
@@ -49,12 +51,17 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         this.alpha = DEFAULT_ALPHA;
     }
 
+    @Override
+    public TrackType getType() {
+        return TrackType.merged;
+    }
+
     public void setMemberTracks(Collection<DataTrack> inputTracks) {
         initTrackList(inputTracks);
     }
 
     private void initTrackList(Collection<DataTrack> inputTracks) {
-        this.memberTracks = new ArrayList<DataTrack>(inputTracks.size());
+        this.memberTracks = new ArrayList<>(inputTracks.size());
         for (DataTrack inputTrack : inputTracks) {
             if (inputTrack instanceof MergedTracks) {
                 this.memberTracks.addAll(((MergedTracks) inputTrack).getMemberTracks());
@@ -63,8 +70,13 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             }
         }
 
+        // Set the height all tracks to the same value as the merged track.
+        for (Track track : memberTracks) {
+            track.setHeight(this.getHeight());
+        }
+
         // Set the group autoscale attribute only IF all tracks are in the same group
-        if (memberTracks != null && memberTracks.size() > 1) {
+        if (memberTracks.size() > 1) {
             String group = memberTracks.iterator().next().getAttributeValue(AttributeManager.GROUP_AUTOSCALE);
             if (group != null) {
                 for (Track t : memberTracks) {
@@ -107,7 +119,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         return locators;
     }
 
-    public Collection<DataTrack> getMemberTracks() {
+    public List<DataTrack> getMemberTracks() {
         return this.memberTracks;
     }
 
@@ -128,17 +140,17 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
 
 
     @Override
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
         for (Track track : memberTracks) {
-            track.render(context, rect);
+            track.render(context);
         }
     }
 
     @Override
-    public int getHeight() {
-        int height = super.getHeight();
+    public int getContentHeight() {
+        int height = super.getContentHeight();
         for (Track track : memberTracks) {
-            height = Math.max(height, track.getHeight());
+            height = Math.max(height, track.getContentHeight());
         }
         return height;
     }
@@ -146,8 +158,10 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     @Override
     public void setHeight(int height) {
         super.setHeight(height);
-        for (Track track : memberTracks) {
-            track.setHeight(height);
+        if(memberTracks != null) {
+            for (Track track : memberTracks) {
+                track.setHeight(height);
+            }
         }
     }
 
@@ -271,12 +285,12 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
-    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         final List<Track> selfAsList = Arrays.asList((Track) this);
-        menu.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
+        items.add(TrackMenuUtils.getTrackRenameItem(selfAsList));
 
         //Give users the ability to set the color of each track individually
         JMenu setPosColorMenu = new JMenu("Change Track Color (Positive Values)");
@@ -293,15 +307,18 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             negItem.addActionListener(new ChangeTrackColorActionListener(track, ChangeTrackMethod.NEGATIVE));
             setNegColorMenu.add(negItem);
         }
-        menu.add(setPosColorMenu);
-        menu.add(setNegColorMenu);
+        items.add(setPosColorMenu);
+        items.add(setNegColorMenu);
 
-        menu.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
-        menu.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
+        items.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
+        items.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
-        menu.addSeparator();
-        TrackMenuUtils.addDataItems(menu, selfAsList, true);
-        for (Component c : menu.getComponents()) {
+        items.add(new JPopupMenu.Separator());
+
+        items.addAll(TrackMenuUtils.getDataMenuItems(selfAsList));
+
+        // Disable heatmap items
+        for (Component c : items) {
             if (c instanceof JMenuItem) {
                 String text = ((JMenuItem) c).getText();
                 text = text != null ? text.toLowerCase() : "null";
@@ -309,10 +326,9 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
                     c.setEnabled(false);
                 }
             }
-
         }
 
-        return menu;
+        return items;
     }
 
     @Override
@@ -340,21 +356,6 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
     }
 
     @Override
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        if (alpha != DEFAULT_ALPHA) {
-            element.setAttribute("alpha", String.valueOf(alpha));
-        }
-        for (DataTrack track : memberTracks) {
-            Element trackElement = document.createElement(SessionElement.TRACK);
-            track.marshalXML(document, trackElement);
-            element.appendChild(trackElement);
-        }
-    }
-
-    @Override
     public void unmarshalXML(Element element, Integer version) {
 
         super.unmarshalXML(element, version);
@@ -362,6 +363,28 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             this.alpha = Double.valueOf(element.getAttribute("alpha"));
         }
         // Un-marshalling handled in IGVSessionReader
+    }
+
+    @Override
+    public void marshalJSON(JSONObject json) {
+        super.marshalJSON(json);
+        json.put("alpha", this.alpha);
+
+        JSONArray tracksArray = new JSONArray();
+        for (DataTrack track : memberTracks) {
+            JSONObject trackJson = new JSONObject();
+            track.marshalJSON(trackJson);
+            tracksArray.put(trackJson);
+        }
+        json.put("tracks", tracksArray);
+    }
+
+    @Override
+    public void unmarshalJSON(JSONObject jsonObject) {
+        super.unmarshalJSON(jsonObject);
+        if (jsonObject.has("alpha")) {
+            this.alpha = jsonObject.getDouble("alpha");
+        }
     }
 
     private enum ChangeTrackMethod {

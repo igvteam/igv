@@ -6,7 +6,7 @@ import org.igv.Globals;
 import org.igv.exceptions.ParserException;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.collections.DownsampledDoubleArrayList;
@@ -90,7 +90,7 @@ public class WiggleParser {
             endColumn = 4;
             dataColumn = 5;
             startBase = 1;
-            dataset.setType(TrackType.EXPR);
+            dataset.setType(DataType.EXPR);
         }
     }
 

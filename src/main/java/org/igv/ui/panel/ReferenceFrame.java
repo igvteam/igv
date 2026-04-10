@@ -139,7 +139,6 @@ public class ReferenceFrame {
     public void dragStopped() {
         setOrigin(Math.round(origin));   // Snap to gride
         final ViewChange event = ViewChange.LocusChangeResult(this, chrName, origin, getEnd(), false);
-        event.fromPanning = true;
         eventBus.post(event);
     }
 
@@ -363,13 +362,11 @@ public class ReferenceFrame {
         eventBus.post(ViewChange.LocusChangeResultPanning(this, chrName, origin, getEnd(), false));
     }
 
-    public void centerOnLocation(String chr, double chrLocation) {
-        if (!chrName.equals(chr)) {
-            setChromosomeName(chr);
-        }
-        centerOnLocation(chrLocation);
-    }
-
+    /**
+     * Center the view on the specified location, keeping the zoom level the same
+     * The location is in chromosome coordinates, and the chromosome is assumed to be the current chromosome
+     * @param chrLocation
+     */
     public void centerOnLocation(double chrLocation) {
         double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));

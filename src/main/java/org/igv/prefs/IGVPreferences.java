@@ -12,7 +12,7 @@ import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.SequenceRenderer;
 import org.igv.sam.mods.BaseModificationColors;
-import org.igv.track.TrackType;
+import org.igv.track.DataType;
 import org.igv.ui.*;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.color.PaletteColorTable;
@@ -405,6 +405,7 @@ public class IGVPreferences {
     }
 
 
+
     public String getGenomeListURL() {
         return get(GENOMES_SERVER_URL);
     }
@@ -686,7 +687,7 @@ public class IGVPreferences {
      * @return
      */
 
-    public ContinuousColorScale getColorScale(TrackType type) {
+    public ContinuousColorScale getColorScale(DataType type) {
         if (type == null) {
             return null;
         }
@@ -717,7 +718,7 @@ public class IGVPreferences {
             } else {
                 String typeString = key.replace(COLOR_SCALE_KEY, "").replace("_DARK", "");
                 try {
-                    TrackType type = TrackType.valueOf(typeString);
+                    DataType type = DataType.valueOf(typeString);
                     scale = getDefaultColorScale(type);
                 } catch (IllegalArgumentException e) {
                     // Ignore
@@ -738,7 +739,7 @@ public class IGVPreferences {
      * @param type
      * @return
      */
-    static ContinuousColorScale getDefaultColorScale(TrackType type) {
+    static ContinuousColorScale getDefaultColorScale(DataType type) {
         switch (type) {
             case LOH:
                 return new ContinuousColorScale(0, -1, 0, 1, Color.red, UIConstants.LIGHT_YELLOW, Color.blue);

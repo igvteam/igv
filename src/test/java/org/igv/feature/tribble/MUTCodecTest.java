@@ -1,7 +1,7 @@
 package org.igv.feature.tribble;
 
 import org.igv.AbstractHeadlessTest;
-import org.igv.feature.Mutation;
+import org.igv.feature.mut.Mutation;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.junit.Test;

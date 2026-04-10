@@ -70,8 +70,12 @@ public class GenomeConfig implements Cloneable {
         if (json.contains("chromosomeOrder")) {
             json = fixChromosomeOrder(json);
         }
-        GenomeConfig config = new GenomeConfig();
         JSONObject jsonObj = new JSONObject(json);
+        return getGenomeConfig(jsonObj);
+    }
+
+    public static GenomeConfig getGenomeConfig(JSONObject jsonObj) {
+        GenomeConfig config = new GenomeConfig();
         config.id = jsonObj.optString("id");
         config.name = jsonObj.optString("name", null);
         config.fastaURL = jsonObj.optString("fastaURL", null);
@@ -100,8 +104,15 @@ public class GenomeConfig implements Cloneable {
         config.maneBbURL = jsonObj.optString("maneBbURL", null);
         config.maneTrixURL = jsonObj.optString("maneTrixURL", null);
         config.rsdbURL = jsonObj.optString("rsdbURL", null);
-        config.chromosomeOrder = jsonObj.has("chromosomeOrder") ?
-                jsonObj.getJSONArray("chromosomeOrder").toList().toArray(new String[0]) : null;
+
+        if (jsonObj.has("chromosomeOrder")) {
+            Object chromosomeOrder = jsonObj.get("chromosomeOrder");
+            if (chromosomeOrder instanceof String) {
+                config.chromosomeOrder = Arrays.stream(((String) chromosomeOrder).split(",")).map(String::trim).toArray(String[]::new);
+            } else  {
+                config.chromosomeOrder = jsonObj.getJSONArray("chromosomeOrder").toList().toArray(new String[0]);
+            }
+        }
 
         config.wholeGenomeView = jsonObj.optBoolean("wholeGenomeView", true);
 

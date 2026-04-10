@@ -24,17 +24,15 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.UIUtilities;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
+import static org.igv.Globals.JS_MAX_SAFE_INTEGER;
 import static org.igv.prefs.Constants.*;
 
 
@@ -45,7 +43,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private static Logger log = LogManager.getLogger(SequenceTrack.class);
 
-    private static final int SEQUENCE_HEIGHT = 14;
+    private static final int SEQUENCE_HEIGHT = 17;
 
     private static String NAME = "Sequence";
 
@@ -65,7 +63,18 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         setSortable(false);
         showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
+        setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top of track list
         IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
+    }
+
+    @Override
+    public DataType getDataType() {
+        return DataType.SEQUENCE;
+    }
+
+    @Override
+    public TrackType getType() {
+        return TrackType.sequence;
     }
 
     public static String getReverseComplement(String sequence) {
@@ -134,7 +143,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect) {
 
         // Use local graphics -- this method corrupts graphics context when exporting to "png" files
         Graphics2D graphics = (Graphics2D) g.create();
@@ -145,11 +154,11 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
         if (visible) {
             graphics.setFont(font);
-            int textBaseline = trackRectangle.y + 12;
-            graphics.drawString(NAME, trackRectangle.x + 5, textBaseline);
+            int textBaseline = 12;
+            graphics.drawString(NAME, 5, textBaseline);
 
-            int rx = trackRectangle.x + trackRectangle.width - 20;
-            arrowRect = new Rectangle(rx, trackRectangle.y + 2, 15, 10);
+            int rx = visibleRect.width - 20;
+            arrowRect = new Rectangle(rx, 2, 15, 10);
             drawArrow(graphics);
 
             //Show icon when translation non-standard
@@ -244,9 +253,8 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
      * Render the sequence, and optionally the 3 frame translation table
      *
      * @param context
-     * @param rect
      */
-    public void render(RenderContext context, Rectangle rect) {
+    public void render(RenderContext context) {
 
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
         boolean visible = context.getReferenceFrame().getScale() < resolutionThreshold &&
@@ -257,11 +265,15 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             LoadedDataInterval<SeqCache> sequenceInterval = loadedIntervalCache.get(frameName);
             if (sequenceInterval != null) {
                 sequenceRenderer.setStrand(strand);
-                sequenceRenderer.draw(sequenceInterval, context, rect, showTranslation, resolutionThreshold);
+                sequenceRenderer.draw(sequenceInterval, context, context.getTrackRectangle(), showTranslation, resolutionThreshold);
             }
         }
     }
 
+    /**
+     * Determine if this track is visible in any frame
+     * @return
+     */
     @Override
     public boolean isVisible() {
         int resolutionThreshold = PreferencesManager.getPreferences().getAsInt(MAX_SEQUENCE_RESOLUTION);
@@ -275,7 +287,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public int getHeight() {
+    public int getContentHeight() {
         return isVisible() ? SEQUENCE_HEIGHT +
                 (showTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT + SequenceRenderer.TRANSLATED_SEQ_GAP : 0) :
                 0;
@@ -297,12 +309,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         if (arrowRect != null && arrowRect.contains(e.getPoint())) {
             flipStrand();
         }
-
     }
 
     private void flipStrand() {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
-        IGV.getInstance().clearSelections();
         repaint();
 
     }
@@ -310,26 +320,25 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public void setStrand(Strand strandValue) {
         strand = strandValue;
         PreferencesManager.getPreferences().put(SEQUENCE_TRANSLATION_STRAND, strand.toString());
-        IGV.getInstance().clearSelections();
         repaint();
     }
 
     public void setShowTranslation(boolean showTranslation) {
         this.showTranslation = showTranslation;
         PreferencesManager.getPreferences().put(SHOW_SEQUENCE_TRANSLATION, showTranslation);
-        repaint();
+        IGV.getInstance().revalidateTrackPanels();
     }
 
 
     /**
-     * Override to return a specialized popup menu
+     * Override to return a list of menu items for the popup menu
      *
      * @return
      */
     @Override
-    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
+    public List<Component> getPopupMenuItems(final TrackClickEvent te) {
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        List<Component> items = new ArrayList<>();
 
         JMenuItem m1 = new JMenuItem("Flip strand");
         m1.addActionListener(e -> flipStrand());
@@ -338,11 +347,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         m2.setSelected(showTranslation);
         m2.addActionListener(e -> {
             setShowTranslation(m2.isSelected());
-            IGV.getInstance().clearSelections();
         });
 
-        menu.add(m1);
-        menu.add(m2);
+        items.add(m1);
+        items.add(m2);
 
         final JMenu transTableMenu = new JMenu("Translation Table");
         transTableMenu.add(getCodonTableMenuItem(null));   // The "null" or default item
@@ -350,9 +358,9 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             JMenuItem item = getCodonTableMenuItem(codonTable);
             transTableMenu.add(item);
         }
-        menu.add(transTableMenu);
+        items.add(transTableMenu);
 
-        return menu;
+        return items;
     }
 
     private JCheckBoxMenuItem getCodonTableMenuItem(CodonTable codonTable) {
@@ -453,15 +461,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public void marshalXML(Document document, Element element) {
-
-        super.marshalXML(document, element);
-
-        element.setAttribute("shouldShowTranslation", String.valueOf(showTranslation));
-        element.setAttribute("sequenceTranslationStrandValue", String.valueOf(strand));
-
-    }
-
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -474,5 +473,21 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
             this.strand = Strand.fromString(element.getAttribute("sequenceTranslationStrandValue"));
         }
     }
+
+        @Override
+        public void marshalJSON(org.json.JSONObject jsonObject) {
+            super.marshalJSON(jsonObject);
+            jsonObject.put("shouldShowTranslation", showTranslation);
+            jsonObject.put("sequenceTranslationStrandValue", strand.toString());
+        }
+
+        @Override
+        public void unmarshalJSON(org.json.JSONObject jsonObject) {
+            super.unmarshalJSON(jsonObject);
+            this.showTranslation = jsonObject.optBoolean("shouldShowTranslation", showTranslation);
+            if(jsonObject.has("sequenceTranslationStrandValue")) {
+                this.strand = Strand.fromString(jsonObject.getString("sequenceTranslationStrandValue"));
+            }
+        }
 
 }
