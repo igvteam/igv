@@ -126,6 +126,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             }
             this.invalidate(); // this should not be neccessary, but is harmless
             this.validate();
+            this.repaint();  // Repaint to update divider lines (horizontal separator + track area vertical dividers)
         });
     }
 

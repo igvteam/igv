@@ -33,29 +33,13 @@ public class ScrollableTrackContainer extends JPanel implements Scrollable {
 
     /**
      * Draw vertical divider lines at the boundaries between name, attribute, and data panels.
-     * Positions are derived from actual component geometry to avoid coordinate mismatches.
+     * Uses computed positions from MainPanel so lines update immediately after layout changes
+     * (e.g. hiding the attribute panel or changing name panel width).
      */
     private void drawPanelDividers(Graphics g) {
-        // Find the first TrackPanelScrollPane to get actual component positions
-        TrackPanelScrollPane tsp = null;
-        for (Component c : getComponents()) {
-            if (c instanceof TrackPanelScrollPane) {
-                tsp = (TrackPanelScrollPane) c;
-                break;
-            }
-        }
-        if (tsp == null || tsp.getTrackPanel() == null) return;
-
-        TrackPanel trackPanel = tsp.getTrackPanel();
-        TrackNamePanel namePanel = trackPanel.getNamePanel();
-        DataPanelContainer dataPanel = trackPanel.getDataPanelContainer();
-
-        // Convert actual child positions to this container's coordinate space
-        Point namePanelPos = SwingUtilities.convertPoint(namePanel, 0, 0, this);
-        int nameRight = namePanelPos.x + namePanel.getWidth();
-
-        Point dataPanelPos = SwingUtilities.convertPoint(dataPanel, 0, 0, this);
-        int dataLeft = dataPanelPos.x;
+        int leftOffset = mainPanel.getLeftOffset();
+        int nameRight = leftOffset + mainPanel.getNamePanelX() + mainPanel.getNamePanelWidth();
+        int dataLeft = leftOffset + mainPanel.getDataPanelX();
 
         int h = getHeight();
         Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;

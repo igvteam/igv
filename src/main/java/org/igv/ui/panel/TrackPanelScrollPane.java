@@ -1,5 +1,6 @@
 package org.igv.ui.panel;
 
+import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -48,6 +49,36 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
         });
 
         add(innerScrollPane);
+    }
+
+    // ---- Divider lines ----
+
+    @Override
+    protected void paintChildren(Graphics g) {
+        super.paintChildren(g);
+        drawPanelDividers(g);
+    }
+
+    /**
+     * Draw vertical divider lines at the boundaries between name, attribute, and data panels.
+     * Drawing at this level ensures divider lines survive when this scroll pane repaints
+     * independently (e.g. after a track height change) without the parent container repainting.
+     */
+    private void drawPanelDividers(Graphics g) {
+        if (trackPanel == null || trackPanel.mainPanel == null) return;
+        MainPanel mainPanel = trackPanel.mainPanel;
+        int leftOffset = mainPanel.getLeftOffset();
+        int nameRight = leftOffset + mainPanel.getNamePanelX() + mainPanel.getNamePanelWidth();
+        int dataLeft = leftOffset + mainPanel.getDataPanelX();
+
+        int h = getHeight();
+        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
+        g.setColor(dividerColor);
+
+        g.drawLine(nameRight, 0, nameRight, h);
+        if (dataLeft != nameRight) {
+            g.drawLine(dataLeft, 0, dataLeft, h);
+        }
     }
 
     // ---- Layout ----
