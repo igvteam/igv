@@ -132,12 +132,22 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     public void removeHeader() {
         remove(headerScrollPane);
+        trackPanelScrollPane.setBorder(null);
         revalidate();
     }
 
     public void restoreHeader() {
         add(headerScrollPane, BorderLayout.NORTH);
+        trackPanelScrollPane.setBorder(createHeaderSeparatorBorder());
         revalidate();
+    }
+
+    /**
+     * Creates a border with a 1px top line to visually separate the header from the track area.
+     */
+    private static javax.swing.border.Border createHeaderSeparatorBorder() {
+        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
+        return BorderFactory.createMatteBorder(1, 0, 0, 0, dividerColor);
     }
 
 
@@ -195,7 +205,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         trackPanelScrollPane = new JScrollPane(trackPanelContainer);
         trackPanelScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         trackPanelScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        trackPanelScrollPane.setBorder(null);
+        trackPanelScrollPane.setBorder(createHeaderSeparatorBorder());
         trackPanelScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         trackPanelScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -559,15 +569,6 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     }
 
 
-    @Override
-    protected void paintChildren(Graphics g) {
-        super.paintChildren(g);
-        // Draw a horizontal separator line between the header and track areas
-        int y = headerScrollPane.getY() + headerScrollPane.getHeight();
-        Color dividerColor = Globals.isDarkMode() ? Color.GRAY : Color.LIGHT_GRAY;
-        g.setColor(dividerColor);
-        g.drawLine(0, y, getWidth(), y);
-    }
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 

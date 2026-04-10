@@ -544,7 +544,7 @@ public class IGVMenuBar extends JMenuBar {
                 } else {
                     igv.getMainPanel().removeHeader();
                 }
-                igv.getMainPanel().revalidate();
+                igv.getMainPanel().revalidateTrackPanels();
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
