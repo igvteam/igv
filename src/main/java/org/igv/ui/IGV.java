@@ -1217,8 +1217,17 @@ public class IGV implements IGVEventObserver {
     public boolean scrollToTrack(String trackName) {
         boolean found = false;
         for (TrackPanel tp : getTrackPanels()) {
-            if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
-                found = true;
+            for (Track track : tp.getTracks()) {
+                if (track.getName().equals(trackName)) {
+                    TrackPanelScrollPane scrollPane = tp.getScrollPane();
+                    if (scrollPane != null) {
+                        // Scroll so this TrackPanelScrollPane aligns with the top of the viewport
+                        Rectangle bounds = scrollPane.getBounds();
+                        getMainPanel().getTrackPanelContainer().scrollRectToVisible(
+                                new Rectangle(bounds.x, bounds.y, bounds.width, 1));
+                        found = true;
+                    }
+                }
             }
         }
         return found;
@@ -1226,15 +1235,12 @@ public class IGV implements IGVEventObserver {
 
 
     /**
-     * Scroll all panels to the top (position 0).  Supports batch command "scrolltotop"
+     * Scroll to the top (position 0).  Supports batch command "scrolltotop"
      *
      * @return
      */
     public void scrollToTop() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().getNamePanel().scrollToPosition(0);
-
-        }
+        getMainPanel().getTrackPanelContainer().scrollRectToVisible(new Rectangle(0, 0, 1, 1));
     }
 
     /**
