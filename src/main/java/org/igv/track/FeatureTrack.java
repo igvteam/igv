@@ -526,7 +526,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 rowHeight = this.getContentHeight();
         }
 
-        return Math.max(0, (y - this.getY() - this.margin) / rowHeight);
+        return Math.max(0, y / rowHeight);
 
     }
 
@@ -773,7 +773,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public boolean supportsWholeGenome() {
-        return source.supportsWholeGenome();
+        return source == null || source.supportsWholeGenome();
     }
 
     protected boolean isShowFeatures(ReferenceFrame frame) {
