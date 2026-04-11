@@ -175,9 +175,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public int getHeight() {
-        int i = !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
-        System.out.println(i);
-        return i;
+        return !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
     }
 
     @Override
