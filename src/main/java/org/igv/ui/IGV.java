@@ -657,12 +657,10 @@ public class IGV implements IGVEventObserver {
      */
     public void resetSession(String sessionPath) {
 
-
         session.reset(sessionPath);
         AttributeManager.getInstance().clearAllAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
-
         contentPane.getMainPanel().clearTrackPanels();
         revalidateTrackPanels();
     }
@@ -674,9 +672,7 @@ public class IGV implements IGVEventObserver {
     public void newSession() {
         resetSession(null);
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome != null) {
-            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
-        }
+        GenomeManager.getInstance().setCurrentGenome(currentGenome);
         this.menuBar.disableReloadSession();
         goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
         revalidateTrackPanels();
@@ -811,37 +807,6 @@ public class IGV implements IGVEventObserver {
         return Arrays.asList(trackCountMap, panelSizeMap);
     }
 
-    /**
-     * Recalculate and set heights of track panels, based on newly loaded tracks
-     *
-     * @param trackCountMap scrollpane -> number of tracks
-     * @param panelSizeMap  scrollpane -> height in pixels
-     */
-    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap) {
-
-        UIUtilities.invokeAndWaitOnEventThread(() -> {
-
-            double totalHeight = 0;
-            for (TrackPanel tp : getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (trackCountMap.containsKey(sp)) {
-                    int prevTrackCount = trackCountMap.get(sp);
-                    if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                        int scrollPosition = panelSizeMap.get(sp);
-                        if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                            sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                            sp.getVerticalScrollBar().setValue(scrollPosition);
-                        }
-                    }
-                }
-                // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                if (sp.getTrackPanel().getTracks().size() > 0)
-                    totalHeight += Math.min(300, sp.getTrackPanel().getContentHeight());
-            }
-
-            contentPane.getMainPanel().invalidate();
-        });
-    }
 
     public void setGeneList(GeneList geneList) {
         setGeneList(geneList, true);
