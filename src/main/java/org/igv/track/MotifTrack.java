@@ -30,7 +30,6 @@ public class MotifTrack extends FeatureTrack {
         CachingFeatureSource source = new CachingFeatureSource(src);
         super.init(null, source);
         setVisibilityWindow(1000000);  // Must be done after super.init()
-        setSortable(false);
     }
 
     @Override

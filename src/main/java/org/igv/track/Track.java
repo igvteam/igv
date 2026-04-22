@@ -228,6 +228,15 @@ public interface Track {
         return 25;
     }
 
+    /**
+     * Return the height of a single row within a track. Applicable to tracks with multiple rows, including
+     * alignment tracks, variant tracks, and feature tracks in "expand" mode.
+     *
+     * @return
+     */
+    int getRowHeight();
+
+    void setRowHeight(int rowHeight);
 
     /**
      * Manually specify the data range.
@@ -258,9 +267,6 @@ public interface Track {
     void setRendererClass(Class rc);
 
     Renderer getRenderer();
-
-
-    boolean isSortable();
 
     boolean isShowDataRange();
 

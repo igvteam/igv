@@ -250,19 +250,19 @@ public class VariantTrackMenuHelper {
 
         Track.DisplayMode displayMode = track.getDisplayMode();
 
-        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Collapsed", displayMode == Track.DisplayMode.COLLAPSED);
+        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Collapse", displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(evt -> {
             track.setDisplayMode(Track.DisplayMode.COLLAPSED);
             track.repaint();
         });
 
-        JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Squished", displayMode == Track.DisplayMode.SQUISHED);
+        JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Squish", displayMode == Track.DisplayMode.SQUISHED);
         m2.addActionListener(evt -> {
             track.setDisplayMode(Track.DisplayMode.SQUISHED);
             track.repaint();
         });
 
-        JCheckBoxMenuItem m3 = new JCheckBoxMenuItem("Expanded", displayMode == Track.DisplayMode.EXPANDED);
+        JCheckBoxMenuItem m3 = new JCheckBoxMenuItem("Expand", displayMode == Track.DisplayMode.EXPANDED);
         m3.addActionListener(evt -> {
             track.setDisplayMode(Track.DisplayMode.EXPANDED);
             track.repaint();

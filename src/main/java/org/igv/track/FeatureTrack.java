@@ -54,10 +54,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public static final int MINIMUM_FEATURE_SPACING = 0;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
-    private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
     private transient int maxFeatureRow = 1;
 
@@ -106,7 +104,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         return TrackMenuUtils.getFeatureMenuItems(Collections.singleton(this), te);
     }
 
-    // TODO -- there are WAY too many constructors for this class
+    public FeatureTrack(ResourceLocator locator, FeatureSource source) {
+        super(locator);
+        init(locator, source);
+    }
 
     /**
      * Constructor used by SpliceJunctionTrack, BlatTrack, and MotifTrack
@@ -117,58 +118,32 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public FeatureTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
-        setSortable(false);
+        this.rowHeight = DEFAULT_EXPANDED_HEIGHT;
     }
 
     /**
-     * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.  This method is used by ".genome" and gbk genome loaders.
+     * Constructor with no ResourceLocator.  Used by ".genome" and gbk genome loaders.
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(null, id, name);
         init(null, source);
-        setSortable(false);
-    }
-
-    /**
-     * Constructor specifically for BigWig data source
-     *
-     * @param locator
-     * @param id
-     * @param name
-     * @param source
-     */
-    public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
-        super(locator, id, name);
-        init(locator, source);
-        setSortable(false);
-    }
-
-    public FeatureTrack(ResourceLocator locator, FeatureSource source) {
-        super(locator);
-        init(locator, source);
-        setSortable(false);
     }
 
 
-    /**
-     * SMap files (bionano), MutationTrack
-     */
-    public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
-        super(locator, id, locator.getTrackName());
-        init(locator, source);
-    }
 
     /**
      * Create a new track which is a shallow copy of this one.  Currently used by SashimiPlot.
      */
     public FeatureTrack(FeatureTrack featureTrack) {
-        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
+        super(null, featureTrack.getId(), featureTrack.getName());
+        init(null, featureTrack.source);
     }
 
     protected void init(ResourceLocator locator, FeatureSource source) {
 
         this.source = source;
+
+        this.rowHeight = DEFAULT_EXPANDED_HEIGHT;
         setMinimumHeight(10);
 
         coverageRenderer = new BarChartRenderer();
@@ -235,8 +210,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (!isVisible()) {
             return 0;
         }
-        int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-        int minHeight = margin + rowHeight * Math.max(1, maxFeatureRow);
+        int minHeight = margin + getRowHeight() * Math.max(1, maxFeatureRow);
         return Math.max(minHeight, super.getContentHeight());
     }
 
@@ -252,20 +226,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         }
     }
 
-    public int getExpandedRowHeight() {
-        return expandedRowHeight;
-    }
-
-    public void setExpandedRowHeight(int expandedRowHeight) {
-        this.expandedRowHeight = expandedRowHeight;
-    }
-
-    public int getSquishedRowHeight() {
-        return squishedRowHeight;
-    }
-
-    public void setSquishedRowHeight(int squishedRowHeight) {
-        this.squishedRowHeight = squishedRowHeight;
+    @Override
+    public int getRowHeight() {
+        return getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : rowHeight;
     }
 
     public void setRendererClass(Class rc) {
@@ -512,22 +475,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     private int getFeatureRow(int y) {
-
-        int rowHeight;
-        DisplayMode mode = getDisplayMode();
-        switch (mode) {
-            case SQUISHED:
-                rowHeight = getSquishedRowHeight();
-                break;
-            case EXPANDED:
-                rowHeight = getExpandedRowHeight();
-                break;
-            default:
-                rowHeight = this.getContentHeight();
-        }
-
-        return Math.max(0, y / rowHeight);
-
+        return Math.max(0, y / getRowHeight());
     }
 
     /**
@@ -876,7 +824,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (rows != null && rows.size() > 0) {
 
                 // Divide rectangle into equal height levels
-                double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
+                double h = getRowHeight();
                 Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, (int) h);
                 int i = 0;
 

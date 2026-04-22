@@ -45,6 +45,7 @@ public class SegTrack extends AbstractTrack {
                     Genome genome) {
 
         super(locator, id, name);
+        this.rowHeight = EXPANDED_SAMPLE_HEIGHT;
         this.dataset = dataset;
         this.type = type;
         renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();
@@ -86,7 +87,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int getSampleHeight() {
-        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : EXPANDED_SAMPLE_HEIGHT;
+        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : rowHeight;
     }
 
     @Override
@@ -220,7 +221,7 @@ public class SegTrack extends AbstractTrack {
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        var trackY = mouseY - this.getY();
+        var trackY = mouseY;
         var y = 0;
         for (var group : getSampleGroups()) {
             var groupPixelHeight = group.samples().size() * getSampleHeight();

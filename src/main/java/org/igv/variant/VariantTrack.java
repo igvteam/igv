@@ -158,6 +158,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int margins = (groupCount - 1) * 3;
         squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
                 Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (getHeight() - getVariantBandHeight() - margins) / sampleCount));
+        rowHeight = DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
 
         // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise
         // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
@@ -209,7 +210,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             case COLLAPSED:
                 return 0;
             default:
-                return DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
+                return rowHeight;
 
         }
     }
@@ -465,7 +466,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect) {
 
         Graphics2D g2D = null;
-        Color backupColor = g.getBackground();
 
         try {
             g2D = (Graphics2D) g.create();
@@ -514,7 +514,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         Rectangle clipBounds = g2D.getClipBounds();
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED || showGenotypes == false) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED || showGenotypes == false || trackRectangle.height < 2) {
             return;
         }
 
@@ -529,7 +529,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
 
-        boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
+        boolean supressFill = trackRectangle.height < 4;
         boolean hasGroups = getSampleGroups().size() > 1;
         boolean b = false;
 

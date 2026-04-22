@@ -54,7 +54,6 @@ public class CNFreqTrack extends AbstractTrack {
 
         this.setMinimumHeight(25);
         this.setHeight(50);
-        this.setSortable(false);
     }
 
     @Override
@@ -67,10 +66,6 @@ public class CNFreqTrack extends AbstractTrack {
         return this.height;
     }
 
-    @Override
-    public boolean isSortable() {
-        return false;
-    }
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {

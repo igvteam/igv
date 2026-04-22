@@ -313,7 +313,7 @@ public class TrackLoader {
     private void loadSMAPFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         List<Feature> features = SMAPParser.parseFeatures(locator, genome);
         FeatureCollectionSource src = new FeatureCollectionSource(features, genome);
-        FeatureTrack track = new FeatureTrack(locator, locator.getName(), src);
+        FeatureTrack track = new FeatureTrack(locator, src);
         track.setRenderer(new SMAPRenderer());
         track.setDisplayMode(Track.DisplayMode.EXPANDED);
         newTracks.add(track);
@@ -828,7 +828,7 @@ public class TrackLoader {
                     track = new InteractionTrack(locator, new WrappedInteractionSource(featureSource));
                     break;
                 default:
-                    track = new FeatureTrack(locator, trackId, trackName, featureSource);
+                    track = new FeatureTrack(locator, featureSource);
             }
 
 

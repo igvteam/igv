@@ -526,10 +526,6 @@ public class ParsingUtils {
                             // Any value other than 0 or off => on
                             boolean gffTags = !(value.equals("0") || (valueLowerCase.equals("off")));
                             trackProperties.setGffTags(gffTags);
-                        } else if (key.equals("sortable")) {
-                            // Any value other than 0 or off => on
-                            boolean sortable = (value.equals("1") || (valueLowerCase.equals("true")));
-                            trackProperties.setSortable(sortable);
                         } else if (key.equals("alternateexoncolor")) {
                             trackProperties.setAlternateExonColor(valueLowerCase.equals("on") || value.equals("1"));
                         } else if (key.equals("visibility")) {

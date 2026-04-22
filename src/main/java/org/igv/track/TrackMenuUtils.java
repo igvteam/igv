@@ -908,11 +908,11 @@ public class TrackMenuUtils {
 
         ButtonGroup group = new ButtonGroup();
         Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
-        if (tracks.stream().allMatch(t -> TrackType.annotation == t.getType())) {
-            modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
+        if (tracks.stream().allMatch(t -> TrackType.annotation == t.getType() || TrackType.junction == t.getType())) {
+            modes.put("Collapse", Track.DisplayMode.COLLAPSED);
         }
-        modes.put("Expanded", Track.DisplayMode.EXPANDED);
-        modes.put("Squished", Track.DisplayMode.SQUISHED);
+        modes.put("Expand", Track.DisplayMode.EXPANDED);
+        modes.put("Squish", Track.DisplayMode.SQUISHED);
 
         if (tracks.stream().allMatch(t -> t.isAlignment())) {
             modes.put("Full", Track.DisplayMode.FULL);
@@ -931,6 +931,20 @@ public class TrackMenuUtils {
             group.add(mm);
             items.add(mm);
         }
+
+        items.add(new JSeparator());
+        JMenuItem rowHeightItem = new JMenuItem("Set Expanded Row Height...");
+        rowHeightItem.addActionListener(evt -> {
+            int currentHeight = tracks.iterator().next().getRowHeight();
+            Integer newHeight = getIntegerInput("Row Height", currentHeight);
+            if (newHeight != null) {
+                for (Track t : tracks) {
+                    t.setRowHeight(newHeight);
+                }
+                IGV.getInstance().repaint(tracks);
+            }
+        });
+        items.add(rowHeightItem);
 
         return items;
     }

@@ -116,8 +116,6 @@ public class TrackProperties {
 
     private Float yLine;
 
-    private boolean sortable = true;
-
     private boolean alternateExonColor = false;
 
     private String dataURL;
@@ -223,13 +221,6 @@ public class TrackProperties {
         return this.trackLine;
     }
 
-    public boolean isSortable() {
-        return sortable;
-    }
-
-    public void setSortable(boolean sortable) {
-        this.sortable = sortable;
-    }
 
     public boolean isLogScale() {
         return logScale;

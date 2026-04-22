@@ -270,9 +270,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private boolean removed = false;
     private boolean showGroupLine;
-    private int expandedHeight = 14;
     private int collapsedHeight = 9;
-    private final int maxSquishedHeight = 5;
     private int squishedHeight = 2;
     private final int minHeight = 50;
 
@@ -292,6 +290,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         final String baseName = locator.getTrackName();
         this.setName(baseName);
+        this.rowHeight = 14;
         this.dataManager = dataManager;
         this.genome = genome;
         this.renderer = new AlignmentRenderer(this);
@@ -469,6 +468,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void setDisplayMode(DisplayMode mode) {
+        // Transitioning to or from FULL requires repacking
         boolean repack = (getDisplayMode() == DisplayMode.FULL || mode == DisplayMode.FULL);
         super.setDisplayMode(mode);
         if (repack) {
@@ -486,10 +486,10 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         return Math.max(minimumHeight, h);
     }
 
-    private int getRowHeight() {
+    public int getRowHeight() {
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
-            return expandedHeight;
+            return rowHeight;
         } else if (displayMode == DisplayMode.COLLAPSED) {
             return collapsedHeight;
         } else {
@@ -637,7 +637,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         double h;
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
-            h = expandedHeight;
+            h = rowHeight;
         } else if (displayMode == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
@@ -730,7 +730,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         double y = inputRect.getY() - 3;
         double h;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
-            h = expandedHeight;
+            h = rowHeight;
         } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             h = collapsedHeight;
         } else {
