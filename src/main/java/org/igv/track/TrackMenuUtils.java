@@ -933,7 +933,7 @@ public class TrackMenuUtils {
         }
 
         items.add(new JSeparator());
-        JMenuItem rowHeightItem = new JMenuItem("Set Expanded Row Height...");
+        JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(evt -> {
             int currentHeight = tracks.iterator().next().getRowHeight();
             Integer newHeight = getIntegerInput("Row Height", currentHeight);
