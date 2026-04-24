@@ -49,6 +49,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     private static final Logger log = LogManager.getLogger(AlignmentTrack.class);
 
+    static final int LEGACY_SQUISHED_HEIGHT = 2;
+
     // Alignment colors
     static final Color DEFAULT_ALIGNMENT_COLOR = new Color(185, 185, 185); //200, 200, 200);
 
@@ -354,11 +356,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public boolean isAlignment() {
-        return true;
-    }
-
-    @Override
     public void receiveEvent(IGVEvent event) {
 
         if (event instanceof FrameManager.ChangeEvent) {
@@ -470,6 +467,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public void setDisplayMode(DisplayMode mode) {
         // Transitioning to or from FULL requires repacking
         boolean repack = (getDisplayMode() == DisplayMode.FULL || mode == DisplayMode.FULL);
+
+        // Legacy "squished" mode -- an expanded mode with reduced row height
+        if(mode == DisplayMode.SQUISHED) {
+            setRowHeight(LEGACY_SQUISHED_HEIGHT);
+            mode = DisplayMode.EXPANDED;
+        }
+
         super.setDisplayMode(mode);
         if (repack) {
             packAlignments();
@@ -633,17 +637,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.peStats = peStats;
         }
 
-
-        double h;
-        final DisplayMode displayMode = getDisplayMode();
-        if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
-            h = rowHeight;
-        } else if (displayMode == DisplayMode.COLLAPSED) {
-            h = collapsedHeight;
-        } else {
-            h = squishedHeight;
-        }
-
+        double  h =  rowHeight;
 
         // Loop through groups
         double y = alignmentsRect.y;
@@ -714,7 +708,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
-        boolean leaveMargin = getDisplayMode() != DisplayMode.SQUISHED;
+        boolean leaveMargin = rowHeight > 2;
         inputRect.y += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
@@ -1037,7 +1031,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 renderOptions.setGroupByTag("HP");
             }
             showGroupLine = false;
-            setDisplayMode(DisplayMode.SQUISHED);
+            setRowHeight(2);
+            setDisplayMode(DisplayMode.EXPANDED);
         }
         dataManager.packAlignments(renderOptions, getDisplayMode());
         repaint();

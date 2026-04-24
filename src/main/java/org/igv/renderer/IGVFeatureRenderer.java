@@ -245,7 +245,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
                         // track name without drawing over the features
-                        int verticalSpaceRequiredForText = textBaselineY - (int) trackRectangleY;
+                        int verticalSpaceRequiredForText = fontHeight + blockHeight + 5;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
                             lastNamePixelEnd = drawFeatureName(name, track.getDisplayMode(), nameStart, nameEnd,

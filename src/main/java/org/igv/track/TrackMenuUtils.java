@@ -90,15 +90,8 @@ public class TrackMenuUtils {
                 menu.add(item);
             }
 
-            if(hasColor(track.getType())) {
+            if (hasColor(track.getType())) {
                 for (Component item : getColorMenuItems(Collections.singleton(track))) {
-                    menu.add(item);
-                }
-            }
-
-            if (track.hasDisplayMode()) {
-                menu.add(new JPopupMenu.Separator());
-                for (Component item : getDisplayModeMenuItems(Collections.singleton(track))) {
                     menu.add(item);
                 }
             }
@@ -382,78 +375,6 @@ public class TrackMenuUtils {
         }
 
         return items;
-    }
-
-
-    /**
-     * Return a list of menu items applicable to feature tracks.
-     * Null entries represent separators.
-     */
-    public static List<Component> getFeatureMenuItems(final Collection<Track> tracks, TrackClickEvent te) {
-
-        List<Component> items = new ArrayList<>();
-
-        items.add(getGroupByStrandItem(tracks));
-
-        if (tracks.size() == 1) {
-            Track t = tracks.iterator().next();
-            Feature f = t.getFeatureAtMousePosition(te);
-
-            ReferenceFrame frame = te.getFrame();
-            if (frame == null && !FrameManager.isGeneListMode()) {
-                frame = FrameManager.getDefaultFrame();
-            }
-
-            String featureName = "";
-            if (f != null) {
-                items.add(new JPopupMenu.Separator());
-                items.add(getCopyDetailsItem(f, te));
-
-                Feature sequenceFeature = f;
-                if (sequenceFeature instanceof IGVFeature) {
-                    featureName = ((IGVFeature) sequenceFeature).getName();
-                    double position = te.getChromosomePosition();
-                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
-                    if (exons != null) {
-                        for (Exon exon : exons) {
-                            if (position > exon.getStart() && position < exon.getEnd()) {
-                                sequenceFeature = exon;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                items.add(getCopySequenceItem(sequenceFeature));
-
-                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
-                    Range r = frame.getCurrentRange();
-                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
-                }
-
-                items.add(getBlatItem(sequenceFeature));
-            }
-        }
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getChangeFeatureWindow(tracks));
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getShowFeatureNames(tracks));
-        items.add(getFeatureNameAttribute(tracks));
-
-        return items;
-    }
-
-    /**
-     * Return popup menu with items applicable to BasePairTrack(s)
-     *
-     * @author stevenbusan
-     */
-    public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
-        for (Component item : getBasePairMenuItems(tracks)) {
-            menu.add(item);
-        }
     }
 
     /**
@@ -871,13 +792,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-
-    public static void addDisplayModeItems(final Collection<Track> tracks, JPopupMenu menu) {
-        for (Component item : getDisplayModeMenuItems(tracks)) {
-            menu.add(item);
-        }
-    }
-
     /**
      * Return a list of display mode radio button menu items.
      */
@@ -885,54 +799,62 @@ public class TrackMenuUtils {
 
         List<Component> items = new ArrayList<>();
 
-        // Find "most representative" state from track collection
-        Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
-        Track.DisplayMode currentMode = null;
+        boolean allAnnotation = tracks.stream().allMatch(t -> TrackType.annotation == t.getType() || TrackType.junction == t.getType());
+        boolean allAlignments = tracks.stream().allMatch(t -> TrackType.alignment == t.getType());
 
-        for (Track t : tracks) {
-            Track.DisplayMode mode = t.getDisplayMode();
-            if (counts.containsKey(mode)) {
-                counts.put(mode, counts.get(mode) + 1);
-            } else {
-                counts.put(mode, 1);
-            }
-        }
+        if (allAnnotation || allAlignments) {
+            // Find "most representative" state from track collection
+            Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
+            Track.DisplayMode currentMode = null;
 
-        int maxCount = -1;
-        for (Map.Entry<Track.DisplayMode, Integer> count : counts.entrySet()) {
-            if (count.getValue() > maxCount) {
-                currentMode = count.getKey();
-                maxCount = count.getValue();
-            }
-        }
-
-        ButtonGroup group = new ButtonGroup();
-        Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
-        if (tracks.stream().allMatch(t -> TrackType.annotation == t.getType() || TrackType.junction == t.getType())) {
-            modes.put("Collapse", Track.DisplayMode.COLLAPSED);
-        }
-        modes.put("Expand", Track.DisplayMode.EXPANDED);
-        modes.put("Squish", Track.DisplayMode.SQUISHED);
-
-        if (tracks.stream().allMatch(t -> t.isAlignment())) {
-            modes.put("Full", Track.DisplayMode.FULL);
-        }
-
-        for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
-            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
-            mm.setSelected(currentMode == entry.getValue());
-            mm.addActionListener(evt -> {
-                for (Track t : tracks) {
-                    t.setDisplayMode(entry.getValue());
-
+            for (Track t : tracks) {
+                Track.DisplayMode mode = t.getDisplayMode();
+                if (counts.containsKey(mode)) {
+                    counts.put(mode, counts.get(mode) + 1);
+                } else {
+                    counts.put(mode, 1);
                 }
-                IGV.getInstance().repaint(tracks);
-            });
-            group.add(mm);
-            items.add(mm);
+            }
+
+            int maxCount = -1;
+            for (Map.Entry<Track.DisplayMode, Integer> count : counts.entrySet()) {
+                if (count.getValue() > maxCount) {
+                    currentMode = count.getKey();
+                    maxCount = count.getValue();
+                }
+            }
+
+            ButtonGroup group = new ButtonGroup();
+            Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
+            if (allAnnotation) {
+                modes.put("Collapse", Track.DisplayMode.COLLAPSED);
+            }
+            modes.put("Expand", Track.DisplayMode.EXPANDED);
+
+            if (allAlignments) {
+                modes.put("Full", Track.DisplayMode.FULL);
+            }
+
+            for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
+                JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+                mm.setSelected(currentMode == entry.getValue());
+                mm.addActionListener(evt -> {
+                    for (Track t : tracks) {
+                        t.setDisplayMode(entry.getValue());
+                    }
+                    IGV.getInstance().repaint(tracks);
+                });
+                group.add(mm);
+                items.add(mm);
+            }
         }
 
-        items.add(new JSeparator());
+        items.add(getRowHeightItem(tracks));
+
+        return items;
+    }
+
+    public static JMenuItem getRowHeightItem(Collection<Track> tracks) {
         JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(evt -> {
             int currentHeight = tracks.iterator().next().getRowHeight();
@@ -944,9 +866,7 @@ public class TrackMenuUtils {
                 IGV.getInstance().repaint(tracks);
             }
         });
-        items.add(rowHeightItem);
-
-        return items;
+        return rowHeightItem;
     }
 
     /**

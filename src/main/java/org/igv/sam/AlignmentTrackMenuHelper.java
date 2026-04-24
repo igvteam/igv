@@ -88,6 +88,9 @@ class AlignmentTrackMenuHelper {
         this.renderOptions = alignmentTrack.getRenderOptions();
         final Alignment clickedAlignment = alignmentTrack.getAlignmentAt(e);
 
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(alignmentTrack)));
+        items.add(new JSeparator());
+
         // Circular view items -- optional
         if (CircularViewUtilities.ping()) {
             addSeparator();

@@ -172,16 +172,9 @@ public interface Track {
         return false;
     }
 
-    default boolean isAlignment() {
-        return false;
-    }
-
-    void setOverlayed(boolean overlayVisible);
-
     void setDataType(DataType type);
 
     DataType getDataType();
-
 
     void setY(int top);
 
@@ -205,10 +198,6 @@ public interface Track {
      * @return
      */
     int getHeight();
-
-    default int getDefaultHeight() {
-        return 50;
-    }
 
     /**
      * Return the minimum height for this track. Tracks should not be resized below this value.

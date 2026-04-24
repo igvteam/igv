@@ -42,7 +42,10 @@ public class VariantTrackMenuHelper {
             JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
             circItem.addActionListener(e1 -> variantTrack.sendToCircularView(e));
             items.add(circItem);
+            items.add(new JPopupMenu.Separator());
         }
+
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
@@ -243,38 +246,5 @@ public class VariantTrackMenuHelper {
         items.add(getQualitySortItem(track, variant));
         return items;
     }
-
-    public static List<JMenuItem> getDisplayModeItems(VariantTrack track) {
-
-        List<JMenuItem> items = new ArrayList();
-
-        Track.DisplayMode displayMode = track.getDisplayMode();
-
-        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Collapse", displayMode == Track.DisplayMode.COLLAPSED);
-        m1.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-            track.repaint();
-        });
-
-        JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Squish", displayMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.SQUISHED);
-            track.repaint();
-        });
-
-        JCheckBoxMenuItem m3 = new JCheckBoxMenuItem("Expand", displayMode == Track.DisplayMode.EXPANDED);
-        m3.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.EXPANDED);
-            track.repaint();
-        });
-
-
-        items.add(m1);
-        items.add(m2);
-        items.add(m3);
-
-        return items;
-    }
-
 
 }

@@ -22,6 +22,7 @@ import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -87,7 +88,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public int getSampleHeight() {
-        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : rowHeight;
+        return rowHeight;
     }
 
     @Override
@@ -189,6 +190,8 @@ public class SegTrack extends AbstractTrack {
     public List<Component> getPopupMenuItems(final TrackClickEvent te) {
 
         List<Component> items = new ArrayList<>();
+
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 

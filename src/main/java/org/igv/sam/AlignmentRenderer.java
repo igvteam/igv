@@ -306,7 +306,7 @@ public class AlignmentRenderer {
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
                 Color alignmentColor = getAlignmentColor(alignment, track);
-                final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
+                final boolean leaveMargin = (this.track.getRowHeight() > 2);
                 final ColorOption colorOption = renderOptions.getColorOption();
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(colorOption) ||

@@ -208,6 +208,8 @@ public class CommandExecutor {
             result = this.setShowDataRange(param1, param2);
         } else if (cmd.equalsIgnoreCase("setTrackHeight")) {
             result = this.setTrackHeight(param1, param2);
+        } else if (cmd.equalsIgnoreCase("setRowHeight")) {
+            result = this.setRowHeight(param1, param2);
         } else if (cmd.equalsIgnoreCase("overlay")) {
             result = this.overlay(args);
         } else if (cmd.equalsIgnoreCase("separate")) {
@@ -533,6 +535,31 @@ public class CommandExecutor {
                 track.setHeight(height);
                 igv.repaint(track);
             }
+            return "OK";
+        } else {
+            return String.format("Error: Track %s not found", trackName);
+        }
+    }
+
+    private String setRowHeight(String param1, String param2) {
+
+        int height;
+        String trackName;
+        try {
+            height = Integer.parseInt(param1);
+            trackName = parseTrackName(param2);
+        } catch (NumberFormatException e) {
+            height = Integer.parseInt(param2);
+            trackName = parseTrackName(param1);
+        }
+
+        height = Math.max(0, height);
+        List<Track> tracks = tracksMatchingName(trackName);
+        if (tracks.size() > 0) {
+            for (Track track : tracks) {
+                track.setRowHeight(height);
+            }
+            igv.repaint();
             return "OK";
         } else {
             return String.format("Error: Track %s not found", trackName);
