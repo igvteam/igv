@@ -210,8 +210,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             case COLLAPSED:
                 return 0;
             default:
-                return rowHeight;
-
+                return Math.max(1, Math.round(rowHeight));
         }
     }
 
@@ -233,7 +232,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         } else {
             final int groupCount = getSampleGroups().size();
             int margins = groupCount * 3;
-            h = getVariantsHeight() + margins + (sampleCount * getGenotypeBandHeight());
+            h = getVariantsHeight() + margins + Math.round(sampleCount * rowHeight);
         }
         return Math.max(WG_TRACK_HEIGHT, h);
     }
@@ -496,6 +495,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     @Override
     public int getSampleHeight() {
         return getGenotypeBandHeight();
+    }
+
+    @Override
+    public int getNumRows() {
+        return sampleCount();
     }
 
     @Override

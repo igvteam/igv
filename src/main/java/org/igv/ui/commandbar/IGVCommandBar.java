@@ -20,7 +20,6 @@ import org.igv.session.History;
 import org.igv.ui.IGV;
 import org.igv.ui.ShowDetailsBehavior;
 import org.igv.ui.UIConstants;
-import org.igv.ui.action.FitDataToWindowMenuAction;
 import org.igv.ui.action.ReloadTracksMenuAction;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
@@ -447,9 +446,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setToolTipText("Resize tracks to fit in window.");
-        fitToWindowButton.addActionListener(evt ->
-                new FitDataToWindowMenuAction(null, 0, IGV.getInstance()).actionPerformed(evt)
-        );
+        fitToWindowButton.addActionListener(evt -> IGV.getInstance().fitTracksToWindow());
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);

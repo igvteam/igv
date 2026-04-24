@@ -67,7 +67,8 @@ public abstract class AbstractTrack implements Track {
     private boolean showDataRange = true;
 
     private int top;
-    protected int rowHeight;
+    protected float rowHeight;
+    private float savedRowHeight = 0;
     protected int minimumHeight = -1;
     private DataType dataType = DataType.OTHER;
     private boolean selected = false;
@@ -434,13 +435,28 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
-    public int getRowHeight() {
+    public float getRowHeight() {
         return rowHeight;
     }
 
     @Override
-    public void setRowHeight(int rowHeight) {
+    public void setRowHeight(float rowHeight) {
         this.rowHeight = rowHeight;
+    }
+
+    @Override
+    public void saveRowHeight() {
+        this.savedRowHeight = this.rowHeight;
+    }
+
+    @Override
+    public float getSavedRowHeight() {
+        return savedRowHeight;
+    }
+
+    @Override
+    public boolean hasSavedRowHeight() {
+        return savedRowHeight > 0;
     }
 
     @Override
@@ -1426,7 +1442,7 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("rowHeight")) {
             try {
-                this.rowHeight = jsonObject.getInt("rowHeight");
+                this.rowHeight = jsonObject.getFloat("rowHeight");
             } catch (Exception e) {
                 log.error("Unrecognized rowHeight: " + jsonObject.getString("rowHeight"));
             }

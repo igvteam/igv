@@ -12,6 +12,7 @@ import org.igv.track.Track;
 import org.igv.ui.IGV;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 
@@ -102,11 +103,52 @@ public class DataPanelPainter {
 
         if (track.isVisible()) {
             try {
-                track.render(context);
-
+                if (track.getRowHeight() < 1f) {
+                    paintScaled(track, context);
+                } else {
+                    track.render(context);
+                }
             } catch (Exception e) {
                 log.error("Error rendering track: " + track.getName(), e);
             }
+        }
+    }
+
+    private void paintScaled(Track track, RenderContext context) {
+        int nRows = track.getNumRows();
+        if (nRows <= 1) {
+            track.render(context);
+            return;
+        }
+
+        int maxRows = PreferencesManager.getPreferences().getAsInt(Constants.FIT_TO_VIEWPORT_MAX_ROWS);
+        int imageRows = Math.min(nRows, maxRows);
+        Rectangle trackRect = context.getTrackRectangle();
+        int width = trackRect.width;
+
+        Color bg = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+        if (bg == null) bg = Color.WHITE;
+
+        BufferedImage image = new BufferedImage(width, imageRows, BufferedImage.TYPE_INT_RGB);
+        Graphics2D ig = image.createGraphics();
+        ig.setColor(bg);
+        ig.fillRect(0, 0, width, imageRows);
+
+        Rectangle offRect = new Rectangle(0, 0, width, imageRows);
+        RenderContext offContext = new RenderContext(null, ig, context.getReferenceFrame(), offRect, offRect, offRect);
+        try {
+            track.render(offContext);
+        } finally {
+            offContext.dispose();
+            ig.dispose();
+        }
+
+        Graphics2D g = context.getGraphics();
+        Object prevHint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(image, trackRect.x, trackRect.y, trackRect.width, trackRect.height, null);
+        if (prevHint != null) {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, prevHint);
         }
     }
 

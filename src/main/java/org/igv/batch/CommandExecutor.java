@@ -201,7 +201,7 @@ public class CommandExecutor {
         } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
             result = sortByAttribute(args);
         } else if (cmd.equalsIgnoreCase("fitTracks")) {
-            igv.fitTracksToPanel();
+            igv.fitTracksToWindow();
         } else if (cmd.equalsIgnoreCase("showAttributes")) {
             result = this.showAttributes(args);
         } else if (cmd.equalsIgnoreCase("showDataRange")) {

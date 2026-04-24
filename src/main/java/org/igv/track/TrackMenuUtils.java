@@ -32,6 +32,7 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.TrackPanelScrollPane;
 import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
@@ -850,6 +851,8 @@ public class TrackMenuUtils {
         }
 
         items.add(getRowHeightItem(tracks));
+        items.add(getFitToViewportItem(tracks));
+        items.add(getResetRowHeightItem(tracks));
 
         return items;
     }
@@ -857,16 +860,49 @@ public class TrackMenuUtils {
     public static JMenuItem getRowHeightItem(Collection<Track> tracks) {
         JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(evt -> {
-            int currentHeight = tracks.iterator().next().getRowHeight();
-            Integer newHeight = getIntegerInput("Row Height", currentHeight);
-            if (newHeight != null) {
+            float currentHeight = tracks.iterator().next().getRowHeight();
+            Double newHeight = getDoubleInput("Row Height", currentHeight);
+            if (newHeight != null && newHeight > 0) {
                 for (Track t : tracks) {
-                    t.setRowHeight(newHeight);
+                    t.setRowHeight(newHeight.floatValue());
                 }
                 IGV.getInstance().repaint(tracks);
             }
         });
         return rowHeightItem;
+    }
+
+    public static JMenuItem getFitToViewportItem(Collection<Track> tracks) {
+        JMenuItem item = new JMenuItem("Fit Data to Window");
+        item.addActionListener(evt -> {
+            for (Track t : tracks) {
+                TrackPanelScrollPane viewport = t.getViewport();
+                if (viewport != null) {
+                    int viewportHeight = viewport.getViewport().getHeight();
+                    int nRows = t.getNumRows();
+                    if (nRows > 1 && viewportHeight > 0) {
+                        t.saveRowHeight();
+                        t.setRowHeight((float) viewportHeight / nRows);
+                    }
+                }
+            }
+            IGV.getInstance().repaint(tracks);
+        });
+        return item;
+    }
+
+    public static JMenuItem getResetRowHeightItem(Collection<Track> tracks) {
+        JMenuItem item = new JMenuItem("Reset Row Height");
+        item.setEnabled(tracks.stream().anyMatch(Track::hasSavedRowHeight));
+        item.addActionListener(evt -> {
+            for (Track t : tracks) {
+                if (t.hasSavedRowHeight()) {
+                    t.setRowHeight(t.getSavedRowHeight());
+                }
+            }
+            IGV.getInstance().repaint(tracks);
+        });
+        return item;
     }
 
     /**

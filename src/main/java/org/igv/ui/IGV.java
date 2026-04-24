@@ -1793,9 +1793,9 @@ public class IGV implements IGVEventObserver {
      * height of the panel. This is not possible in all cases as the
      * minimum height for tracks is respected.
      */
-    public void fitTracksToPanel() {
+    public void fitTracksToWindow() {
         for (TrackPanel tp : getTrackPanels()) {
-            tp.fitTracksToPanel();
+
         }
         repaint();
     }

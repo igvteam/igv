@@ -82,7 +82,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         double locScale = context.getScale();
         double end = origin + trackRectangle.getWidth() * locScale;
 
-        final int rowHeight = track.getRowHeight();
+        final int rowHeight = Math.max(1, Math.round(track.getRowHeight()));
         blockHeight = Math.min(BLOCK_HEIGHT, rowHeight / 2);
         thinBlockHeight = Math.min( THIN_BLOCK_HEIGHT, blockHeight / 2);
         nonCodingHeight = Math.min(thinBlockHeight, NON_CODING_HEIGHT);

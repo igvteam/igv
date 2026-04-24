@@ -485,12 +485,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public int getContentHeight() {
 
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN + TOP_MARGIN
+        int h = Math.max(minHeight, Math.round(getNLevels() * getRowHeight()) + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT);
         return Math.max(minimumHeight, h);
     }
 
-    public int getRowHeight() {
+    @Override
+    public float getRowHeight() {
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
             return rowHeight;
@@ -499,6 +500,11 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else {
             return squishedHeight;
         }
+    }
+
+    @Override
+    public int getNumRows() {
+        return getNLevels();
     }
 
     private int getNLevels() {
@@ -637,7 +643,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.peStats = peStats;
         }
 
-        double  h =  rowHeight;
+        int intH = Math.max(1, Math.round(rowHeight));
 
         // Loop through groups
         double y = alignmentsRect.y;
@@ -658,13 +664,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                     break;
                 }
 
-                if (y + h > clipBounds.y) {
-                    Rectangle rowRectangle = new Rectangle(alignmentsRect.x, (int) y, alignmentsRect.width, (int) h);
+                if (y + intH > clipBounds.y) {
+                    Rectangle rowRectangle = new Rectangle(alignmentsRect.x, (int) y, alignmentsRect.width, intH);
                     renderer.renderAlignments(row.alignments, alignmentCounts, context, rowRectangle, renderOptions);
                     row.y = y;
-                    row.h = h;
+                    row.h = intH;
                 }
-                y += h;
+                y += intH;
             }
 
             if (groupOption != GroupOption.NONE) {
@@ -677,7 +683,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
 
                 // Label the group, if there is room
-                double groupHeight = rows.size() * h;
+                double groupHeight = rows.size() * intH;
                 if (groupHeight > GROUP_LABEL_HEIGHT + 2 && !context.multiframe) {
                     String groupName = entry.getKey();
                     if (groupName.equals("SELECTED")) {
@@ -708,7 +714,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
-        boolean leaveMargin = rowHeight > 2;
+        boolean leaveMargin = rowHeight > 2f;
         inputRect.y += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
@@ -722,13 +728,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         // Divide rectangle into equal height levels
         double y = inputRect.getY() - 3;
-        double h;
+        int intH;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
-            h = rowHeight;
+            intH = Math.max(1, Math.round(rowHeight));
         } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
-            h = collapsedHeight;
+            intH = collapsedHeight;
         } else {
-            h = squishedHeight;
+            intH = squishedHeight;
         }
 
         for (Map.Entry<String, List<Row>> entry : groups.entrySet()) {
@@ -740,14 +746,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
 
                 assert clipBounds != null;
-                if (y + h > clipBounds.getY()) {
-                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                if (y + intH > clipBounds.getY()) {
+                    Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, intH);
                     if (row.alignments != null)  // TODO -- not sure this is needed
                         BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);
                     row.y = y;
-                    row.h = h;
+                    row.h = intH;
                 }
-                y += h;
+                y += intH;
             }
 
             y += GROUP_MARGIN;

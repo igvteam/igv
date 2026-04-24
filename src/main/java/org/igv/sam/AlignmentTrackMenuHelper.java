@@ -89,6 +89,8 @@ class AlignmentTrackMenuHelper {
         final Alignment clickedAlignment = alignmentTrack.getAlignmentAt(e);
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(alignmentTrack)));
+        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(alignmentTrack)));
+        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(alignmentTrack)));
         items.add(new JSeparator());
 
         // Circular view items -- optional

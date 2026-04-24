@@ -46,6 +46,8 @@ public class VariantTrackMenuHelper {
         }
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
+        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(variantTrack)));
+        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));

@@ -223,9 +223,23 @@ public interface Track {
      *
      * @return
      */
-    int getRowHeight();
+    float getRowHeight();
 
-    void setRowHeight(int rowHeight);
+    void setRowHeight(float rowHeight);
+
+    void saveRowHeight();
+
+    float getSavedRowHeight();
+
+    boolean hasSavedRowHeight();
+
+    /**
+     * Return the number of data rows currently displayed. Used to compute the row height
+     * needed to fit all content into the viewport without scrolling.
+     */
+    default int getNumRows() {
+        return 1;
+    }
 
     /**
      * Manually specify the data range.

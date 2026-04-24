@@ -83,12 +83,17 @@ public class SegTrack extends AbstractTrack {
     @Override
     public int getContentHeight() {
         var nSamples = sampleCount();
-        return nSamples * getSampleHeight() + (getSampleGroups().size() - 1) * groupGap;
+        return Math.round(rowHeight * nSamples) + (getSampleGroups().size() - 1) * groupGap;
     }
 
     @Override
     public int getSampleHeight() {
-        return rowHeight;
+        return Math.max(1, Math.round(rowHeight));
+    }
+
+    @Override
+    public int getNumRows() {
+        return sampleCount();
     }
 
     @Override
@@ -192,6 +197,8 @@ public class SegTrack extends AbstractTrack {
         List<Component> items = new ArrayList<>();
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
+        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(this)));
+        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(this)));
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
