@@ -878,11 +878,11 @@ public class TrackMenuUtils {
             for (Track t : tracks) {
                 TrackPanelScrollPane viewport = t.getViewport();
                 if (viewport != null) {
-                    int viewportHeight = viewport.getViewport().getHeight();
+                    int availableHeight = viewport.getViewport().getHeight() - t.getReservedHeight();
                     int nRows = t.getNumRows();
-                    if (nRows > 1 && viewportHeight > 0) {
+                    if (nRows > 1 && availableHeight > 0) {
                         t.saveRowHeight();
-                        t.setRowHeight((float) viewportHeight / nRows);
+                        t.setRowHeight((float) availableHeight / nRows);
                     }
                 }
             }

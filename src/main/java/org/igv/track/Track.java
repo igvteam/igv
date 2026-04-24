@@ -241,6 +241,11 @@ public interface Track {
         return 1;
     }
 
+    /** Height in pixels reserved at the top of the track (not available for row content). */
+    default int getReservedHeight() {
+        return 0;
+    }
+
     /**
      * Manually specify the data range.
      * {@code autoScale} must be turned off elsewhere, if applicable

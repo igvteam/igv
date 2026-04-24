@@ -568,6 +568,21 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return trackPanelContainer;
     }
 
+    public int getTrackPanelViewportHeight() {
+        return trackPanelScrollPane.getViewport().getHeight();
+    }
+
+    /** Sum of preferred heights of non-track components (dividers, margins) in the track container. */
+    public int getTrackContainerOverhead() {
+        int overhead = 0;
+        for (Component c : trackPanelContainer.getComponents()) {
+            if (!(c instanceof TrackPanelScrollPane)) {
+                overhead += c.getPreferredSize().height;
+            }
+        }
+        return overhead;
+    }
+
 
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {

@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -57,6 +58,8 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     private JideButton backButton;
     private JideButton forwardButton;
+    private JideButton fitToWindowButton;
+    private List<IGV.TrackFitState> fitState;
 
     private ShowDetailsBehavior detailsBehavior;
 
@@ -436,17 +439,29 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         toolPanel.add(roiToggleButton, JideBoxLayout.FIX);
 
 
-        JideButton fitToWindowButton = new JideButton();
-        //fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        //fitToWindowButton.setBorder(toolButtonBorder);
+        final Icon collapseIcon = new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/collapseall.invert.gif" : "/images/collapseall.gif"));
+        final Icon expandIcon = new javax.swing.ImageIcon(getClass().getResource("/images/expandall.gif"));
+
+        fitToWindowButton = new JideButton();
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
-        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
-                darkMode ? "/images/collapseall.invert.gif" : "/images/collapseall.gif")));
+        fitToWindowButton.setIcon(collapseIcon);
         fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setToolTipText("Resize tracks to fit in window.");
-        fitToWindowButton.addActionListener(evt -> IGV.getInstance().fitTracksToWindow());
+        fitToWindowButton.addActionListener(evt -> {
+            if (fitState == null) {
+                fitState = IGV.getInstance().fitTracksToWindow();
+                fitToWindowButton.setIcon(expandIcon);
+                fitToWindowButton.setToolTipText("Restore track heights.");
+            } else {
+                IGV.getInstance().restoreTrackFitState(fitState);
+                fitState = null;
+                fitToWindowButton.setIcon(collapseIcon);
+                fitToWindowButton.setToolTipText("Resize tracks to fit in window.");
+            }
+        });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);

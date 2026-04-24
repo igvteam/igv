@@ -503,6 +503,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     @Override
+    public int getReservedHeight() {
+        return getVariantsHeight();
+    }
+
+    @Override
     public int getSampleOffset() {
         return getVariantsHeight();
     }
