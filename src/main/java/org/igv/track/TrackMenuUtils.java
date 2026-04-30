@@ -6,7 +6,6 @@ import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.igv.bedpe.InteractionTrack;
 import org.igv.data.AbstractDataSource;
-import org.igv.feature.Exon;
 import org.igv.feature.IGVFeature;
 import org.igv.feature.Range;
 import org.igv.feature.Strand;
@@ -21,7 +20,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
 import org.igv.sam.AlignmentDataManager;
 import org.igv.sam.AlignmentTrack;
-import org.igv.sam.CoverageTrack;
 import org.igv.sam.SAMWriter;
 import org.igv.ui.DataRangeDialog;
 import org.igv.ui.FontManager;
@@ -851,8 +849,7 @@ public class TrackMenuUtils {
         }
 
         items.add(getRowHeightItem(tracks));
-        items.add(getFitToViewportItem(tracks));
-        items.add(getResetRowHeightItem(tracks));
+        items.add(getMinimizeHeightItem(tracks));
 
         return items;
     }
@@ -860,11 +857,11 @@ public class TrackMenuUtils {
     public static JMenuItem getRowHeightItem(Collection<Track> tracks) {
         JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
         rowHeightItem.addActionListener(evt -> {
-            float currentHeight = tracks.iterator().next().getRowHeight();
-            Double newHeight = getDoubleInput("Row Height", currentHeight);
+            int currentHeight = tracks.iterator().next().getRowHeight();
+            Integer newHeight = getIntegerInput("Row Height", currentHeight);
             if (newHeight != null && newHeight > 0) {
                 for (Track t : tracks) {
-                    t.setRowHeight(newHeight.floatValue());
+                    t.setRowHeight(newHeight);
                 }
                 IGV.getInstance().repaint(tracks);
             }
@@ -872,8 +869,8 @@ public class TrackMenuUtils {
         return rowHeightItem;
     }
 
-    public static JMenuItem getFitToViewportItem(Collection<Track> tracks) {
-        JMenuItem item = new JMenuItem("Fit Data to Window");
+    public static JMenuItem getMinimizeHeightItem(Collection<Track> tracks) {
+        JMenuItem item = new JMenuItem("Minimize Track Height");
         item.addActionListener(evt -> {
             for (Track t : tracks) {
                 TrackPanelScrollPane viewport = t.getViewport();
@@ -881,23 +878,8 @@ public class TrackMenuUtils {
                     int availableHeight = viewport.getViewport().getHeight() - t.getReservedHeight();
                     int nRows = t.getNumRows();
                     if (nRows > 1 && availableHeight > 0) {
-                        t.saveRowHeight();
-                        t.setRowHeight((float) availableHeight / nRows);
+                        t.setRowHeight(Math.max(1, availableHeight / nRows));
                     }
-                }
-            }
-            IGV.getInstance().repaint(tracks);
-        });
-        return item;
-    }
-
-    public static JMenuItem getResetRowHeightItem(Collection<Track> tracks) {
-        JMenuItem item = new JMenuItem("Reset Row Height");
-        item.setEnabled(tracks.stream().anyMatch(Track::hasSavedRowHeight));
-        item.addActionListener(evt -> {
-            for (Track t : tracks) {
-                if (t.hasSavedRowHeight()) {
-                    t.setRowHeight(t.getSavedRowHeight());
                 }
             }
             IGV.getInstance().repaint(tracks);

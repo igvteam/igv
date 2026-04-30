@@ -200,8 +200,8 @@ public class CommandExecutor {
             HttpUtils.getInstance().clearAccessTokens();
         } else if (cmd.equalsIgnoreCase("sortByAttribute")) {
             result = sortByAttribute(args);
-        } else if (cmd.equalsIgnoreCase("fitTracks")) {
-            igv.fitTracksToWindow();
+        } else if (cmd.equalsIgnoreCase("fitTracks") || cmd.equals("minimizeTrackHeights")) {
+            igv.minimizeTrackHeights();
         } else if (cmd.equalsIgnoreCase("showAttributes")) {
             result = this.showAttributes(args);
         } else if (cmd.equalsIgnoreCase("showDataRange")) {

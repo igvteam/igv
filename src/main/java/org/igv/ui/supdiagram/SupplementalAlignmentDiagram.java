@@ -169,6 +169,16 @@ class SupplementalAlignmentDiagram extends JPanel {
         return AlphaComposite.getInstance(type, alpha);
     }
 
+    /**
+     * Renders a linear, left-to-right picture of how the read is broken into alignment segments, where each segment's
+     * width reflects how many bases it covers.
+     *
+     * @param g
+     * @param toDraw
+     * @param selected
+     * @param bounds
+     * @return
+     */
     private static Map<SupplementaryAlignment, AlignmentArrow> drawAlignmentsInReadOrder(final Graphics2D g, final SupplementaryGroup toDraw,
                                                                                          final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
         int midline = (int) (bounds.getY() + .5 * bounds.getHeight());
@@ -224,8 +234,18 @@ class SupplementalAlignmentDiagram extends JPanel {
         return output;
     }
 
-    //Draw the alignments in chromosome order but give an indication of how close they are to each other i.e. within a 1kb window or not
-    //Handle overlapping alignments
+    //
+
+    /**
+     * Draw the alignments in chromosome order but give an indication of how close they are to each other i.e. within a 1kb window or not
+     * Handle overlapping alignments
+     *
+     * @param g
+     * @param toDraw
+     * @param selected
+     * @param bounds
+     * @return
+     */
     private static Map<SupplementaryAlignment, AlignmentArrow> drawAlignmentsInCondensedChromosomeOrder(final Graphics2D g, final SupplementaryGroup toDraw,
                                                                                                         final Set<SupplementaryAlignment> selected, Rectangle2D bounds) {
 

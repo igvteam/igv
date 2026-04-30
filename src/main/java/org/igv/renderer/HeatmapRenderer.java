@@ -20,8 +20,9 @@ public class HeatmapRenderer extends DataRenderer {
 
     private static Logger log = LogManager.getLogger(HeatmapRenderer.class);
 
-    public String getDisplayName() {
-        return "Heatmap";
+    @Override
+    public int getMinimumHeight() {
+        return 1;
     }
 
     /**

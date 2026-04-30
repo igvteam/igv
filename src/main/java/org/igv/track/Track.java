@@ -205,7 +205,7 @@ public interface Track {
      * @return the minimum height in pixels
      */
     default int getMinimumHeight() {
-        return 10;
+        return 20;
     }
 
     /**
@@ -223,15 +223,18 @@ public interface Track {
      *
      * @return
      */
-    float getRowHeight();
+    int getRowHeight();
 
-    void setRowHeight(float rowHeight);
+    void setRowHeight(int rowHeight);
 
-    void saveRowHeight();
-
-    float getSavedRowHeight();
-
-    boolean hasSavedRowHeight();
+    /**
+     * Shrink the track to its minimum useful height. Default implementation sets the track height to its
+     * minimum height. Tracks with variable content height (e.g. multi-row tracks) should override this to
+     * use the larger of the content height or minimum height. Only shrinks; never grows the current height.
+     */
+    default void minimizeHeight() {
+        setHeight(Math.min(getHeight(), getMinimumHeight()));
+    }
 
     /**
      * Return the number of data rows currently displayed. Used to compute the row height

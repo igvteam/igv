@@ -46,8 +46,7 @@ public class VariantTrackMenuHelper {
         }
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
-        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(variantTrack)));
-        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(variantTrack)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
@@ -83,16 +82,6 @@ public class VariantTrackMenuHelper {
         }
 
         items.add(new JPopupMenu.Separator());
-        JMenuItem item = new JMenuItem("Change Squished Row Height...");
-        item.addActionListener(evt -> {
-            int currentValue = variantTrack.getSquishedHeight();
-            Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
-            if (newValue != null) {
-                variantTrack.setSquishedHeight(newValue);
-                IGV.getInstance().getContentPane().repaint();
-            }
-        });
-        items.add(item);
 
         items.add(getHideFilteredItem(variantTrack));
         items.add(getFeatureVisibilityItem(variantTrack));

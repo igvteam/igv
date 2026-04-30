@@ -51,8 +51,6 @@ public class CNFreqTrack extends AbstractTrack {
         this.altColor = Color.blue;
 
         renderer = new BarChartRenderer();
-
-        this.setMinimumHeight(25);
         this.setHeight(50);
     }
 

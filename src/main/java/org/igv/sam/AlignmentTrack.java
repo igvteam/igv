@@ -485,13 +485,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     public int getContentHeight() {
 
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, Math.round(getNLevels() * getRowHeight()) + nGroups * GROUP_MARGIN + TOP_MARGIN
+        int intRowHeight = Math.max(1, rowHeight);  // This is what is used to draw
+        int h = Math.max(minHeight, getNLevels() * intRowHeight + nGroups * GROUP_MARGIN + TOP_MARGIN
                 + DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT);
         return Math.max(minimumHeight, h);
     }
 
     @Override
-    public float getRowHeight() {
+    public int getRowHeight() {
         final DisplayMode displayMode = getDisplayMode();
         if (displayMode == DisplayMode.EXPANDED || displayMode == DisplayMode.FULL) {
             return rowHeight;
@@ -500,6 +501,12 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         } else {
             return squishedHeight;
         }
+    }
+
+    @Override
+    public void minimizeHeight() {
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
     }
 
     @Override
@@ -643,7 +650,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             renderOptions.peStats = peStats;
         }
 
-        int intH = Math.max(1, Math.round(rowHeight));
+        int intH = Math.max(1, rowHeight);
 
         // Loop through groups
         double y = alignmentsRect.y;
@@ -714,7 +721,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
-        boolean leaveMargin = rowHeight > 2f;
+        boolean leaveMargin = rowHeight > 2;
         inputRect.y += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
@@ -730,7 +737,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         double y = inputRect.getY() - 3;
         int intH;
         if (getDisplayMode() == DisplayMode.EXPANDED) {
-            intH = Math.max(1, Math.round(rowHeight));
+            intH = Math.max(1, rowHeight);
         } else if (getDisplayMode() == DisplayMode.COLLAPSED) {
             intH = collapsedHeight;
         } else {
@@ -1218,6 +1225,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         private AlignmentTrack track;
         private Boolean shadeBasesOption;
         private Boolean shadeCenters;
+        private Boolean showCenterline;
         private Boolean flagUnmappedPairs;
         private Boolean showAllBases;
         private Integer minInsertSize;
@@ -1276,6 +1284,14 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
         IGVPreferences getPreferences() {
             return this.track != null ? this.track.getPreferences() : AlignmentTrack.getPreferences(ExperimentType.OTHER);
+        }
+
+        public Boolean getShowCenterline() {
+            return showCenterline;
+        }
+
+        public void setShowCenterline(Boolean showCenterline) {
+            this.showCenterline = showCenterline;
         }
 
         public int getMinJunctionCoverage() {

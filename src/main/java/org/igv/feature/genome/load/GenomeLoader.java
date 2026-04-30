@@ -83,8 +83,6 @@ abstract public class GenomeLoader {
 
         String id = genome.getId() + "_genes";
         geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
-        geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(35);
 
         return geneFeatureTrack;
     }

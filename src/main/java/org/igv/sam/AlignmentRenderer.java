@@ -976,6 +976,7 @@ public class AlignmentRenderer {
 
     /**
      * get a texture to apply to duplicate reads, caches the created textures according to their color
+     *
      * @param baseColor the color to render the read
      * @return a texture matching the base color with shading
      */

@@ -17,7 +17,6 @@ import org.igv.sam.mods.BaseModificationUtils;
 import org.igv.sashimi.SashimiPlot;
 import org.igv.tools.PFMExporter;
 import org.igv.track.SequenceTrack;
-import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
@@ -89,8 +88,7 @@ class AlignmentTrackMenuHelper {
         final Alignment clickedAlignment = alignmentTrack.getAlignmentAt(e);
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(alignmentTrack)));
-        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(alignmentTrack)));
-        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(alignmentTrack)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(alignmentTrack)));
         items.add(new JSeparator());
 
         // Circular view items -- optional
@@ -118,6 +116,7 @@ class AlignmentTrackMenuHelper {
         addShadeAlignmentsMenuItem();
         //addFilterMenuItem();
         addPackMenuItem();
+        addShowCenterLineMenuItem();
 
         // Shading and mismatch items
         addSeparator();
@@ -1052,6 +1051,16 @@ class AlignmentTrackMenuHelper {
             renderOptions.setShadeBasesOption(item.isSelected());
             alignmentTrack.repaint();
         }));
+        add(item);
+    }
+
+    private void addShowCenterLineMenuItem() {
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem("Show center line");
+        item.setSelected(alignmentTrack.getPreferences().getAsBoolean(SAM_SHOW_CENTER_LINE));
+        item.addActionListener(aEvt -> {
+            alignmentTrack.getPreferences().put(SAM_SHOW_CENTER_LINE, item.isSelected());
+            IGV.getInstance().getAlignmentTracks().forEach(AlignmentTrack::repaint);
+        });
         add(item);
     }
 

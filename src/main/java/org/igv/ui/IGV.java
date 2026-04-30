@@ -643,85 +643,14 @@ public class IGV implements IGVEventObserver {
         }
     }
 
-    public record TrackFitState(Track track, int height, float rowHeight) {}
-
-    public List<TrackFitState> fitTracksToWindow() {
-        List<Track> tracks = getAllTracks().stream()
-                .filter(Track::isVisible)
-                .filter(t -> t.getNumRows() > 0)
-                .collect(Collectors.toList());
-
-        if (tracks.isEmpty()) return Collections.emptyList();
-
-        List<TrackFitState> savedState = tracks.stream()
-                .map(t -> new TrackFitState(t, t.getHeight(), t.getRowHeight()))
-                .collect(Collectors.toList());
-
-        int viewportAvailable = getMainPanel().getTrackPanelViewportHeight() - getMainPanel().getTrackContainerOverhead();
-        Map<Track, Integer> assignedHeights = assignHeights(tracks, viewportAvailable);
-
+    public void minimizeTrackHeights() {
+        List<Track> tracks = getAllTracks();
         for (Track t : tracks) {
-            int newHeight = assignedHeights.get(t);
-            t.setHeight(newHeight);
-
-            int nRows = t.getNumRows();
-            if (nRows > 1) {
-                int available = newHeight - t.getReservedHeight();
-                if (available > 0) {
-                    t.saveRowHeight();
-                    t.setRowHeight((float) available / nRows);
-                }
-            }
+            t.setRowHeight(1);
+            t.minimizeHeight();
         }
-
         repaint(tracks);
-        return savedState;
     }
-
-    private Map<Track, Integer> assignHeights(List<Track> tracks, int availableHeight) {
-        Map<Track, Integer> assigned = new LinkedHashMap<>();
-        List<Track> remaining = new ArrayList<>(tracks);
-
-        while (!remaining.isEmpty()) {
-            int totalWeight = remaining.stream().mapToInt(t -> Math.max(1, t.getNumRows())).sum();
-            List<Track> clamped = new ArrayList<>();
-
-            for (Track t : remaining) {
-                int weight = Math.max(1, t.getNumRows());
-                int proportional = (int) ((double) availableHeight * weight / totalWeight);
-                if (proportional < t.getMinimumHeight()) {
-                    clamped.add(t);
-                    assigned.put(t, t.getMinimumHeight());
-                    availableHeight -= t.getMinimumHeight();
-                }
-            }
-
-            remaining.removeAll(clamped);
-
-            if (clamped.isEmpty() || remaining.isEmpty() || availableHeight <= 0) {
-                // Distribute whatever is left proportionally (or at minimum if nothing left)
-                int finalWeight = remaining.stream().mapToInt(t -> Math.max(1, t.getNumRows())).sum();
-                for (Track t : remaining) {
-                    int weight = Math.max(1, t.getNumRows());
-                    int h = availableHeight <= 0 ? t.getMinimumHeight()
-                            : Math.max(t.getMinimumHeight(), (int) ((double) availableHeight * weight / finalWeight));
-                    assigned.put(t, h);
-                }
-                break;
-            }
-        }
-
-        return assigned;
-    }
-
-    public void restoreTrackFitState(List<TrackFitState> state) {
-        for (TrackFitState s : state) {
-            s.track().setHeight(s.height());
-            s.track().setRowHeight(s.rowHeight());
-        }
-        repaint(state.stream().map(TrackFitState::track).collect(Collectors.toList()));
-    }
-
 
     public Session getSession() {
         return session;

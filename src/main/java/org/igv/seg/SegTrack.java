@@ -83,12 +83,12 @@ public class SegTrack extends AbstractTrack {
     @Override
     public int getContentHeight() {
         var nSamples = sampleCount();
-        return Math.round(rowHeight * nSamples) + (getSampleGroups().size() - 1) * groupGap;
+        return getSampleHeight() * nSamples + (getSampleGroups().size() - 1) * groupGap;
     }
 
     @Override
     public int getSampleHeight() {
-        return Math.max(1, Math.round(rowHeight));
+        return Math.max(1, rowHeight);
     }
 
     @Override
@@ -97,10 +97,15 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public void minimizeHeight() {
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
+    }
+
+    @Override
     public void render(RenderContext context) {
 
         Rectangle clipBounds = new Rectangle(context.getClipBounds());
-        Rectangle trackRectangle = context.getTrackRectangle();
 
         final boolean hasGroups = getSampleGroups().size() > 0;
         if (hasGroups && lastClipBounds != null) {
@@ -197,8 +202,7 @@ public class SegTrack extends AbstractTrack {
         List<Component> items = new ArrayList<>();
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
-        items.add(TrackMenuUtils.getFitToViewportItem(Collections.singletonList(this)));
-        items.add(TrackMenuUtils.getResetRowHeightItem(Collections.singletonList(this)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(this)));
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 

@@ -103,54 +103,52 @@ public class DataPanelPainter {
 
         if (track.isVisible()) {
             try {
-                if (track.getRowHeight() < 1f) {
-                    paintScaled(track, context);
-                } else {
+//                float rowHeight = track.getRowHeight();
+//                if (rowHeight > 0 && rowHeight != Math.round(rowHeight)) {
+//                    paintScaled(track, context);
+//                } else {
                     track.render(context);
-                }
+ //               }
             } catch (Exception e) {
                 log.error("Error rendering track: " + track.getName(), e);
             }
         }
     }
 
-    private void paintScaled(Track track, RenderContext context) {
-        int nRows = track.getNumRows();
-        if (nRows <= 1) {
-            track.render(context);
-            return;
-        }
-
-        int maxRows = PreferencesManager.getPreferences().getAsInt(Constants.FIT_TO_VIEWPORT_MAX_ROWS);
-        int imageRows = Math.min(nRows, maxRows);
-        Rectangle trackRect = context.getTrackRectangle();
-        int width = trackRect.width;
-
-        Color bg = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
-        if (bg == null) bg = Color.WHITE;
-
-        BufferedImage image = new BufferedImage(width, imageRows, BufferedImage.TYPE_INT_RGB);
-        Graphics2D ig = image.createGraphics();
-        ig.setColor(bg);
-        ig.fillRect(0, 0, width, imageRows);
-
-        Rectangle offRect = new Rectangle(0, 0, width, imageRows);
-        RenderContext offContext = new RenderContext(null, ig, context.getReferenceFrame(), offRect, offRect, offRect);
-        try {
-            track.render(offContext);
-        } finally {
-            offContext.dispose();
-            ig.dispose();
-        }
-
-        Graphics2D g = context.getGraphics();
-        Object prevHint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(image, trackRect.x, trackRect.y, trackRect.width, trackRect.height, null);
-        if (prevHint != null) {
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, prevHint);
-        }
-    }
+//    private void paintScaled(Track track, RenderContext context) {
+//        Rectangle trackRect = context.getTrackRectangle();
+//        int width = trackRect.width;
+//        int imageHeight = track.getContentHeight();
+//        if (imageHeight <= 0 || imageHeight == trackRect.height) {
+//            track.render(context);
+//            return;
+//        }
+//
+//        Color bg = PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR);
+//        if (bg == null) bg = Color.WHITE;
+//
+//        BufferedImage image = new BufferedImage(width, imageHeight, BufferedImage.TYPE_INT_RGB);
+//        Graphics2D ig = image.createGraphics();
+//        ig.setColor(bg);
+//        ig.fillRect(0, 0, width, imageHeight);
+//
+//        Rectangle offRect = new Rectangle(0, 0, width, imageHeight);
+//        RenderContext offContext = new RenderContext(null, ig, context.getReferenceFrame(), offRect, offRect, offRect);
+//        try {
+//            track.render(offContext);
+//        } finally {
+//            offContext.dispose();
+//            ig.dispose();
+//        }
+//
+//        Graphics2D g = context.getGraphics();
+//        Object prevHint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+//        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//        g.drawImage(image, trackRect.x, trackRect.y, trackRect.width, trackRect.height, null);
+//        if (prevHint != null) {
+//            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, prevHint);
+//        }
+//    }
 
 
     private void paintExpandedInsertion(InsertionMarker insertionMarker, Track track, RenderContext context) {

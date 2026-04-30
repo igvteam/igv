@@ -204,7 +204,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         this.source = source;
 
         this.rowHeight = DEFAULT_EXPANDED_HEIGHT;
-        setMinimumHeight(10);
 
         coverageRenderer = new BarChartRenderer();
 
@@ -270,13 +269,20 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
         if (!isVisible()) {
             return 0;
         }
-        int minHeight = margin + Math.round(getRowHeight() * Math.max(1, maxFeatureRow));
+        int intRowHeight = Math.max(1, rowHeight);
+        int minHeight = margin + intRowHeight * Math.max(1, maxFeatureRow);
         return Math.max(minHeight, super.getContentHeight());
     }
 
     @Override
     public int getNumRows() {
         return Math.max(1, maxFeatureRow);
+    }
+
+    @Override
+    public void minimizeHeight() {
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
     }
 
     private void updateMaxFeatureRow() {
@@ -535,7 +541,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     private int getFeatureRow(int y) {
-        return Math.max(0, (int) (y / getRowHeight()));
+        return Math.max(0, y / Math.max(1, getRowHeight()));
     }
 
     /**
@@ -876,8 +882,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (rows != null && rows.size() > 0) {
 
                 // Divide rectangle into equal height levels
-                int intH = Math.max(1, Math.round(getRowHeight()));
-                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, intH);
+                int intRowHeight = Math.max(1, getRowHeight());
+                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, intRowHeight);
                 int i = 0;
 
                 if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
@@ -888,7 +894,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
                     if (rect.y + rect.height < clipBounds.y) {
                         // Not yet in clip bounds
-                        rect.y += intH;
+                        rect.y += intRowHeight;
                         i++;
                         continue;
                     }
@@ -900,7 +906,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
                     //  }
 
-                    rect.y += intH;
+                    rect.y += intRowHeight;
                     i++;
                 }
             }
