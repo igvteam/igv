@@ -60,7 +60,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
-    private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
     private transient int maxFeatureRow = 1;
 
     boolean fatalLoadError = false;
@@ -260,17 +259,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public boolean hasDisplayMode() {
-        return true;
-    }
-
-    @Override
     public int getContentHeight() {
         if (!isVisible()) {
             return 0;
         }
-        int intRowHeight = Math.max(1, rowHeight);
-        int minHeight = margin + intRowHeight * Math.max(1, maxFeatureRow);
+        int minHeight = margin + rowHeight * Math.max(1, maxFeatureRow);
         return Math.max(minHeight, super.getContentHeight());
     }
 
@@ -281,6 +274,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
+        setRowHeight(DEFAULT_SQUISHED_HEIGHT);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }

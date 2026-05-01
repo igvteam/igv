@@ -646,7 +646,6 @@ public class IGV implements IGVEventObserver {
     public void minimizeTrackHeights() {
         List<Track> tracks = getAllTracks();
         for (Track t : tracks) {
-            t.setRowHeight(1);
             t.minimizeHeight();
         }
         repaint(tracks);

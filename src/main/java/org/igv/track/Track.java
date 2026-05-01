@@ -228,11 +228,12 @@ public interface Track {
     void setRowHeight(int rowHeight);
 
     /**
-     * Shrink the track to its minimum useful height. Default implementation sets the track height to its
-     * minimum height. Tracks with variable content height (e.g. multi-row tracks) should override this to
-     * use the larger of the content height or minimum height. Only shrinks; never grows the current height.
+     * Shrink the track to its minimum useful height. Default implementation sets row height to 1 and the
+     * track height to its minimum height. Subclasses may override to use a different minimum row height,
+     * or to size based on content. Only shrinks; never grows the current track height.
      */
     default void minimizeHeight() {
+        setRowHeight(1);
         setHeight(Math.min(getHeight(), getMinimumHeight()));
     }
 
@@ -314,10 +315,6 @@ public interface Track {
     boolean isItemRGB();
 
     boolean isUseScore();
-
-    default boolean hasDisplayMode() {
-        return false;
-    }
 
     DisplayMode getDisplayMode();
 

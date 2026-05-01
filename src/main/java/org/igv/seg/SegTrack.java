@@ -98,6 +98,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public void minimizeHeight() {
+        setRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
@@ -214,11 +215,6 @@ public class SegTrack extends AbstractTrack {
         }
 
         return items;
-    }
-
-    @Override
-    public boolean hasDisplayMode() {
-        return true;
     }
 
     /**

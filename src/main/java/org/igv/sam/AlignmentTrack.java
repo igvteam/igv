@@ -459,11 +459,6 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public boolean hasDisplayMode() {
-        return true;
-    }
-
-    @Override
     public void setDisplayMode(DisplayMode mode) {
         // Transitioning to or from FULL requires repacking
         boolean repack = (getDisplayMode() == DisplayMode.FULL || mode == DisplayMode.FULL);
@@ -505,6 +500,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
+        setRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }

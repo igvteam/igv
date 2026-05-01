@@ -875,11 +875,7 @@ public class TrackMenuUtils {
             for (Track t : tracks) {
                 TrackPanelScrollPane viewport = t.getViewport();
                 if (viewport != null) {
-                    int availableHeight = viewport.getViewport().getHeight() - t.getReservedHeight();
-                    int nRows = t.getNumRows();
-                    if (nRows > 1 && availableHeight > 0) {
-                        t.setRowHeight(Math.max(1, availableHeight / nRows));
-                    }
+                    t.minimizeHeight();
                 }
             }
             IGV.getInstance().repaint(tracks);

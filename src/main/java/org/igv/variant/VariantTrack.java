@@ -175,6 +175,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
+        setRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
@@ -1013,11 +1014,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             repaint();
         }
         return VariantTrackMenuHelper.getMenuItems(this, selectedVariant, te);
-    }
-
-    @Override
-    public boolean hasDisplayMode() {
-        return true;
     }
 
     /**

@@ -57,7 +57,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
 
     private JideButton backButton;
     private JideButton forwardButton;
-    private JideButton fitToWindowButton;
+    private JideButton minimizeTrackHeightButton;
 
     private ShowDetailsBehavior detailsBehavior;
 
@@ -437,16 +437,16 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         toolPanel.add(roiToggleButton, JideBoxLayout.FIX);
 
 
-        fitToWindowButton = new JideButton();
-        fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
-        fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+        minimizeTrackHeightButton = new JideButton();
+        minimizeTrackHeightButton.setAlignmentX(RIGHT_ALIGNMENT);
+        minimizeTrackHeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
                 darkMode ? "/images/collapseall.invert.gif" : "/images/collapseall.gif")));
-        fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
-        fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
-        fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        fitToWindowButton.setToolTipText("Minimize track heights.");
-        fitToWindowButton.addActionListener(evt -> IGV.getInstance().minimizeTrackHeights());
-        toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
+        minimizeTrackHeightButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        minimizeTrackHeightButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        minimizeTrackHeightButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        minimizeTrackHeightButton.setToolTipText("Minimize track heights.");
+        minimizeTrackHeightButton.addActionListener(evt -> IGV.getInstance().minimizeTrackHeights());
+        toolPanel.add(minimizeTrackHeightButton, JideBoxLayout.FIX);
 
         final Icon noTooltipIcon = IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
         detailsBehaviorButton = new JideButton(noTooltipIcon);
