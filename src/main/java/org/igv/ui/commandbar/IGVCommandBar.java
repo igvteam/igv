@@ -58,6 +58,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton minimizeTrackHeightButton;
+    JideButton multiMenuButton;
 
     private ShowDetailsBehavior detailsBehavior;
 
@@ -85,6 +86,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeResetEvent.class, this);
+        IGVEventBus.getInstance().subscribe(TrackSelectionEvent.class, this);
 
     }
 
@@ -237,9 +239,26 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             updateCurrentCoordinates();
         } else if (e instanceof GenomeResetEvent) {
             refreshGenomeListComboBox();
+        } else if (e instanceof TrackSelectionEvent) {
+            updateMultiMenuButtonVisibility();
         } else {
             log.warn("Unknown event class: " + e.getClass());
         }
+    }
+
+    private void updateMultiMenuButtonVisibility() {
+        boolean anySelected = false;
+        if (IGV.hasInstance() && IGV.getInstance().getMainPanel() != null) {
+            for (org.igv.ui.panel.TrackPanel tp : IGV.getInstance().getMainPanel().getTrackPanels()) {
+                org.igv.ui.panel.TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null && sp.getSelectionPanel() != null && sp.getSelectionPanel().isTrackSelected()) {
+                    anySelected = true;
+                    break;
+                }
+            }
+        }
+        final boolean visible = anySelected;
+        UIUtilities.invokeOnEventThread(() -> multiMenuButton.setVisible(visible));
     }
 
     // Set the focus in the search box
@@ -358,12 +377,9 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         JPanel toolPanel = new javax.swing.JPanel();
         toolPanel.setAlignmentX(RIGHT_ALIGNMENT);
         toolPanel.setLayout(new JideBoxLayout(toolPanel, JideBoxLayout.X_AXIS));
-        //final Border toolButtonBorder = BorderFactory.createLineBorder(Color.gray, 1);
 
         JideButton homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
-        //homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        // homeButton.setBorder(toolButtonBorder);
         homeButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/toolbarButtonGraphics/navigation/Home24.gif")));
         homeButton.setMaximumSize(new java.awt.Dimension(32, 32));
@@ -373,12 +389,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         homeButton.addActionListener(this::homeButtonActionPerformed);
         toolPanel.add(homeButton, JideBoxLayout.FIX);
 
-
-        // toolPanel.setBorder(
-        // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         backButton = new JideButton();
-        //backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        //backButton.setBorder(toolButtonBorder);
         backButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
                 darkMode ? "/images/left-arrow.invert.gif" : "/images/left-arrow.gif")));
         backButton.setToolTipText("Go back");
@@ -461,8 +472,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         toolPanel.add(detailsBehaviorButton, JideBoxLayout.FIX);
 
         rulerLineButton = new JideToggleButton();
-        //roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        //roiToggleButton.setBorder(toolButtonBorder);
         rulerLineButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/vertical-line.gif")));
         rulerLineButton.setAlignmentX(RIGHT_ALIGNMENT);
         rulerLineButton.setToolTipText("Enable ruler line in data panels");
@@ -475,6 +484,18 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         });
         toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
 
+        multiMenuButton = new JideButton();
+        multiMenuButton.setAlignmentX(CENTER_ALIGNMENT);
+        multiMenuButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+                darkMode ? "/images/collapseall.invert.gif" : "/images/gear.png")));
+        multiMenuButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        multiMenuButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        multiMenuButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        multiMenuButton.setToolTipText("Minimize track heights.");
+        multiMenuButton.addActionListener(evt -> IGV.getInstance().minimizeTrackHeights());
+        multiMenuButton.setVisible(false);
+        toolPanel.add(multiMenuButton, JideBoxLayout.FIX);
+
         this.add(toolPanel);
 
         this.add(Box.createHorizontalGlue(), JideBoxLayout.VARY);
@@ -482,7 +503,7 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         zoomControl = new ZoomSliderPanel();
 
         // zoomControl.setAlignmentX(RIGHT_ALIGNMENT);
-        Dimension dimSize = new Dimension(200, 30);
+        Dimension dimSize = new Dimension(170, 30);
         zoomControl.setPreferredSize(dimSize);
         zoomControl.setMinimumSize(dimSize);
         zoomControl.setMaximumSize(dimSize);
