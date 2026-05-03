@@ -114,8 +114,7 @@ public class SegTrack extends AbstractTrack {
             // of the visible rectangle
             Rectangle visibleRect = context.getVisibleRect();
             int expandedTop = Math.max(visibleRect.y, Math.min(clipBounds.y, lastClipBounds.y));
-            int expandedBottom = Math.min(visibleRect.y + visibleRect.height,
-                    Math.max(clipBounds.y + clipBounds.height, lastClipBounds.y + clipBounds.height));
+            int expandedBottom = Math.clamp(clipBounds.y + clipBounds.height, lastClipBounds.y + clipBounds.height, visibleRect.y + visibleRect.height);
             clipBounds.y = expandedTop;
             clipBounds.height = expandedBottom - expandedTop;
             context.getGraphics().setClip(clipBounds);

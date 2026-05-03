@@ -17,6 +17,7 @@ import org.igv.sam.mods.BaseModificationUtils;
 import org.igv.sashimi.SashimiPlot;
 import org.igv.tools.PFMExporter;
 import org.igv.track.SequenceTrack;
+import org.igv.track.Track.DisplayMode;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
@@ -89,6 +90,15 @@ class AlignmentTrackMenuHelper {
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(alignmentTrack)));
         items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(alignmentTrack)));
+
+        JCheckBoxMenuItem displayAllItem = new JCheckBoxMenuItem("Display Single Alignment per Row");
+        displayAllItem.setSelected(alignmentTrack.getDisplayMode() == DisplayMode.FULL);
+        displayAllItem.addActionListener(ae -> {
+            alignmentTrack.setDisplayMode(displayAllItem.isSelected() ? DisplayMode.FULL : DisplayMode.EXPANDED);
+            alignmentTrack.repaint();
+        });
+        items.add(displayAllItem);
+
         items.add(new JSeparator());
 
         // Circular view items -- optional

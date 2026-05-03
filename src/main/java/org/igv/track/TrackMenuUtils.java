@@ -798,41 +798,30 @@ public class TrackMenuUtils {
 
         List<Component> items = new ArrayList<>();
 
-        boolean allAnnotation = tracks.stream().allMatch(t -> TrackType.annotation == t.getType() || TrackType.junction == t.getType());
-        boolean allAlignments = tracks.stream().allMatch(t -> TrackType.alignment == t.getType());
+        // Find "most representative" state from track collection
+        Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
+        Track.DisplayMode currentMode = null;
 
-        if (allAnnotation || allAlignments) {
-            // Find "most representative" state from track collection
-            Map<Track.DisplayMode, Integer> counts = new HashMap<Track.DisplayMode, Integer>(Track.DisplayMode.values().length);
-            Track.DisplayMode currentMode = null;
-
-            for (Track t : tracks) {
-                Track.DisplayMode mode = t.getDisplayMode();
-                if (counts.containsKey(mode)) {
-                    counts.put(mode, counts.get(mode) + 1);
-                } else {
-                    counts.put(mode, 1);
-                }
+        for (Track t : tracks) {
+            Track.DisplayMode mode = t.getDisplayMode();
+            if (counts.containsKey(mode)) {
+                counts.put(mode, counts.get(mode) + 1);
+            } else {
+                counts.put(mode, 1);
             }
+        }
 
-            int maxCount = -1;
-            for (Map.Entry<Track.DisplayMode, Integer> count : counts.entrySet()) {
-                if (count.getValue() > maxCount) {
-                    currentMode = count.getKey();
-                    maxCount = count.getValue();
-                }
+        int maxCount = -1;
+        for (Map.Entry<Track.DisplayMode, Integer> count : counts.entrySet()) {
+            if (count.getValue() > maxCount) {
+                currentMode = count.getKey();
+                maxCount = count.getValue();
             }
 
             ButtonGroup group = new ButtonGroup();
             Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
-            if (allAnnotation) {
-                modes.put("Collapse", Track.DisplayMode.COLLAPSED);
-            }
+            modes.put("Collapse", Track.DisplayMode.COLLAPSED);
             modes.put("Expand", Track.DisplayMode.EXPANDED);
-
-            if (allAlignments) {
-                modes.put("Full", Track.DisplayMode.FULL);
-            }
 
             for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
                 JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
