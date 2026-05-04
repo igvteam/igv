@@ -461,6 +461,22 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Show/hide track selection checkboxes
+        menuItems.add(new JSeparator());
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.isSelected();
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
+            }
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        menuItems.add(selectTracksItem);
+
         menuItems.add(new JSeparator());
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
             @Override
@@ -544,21 +560,6 @@ public class IGVMenuBar extends JMenuBar {
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
-
-        // Show/hide track selection checkboxes
-        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
-        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
-        selectTracksItem.addActionListener(e -> {
-            boolean show = selectTracksItem.isSelected();
-            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (sp != null) {
-                    sp.setSelectionPanelVisible(show);
-                }
-            }
-            igv.getMainPanel().revalidateTrackPanels();
-        });
-        menuItems.add(selectTracksItem);
 
         menuAction =
                 new MenuAction("Reorder Tracks...", null, KeyEvent.VK_S) {

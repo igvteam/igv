@@ -30,7 +30,9 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.TrackPanel;
 import org.igv.ui.panel.TrackPanelScrollPane;
+import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
@@ -74,14 +76,37 @@ public class TrackMenuUtils {
             log.debug("enter getPopupMenu");
         }
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        // Try multi-track menu first.  If multiple tracks are selected a menu with a subset of shared items is
+        // created.  If the track clicked is not one of the selected tracks selections are cleared and we proceed
+        // as usual with a single-track menu.  This behavior mimics google sheets.
+        List<Track> selectedTracks = getSelectedTracks();
+        if (!selectedTracks.isEmpty()) {
+            if (selectedTracks.contains(track)) {
+                IGVPopupMenu multiMenu = new IGVPopupMenu();
+                JLabel multiTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
+                multiTitle.setFont(FontManager.getFont(Font.BOLD, 12));
+                multiMenu.add(multiTitle);
+                multiMenu.addSeparator();
 
+                for (Component item : getSharedMenuItems(selectedTracks)) {
+                    wrapClearAfterAction(item);
+                    multiMenu.add(item);
+                }
+                for (Component item : getColorMenuItems(selectedTracks)) {
+                    wrapClearAfterAction(item);
+                    multiMenu.add(item);
+                }
+                return multiMenu;
+            } else {
+                clearTrackSelections();
+            }
+        }
+
+        IGVPopupMenu menu = new IGVPopupMenu();
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
         popupTitle.setFont(FontManager.getFont(Font.BOLD, 12));
-        if (popupTitle != null) {
-            menu.add(popupTitle);
-            menu.addSeparator();
-        }
+        menu.add(popupTitle);
+        menu.addSeparator();
 
         // Items all tracks share
         if (track.getType() != TrackType.sequence) {
@@ -89,11 +114,10 @@ public class TrackMenuUtils {
                 menu.add(item);
             }
 
-            if (hasColor(track.getType())) {
-                for (Component item : getColorMenuItems(track)) {
-                    menu.add(item);
-                }
+            for (Component item : getColorMenuItems(Collections.singleton(track))) {
+                menu.add(item);
             }
+
         }
 
         // Add track specific items
@@ -135,6 +159,51 @@ public class TrackMenuUtils {
         IGV.getInstance().saveImage(track.getViewport(), "igv_panel", extension);
     }
 
+    private static List<Track> getSelectedTracks() {
+        List<Track> selected = new ArrayList<>();
+        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp == null) continue;
+            TrackSelectionPanel selPanel = sp.getSelectionPanel();
+            if (selPanel != null && selPanel.isTrackSelected()) {
+                selected.add(tp.getTrack());
+            }
+        }
+        return selected;
+    }
+
+    private static void clearTrackSelections() {
+        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp == null) continue;
+            TrackSelectionPanel selPanel = sp.getSelectionPanel();
+            if (selPanel != null) {
+                selPanel.setTrackSelected(false);
+            }
+        }
+    }
+
+    /**
+     * Replace the action listeners on {@code component} so that the originals fire first
+     * (synchronously, including any modal dialog they open) and the track selections are
+     * cleared afterwards. Relies on action handlers running on the EDT, where modal
+     * dialogs block until dismissed.
+     */
+    private static void wrapClearAfterAction(Component component) {
+        if (!(component instanceof AbstractButton button)) return;
+        ActionListener[] originals = button.getActionListeners();
+        if (originals.length == 0) return;
+        for (ActionListener l : originals) {
+            button.removeActionListener(l);
+        }
+        button.addActionListener(e -> {
+            for (ActionListener l : originals) {
+                l.actionPerformed(e);
+            }
+            clearTrackSelections();
+        });
+    }
+
 
     /**
      * Return a list of shared menu items (rename, color, height, font size).
@@ -156,32 +225,33 @@ public class TrackMenuUtils {
         return items;
     }
 
-    private static List<Component> getColorMenuItems(Track track) {
+    private static List<Component> getColorMenuItems(Collection<Track> tracks) {
 
         List<Component> items = new ArrayList<>();
-        String colorLabel = "Set Track Color...";
-        JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(evt -> changeTrackColor(Collections.singleton(track)));
+        JMenuItem item = new JMenuItem("Set Track Color...");
+        item.addActionListener(evt -> changeTrackColor(tracks));
         items.add(item);
 
-
-        if(track.getType() != TrackType.alignment) {
-            String altLabel = track.getType() == TrackType.wig ? "Set Track Color (Negative Values)" : "Set Track Color (Negative Strand)";
+        boolean anyAlignment = tracks.stream().anyMatch(t -> t.getType() == TrackType.alignment);
+        if (!anyAlignment) {
+            boolean allWig = !tracks.isEmpty() && tracks.stream().allMatch(t -> t.getType() == TrackType.wig);
+            String altLabel = allWig ? "Set Track Color (Negative Values)" : "Set Track Color (Negative Strand)";
             item = new JMenuItem(altLabel);
             item.setToolTipText(
                     "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
-            item.addActionListener(evt -> changeAltTrackColor(Collections.singleton(track)));
+            item.addActionListener(evt -> changeAltTrackColor(tracks));
             items.add(item);
         }
 
         item = new JMenuItem("Unset Track Color");
         item.setToolTipText("Revert track colors to default.");
         item.addActionListener(evt -> {
-            track.setColor(null);
-            track.setAltColor(null);
-            track.repaint();
+            for (Track t : tracks) {
+                t.setColor(null);
+                t.setAltColor(null);
+                t.repaint();
+            }
         });
-        //item.setEnabled(track.getColor() != null);
         items.add(item);
 
         return items;

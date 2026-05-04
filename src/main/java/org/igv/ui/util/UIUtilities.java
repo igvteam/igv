@@ -30,26 +30,21 @@ public class UIUtilities {
      */
     public static Color showColorChooserDialog(String dialogTitle, Color defaultColor) {
 
-        Color color = null;
-        JColorChooser chooser = new JColorChooser();
-        chooser.setColor(defaultColor);
-        while (true) {
-
-            int response = JOptionPane.showConfirmDialog(IGV.getInstance().getMainFrame(), chooser,
-                    dialogTitle, JOptionPane.OK_CANCEL_OPTION);
-
-            if ((response == JOptionPane.CANCEL_OPTION) || (response == JOptionPane.CLOSED_OPTION)) {
-                return null;
-            }
-
-            color = chooser.getColor();
-            if (color == null) {
-                continue;
-            } else {
-                break;
-            }
+        final JColorChooser chooser = new JColorChooser();
+        if (defaultColor != null) {
+            chooser.setColor(defaultColor);
         }
-        return color;
+        final Color[] result = {null};
+        JDialog dialog = JColorChooser.createDialog(
+                IGV.getInstance().getMainFrame(),
+                dialogTitle,
+                true,
+                chooser,
+                e -> result[0] = chooser.getColor(),
+                null);
+        dialog.setVisible(true);
+        dialog.dispose();
+        return result[0];
     }
 
     /**

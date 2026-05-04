@@ -58,7 +58,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton minimizeTrackHeightButton;
-    JideButton multiMenuButton;
 
     private ShowDetailsBehavior detailsBehavior;
 
@@ -239,30 +238,12 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             updateCurrentCoordinates();
         } else if (e instanceof GenomeResetEvent) {
             refreshGenomeListComboBox();
-        } else if (e instanceof TrackSelectionEvent) {
-            updateMultiMenuButtonVisibility();
         } else {
             log.warn("Unknown event class: " + e.getClass());
         }
     }
 
-    private void updateMultiMenuButtonVisibility() {
-        boolean anySelected = false;
-        if (IGV.hasInstance() && IGV.getInstance().getMainPanel() != null) {
-            for (org.igv.ui.panel.TrackPanel tp : IGV.getInstance().getMainPanel().getTrackPanels()) {
-                org.igv.ui.panel.TrackPanelScrollPane sp = tp.getScrollPane();
-                if (sp != null && sp.getSelectionPanel() != null && sp.getSelectionPanel().isTrackSelected()) {
-                    anySelected = true;
-                    break;
-                }
-            }
-        }
-        final boolean visible = anySelected;
-        UIUtilities.invokeOnEventThread(() -> multiMenuButton.setVisible(visible));
-    }
-
     // Set the focus in the search box
-
     public void focusSearchBox() {
         searchTextField.requestFocusInWindow();
         searchTextField.selectAll();
@@ -483,18 +464,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
             IGV.getInstance().repaint();
         });
         toolPanel.add(rulerLineButton, JideBoxLayout.FIX);
-
-        multiMenuButton = new JideButton();
-        multiMenuButton.setAlignmentX(CENTER_ALIGNMENT);
-        multiMenuButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(
-                darkMode ? "/images/collapseall.invert.gif" : "/images/gear.png")));
-        multiMenuButton.setMaximumSize(new java.awt.Dimension(32, 32));
-        multiMenuButton.setMinimumSize(new java.awt.Dimension(32, 32));
-        multiMenuButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        multiMenuButton.setToolTipText("Minimize track heights.");
-        multiMenuButton.addActionListener(evt -> IGV.getInstance().minimizeTrackHeights());
-        multiMenuButton.setVisible(false);
-        toolPanel.add(multiMenuButton, JideBoxLayout.FIX);
 
         this.add(toolPanel);
 
