@@ -1159,7 +1159,7 @@ public class AlignmentRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        Color defaultColor = track.getColor();
+        Color defaultColor = alignment.isNegativeStrand()  ? track.getAltColor() : track.getColor();
         Color c = defaultColor;
         AlignmentTrack.RenderOptions renderOptions = track.getRenderOptions();
         ColorOption colorOption = renderOptions.getColorOption();

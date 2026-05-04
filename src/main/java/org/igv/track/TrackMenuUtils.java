@@ -90,7 +90,7 @@ public class TrackMenuUtils {
             }
 
             if (hasColor(track.getType())) {
-                for (Component item : getColorMenuItems(Collections.singleton(track))) {
+                for (Component item : getColorMenuItems(track)) {
                     menu.add(item);
                 }
             }
@@ -127,7 +127,7 @@ public class TrackMenuUtils {
     }
 
     private static boolean hasColor(TrackType type) {
-        return type == TrackType.annotation || type == TrackType.wig ||
+        return type == TrackType.annotation || type == TrackType.wig || type == TrackType.alignment ||
                 type == TrackType.coverage || type == TrackType.interact || type == TrackType.arc;
     }
 
@@ -156,27 +156,32 @@ public class TrackMenuUtils {
         return items;
     }
 
-    private static List<Component> getColorMenuItems(Collection<Track> tracks) {
+    private static List<Component> getColorMenuItems(Track track) {
 
         List<Component> items = new ArrayList<>();
         String colorLabel = "Set Track Color...";
         JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(evt -> changeTrackColor(tracks));
+        item.addActionListener(evt -> changeTrackColor(Collections.singleton(track)));
         items.add(item);
 
-        item = new JMenuItem("Set Track Color (Negative Values or Strand)...");
-        item.setToolTipText(
-                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
-        item.addActionListener(evt -> changeAltTrackColor(tracks));
-        items.add(item);
+
+        if(track.getType() !== TrackType.alignment) {
+            String altLabel = track.getType() == TrackType.wig ? "Set Track Color (Negative Values)" : "Set Track Color (Negative Strand)";
+            item = new JMenuItem(altLabel);
+            item.setToolTipText(
+                    "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
+            item.addActionListener(evt -> changeAltTrackColor(Collections.singleton(track)));
+            items.add(item);
+        }
 
         item = new JMenuItem("Unset Track Color");
-        item.setToolTipText("Revert track color to default.");
+        item.setToolTipText("Revert track colors to default.");
         item.addActionListener(evt -> {
-            tracks.forEach(track -> track.setColor(null));
-            IGV.getInstance().repaint(tracks);
+            track.setColor(null);
+            track.setAltColor(null);
+            track.repaint();
         });
-        item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
+        //item.setEnabled(track.getColor() != null);
         items.add(item);
 
         return items;

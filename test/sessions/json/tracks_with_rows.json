@@ -43,9 +43,7 @@
   "locus": "chr8:128748604-128749267",
   "tracks": [
     {
-      "sequenceTranslationStrandValue": "+",
       "name": "Reference sequence",
-      "shouldShowTranslation": false,
       "id": "Reference sequence",
       "type": "sequence",
       "order": -9007199254740991
@@ -55,38 +53,23 @@
       "name": "Refseq All",
       "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
       "type": "annotation",
-      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
-      "order": 1,
-      "rowHeight": 35
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz"
     },
     {
       "visibilityWindow": "10000",
       "format": "vcf.list",
       "name": "Phase 3 genotypes",
       "id": "https://igv.org/genomes/data/hg19/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list",
-      "siteColorMode": "ALLELE_FREQUENCY",
       "type": "variant",
       "url": "https://igv.org/genomes/data/hg19/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list",
-      "displayMode": "EXPANDED",
-      "squishedHeight": 1,
-      "order": 2,
-      "rowHeight": 15
     },
     {
-      "flipAxis": false,
-      "drawBaseline": true,
-      "max": 217,
       "format": "bam",
-      "mid": 0,
       "type": "coverage",
       "autoscale": "true",
       "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "logScale": false,
-      "min": 0,
       "name": "HG01879 exome Coverage",
-      "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam_coverage",
-      "alleleFreqThreshold": 0.2,
-      "order": 3
+      "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam_coverage"
     },
     {
       "visible": "false",
@@ -94,26 +77,14 @@
       "name": "HG01879 exome Junctions",
       "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam_junctions",
       "type": "junction",
-      "maxdepth": 50,
-      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "order": 4,
-      "height": 60,
-      "rowHeight": 35,
-      "autoScale": "true"
+      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam"
     },
     {
-      "color": "185,185,185",
-      "duplicatesOption": "FILTER",
       "format": "bam",
       "name": "HG01879 exome",
       "id": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
       "type": "alignment",
-      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam",
-      "displayMode": "EXPANDED",
-      "experimentType": "OTHER",
-      "order": 5,
-      "height": 300,
-      "rowHeight": 14
+      "url": "https://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam"
     },
     {
       "ampThreshold": 0.1,
@@ -124,9 +95,6 @@
       "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
       "type": "cnfreq",
       "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
-      "delThreshold": -0.1,
-      "order": 6,
-      "height": 50
     },
     {
       "renderer": "org.igv.renderer.HeatmapRenderer",
@@ -135,8 +103,6 @@
       "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz_cn",
       "type": "seg",
       "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
-      "order": 7,
-      "rowHeight": 15
     }
   ]
 }

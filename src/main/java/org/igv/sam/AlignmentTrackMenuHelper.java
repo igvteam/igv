@@ -77,10 +77,6 @@ class AlignmentTrackMenuHelper {
         items.add(new JPopupMenu.Separator());
     }
 
-    private Font getFont() {
-        return UIManager.getFont("Label.font");
-    }
-
     private AlignmentTrackMenuHelper(AlignmentTrack alignmentTrack, final TrackClickEvent e) {
 
         this.alignmentTrack = alignmentTrack;
