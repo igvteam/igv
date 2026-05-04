@@ -165,7 +165,7 @@ public class TrackMenuUtils {
         items.add(item);
 
 
-        if(track.getType() !== TrackType.alignment) {
+        if(track.getType() != TrackType.alignment) {
             String altLabel = track.getType() == TrackType.wig ? "Set Track Color (Negative Values)" : "Set Track Color (Negative Strand)";
             item = new JMenuItem(altLabel);
             item.setToolTipText(
