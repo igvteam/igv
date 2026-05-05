@@ -172,16 +172,9 @@ public interface Track {
         return false;
     }
 
-    default boolean isAlignment() {
-        return false;
-    }
-
-    void setOverlayed(boolean overlayVisible);
-
     void setDataType(DataType type);
 
     DataType getDataType();
-
 
     void setY(int top);
 
@@ -206,17 +199,13 @@ public interface Track {
      */
     int getHeight();
 
-    default int getDefaultHeight() {
-        return 50;
-    }
-
     /**
      * Return the minimum height for this track. Tracks should not be resized below this value.
      *
      * @return the minimum height in pixels
      */
     default int getMinimumHeight() {
-        return 10;
+        return 20;
     }
 
     /**
@@ -228,6 +217,38 @@ public interface Track {
         return 25;
     }
 
+    /**
+     * Return the height of a single row within a track. Applicable to tracks with multiple rows, including
+     * alignment tracks, variant tracks, and feature tracks in "expand" mode.
+     *
+     * @return
+     */
+    int getRowHeight();
+
+    void setRowHeight(int rowHeight);
+
+    /**
+     * Shrink the track to its minimum useful height. Default implementation sets row height to 1 and the
+     * track height to its minimum height. Subclasses may override to use a different minimum row height,
+     * or to size based on content. Only shrinks; never grows the current track height.
+     */
+    default void minimizeHeight() {
+        setRowHeight(1);
+        setHeight(Math.min(getHeight(), getMinimumHeight()));
+    }
+
+    /**
+     * Return the number of data rows currently displayed. Used to compute the row height
+     * needed to fit all content into the viewport without scrolling.
+     */
+    default int getNumRows() {
+        return 1;
+    }
+
+    /** Height in pixels reserved at the top of the track (not available for row content). */
+    default int getReservedHeight() {
+        return 0;
+    }
 
     /**
      * Manually specify the data range.
@@ -258,9 +279,6 @@ public interface Track {
     void setRendererClass(Class rc);
 
     Renderer getRenderer();
-
-
-    boolean isSortable();
 
     boolean isShowDataRange();
 
@@ -297,10 +315,6 @@ public interface Track {
     boolean isItemRGB();
 
     boolean isUseScore();
-
-    default boolean hasDisplayMode() {
-        return false;
-    }
 
     DisplayMode getDisplayMode();
 

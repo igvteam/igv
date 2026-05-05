@@ -33,7 +33,9 @@ public class ReloadSessionMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         String currentSessionFilePath = igv.getSession().getPath();
-        if (currentSessionFilePath != null) {
+        if (currentSessionFilePath == null) {
+            igv.newSession();
+        } else {
             LongRunningTask.submit(() -> this.igv.loadSession(currentSessionFilePath, null));
         }
     }

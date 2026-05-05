@@ -17,6 +17,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
+import org.igv.renderer.Renderer;
 import org.igv.tools.motiffinder.MotifFinderSource;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;
@@ -30,12 +31,15 @@ import org.json.JSONObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.igv.track.TrackMenuUtils.*;
 
 /**
  * Track which displays features, typically showing regions of the genome
@@ -54,17 +58,11 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public static final int MINIMUM_FEATURE_SPACING = 0;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
-    private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
-    private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
     private transient int maxFeatureRow = 1;
 
     boolean fatalLoadError = false;
-
-    Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
-
     /**
      * Map of reference frame -> packed features
      */
@@ -103,10 +101,73 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public List<Component> getPopupMenuItems(TrackClickEvent te) {
-        return TrackMenuUtils.getFeatureMenuItems(Collections.singleton(this), te);
+
+        Collection<Track> tracks = Collections.singleton(this);
+
+        List<Component> items = new ArrayList<>();
+
+        for (Component item : getDisplayModeMenuItems(tracks)) {
+            items.add(item);
+        }
+        items.add(new JSeparator());
+
+        items.add(getGroupByStrandItem(tracks));
+
+        if (tracks.size() == 1) {
+            Track t = tracks.iterator().next();
+            Feature f = t.getFeatureAtMousePosition(te);
+
+            ReferenceFrame frame = te.getFrame();
+            if (frame == null && !FrameManager.isGeneListMode()) {
+                frame = FrameManager.getDefaultFrame();
+            }
+
+            String featureName = "";
+            if (f != null) {
+                items.add(new JPopupMenu.Separator());
+                items.add(getCopyDetailsItem(f, te));
+
+                Feature sequenceFeature = f;
+                if (sequenceFeature instanceof IGVFeature) {
+                    featureName = ((IGVFeature) sequenceFeature).getName();
+                    double position = te.getChromosomePosition();
+                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
+                    if (exons != null) {
+                        for (Exon exon : exons) {
+                            if (position > exon.getStart() && position < exon.getEnd()) {
+                                sequenceFeature = exon;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                items.add(getCopySequenceItem(sequenceFeature));
+
+                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+                    Range r = frame.getCurrentRange();
+                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
+                }
+
+                items.add(getBlatItem(sequenceFeature));
+            }
+        }
+
+        items.add(new JPopupMenu.Separator());
+        items.add(getChangeFeatureWindow(tracks));
+
+        items.add(new JPopupMenu.Separator());
+        items.add(getShowFeatureNames(tracks));
+        items.add(getFeatureNameAttribute(tracks));
+
+        return items;
+
     }
 
-    // TODO -- there are WAY too many constructors for this class
+    public FeatureTrack(ResourceLocator locator, FeatureSource source) {
+        super(locator);
+        init(locator, source);
+    }
 
     /**
      * Constructor used by SpliceJunctionTrack, BlatTrack, and MotifTrack
@@ -117,59 +178,31 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      */
     public FeatureTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
-        setSortable(false);
+        this.rowHeight = DEFAULT_EXPANDED_HEIGHT;
     }
 
     /**
-     * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.  This method is used by ".genome" and gbk genome loaders.
+     * Constructor with no ResourceLocator.  Used by ".genome" and gbk genome loaders.
      */
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(null, id, name);
         init(null, source);
-        setSortable(false);
     }
 
-    /**
-     * Constructor specifically for BigWig data source
-     *
-     * @param locator
-     * @param id
-     * @param name
-     * @param source
-     */
-    public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
-        super(locator, id, name);
-        init(locator, source);
-        setSortable(false);
-    }
-
-    public FeatureTrack(ResourceLocator locator, FeatureSource source) {
-        super(locator);
-        init(locator, source);
-        setSortable(false);
-    }
-
-
-    /**
-     * SMap files (bionano), MutationTrack
-     */
-    public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
-        super(locator, id, locator.getTrackName());
-        init(locator, source);
-    }
 
     /**
      * Create a new track which is a shallow copy of this one.  Currently used by SashimiPlot.
      */
     public FeatureTrack(FeatureTrack featureTrack) {
-        this(featureTrack.getId(), featureTrack.getName(), featureTrack.source);
+        super(null, featureTrack.getId(), featureTrack.getName());
+        init(null, featureTrack.source);
     }
 
     protected void init(ResourceLocator locator, FeatureSource source) {
 
         this.source = source;
-        setMinimumHeight(10);
+
+        this.rowHeight = DEFAULT_EXPANDED_HEIGHT;
 
         coverageRenderer = new BarChartRenderer();
 
@@ -226,18 +259,24 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     }
 
     @Override
-    public boolean hasDisplayMode() {
-        return true;
-    }
-
-    @Override
     public int getContentHeight() {
         if (!isVisible()) {
             return 0;
         }
-        int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
         int minHeight = margin + rowHeight * Math.max(1, maxFeatureRow);
         return Math.max(minHeight, super.getContentHeight());
+    }
+
+    @Override
+    public int getNumRows() {
+        return Math.max(1, maxFeatureRow);
+    }
+
+    @Override
+    public void minimizeHeight() {
+        setRowHeight(DEFAULT_SQUISHED_HEIGHT);
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
     }
 
     private void updateMaxFeatureRow() {
@@ -250,22 +289,6 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
         }
-    }
-
-    public int getExpandedRowHeight() {
-        return expandedRowHeight;
-    }
-
-    public void setExpandedRowHeight(int expandedRowHeight) {
-        this.expandedRowHeight = expandedRowHeight;
-    }
-
-    public int getSquishedRowHeight() {
-        return squishedRowHeight;
-    }
-
-    public void setSquishedRowHeight(int squishedRowHeight) {
-        this.squishedRowHeight = squishedRowHeight;
     }
 
     public void setRendererClass(Class rc) {
@@ -512,22 +535,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * @return
      */
     private int getFeatureRow(int y) {
-
-        int rowHeight;
-        DisplayMode mode = getDisplayMode();
-        switch (mode) {
-            case SQUISHED:
-                rowHeight = getSquishedRowHeight();
-                break;
-            case EXPANDED:
-                rowHeight = getExpandedRowHeight();
-                break;
-            default:
-                rowHeight = this.getContentHeight();
-        }
-
-        return Math.max(0, y / rowHeight);
-
+        return Math.max(0, y / Math.max(1, getRowHeight()));
     }
 
     /**
@@ -644,10 +652,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public void setDisplayMode(DisplayMode mode) {
 
-        super.setDisplayMode(mode);
+        // Deal with the legacy "squished" mode.  This is an expanded mode with a reduced row height
+        if (mode == DisplayMode.SQUISHED) {
+            setRowHeight(DEFAULT_SQUISHED_HEIGHT);
+            mode = DisplayMode.EXPANDED;
+        }
 
-        // Explicity setting the display mode overrides the automatic switch
-        lastFeatureMode = null;
+        super.setDisplayMode(mode);
 
         for (PackedFeatures pf : packedFeaturesMap.values()) {
             pf.pack(mode, groupByStrand);
@@ -754,19 +765,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
         showFeatures = isShowFeatures(context.getReferenceFrame());
         if (showFeatures) {
-            if (lastFeatureMode != null) {
-                super.setDisplayMode(lastFeatureMode);
-                lastFeatureMode = null;
-            }
             renderFeatures(context, renderRect);
         } else if (coverageRenderer != null) {
-            if (getDisplayMode() != DisplayMode.COLLAPSED) {
-                // An ugly hack, but we want to prevent this for vcf tracks
-                if (!(this instanceof VariantTrack)) {
-                    lastFeatureMode = getDisplayMode();
-                    super.setDisplayMode(DisplayMode.COLLAPSED);
-                }
-            }
             renderCoverage(context, renderRect);
         }
     }
@@ -824,7 +824,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
      * Render features in the given input rectangle.
      *
      * @param context
-     * @param ignore - deprecated
+     * @param ignore  - deprecated
      */
     protected void renderFeatures(RenderContext context, Rectangle ignore) {
 
@@ -876,8 +876,8 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
             if (rows != null && rows.size() > 0) {
 
                 // Divide rectangle into equal height levels
-                double h = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
-                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, (int) h);
+                int intRowHeight = Math.max(1, getRowHeight());
+                Rectangle rect = new Rectangle(trackRectangle.x, trackRectangle.y, trackRectangle.width, intRowHeight);
                 int i = 0;
 
                 if (renderer instanceof FeatureRenderer) ((FeatureRenderer) renderer).reset();
@@ -888,7 +888,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     }
                     if (rect.y + rect.height < clipBounds.y) {
                         // Not yet in clip bounds
-                        rect.y += h;
+                        rect.y += intRowHeight;
                         i++;
                         continue;
                     }
@@ -900,7 +900,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
                     //      fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
                     //  }
 
-                    rect.y += h;
+                    rect.y += intRowHeight;
                     i++;
                 }
             }

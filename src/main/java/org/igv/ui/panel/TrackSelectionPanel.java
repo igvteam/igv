@@ -1,6 +1,9 @@
 package org.igv.ui.panel;
 
+import org.igv.event.IGVEventBus;
+import org.igv.event.TrackSelectionEvent;
 import org.igv.track.Track;
+import org.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +34,7 @@ public class TrackSelectionPanel extends JPanel {
         checkBox = new JCheckBox();
         checkBox.setBackground(Color.WHITE);
         checkBox.setOpaque(true);
+        checkBox.addItemListener(e -> IGVEventBus.getInstance().post(new TrackSelectionEvent()));
 
         add(checkBox);
 

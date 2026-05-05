@@ -306,7 +306,7 @@ public class AlignmentRenderer {
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
                 Color alignmentColor = getAlignmentColor(alignment, track);
-                final boolean leaveMargin = (this.track.getDisplayMode() != Track.DisplayMode.SQUISHED);
+                final boolean leaveMargin = (this.track.getRowHeight() > 2);
                 final ColorOption colorOption = renderOptions.getColorOption();
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
@@ -976,6 +976,7 @@ public class AlignmentRenderer {
 
     /**
      * get a texture to apply to duplicate reads, caches the created textures according to their color
+     *
      * @param baseColor the color to render the read
      * @return a texture matching the base color with shading
      */
@@ -1158,7 +1159,7 @@ public class AlignmentRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
-        Color defaultColor = track.getColor();
+        Color defaultColor = alignment.isNegativeStrand()  ? track.getAltColor() : track.getColor();
         Color c = defaultColor;
         AlignmentTrack.RenderOptions renderOptions = track.getRenderOptions();
         ColorOption colorOption = renderOptions.getColorOption();

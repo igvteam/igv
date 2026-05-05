@@ -51,7 +51,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     private AlignmentDataManager dataManager;
     private boolean removed = false;
 
-    public SpliceJunctionTrack(ResourceLocator locator, String name,
+    public SpliceJunctionTrack(ResourceLocator locator,
+                               String name,
                                AlignmentDataManager dataManager,
                                AlignmentTrack alignmentTrack,
                                StrandOption ignoreStrand) {
@@ -233,14 +234,6 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
     public List<Component> getPopupMenuItems(TrackClickEvent te) {
 
         List<Component> items = new ArrayList<>();
-
-        JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
-        popupTitle.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 12));
-        items.add(popupTitle);
-        items.add(new JPopupMenu.Separator());
-
-        items.add(new JPopupMenu.Separator());
-        items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(this)));
 
         items.add(new JPopupMenu.Separator());
         final JMenuItem setScaleItem = new JMenuItem("Set Maximum Depth");

@@ -641,9 +641,15 @@ public class IGV implements IGVEventObserver {
         for (Track track : getAllTracks()) {
             track.setHeight(newHeight);
         }
-
     }
 
+    public void minimizeTrackHeights() {
+        List<Track> tracks = getAllTracks();
+        for (Track t : tracks) {
+            t.minimizeHeight();
+        }
+        repaint(tracks);
+    }
 
     public Session getSession() {
         return session;
@@ -657,12 +663,10 @@ public class IGV implements IGVEventObserver {
      */
     public void resetSession(String sessionPath) {
 
-
         session.reset(sessionPath);
         AttributeManager.getInstance().clearAllAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
-
         contentPane.getMainPanel().clearTrackPanels();
         revalidateTrackPanels();
     }
@@ -674,9 +678,7 @@ public class IGV implements IGVEventObserver {
     public void newSession() {
         resetSession(null);
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (currentGenome != null) {
-            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
-        }
+        GenomeManager.getInstance().setCurrentGenome(currentGenome);
         this.menuBar.disableReloadSession();
         goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
         revalidateTrackPanels();
@@ -811,37 +813,6 @@ public class IGV implements IGVEventObserver {
         return Arrays.asList(trackCountMap, panelSizeMap);
     }
 
-    /**
-     * Recalculate and set heights of track panels, based on newly loaded tracks
-     *
-     * @param trackCountMap scrollpane -> number of tracks
-     * @param panelSizeMap  scrollpane -> height in pixels
-     */
-    public void resetPanelHeights(Map<TrackPanelScrollPane, Integer> trackCountMap, Map<TrackPanelScrollPane, Integer> panelSizeMap) {
-
-        UIUtilities.invokeAndWaitOnEventThread(() -> {
-
-            double totalHeight = 0;
-            for (TrackPanel tp : getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (trackCountMap.containsKey(sp)) {
-                    int prevTrackCount = trackCountMap.get(sp);
-                    if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                        int scrollPosition = panelSizeMap.get(sp);
-                        if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                            sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                            sp.getVerticalScrollBar().setValue(scrollPosition);
-                        }
-                    }
-                }
-                // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                if (sp.getTrackPanel().getTracks().size() > 0)
-                    totalHeight += Math.min(300, sp.getTrackPanel().getContentHeight());
-            }
-
-            contentPane.getMainPanel().invalidate();
-        });
-    }
 
     public void setGeneList(GeneList geneList) {
         setGeneList(geneList, true);
@@ -1217,8 +1188,17 @@ public class IGV implements IGVEventObserver {
     public boolean scrollToTrack(String trackName) {
         boolean found = false;
         for (TrackPanel tp : getTrackPanels()) {
-            if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
-                found = true;
+            for (Track track : tp.getTracks()) {
+                if (track.getName().equals(trackName)) {
+                    TrackPanelScrollPane scrollPane = tp.getScrollPane();
+                    if (scrollPane != null) {
+                        // Scroll so this TrackPanelScrollPane aligns with the top of the viewport
+                        Rectangle bounds = scrollPane.getBounds();
+                        getMainPanel().getTrackPanelContainer().scrollRectToVisible(
+                                new Rectangle(bounds.x, bounds.y, bounds.width, 1));
+                        found = true;
+                    }
+                }
             }
         }
         return found;
@@ -1226,15 +1206,12 @@ public class IGV implements IGVEventObserver {
 
 
     /**
-     * Scroll all panels to the top (position 0).  Supports batch command "scrolltotop"
+     * Scroll to the top (position 0).  Supports batch command "scrolltotop"
      *
      * @return
      */
     public void scrollToTop() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.getScrollPane().getNamePanel().scrollToPosition(0);
-
-        }
+        getMainPanel().getTrackPanelContainer().scrollRectToVisible(new Rectangle(0, 0, 1, 1));
     }
 
     /**
@@ -1817,17 +1794,6 @@ public class IGV implements IGVEventObserver {
     }
 
 
-    /**
-     * Adjust the height of tracks so that all tracks fit in the available
-     * height of the panel. This is not possible in all cases as the
-     * minimum height for tracks is respected.
-     */
-    public void fitTracksToPanel() {
-        for (TrackPanel tp : getTrackPanels()) {
-            tp.fitTracksToPanel();
-        }
-        repaint();
-    }
 
     /**
      * Repaint all visible tracks.

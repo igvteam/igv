@@ -22,6 +22,7 @@ import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class SegTrack extends AbstractTrack {
                     Genome genome) {
 
         super(locator, id, name);
+        this.rowHeight = EXPANDED_SAMPLE_HEIGHT;
         this.dataset = dataset;
         this.type = type;
         renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();
@@ -81,19 +83,30 @@ public class SegTrack extends AbstractTrack {
     @Override
     public int getContentHeight() {
         var nSamples = sampleCount();
-        return nSamples * getSampleHeight() + (getSampleGroups().size() - 1) * groupGap;
+        return getSampleHeight() * nSamples + (getSampleGroups().size() - 1) * groupGap;
     }
 
     @Override
     public int getSampleHeight() {
-        return getDisplayMode() == DisplayMode.SQUISHED ? SQUISHED_SAMPLE_HEIGHT : EXPANDED_SAMPLE_HEIGHT;
+        return Math.max(1, rowHeight);
+    }
+
+    @Override
+    public int getNumRows() {
+        return sampleCount();
+    }
+
+    @Override
+    public void minimizeHeight() {
+        setRowHeight(1);
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
     }
 
     @Override
     public void render(RenderContext context) {
 
         Rectangle clipBounds = new Rectangle(context.getClipBounds());
-        Rectangle trackRectangle = context.getTrackRectangle();
 
         final boolean hasGroups = getSampleGroups().size() > 0;
         if (hasGroups && lastClipBounds != null) {
@@ -189,6 +202,9 @@ public class SegTrack extends AbstractTrack {
 
         List<Component> items = new ArrayList<>();
 
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(this)));
+
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
         if (keys.size() > 0) {
@@ -199,11 +215,6 @@ public class SegTrack extends AbstractTrack {
         }
 
         return items;
-    }
-
-    @Override
-    public boolean hasDisplayMode() {
-        return true;
     }
 
     /**
@@ -220,7 +231,7 @@ public class SegTrack extends AbstractTrack {
     @Override
     public String getValueStringAt(String chr, double position, int mouseX, int mouseY, ReferenceFrame frame) {
 
-        var trackY = mouseY - this.getY();
+        var trackY = mouseY;
         var y = 0;
         for (var group : getSampleGroups()) {
             var groupPixelHeight = group.samples().size() * getSampleHeight();

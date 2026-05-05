@@ -131,7 +131,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         featureTrack = new SelectableFeatureTrack(geneTrack);
         TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(referenceFrame, featureTrack);
-        initGeneComponent(referenceFrame.getWidthInPixels(), geneComponent, featureTrack);
+        initGeneComponent(geneComponent, featureTrack);
 
         JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
         scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -186,7 +186,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         return axis;
     }
 
-    private void initGeneComponent(int prefWidth, TrackComponent<SelectableFeatureTrack> geneComponent, FeatureTrack geneTrack) {
+    private void initGeneComponent(TrackComponent<SelectableFeatureTrack> geneComponent, FeatureTrack geneTrack) {
 
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
@@ -490,7 +490,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         @Override
         protected IGVPopupMenu getPopupMenu(MouseEvent e) {
             IGVPopupMenu menu = new IGVPopupMenu();
-            TrackMenuUtils.addDisplayModeItems(Arrays.asList(trackComponent.track), menu);
+            for (Component item : TrackMenuUtils.getDisplayModeMenuItems(Arrays.asList(trackComponent.track))) {
+                menu.add(item);
+            }
             menu.addPopupMenuListener(new RepaintPopupMenuListener(trackComponent));
             return menu;
         }

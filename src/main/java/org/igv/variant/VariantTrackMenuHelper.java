@@ -42,7 +42,11 @@ public class VariantTrackMenuHelper {
             JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
             circItem.addActionListener(e1 -> variantTrack.sendToCircularView(e));
             items.add(circItem);
+            items.add(new JPopupMenu.Separator());
         }
+
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
@@ -78,16 +82,6 @@ public class VariantTrackMenuHelper {
         }
 
         items.add(new JPopupMenu.Separator());
-        JMenuItem item = new JMenuItem("Change Squished Row Height...");
-        item.addActionListener(evt -> {
-            int currentValue = variantTrack.getSquishedHeight();
-            Integer newValue = TrackMenuUtils.getIntegerInput("Squished row height", currentValue);
-            if (newValue != null) {
-                variantTrack.setSquishedHeight(newValue);
-                IGV.getInstance().getContentPane().repaint();
-            }
-        });
-        items.add(item);
 
         items.add(getHideFilteredItem(variantTrack));
         items.add(getFeatureVisibilityItem(variantTrack));
@@ -243,38 +237,5 @@ public class VariantTrackMenuHelper {
         items.add(getQualitySortItem(track, variant));
         return items;
     }
-
-    public static List<JMenuItem> getDisplayModeItems(VariantTrack track) {
-
-        List<JMenuItem> items = new ArrayList();
-
-        Track.DisplayMode displayMode = track.getDisplayMode();
-
-        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Collapsed", displayMode == Track.DisplayMode.COLLAPSED);
-        m1.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-            track.repaint();
-        });
-
-        JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Squished", displayMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.SQUISHED);
-            track.repaint();
-        });
-
-        JCheckBoxMenuItem m3 = new JCheckBoxMenuItem("Expanded", displayMode == Track.DisplayMode.EXPANDED);
-        m3.addActionListener(evt -> {
-            track.setDisplayMode(Track.DisplayMode.EXPANDED);
-            track.repaint();
-        });
-
-
-        items.add(m1);
-        items.add(m2);
-        items.add(m3);
-
-        return items;
-    }
-
 
 }

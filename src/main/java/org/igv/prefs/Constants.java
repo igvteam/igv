@@ -87,6 +87,7 @@ final public class Constants {
     public static final String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
     public static final String SHOW_REGION_BARS = "SHOW_REGION_BARS";
     public static final String DEFAULT_VISIBILITY_WINDOW = "DEFAULT_VISIBILITY_WINDOW";
+    public static final String FIT_TO_VIEWPORT_MAX_ROWS = "FIT_TO_VIEWPORT_MAX_ROWS";
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
     public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";

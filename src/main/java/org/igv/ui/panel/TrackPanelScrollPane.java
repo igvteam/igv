@@ -237,6 +237,9 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
     public void setSelectionPanelVisible(boolean visible) {
         TrackSelectionPanel.setSelectionModeActive(visible);
         if (selectionPanel != null) {
+            if (!visible) {
+                selectionPanel.setTrackSelected(false);
+            }
             selectionPanel.setVisible(visible);
         }
         doLayout();

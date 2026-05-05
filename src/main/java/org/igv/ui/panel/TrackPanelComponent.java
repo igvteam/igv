@@ -43,53 +43,12 @@ abstract public class TrackPanelComponent extends JPanel {
         return getTrackPanel().getName();
     }
 
-    protected void addMousableRegion(MouseableRegion region) {
-        mouseRegions.add(region);
-    }
-
     protected void removeMousableRegions() {
         mouseRegions.clear();
     }
 
     protected List<MouseableRegion> getMouseRegions() {
         return mouseRegions;
-    }
-
-    public boolean scrollTo(String trackName) {
-        Track t = findNextTrackMatching(trackName);
-        if (t != null) {
-            scrollToPosition(t.getY());
-            return true;
-        }
-        return false;
-    }
-
-    public void scrollToPosition(int y) {
-        if (trackPanel.getScrollPane().getVerticalScrollBar().isShowing()) {
-            trackPanel.getScrollPane().getVerticalScrollBar().setValue(y);
-        }
-    }
-
-    int searchIdx = 0;
-
-    private synchronized Track findNextTrackMatching(String trackName) {
-        List<Track> tracks = getAllTracks();
-        searchIdx = Math.min(searchIdx, tracks.size());
-        for (int i = searchIdx; i < tracks.size(); i++) {
-            Track t = tracks.get(i);
-            if (t.getName().toUpperCase().contains(trackName.toUpperCase())) {
-                searchIdx = i + 1;
-                return t;
-            }
-        }
-        for (int i = 0; i < searchIdx; i++) {
-            Track t = tracks.get(i);
-            if (t.getName().toUpperCase().contains(trackName.toUpperCase())) {
-                searchIdx = i + 1;
-                return t;
-            }
-        }
-        return null;
     }
 
     public List<Track> getAllTracks() {

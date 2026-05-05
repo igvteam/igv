@@ -19,7 +19,7 @@ import static org.igv.prefs.Constants.*;
  * @api
  * @since Jul 16, 2010
  */
-public class VariantRenderer { //extends FeatureRenderer {
+public class VariantRenderer {
 
     private static Logger log = LogManager.getLogger(VariantRenderer.class);
 
@@ -125,17 +125,16 @@ public class VariantRenderer { //extends FeatureRenderer {
         final Color refColor;
         double percent;
 
-        Color colorAlleleRef = variant.isNonRef() ? nonRefColor :   track.getColor();
+        Color colorAlleleRef = variant.isNonRef() ? nonRefColor : track.getColor();
         //colorAlleleRef = new Color(((int)(Math.random()*255)),((int)(Math.random()*255)),((int)(Math.random()*255)));
 
         Color colorAlleleRefAlpha = useAlpha ? ColorUtilities.getCompositeColor(colorAlleleRef, alphaValue) : colorAlleleRef;
 
-        if(track.getSiteColorMode() == VariantTrack.ColorMode.NONE) {
+        if (track.getSiteColorMode() == VariantTrack.ColorMode.NONE) {
             refColor = track.getColor();
             alleleColor = track.getColor();
             percent = 0;
-        }
-        else if (track.getSiteColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
+        } else if (track.getSiteColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
@@ -182,8 +181,14 @@ public class VariantRenderer { //extends FeatureRenderer {
     }
 
 
-    public void renderGenotypeBandSNP(Variant variant, RenderContext context, Rectangle bandRectangle, int pX0, int dX,
-                                      String sampleName, VariantTrack.ColorMode coloring, boolean hideFiltered) {
+    public void renderGenotypeBandSNP(Variant variant,
+                                      RenderContext context,
+                                      Rectangle bandRectangle,
+                                      int pX0,
+                                      int dX,
+                                      String sampleName,
+                                      VariantTrack.ColorMode coloring,
+                                      boolean hideFiltered) {
 
         updateColors();
 

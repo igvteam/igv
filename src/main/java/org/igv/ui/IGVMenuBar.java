@@ -332,10 +332,6 @@ public class IGVMenuBar extends JMenuBar {
 
         MenuAction menuAction;
 
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, igv);
-        menuAction.setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
-        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
         menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
         menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -351,7 +347,7 @@ public class IGVMenuBar extends JMenuBar {
 
         menu.add(new JSeparator());
 
-        menuAction = new ReloadSessionMenuAction("Reload Session", -1, igv);
+        menuAction = new ReloadSessionMenuAction("Reset Session", -1, igv);
         menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
         reloadSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
         reloadSessionItem.setEnabled(false);
@@ -465,6 +461,22 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(PREFERENCE_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        // Show/hide track selection checkboxes
+        menuItems.add(new JSeparator());
+        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
+        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.addActionListener(e -> {
+            boolean show = selectTracksItem.isSelected();
+            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
+                TrackPanelScrollPane sp = tp.getScrollPane();
+                if (sp != null) {
+                    sp.setSelectionPanelVisible(show);
+                }
+            }
+            igv.getMainPanel().revalidateTrackPanels();
+        });
+        menuItems.add(selectTracksItem);
+
         menuItems.add(new JSeparator());
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
             @Override
@@ -548,21 +560,6 @@ public class IGVMenuBar extends JMenuBar {
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
-
-        // Show/hide track selection checkboxes
-        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
-        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
-        selectTracksItem.addActionListener(e -> {
-            boolean show = selectTracksItem.isSelected();
-            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (sp != null) {
-                    sp.setSelectionPanelVisible(show);
-                }
-            }
-            igv.getMainPanel().revalidateTrackPanels();
-        });
-        menuItems.add(selectTracksItem);
 
         menuAction =
                 new MenuAction("Reorder Tracks...", null, KeyEvent.VK_S) {

@@ -68,8 +68,6 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     private boolean removed = false;
     IGV igv;
 
-    ColorScale baseModificationColorScale;
-
 
     /**
      * Whether to autoscale across all ReferenceFrames
@@ -110,6 +108,8 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     public TrackType getType() {
         return TrackType.coverage;
     }
+
+
 
     @Override
     public Color getColor() {

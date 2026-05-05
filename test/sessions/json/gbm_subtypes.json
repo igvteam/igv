@@ -35,7 +35,7 @@
   },
   "sampleinfo": [{
     "format": "sampleInfo",
-    "url": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/sampleTable.txt"
+    "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/sampleTable.txt"
   }],
   "locus": "All",
   "tracks": [
@@ -48,24 +48,24 @@
       "order": -9007199254740991
     },
     {
-      "path": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "path": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
       "ampThreshold": 0.1,
       "altColor": "0,0,255",
       "color": "255,0,0",
       "format": "seg",
       "name": "CNV Summary",
-      "id": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
       "type": "cnfreq",
       "delThreshold": -0.1,
       "order": 0,
       "height": 50
     },
     {
-      "path": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz",
+      "path": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz",
       "renderer": "org.igv.renderer.HeatmapRenderer",
       "format": "seg",
       "name": "Broad.080528.subtypes.seg.gz",
-      "id": "/Users/jrobinso/Library/CloudStorage/Dropbox-igv-team/James Robinson/projects/igv-data/data/test/gbm/Broad.080528.subtypes.seg.gz_cn",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/Broad.080528.subtypes.seg.gz_cn",
       "groupBy": "Subtype",
       "type": "seg",
       "order": 0

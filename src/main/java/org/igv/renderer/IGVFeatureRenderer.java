@@ -32,9 +32,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     static protected final int REGION_STRAND_THICKNESS = 4;
     static final int BLOCK_HEIGHT = 14;
     static final int THIN_BLOCK_HEIGHT = 6;
+    static final int NON_CODING_HEIGHT = 8;
     protected Color AA_COLOR_1 = new Color(92, 92, 164);
     protected Color AA_COLOR_2 = new Color(12, 12, 120);
-    static final int NON_CODING_HEIGHT = 8;
+
 
     private static final Color VARIANT_HET_COLOR = Color.blue.brighter();
     private static final Color VARIANT_HOM_COLOR = new Color(0, 245, 255);
@@ -49,13 +50,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     //protected double lastRegionMaxY = 0;
 
 
-    int blockHeight = BLOCK_HEIGHT;
-    int thinBlockHeight = THIN_BLOCK_HEIGHT;
-
-    //Map from Exon to y offset
-    //Could use more coordinates, but they are all contained in the Exon
-    private Map<IExon, Integer> exonMap = new HashMap<IExon, Integer>(100);
-    private Set<String> drawnNames = new HashSet<String>(100);
+    transient int blockHeight ;
+    transient int thinBlockHeight;
+    transient int nonCodingHeight ;
 
     protected boolean isGenotypeRenderer = false;
 
@@ -85,9 +82,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         double locScale = context.getScale();
         double end = origin + trackRectangle.getWidth() * locScale;
 
-        final Track.DisplayMode displayMode = track.getDisplayMode();
-        blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
-        thinBlockHeight = displayMode == Track.DisplayMode.SQUISHED ? THIN_BLOCK_HEIGHT / 2 : THIN_BLOCK_HEIGHT;
+        final int rowHeight = Math.max(1, track.getRowHeight());
+        blockHeight = Math.min(BLOCK_HEIGHT, rowHeight / 2);
+        thinBlockHeight = Math.min( THIN_BLOCK_HEIGHT, blockHeight / 2);
+        nonCodingHeight = Math.min(thinBlockHeight, NON_CODING_HEIGHT);
         
         if ((featureList != null) && (featureList.size() > 0)) {
 
@@ -188,7 +186,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     if ((pixelWidth < 3)) {
                         drawFeatureBounds(pixelStart, pixelEnd, pixelYCenter, g2D);
                     } else {
-                        drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
+                        drawExons(feature, pixelYCenter, context, g2D, trackRectangle, rowHeight,
                                 alternateExonColor, track.getColor(), track.getAltColor());
                     }
                 } else {
@@ -196,10 +194,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     // If there is room create a gap between this feature and the next
                     drawFeatureBlock(pixelStart, pixelEnd, pixelThickStart, pixelThickEnd, pixelYCenter, g2D);
 
-                    if (displayMode != Track.DisplayMode.SQUISHED) {
+                    if (rowHeight >= 5) {
                         Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.WHITE);
                         drawStrandArrows(feature.getStrand(), pixelStart, pixelEnd, pixelYCenter, 0,
-                                displayMode, trackRectangle, arrowGraphics);
+                                rowHeight, trackRectangle, arrowGraphics);
                     }
 
                     // This is ugly, but alternatives are probably worse
@@ -223,7 +221,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
                 // Draw name , if there is room
-                if (displayMode != Track.DisplayMode.SQUISHED && track.isShowFeatureNames()) {
+                if (rowHeight >= 10 && track.isShowFeatureNames()) {
 
                     String name = labelField != null ? feature.getDisplayName(labelField) : feature.getName();
 
@@ -247,7 +245,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         // Calculate the minimum amount of vertical track
                         // space required be we  draw the
                         // track name without drawing over the features
-                        int verticalSpaceRequiredForText = textBaselineY - (int) trackRectangleY;
+                        int verticalSpaceRequiredForText = fontHeight + blockHeight + 5;
 
                         if (verticalSpaceRequiredForText <= trackRectangle.height) {
                             lastNamePixelEnd = drawFeatureName(name, track.getDisplayMode(), nameStart, nameEnd,
@@ -339,7 +337,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     protected void drawExons(IGVFeature gene, int yOffset, RenderContext context,
-                             Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode,
+                             Graphics2D g2D, Rectangle trackRectangle, int rowHeight,
                              boolean alternateExonColor, Color color1, Color color2) {
 
         // Now get the individual regions of the
@@ -420,7 +418,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     && lastExonEndX >= maxLineEndX) {
                 drawConnectingLine(lastExonEndX, lastY, pStart, curYOffset, exon.getStrand(), blockGraphics);
                 double angle = Math.atan(-(curYOffset - lastY) / ((pStart - lastExonEndX) + 1e-12));
-                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, mode, trackRectangle, blockGraphics);
+                drawStrandArrows(gene.getStrand(), lastExonEndX, pStart, lastY, angle, rowHeight, trackRectangle, blockGraphics);
                 maxLineEndX = Math.max(maxLineEndX, pStart);
             }
             lastExonEndX = pEnd;
@@ -444,9 +442,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             blockGraphics,
                             exon,
                             pClippedStart,
-                            curYOffset - NON_CODING_HEIGHT / 2,
+                            curYOffset - nonCodingHeight / 2,
                             pClippedWidth,
-                            NON_CODING_HEIGHT);
+                            nonCodingHeight);
 
                 } else {
                     // Exon contains 5' UTR -- draw non-coding part
@@ -458,9 +456,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 blockGraphics,
                                 exon,
                                 pClippedStart,
-                                curYOffset - NON_CODING_HEIGHT / 2,
+                                curYOffset - nonCodingHeight / 2,
                                 pClippedWidth,
-                                NON_CODING_HEIGHT);
+                                nonCodingHeight);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -472,8 +470,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 blockGraphics,
                                 exon,
                                 pClippedStart,
-                                curYOffset - NON_CODING_HEIGHT / 2,
-                                pClippedWidth, NON_CODING_HEIGHT);
+                                curYOffset - nonCodingHeight / 2,
+                                pClippedWidth, nonCodingHeight);
                         pEnd = pCdEnd;
                     }
                     // At least part of this exon is coding.  Draw the coding part.
@@ -486,10 +484,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 }
 
                 Graphics2D whiteArrowGraphics = context.getGraphic2DForColor(Color.white);
-                drawStrandArrows(gene.getStrand(), pStart + ARROW_SPACING / 2, pEnd, curYOffset, 0, mode,
+                drawStrandArrows(gene.getStrand(), pStart + ARROW_SPACING / 2, pEnd, curYOffset, 0, rowHeight,
                         trackRectangle, whiteArrowGraphics);
 
-                if (locationScale < 0.25) {
+                if (locationScale < 0.25 && rowHeight > 10) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
                             curYOffset, trackRectangle, idx);
                 }
@@ -518,7 +516,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      * @param endX
      * @param startY
      * @param angle
-     * @param mode
+     * @param rowHeight
      * @param g2D
      */
     protected void drawStrandArrows(Strand strand,
@@ -526,7 +524,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                     int endX,
                                     int startY,
                                     double angle,
-                                    Track.DisplayMode mode,
+                                    int rowHeight,
                                     Rectangle trackRectangle,
                                     Graphics2D g2D) {
 
@@ -546,7 +544,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
 
         // Draw the directional arrows on the feature
-        int sz = mode == Track.DisplayMode.EXPANDED ? 3 : 2;
+        int sz = rowHeight < 5 ?  2 : 3;
         sz = strand.equals(Strand.POSITIVE) ? -sz : sz;
         final int asz = Math.abs(sz);
 
@@ -594,8 +592,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // g2D.clearRect(xString2, textBaselineY, (int) stringBounds.getWidth(), (int) stringBounds.getHeight());
             g2D.drawString(name, nameStart, textBaselineY);
             lastFeatureEndedAtPixelX = nameStart + nameWidth;
-            drawnNames.add(name);
-
         }
 
         return lastFeatureEndedAtPixelX;
@@ -695,9 +691,4 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         return (int) Math.round((chromosomeLocation - origin) / locationScale);
     }
 
-    @Override
-    public void reset() {
-        exonMap.clear();
-        drawnNames.clear();
-    }
 }

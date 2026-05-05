@@ -61,8 +61,6 @@ public class DotGenomeLoader extends GenomeLoader {
 
                 String id = genome.getId() + "_genes";
                 geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
-                geneFeatureTrack.setMinimumHeight(5);
-                geneFeatureTrack.setHeight(35);
                 geneFeatureTrack.setDataType(DataType.GENE);
                 TrackProperties props = parser.getTrackProperties();
                 if (props != null) {

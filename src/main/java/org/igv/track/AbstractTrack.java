@@ -67,11 +67,11 @@ public abstract class AbstractTrack implements Track {
     private boolean showDataRange = true;
 
     private int top;
-    protected int minimumHeight = -1;
+    protected int rowHeight;
+    protected int minimumHeight = 20;
     private DataType dataType = DataType.OTHER;
     private boolean selected = false;
     private boolean visible = true;
-    private boolean sortable = true;
 
     boolean overlaid;
     boolean drawYLine = false;
@@ -125,15 +125,15 @@ public abstract class AbstractTrack implements Track {
     }
 
     public AbstractTrack(
-            ResourceLocator dataResourceLocator,
+            ResourceLocator resourceLocator,
             String id,
             String name) {
         this();
-        this.resourceLocator = dataResourceLocator;
+        this.resourceLocator = resourceLocator;
         this.id = id;
         this.name = name;
-        if (dataResourceLocator != null) {
-            this.order = dataResourceLocator.getOrder();
+        if (resourceLocator != null) {
+            this.order = resourceLocator.getOrder();
         }
         init();
     }
@@ -296,21 +296,6 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-
-    private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {
-        Rectangle rect = null;
-        if (visibleRect != null) {
-            Rectangle intersectedRect = trackRectangle.intersection(visibleRect);
-            if (intersectedRect.height > 15) {
-                rect = intersectedRect;
-            } else {
-                rect = new Rectangle(trackRectangle);
-            }
-        }
-        return rect;
-
-    }
-
     @Override
     public void setColor(Color color) {
         this.color = color;
@@ -449,6 +434,16 @@ public abstract class AbstractTrack implements Track {
     }
 
     @Override
+    public int getRowHeight() {
+        return rowHeight;
+    }
+
+    @Override
+    public void setRowHeight(int rowHeight) {
+        this.rowHeight = rowHeight;
+    }
+
+    @Override
     public void setDataType(DataType type) {
         this.dataType = type;
     }
@@ -566,7 +561,6 @@ public abstract class AbstractTrack implements Track {
             this.yLine = properties.getyLine();
         }
         this.drawYLine = properties.isDrawYLine();
-        this.sortable = properties.isSortable();
 
         // The viewLimit properties com from UCSC track lines and control "useScore" shading. They
         // are somewhat redundant with dataRange,  but we keep both for now to avoid breaking existing behavior.
@@ -885,13 +879,6 @@ public abstract class AbstractTrack implements Track {
         return true;
     }
 
-    public boolean isSortable() {
-        return sortable;
-    }
-
-    public void setSortable(boolean sortable) {
-        this.sortable = sortable;
-    }
 
     public boolean isDrawYLine() {
         return drawYLine;
@@ -1288,6 +1275,9 @@ public abstract class AbstractTrack implements Track {
         if (height != DEFAULT_HEIGHT && height > 0) {
             jsonObject.put("height", this.height);
         }
+        if (rowHeight > 0) {
+            jsonObject.put("rowHeight", this.rowHeight);
+        }
         if (showDataRange == false) {
             jsonObject.put("showDataRange", showDataRange);
         }
@@ -1431,6 +1421,14 @@ public abstract class AbstractTrack implements Track {
                 this.height = jsonObject.getInt("height");
             } catch (Exception e) {
                 log.error("Unrecognized height: " + jsonObject.getString("height"));
+            }
+        }
+
+        if (jsonObject.has("rowHeight")) {
+            try {
+                this.rowHeight = jsonObject.getInt("rowHeight");
+            } catch (Exception e) {
+                log.error("Unrecognized rowHeight: " + jsonObject.getString("rowHeight"));
             }
         }
 

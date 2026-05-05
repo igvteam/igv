@@ -68,7 +68,9 @@ abstract public class GenomeLoader {
 
 
     /**
-     * Create an annotation track for the genome from a supplied list of features
+     * Create an annotation track for the genome from a supplied list of features.
+     *
+     * This is used by the ".genome" and genbank loaders, which include annotations within the genome file.
      *
      * @param genome
      * @param features
@@ -81,8 +83,6 @@ abstract public class GenomeLoader {
 
         String id = genome.getId() + "_genes";
         geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(features, genome));
-        geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(35);
 
         return geneFeatureTrack;
     }

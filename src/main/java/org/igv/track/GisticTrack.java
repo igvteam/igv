@@ -56,8 +56,6 @@ public class GisticTrack extends AbstractTrack {
         renderer = new GisticTrackRenderer();
         setHeight(DEFAULT_HEIGHT);
         renderer = new GisticTrackRenderer();
-        setSortable(false);
-
     }
 
     public GisticTrack() {

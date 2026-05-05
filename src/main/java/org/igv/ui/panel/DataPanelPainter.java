@@ -12,6 +12,7 @@ import org.igv.track.Track;
 import org.igv.ui.IGV;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 
@@ -97,19 +98,17 @@ public class DataPanelPainter {
         return newContext;
     }
 
-
     private void paintFrame(Track track, RenderContext context) {
 
         if (track.isVisible()) {
             try {
-                track.render(context);
 
+                    track.render(context);
             } catch (Exception e) {
                 log.error("Error rendering track: " + track.getName(), e);
             }
         }
     }
-
 
     private void paintExpandedInsertion(InsertionMarker insertionMarker, Track track, RenderContext context) {
         if (track instanceof AlignmentTrack && track.isVisible()) {
@@ -117,9 +116,7 @@ public class DataPanelPainter {
 
             ((AlignmentTrack) track).renderExpandedInsertion(insertionMarker, context, dRect);
         }
-
     }
-
 }
 
 

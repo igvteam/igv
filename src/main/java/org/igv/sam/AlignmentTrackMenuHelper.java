@@ -17,7 +17,7 @@ import org.igv.sam.mods.BaseModificationUtils;
 import org.igv.sashimi.SashimiPlot;
 import org.igv.tools.PFMExporter;
 import org.igv.track.SequenceTrack;
-import org.igv.track.Track;
+import org.igv.track.Track.DisplayMode;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
@@ -77,16 +77,25 @@ class AlignmentTrackMenuHelper {
         items.add(new JPopupMenu.Separator());
     }
 
-    private Font getFont() {
-        return UIManager.getFont("Label.font");
-    }
-
     private AlignmentTrackMenuHelper(AlignmentTrack alignmentTrack, final TrackClickEvent e) {
 
         this.alignmentTrack = alignmentTrack;
         this.dataManager = alignmentTrack.getDataManager();
         this.renderOptions = alignmentTrack.getRenderOptions();
         final Alignment clickedAlignment = alignmentTrack.getAlignmentAt(e);
+
+        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(alignmentTrack)));
+        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(alignmentTrack)));
+
+        JCheckBoxMenuItem displayAllItem = new JCheckBoxMenuItem("Display Single Alignment per Row");
+        displayAllItem.setSelected(alignmentTrack.getDisplayMode() == DisplayMode.FULL);
+        displayAllItem.addActionListener(ae -> {
+            alignmentTrack.setDisplayMode(displayAllItem.isSelected() ? DisplayMode.FULL : DisplayMode.EXPANDED);
+            alignmentTrack.repaint();
+        });
+        items.add(displayAllItem);
+
+        items.add(new JSeparator());
 
         // Circular view items -- optional
         if (CircularViewUtilities.ping()) {
@@ -113,6 +122,7 @@ class AlignmentTrackMenuHelper {
         addShadeAlignmentsMenuItem();
         //addFilterMenuItem();
         addPackMenuItem();
+        addShowCenterLineMenuItem();
 
         // Shading and mismatch items
         addSeparator();
@@ -1047,6 +1057,16 @@ class AlignmentTrackMenuHelper {
             renderOptions.setShadeBasesOption(item.isSelected());
             alignmentTrack.repaint();
         }));
+        add(item);
+    }
+
+    private void addShowCenterLineMenuItem() {
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem("Show center line");
+        item.setSelected(alignmentTrack.getPreferences().getAsBoolean(SAM_SHOW_CENTER_LINE));
+        item.addActionListener(aEvt -> {
+            alignmentTrack.getPreferences().put(SAM_SHOW_CENTER_LINE, item.isSelected());
+            IGV.getInstance().getAlignmentTracks().forEach(AlignmentTrack::repaint);
+        });
         add(item);
     }
 

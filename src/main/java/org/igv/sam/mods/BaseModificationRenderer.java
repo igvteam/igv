@@ -39,7 +39,7 @@ public class BaseModificationRenderer {
         boolean distinguishStrands = renderOptions.getBasemodDistinguishStrands();
 
         // Determine if we should leave a margin (same logic as AlignmentRenderer)
-        boolean leaveMargin = renderOptions.getDisplayMode() != org.igv.track.Track.DisplayMode.SQUISHED;
+        boolean leaveMargin = rowRect.height > 2;
 
         int pY = (int) rowRect.getY();
         int dY = (int) rowRect.getHeight();

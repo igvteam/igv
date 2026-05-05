@@ -60,7 +60,6 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     public SequenceTrack(String name) {
         super(null, name, name);
-        setSortable(false);
         showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
         loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top of track list

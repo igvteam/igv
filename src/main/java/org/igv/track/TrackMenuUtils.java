@@ -6,7 +6,6 @@ import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.igv.bedpe.InteractionTrack;
 import org.igv.data.AbstractDataSource;
-import org.igv.feature.Exon;
 import org.igv.feature.IGVFeature;
 import org.igv.feature.Range;
 import org.igv.feature.Strand;
@@ -21,7 +20,6 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
 import org.igv.sam.AlignmentDataManager;
 import org.igv.sam.AlignmentTrack;
-import org.igv.sam.CoverageTrack;
 import org.igv.sam.SAMWriter;
 import org.igv.ui.DataRangeDialog;
 import org.igv.ui.FontManager;
@@ -32,6 +30,9 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
+import org.igv.ui.panel.TrackPanel;
+import org.igv.ui.panel.TrackPanelScrollPane;
+import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
@@ -75,14 +76,37 @@ public class TrackMenuUtils {
             log.debug("enter getPopupMenu");
         }
 
-        IGVPopupMenu menu = new IGVPopupMenu();
+        // Try multi-track menu first.  If multiple tracks are selected a menu with a subset of shared items is
+        // created.  If the track clicked is not one of the selected tracks selections are cleared and we proceed
+        // as usual with a single-track menu.  This behavior mimics google sheets.
+        List<Track> selectedTracks = getSelectedTracks();
+        if (!selectedTracks.isEmpty()) {
+            if (selectedTracks.contains(track)) {
+                IGVPopupMenu multiMenu = new IGVPopupMenu();
+                JLabel multiTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
+                multiTitle.setFont(FontManager.getFont(Font.BOLD, 12));
+                multiMenu.add(multiTitle);
+                multiMenu.addSeparator();
 
+                for (Component item : getSharedMenuItems(selectedTracks)) {
+                    wrapClearAfterAction(item);
+                    multiMenu.add(item);
+                }
+                for (Component item : getColorMenuItems(selectedTracks)) {
+                    wrapClearAfterAction(item);
+                    multiMenu.add(item);
+                }
+                return multiMenu;
+            } else {
+                clearTrackSelections();
+            }
+        }
+
+        IGVPopupMenu menu = new IGVPopupMenu();
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
         popupTitle.setFont(FontManager.getFont(Font.BOLD, 12));
-        if (popupTitle != null) {
-            menu.add(popupTitle);
-            menu.addSeparator();
-        }
+        menu.add(popupTitle);
+        menu.addSeparator();
 
         // Items all tracks share
         if (track.getType() != TrackType.sequence) {
@@ -90,18 +114,10 @@ public class TrackMenuUtils {
                 menu.add(item);
             }
 
-            if(hasColor(track.getType())) {
-                for (Component item : getColorMenuItems(Collections.singleton(track))) {
-                    menu.add(item);
-                }
+            for (Component item : getColorMenuItems(Collections.singleton(track))) {
+                menu.add(item);
             }
 
-            if (track.hasDisplayMode()) {
-                menu.add(new JPopupMenu.Separator());
-                for (Component item : getDisplayModeMenuItems(Collections.singleton(track))) {
-                    menu.add(item);
-                }
-            }
         }
 
         // Add track specific items
@@ -135,12 +151,57 @@ public class TrackMenuUtils {
     }
 
     private static boolean hasColor(TrackType type) {
-        return type == TrackType.annotation || type == TrackType.wig ||
+        return type == TrackType.annotation || type == TrackType.wig || type == TrackType.alignment ||
                 type == TrackType.coverage || type == TrackType.interact || type == TrackType.arc;
     }
 
     public static void saveImage(Track track, String extension) {
         IGV.getInstance().saveImage(track.getViewport(), "igv_panel", extension);
+    }
+
+    private static List<Track> getSelectedTracks() {
+        List<Track> selected = new ArrayList<>();
+        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp == null) continue;
+            TrackSelectionPanel selPanel = sp.getSelectionPanel();
+            if (selPanel != null && selPanel.isTrackSelected()) {
+                selected.add(tp.getTrack());
+            }
+        }
+        return selected;
+    }
+
+    private static void clearTrackSelections() {
+        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp == null) continue;
+            TrackSelectionPanel selPanel = sp.getSelectionPanel();
+            if (selPanel != null) {
+                selPanel.setTrackSelected(false);
+            }
+        }
+    }
+
+    /**
+     * Replace the action listeners on {@code component} so that the originals fire first
+     * (synchronously, including any modal dialog they open) and the track selections are
+     * cleared afterwards. Relies on action handlers running on the EDT, where modal
+     * dialogs block until dismissed.
+     */
+    private static void wrapClearAfterAction(Component component) {
+        if (!(component instanceof AbstractButton button)) return;
+        ActionListener[] originals = button.getActionListeners();
+        if (originals.length == 0) return;
+        for (ActionListener l : originals) {
+            button.removeActionListener(l);
+        }
+        button.addActionListener(e -> {
+            for (ActionListener l : originals) {
+                l.actionPerformed(e);
+            }
+            clearTrackSelections();
+        });
     }
 
 
@@ -167,24 +228,30 @@ public class TrackMenuUtils {
     private static List<Component> getColorMenuItems(Collection<Track> tracks) {
 
         List<Component> items = new ArrayList<>();
-        String colorLabel = "Set Track Color...";
-        JMenuItem item = new JMenuItem(colorLabel);
+        JMenuItem item = new JMenuItem("Set Track Color...");
         item.addActionListener(evt -> changeTrackColor(tracks));
         items.add(item);
 
-        item = new JMenuItem("Set Track Color (Negative Values or Strand)...");
-        item.setToolTipText(
-                "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
-        item.addActionListener(evt -> changeAltTrackColor(tracks));
-        items.add(item);
+        boolean anyAlignment = tracks.stream().anyMatch(t -> t.getType() == TrackType.alignment);
+        if (!anyAlignment) {
+            boolean allWig = !tracks.isEmpty() && tracks.stream().allMatch(t -> t.getType() == TrackType.wig);
+            String altLabel = allWig ? "Set Track Color (Negative Values)" : "Set Track Color (Negative Strand)";
+            item = new JMenuItem(altLabel);
+            item.setToolTipText(
+                    "Change the alternate track color.  This color is used when drawing features with negative values or on the negative strand.");
+            item.addActionListener(evt -> changeAltTrackColor(tracks));
+            items.add(item);
+        }
 
         item = new JMenuItem("Unset Track Color");
-        item.setToolTipText("Revert track color to default.");
+        item.setToolTipText("Revert track colors to default.");
         item.addActionListener(evt -> {
-            tracks.forEach(track -> track.setColor(null));
-            IGV.getInstance().repaint(tracks);
+            for (Track t : tracks) {
+                t.setColor(null);
+                t.setAltColor(null);
+                t.repaint();
+            }
         });
-        item.setEnabled(tracks.stream().anyMatch(track -> track.getColor() != null));
         items.add(item);
 
         return items;
@@ -382,78 +449,6 @@ public class TrackMenuUtils {
         }
 
         return items;
-    }
-
-
-    /**
-     * Return a list of menu items applicable to feature tracks.
-     * Null entries represent separators.
-     */
-    public static List<Component> getFeatureMenuItems(final Collection<Track> tracks, TrackClickEvent te) {
-
-        List<Component> items = new ArrayList<>();
-
-        items.add(getGroupByStrandItem(tracks));
-
-        if (tracks.size() == 1) {
-            Track t = tracks.iterator().next();
-            Feature f = t.getFeatureAtMousePosition(te);
-
-            ReferenceFrame frame = te.getFrame();
-            if (frame == null && !FrameManager.isGeneListMode()) {
-                frame = FrameManager.getDefaultFrame();
-            }
-
-            String featureName = "";
-            if (f != null) {
-                items.add(new JPopupMenu.Separator());
-                items.add(getCopyDetailsItem(f, te));
-
-                Feature sequenceFeature = f;
-                if (sequenceFeature instanceof IGVFeature) {
-                    featureName = ((IGVFeature) sequenceFeature).getName();
-                    double position = te.getChromosomePosition();
-                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
-                    if (exons != null) {
-                        for (Exon exon : exons) {
-                            if (position > exon.getStart() && position < exon.getEnd()) {
-                                sequenceFeature = exon;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                items.add(getCopySequenceItem(sequenceFeature));
-
-                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
-                    Range r = frame.getCurrentRange();
-                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
-                }
-
-                items.add(getBlatItem(sequenceFeature));
-            }
-        }
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getChangeFeatureWindow(tracks));
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getShowFeatureNames(tracks));
-        items.add(getFeatureNameAttribute(tracks));
-
-        return items;
-    }
-
-    /**
-     * Return popup menu with items applicable to BasePairTrack(s)
-     *
-     * @author stevenbusan
-     */
-    public static void addBasePairItems(JPopupMenu menu, final Collection<Track> tracks) {
-        for (Component item : getBasePairMenuItems(tracks)) {
-            menu.add(item);
-        }
     }
 
     /**
@@ -871,13 +866,6 @@ public class TrackMenuUtils {
         return item;
     }
 
-
-    public static void addDisplayModeItems(final Collection<Track> tracks, JPopupMenu menu) {
-        for (Component item : getDisplayModeMenuItems(tracks)) {
-            menu.add(item);
-        }
-    }
-
     /**
      * Return a list of display mode radio button menu items.
      */
@@ -904,35 +892,59 @@ public class TrackMenuUtils {
                 currentMode = count.getKey();
                 maxCount = count.getValue();
             }
+
+            ButtonGroup group = new ButtonGroup();
+            Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
+            modes.put("Collapse", Track.DisplayMode.COLLAPSED);
+            modes.put("Expand", Track.DisplayMode.EXPANDED);
+
+            for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
+                JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
+                mm.setSelected(currentMode == entry.getValue());
+                mm.addActionListener(evt -> {
+                    for (Track t : tracks) {
+                        t.setDisplayMode(entry.getValue());
+                    }
+                    IGV.getInstance().repaint(tracks);
+                });
+                group.add(mm);
+                items.add(mm);
+            }
         }
 
-        ButtonGroup group = new ButtonGroup();
-        Map<String, Track.DisplayMode> modes = new LinkedHashMap<String, Track.DisplayMode>(4);
-        if (tracks.stream().allMatch(t -> TrackType.annotation == t.getType())) {
-            modes.put("Collapsed", Track.DisplayMode.COLLAPSED);
-        }
-        modes.put("Expanded", Track.DisplayMode.EXPANDED);
-        modes.put("Squished", Track.DisplayMode.SQUISHED);
-
-        if (tracks.stream().allMatch(t -> t.isAlignment())) {
-            modes.put("Full", Track.DisplayMode.FULL);
-        }
-
-        for (final Map.Entry<String, Track.DisplayMode> entry : modes.entrySet()) {
-            JRadioButtonMenuItem mm = new JRadioButtonMenuItem(entry.getKey());
-            mm.setSelected(currentMode == entry.getValue());
-            mm.addActionListener(evt -> {
-                for (Track t : tracks) {
-                    t.setDisplayMode(entry.getValue());
-
-                }
-                IGV.getInstance().repaint(tracks);
-            });
-            group.add(mm);
-            items.add(mm);
-        }
+        items.add(getRowHeightItem(tracks));
+        items.add(getMinimizeHeightItem(tracks));
 
         return items;
+    }
+
+    public static JMenuItem getRowHeightItem(Collection<Track> tracks) {
+        JMenuItem rowHeightItem = new JMenuItem("Set Row Height...");
+        rowHeightItem.addActionListener(evt -> {
+            int currentHeight = tracks.iterator().next().getRowHeight();
+            Integer newHeight = getIntegerInput("Row Height", currentHeight);
+            if (newHeight != null && newHeight > 0) {
+                for (Track t : tracks) {
+                    t.setRowHeight(newHeight);
+                }
+                IGV.getInstance().repaint(tracks);
+            }
+        });
+        return rowHeightItem;
+    }
+
+    public static JMenuItem getMinimizeHeightItem(Collection<Track> tracks) {
+        JMenuItem item = new JMenuItem("Minimize Track Height");
+        item.addActionListener(evt -> {
+            for (Track t : tracks) {
+                TrackPanelScrollPane viewport = t.getViewport();
+                if (viewport != null) {
+                    t.minimizeHeight();
+                }
+            }
+            IGV.getInstance().repaint(tracks);
+        });
+        return item;
     }
 
     /**

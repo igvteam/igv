@@ -65,6 +65,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
     private transient Rectangle lastClipBounds;
+    private transient int _squishedHeight;
 
     public static boolean isVCF(String format) {
         return (format.equals("vcf3") ||
@@ -88,11 +89,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
 
     private boolean showGenotypes = true;
-
-    /**
-     * The height of a single row in in squished mode
-     */
-    private int squishedHeight = DEFAULT_SQUISHED_HEIGHT;
 
     /**
      * Current coloring option
@@ -156,8 +152,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         int sampleCount = samples.size();
         final int groupCount = getSampleGroups().size();
         final int margins = (groupCount - 1) * 3;
-        squishedHeight = sampleCount == 0 || showGenotypes == false ? DEFAULT_SQUISHED_HEIGHT :
-                Math.min(DEFAULT_SQUISHED_HEIGHT, Math.max(1, (getHeight() - getVariantBandHeight() - margins) / sampleCount));
+        rowHeight = DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
 
         // Set visibility window.  These values are appropriate for human dbsnp/1kg files, probably conservative otherwise
         // Ugly test on source is to avoid having to add "isIndexed" to a zillion feature source classes.  The intent
@@ -176,6 +171,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     @Override
     public int getHeight() {
         return !isVisible() ? 0 : height == 0 ? Math.min(DEFAULT_MAX_HEIGHT, getContentHeight()) : height;
+    }
+
+    @Override
+    public void minimizeHeight() {
+        setRowHeight(1);
+        int newHeight = Math.max(getContentHeight(), getMinimumHeight());
+        setHeight(Math.min(newHeight, getHeight()));
     }
 
     @Override
@@ -203,15 +205,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     public int getGenotypeBandHeight() {
-        switch (getDisplayMode()) {
-            case SQUISHED:
-                return getSquishedHeight();
-            case COLLAPSED:
-                return 0;
-            default:
-                return DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
-
-        }
+        return Math.max(1, rowHeight);
     }
 
     /**
@@ -232,7 +226,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         } else {
             final int groupCount = getSampleGroups().size();
             int margins = groupCount * 3;
-            h = getVariantsHeight() + margins + (sampleCount * getGenotypeBandHeight());
+            h = getVariantsHeight() + margins + sampleCount * getGenotypeBandHeight();
         }
         return Math.max(WG_TRACK_HEIGHT, h);
     }
@@ -465,7 +459,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public void renderName(Graphics2D g, Rectangle trackRectangle, Rectangle visibleRect) {
 
         Graphics2D g2D = null;
-        Color backupColor = g.getBackground();
 
         try {
             g2D = (Graphics2D) g.create();
@@ -499,6 +492,16 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     @Override
+    public int getNumRows() {
+        return sampleCount();
+    }
+
+    @Override
+    public int getReservedHeight() {
+        return getVariantsHeight();
+    }
+
+    @Override
     public int getSampleOffset() {
         return getVariantsHeight();
     }
@@ -514,7 +517,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         Rectangle clipBounds = g2D.getClipBounds();
 
-        if (getDisplayMode() == DisplayMode.COLLAPSED || showGenotypes == false) {
+        if (getDisplayMode() == DisplayMode.COLLAPSED || showGenotypes == false || trackRectangle.height < 2) {
             return;
         }
 
@@ -529,7 +532,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
 
-        boolean supressFill = (getDisplayMode() == DisplayMode.SQUISHED && squishedHeight < 4);
+        boolean supressFill = trackRectangle.height < 4;
         boolean hasGroups = getSampleGroups().size() > 1;
         boolean b = false;
 
@@ -888,14 +891,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         selectedVariant = null;
     }
 
-    public int getSquishedHeight() {
-        return squishedHeight;
-    }
-
-    public void setSquishedHeight(int squishedHeight) {
-        this.squishedHeight = squishedHeight;
-    }
-
 
     public boolean isShowGenotypes() {
         return showGenotypes;
@@ -1021,11 +1016,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         return VariantTrackMenuHelper.getMenuItems(this, selectedVariant, te);
     }
 
-    @Override
-    public boolean hasDisplayMode() {
-        return true;
-    }
-
     /**
      * Return the index for the sample.  This is a very inefficient implementation, but we don't care because
      * these lists are tiny.
@@ -1128,6 +1118,21 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
+    /**
+     * VariantTrack no longer uses a "display mode" state.  Over the setter to translate.  This should only
+     * be called from unmarshalling sessions
+     *
+     * @param mode
+     */
+    @Override
+    public void setDisplayMode(DisplayMode mode) {
+        if (mode == DisplayMode.SQUISHED) {
+            this.rowHeight = this._squishedHeight > 0 ? this._squishedHeight : DEFAULT_SQUISHED_HEIGHT;
+        } else if (mode == DisplayMode.COLLAPSED) {
+            this.showGenotypes = false;
+        }
+    }
+
     @Override
     public void unmarshalXML(Element element, Integer version) {
 
@@ -1136,11 +1141,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (element.hasAttribute("showGenotypes")) {
             this.showGenotypes = Boolean.parseBoolean(element.getAttribute("showGenotypes"));
         }
-
         if (element.hasAttribute("squishedHeight")) {
-            this.squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));
+            this._squishedHeight = Integer.parseInt(element.getAttribute("squishedHeight"));
         }
-
         if (element.hasAttribute("genotypeColorMode")) {
             this.genotypeColorMode = ColorMode.valueOf(element.getAttribute("genotypeColorMode"));
         } else if (element.hasAttribute("coloring")) {
@@ -1163,9 +1166,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (showGenotypes != defaultShowGenotypes()) {
             json.put("showGenotypes", showGenotypes);
         }
-        if (this.squishedHeight != DEFAULT_SQUISHED_HEIGHT) {
-            json.put("squishedHeight", squishedHeight);
-        }
         if (genotypeColorMode != ColorMode.GENOTYPE) {
             json.put("genotypeColorMode", genotypeColorMode.toString());
         }
@@ -1185,7 +1185,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         if (json.has("squishedHeight")) {
-            this.squishedHeight = json.getInt("squishedHeight");
+            this._squishedHeight = json.getInt("squishedHeight");
         }
 
         if (json.has("genotypeColorMode")) {
