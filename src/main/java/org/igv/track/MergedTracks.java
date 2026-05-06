@@ -5,6 +5,7 @@ import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.session.SessionElement;
 import org.igv.ui.IGV;
+import org.igv.ui.action.OverlayTracksMenuAction;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -311,22 +312,30 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
         items.add(setNegColorMenu);
 
         items.add(TrackMenuUtils.getChangeTrackHeightItem(selfAsList));
-        items.add(TrackMenuUtils.getChangeFontSizeItem(selfAsList));
 
         items.add(new JPopupMenu.Separator());
+        JMenuItem alphaItem = new JMenuItem("Adjust Transparency");
+        alphaItem.addActionListener(e -> {
+            JDialog alphaDialog = getAlphaDialog();
+            alphaDialog.setVisible(true);
+        });
+        items.add(alphaItem);
 
-        items.addAll(TrackMenuUtils.getDataMenuItems(selfAsList));
+        items.add(new JPopupMenu.Separator());
+        JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
 
-        // Disable heatmap items
-        for (Component c : items) {
-            if (c instanceof JMenuItem) {
-                String text = ((JMenuItem) c).getText();
-                text = text != null ? text.toLowerCase() : "null";
-                if (text.contains("heatmap")) {
-                    c.setEnabled(false);
-                }
+        unmergeItem.addActionListener(e -> {
+            long order = getOrder();
+            setTrackAlphas(1.0);
+            // Set the order of member tracks to match the merged track's order
+            for (Track memberTrack : getMemberTracks()) {
+                memberTrack.setOrder(order);
             }
-        }
+            IGV.getInstance().deleteTracks(List.of(this));
+            IGV.getInstance().addTracks(new ArrayList<>(getMemberTracks()));
+            IGV.getInstance().repaint();
+        });
+        items.add(unmergeItem);
 
         return items;
     }

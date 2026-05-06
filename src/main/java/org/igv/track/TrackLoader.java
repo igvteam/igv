@@ -296,7 +296,6 @@ public class TrackLoader {
             }
             throw new DataLoadException(e.getMessage());
         }
-
     }
 
     public static boolean isAlignmentTrack(String typeString) {

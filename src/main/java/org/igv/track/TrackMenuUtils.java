@@ -96,28 +96,52 @@ public class TrackMenuUtils {
                     wrapClearAfterAction(item);
                     multiMenu.add(item);
                 }
+
+                boolean allDataTracks = selectedTracks.stream()
+                        .allMatch(t -> t.getType() == TrackType.wig || t.getType() == TrackType.merged);
+                if (allDataTracks) {
+                    multiMenu.addSeparator();
+                    for (Component item : getDataMenuItems(selectedTracks)) {
+                        wrapClearAfterAction(item);
+                        multiMenu.add(item);
+                    }
+
+                    final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(selectedTracks, DataTrack.class));
+                    if (dataTrackList.size() > 1) {
+                        final JMenuItem item = new JMenuItem("Overlay Tracks");
+                        item.addActionListener(e -> {
+                            MergedTracks mergedTracks = new MergedTracks(UUID.randomUUID().toString(), "Merged Tracks", dataTrackList);
+                            mergedTracks.setOrder(dataTrackList.get(0).getOrder());
+                            IGV.getInstance().removeTracks(dataTrackList);
+                            IGV.getInstance().addTracks(List.of(mergedTracks));
+                            IGV.getInstance().repaint();
+                        });
+                        multiMenu.addSeparator();
+                        multiMenu.add(item);
+                    }
+                }
+
                 return multiMenu;
             } else {
                 clearTrackSelections();
             }
         }
 
+        // Single track menu
         IGVPopupMenu menu = new IGVPopupMenu();
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
         popupTitle.setFont(FontManager.getFont(Font.BOLD, 12));
         menu.add(popupTitle);
         menu.addSeparator();
 
-        // Items all tracks share
-        if (track.getType() != TrackType.sequence) {
+        // Items most tracks share
+        if (track.getType() != TrackType.sequence && track.getType() != TrackType.merged) {
             for (Component item : getSharedMenuItems(Collections.singleton(track))) {
                 menu.add(item);
             }
-
             for (Component item : getColorMenuItems(Collections.singleton(track))) {
                 menu.add(item);
             }
-
         }
 
         // Add track specific items
@@ -148,11 +172,6 @@ public class TrackMenuUtils {
 
         return menu;
 
-    }
-
-    private static boolean hasColor(TrackType type) {
-        return type == TrackType.annotation || type == TrackType.wig || type == TrackType.alignment ||
-                type == TrackType.coverage || type == TrackType.interact || type == TrackType.arc;
     }
 
     public static void saveImage(Track track, String extension) {
@@ -215,7 +234,9 @@ public class TrackMenuUtils {
     public static List<Component> getSharedMenuItems(final Collection<Track> tracks) {
         List<Component> items = new ArrayList<>();
 
-        items.add(getTrackRenameItem(tracks));
+        if (tracks.size() == 1) {
+            items.add(getTrackRenameItem(tracks));
+        }
         JMenuItem changeTrackHeightItem = getChangeTrackHeightItem(tracks);
         if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
             changeTrackHeightItem.setEnabled(false);
@@ -360,55 +381,7 @@ public class TrackMenuUtils {
 
         items.add(getShowDataRangeItem(tracks));
 
-        //Optionally add overlay track options
-        Track firstTrack = tracks.iterator().next();
-        boolean merged = (tracks.size() == 1 && firstTrack instanceof MergedTracks);
-
-        if (tracks.size() > 1 || merged) {
-            items.add(new JPopupMenu.Separator());
-
-            final List<DataTrack> dataTrackList = Lists.newArrayList(Iterables.filter(tracks, DataTrack.class));
-            final JMenuItem overlayGroups = new JMenuItem("Overlay Tracks");
-            overlayGroups.addActionListener(e -> {
-                OverlayTracksMenuAction.merge(dataTrackList, "Overlay");
-                IGV.getInstance().repaint();
-            });
-
-            int numDataTracks = dataTrackList.size();
-            overlayGroups.setEnabled(numDataTracks >= 2 && numDataTracks == tracks.size());
-            items.add(overlayGroups);
-
-            JMenuItem unmergeItem = new JMenuItem("Separate Tracks");
-            if (merged) {
-                unmergeItem.addActionListener(e -> {
-                    OverlayTracksMenuAction.unmerge(tracks);
-                    IGV.getInstance().repaint();
-                });
-            } else {
-                unmergeItem.setEnabled(false);
-            }
-            items.add(unmergeItem);
-
-            if (merged) {
-                Track firstTrack1 = tracks.iterator().next();
-                final MergedTracks mergedTracks = (MergedTracks) firstTrack1;
-
-                JMenuItem alphaItem = new JMenuItem("Adjust Transparency");
-                alphaItem.addActionListener(e -> {
-                    JDialog alphaDialog = mergedTracks.getAlphaDialog();
-                    alphaDialog.setVisible(true);
-                });
-                items.add(alphaItem);
-            }
-        }
-
         return items;
-    }
-
-    public static void addDataRendererItems(JPopupMenu menu, List<String> labels, Collection<Track> tracks) {
-        for (Component item : getDataRendererMenuItems(labels, tracks)) {
-            menu.add(item);
-        }
     }
 
     /**
