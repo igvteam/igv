@@ -101,67 +101,7 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public List<Component> getPopupMenuItems(TrackClickEvent te) {
-
-        Collection<Track> tracks = Collections.singleton(this);
-
-        List<Component> items = new ArrayList<>();
-
-        for (Component item : getDisplayModeMenuItems(tracks)) {
-            items.add(item);
-        }
-        items.add(new JSeparator());
-
-        items.add(getGroupByStrandItem(tracks));
-
-        if (tracks.size() == 1) {
-            Track t = tracks.iterator().next();
-            Feature f = t.getFeatureAtMousePosition(te);
-
-            ReferenceFrame frame = te.getFrame();
-            if (frame == null && !FrameManager.isGeneListMode()) {
-                frame = FrameManager.getDefaultFrame();
-            }
-
-            String featureName = "";
-            if (f != null) {
-                items.add(new JPopupMenu.Separator());
-                items.add(getCopyDetailsItem(f, te));
-
-                Feature sequenceFeature = f;
-                if (sequenceFeature instanceof IGVFeature) {
-                    featureName = ((IGVFeature) sequenceFeature).getName();
-                    double position = te.getChromosomePosition();
-                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
-                    if (exons != null) {
-                        for (Exon exon : exons) {
-                            if (position > exon.getStart() && position < exon.getEnd()) {
-                                sequenceFeature = exon;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                items.add(getCopySequenceItem(sequenceFeature));
-
-                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
-                    Range r = frame.getCurrentRange();
-                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
-                }
-
-                items.add(getBlatItem(sequenceFeature));
-            }
-        }
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getChangeFeatureWindow(tracks));
-
-        items.add(new JPopupMenu.Separator());
-        items.add(getShowFeatureNames(tracks));
-        items.add(getFeatureNameAttribute(tracks));
-
-        return items;
-
+        return TrackMenuUtils.getAnnotationMenuItems(Collections.singleton(this), te);
     }
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {

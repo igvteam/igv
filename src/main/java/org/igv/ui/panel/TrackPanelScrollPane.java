@@ -10,6 +10,8 @@ import org.igv.ui.util.SnapshotUtilities;
 import javax.swing.*;
 import java.awt.*;
 
+import static org.igv.prefs.Constants.SHOW_SELECTION_PANEL;
+
 /**
  * A panel that wraps a track in a scrollable view with a fixed left strip
  * containing the drag handle and selection checkbox. The left strip stays
@@ -137,7 +139,7 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
         if (dragHandlePanel != null) remove(dragHandlePanel);
 
         selectionPanel = new TrackSelectionPanel(trackPanel);
-        selectionPanel.setVisible(TrackSelectionPanel.isSelectionModeActive());
+        selectionPanel.setVisible(PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
         dragHandlePanel = new DragHandlePanel(trackPanel);
 
         add(selectionPanel);
@@ -235,7 +237,6 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
      * Show or hide the selection panel (checkbox panel).
      */
     public void setSelectionPanelVisible(boolean visible) {
-        TrackSelectionPanel.setSelectionModeActive(visible);
         if (selectionPanel != null) {
             if (!visible) {
                 selectionPanel.setTrackSelected(false);

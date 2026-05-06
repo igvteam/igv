@@ -38,6 +38,7 @@ final public class Constants {
     public static final String AUTOSAVE_FREQUENCY = "AUTOSAVE_FREQUENCY";
     public static final String AUTOSAVES_TO_KEEP = "AUTOSAVES_TO_KEEP";
     public static final String USER_THEME = "USER_THEME";
+    public static final String SHOW_SELECTION_PANEL = "SHOW_SELECTION_PANEL";
 
     //
     public static final String RECENT_SESSIONS = "IGV.Session.recent.sessions";

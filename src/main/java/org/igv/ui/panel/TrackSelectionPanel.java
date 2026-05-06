@@ -3,7 +3,6 @@ package org.igv.ui.panel;
 import org.igv.event.IGVEventBus;
 import org.igv.event.TrackSelectionEvent;
 import org.igv.track.Track;
-import org.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +16,6 @@ import java.awt.*;
 public class TrackSelectionPanel extends JPanel {
 
     public static final int SELECTION_PANEL_WIDTH = 24;
-
-    // Static flag to control visibility of all selection panels
-    private static boolean selectionModeActive = false;
 
     private final TrackPanel trackPanel;
     private final JCheckBox checkBox;
@@ -61,30 +57,6 @@ public class TrackSelectionPanel extends JPanel {
      */
     public Track getTrack() {
         return trackPanel.getTrack();
-    }
-
-    /**
-     * Check if selection mode is active globally
-     */
-    public static boolean isSelectionModeActive() {
-        return selectionModeActive;
-    }
-
-    /**
-     * Set the global selection mode
-     * @param active true to show selection checkboxes, false to hide them
-     */
-    public static void setSelectionModeActive(boolean active) {
-        selectionModeActive = active;
-    }
-
-    /**
-     * Toggle the selection mode
-     * @return the new state of selection mode
-     */
-    public static boolean toggleSelectionMode() {
-        selectionModeActive = !selectionModeActive;
-        return selectionModeActive;
     }
 
     /**

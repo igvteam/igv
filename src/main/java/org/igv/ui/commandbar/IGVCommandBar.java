@@ -85,8 +85,6 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
         IGVEventBus.getInstance().subscribe(ViewChange.class, this);
         IGVEventBus.getInstance().subscribe(GenomeChangeEvent.class, this);
         IGVEventBus.getInstance().subscribe(GenomeResetEvent.class, this);
-        IGVEventBus.getInstance().subscribe(TrackSelectionEvent.class, this);
-
     }
 
 

@@ -6,6 +6,7 @@ import htsjdk.tribble.Feature;
 import org.apache.commons.math3.stat.StatUtils;
 import org.igv.bedpe.InteractionTrack;
 import org.igv.data.AbstractDataSource;
+import org.igv.feature.Exon;
 import org.igv.feature.IGVFeature;
 import org.igv.feature.Range;
 import org.igv.feature.Strand;
@@ -117,6 +118,15 @@ public class TrackMenuUtils {
                             IGV.getInstance().repaint();
                         });
                         multiMenu.addSeparator();
+                        multiMenu.add(item);
+                    }
+                }
+
+                boolean allAnnotationTracks = selectedTracks.stream().allMatch(t -> t.getType() == TrackType.annotation);
+                if(allAnnotationTracks) {
+                    multiMenu.addSeparator();
+                    for (Component item : getAnnotationMenuItems(selectedTracks, te)) {
+                        wrapClearAfterAction(item);
                         multiMenu.add(item);
                     }
                 }
@@ -383,6 +393,69 @@ public class TrackMenuUtils {
 
         return items;
     }
+
+    public static List<Component> getAnnotationMenuItems(final Collection<Track> tracks, TrackClickEvent te) {
+        
+        List<Component> items = new ArrayList<>();
+
+        for (Component item : getDisplayModeMenuItems(tracks)) {
+            items.add(item);
+        }
+        items.add(new JSeparator());
+
+        items.add(getGroupByStrandItem(tracks));
+
+        if (tracks.size() == 1) {
+            Track t = tracks.iterator().next();
+            Feature f = t.getFeatureAtMousePosition(te);
+
+            ReferenceFrame frame = te.getFrame();
+            if (frame == null && !FrameManager.isGeneListMode()) {
+                frame = FrameManager.getDefaultFrame();
+            }
+
+            String featureName = "";
+            if (f != null) {
+                items.add(new JPopupMenu.Separator());
+                items.add(getCopyDetailsItem(f, te));
+
+                Feature sequenceFeature = f;
+                if (sequenceFeature instanceof IGVFeature) {
+                    featureName = ((IGVFeature) sequenceFeature).getName();
+                    double position = te.getChromosomePosition();
+                    Collection<Exon> exons = ((IGVFeature) sequenceFeature).getExons();
+                    if (exons != null) {
+                        for (Exon exon : exons) {
+                            if (position > exon.getStart() && position < exon.getEnd()) {
+                                sequenceFeature = exon;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                items.add(getCopySequenceItem(sequenceFeature));
+
+                if (frame != null && PreferencesManager.getPreferences().get(Constants.EXTVIEW_URL) != null) {
+                    Range r = frame.getCurrentRange();
+                    items.add(getExtendViewItem(featureName, sequenceFeature, r));
+                }
+
+                items.add(getBlatItem(sequenceFeature));
+            }
+        }
+
+        items.add(new JPopupMenu.Separator());
+        items.add(getChangeFeatureWindow(tracks));
+
+        items.add(new JPopupMenu.Separator());
+        items.add(getShowFeatureNames(tracks));
+        items.add(getFeatureNameAttribute(tracks));
+
+        return items;
+
+    }
+
 
     /**
      * Return a list of data renderer menu items (graph type selection).

@@ -558,7 +558,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
      */
     public int getLeftOffset() {
         int offset = DragHandlePanel.DRAG_HANDLE_WIDTH;
-        if (TrackSelectionPanel.isSelectionModeActive()) {
+        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL)) {
             offset += TrackSelectionPanel.SELECTION_PANEL_WIDTH;
         }
         return offset;

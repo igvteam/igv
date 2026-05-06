@@ -14,6 +14,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.oauth.OAuthProvider;
 import org.igv.oauth.OAuthUtils;
+import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.tools.IgvToolsGui;
 import org.igv.tools.motiffinder.MotifFinderPlugin;
@@ -304,28 +305,6 @@ public class IGVMenuBar extends JMenuBar {
         return fileMenu;
     }
 
-    JMenu createTracksMenu() {
-
-        JMenu tracksMenu = new JMenu("Tracks");
-
-        // Show/hide track selection checkboxes
-        JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
-        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
-        selectTracksItem.addActionListener(e -> {
-            boolean show = selectTracksItem.isSelected();
-            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (sp != null) {
-                    sp.setSelectionPanelVisible(show);
-                }
-            }
-            igv.getMainPanel().revalidateTrackPanels();
-        });
-        tracksMenu.add(selectTracksItem);
-
-        return tracksMenu;
-    }
-
     JMenu createSessionsMenu(String name) {
 
         final JMenu menu = new JMenu(name);
@@ -464,9 +443,10 @@ public class IGVMenuBar extends JMenuBar {
         // Show/hide track selection checkboxes
         menuItems.add(new JSeparator());
         JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
-        selectTracksItem.setSelected(TrackSelectionPanel.isSelectionModeActive());
+        selectTracksItem.setSelected(PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
         selectTracksItem.addActionListener(e -> {
             boolean show = selectTracksItem.isSelected();
+            PreferencesManager.getPreferences().put(SHOW_SELECTION_PANEL, show);
             for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
                 TrackPanelScrollPane sp = tp.getScrollPane();
                 if (sp != null) {
