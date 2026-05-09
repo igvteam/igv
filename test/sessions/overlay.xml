@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" version="8">
+    <Resources>
+        <Resource name="ENCFF478URK.bigWig" path="https://www.encodeproject.org/files/ENCFF478URK/@@download/ENCFF478URK.bigWig" type="bigwig"/>
+        <Resource name="ENCFF378JWE.bigWig" path="https://www.encodeproject.org/files/ENCFF378JWE/@@download/ENCFF378JWE.bigWig" type="bigwig"/>
+        <Resource name="ENCFF407AYY.bigWig" path="https://www.encodeproject.org/files/ENCFF407AYY/@@download/ENCFF407AYY.bigWig" type="bigwig"/>
+    </Resources>
+    <Panel height="578" name="DataPanel" width="1314">
+        <Track attributeKey="Overlay" autoScale="true" clazz="org.broad.igv.track.MergedTracks" fontSize="10" id="3d19e770-0d05-485f-85e6-85c5708a493b" name="Overlay" visible="true">
+            <Track altColor="0,0,150" attributeKey="ENCFF378JWE.bigWig" autoScale="true" color="0,0,150" fontSize="10" id="https://www.encodeproject.org/files/ENCFF378JWE/@@download/ENCFF378JWE.bigWig" name="ENCFF378JWE.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
+            <Track altColor="200,0,0" attributeKey="ENCFF478URK.bigWig" autoScale="true" color="200,0,0" fontSize="10" id="https://www.encodeproject.org/files/ENCFF478URK/@@download/ENCFF478URK.bigWig" name="ENCFF478URK.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
+            <Track altColor="0,204,0" attributeKey="ENCFF407AYY.bigWig" autoScale="true" color="0,204,0" fontSize="10" id="https://www.encodeproject.org/files/ENCFF407AYY/@@download/ENCFF407AYY.bigWig" name="ENCFF407AYY.bigWig" renderer="BAR_CHART" visible="true" windowFunction="mean"/>
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.8135017" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="189" name="FeaturePanel" width="1314">
+        <Track attributeKey="Reference sequence" clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.broad.igv.track.FeatureTrack" colorScale="ContinuousColorScale;0.0;696.0;255,255,255;0,0,178" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.7493540051679587"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>

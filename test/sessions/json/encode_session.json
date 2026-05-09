@@ -1,0 +1,152 @@
+{
+  "reference": {
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",
+    "aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/hg19_alias.tab",
+    "chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes",
+    "name": "Human (hg19)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/cytoBand.txt.gz",
+    "maneBbURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/ncbiRefSeqSelect.bb",
+    "id": "hg19",
+    "wholeGenomeView": true,
+    "chromosomeOrder": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr8",
+      "chr9",
+      "chr10",
+      "chr11",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ],
+    "hubs": [
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/1kg/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/tutorials/hub.txt"
+    ]
+  },
+  "locus": "All",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "order": 0
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "graphType": "BAR_CHART",
+      "max": 0.84759665,
+      "format": "bigwig",
+      "mid": 0,
+      "type": "wig",
+      "autoscale": "true",
+      "url": "https://www.encodeproject.org/files/ENCFF947HWO/@@download/ENCFF947HWO.bigWig",
+      "logScale": false,
+      "min": 0,
+      "name": "GM12878 GABPA ChIP-seq fold change over control",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF947HWO/@@download/ENCFF947HWO.bigWig",
+      "order": 0,
+      "height": 40
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "graphType": "BAR_CHART",
+      "max": 4.963344,
+      "format": "bigwig",
+      "mid": 0,
+      "type": "wig",
+      "autoscale": "true",
+      "url": "https://www.encodeproject.org/files/ENCFF000PNJ/@@download/ENCFF000PNJ.bigWig",
+      "logScale": false,
+      "min": 0,
+      "name": "HepG2 POLR2A ChIP-seq raw signal",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF000PNJ/@@download/ENCFF000PNJ.bigWig",
+      "order": 0,
+      "height": 40
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "graphType": "BAR_CHART",
+      "max": 0.9919825,
+      "format": "bigwig",
+      "mid": 0,
+      "type": "wig",
+      "autoscale": "true",
+      "url": "https://www.encodeproject.org/files/ENCFF427RAW/@@download/ENCFF427RAW.bigWig",
+      "logScale": false,
+      "min": 0,
+      "name": "HepG2 POLR2A ChIP-seq signal p-value",
+      "windowFunction": "mean",
+      "id": "https://www.encodeproject.org/files/ENCFF427RAW/@@download/ENCFF427RAW.bigWig",
+      "order": 0,
+      "height": 40
+    },
+    {
+      "visibilityWindow": "103189799",
+      "format": "bigbed",
+      "name": "GM12878 GABPA ChIP-seq peaks and background as input for IDR",
+      "id": "https://www.encodeproject.org/files/ENCFF301MZF/@@download/ENCFF301MZF.bigBed",
+      "type": "annotation",
+      "url": "https://www.encodeproject.org/files/ENCFF301MZF/@@download/ENCFF301MZF.bigBed",
+      "order": 0
+    },
+    {
+      "visibilityWindow": "156520236",
+      "format": "bigbed",
+      "name": "GM12878 GABPA ChIP-seq peaks and background as input for IDR",
+      "id": "https://www.encodeproject.org/files/ENCFF533WKI/@@download/ENCFF533WKI.bigBed",
+      "type": "annotation",
+      "url": "https://www.encodeproject.org/files/ENCFF533WKI/@@download/ENCFF533WKI.bigBed",
+      "order": 0
+    },
+    {
+      "visibilityWindow": "2147483647",
+      "format": "bigbed",
+      "name": "GM12878 GABPA ChIP-seq optimal IDR thresholded peaks",
+      "id": "https://www.encodeproject.org/files/ENCFF476VBY/@@download/ENCFF476VBY.bigBed",
+      "type": "annotation",
+      "url": "https://www.encodeproject.org/files/ENCFF476VBY/@@download/ENCFF476VBY.bigBed",
+      "order": 0
+    },
+    {
+      "visibilityWindow": "2147483647",
+      "format": "bigbed",
+      "name": "GM12878 GABPA ChIP-seq conservative IDR thresholded peaks",
+      "id": "https://www.encodeproject.org/files/ENCFF519HYN/@@download/ENCFF519HYN.bigBed",
+      "type": "annotation",
+      "url": "https://www.encodeproject.org/files/ENCFF519HYN/@@download/ENCFF519HYN.bigBed",
+      "order": 0
+    }
+  ]
+}

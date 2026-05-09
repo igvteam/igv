@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="chr8:128748298-128749361" version="8">
+    <Resources>
+        <Resource name="HG01882 exome" path="http://1000genomes.s3.amazonaws.com/phase3/data/HG01882/exome_alignment/HG01882.mapped.ILLUMINA.bwa.ACB.exome.20121211.bam" type="bam"/>
+        <Resource name="HG01885 exome" path="http://1000genomes.s3.amazonaws.com/phase3/data/HG01885/exome_alignment/HG01885.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam" type="bam"/>
+        <Resource name="HG01883 exome" path="http://1000genomes.s3.amazonaws.com/phase3/data/HG01883/exome_alignment/HG01883.mapped.ILLUMINA.bwa.ACB.exome.20121211.bam" type="bam"/>
+        <Resource name="HG01880 exome" path="http://1000genomes.s3.amazonaws.com/phase3/data/HG01880/exome_alignment/HG01880.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam" type="bam"/>
+        <Resource name="HG01879 exome" path="http://1000genomes.s3.amazonaws.com/phase3/data/HG01879/exome_alignment/HG01879.mapped.ILLUMINA.bwa.ACB.exome.20120522.bam" type="bam"/>
+        <Resource name="Phase 3 genotypes" path="https://s3.amazonaws.com/igv.broadinstitute.org/data/hg19/1kg/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list" type="vcf.list"/>
+        <Resource name="CopyNumber: [genome_wide_snp_6__broad]" path="https://data.broadinstitute.org/igvdata/tcga/gdac_stddata__2016_01_28/Sample_Set/ACC-TP/jobs/merge/snp__genome_wide_snp_6__broad_mit_edu__Level_3__segmented_scna_hg19__seg/latest/ACC-TP.snp__genome_wide_snp_6__broad_mit_edu__Level_3__segmented_scna_hg19__seg.seg.txt" type="seg"/>
+    </Resources>
+  
+</Session>

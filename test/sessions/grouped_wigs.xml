@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" groupTracksBy="Target" locus="All" version="8">
+    <Resources>
+        <Resource name="GM12878 GABPA ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF908OSB/@@download/ENCFF908OSB.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF458ZCG/@@download/ENCFF458ZCG.bigWig" type="bigwig"/>
+        <Resource name="fibroblast of lung female child (11 years) and male adult (45 years) H3K79me2 ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF799PEP/@@download/ENCFF799PEP.bigWig" type="bigwig"/>
+        <Resource name="endothelial cell of umbilical vein newborn H3K9ac ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF176QOG/@@download/ENCFF176QOG.bigWig" type="bigwig"/>
+    </Resources>
+    <Panel height="443" name="DataPanel" width="1138">
+        <Track attributeKey="GM12878 GABPA ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF908OSB/@@download/ENCFF908OSB.bigWig" name="GM12878 GABPA ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.493627" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF458ZCG/@@download/ENCFF458ZCG.bigWig" name="SK-N-SH SMC3 ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6414872" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="fibroblast of lung female child (11 years) and male adult (45 years) H3K79me2 ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF799PEP/@@download/ENCFF799PEP.bigWig" name="fibroblast of lung female child (11 years) and male adult (45 years) H3K79me2 ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.718756" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="endothelial cell of umbilical vein newborn H3K9ac ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" color="100,0,0" fontSize="10" id="https://www.encodeproject.org/files/ENCFF176QOG/@@download/ENCFF176QOG.bigWig" name="endothelial cell of umbilical vein newborn H3K9ac ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.7862592" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="107" name="FeaturePanel" width="1138">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.7989228007181328"/>
+</Session>

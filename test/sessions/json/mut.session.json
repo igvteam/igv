@@ -1,0 +1,842 @@
+{
+  "reference": {
+    "twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",
+    "aliasURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/hg19_alias.tab",
+    "chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes",
+    "name": "Human (hg19)",
+    "cytobandURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/cytoBand.txt.gz",
+    "maneBbURL": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/hg19/ncbiRefSeqSelect.bb",
+    "id": "hg19",
+    "wholeGenomeView": true,
+    "chromosomeOrder": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr8",
+      "chr9",
+      "chr10",
+      "chr11",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ],
+    "hubs": [
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/1kg/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/platinum_genomes/hub.txt",
+      "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/hubs/hg19/tutorials/hub.txt"
+    ]
+  },
+  "locus": "All",
+  "hiddenAttributes": [
+    "DATA FILE",
+    "DATA TYPE",
+    "NAME"
+  ],
+  "tracks": [
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "order": 0
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0206",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0206",
+      "type": "mut",
+      "order": 0,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0083",
+      "colorScale": "ContinuousColorScale;0.0;3.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0083",
+      "type": "mut",
+      "order": 1,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0189",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0189",
+      "type": "mut",
+      "order": 2,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0126",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0126",
+      "type": "mut",
+      "order": 3,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0114",
+      "colorScale": "ContinuousColorScale;0.0;3.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0114",
+      "type": "mut",
+      "order": 4,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0028",
+      "colorScale": "ContinuousColorScale;0.0;3.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0028",
+      "type": "mut",
+      "order": 5,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0010",
+      "colorScale": "ContinuousColorScale;0.0;2.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0010",
+      "type": "mut",
+      "order": 6,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0085",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0085",
+      "type": "mut",
+      "order": 7,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0043",
+      "colorScale": "ContinuousColorScale;0.0;3.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0043",
+      "type": "mut",
+      "order": 8,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0129",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0129",
+      "type": "mut",
+      "order": 9,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0055",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0055",
+      "type": "mut",
+      "order": 10,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0099",
+      "colorScale": "ContinuousColorScale;0.0;2.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0099",
+      "type": "mut",
+      "order": 11,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0173",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0173",
+      "type": "mut",
+      "order": 12,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0075",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0075",
+      "type": "mut",
+      "order": 13,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0176",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0176",
+      "type": "mut",
+      "order": 14,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0133",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0133",
+      "type": "mut",
+      "order": 15,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0007",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0007",
+      "type": "mut",
+      "order": 16,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0185",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0185",
+      "type": "mut",
+      "order": 17,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0014",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0014",
+      "type": "mut",
+      "order": 18,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0033",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0033",
+      "type": "mut",
+      "order": 19,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0145",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0145",
+      "type": "mut",
+      "order": 20,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0166",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0166",
+      "type": "mut",
+      "order": 21,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0046",
+      "colorScale": "ContinuousColorScale;0.0;2.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0046",
+      "type": "mut",
+      "order": 22,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0116",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0116",
+      "type": "mut",
+      "order": 23,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0047",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0047",
+      "type": "mut",
+      "order": 24,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0037",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0037",
+      "type": "mut",
+      "order": 25,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0171",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0171",
+      "type": "mut",
+      "order": 26,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0054",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0054",
+      "type": "mut",
+      "order": 27,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0009",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0009",
+      "type": "mut",
+      "order": 28,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0174",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0174",
+      "type": "mut",
+      "order": 29,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0058",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0058",
+      "type": "mut",
+      "order": 30,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0213",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0213",
+      "type": "mut",
+      "order": 31,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0003",
+      "colorScale": "ContinuousColorScale;0.0;2.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0003",
+      "type": "mut",
+      "order": 32,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0021",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0021",
+      "type": "mut",
+      "order": 33,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0178",
+      "colorScale": "ContinuousColorScale;0.0;1.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0178",
+      "type": "mut",
+      "order": 34,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0089",
+      "colorScale": "ContinuousColorScale;0.0;2.0;255,255,255;0,0,178",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0089",
+      "type": "mut",
+      "order": 35,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0074",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0074",
+      "type": "mut",
+      "order": 36,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0201",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0201",
+      "type": "mut",
+      "order": 37,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0011",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0011",
+      "type": "mut",
+      "order": 38,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0069",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0069",
+      "type": "mut",
+      "order": 39,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0125",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0125",
+      "type": "mut",
+      "order": 40,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0148",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0148",
+      "type": "mut",
+      "order": 41,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0237",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0237",
+      "type": "mut",
+      "order": 42,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0154",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0154",
+      "type": "mut",
+      "order": 43,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0156",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0156",
+      "type": "mut",
+      "order": 44,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0157",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0157",
+      "type": "mut",
+      "order": 45,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0209",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0209",
+      "type": "mut",
+      "order": 46,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0124",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0124",
+      "type": "mut",
+      "order": 47,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0060",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0060",
+      "type": "mut",
+      "order": 48,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0080",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0080",
+      "type": "mut",
+      "order": 49,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0214",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0214",
+      "type": "mut",
+      "order": 50,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0188",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0188",
+      "type": "mut",
+      "order": 51,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0141",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0141",
+      "type": "mut",
+      "order": 52,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0184",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0184",
+      "type": "mut",
+      "order": 53,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0197",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0197",
+      "type": "mut",
+      "order": 54,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0052",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0052",
+      "type": "mut",
+      "order": 55,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0190",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0190",
+      "type": "mut",
+      "order": 56,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0138",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0138",
+      "type": "mut",
+      "order": 57,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0027",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0027",
+      "type": "mut",
+      "order": 58,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0187",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0187",
+      "type": "mut",
+      "order": 59,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0001",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0001",
+      "type": "mut",
+      "order": 60,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0195",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0195",
+      "type": "mut",
+      "order": 61,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0038",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0038",
+      "type": "mut",
+      "order": 62,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0113",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0113",
+      "type": "mut",
+      "order": 63,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0071",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0071",
+      "type": "mut",
+      "order": 64,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0168",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0168",
+      "type": "mut",
+      "order": 65,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0122",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0122",
+      "type": "mut",
+      "order": 66,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0024",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0024",
+      "type": "mut",
+      "order": 67,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0107",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0107",
+      "type": "mut",
+      "order": 68,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0169",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0169",
+      "type": "mut",
+      "order": 69,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0102",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0102",
+      "type": "mut",
+      "order": 70,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0128",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0128",
+      "type": "mut",
+      "order": 71,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0139",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0139",
+      "type": "mut",
+      "order": 72,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0034",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0034",
+      "type": "mut",
+      "order": 73,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0241",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0241",
+      "type": "mut",
+      "order": 74,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0130",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0130",
+      "type": "mut",
+      "order": 75,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0221",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0221",
+      "type": "mut",
+      "order": 76,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0115",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0115",
+      "type": "mut",
+      "order": 77,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0086",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0086",
+      "type": "mut",
+      "order": 78,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0147",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0147",
+      "type": "mut",
+      "order": 79,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-02-0057",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-02-0057",
+      "type": "mut",
+      "order": 80,
+      "height": 15
+    },
+    {
+      "path": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut",
+      "format": "mut",
+      "name": "TCGA-06-0158",
+      "id": "../../data/mut/tcga_20080711_phase1_filtered_nonsilent.mut_TCGA-06-0158",
+      "type": "mut",
+      "order": 81,
+      "height": 15
+    },
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": 82
+    }
+  ]
+}

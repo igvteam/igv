@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" locus="All" version="8">
+    <Resources>
+        <Resource name="HepG2 POLR2A ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF268HHX/@@download/ENCFF268HHX.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF908OSB/@@download/ENCFF908OSB.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF012NRC/@@download/ENCFF012NRC.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF126LIQ/@@download/ENCFF126LIQ.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF538ZWY/@@download/ENCFF538ZWY.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF122IGC/@@download/ENCFF122IGC.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF947HWO/@@download/ENCFF947HWO.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq raw signal" path="https://www.encodeproject.org/files/ENCFF000PNK/@@download/ENCFF000PNK.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF084KNT/@@download/ENCFF084KNT.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq signal" path="https://www.encodeproject.org/files/ENCFF000ZSX/@@download/ENCFF000ZSX.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF427RAW/@@download/ENCFF427RAW.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF800QHJ/@@download/ENCFF800QHJ.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF621LET/@@download/ENCFF621LET.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF089OGX/@@download/ENCFF089OGX.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq raw signal" path="https://www.encodeproject.org/files/ENCFF000NWD/@@download/ENCFF000NWD.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF304REF/@@download/ENCFF304REF.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF356GIC/@@download/ENCFF356GIC.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq raw signal" path="https://www.encodeproject.org/files/ENCFF000PNJ/@@download/ENCFF000PNJ.bigWig" type="bigwig"/>
+        <Resource name="HepG2 POLR2A ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF981PKL/@@download/ENCFF981PKL.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq fold change over control" path="https://www.encodeproject.org/files/ENCFF344DXS/@@download/ENCFF344DXS.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF458ZCG/@@download/ENCFF458ZCG.bigWig" type="bigwig"/>
+        <Resource name="SK-N-SH SMC3 ChIP-seq signal p-value" path="https://www.encodeproject.org/files/ENCFF972FLA/@@download/ENCFF972FLA.bigWig" type="bigwig"/>
+        <Resource name="GM12878 GABPA ChIP-seq raw signal" path="https://www.encodeproject.org/files/ENCFF000NWC/@@download/ENCFF000NWC.bigWig" type="bigwig"/>
+    </Resources>
+    <Panel height="920" name="DataPanel" width="1202">
+        <Track attributeKey="GM12878 GABPA ChIP-seq raw signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF000NWC/@@download/ENCFF000NWC.bigWig" name="GM12878 GABPA ChIP-seq raw signal" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="3.5323048" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq raw signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF000NWD/@@download/ENCFF000NWD.bigWig" name="GM12878 GABPA ChIP-seq raw signal" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="2.8682268" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF621LET/@@download/ENCFF621LET.bigWig" name="GM12878 GABPA ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.7343026" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF908OSB/@@download/ENCFF908OSB.bigWig" name="GM12878 GABPA ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.493627" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF012NRC/@@download/ENCFF012NRC.bigWig" name="GM12878 GABPA ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="2.0724525" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF947HWO/@@download/ENCFF947HWO.bigWig" name="GM12878 GABPA ChIP-seq fold change over control" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.84759665" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF122IGC/@@download/ENCFF122IGC.bigWig" name="GM12878 GABPA ChIP-seq fold change over control" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0021858" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="GM12878 GABPA ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF538ZWY/@@download/ENCFF538ZWY.bigWig" name="GM12878 GABPA ChIP-seq fold change over control" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.92765826" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq raw signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF000PNJ/@@download/ENCFF000PNJ.bigWig" name="HepG2 POLR2A ChIP-seq raw signal" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="4.963344" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq raw signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF000PNK/@@download/ENCFF000PNK.bigWig" name="HepG2 POLR2A ChIP-seq raw signal" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="2.3015573" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF084KNT/@@download/ENCFF084KNT.bigWig" name="HepG2 POLR2A ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.1493008" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF268HHX/@@download/ENCFF268HHX.bigWig" name="HepG2 POLR2A ChIP-seq fold change over control" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.3569593" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF427RAW/@@download/ENCFF427RAW.bigWig" name="HepG2 POLR2A ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.9919825" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF089OGX/@@download/ENCFF089OGX.bigWig" name="HepG2 POLR2A ChIP-seq signal p-value" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="2.6027641" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF981PKL/@@download/ENCFF981PKL.bigWig" name="HepG2 POLR2A ChIP-seq fold change over control" renderer="BAR_CHART" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="2.0875216" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="HepG2 POLR2A ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF800QHJ/@@download/ENCFF800QHJ.bigWig" name="HepG2 POLR2A ChIP-seq fold change over control" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.957458" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq signal" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF000ZSX/@@download/ENCFF000ZSX.bigWig" name="SK-N-SH SMC3 ChIP-seq signal" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="5.4618545" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF458ZCG/@@download/ENCFF458ZCG.bigWig" name="SK-N-SH SMC3 ChIP-seq signal p-value" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.6414872" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF344DXS/@@download/ENCFF344DXS.bigWig" name="SK-N-SH SMC3 ChIP-seq fold change over control" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.85891145" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF126LIQ/@@download/ENCFF126LIQ.bigWig" name="SK-N-SH SMC3 ChIP-seq fold change over control" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.7911644" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq fold change over control" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF304REF/@@download/ENCFF304REF.bigWig" name="SK-N-SH SMC3 ChIP-seq fold change over control" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.85904604" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF356GIC/@@download/ENCFF356GIC.bigWig" name="SK-N-SH SMC3 ChIP-seq signal p-value" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.5606043" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track attributeKey="SK-N-SH SMC3 ChIP-seq signal p-value" autoScale="true" clazz="org.igv.track.DataSourceTrack" fontSize="10" id="https://www.encodeproject.org/files/ENCFF972FLA/@@download/ENCFF972FLA.bigWig" name="SK-N-SH SMC3 ChIP-seq signal p-value" visible="true" windowFunction="mean">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.7336402" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="75" name="FeaturePanel" width="1202">
+        <Track attributeKey="Reference sequence" clazz="org.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" sequenceTranslationStrandValue="+" shouldShowTranslation="false" visible="true"/>
+        <Track attributeKey="Refseq All" clazz="org.igv.track.FeatureTrack" fontSize="10" groupByStrand="false" id="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz" name="Refseq All" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.8818316100443131"/>
+</Session>
