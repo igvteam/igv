@@ -453,6 +453,9 @@ public class IGVMenuBar extends JMenuBar {
                     sp.setSelectionPanelVisible(show);
                 }
             }
+            if (igv.getMainPanel().getHeaderSelectAllPanel() != null) {
+                igv.getMainPanel().getHeaderSelectAllPanel().setCheckBoxVisible(show);
+            }
             igv.getMainPanel().revalidateTrackPanels();
         });
         menuItems.add(selectTracksItem);

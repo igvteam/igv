@@ -90,11 +90,9 @@ public class TrackMenuUtils {
                 multiMenu.addSeparator();
 
                 for (Component item : getSharedMenuItems(selectedTracks)) {
-                    wrapClearAfterAction(item);
                     multiMenu.add(item);
                 }
                 for (Component item : getColorMenuItems(selectedTracks)) {
-                    wrapClearAfterAction(item);
                     multiMenu.add(item);
                 }
 
@@ -103,7 +101,6 @@ public class TrackMenuUtils {
                 if (allDataTracks) {
                     multiMenu.addSeparator();
                     for (Component item : getDataMenuItems(selectedTracks)) {
-                        wrapClearAfterAction(item);
                         multiMenu.add(item);
                     }
 
@@ -126,7 +123,6 @@ public class TrackMenuUtils {
                 if(allAnnotationTracks) {
                     multiMenu.addSeparator();
                     for (Component item : getAnnotationMenuItems(selectedTracks, te)) {
-                        wrapClearAfterAction(item);
                         multiMenu.add(item);
                     }
                 }
@@ -212,26 +208,6 @@ public class TrackMenuUtils {
         }
     }
 
-    /**
-     * Replace the action listeners on {@code component} so that the originals fire first
-     * (synchronously, including any modal dialog they open) and the track selections are
-     * cleared afterwards. Relies on action handlers running on the EDT, where modal
-     * dialogs block until dismissed.
-     */
-    private static void wrapClearAfterAction(Component component) {
-        if (!(component instanceof AbstractButton button)) return;
-        ActionListener[] originals = button.getActionListeners();
-        if (originals.length == 0) return;
-        for (ActionListener l : originals) {
-            button.removeActionListener(l);
-        }
-        button.addActionListener(e -> {
-            for (ActionListener l : originals) {
-                l.actionPerformed(e);
-            }
-            clearTrackSelections();
-        });
-    }
 
 
     /**
@@ -395,7 +371,7 @@ public class TrackMenuUtils {
     }
 
     public static List<Component> getAnnotationMenuItems(final Collection<Track> tracks, TrackClickEvent te) {
-        
+
         List<Component> items = new ArrayList<>();
 
         for (Component item : getDisplayModeMenuItems(tracks)) {

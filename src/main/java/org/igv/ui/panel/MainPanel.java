@@ -53,6 +53,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
     private JScrollPane trackPanelScrollPane;
     private NameHeaderPanel nameHeaderPanel;
     private AttributeHeaderPanel attributeHeaderPanel;
+    private HeaderSelectAllPanel headerSelectAllPanel;
 
     private int hgap = 5;
     private JScrollPane headerScrollPane;
@@ -187,11 +188,13 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
         applicationHeaderPanel = new IGVPanel(this);
 
-        // Add spacer panel to align with drag handle in TrackPanel
-        JPanel dragHandleSpacer = new JPanel();
-        //dragHandleSpacer.setBackground(new java.awt.Color(255, 255, 255));
-        dragHandleSpacer.setPreferredSize(new java.awt.Dimension(DragHandlePanel.DRAG_HANDLE_WIDTH, 0));
-        applicationHeaderPanel.add(dragHandleSpacer);
+        // Leftmost slot: hosts the select-all checkbox (when SHOW_SELECTION_PANEL is on)
+        // and provides spacing for the drag-handle column. IGVPanel.doLayout() sizes
+        // this child to the full leftOffset width (selection + drag handle).
+        headerSelectAllPanel = new HeaderSelectAllPanel();
+        headerSelectAllPanel.setCheckBoxVisible(
+                PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
+        applicationHeaderPanel.add(headerSelectAllPanel);
 
         applicationHeaderPanel.add(nameHeaderPanel);
         applicationHeaderPanel.add(attributeHeaderPanel);
@@ -566,6 +569,10 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
     public ScrollableTrackContainer getTrackPanelContainer() {
         return trackPanelContainer;
+    }
+
+    public HeaderSelectAllPanel getHeaderSelectAllPanel() {
+        return headerSelectAllPanel;
     }
 
     public int getTrackPanelViewportHeight() {
