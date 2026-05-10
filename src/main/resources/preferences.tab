@@ -323,6 +323,8 @@ CIRC_VIEW_PORT	CircView port	integer	60152
 UCSC_HOST	hgdownload.soe.ucsc.edu
 UCSC_BACKUP_HOST	genome-browser.s3.us-east-1.amazonaws.com
 
+SHOW_SELECTION_PANEL    FALSE
+
 ENCODE_FILELIST_URL	https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/encode/
 FOUR_DN_FILELIST_URL	https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/4dn/
 
