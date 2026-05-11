@@ -91,7 +91,7 @@ MUT_COORDS	Mut file coordinate convention. 0 = zero based half-open, 1 = one bas
 
 
 #Alignments
-info	Default settings for alignment tracks.  A subset of these properties can be overriden for RNA and 3rd generation data.
+info	Default settings for alignment tracks.  A subset of these properties can be overridden for RNA and 3rd generation data.
 info	See also the RNA and Third Gen tabs.
 
 ##Track Display
@@ -100,7 +100,7 @@ SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE
 SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
-SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visibile
+SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visible
 
 ##Downsampling
 SAM.DOWNSAMPLE_READS	Downsample reads	boolean	TRUE
@@ -118,12 +118,12 @@ SAM.COLOR_BY_TAG	Color by TAG	string
 ---
 SAM.SORT_OPTION	Sort alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY|SELECTED|DUPLICATE
 SAM.SORT_BY_TAG	Sort by TAG	string
-SAM.SORT_ALL	Syncronize sort across all alignment tracks	boolean	TRUE
+SAM.SORT_ALL	Synchronize sort across all alignment tracks	boolean	TRUE
 SAM.AUTO_SORT	Automatically sort alignments when loading or changing locus	boolean	FALSE
 ---
 SAM.GROUP_OPTION	Group alignments by	select NONE|STRAND|SAMPLE|READ_GROUP|LIBRARY|FIRST_OF_PAIR_STRAND|TAG|PAIR_ORIENTATION|MATE_CHROMOSOME|SV_ALIGNMENT|SUPPLEMENTARY|BASE_AT_POS|MOVIE|ZMW|HAPLOTYPE|READ_ORDER|LINKED|PHASE|MAPPING_QUALITY|SELECTED|DUPLICATE
 SAM.GROUP_BY_TAG	Group by TAG	string
-SAM.GROUP_ALL	Syncronize grouping across all alignment tracks	boolean	FALSE
+SAM.GROUP_ALL	Synchronize grouping across all alignment tracks	boolean	FALSE
 ---
 SAM.LINK_READS	Link alignments by tag	boolean	FALSE
 SAM.LINK_TAG	Linking tag	string	READNAME
@@ -145,7 +145,7 @@ SAM.FILTER_FAILED_READS	Filter vendor failed reads	boolean	TRUE
 SAM.FILTER_SECONDARY_ALIGNMENTS	Filter secondary alignments	boolean	FALSE
 SAM.FILTER_SUPPLEMENTARY_ALIGNMENTS	Filter supplementary alignments	boolean	FALSE
 SAM.FLAG_UNMAPPED_PAIR	Flag unmapped pairs	boolean	FALSE
-SAM.SHOW_CENTER_LINE	Show center line	boolean	FALSE
+SAM.SHOW_CENTER_LINE	Show center line	boolean	TRUE
 SAM.SHOW_SOFT_CLIPPED	Show soft-clipped bases	boolean	FALSE
 ---
 SAM.SHADE_BASE_QUALITY	Shade mismatched bases by quality.	boolean	TRUE
@@ -173,7 +173,6 @@ SAM.MAX_SOFT_CLIP	Soft clip reference extension maximum	integer	1000	Reference s
 ---
 SAM.FILTER_ALIGNMENTS	Filter alignments by read group	boolean	FALSE
 SAM.FILTER_URL	URL or path to read group filter file	string	null
-
 
 ##Insert Size Options
 SAM.COMPUTE_ISIZES	Compute insert size thresholds	boolean	TRUE
