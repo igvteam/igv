@@ -69,7 +69,7 @@ public class ReorderPanelsDialog extends org.igv.ui.IGVDialog  {
         cancelButton = new JButton();
 
         //======== this ========
-        setTitle("Reorder Panels");
+        setTitle("Reorder Tracks");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
@@ -90,7 +90,7 @@ public class ReorderPanelsDialog extends org.igv.ui.IGVDialog  {
                 contentPanel.add(scrollPane1, BorderLayout.CENTER);
 
                 //---- label1 ----
-                label1.setText("To reorder panels drag and drop entries in the list below.");
+                label1.setText("To reorder tracks drag and drop entries in the list below.");
                 contentPanel.add(label1, BorderLayout.NORTH);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
