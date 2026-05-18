@@ -93,12 +93,12 @@ public class SupplementaryGroup {
 
     public SupplementaryAlignment getNextPosition(SupplementaryAlignment alignment) {
         final int i = positionOrder.indexOf(alignment);
-        return positionOrder.size() > i + 1 ? readOrder.get(i + 1) : null;
+        return positionOrder.size() > i + 1 ? positionOrder.get(i + 1) : null;
     }
 
     public SupplementaryAlignment getPreviousPosition(SupplementaryAlignment alignment) {
-        final int i = readOrder.indexOf(alignment);
-        return i > 0 ? readOrder.get(i - 1) : null;
+        final int i = positionOrder.indexOf(alignment);
+        return i > 0 ? positionOrder.get(i - 1) : null;
     }
 
     /**
