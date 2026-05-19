@@ -9,7 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.reflect.Method;
 
 /**
  * @author jrobinso
@@ -72,10 +71,8 @@ public class FileDialogUtils {
             files = selectedFiles;
         } else {
             FileDialog fd = getNativeChooser(title, initialDirectory, null, filter, JFileChooser.FILES_ONLY, LOAD);
-            if (fd.isMultipleMode()) {
-                fd.setVisible(true);
-                files = fd.getFiles();
-            }
+            fd.setVisible(true);
+            files = fd.getFiles();
         }
         return files;
     }
@@ -98,7 +95,7 @@ public class FileDialogUtils {
         fd.setMode(mode);
 
         if (mode == LOAD && !directories) {
-            setMultipleMode(fd, true);
+            fd.setMultipleMode(true);
         }
         return fd;
     }
@@ -195,24 +192,6 @@ public class FileDialogUtils {
         return fileChooser;
     }
 
-
-    /**
-     * Reflectively call FileDialog.setMultipleMode.
-     * Does nothing if method not available
-     *
-     * @param fd
-     * @param b
-     * @return true if call was successful, false if not
-     */
-    private static boolean setMultipleMode(FileDialog fd, boolean b) {
-        try {
-            Method method = FileDialog.class.getMethod("setMultipleMode", boolean.class);
-            method.invoke(fd, b);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
     /**
      * Fix for bug in MacOS "native" dialog.  If hide extension is on the extension is stripped from the dialog,
