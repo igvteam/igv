@@ -9,6 +9,8 @@ import org.igv.ui.util.SnapshotUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetListener;
 
 import static org.igv.prefs.Constants.SHOW_SELECTION_PANEL;
 
@@ -141,6 +143,12 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
         selectionPanel = new TrackSelectionPanel(trackPanel);
         selectionPanel.setVisible(PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
         dragHandlePanel = new DragHandlePanel(trackPanel);
+
+        // Accept TrackPanel-reorder drops on the left strip too — the drag handles are
+        // vertically aligned across tracks and are the most natural drop spot.
+        DropTargetListener dropListener = new TrackPanelDropTargetListener(trackPanel);
+        new DropTarget(dragHandlePanel, dropListener);
+        new DropTarget(selectionPanel, dropListener);
 
         add(selectionPanel);
         add(dragHandlePanel);

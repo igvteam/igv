@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,11 +63,17 @@ public class TrackPanel extends IGVPanel implements Scrollable, Transferable {
         add(attributePanel);
         add(dataPanelContainer);
 
-        // Setup drag and drop
+        // Setup drag and drop. The listener is installed on TrackPanel and each of
+        // its direct children (name/attribute/data panels) so that drops anywhere
+        // in the track's visible area go straight to the right target — relying on
+        // MainPanel's recursive DropTarget forwarder for these children proved
+        // unreliable for TrackPanel reorder drops.
         this.setTransferHandler(new TrackPanelTransferHandler());
-        this.setDropTarget(new DropTarget(this, new TrackPanelDropTargetListener(this)));
-
-
+        DropTargetListener dropListener = new TrackPanelDropTargetListener(this);
+        this.setDropTarget(new DropTarget(this, dropListener));
+        new DropTarget(namePanel, dropListener);
+        new DropTarget(attributePanel, dropListener);
+        new DropTarget(dataPanelContainer, dropListener);
     }
 
 

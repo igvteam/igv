@@ -2,6 +2,9 @@ package org.igv.ui.panel;
 
 import org.igv.ui.IGV;
 
+import javax.swing.SwingUtilities;
+import java.awt.Component;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
@@ -74,17 +77,20 @@ class TrackPanelDropTargetListener implements DropTargetListener {
             return;
         }
 
-        // Determine if drop is in top or bottom half of the *visible* viewport.
-        // targetPanel.getHeight() returns the full content height (which can be very
-        // large for alignment tracks), so we must use the viewport's visible rectangle.
-        int dropYLoc = dtde.getLocation().y;
+        // Determine if drop is in top or bottom half of the *visible* track area.
+        // The drop may have landed on any descendant of TrackPanelScrollPane (track
+        // panel, name panel, data panel, drag handle, …) so convert the drop point
+        // into the scroll pane's coordinate space and compare against its height —
+        // that is always the visible track region regardless of scroll offset.
+        Component dropComp = dtde.getDropTargetContext().getComponent();
+        Point dropPoint = dtde.getLocation();
         TrackPanelScrollPane scrollPane = targetPanel.getScrollPane();
         boolean before;
-        if (scrollPane != null) {
-            java.awt.Rectangle viewRect = scrollPane.getViewport().getViewRect();
-            before = dropYLoc < viewRect.y + viewRect.height / 2;
+        if (scrollPane != null && dropComp != null) {
+            Point inScrollPane = SwingUtilities.convertPoint(dropComp, dropPoint, scrollPane);
+            before = inScrollPane.y < scrollPane.getHeight() / 2;
         } else {
-            before = dropYLoc < targetPanel.getHeight() / 2;
+            before = dropPoint.y < targetPanel.getHeight() / 2;
         }
 
         // Reorder the panels using direct scroll pane references
