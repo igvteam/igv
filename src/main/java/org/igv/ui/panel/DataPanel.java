@@ -356,7 +356,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
      * @param x Mouse x position in pixels
      * @param y Mouse y position in pixels
      */
-    public void updateTooltipText(int x, int y) {
+    public void updateTooltipText(int x, int y, Track track) {
 
         //Tooltip here specifically means text that is shown on hover
         //We disable it unless that option is specified
@@ -367,25 +367,19 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
         double position = frame.getChromosomePosition(x);
 
-        Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
         StringBuffer popupTextBuffer = new StringBuffer();
         popupTextBuffer.append("<html>");
 
-        for (MouseableRegion mouseRegion : regions) {
-            if (mouseRegion.containsPoint(x, y)) {
-                track = mouseRegion.getTracks().iterator().next();
-                if (track != null) {
-                    String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
-                    if (valueString != null) {
-                        popupTextBuffer.append(valueString);
-                        popupTextBuffer.append("<br>");
-                        break;
-                    }
-                }
+        if (track != null) {
+            String valueString = track.getValueStringAt(frame.getChrName(), position, x, y, frame);
+            if (valueString != null) {
+                popupTextBuffer.append(valueString);
+                popupTextBuffer.append("<br>");
+
             }
         }
-
+        
         if (popupTextBuffer.length() > 6) {   // 6 characters for <html>
             //popupTextBuffer.append("<br>--------------------------");
             //popupTextBuffer.append(positionString);
@@ -496,7 +490,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 position = frame.getChrName() + ":" + locationFormatter.format(location);
                 IGV.getInstance().setStatusBarMessag2(position);
             }
-            updateTooltipText(e.getX(), e.getY());
+            updateTooltipText(e.getX(), e.getY(), getTrack());
 
             if (IGV.getInstance().isRulerEnabled()) {
                 IGV.getInstance().repaint();
@@ -653,7 +647,6 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                     TrackClickEvent te = new TrackClickEvent(e, frame);
                     if (track.handleDataClick(te)) {
                         e.consume();
-                        return;
                     }
 
                 } else {
