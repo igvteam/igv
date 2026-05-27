@@ -379,7 +379,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
 
             }
         }
-        
+
         if (popupTextBuffer.length() > 6) {   // 6 characters for <html>
             //popupTextBuffer.append("<br>--------------------------");
             //popupTextBuffer.append(positionString);

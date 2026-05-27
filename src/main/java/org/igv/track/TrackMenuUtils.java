@@ -120,12 +120,16 @@ public class TrackMenuUtils {
                 }
 
                 boolean allAnnotationTracks = selectedTracks.stream().allMatch(t -> t.getType() == TrackType.annotation);
-                if(allAnnotationTracks) {
+                if (allAnnotationTracks) {
                     multiMenu.addSeparator();
                     for (Component item : getAnnotationMenuItems(selectedTracks, te)) {
                         multiMenu.add(item);
                     }
                 }
+
+                // Remove
+                multiMenu.addSeparator();
+                multiMenu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
 
                 return multiMenu;
             } else {
@@ -173,6 +177,7 @@ public class TrackMenuUtils {
         JMenuItem exportFeats = TrackMenuUtils.getExportFeatures(track, frame);
         if (exportFeats != null) menu.add(exportFeats);
 
+        // Remove
         menu.addSeparator();
         menu.add(TrackMenuUtils.getRemoveMenuItem(Collections.singleton(track)));
 
@@ -209,7 +214,6 @@ public class TrackMenuUtils {
     }
 
 
-
     /**
      * Return a list of shared menu items (rename, color, height, font size).
      * These are items applicable to both feature and data tracks.
@@ -223,12 +227,10 @@ public class TrackMenuUtils {
         if (tracks.size() == 1) {
             items.add(getTrackRenameItem(tracks));
         }
-        JMenuItem changeTrackHeightItem = getChangeTrackHeightItem(tracks);
-        if (PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
-            changeTrackHeightItem.setEnabled(false);
+        if (!PreferencesManager.getPreferences().getAsBoolean(SHOW_SINGLE_TRACK_PANE_KEY)) {
+            JMenuItem changeTrackHeightItem = getChangeTrackHeightItem(tracks);
+            items.add(changeTrackHeightItem);
         }
-        items.add(changeTrackHeightItem);
-
         return items;
     }
 
@@ -694,9 +696,23 @@ public class TrackMenuUtils {
 
 
     public static JMenuItem getTrackRenameItem(final Collection<Track> selectedTracks) {
+
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Rename Track...");
-        item.addActionListener(evt -> UIUtilities.invokeOnEventThread(() -> renameTrack(selectedTracks)));
+        item.addActionListener(evt -> {
+            if (selectedTracks.isEmpty()) {
+                return;
+            }
+            Track t = selectedTracks.iterator().next();
+            String newName = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Enter new name: ", t.getName());
+
+            if (newName == null || newName.trim() == "") {
+                return;
+            }
+
+            t.setName(newName);
+            IGV.getInstance().repaintNamePanels();
+        });
         if (selectedTracks.size() > 1) {
             item.setEnabled(false);
         }
@@ -1026,39 +1042,6 @@ public class TrackMenuUtils {
         IGV.getInstance().repaint(selectedTracks);
     }
 
-    public static void renameTrack(final Collection<Track> selectedTracks) {
-
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-        Track t = selectedTracks.iterator().next();
-        String newName = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), "Enter new name: ", t.getName());
-
-        if (newName == null || newName.trim() == "") {
-            return;
-        }
-
-        t.setName(newName);
-        IGV.getInstance().repaintNamePanels();
-    }
-
-    public static void changeTrackHeight(final Collection<Track> selectedTracks) {
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-
-        final String parameter = "Track height";
-        Integer value = getIntegerInput(parameter, getRepresentativeTrackHeight(selectedTracks));
-        if (value == null) {
-            return;
-        }
-
-        value = Math.max(0, value);
-        for (Track track : selectedTracks) {
-            track.setHeight(value);
-        }
-    }
-
     public static void changeFeatureVisibilityWindow(final Collection<Track> selectedTracks) {
 
         Collection<Track> featureTracks = new ArrayList(selectedTracks.size());
@@ -1085,28 +1068,6 @@ public class TrackMenuUtils {
         }
 
         IGV.getInstance().repaint(featureTracks);
-    }
-
-    public static void changeFontSize(final Collection<Track> selectedTracks) {
-
-
-        if (selectedTracks.isEmpty()) {
-            return;
-        }
-
-        final String parameter = "Font size";
-        int defaultValue = selectedTracks.iterator().next().getFontSize();
-        Integer value = getIntegerInput(parameter, defaultValue);
-        if (value == null) {
-            return;
-        }
-
-        for (Track track : selectedTracks) {
-            track.setFontSize(value);
-        }
-
-        IGV.getInstance().repaintNamePanels();
-        IGV.getInstance().repaint(selectedTracks);
     }
 
     public static Integer getIntegerInput(String parameter, int value) {
@@ -1337,10 +1298,20 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Set Track Height...");
-        item.addActionListener(new ActionListener() {
+        item.addActionListener(evt -> {
+            if (selectedTracks.isEmpty()) {
+                return;
+            }
 
-            public void actionPerformed(ActionEvent evt) {
-                changeTrackHeight(selectedTracks);
+            final String parameter = "Track height";
+            Integer value = getIntegerInput(parameter, getRepresentativeTrackHeight(selectedTracks));
+            if (value == null) {
+                return;
+            }
+
+            value = Math.max(0, value);
+            for (Track track : selectedTracks) {
+                track.setHeight(value);
             }
         });
         return item;
@@ -1389,7 +1360,25 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeFontSizeItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Set Font Size...");
-        item.addActionListener(evt -> changeFontSize(selectedTracks));
+        item.addActionListener(evt -> {
+            if (selectedTracks.isEmpty()) {
+                return;
+            }
+
+            final String parameter = "Font size";
+            int defaultValue = selectedTracks.iterator().next().getFontSize();
+            Integer value = getIntegerInput(parameter, defaultValue);
+            if (value == null) {
+                return;
+            }
+
+            for (Track track : selectedTracks) {
+                track.setFontSize(value);
+            }
+
+            IGV.getInstance().repaintNamePanels();
+            IGV.getInstance().repaint(selectedTracks);
+        });
         return item;
     }
 
