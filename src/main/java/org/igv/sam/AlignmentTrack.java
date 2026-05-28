@@ -176,8 +176,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
     private static final int GROUP_MARGIN = 5;
     private static final int TOP_MARGIN = 20;
     private static final int DS_MARGIN_0 = 2;
-    private static final int DOWNSAMPLED_ROW_HEIGHT = 10;
-    private static final int INSERTION_ROW_HEIGHT = 9;
+    private static final int DOWNSAMPLED_ROW_HEIGHT = 5;
 
     public enum BisulfiteContext {
         CG("CG", new byte[]{}, new byte[]{'G'}),
