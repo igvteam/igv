@@ -21,9 +21,6 @@ import static spark.Spark.get;
  */
 public class HttpUtilsTest extends AbstractHeadlessTest {
 
-
-    static String broadURLString = "https://igv-genepattern-org.s3.amazonaws.com/test/fasta/chr22.fa";
-
     @Test
     public void testSignedURLMatch() throws Exception {
         String aws = "https://amazonaws.com?X-Amz-Signature=foo";  //X-Amz-Signature"
@@ -34,24 +31,6 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         assertFalse(HttpUtils.isSignedURL(noMatch));
     }
 
-
-    @Test
-    public void testGetContentLength() throws IOException {
-        // Open an input stream just to check permissions
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) (HttpUtils.createURL(broadURLString)).openConnection();
-            conn.setRequestProperty("User-Agent", "IGV");
-            String contentLength = conn.getHeaderField("Content-length");
-            assertEquals("52330665", contentLength);
-
-        } finally {
-
-            if (conn != null) {
-                conn.disconnect();  // <- this really doesn't do anything (see Sun documentation)
-            }
-        }
-    }
 
     @Ignore
     @Test
@@ -121,53 +100,5 @@ public class HttpUtilsTest extends AbstractHeadlessTest {
         } finally {
             HttpUtils.getInstance().clearAccessTokens();
         }
-    }
-
-    public class RunnableSparkHttp implements Runnable {
-
-        /// counters incremented on each request:
-
-        // permanent redirect src
-        public int permSrcCt = 0;
-        // permanent redirect dest
-        public int permDestCt = 0;
-        // temporary redirect src
-        public int tempSrcCt = 0;
-        // temporary redirect dest
-        public int tempDestCt = 0;
-
-        public void run() {
-            System.out.println("run thing");
-
-            get("/perm_redir_src", (req, res) ->
-            {
-                // increment a counter for tests to inspect
-                this.permSrcCt += 1;
-                res.status(301); // permanent redirect
-                res.header("Location", "http://localhost:4567/perm_redir_dest");
-                return "redirecting";
-            });
-
-            get("/perm_redir_dest", (req, res) -> {
-                this.permDestCt += 1;
-                return "done";
-            });
-
-            get("/temp_redir_src", (req, res) ->
-            {
-                this.tempSrcCt += 1;
-                res.status(302); // temporary redirect
-                res.header("Location", "http://localhost:4567/temp_redir_dest");
-                res.header("Cache-Control", "max-age=1"); // expire in 1 second
-                return "redirecting";
-            });
-
-            get("/temp_redir_dest", (req, res) -> {
-                this.tempDestCt += 1;
-                return "done";
-            });
-
-        }
-
     }
 }

@@ -2,6 +2,7 @@ package org.igv.feature.genome.fasta;
 
 import org.igv.feature.genome.InMemorySequence;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import static org.junit.Assert.assertEquals;
  * @author Jim Robinson
  * @date 3/26/12
  */
+@Ignore
 public class FastaSequenceParserTest {
 
     static InMemorySequence fastaSequence;

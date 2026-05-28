@@ -15,8 +15,8 @@ import static org.junit.Assert.assertEquals;
 
 public class IGVHttpClientUtilsTest {
 
-    String url = "https://s3.amazonaws.com/igv.org.test/csi_test/chr10p.bam.csi";
-    int byteCount = 105063;
+    String url = "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/genomes/genomes.tsv";
+    int byteCount = 5487;
 
     @Test
     public void testGetContentLength() throws IOException {

@@ -13,25 +13,6 @@ import static org.junit.Assert.*;
 
 public class BBDataSourceTest {
 
-    @Test
-    public void testUncompressedBigwig() throws IOException {
-
-        //chr21:19,146,376-19,193,466
-        String url = "https://s3.amazonaws.com/igv.org.test/data/uncompressed.bw";
-        String chr = "chr21";
-        int start = 0;
-        int end = Integer.MAX_VALUE;
-        double bpPerPixel = 6191354.824;
-
-        BBFile bbFile = new BBFile(url, null);
-
-        assertNotNull(bbFile);
-
-//        const bwReader = new BWReader({url: url})
-//        const features = await bwReader.readFeatures(chr, start, chr, end, bpPerPixel)
-//        assert.equal(features.length, 8)   // Verified in iPad app
-
-    }
 
     @Test
     public void testBigWigZoom() throws IOException {

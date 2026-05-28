@@ -15,7 +15,7 @@ public class FastaBlockCompressedSequenceTest {
     @Test
     public void findBlockContaining() throws Exception {
 
-        String fasta = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa.gz";
+        String fasta = "https://igv.org/genomes/data/hg38/hg38.fa.gz";
 
         FastaBlockCompressedSequence seq = new FastaBlockCompressedSequence(fasta);
 
@@ -28,8 +28,8 @@ public class FastaBlockCompressedSequenceTest {
     @Test
     public void compareSequences() throws Exception {
 
-        String sequencePath = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa";
-        String compressedSequencePath = "https://igv-genepattern-org.s3.amazonaws.com/genomes/seq/hg38/hg38.fa.gz";
+        String sequencePath = "https://igv.org/genomes/data/hg38/hg38.fa";
+        String compressedSequencePath = "https://igv.org/genomes/data/hg38/hg38.fa.gz";
 
         Sequence fastaSequence = new FastaIndexedSequence(sequencePath);
         Sequence bgSequence = new FastaBlockCompressedSequence(compressedSequencePath);

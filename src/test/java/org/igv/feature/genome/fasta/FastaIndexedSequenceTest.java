@@ -21,26 +21,21 @@ public class FastaIndexedSequenceTest {
 
     static FastaIndexedSequence fastaSequence;
 
-    @BeforeClass
-    public static void setup() throws IOException {
-        String path = "https://s3.amazonaws.com/igv.org.test/data/ci2_test.fa";
-        fastaSequence = new FastaIndexedSequence(path);
-    }
 
 
     @Test
     public void testReadEnd() throws Exception {
 
-        String path = "https://s3.amazonaws.com/igv.org.test/data/ci2_test.fa";
+        String path = TestUtils.DATA_DIR + "fasta/ecoli_out.padded.fasta";
+        fastaSequence = new FastaIndexedSequence(path);
 
-        String chr = "chr02q";
-        int chrLen = 8059593;
+        String chr = "NC_000913_bb";
+        int chrLen = 5081;
         int start = chrLen - 10;
         int end = chrLen + 10;
         byte[] bytes = fastaSequence.getSequence(chr, start, end);
         assertEquals(10, bytes.length);
-
-        byte[] expectedSequence = "TTTTTCCCAG".getBytes();
+        byte[] expectedSequence = "cattctgact".getBytes();
 
         for (int i = 0; i < 10; i++) {
             assertEquals(expectedSequence[i], bytes[i]);

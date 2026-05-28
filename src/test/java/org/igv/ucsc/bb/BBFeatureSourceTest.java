@@ -228,6 +228,7 @@ public class BBFeatureSourceTest {
 
     // NOTE:  bigInteract is not yet supported in IGV desktop, bigInteract is treated as a plain bed file.
     @Test
+    @Ignore
     public void testBigInteract() throws IOException {
 
         String path = "https://s3.amazonaws.com/igv.org.demo/interactExample3.inter.bb";

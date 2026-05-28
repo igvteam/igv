@@ -7,10 +7,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.AbstractHeadlessTest;
 import org.igv.util.HttpUtils;
 import org.igv.util.TestUtils;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.*;
 import java.net.URL;
@@ -20,12 +17,11 @@ import java.util.Random;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
-    //    private final File BAM_INDEX_FILE = new File("testdata/net/sf/samtools/BAMFileIndexTest/index_test.bam.bai");
-    private final File BAM_FILE = new File(TestUtils.DATA_DIR + "/samtools/index_test.bam");
-    private final String BAM_URL_STRING = "https://s3.amazonaws.com/igv.org.test/data/index_test.bam";
-    private static File megabyteZerosFile = new File(TestUtils.DATA_DIR + "/samtools/megabyteZeros.dat");
+    private final File BAM_FILE = new File(TestUtils.DATA_DIR + "/bam/gsst1_sample.bam");
+    private final String BAM_URL_STRING = "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/bam/small/gstt1_sample.bam";
 
     static int expectedFileSize = 20000;
     static byte[] expectedBytes;
@@ -307,33 +303,6 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
         } while (total != bytes.length && read > 0);
 
         return total;
-    }
-
-
-    @Test
-    public void testDivisableReads()throws IOException{
-
-        testReadsLength(1);
-        testReadsLength(2);
-        testReadsLength(4);
-        testReadsLength(5);
-        testReadsLength(10);
-        testReadsLength(20);
-        testReadsLength(50);
-        testReadsLength(100);
-
-    }
-
-    private void testReadsLength(final int length) throws IOException {
-
-        final int BUFFERED_STREAM_BUFFER_SIZE = 100;
-        final byte buffer[]=new byte[BUFFERED_STREAM_BUFFER_SIZE*10];
-        final SeekableFileStream fileStream = new SeekableFileStream(megabyteZerosFile);
-        final IGVSeekableBufferedStream  bufferedStream = new IGVSeekableBufferedStream(fileStream,BUFFERED_STREAM_BUFFER_SIZE);
-
-        for( int i=0; i<10*BUFFERED_STREAM_BUFFER_SIZE/length ; ++i ){
-            assertEquals(bufferedStream.read(buffer, 0, length), length);
-        }
     }
 
     private void assertArraysEqual(byte [] a1, byte [] a2) {

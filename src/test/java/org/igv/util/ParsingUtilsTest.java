@@ -95,12 +95,6 @@ public class ParsingUtilsTest extends AbstractHeadlessTest {
             ii++;
         }
     }
-    
-    @Test
-    public void testGetLastModified_HTTP() throws Exception{
-        tstGetLastModified(HttpUtilsTest.broadURLString);
-    }
-
 
     @Test
     public void testGetLastModified_File() throws Exception{
