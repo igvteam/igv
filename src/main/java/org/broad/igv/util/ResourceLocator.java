@@ -128,7 +128,12 @@ public class ResourceLocator {
      * Track metadata.  Primarily for generating description and popup text.
      */
     private Map<String, String> metadata;
-    private boolean indexed;
+
+    /**
+     * true if the resource is indexed, null if unknown.  This flag is used primarily to prevent probing for an
+     * index (set to false).
+     */
+    private Boolean indexed;
 
 
     /**
@@ -199,12 +204,12 @@ public class ResourceLocator {
         res.setPanelName(trackConfig.panelName);
         res.setTrixURL(trackConfig.trixURL);
         res.setFeatureInfoURL(trackConfig.infoURL);
-        res.setIndexed(trackConfig.indexed != null ? trackConfig.indexed : false);
         res.setLabelField(trackConfig.labelField);
         res.setDescription(trackConfig.description);
         res.setAutoscaleGroup(trackConfig.autoscaleGroup);
         res.setTrackProperties(new TrackProperties(trackConfig));
         res.filterTypes = trackConfig.filterTypes;
+        if(trackConfig.indexed != null) res.setIndexed(trackConfig.indexed);
         return res;
 
     }
@@ -617,11 +622,11 @@ public class ResourceLocator {
         }
     }
 
-    public void setIndexed(boolean indexed) {
+    public void setIndexed(Boolean indexed) {
         this.indexed = indexed;
     }
 
-    public boolean isIndexed() {
+    public Boolean isIndexed() {
         return indexed;
     }
 
