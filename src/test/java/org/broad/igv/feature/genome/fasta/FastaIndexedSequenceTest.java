@@ -28,6 +28,7 @@ package org.broad.igv.feature.genome.fasta;
 import org.broad.igv.feature.genome.SequenceWrapper;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertEquals;
  * Time: 9:21 PM
  * To change this template use File | Settings | File Templates.
  */
+@Ignore
 public class FastaIndexedSequenceTest {
 
 

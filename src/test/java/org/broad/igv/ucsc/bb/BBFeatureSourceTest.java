@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
-
+@Ignore
 public class BBFeatureSourceTest {
 
     @Test

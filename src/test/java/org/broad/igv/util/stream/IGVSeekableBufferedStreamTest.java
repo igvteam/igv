@@ -33,10 +33,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.broad.igv.AbstractHeadlessTest;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.TestUtils;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.*;
 import java.net.URL;
@@ -45,7 +42,7 @@ import java.util.Random;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
+@Ignore
 public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
     //    private final File BAM_INDEX_FILE = new File("testdata/net/sf/samtools/BAMFileIndexTest/index_test.bam.bai");

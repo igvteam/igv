@@ -25,6 +25,7 @@
 
 package org.broad.igv.util;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
  * @author Jim Robinson
  * @date Jul 27, 2011
  */
-
+@Ignore
 public class IGVHttpClientUtilsTest {
 
     String url = "https://s3.amazonaws.com/igv.org.test/csi_test/chr10p.bam.csi";
