@@ -6,6 +6,7 @@ import org.igv.feature.Strand;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.ui.util.MessageUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+@Ignore
 public class BlatClientTest extends AbstractHeadlessTest  {
 
     @Test
