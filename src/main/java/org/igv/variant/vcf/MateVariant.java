@@ -1,5 +1,6 @@
 package org.igv.variant.vcf;
 
+import org.igv.feature.PackedFeature;
 import org.igv.variant.Allele;
 import org.igv.variant.Genotype;
 import org.igv.variant.Variant;
@@ -11,11 +12,12 @@ import java.util.Map;
 /**
  * Represents the mate of a structural variant, defined by CHR2 and END attributes.
  */
-public class MateVariant implements Variant {
+public class MateVariant implements Variant, PackedFeature {
 
     private String chr;
     private int position;
     public Variant mate;
+    private int rowIndex;
 
     public MateVariant(String chr, int position, Variant mate) {
         this.chr = chr;
@@ -144,4 +146,13 @@ public class MateVariant implements Variant {
         return mate.getAlleleFraction();
     }
 
+    @Override
+    public void setPackedRow(int rowIndex) {
+        this.rowIndex = rowIndex;
+    }
+
+    @Override
+    public int getPackedRow() {
+        return rowIndex;
+    }
 }

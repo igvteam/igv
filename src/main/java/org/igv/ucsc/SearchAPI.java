@@ -23,7 +23,7 @@ public class SearchAPI {
 
     public static List<Locus> search(String searchTerm, String genome) throws IOException {
 
-        List<String> positions = searchIGV(searchTerm, genome);  //searchUCSC(searchTerm, genome);
+        List<String> positions = searchUCSC(searchTerm, genome); //searchIGV(searchTerm, genome);  //
 
         return mergeOverlaps(positions);
     }
@@ -54,6 +54,9 @@ public class SearchAPI {
         List<Map<String, Object>> results = (List<Map<String, Object>>) searchResults.get("positionMatches");
         if (results != null) {
             for (Map<String, Object> result : results) {
+                if (searchTerm.indexOf("rs") == 0 && ((String) result.get("name")).indexOf("dbSnp") != 0) {
+                    continue;
+                }
                 List<Map<String, Object>> matches = (List<Map<String, Object>>) result.get("matches");
                 if (matches != null) {
                     for (Map<String, Object> match : matches) {

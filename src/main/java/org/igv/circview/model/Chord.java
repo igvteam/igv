@@ -1,27 +1,50 @@
-package org.igv.jbrowse;
+package org.igv.circview.model;
 
 import htsjdk.samtools.SAMTag;
 import org.igv.Globals;
 import org.igv.bedpe.BedPE;
-import org.igv.bedpe.BedPEFeature;
 import org.igv.sam.Alignment;
 import org.igv.sam.ReadMate;
 import org.igv.sam.SupplementaryAlignment;
 import org.igv.variant.Variant;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class Chord {
-    String uniqueId;
-    String color;
-    String refName;
-    int start;
-    int end;
-    Mate mate;
+/**
+ * A chord (arc) connecting one genomic region to its {@link Mate} region.
+ *
+ * <p>Mirrors the chord feature objects passed to addChords() in circularView.js:
+ * <pre>
+ * {
+ *   uniqueId, color, refName, start, end,
+ *   mate: { refName, start, end }
+ * }
+ * </pre>
+ * The per-feature {@code color} is optional; when null the owning
+ * {@link ChordSet}'s color is used.
+ */
+public final class Chord {
 
-    private Chord() {
+    private  String uniqueId;
+    private  String refName;
+    private  long start;
+    private  long end;
+    private  Mate mate;
+    private  Color color;
+
+    public Chord() {
+    }
+
+    public Chord(String uniqueId, String refName, long start, long end, Mate mate, Color color) {
+        this.uniqueId = uniqueId;
+        this.refName = refName;
+        this.start = start;
+        this.end = end;
+        this.mate = mate;
+        this.color = color;
     }
 
     public static Chord fromBedPE(BedPE f) {
@@ -87,52 +110,39 @@ class Chord {
         return c;
     }
 
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("uniqueId", uniqueId));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("color", color));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("refName", refName));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("start", start));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("end", end));
-        buf.append(",");
-        buf.append("\"mate\":");
-        buf.append(mate.toJson());
-        buf.append("}");
-        return buf.toString();
-    }
-
     static String shortName(String chr) {
         return chr.startsWith("chr") ? chr.substring(3) : chr;
     }
-}
-
-
-class Mate {
-    String refName;
-    int start;
-    int end;
-
-    public Mate(String refName, int start, int end) {
-        this.refName = refName;
-        this.start = start;
-        this.end = end;
+    
+    public String getUniqueId() {
+        return uniqueId;
     }
 
-    public String toJson() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("{");
-        buf.append(JsonUtils.toJson("refName", refName));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("start", start));
-        buf.append(",");
-        buf.append(JsonUtils.toJson("end", end));
-        buf.append("}");
-        return buf.toString();
+    public String getRefName() {
+        return refName;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public Mate getMate() {
+        return mate;
+    }
+
+    /** Optional per-feature color; may be null (fall back to the chord set color). */
+    public Color getColor() {
+        return color;
+    }
+
+    @Override
+    public String toString() {
+        return "ChordFeature{" + refName + ":" + start + "-" + end
+                + " -> " + mate.getRefName() + ":" + mate.getStart() + "-" + mate.getEnd()
+                + (uniqueId != null ? " id=" + uniqueId : "") + "}";
     }
 }
-

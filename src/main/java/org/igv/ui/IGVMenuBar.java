@@ -5,6 +5,8 @@ import org.igv.Globals;
 import org.igv.aws.S3LoadDialog;
 import org.igv.batch.CommandExecutor;
 import org.igv.charts.ScatterPlotUtils;
+import org.igv.circview.CircularViewUtilities;
+import org.igv.circview.ui.CircularView;
 import org.igv.encode.EncodeTrackChooserFactory;
 import org.igv.feature.genome.ChromSizesUtils;
 import org.igv.feature.genome.Genome;
@@ -554,6 +556,15 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuItems.add(new JSeparator());
+        JMenuItem circViewItem = new JMenuItem("Show circular view");
+        circViewItem.addActionListener(e -> {
+                    UIUtilities.invokeOnEventThread(() -> {
+                        CircularViewUtilities.open();
+                    });
+                });
+        menuItems.add(circViewItem);
 
         menuItems.add(new JSeparator());
         menuItems.add(new HistoryMenu("Go to"));

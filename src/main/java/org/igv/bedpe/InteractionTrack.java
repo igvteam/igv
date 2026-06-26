@@ -3,7 +3,7 @@ package org.igv.bedpe;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventObserver;
-import org.igv.jbrowse.CircularViewUtilities;
+import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -414,21 +414,18 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
             items.add(TrackMenuUtils.getChangeFeatureWindow(Collections.singletonList(this)));
 
 
-            // Experimental JBrowse.
-            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) &&
-                    CircularViewUtilities.ping()) {
-                items.add(new JPopupMenu.Separator());
-                JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
-                circViewItem.addActionListener(e -> {
-                    List<ReferenceFrame> frames = te.getFrame() != null ?
-                            Collections.singletonList(te.getFrame()) :
-                            FrameManager.getFrames();
-                    List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
-                    CircularViewUtilities.sendBedpeToJBrowse(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
-                });
-                items.add(circViewItem);
-                items.add(new JPopupMenu.Separator());
-            }
+            // Circular view
+            items.add(new JPopupMenu.Separator());
+            JMenuItem circViewItem = new JMenuItem("Add Features to Circular View");
+            circViewItem.addActionListener(e -> {
+                List<ReferenceFrame> frames = te.getFrame() != null ?
+                        Collections.singletonList(te.getFrame()) :
+                        FrameManager.getFrames();
+                List<? extends BedPE> visibleFeatures = getVisibleFeatures(frames);
+                CircularViewUtilities.addBedPE(visibleFeatures, InteractionTrack.this.getName(), InteractionTrack.this.getColor());
+            });
+            items.add(circViewItem);
+            items.add(new JPopupMenu.Separator());
         }
 
         return items;

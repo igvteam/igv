@@ -6,7 +6,7 @@ import org.igv.event.*;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.Range;
 import org.igv.feature.genome.Genome;
-import org.igv.jbrowse.CircularViewUtilities;
+import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -1091,7 +1091,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             Color chordColor = AlignmentTrack.this.getColor().equals(DEFAULT_ALIGNMENT_COLOR) ? Color.BLUE : AlignmentTrack.this.getColor();
-            CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
+            CircularViewUtilities.addAlignments(inView, AlignmentTrack.this.getName(), chordColor);
         }
     }
 
@@ -1115,7 +1115,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             Color chordColor = AlignmentTrack.this.getColor().equals(DEFAULT_ALIGNMENT_COLOR) ? Color.BLUE : AlignmentTrack.this.getColor();
-            CircularViewUtilities.sendAlignmentsToJBrowse(inView, AlignmentTrack.this.getName(), chordColor);
+            CircularViewUtilities.addAlignments(inView, AlignmentTrack.this.getName(), chordColor);
         }
     }
 
@@ -1886,20 +1886,20 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 }
             }
             if (json.has("shadeCenters")) {
-                shadeCenters = Boolean.parseBoolean(json.getString("shadeCenters"));
+                shadeCenters = json.getBoolean("shadeCenters");
             }
             if (json.has("showAllBases")) {
-                showAllBases = Boolean.parseBoolean(json.getString("showAllBases"));
+                showAllBases = json.getBoolean("showAllBases");
             }
             if (json.has("flagUnmappedPairs")) {
-                flagUnmappedPairs = Boolean.parseBoolean(json.getString("flagUnmappedPairs"));
+                flagUnmappedPairs = json.getBoolean("flagUnmappedPairs");
             }
 
             if (json.has("minTLEN")) {
-                minInsertSize = Integer.parseInt(json.getString("minTLEN"));
+                minInsertSize = json.getInt("minTLEN");
             }
             if (json.has("maxTLEN")) {
-                maxInsertSize = Integer.parseInt(json.getString("maxTLEN"));
+                maxInsertSize = json.getInt("maxTLEN");
             }
             if (json.has("colorOption")) {
                 // Convert deprecated options
@@ -1934,13 +1934,13 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 duplicatesOption = CollUtils.valueOf(DuplicatesOption.class, json.getString("duplicatesOption"), null);
             }
             if (json.has("mappingQualityLow")) {
-                mappingQualityLow = Integer.parseInt(json.getString("mappingQualityLow"));
+                mappingQualityLow = json.getInt("mappingQualityLow");
             }
             if (json.has("mappingQualityHigh")) {
-                mappingQualityHigh = Integer.parseInt(json.getString("mappingQualityHigh"));
+                mappingQualityHigh = json.getInt("mappingQualityHigh");
             }
             if (json.has("viewPairs")) {
-                viewPairs = Boolean.parseBoolean(json.getString("viewPairs"));
+                viewPairs = json.getBoolean("viewPairs");
             }
             if (json.has("colorByTag")) {
                 colorByTag = json.getString("colorByTag");
@@ -1955,16 +1955,16 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 linkByTag = json.getString("linkByTag");
             }
             if (json.has("linkedReads")) {
-                linkedReads = Boolean.parseBoolean(json.getString("linkedReads"));
+                linkedReads = json.getBoolean("linkedReads");
             }
             if (json.has("quickConsensusMode")) {
-                quickConsensusMode = Boolean.parseBoolean(json.getString("quickConsensusMode"));
+                quickConsensusMode = json.getBoolean("quickConsensusMode");
             }
             if (json.has("showMismatches")) {
-                showMismatches = Boolean.parseBoolean(json.getString("showMismatches"));
+                showMismatches = json.getBoolean("showMismatches");
             }
             if (json.has("computeIsizes")) {
-                computeIsizes = Boolean.parseBoolean(json.getString("computeIsizes"));
+                computeIsizes = json.getBoolean("computeIsizes");
             }
             if (json.has("minTLENPercentile")) {
                 minInsertSizePercentile = Double.parseDouble(json.getString("minTLENPercentile"));
@@ -1973,29 +1973,29 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 maxInsertSizePercentile = Double.parseDouble(json.getString("maxTLENPercentile"));
             }
             if (json.has("pairedArcView")) {
-                pairedArcView = Boolean.parseBoolean(json.getString("pairedArcView"));
+                pairedArcView = json.getBoolean("pairedArcView");
             }
             if (json.has("flagZeroQualityAlignments")) {
-                flagZeroQualityAlignments = Boolean.parseBoolean(json.getString("flagZeroQualityAlignments"));
+                flagZeroQualityAlignments = json.getBoolean("flagZeroQualityAlignments");
             }
             if (json.has("groupByPos")) {
                 groupByPos = Range.fromString(json.getString("groupByPos"));
             }
             if (json.has("invertSorting")) {
-                invertSorting = Boolean.parseBoolean(json.getString("invertSorting"));
+                invertSorting = json.getBoolean("invertSorting");
             }
             if (json.has("invertGroupSorting")) {
-                invertGroupSorting = Boolean.parseBoolean(json.getString("invertGroupSorting"));
+                invertGroupSorting = json.getBoolean("invertGroupSorting");
             }
             if (json.has("hideSmallIndels")) {
-                hideSmallIndels = Boolean.parseBoolean(json.getString("hideSmallIndels"));
+                hideSmallIndels = json.getBoolean("hideSmallIndels");
             }
             if (json.has("indexlSizeThreshold")) {
-                smallIndelThreshold = Integer.parseInt(json.getString("indexlSizeThreshold"));
+                smallIndelThreshold = json.getInt("indexlSizeThreshold");
             }
             if (json.has("showInsertionMarkers")) {
                 // TODO -- something with this
-                // showInsertionMarkers = Boolean.parseBoolean(json.getString("showInsertionMarkers"));
+                // showInsertionMarkers = json.getBoolean("showInsertionMarkers"));
             }
             if (json.has("basemodFilter")) {
                 basemodFilter = BaseModficationFilter.fromString(json.getString("basemodFilter"));
@@ -2004,7 +2004,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 basemodFilter = BaseModficationFilter.fromString(json.getString("basemodThreshold"));
             }
             if (json.has("minJunctionCoverage")) {
-                minJunctionCoverage = Integer.parseInt(json.getString("minJunctionCoverage"));
+                minJunctionCoverage = json.getInt("minJunctionCoverage");
             }
         }
 

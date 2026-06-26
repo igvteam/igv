@@ -17,7 +17,7 @@ import org.igv.feature.genome.load.ChromAliasParser;
 import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.feature.genome.load.GenomeLoader;
 import org.igv.feature.genome.load.TrackConfig;
-import org.igv.jbrowse.CircularViewUtilities;
+import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -203,9 +203,7 @@ public class GenomeManager {
                 PreferencesManager.getPreferences().setLastGenome(newGenome.getId());
             }
 
-            if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-                CircularViewUtilities.changeGenome(newGenome);
-            }
+            CircularViewUtilities.changeGenome(newGenome);
 
             IGVEventBus.getInstance().post(new GenomeChangeEvent(newGenome));
         }

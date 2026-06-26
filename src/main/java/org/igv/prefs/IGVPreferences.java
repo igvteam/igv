@@ -270,7 +270,6 @@ public class IGVPreferences {
         checkForAlignmentChanges(updatedPrefs);
         checkForCommandListenerChanges(updatedPrefs);
         checkForAttributePanelChanges(updatedPrefs);
-        checkForCircViewChanges(updatedPrefs);
         checkForGoogleMenuChange(updatedPrefs);
         checkForRestartChanges(updatedPrefs);
         IGVEventBus.getInstance().post(new PreferencesChangeEvent());
@@ -369,18 +368,6 @@ public class IGVPreferences {
             if (IGV.hasInstance()) {
                 IGV.getInstance().revalidateTrackPanels();
             }
-        }
-    }
-
-    /**
-     * Enabling circ view requires port listener
-     */
-    private void checkForCircViewChanges(Map<String, String> updatedPreferenceMap) {
-        if (updatedPreferenceMap.containsKey(CIRC_VIEW_ENABLED) &&
-                getAsBoolean(CIRC_VIEW_ENABLED) &&
-                !getAsBoolean(PORT_ENABLED)) {
-            put(PORT_ENABLED, true);
-            CommandListener.start(getAsInt(PORT_NUMBER));
         }
     }
 
