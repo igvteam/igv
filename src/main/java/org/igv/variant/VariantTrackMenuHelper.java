@@ -1,6 +1,5 @@
 package org.igv.variant;
 
-import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
@@ -37,13 +36,6 @@ public class VariantTrackMenuHelper {
 
         List<Component> items = new ArrayList<>();
 
-        if (PreferencesManager.getPreferences().getAsBoolean(Constants.CIRC_VIEW_ENABLED) && CircularViewUtilities.ping()) {
-            items.add(new JPopupMenu.Separator());
-            JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
-            circItem.addActionListener(e1 -> variantTrack.sendToCircularView(e));
-            items.add(circItem);
-            items.add(new JPopupMenu.Separator());
-        }
 
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
         items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(variantTrack)));
@@ -81,6 +73,10 @@ public class VariantTrackMenuHelper {
             items.add(SampleMenuUtils.getFilterByAttributeItem(variantTrack));
         }
 
+        items.add(new JPopupMenu.Separator());
+        JMenuItem circItem = new JMenuItem("Add SVs to Circular View");
+        circItem.addActionListener(e1 -> variantTrack.sendToCircularView(e));
+        items.add(circItem);
         items.add(new JPopupMenu.Separator());
 
         items.add(getHideFilteredItem(variantTrack));

@@ -8,7 +8,7 @@ import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.PackedFeature;
-import org.igv.jbrowse.CircularViewUtilities;
+import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
@@ -319,9 +319,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
             for (PackedFeatures.FeatureRow row : rows) {
 
-                List<VCFVariant> features = row.getFeatures();
-                for (VCFVariant feature : features) {
-                    VCFVariant variant = feature;
+                List<Variant> features = row.getFeatures();
+                for (Variant feature : features) {
+                    Variant variant = feature;
 
                     if (hideFiltered && variant.isFiltered()) {
                         continue;
@@ -1100,7 +1100,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (svFeatures.isEmpty()) {
             MessageUtils.showMessage("No structural variants found.");
         } else {
-            CircularViewUtilities.sendVariantsToJBrowse(svFeatures, getName(), CIRC_VIEW_DEFAULT_COLOR);
+            CircularViewUtilities.addVariants(svFeatures, getName(), CIRC_VIEW_DEFAULT_COLOR);
         }
     }
 

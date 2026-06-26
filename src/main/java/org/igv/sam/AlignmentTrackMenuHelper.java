@@ -6,7 +6,6 @@ import org.igv.event.AlignmentTrackEvent;
 import org.igv.event.IGVEventBus;
 import org.igv.feature.Range;
 import org.igv.feature.Strand;
-import org.igv.jbrowse.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
@@ -97,20 +96,6 @@ class AlignmentTrackMenuHelper {
 
         items.add(new JSeparator());
 
-        // Circular view items -- optional
-        if (CircularViewUtilities.ping()) {
-            addSeparator();
-            JMenuItem item = new JMenuItem("Add Discordant Pairs to Circular View");
-            item.setEnabled(alignmentTrack.getDataManager().isPairedEnd());
-            add(item);
-            item.addActionListener(ae -> alignmentTrack.sendPairsToCircularView(e));
-
-            JMenuItem item2 = new JMenuItem("Add Split Reads to Circular View");
-            add(item2);
-            item2.addActionListener(ae -> alignmentTrack.sendSplitToCircularView(e));
-        }
-
-
         // Experiment type  (RNA, THIRD GEN, OTHER)
         addExperimentTypeMenuItem();
 
@@ -186,6 +171,11 @@ class AlignmentTrackMenuHelper {
                 showMateRegion(e, clickedAlignment);
             }
             addInsertSizeMenuItem();
+
+            // Circular view items
+            JMenuItem item = new JMenuItem("Add Discordant Pairs to Circular View");
+            add(item);
+            item.addActionListener(ae -> alignmentTrack.sendPairsToCircularView(e));
         }
 
         // Third gen (primarily) items
@@ -1355,6 +1345,10 @@ class AlignmentTrackMenuHelper {
         //Supplementary/chimeric items, only if the read has an SA tag;
         addShowChimericRegions(alignmentTrack, tce, clickedAlignment);
         addShowDiagram(tce, clickedAlignment);
+
+        JMenuItem item2 = new JMenuItem("Add split reads to circular view");
+        add(item2);
+        item2.addActionListener(ae -> alignmentTrack.sendSplitToCircularView(tce));
 
     }
 

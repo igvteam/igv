@@ -324,10 +324,6 @@ final public class Constants {
 
     public static final String AWS_ENDPOINT_URL = "AWS_ENDPOINT_URL";
 
-    // JBrowse circular view integration
-    public static final String CIRC_VIEW_ENABLED = "CIRC_VIEW_ENABLED";
-    public static final String CIRC_VIEW_PORT = "CIRC_VIEW_PORT";
-    public static final String CIRC_VIEW_HOST = "CIRC_VIEW_HOST";
 
     // Misc URLS
     public static final String ENCODE_FILELIST_URL = "ENCODE_FILELIST_URL";
