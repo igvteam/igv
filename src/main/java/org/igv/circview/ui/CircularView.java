@@ -140,7 +140,7 @@ public class CircularView extends JPanel {
     @Override
     public String getToolTipText(MouseEvent event) {
         Chord feature = chordAt(event.getX(), event.getY());
-        return (feature != null) ? feature.toString() : null;
+        return (feature != null) ? feature.tooltipString() : null;
     }
 
     // ---- Public API (subset of the JS CircularView) -------------------------

@@ -50,7 +50,7 @@ public class SaveSessionMenuAction extends MenuAction {
         File parentDir = currentSessionFilePath == null ? null : new File(new File(currentSessionFilePath).getParent());
 
         // If the filepath is null or the file is in the autosave dir, use the default session file name
-        String initFile = currentSessionFilePath == null  || parentDir.equals(DirectoryManager.getAutosaveDirectory()) ?
+        String initFile = currentSessionFilePath == null || parentDir.equals(DirectoryManager.getAutosaveDirectory()) ?
                 UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
         sessionFile = FileDialogUtils.chooseFile("Save Session",
                 PreferencesManager.getPreferences().getLastTrackDirectory(),
@@ -63,9 +63,11 @@ public class SaveSessionMenuAction extends MenuAction {
             return;
         }
 
-
+        // Convert xml session paths to json. IGV does not export XML sessions post release 3.0
         String filePath = sessionFile.getAbsolutePath();
-        if (!filePath.toLowerCase().endsWith(".json")) {
+        if (filePath.endsWith(".xml")) {
+            filePath = filePath.substring(0, filePath.length() - 4) + ".json";
+        } else if (!filePath.toLowerCase().endsWith(".json")) {
             sessionFile = new File(filePath + ".json");
         }
 

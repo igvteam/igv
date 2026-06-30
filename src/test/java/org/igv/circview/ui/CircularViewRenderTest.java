@@ -98,7 +98,7 @@ public class CircularViewRenderTest {
 
         MouseEvent over = new MouseEvent(view, MouseEvent.MOUSE_MOVED, 0L, 0,
                 (int) Math.round(p.getX()), (int) Math.round(p.getY()), 0, false);
-        assertEquals(feature.toString(), view.getToolTipText(over));
+        assertEquals(feature.tooltipString(), view.getToolTipText(over));
     }
 
     @Test

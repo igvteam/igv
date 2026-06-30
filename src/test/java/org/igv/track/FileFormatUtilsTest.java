@@ -39,7 +39,7 @@ public class FileFormatUtilsTest extends TestCase {
         format = FileFormatUtils.determineFormat(unknown);
         assertNull(format);
 
-        String sampleInfoFile = "http://igvdata.broadinstitute.org/data/hg18/tcga/gbm/gbmsubtypes/sampleTable.txt.gz";
+        String sampleInfoFile = "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/test/gbm/sampleTable.txt";
         format = FileFormatUtils.determineFormat(sampleInfoFile);
         assertEquals("sampleinfo", format);
 

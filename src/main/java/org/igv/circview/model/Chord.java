@@ -145,4 +145,8 @@ public final class Chord {
                 + " -> " + mate.getRefName() + ":" + mate.getStart() + "-" + mate.getEnd()
                 + (uniqueId != null ? " id=" + uniqueId : "") + "}";
     }
+
+    public String tooltipString() {
+        return refName + ":" + start + "-" + end  + " <-> " + mate.getRefName() + ":" + mate.getStart() + "-" + mate.getEnd();
+    }
 }
