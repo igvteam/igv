@@ -69,7 +69,7 @@ public class BaseModificationRenderer {
                 if (bmSet.containsPosition(i)) {
                     int lh = Byte.toUnsignedInt(bmSet.getLikelihoods().get(i));
                     noModLh -= lh;
-                    if ((filter == null || filter.pass(bmSet.getModification(), canonicalBase)) && (modification == null || lh > maxLh)) {
+                    if ((filter == null || filter.pass(bmSet.getModification(), bmSet.getCanonicalBase())) && (modification == null || lh > maxLh)) {
                         modification = bmSet.getModification();
                         canonicalBase = bmSet.getCanonicalBase();
                         maxLh = lh;
@@ -123,5 +123,4 @@ public class BaseModificationRenderer {
         }
     }
 }
-
 
