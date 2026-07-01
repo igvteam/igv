@@ -49,10 +49,14 @@ public class HttpMappings {
             loadMappings();
         }
 
-        urlString = checkStaticMappings(urlString);
-        String key = urlString.startsWith("s3://") || urlString.contains("amazonaws.com") ? getAmazonKey(urlString) : urlString;
-
-        String mappedURL = urlMappings.containsKey(key) ? urlMappings.get(key) : urlString;
+        String mappedURL;
+        if(urlMappings.containsKey(urlString)) {
+            mappedURL = urlMappings.get(urlString);
+        } else {
+            urlString = checkStaticMappings(urlString);
+            String key = urlString.startsWith("s3://") || urlString.contains("amazonaws.com") ? getAmazonKey(urlString) : urlString;
+            mappedURL = urlMappings.containsKey(key) ? urlMappings.get(key) : urlString;
+        }
         mappedURLCache.put(urlString, mappedURL);       // Record even if not mapped to prevent further lookups
         return mappedURL;
     }

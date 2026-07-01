@@ -925,16 +925,22 @@ public class SAMAlignment implements Alignment {
                 buf.append("<hr>");
                 int offset = basePosition - block.getStart();
                 byte base = block.getBase(offset);
-                byte referenceBase = (byte) Character.toUpperCase((char)genome.getReference(chr, basePosition));
+                byte referenceBase = (byte) Character.toUpperCase((char) genome.getReference(chr, basePosition));
 
                 if (base == 0 && this.getReadSequence().equals("=") && !block.isSoftClip() && genome != null) {
                     base = referenceBase;
                 }
 
-                byte quality = block.getQuality(offset);
                 buf.append("Location = " + getChr() + ":" + Globals.DECIMAL_FORMAT.format(1 + (long) position) + "<br>");
-                buf.append("Base = " + (char) base + " @ QV " + Globals.DECIMAL_FORMAT.format(quality) + "<br>");
-                if (referenceBase !=  base) {
+                buf.append("Base = " + (char) base);
+                Byte quality = block.getActualQuality(offset);
+                if(quality != null) {
+                    buf.append(" @ QV " + Globals.DECIMAL_FORMAT.format(quality));
+                } else {
+                    buf.append(" (quality unknown)");
+                }
+                buf.append("<br>");
+                if (referenceBase != base) {
                     String hgvsNotation = HGVS.createHGVSAnnotation(genome, chr, basePosition, referenceBase, base);
 
                     if (hgvsNotation != null) {

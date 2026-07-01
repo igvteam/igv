@@ -30,6 +30,10 @@ public interface AlignmentBlock {
 
     byte getQuality(int offset);
 
+    default Byte getActualQuality(int offset) {
+        return getQuality(offset);
+    }
+
     ByteSubarray getQualities();
 
     int getEnd();

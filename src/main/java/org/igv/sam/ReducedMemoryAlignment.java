@@ -354,6 +354,11 @@ public class ReducedMemoryAlignment implements Alignment {
         }
 
         @Override
+        public Byte getActualQuality(int offset) {
+            return null;
+        }
+
+        @Override
         public ByteSubarray getQualities() {
             return null;
         }
