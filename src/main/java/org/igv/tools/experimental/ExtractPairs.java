@@ -1,7 +1,7 @@
 package org.igv.tools.experimental;
 
 import htsjdk.samtools.*;
-import org.igv.sam.cram.IGVReferenceSource;
+import org.igv.alignment.cram.IGVReferenceSource;
 import org.igv.util.HttpUtils;
 
 import java.io.*;

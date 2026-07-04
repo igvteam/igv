@@ -13,7 +13,6 @@ import org.igv.feature.genome.GenomeManager;
 import org.igv.lists.GeneList;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.sam.AlignmentTrackUtils;
 import org.igv.track.RegionScoreType;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
@@ -27,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.igv.sam.SortOption;
+import org.igv.alignment.SortOption;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

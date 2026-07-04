@@ -13,7 +13,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
-import org.igv.sam.InsertionMarker;
+import org.igv.alignment.InsertionMarker;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MessageUtils;
 

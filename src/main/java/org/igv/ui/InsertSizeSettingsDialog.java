@@ -6,7 +6,7 @@ package org.igv.ui;
 
 import java.awt.event.*;
 
-import org.igv.sam.AlignmentTrack;
+import org.igv.alignment.RenderOptions;
 import org.igv.ui.util.MessageUtils;
 
 import java.awt.*;
@@ -27,13 +27,13 @@ public class InsertSizeSettingsDialog extends org.igv.ui.IGVDialog  {
     private int maxThreshold;
 
 
-    public InsertSizeSettingsDialog(Frame owner, AlignmentTrack.RenderOptions options) {
+    public InsertSizeSettingsDialog(Frame owner, RenderOptions options) {
         super(owner);
         initComponents();
         initValues(options);
     }
 
-    private void initValues(AlignmentTrack.RenderOptions options) {
+    private void initValues(RenderOptions options) {
 
         computeIsize = options.isComputeIsizes();
         minPercentile = options.getMinInsertSizePercentile();

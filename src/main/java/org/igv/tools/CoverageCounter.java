@@ -6,9 +6,9 @@ import org.igv.feature.Chromosome;
 import org.igv.feature.Locus;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.Genome;
-import org.igv.sam.*;
-import org.igv.sam.reader.AlignmentReader;
-import org.igv.sam.reader.AlignmentReaderFactory;
+import org.igv.alignment.*;
+import org.igv.alignment.reader.AlignmentReader;
+import org.igv.alignment.reader.AlignmentReaderFactory;
 import org.igv.tools.parsers.DataConsumer;
 
 import java.io.*;

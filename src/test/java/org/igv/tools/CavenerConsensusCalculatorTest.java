@@ -1,8 +1,8 @@
 package org.igv.tools;
 
 import org.igv.AbstractHeadlessTest;
-import org.igv.sam.AlignmentCounts;
-import org.igv.sam.DenseAlignmentCounts;
+import org.igv.alignment.AlignmentCounts;
+import org.igv.alignment.DenseAlignmentCounts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

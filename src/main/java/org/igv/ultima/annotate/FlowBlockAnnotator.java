@@ -1,10 +1,9 @@
 package org.igv.ultima.annotate;
 
-import htsjdk.samtools.SAMRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.igv.sam.AlignmentBlock;
-import org.igv.sam.ByteSubarray;
-import org.igv.sam.SAMAlignment;
+import org.igv.alignment.AlignmentBlock;
+import org.igv.alignment.ByteSubarray;
+import org.igv.alignment.SAMAlignment;
 import org.igv.ultima.render.FlowIndelRendering;
 
 public class FlowBlockAnnotator {

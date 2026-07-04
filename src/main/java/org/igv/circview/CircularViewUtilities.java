@@ -14,7 +14,7 @@ import org.igv.circview.util.ChrColors;
 import org.igv.circview.util.ColorUtils;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
-import org.igv.sam.Alignment;
+import org.igv.alignment.Alignment;
 import org.igv.ui.IGV;
 import org.igv.util.Downsampler;
 import org.igv.variant.Variant;

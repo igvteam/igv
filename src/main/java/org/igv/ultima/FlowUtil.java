@@ -2,8 +2,8 @@ package org.igv.ultima;
 
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
-import org.igv.sam.Alignment;
-import org.igv.sam.SAMAlignment;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.SAMAlignment;
 
 /*
  * misc utilities to handle flow base (Ultima) data

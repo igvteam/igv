@@ -32,7 +32,7 @@ import org.igv.feature.tribble.GFFCodec;
 import org.igv.feature.tribble.IGVBEDCodec;
 import org.igv.feature.tribble.MUTCodec;
 import org.igv.maf.MAFtoSAM;
-import org.igv.sam.reader.AlignmentIndexer;
+import org.igv.alignment.reader.AlignmentIndexer;
 import org.igv.tdf.TDFUtils;
 import org.igv.tools.converters.BamToBed;
 import org.igv.tools.converters.ExpressionFormatter;

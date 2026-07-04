@@ -8,8 +8,6 @@
  */
 package org.igv.util;
 
-import org.igv.sam.Alignment;
-
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Iterator;

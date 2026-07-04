@@ -1,15 +1,13 @@
 package org.igv.ui;
 
-import htsjdk.tribble.Feature;
 import org.igv.logging.*;
 import org.igv.charts.ScatterPlotUtils;
 import org.igv.feature.Range;
 import org.igv.feature.RegionOfInterest;
-import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
-import org.igv.sam.AlignmentTrackUtils;
-import org.igv.sam.SortOption;
+import org.igv.alignment.AlignmentTrackUtils;
+import org.igv.alignment.SortOption;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 

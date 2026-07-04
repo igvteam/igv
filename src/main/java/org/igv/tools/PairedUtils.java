@@ -29,11 +29,10 @@ import htsjdk.samtools.*;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.CloseableIterator;
-import org.igv.sam.Alignment;
-import org.igv.sam.SAMAlignment;
-import org.igv.sam.reader.AlignmentReader;
-import org.igv.sam.reader.AlignmentReaderFactory;
-import org.igv.sam.reader.SAMReader;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.SAMAlignment;
+import org.igv.alignment.reader.AlignmentReader;
+import org.igv.alignment.reader.AlignmentReaderFactory;
 import org.igv.util.stream.IGVSeekableBufferedStream;
 import org.igv.util.stream.IGVSeekableStreamFactory;
 

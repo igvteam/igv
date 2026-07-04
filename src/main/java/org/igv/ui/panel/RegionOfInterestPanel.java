@@ -2,11 +2,6 @@ package org.igv.ui.panel;
 
 import org.igv.Globals;
 import org.igv.feature.Strand;
-import org.igv.sam.AlignmentInterval;
-import org.igv.sam.AlignmentRenderer;
-import org.igv.sam.InsertionManager;
-import org.igv.sam.InsertionMarker;
-import org.igv.track.RenderContext;
 import org.igv.util.blat.BlatClient;
 import org.igv.feature.RegionOfInterest;
 import org.igv.feature.genome.Genome;
@@ -22,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author eflakes

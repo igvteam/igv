@@ -2,8 +2,8 @@ package org.igv.tools;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import org.igv.sam.AlignmentCounts;
-import org.igv.sam.BaseAlignmentCounts;
+import org.igv.alignment.AlignmentCounts;
+import org.igv.alignment.BaseAlignmentCounts;
 import org.igv.util.ParsingUtils;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public abstract class AbstractConsensusCalculator {
 
     /**
      * @param baseFractions Map from nucleotide base -> fraction of total. Should add up to 1f. Allowed
-     *                      values are those in {@link org.igv.sam.BaseAlignmentCounts#nucleotides}.
+     *                      values are those in {@link org.igv.alignment.BaseAlignmentCounts#nucleotides}.
      * @return List of {@code BaseFrequency} objects, in descending order by fraction
      */
     protected abstract char calculateConsensusBase(List<BaseFraction> baseFractions);

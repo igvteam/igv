@@ -11,7 +11,7 @@ import org.igv.logging.Logger;
 import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.SequenceRenderer;
-import org.igv.sam.mods.BaseModificationColors;
+import org.igv.alignment.mods.BaseModificationColors;
 import org.igv.track.DataType;
 import org.igv.ui.*;
 import org.igv.ui.color.ColorUtilities;

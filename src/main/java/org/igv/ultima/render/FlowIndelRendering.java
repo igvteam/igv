@@ -4,7 +4,7 @@ import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SAMRecord;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
-import org.igv.sam.*;
+import org.igv.alignment.*;
 import org.igv.track.RenderContext;
 
 import java.awt.*;
@@ -72,7 +72,7 @@ public class FlowIndelRendering {
                                      AlignmentBlock block,
                                      RenderContext context,
                                      int h, int x, int y,
-                                     AlignmentTrack.RenderOptions renderOptions) {
+                                     RenderOptions renderOptions) {
 
         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
         int hairline = 2;
@@ -99,7 +99,7 @@ public class FlowIndelRendering {
                                           AlignmentBlock block,
                                           RenderContext context,
                                           int pxH, int pxTop, int pxRight, int pxLeft,
-                                          AlignmentTrack.RenderOptions renderOptions) {
+                                          RenderOptions renderOptions) {
 
         int pxWing = (pxH > 10 ? 2 : 1);  // width of the cursor "wing"
         Graphics2D g = context.getGraphics();
@@ -132,7 +132,7 @@ public class FlowIndelRendering {
                                   Gap gap,
                                   int y, int h, int x, int w,
                                   RenderContext context,
-                                  AlignmentTrack.RenderOptions renderOptions) {
+                                  RenderOptions renderOptions) {
 
         if ( !renderOptions.isIndelQualColoring() )
             return;
@@ -202,7 +202,7 @@ public class FlowIndelRendering {
         g.setColor(currentColor);
     }
 
-    private double getInsertionQuality(Alignment alignment, AlignmentBlock block, AlignmentTrack.RenderOptions renderOptions) {
+    private double getInsertionQuality(Alignment alignment, AlignmentBlock block, RenderOptions renderOptions) {
 
         // establish alignment blocks wrapping this insertion block (before and after)
         AlignmentBlock[] blocks = getBlockWrappingBlocks(alignment, block);
@@ -293,7 +293,7 @@ public class FlowIndelRendering {
         }
     }
 
-    private double getQualityFromTP(SAMRecord record, Hmer hmer, int tpValue, AlignmentTrack.RenderOptions renderOptions) {
+    private double getQualityFromTP(SAMRecord record, Hmer hmer, int tpValue, RenderOptions renderOptions) {
 
         // get quals and tp
         byte[]      tp = record.getByteArrayAttribute(ATTR_TP);

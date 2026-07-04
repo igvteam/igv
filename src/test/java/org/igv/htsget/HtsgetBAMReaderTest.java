@@ -1,9 +1,9 @@
 package org.igv.htsget;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.igv.sam.Alignment;
-import org.igv.sam.SAMAlignment;
-import org.igv.sam.reader.BAMReader;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.SAMAlignment;
+import org.igv.alignment.reader.BAMReader;
 import org.igv.util.ResourceLocator;
 import org.junit.Test;
 

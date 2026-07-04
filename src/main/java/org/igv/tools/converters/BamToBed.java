@@ -1,10 +1,10 @@
 package org.igv.tools.converters;
 
 import htsjdk.samtools.util.CloseableIterator;
-import org.igv.sam.Alignment;
-import org.igv.sam.ReadMate;
-import org.igv.sam.reader.AlignmentReader;
-import org.igv.sam.reader.AlignmentReaderFactory;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.ReadMate;
+import org.igv.alignment.reader.AlignmentReader;
+import org.igv.alignment.reader.AlignmentReaderFactory;
 
 import java.io.*;
 

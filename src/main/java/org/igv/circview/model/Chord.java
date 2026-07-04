@@ -3,9 +3,9 @@ package org.igv.circview.model;
 import htsjdk.samtools.SAMTag;
 import org.igv.Globals;
 import org.igv.bedpe.BedPE;
-import org.igv.sam.Alignment;
-import org.igv.sam.ReadMate;
-import org.igv.sam.SupplementaryAlignment;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.ReadMate;
+import org.igv.alignment.SupplementaryAlignment;
 import org.igv.variant.Variant;
 
 import java.awt.Color;

@@ -13,7 +13,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.sam.InsertionManager;
+import org.igv.alignment.InsertionManager;
 import org.igv.track.DataType;
 import org.igv.ui.IGV;
 import org.igv.ui.panel.FrameManager;

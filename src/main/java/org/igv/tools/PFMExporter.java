@@ -1,6 +1,6 @@
 package org.igv.tools;
 
-import org.igv.sam.AlignmentCounts;
+import org.igv.alignment.AlignmentCounts;
 import org.igv.util.StringUtils;
 
 import java.util.ArrayList;

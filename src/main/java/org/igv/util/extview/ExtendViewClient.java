@@ -4,12 +4,11 @@ import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.sam.Alignment;
+import org.igv.alignment.Alignment;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.HttpUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 

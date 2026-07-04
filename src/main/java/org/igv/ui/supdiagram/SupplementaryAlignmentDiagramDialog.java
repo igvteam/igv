@@ -3,9 +3,9 @@ package org.igv.ui.supdiagram;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMRecordSetBuilder;
 import htsjdk.samtools.SAMTag;
-import org.igv.sam.Alignment;
-import org.igv.sam.SAMAlignment;
-import org.igv.sam.SupplementaryGroup;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.SAMAlignment;
+import org.igv.alignment.SupplementaryGroup;
 
 import javax.swing.*;
 import java.awt.*;

@@ -51,7 +51,7 @@ After `createDist`, launch with `build/IGV-dist/igv.sh` (Linux), `igv.command` (
 | `org.igv.feature.genome` | Reference genome management (`Genome`, `GenomeManager`) |
 | `org.igv.session` | Session save/load (XML and JSON formats) |
 | `org.igv.data` | Data loading and caching layer |
-| `org.igv.sam` | SAM/BAM alignment handling |
+| `org.igv.alignment` | SAM/BAM alignment handling |
 | `org.igv.variant` | VCF/variant track (`VariantTrack`) |
 | `org.igv.seg` | Segmentation data (`SegTrack`) |
 | `org.igv.ucsc` | UCSC formats: BigBed, BigWig, TwoBit, TDF |

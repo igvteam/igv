@@ -1,6 +1,6 @@
 package org.igv.ultima.render;
 
-import org.igv.sam.Alignment;
+import org.igv.alignment.Alignment;
 
 public class ColorByTagValueList {
 

@@ -1,16 +1,12 @@
 package org.igv.track;
 
 import org.igv.prefs.PreferencesManager;
-import org.igv.sam.InsertionMarker;
 import org.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static org.igv.prefs.Constants.ENABLE_ANTIALISING;
 
 /**
  * @author jrobinso

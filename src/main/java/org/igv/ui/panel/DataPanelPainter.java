@@ -3,16 +3,13 @@ package org.igv.ui.panel;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
-import org.igv.prefs.Constants;
-import org.igv.prefs.PreferencesManager;
-import org.igv.sam.AlignmentTrack;
-import org.igv.sam.InsertionMarker;
+import org.igv.alignment.AlignmentTrack;
+import org.igv.alignment.InsertionMarker;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 
