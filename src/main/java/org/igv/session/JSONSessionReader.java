@@ -82,6 +82,7 @@ public class JSONSessionReader implements SessionReader {
 
         if (jsonObject.has("locus")) {
             Object locusValue = jsonObject.get("locus");
+            String locusString = null;
             if (locusValue instanceof JSONArray) {
                 // Array of locus values
                 JSONArray locusArray = (JSONArray) locusValue;
@@ -89,11 +90,13 @@ public class JSONSessionReader implements SessionReader {
                 for (int i = 0; i < locusArray.length(); i++) {
                     loci.add(locusArray.getString(i));
                 }
-                igv.goToLocus(String.join(" ", loci));
+                locusString = String.join(" ", loci);
             } else {
                 // Single locus string (may be space-delimited string of multiple loci)
-                igv.goToLocus(locusValue.toString());
+                locusString = locusValue.toString();
             }
+            session.setLocus(locusString);
+            igv.goToLocus(locusString);
         }
 
         // Sample information -- load this first
