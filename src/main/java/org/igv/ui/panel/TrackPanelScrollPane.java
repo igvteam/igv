@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.MouseWheelEvent;
 
 import static org.igv.prefs.Constants.SHOW_SELECTION_PANEL;
 
@@ -51,6 +52,14 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
                 trackPanel.getNamePanel().repaint();
             }
         });
+
+        // Nested-scroll chaining: scroll this track's content first, then hand off to the
+        // outer track-stack scroll pane once we hit the top/bottom limit (or if this track
+        // isn't internally scrollable at all). We disable the scroll pane's built-in wheel
+        // handling and drive it manually so the hand-off can happen at the limits, which the
+        // default handler never does.
+        innerScrollPane.setWheelScrollingEnabled(false);
+        innerScrollPane.addMouseWheelListener(this::handleWheelScroll);
 
         add(innerScrollPane);
     }
@@ -103,6 +112,47 @@ public class TrackPanelScrollPane extends JPanel implements Paintable {
             dragHandlePanel.setBounds(selW, 0, dragW, h);
         }
         innerScrollPane.setBounds(leftW, 0, w - leftW, h);
+    }
+
+    // ---- Wheel scrolling ----
+
+    /**
+     * Mouse-wheel handler implementing nested-scroll chaining. Only the plain (unmodified)
+     * wheel scrolls; modifier + wheel is reserved for genomic zoom, handled in {@code DataPanel},
+     * and never reaches here. If this track can still scroll in the wheel's direction, scroll it;
+     * otherwise forward the event to the outer track-stack scroll pane so the whole stack moves.
+     */
+    private void handleWheelScroll(MouseWheelEvent e) {
+        if (e.getWheelRotation() == 0) return;
+
+        JScrollBar bar = innerScrollPane.getVerticalScrollBar();
+        boolean scrollingUp = e.getWheelRotation() < 0;
+        boolean canScrollInner = bar.isVisible() &&
+                (scrollingUp
+                        ? bar.getValue() > bar.getMinimum()
+                        : bar.getValue() + bar.getVisibleAmount() < bar.getMaximum());
+
+        if (canScrollInner) {
+            int delta = e.getUnitsToScroll() * bar.getUnitIncrement();
+            int newValue = bar.getValue() + delta;
+            newValue = Math.max(bar.getMinimum(),
+                    Math.min(newValue, bar.getMaximum() - bar.getVisibleAmount()));
+            bar.setValue(newValue);
+        } else {
+            // At the limit (or not internally scrollable) — hand off to the outer stack.
+            JScrollPane outer = getOuterScrollPane();
+            if (outer != null) {
+                outer.dispatchEvent(e);
+            }
+        }
+    }
+
+    /** The outer scroll pane that scrolls the whole track stack, or null if not yet attached. */
+    private JScrollPane getOuterScrollPane() {
+        if (trackPanel != null && trackPanel.mainPanel != null) {
+            return trackPanel.mainPanel.getTrackPanelScrollPane();
+        }
+        return null;
     }
 
     // ---- Scroll pane delegation ----

@@ -73,7 +73,10 @@ public class ScrollableTrackContainer extends JPanel implements Scrollable {
 
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 16;
+        // Controls wheel and arrow-button speed for the outer track-stack scroll pane only.
+        // Kept slightly below the inner-track increment so scrolling the whole stack feels
+        // a touch slower than scrolling within a single track.
+        return 12;
     }
 
     @Override

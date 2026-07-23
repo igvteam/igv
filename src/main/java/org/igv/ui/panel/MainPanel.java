@@ -571,6 +571,15 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return trackPanelContainer;
     }
 
+    /**
+     * The outer scroll pane that scrolls the entire stack of track panels.
+     * Used by {@link TrackPanelScrollPane} to hand off wheel scrolling once an
+     * internally-scrollable track reaches its top or bottom limit.
+     */
+    public JScrollPane getTrackPanelScrollPane() {
+        return trackPanelScrollPane;
+    }
+
     public HeaderSelectAllPanel getHeaderSelectAllPanel() {
         return headerSelectAllPanel;
     }
