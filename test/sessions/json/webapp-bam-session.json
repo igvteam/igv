@@ -1,0 +1,61 @@
+{
+	"version": "3.8.4",
+	"showSampleNames": false,
+	"reference": {
+		"id": "hg19",
+		"name": "Human (CRCh37/hg19)",
+		"cytobandURL": "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt",
+		"twoBitURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit",
+		"chromSizesURL": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes"
+	},
+	"locus": "chr1:155,155,322-155,155,392",
+	"roi": [],
+	"tracks": [
+		{
+			"type": "sequence",
+			"order": -1.7976931348623157e+308
+		},
+		{
+			"sourceType": "gcs",
+			"type": "alignment",
+			"url": "gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam",
+			"indexURL": "gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam.bai",
+			"name": "NA12878",
+			"filename": "NA12878_S1.bam",
+			"height": 600,
+			"coverageTrackHeight": 50,
+			"order": 5,
+			"colorBy": "strand",
+			"noSpinner": true,
+			"alleleFreqThreshold": 0.2,
+			"sort": [
+				{
+					"locus": "chr1:155155358",
+					"option": "NUCLEOTIDE",
+					"direction": true,
+					"chr": "chr1",
+					"position": 155155357
+				}
+			]
+		},
+		{
+			"name": "Genes",
+			"format": "refgene",
+			"url": "https://s3.amazonaws.com/igv.org.genomes/hg19/refGene.sorted.txt.gz",
+			"indexURL": "https://s3.amazonaws.com/igv.org.genomes/hg19/refGene.sorted.txt.gz.tbi",
+			"visibilityWindow": -1,
+			"removable": false,
+			"order": 1000000,
+			"filename": "refGene.sorted.txt.gz",
+			"sourceType": "file",
+			"type": "annotation",
+			"maxRows": 500,
+			"noSpinner": true,
+			"filterTypes": [
+				"chromosome",
+				"gene"
+			],
+			"height": 70
+		}
+	]
+}

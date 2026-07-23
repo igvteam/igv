@@ -37,7 +37,7 @@
       "chrY"
     ]
   },
-  "locus": "All",
+  "locus": "chr17:37276855-37277154",
   "hiddenAttributes": [
     "DATA FILE",
     "DATA TYPE",
@@ -50,6 +50,7 @@
       "shouldShowTranslation": true,
       "id": "Reference sequence",
       "type": "sequence",
+      "order": 0
     },
     {
       "visible": "false",
@@ -59,9 +60,10 @@
       "type": "junction",
       "maxdepth": 50,
       "url": "https://igv.org/data/test/bam/skbr3/reads_lr_skbr3.sampled.bam",
+      "order": 1,
       "height": 60,
       "rowHeight": 35,
-      "autoScale": "false"
+      "autoScale": "true"
     },
     {
       "showGenotypes": true,
@@ -71,12 +73,13 @@
       "siteColorMode": "ALLELE_FREQUENCY",
       "type": "variant",
       "url": "https://igv.org/data/test/vcf/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt_filtered.tra.vcf",
+      "order": 2,
       "rowHeight": 15
     },
     {
       "flipAxis": false,
       "drawBaseline": true,
-      "max": 204,
+      "max": 82,
       "format": "bam",
       "mid": 0,
       "type": "coverage",
@@ -87,6 +90,7 @@
       "name": "reads_lr_skbr3.sampled.bam Coverage",
       "id": "https://igv.org/data/test/bam/skbr3/reads_lr_skbr3.sampled.bam_coverage",
       "alleleFreqThreshold": 0.2,
+      "order": 3
     },
     {
       "color": "185,185,185",
@@ -100,6 +104,7 @@
       "indexlSizeThreshold": 5,
       "name": "reads_lr_skbr3.sampled.bam",
       "id": "https://igv.org/data/test/bam/skbr3/reads_lr_skbr3.sampled.bam",
+      "order": 4,
       "height": 501,
       "rowHeight": 14
     },
