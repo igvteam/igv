@@ -264,6 +264,19 @@ public class IGV implements IGVEventObserver {
         }
     }
 
+    public static List<Track> getSelectedTracks() {
+        List<Track> selected = new ArrayList<>();
+        for (TrackPanel tp : getInstance().getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp == null) continue;
+            TrackSelectionPanel selPanel = sp.getSelectionPanel();
+            if (selPanel != null && selPanel.isTrackSelected()) {
+                selected.add(tp.getTrack());
+            }
+        }
+        return selected;
+    }
+
 
     public JRootPane getRootPane() {
         return rootPane;

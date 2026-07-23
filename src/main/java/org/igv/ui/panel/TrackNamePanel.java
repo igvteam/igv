@@ -16,6 +16,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackGroup;
+import org.igv.ui.IGV;
 import org.igv.ui.util.IGVMouseInputAdapter;
 import org.jdesktop.layout.GroupLayout;
 
@@ -33,6 +34,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private static Logger log = LogManager.getLogger(TrackNamePanel.class);
 
+    /**
+     * Width of a "dead zone" along the left edge of the name panel, adjacent to the drag
+     * handle.  Clicks landing in this margin are ignored to avoid accidentally toggling
+     * track selection when the user is aiming for the drag handle.
+     */
+    private static final int LEFT_CLICK_MARGIN = 6;
 
     List<GroupExtent> groupExtents = new ArrayList();
 
@@ -188,15 +195,41 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         }
 
         /**
-         * Mouse was clicked.  Delegate action to the track(s) clicked on. .
+         * Mouse was clicked.  Toggle selection of the associated track (revealing the
+         * selection checkboxes if they are hidden), then delegate the click to the track.
+         * Clicks in the left margin, adjacent to the drag handle, are ignored.
          *
          * @param e
          */
         @Override
         public void igvMouseClicked(final MouseEvent e) {
+            if (e.getX() < LEFT_CLICK_MARGIN) {
+                return;
+            }
+            toggleTrackSelection();
             getTrack().handleNameClick(e);
         }
 
+    }
+
+    /**
+     * Toggle the selection state of the track associated with this name panel.
+     * Selection state is held by the checkbox in the {@link TrackSelectionPanel}, not by the
+     * track itself.  If the selection checkboxes are not currently visible, reveal them first
+     * (revealing leaves the checkbox unchecked, so the toggle then selects the track).
+     */
+    private void toggleTrackSelection() {
+        TrackPanelScrollPane scrollPane = getTrackPanel().getScrollPane();
+        if (scrollPane == null) {
+            return;
+        }
+        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SHOW_SELECTION_PANEL)) {
+            IGV.getInstance().getMainPanel().setSelectionPanelsVisible(true);
+        }
+        TrackSelectionPanel selectionPanel = scrollPane.getSelectionPanel();
+        if (selectionPanel != null) {
+            selectionPanel.setTrackSelected(!selectionPanel.isTrackSelected());
+        }
     }
 
     class GroupExtent {

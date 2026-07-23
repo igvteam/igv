@@ -79,7 +79,7 @@ public class TrackMenuUtils {
         // Try multi-track menu first.  If multiple tracks are selected a menu with a subset of shared items is
         // created.  If the track clicked is not one of the selected tracks selections are cleared and we proceed
         // as usual with a single-track menu.  This behavior mimics google sheets.
-        List<Track> selectedTracks = getSelectedTracks();
+        List<Track> selectedTracks = IGV.getSelectedTracks();
         if (!selectedTracks.isEmpty()) {
             if (selectedTracks.contains(track)) {
                 IGVPopupMenu multiMenu = new IGVPopupMenu();
@@ -186,19 +186,6 @@ public class TrackMenuUtils {
 
     public static void saveImage(Track track, String extension) {
         IGV.getInstance().saveImage(track.getViewport(), "igv_panel", extension);
-    }
-
-    private static List<Track> getSelectedTracks() {
-        List<Track> selected = new ArrayList<>();
-        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
-            TrackPanelScrollPane sp = tp.getScrollPane();
-            if (sp == null) continue;
-            TrackSelectionPanel selPanel = sp.getSelectionPanel();
-            if (selPanel != null && selPanel.isTrackSelected()) {
-                selected.add(tp.getTrack());
-            }
-        }
-        return selected;
     }
 
     private static void clearTrackSelections() {

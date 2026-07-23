@@ -33,9 +33,6 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.MainPanel;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
-import org.igv.ui.panel.TrackPanel;
-import org.igv.ui.panel.TrackPanelScrollPane;
-import org.igv.ui.panel.TrackSelectionPanel;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
 import org.igv.util.BrowserLauncher;
@@ -447,18 +444,7 @@ public class IGVMenuBar extends JMenuBar {
         JCheckBoxMenuItem selectTracksItem = new JCheckBoxMenuItem("Show Selection Checkboxes");
         selectTracksItem.setSelected(PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
         selectTracksItem.addActionListener(e -> {
-            boolean show = selectTracksItem.isSelected();
-            PreferencesManager.getPreferences().put(SHOW_SELECTION_PANEL, show);
-            for (TrackPanel tp : igv.getMainPanel().getTrackPanels()) {
-                TrackPanelScrollPane sp = tp.getScrollPane();
-                if (sp != null) {
-                    sp.setSelectionPanelVisible(show);
-                }
-            }
-            if (igv.getMainPanel().getHeaderSelectAllPanel() != null) {
-                igv.getMainPanel().getHeaderSelectAllPanel().setCheckBoxVisible(show);
-            }
-            igv.getMainPanel().revalidateTrackPanels();
+            igv.getMainPanel().setSelectionPanelsVisible(selectTracksItem.isSelected());
         });
         menuItems.add(selectTracksItem);
 
@@ -573,6 +559,24 @@ public class IGVMenuBar extends JMenuBar {
         // Add to IGVPanel menu
         MenuAction dataMenuAction = new MenuAction(name, null, KeyEvent.VK_V);
         viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+
+        // Keep the "Show Selection Checkboxes" item in sync with state that can also be
+        // changed by a single click in the track name panel.
+        viewMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                selectTracksItem.setSelected(PreferencesManager.getPreferences().getAsBoolean(SHOW_SELECTION_PANEL));
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+
         return viewMenu;
     }
 

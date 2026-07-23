@@ -575,6 +575,26 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return headerSelectAllPanel;
     }
 
+    /**
+     * Show or hide the track selection checkboxes across all track panels and the header
+     * select-all checkbox, and persist the state in preferences.  Shared by the "Show
+     * Selection Checkboxes" View menu item and the single-click select action in the
+     * track name panel.
+     */
+    public void setSelectionPanelsVisible(boolean show) {
+        PreferencesManager.getPreferences().put(SHOW_SELECTION_PANEL, show);
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp != null) {
+                sp.setSelectionPanelVisible(show);
+            }
+        }
+        if (headerSelectAllPanel != null) {
+            headerSelectAllPanel.setCheckBoxVisible(show);
+        }
+        revalidateTrackPanels();
+    }
+
     public int getTrackPanelViewportHeight() {
         return trackPanelScrollPane.getViewport().getHeight();
     }
