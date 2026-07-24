@@ -26,6 +26,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +100,11 @@ public class AlignmentRenderer {
     private static ColorTable zmwColors;
     private static Map<String, ColorTable> tagValueColors;
     private static ColorTable defaultTagColors;
+
+    // Cache of read name -> color, used by the READ_NAME color option.  Multiple alignments can share a read name and
+    // must map to the same color.  Bounded (LRU) to prevent unbounded memory growth for files with many read names.
+    private static final int READ_NAME_COLOR_CACHE_LIMIT = 10000;
+    private static Map<String, Color> readNameColors;
     public static NucleotideColors nucleotideColors;
 
     final private static ColorByTagValueList colorByTagValueList = new ColorByTagValueList();
@@ -195,6 +201,14 @@ public class AlignmentRenderer {
         zmwColors = new PaletteColorTable(palette);
         defaultTagColors = new PaletteColorTable(palette);
         tagValueColors = new HashMap<>();
+
+        // Bounded, access-ordered (LRU) cache of read name -> color.
+        readNameColors = new LinkedHashMap<>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Color> eldest) {
+                return size() > READ_NAME_COLOR_CACHE_LIMIT;
+            }
+        };
 
         typeToColorMap = new HashMap<>(5);
         typeToColorMap.put(AlignmentTrack.OrientationType.LL, LL_COLOR);
@@ -1306,6 +1320,9 @@ public class AlignmentRenderer {
                     c = zmwColors.get(readNameParts[0] + "/" + readNameParts[1]);
                 }
                 break;
+            case READ_NAME:
+                c = getReadNameColor(alignment.getReadName());
+                break;
             case TAG:
                 final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
@@ -1361,6 +1378,24 @@ public class AlignmentRenderer {
         c = shadeByMappingQuality(c, renderOptions, alignment.getMappingQuality());
         return c;
 
+    }
+
+    /**
+     * Return a color for the given read name.  The color is a deterministic function of the read name (derived from its
+     * hash), so all alignments sharing a read name get the same color and a given read name always maps to the same
+     * color even across region changes.  Results are memoized in a bounded (LRU) cache; because the mapping is
+     * deterministic, eviction is harmless -- an evicted read name simply gets recomputed to the same color.
+     */
+    private static synchronized Color getReadNameColor(String readName) {
+        if (readName == null) {
+            return null;
+        }
+        Color c = readNameColors.get(readName);
+        if (c == null) {
+            c = ColorUtilities.randomColor(readName.hashCode());
+            readNameColors.put(readName, c);
+        }
+        return c;
     }
 
     private Color shadeByMappingQuality(final Color initialColor, final RenderOptions renderOptions, final int mappingQuality) {

@@ -494,6 +494,18 @@ public class AlignmentDataManager implements IGVEventObserver {
         return intervalCache;
     }
 
+    /**
+     * Return the total number of alignments currently loaded across all cached intervals.  Used, for example, to
+     * decide whether the "color by read name" option is practical (it is only useful for small assembly-type files).
+     */
+    public int getLoadedAlignmentCount() {
+        int count = 0;
+        for (AlignmentInterval interval : intervalCache) {
+            count += interval.getAlignments().size();
+        }
+        return count;
+    }
+
     public Set<String> getSimplexBaseModifications() {
         return simplexBaseModfications;
     }

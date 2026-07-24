@@ -57,6 +57,11 @@ class AlignmentTrackMenuHelper {
     private final RenderOptions renderOptions;
     private static int nClusters = 2;
 
+    // "Color by read name" is only useful for small (e.g. assembly) files with a handful of reads sharing read names.
+    // For typical BAM files with millions of unique read names it is meaningless, so the option is disabled when more
+    // than this many alignments are loaded.
+    private static final int READ_NAME_COLOR_MAX_ALIGNMENTS = 1000;
+
     private final List<Component> items = new ArrayList<>();
 
     /**
@@ -875,6 +880,17 @@ class AlignmentTrackMenuHelper {
                 group.add(mi);
             }
         }
+
+        // Color by read name.  Only useful for small assembly-type files, so disable when many alignments are loaded.
+        JRadioButtonMenuItem readNameItem = getColorMenuItem("read name (qname)", AlignmentTrack.ColorOption.READ_NAME);
+        readNameItem.setToolTipText("Color by read name.  Useful for small assembly-type files,  disabled when many alignments are loaded.");
+        if (dataManager.getLoadedAlignmentCount() > READ_NAME_COLOR_MAX_ALIGNMENTS) {
+            readNameItem.setEnabled(false);
+            readNameItem.setToolTipText("Disabled: too many alignments loaded (limit " +
+                    READ_NAME_COLOR_MAX_ALIGNMENTS + ")");
+        }
+        colorMenu.add(readNameItem);
+        group.add(readNameItem);
 
         add(colorMenu);
 
