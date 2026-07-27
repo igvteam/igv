@@ -103,9 +103,13 @@ public class GenomeManager {
      * @throws IOException
      */
     public boolean loadGenomeById(String genomeId) throws IOException {
+        return loadGenomeById(genomeId, false);
+    }
+
+    public boolean loadGenomeById(String genomeId, boolean force) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
-        if (currentGenome != null && genomeId.equals(currentGenome.getId())) {
+        if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {
             return false;
         }
 

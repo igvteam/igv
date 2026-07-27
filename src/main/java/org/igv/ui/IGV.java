@@ -12,6 +12,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.igv.DirectoryManager;
 import org.igv.Globals;
+import org.igv.alignment.InsertionManager;
 import org.igv.batch.BatchRunner;
 import org.igv.batch.CommandListener;
 import org.igv.event.*;
@@ -677,6 +678,13 @@ public class IGV implements IGVEventObserver {
     public void resetSession(String sessionPath) {
 
         session.reset(sessionPath);
+        if (FrameManager.getFrames().size() > 1) {
+            resetFrames();
+        }
+        for(ReferenceFrame frame : FrameManager.getFrames()) {
+            frame.setExpandedInsertion(null);
+        }
+        InsertionManager.getInstance().clear();
         AttributeManager.getInstance().clearAllAttributes();
         mainFrame.setTitle(sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath);
         menuBar.resetSessionActions();
@@ -691,8 +699,16 @@ public class IGV implements IGVEventObserver {
     public void newSession() {
         resetSession(null);
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        GenomeManager.getInstance().setCurrentGenome(currentGenome);
-        this.menuBar.disableReloadSession();
+        String id = currentGenome.getId();
+        try {
+            GenomeManager.getInstance().loadGenomeById(id, true);
+        } catch (IOException e) {
+            log.info("Failed to load genome with id " + id);
+            GenomeManager.getInstance().setCurrentGenome(currentGenome);
+            GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
+        }
+
+        menuBar.resetSessionActions();
         goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
         revalidateTrackPanels();
     }
@@ -727,7 +743,7 @@ public class IGV implements IGVEventObserver {
                 mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
 
                 getRecentSessionList().add(sessionPath);
-                this.menuBar.enableReloadSession();
+                menuBar.resetSessionActions();
 
                 //If there's a RegionNavigatorDialog, kill it.
                 //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
@@ -800,7 +816,7 @@ public class IGV implements IGVEventObserver {
         mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
 
         getRecentSessionList().add(sessionPath);
-        this.menuBar.enableReloadSession();
+        menuBar.resetSessionActions();
 
         // No errors so save last location
         PreferencesManager.getPreferences().setLastTrackDirectory(targetFile.getParentFile());
@@ -1772,6 +1788,9 @@ public class IGV implements IGVEventObserver {
                 Genome currentGenome = ((GenomeChangeEvent) event).genome();
                 menuBar.updateMenus(currentGenome);
                 menuBar.setAllMenusEnabled(true);
+                // setAllMenusEnabled enables everything; restore state of items whose
+                // enabled state is conditional (e.g. "Reload Session" depends on a session path).
+                menuBar.resetSessionActions();
             }
             repaint();
         } else {

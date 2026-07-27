@@ -82,14 +82,6 @@ public class Session implements IGVEventObserver {
     public void reset(String path) {
         init(path);
         setCurrentGeneList(null);
-        if (FrameManager.getFrames().size() > 1) {
-            IGV.getInstance().resetFrames();
-        }
-        for(ReferenceFrame frame : FrameManager.getFrames()) {
-            frame.setExpandedInsertion(null);
-        }
-        InsertionManager.getInstance().clear();
-
     }
 
 
