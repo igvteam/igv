@@ -237,6 +237,24 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         };
         inputMap.put(forwardKey1, "forward");
         inputMap.put(forwardKey2, "forward");
+        actionMap.put("forward", forwardAction);
+
+        // Delete selected tracks
+        final KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, false);
+        final KeyStroke backspaceKey = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0, false);
+        final Action deleteAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Collection<Track> selectedTracks = IGV.getSelectedTracks();
+                if (!selectedTracks.isEmpty()) {
+                    igv.deleteTracks(selectedTracks);
+                    igv.repaint();
+                }
+            }
+        };
+        inputMap.put(deleteKey, "deleteTracks");
+        inputMap.put(backspaceKey, "deleteTracks");
+        actionMap.put("deleteTracks", deleteAction);
 
     }
 
