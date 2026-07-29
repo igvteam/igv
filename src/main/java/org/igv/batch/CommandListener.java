@@ -405,7 +405,8 @@ public class CommandListener implements Runnable {
                 String sort = params.get("sort");
                 String sortTag = params.get("sortTag");
                 boolean dup = "true".equals(params.get("dup"));
-                result = cmdExe.loadFiles(file, index, coverage, name, format, locus, merge, params, sort, sortTag, dup);
+                // HTTP /load requests do not need batch mode — pass forceBatch=false to allow parallel track loading
+                result = cmdExe.loadFiles(file, index, coverage, name, format, locus, merge, params, sort, sortTag, dup, false);
             } else {
                 result = "OK";  // No files, perhaps genome only
             }
