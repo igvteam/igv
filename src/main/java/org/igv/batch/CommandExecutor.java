@@ -1,4 +1,3 @@
-
 package org.igv.batch;
 
 import org.igv.Globals;
@@ -709,7 +708,7 @@ public class CommandExecutor {
         Map<String, String> ignore = null;
         String sort = null;
         String sortTag = null;
-        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag, true);
+        return loadFiles(fileString, index, coverage, name, format, locus, merge, ignore, sort, sortTag, true, true);
 
     }
 
@@ -724,6 +723,8 @@ public class CommandExecutor {
      * @param sort
      * @param sortTag    Used iff sort == SortOption.TAG
      * @param dup
+     * @param forceBatch if true, enables batch mode to synchronize loading (required for port/batch scripts);
+     *                   pass false for HTTP /load requests to allow parallel track loading
      * @return
      * @throws IOException
      */
@@ -737,12 +738,16 @@ public class CommandExecutor {
                      Map<String, String> params,
                      String sort,
                      String sortTag,
-                     boolean dup) {
+                     boolean dup,
+                     boolean forceBatch) {
 
         boolean currentBatchSetting = Globals.isBatch();
         try {
-            // Temporarily switch to batch mode to force synchronization of load followed by possible sort
-            Globals.setBatch(true);
+            // Force batch mode for port/batch script commands to ensure synchronization.
+            // HTTP /load requests pass forceBatch=false to allow parallel track loading.
+            if (forceBatch) {
+                Globals.setBatch(true);
+            }
 
             boolean isDataURL = ParsingUtils.isDataURL(fileString);
 
