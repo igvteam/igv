@@ -314,6 +314,7 @@ TOOLTIP.DISMISS_DELAY	Tooltip dismiss delay (ms)	integer	60000
 
 UCSC_HOST	hgdownload.soe.ucsc.edu
 UCSC_BACKUP_HOST	genome-browser.s3.us-east-1.amazonaws.com
+UCSC_CONNECT_TIMEOUT	1000
 
 SHOW_SELECTION_PANEL	FALSE
 

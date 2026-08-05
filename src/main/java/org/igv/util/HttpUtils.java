@@ -48,6 +48,17 @@ public class HttpUtils {
     private final String UCSC_HOST;
     private final String UCSC_BACKUP_HOST;
 
+    /**
+     * Once a connection to the UCSC host has failed all requests are directed to the backup host for this long,
+     * after which the primary host is tried again.
+     */
+    private static final long UCSC_BACKUP_DURATION = 60 * 60 * 1000;   // 1 hour
+
+    /**
+     * Time, in ms since the epoch, until which the UCSC backup host is substituted for the primary host.
+     */
+    private volatile long ucscBackupExpiration = 0;
+
     private ProxySettings proxySettings = null;
     private final int MAX_REDIRECTS = 5;
 
@@ -98,7 +109,52 @@ public class HttpUtils {
         // Some special hosts   https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz
         UCSC_HOST = PreferencesManager.getPreferences().get("UCSC_HOST");
         UCSC_BACKUP_HOST = PreferencesManager.getPreferences().get("UCSC_BACKUP_HOST");
+    }
 
+    private boolean isUCSCHost(URL url) {
+        return UCSC_HOST != null && UCSC_BACKUP_HOST != null && UCSC_HOST.equals(url.getHost());
+    }
+
+    /**
+     * Connect timeout for the UCSC host.  Connections to this host are at times unreliable, hanging until the
+     * default timeout expires.  Only the connect phase is shortened, downloads can still take many seconds.
+     * Read from preferences on each use so it can be adjusted without restarting.
+     */
+    private int getUCSCConnectTimeout() {
+        int timeout = PreferencesManager.getPreferences().getAsInt("UCSC_CONNECT_TIMEOUT");
+        return timeout > 0 ? timeout : Globals.CONNECT_TIMEOUT;
+    }
+
+    /**
+     * Clear any cached backup-host substitution, restoring use of the primary UCSC host.  Used by tests.
+     */
+    void resetUCSCBackupHost() {
+        ucscBackupExpiration = 0;
+    }
+
+    /**
+     * Substitute the UCSC backup host for the primary host if a recent attempt to connect to the primary host
+     * failed.  The substitution is in effect for {@link #UCSC_BACKUP_DURATION} following the failure.
+     */
+    private URL mapUCSCHost(URL url) {
+        if (isUCSCHost(url) && System.currentTimeMillis() < ucscBackupExpiration) {
+            try {
+                return new URL(url.toExternalForm().replaceFirst(UCSC_HOST, UCSC_BACKUP_HOST));
+            } catch (MalformedURLException e) {
+                log.error("Error substituting UCSC backup host", e);
+            }
+        }
+        return url;
+    }
+
+    /**
+     * Return true if the exception indicates the host could not be reached, as opposed to an error response from
+     * a host that answered.  Only the former justifies switching to the backup host.
+     */
+    private static boolean isConnectionFailure(IOException e) {
+        return e instanceof SocketTimeoutException ||
+                e instanceof SocketException ||        // includes ConnectException and NoRouteToHostException
+                e instanceof UnknownHostException;
     }
 
     /**
@@ -528,6 +584,9 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
             // Insure we have mapped deprecated URLs to new ones
             url = new URL(HttpMappings.mapURL(url.toExternalForm()));
 
+            // Use the UCSC backup host if the primary host recently failed to respond
+            url = mapUCSCHost(url);
+
             // if we're already seen a redirect for this URL, use the updated one
             if (redirectCache.containsKey(url)) {
                 CachedRedirect cr = redirectCache.get(url);
@@ -602,7 +661,7 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
                 conn.setRequestProperty("Accept", "text/plain");
             }
 
-            conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
+            conn.setConnectTimeout(isUCSCHost(url) ? getUCSCConnectTimeout() : Globals.CONNECT_TIMEOUT);
             conn.setReadTimeout(Globals.READ_TIMEOUT);
             conn.setRequestMethod(method);
             conn.setRequestProperty("Connection", "Keep-Alive");
@@ -750,11 +809,13 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
             return conn;
 
         } catch (IOException e) {
-            if (url.getHost().equals(UCSC_HOST) && !isIndex(url)) {   // never use backup for index files
+            if (isUCSCHost(url) && isConnectionFailure(e)) {
+                // The primary host is not answering.  Direct this and subsequent requests to the backup host.
+                ucscBackupExpiration = System.currentTimeMillis() + UCSC_BACKUP_DURATION;
+                log.warn("Connection to " + url.getHost() + " failed (" + e.getMessage() +
+                        "), switching to backup host " + UCSC_BACKUP_HOST);
                 try {
-                    log.warn("Connection to " + url.getHost() + " failed, retrying with backup host");
-                    String newURL = url.toExternalForm().replaceFirst(UCSC_HOST, UCSC_BACKUP_HOST);
-                    return openConnection(new URL(newURL), requestProperties, method, redirectCount, retries);
+                    return openConnection(mapUCSCHost(url), requestProperties, method, redirectCount, retries);
                 } catch (IOException e1) {
                     // log.error("Retry failed", e1);
                     // Fall through and throw original exception
@@ -762,11 +823,6 @@ private HttpURLConnection openConnectionHeadOrGet(URL url) throws IOException {
             }
             throw e;
         }
-    }
-
-    private static boolean isIndex(URL url) {
-        return url.getPath().endsWith(".tbi") || url.getPath().endsWith(".idx") || url.getPath().endsWith("idx.gz")
-                || url.getPath().endsWith(".csi");
     }
 
     public HttpURLConnection openProxiedConnection(URL url) throws IOException {
