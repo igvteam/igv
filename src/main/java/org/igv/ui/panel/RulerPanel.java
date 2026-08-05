@@ -15,6 +15,7 @@ import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.alignment.AlignmentTrack;
 import org.igv.alignment.InsertionManager;
@@ -254,10 +255,12 @@ public class RulerPanel extends JPanel {
             }
 
             //  If zoomed in, use the 3rd gen visibility window
-            Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
-            int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
-            if (!frame.getChrName().equals(Globals.CHR_ALL) && (frame.getEnd() - frame.getOrigin()) <= maxVizWindow) {
-                drawInsertionMarkers(g);
+            if(PreferencesManager.getPreferences().getAsBoolean(Constants.SAM_SHOW_INSERTION_MARKERS)) {
+                Collection<AlignmentTrack> tracks = IGV.getInstance().getAlignmentTracks();
+                int maxVizWindow = tracks.size() == 0 ? 0 : tracks.stream().mapToInt(t -> t.getVisibilityWindow()).max().getAsInt();
+                if (!frame.getChrName().equals(Globals.CHR_ALL) && (frame.getEnd() - frame.getOrigin()) <= maxVizWindow) {
+                    drawInsertionMarkers(g);
+                }
             }
         }
     }
