@@ -188,7 +188,7 @@ tasks.withType(Test).configureEach {
 
 tasks.register('createDist', Copy) {
     dependsOn jar
-    from("web/IGV_64.png")
+    from("src/main/resources/org/igv/ui/resources/IGV_64.png")
     from("scripts") {
         include '*.bat'
         include '*.sh'
@@ -307,7 +307,7 @@ tasks.register('createMacAppDist', Copy) {
         into "IGV_${version}.app/Contents"
     }
     with copySpec {
-        from("web/IGV_64.png")
+        from("src/main/resources/org/igv/ui/resources/IGV_64.png")
         into "IGV_${version}.app/Contents/Resources"
     }
     with copySpec {
