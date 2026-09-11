@@ -1,6 +1,7 @@
 package org.igv.bedpe;
 
 import org.igv.track.RenderContext;
+import org.igv.ui.UIConstants;
 
 import java.awt.*;
 import java.awt.geom.Arc2D;
@@ -112,7 +113,8 @@ public class ProportionalArcRenderer implements BedPERenderer {
                         bedPE.setShape(new PAShape(pixelStart + w / 2, y + h, w / 2, h));
 
                     } else {
-                        Color fcolor = bedPE.getColor() == null ? Color.black : bedPE.getColor();
+                        Color fcolor = bedPE.getColor() == null
+                                ? UIConstants.getTrackPanelForeground() : bedPE.getColor();
                         g.setColor(fcolor);
                         double ps = ((bedPE.getStart() + bedPE.getEnd()) / 2 - origin) / locScale;
                         int yBase = direction == UP ? trackRectangle.y + trackRectangle.height - h : trackRectangle.y + gap;

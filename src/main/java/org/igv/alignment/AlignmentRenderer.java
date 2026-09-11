@@ -16,6 +16,7 @@ import org.igv.alignment.mods.BaseModificationRenderer;
 import org.igv.alignment.smrt.SMRTKineticsRenderer;
 import org.igv.track.RenderContext;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.color.*;
 import org.igv.ultima.render.ColorByTagValueList;
 import org.igv.ultima.render.FlowIndelRendering;
@@ -64,7 +65,8 @@ public class AlignmentRenderer {
 
     // Indel colors
     public static Color purple = new Color(118, 24, 220);
-    public static Color deletionColor = Color.black;
+    // Deletion gaps are drawn on the panel background, between the two blocks of a read.
+    public static Color deletionColor = UIConstants.getTrackPanelForeground();
     private static Color skippedColor = new Color(150, 184, 200);
     private static Color unknownGapColor = new Color(0, 150, 0);
 
@@ -256,7 +258,7 @@ public class AlignmentRenderer {
         g4.setColor(Color.DARK_GRAY);
 
         Graphics2D g5 = context.getGraphics2D("SOFT_CLIP");
-        g5.setColor(Color.BLACK);
+        g5.setColor(UIConstants.getTrackPanelForeground());
 
         Graphics2D g6 = context.getGraphics2D("MISMATCH");
         g6.setColor(Color.RED);
@@ -358,7 +360,7 @@ public class AlignmentRenderer {
                 int centerRightP = (int) ((center + 1) / locScale);
                 //float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
                 Graphics2D g = context.getGraphics();
-                g.setColor(Color.black);
+                g.setColor(UIConstants.getTrackPanelForeground());
                 GraphicUtils.drawDottedDashLine(g, centerLeftP, rowRect.y, centerLeftP, bottom);
                 if ((centerRightP - centerLeftP > 2)) {
                     GraphicUtils.drawDottedDashLine(g, centerRightP, rowRect.y, centerRightP, bottom);
@@ -1255,7 +1257,7 @@ public class AlignmentRenderer {
                     } else {
                         c = ChromosomeColors.getColor(alignment.getMate().getChr());
                         if (c == null) {
-                            c = Color.black;
+                            c = Color.GRAY;
                         }
                     }
                 }
@@ -1409,8 +1411,9 @@ public class AlignmentRenderer {
         int clippedMQ = Ints.constrainToRange(mappingQuality, minMapQCutoff, maxMapQCutoff);
         float alphaRange = maxAlpha - minAlpha;
         float normalizedMQ = (float) (clippedMQ - minMapQCutoff) / (float) (maxMapQCutoff - minMapQCutoff);
-        // Assuming white background TODO -- this should probably be passed in
-        final Color backgroundColor = Color.white;
+        // Shading has to fade towards the panel background, not a fixed white -- against a dark panel that made
+        // low mapping quality reads the brightest thing on screen rather than the dimmest.
+        final Color backgroundColor = UIConstants.getTrackPanelBackground();
 
         // MQ of zero has special meaning, and pre-empts shading by mapping quality if "flag zero quality" is set
         if (mappingQuality == 0 && renderOptions.isFlagZeroQualityAlignments()) {
@@ -1559,15 +1562,12 @@ class NucleotideColors {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
         Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
-        Color c = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
+        // Dark-mode C matches the sequence and coverage tracks, which sit directly above the alignments.
+        Color c = prefs.getAsColor(SAM_COLOR_C, Globals.DARK_MODE_BLUE);
         Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
         Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), new Color(209, 113, 5));
         Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
 
-        if (Globals.isDarkMode()) {
-            if (!prefs.hasExplicitValue(SAM_COLOR_G)) g = g.darker().darker();
-            if (!prefs.hasExplicitValue(SAM_COLOR_C)) c = c.brighter().brighter();
-        }
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
         nucleotideColors.put('C', c);

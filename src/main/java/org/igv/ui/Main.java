@@ -280,6 +280,10 @@ public class Main {
 
     private static void initializeLookAndFeel() {
 
+        // IGV's overrides for the FlatLaf themes (see resources/org/igv/ui/theme).  Must be registered before the
+        // look and feel is set -- the defaults are resolved at that point.
+        FlatLaf.registerCustomDefaultsSource("org.igv.ui.theme");
+
         try {
             String lnfselect = PreferencesManager.getPreferences().get(USER_THEME);
             UIManager.LookAndFeelInfo[] looks = UIManager.getInstalledLookAndFeels();

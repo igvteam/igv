@@ -65,7 +65,7 @@ public class TrackConfigurationDialog extends org.igv.ui.IGVDialog  {
 
         jLabel1.setText("Configure Tracks");
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBackground(UIConstants.getTrackPanelBackground());
 
         jLabel2.setText("Type of Graph");
 
@@ -106,7 +106,7 @@ public class TrackConfigurationDialog extends org.igv.ui.IGVDialog  {
                 .addContainerGap(70, Short.MAX_VALUE))
         );
 
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBackground(UIConstants.getTrackPanelBackground());
 
         jLabel3.setText("Windowing Function");
 
@@ -176,7 +176,7 @@ public class TrackConfigurationDialog extends org.igv.ui.IGVDialog  {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel3.setBackground(UIConstants.getTrackPanelBackground());
 
         jLabel5.setText("Data Range");
 

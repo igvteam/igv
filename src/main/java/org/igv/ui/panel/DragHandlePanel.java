@@ -1,5 +1,7 @@
 package org.igv.ui.panel;
 
+import org.igv.ui.UIConstants;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -18,7 +20,7 @@ public class DragHandlePanel extends JPanel {
 
     public DragHandlePanel(TrackPanel trackPanel) {
         this.trackPanel = trackPanel;
-        setBackground(Color.WHITE);
+        setBackground(UIConstants.getTrackPanelBackground());
         setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         setPreferredSize(new Dimension(DRAG_HANDLE_WIDTH, 0));
         setMinimumSize(new Dimension(DRAG_HANDLE_WIDTH, 0));

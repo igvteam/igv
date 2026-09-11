@@ -14,6 +14,7 @@ import org.igv.alignment.CoverageTrack;
 import org.igv.alignment.SpliceJunctionTrack;
 import org.igv.track.*;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.color.ColorPalette;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.*;
@@ -689,7 +690,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
             int startCoord = (int) (origin + (locScale * startPix));
 
-            Graphics2D g2D = context.getGraphic2DForColor(Color.black);
+            Graphics2D g2D = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
 
             g2D.drawLine((int) startPix, yLoc, (int) endPix, yLoc);
 

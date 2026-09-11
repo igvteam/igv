@@ -1,6 +1,7 @@
 package org.igv.renderer;
 
 
+import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.feature.*;
 import org.igv.feature.aa.AminoAcidSequence;
@@ -207,7 +208,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             if (peakPosition > 0) {
                                 Color c = g2D.getColor();
                                 int peakPixelPosition = (int) ((feature.getStart() + peakPosition - origin) / locScale);
-                                Color peakColor = c == Color.cyan ? Color.red : Color.cyan;
+                                Color peakColor = Globals.DARK_MODE_BLUE.equals(c) ? Color.red : Color.cyan;
                                 g2D.setColor(peakColor);
                                 int pw = Math.min(4, pixelWidth / 5);
                                 g2D.fillRect(peakPixelPosition - pw / 2, pixelYCenter - thinBlockHeight / 2 - 1, pw, thinBlockHeight + 2);

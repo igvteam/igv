@@ -18,6 +18,7 @@ import org.igv.alignment.CoverageTrack;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -188,7 +189,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             // by font, only by color, so its necessary to create a new one to prevent
             // affecting other tracks.
             Font font = FontManager.getFont(track.getFontSize());
-            Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
+            Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(
+                    UIConstants.getTrackPanelForeground()).create();
             fontGraphics.setFont(font);
 
             // Track coordinates

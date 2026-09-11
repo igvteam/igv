@@ -11,6 +11,7 @@ package org.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.igv.logging.*;
+import org.igv.ui.UIConstants;
 import org.igv.ui.panel.Paintable;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -106,6 +107,11 @@ public class SnapshotUtilities {
         // Write image data into document                                                                                                   
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
+        final Color background = UIConstants.getTrackPanelBackground();
+        svgGenerator.setBackground(background);
+        svgGenerator.setColor(background);
+        svgGenerator.fillRect(0, 0, width, height);
+
         paintImage(target, svgGenerator, width, height, batch);
 
         Writer out = null;
@@ -141,9 +147,13 @@ public class SnapshotUtilities {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
 
-        // Start with a white background
+        // Start with the panel background rather than a hardcoded white -- paintOffscreen implementations do not
+        // fill a background of their own, so in dark mode the export was a white page under white text.  Setting
+        // the graphics background as well as filling lets renderers that erase behind text match it.
+        final Color background = UIConstants.getTrackPanelBackground();
         Color c = g.getColor();
-        g.setColor(Color.white);
+        g.setBackground(background);
+        g.setColor(background);
         g.fillRect(0, 0, width, height);
         g.setColor(c);
 
@@ -195,6 +205,59 @@ public class SnapshotUtilities {
         return selectedFile;
     }
 
+
+    /**
+     * Paint a live component hierarchy into a PNG using Swing's ordinary paint path.
+     * <p>
+     * This is a debugging aid, and differs from the image export above in two ways that matter when reviewing
+     * the UI itself rather than the tracks:
+     * <ul>
+     *   <li>It renders whatever is actually on screen -- scrollbars, checkboxes, the track selection strip,
+     *       borders, dialogs -- rather than only the components implementing {@link Paintable}, whose
+     *       {@code paintOffscreen} methods deliberately skip the surrounding chrome.</li>
+     *   <li>It touches no screen capture API, so it needs no macOS "Screen Recording" permission and works
+     *       over a remote or automated session.</li>
+     * </ul>
+     * What it cannot capture is anything the OS draws rather than Swing: the macOS screen menu bar, native
+     * window chrome, and heavyweight popups.
+     *
+     * @param component the component to paint, typically {@code IGV.getInstance().getContentPane()}
+     * @param file      destination PNG
+     * @param scale     integer scale factor; use 2 for legible text when inspecting colors
+     */
+    public static void writeComponentImage(Component component, File file, int scale) throws IOException {
+
+        if (component.getWidth() <= 0 || component.getHeight() <= 0) {
+            throw new IOException("Component has not been laid out: " + component.getClass().getSimpleName());
+        }
+        if (scale < 1) {
+            scale = 1;
+        }
+
+        final int s = scale;
+        final BufferedImage image = new BufferedImage(component.getWidth() * s, component.getHeight() * s,
+                BufferedImage.TYPE_INT_RGB);
+
+        // Swing components may only be painted on the event dispatch thread.  printAll() rather than paint() so
+        // double buffering is bypassed -- painting a buffered component directly can yield a blank image.
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            Graphics2D g = image.createGraphics();
+            try {
+                g.scale(s, s);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                component.printAll(g);
+            } finally {
+                g.dispose();
+            }
+        });
+
+        File parent = file.getAbsoluteFile().getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        ImageIO.write(image, "png", file);
+        log.info("Wrote component image to " + file.getAbsolutePath());
+    }
 
     /**
      * Creates a device compatible BufferedImage

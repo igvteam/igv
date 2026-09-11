@@ -2,6 +2,7 @@ package org.igv.ui.panel;
 
 import org.igv.Globals;
 import org.igv.logging.*;
+import org.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -97,7 +98,8 @@ public class IGVPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect, boolean batch) {
 
-        g.setColor(Color.black);
+        g.setColor(UIConstants.getTrackPanelForeground());
+        g.setBackground(UIConstants.getTrackPanelBackground());
 
         Component[] children = getComponents();
 

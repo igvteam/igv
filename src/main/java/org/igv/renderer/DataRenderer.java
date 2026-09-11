@@ -19,6 +19,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 
 import java.awt.*;
 import java.util.List;
@@ -88,9 +89,9 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
         if (prefs.getAsBoolean(CHART_DRAW_Y_AXIS)) {
 
             Rectangle axisRect = new Rectangle(rect.x, rect.y + 1, AXIS_AREA_WIDTH, rect.height);
-            Graphics2D whiteGraphics = context.getGraphic2DForColor(Color.white);
+            Graphics2D backgroundGraphics = context.getGraphic2DForColor(UIConstants.getTrackPanelBackground());
 
-            whiteGraphics.fillRect(axisRect.x, axisRect.y, axisRect.width, axisRect.height);
+            backgroundGraphics.fillRect(axisRect.x, axisRect.y, axisRect.width, axisRect.height);
 
             Graphics2D axisGraphics = context.getGraphic2DForColor(axisLineColor);
 

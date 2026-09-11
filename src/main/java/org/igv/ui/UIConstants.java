@@ -2,8 +2,12 @@ package org.igv.ui;
 
 import org.igv.logging.*;
 import org.igv.Globals;
+import org.igv.prefs.Constants;
+import org.igv.prefs.IGVPreferences;
+import org.igv.prefs.PreferencesManager;
 import org.igv.track.DataType;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -87,6 +91,32 @@ public class UIConstants {
 //
 //        }
         return doubleClickInterval;
+    }
+
+    /**
+     * Text and hairline color that reads against {@link #getTrackPanelBackground()}.  Use this for anything drawn
+     * directly on the panel -- axis labels, dividers, cursor and region-of-interest lines -- rather than a literal
+     * black, which disappears in dark mode.
+     */
+    public static Color getTrackPanelForeground() {
+        return Globals.isDarkMode() ? Color.WHITE : Color.BLACK;
+    }
+
+    /**
+     * Background for the track panels and the fixed strips beside them (selection checkboxes, drag handles).
+     * <p>
+     * The BACKGROUND_COLOR preference default is tuned for light mode, so in dark mode it is honored only if the
+     * user set it explicitly; otherwise we follow the look and feel.
+     */
+    public static Color getTrackPanelBackground() {
+        IGVPreferences prefs = PreferencesManager.getPreferences();
+        if (Globals.isDarkMode() && !prefs.hasExplicitValue(Constants.BACKGROUND_COLOR)) {
+            Color background = UIManager.getColor("Panel.background");
+            if (background != null) {
+                return background;
+            }
+        }
+        return prefs.getAsColor(Constants.BACKGROUND_COLOR);
     }
 
 }

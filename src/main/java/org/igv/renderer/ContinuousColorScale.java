@@ -254,7 +254,7 @@ public class ContinuousColorScale extends AbstractColorScale {
         }
 
         if(Float.isNaN(val)) {
-            return PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR);
+            return noDataColor();
         }
 
         // See if we are in the midrange.

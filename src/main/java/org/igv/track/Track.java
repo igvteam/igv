@@ -286,7 +286,7 @@ public interface Track {
     Color getColor();
 
     default Color getDefaultColor() {
-        return Globals.isDarkMode() ? Color.cyan : Color.blue.brighter();
+        return Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.blue.brighter();
     }
 
     void setColor(Color color);

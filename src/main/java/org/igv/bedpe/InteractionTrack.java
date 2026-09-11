@@ -11,6 +11,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
@@ -245,7 +246,7 @@ public class InteractionTrack extends AbstractTrack implements IGVEventObserver 
      */
     public void drawScale(RenderContext context, Rectangle arect) {
         if (!context.multiframe) {
-            Graphics2D g = context.getGraphic2DForColor(Color.black);
+            Graphics2D g = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
             Font font = g.getFont();
             Font smallFont = FontManager.getFont(8);
             try {

@@ -89,7 +89,7 @@ public class ResourceTree {
 
             optionPane.setPreferredSize(new Dimension(650, 500));
             optionPane.setOpaque(true);
-            optionPane.setBackground(Color.WHITE);
+            optionPane.setBackground(UIConstants.getTrackPanelBackground());
             optionPane.addPropertyChangeListener(JOptionPane.VALUE_PROPERTY,
                     new PropertyChangeListener() {
 
@@ -114,13 +114,13 @@ public class ResourceTree {
                     });
 
             dialog = optionPane.createDialog(parent, (dialogTitle == null ? "Resource Tree" : dialogTitle));
-            dialog.setBackground(Color.WHITE);
-            dialog.getContentPane().setBackground(Color.WHITE);
+            dialog.setBackground(UIConstants.getTrackPanelBackground());
+            dialog.getContentPane().setBackground(UIConstants.getTrackPanelBackground());
 
             Component[] children = optionPane.getComponents();
             if (children != null) {
                 for (Component child : children) {
-                    child.setBackground(Color.WHITE);
+                    child.setBackground(UIConstants.getTrackPanelBackground());
                 }
             }
 

@@ -3,6 +3,7 @@ package org.igv.maf;
 import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.SequenceRenderer;
 import org.igv.track.RenderContext;
+import org.igv.ui.UIConstants;
 import org.igv.track.Track;
 import org.igv.ui.FontManager;
 
@@ -50,7 +51,7 @@ public class MAFRenderer {
 
             int pixelPosition = (int) ((gap.position - origin) / locScale);
 
-            Graphics2D g = context.getGraphic2DForColor(Color.BLACK);
+            Graphics2D g = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
 
             g.drawLine(pixelPosition, rect.y + rect.height - 5, pixelPosition,
                     rect.y + rect.height);
@@ -134,7 +135,7 @@ public class MAFRenderer {
                 if (charToDraw == '.') {
                     color = Color.LIGHT_GRAY;
                 } else if (color == null) {
-                    color = Color.black;
+                    color = UIConstants.getTrackPanelForeground();
                 }
                 g.setColor(color);
 
@@ -156,7 +157,7 @@ public class MAFRenderer {
 
         // Check for insertion
         if (gaps != null) {
-            Graphics2D gapG = context.getGraphic2DForColor(Color.black);
+            Graphics2D gapG = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
             for (MultipleAlignmentBlock.Gap gap : gaps) {
                 for (int idx = gap.startIdx; idx < gap.startIdx + gap.size; idx++) {
                     if (alignmentBytes[idx] != '-') {

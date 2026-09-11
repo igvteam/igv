@@ -18,6 +18,7 @@ import org.igv.event.ViewChange;
 import org.igv.feature.RegionOfInterest;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.util.IGVMouseInputAdapter;
 
 import javax.swing.*;
@@ -60,7 +61,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
         this.darkMode = Globals.isDarkMode();
 
         //setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200)));
-        setBackground(darkMode ? UIManager.getColor("Panel.background") : new java.awt.Color(255, 255, 255));
+        setBackground(UIConstants.getTrackPanelBackground());
         setMinimumSize(new java.awt.Dimension(700, 0));
         setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.BorderLayout());
@@ -73,7 +74,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
             geneListPanel.setLayout(new java.awt.BorderLayout());
 
             label = new JLabel(frame.getFormattedLocusString());
-            label.setForeground(Color.blue);
+            label.setForeground(Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.blue);
             label.setToolTipText("Go to " + frame.getName());
             label.addMouseListener(new MouseAdapter() {
                 long mouseDownTime = 0;
@@ -147,17 +148,17 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
             BoxLayout layout = new BoxLayout(labelPanel, BoxLayout.LINE_AXIS);
             labelPanel.setLayout(layout);
             final JPanel spacerLeft = new JPanel();
-            spacerLeft.setBackground(new java.awt.Color(255, 255, 255));
+            spacerLeft.setBackground(UIConstants.getTrackPanelBackground());
             labelPanel.add(spacerLeft);
             labelPanel.add(label);
             final JPanel spacerRight = new JPanel();
-            spacerRight.setBackground(new java.awt.Color(255, 255, 255));
+            spacerRight.setBackground(UIConstants.getTrackPanelBackground());
             labelPanel.add(spacerRight);
-            labelPanel.setBackground(new java.awt.Color(255, 255, 255));
+            labelPanel.setBackground(UIConstants.getTrackPanelBackground());
             geneListPanel.add(labelPanel, BorderLayout.CENTER);
 
             JPanel bottomPanel = new JPanel();
-            bottomPanel.setBackground(new java.awt.Color(255, 255, 255));
+            bottomPanel.setBackground(UIConstants.getTrackPanelBackground());
             geneListPanel.add(bottomPanel, BorderLayout.SOUTH);
 
             add(geneListPanel);
@@ -173,25 +174,25 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
 
             JPanel panel = new JPanel();
             setBorder(javax.swing.BorderFactory.createLineBorder(Color.gray));
-            panel.setBackground(new java.awt.Color(255, 255, 255));
+            panel.setBackground(UIConstants.getTrackPanelBackground());
             panel.setMinimumSize(new java.awt.Dimension(700, 0));
             panel.setPreferredSize(new java.awt.Dimension(0, 0));
             panel.setLayout(new java.awt.BorderLayout());
 
             cytobandPanel = new CytobandPanel(frame);
-            cytobandPanel.setBackground(new java.awt.Color(255, 255, 255));
+            cytobandPanel.setBackground(UIConstants.getTrackPanelBackground());
             cytobandPanel.setPreferredSize(new java.awt.Dimension(0, 50));
             cytobandPanel.setRequestFocusEnabled(false);
             cytobandPanel.setLayout(null);
             panel.add(cytobandPanel, java.awt.BorderLayout.NORTH);
 
             rulerPanel = new RulerPanel(frame);
-            rulerPanel.setBackground(new java.awt.Color(255, 255, 255));
+            rulerPanel.setBackground(UIConstants.getTrackPanelBackground());
             rulerPanel.setLayout(null);
             panel.add(rulerPanel, java.awt.BorderLayout.CENTER);
 
             regionOfInterestPane = new RegionOfInterestPanel(frame);
-            regionOfInterestPane.setBackground(new java.awt.Color(255, 255, 255));
+            regionOfInterestPane.setBackground(UIConstants.getTrackPanelBackground());
             regionOfInterestPane.setMinimumSize(new java.awt.Dimension(0, 13));
 
 
@@ -280,7 +281,7 @@ public class HeaderPanel extends JPanel implements Transferable, Paintable, IGVE
 
         this.paint(g);
 
-        borderGraphics.setColor(Color.lightGray);
+        borderGraphics.setColor(Globals.isDarkMode() ? Color.GRAY : Color.lightGray);
         borderGraphics.drawRect(rect.x, rect.y, rect.width-1, rect.height-1);
         borderGraphics.dispose();
     }

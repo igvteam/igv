@@ -1,5 +1,6 @@
 package org.igv.variant;
 
+import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
@@ -74,13 +75,18 @@ public class VariantRenderer {
 
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
+        // The allele frequency "reference" band and the heterozygous genotype color both default to a near-black
+        // blue, which disappears against a dark background.
+        final Color alleleBandRef = prefMgr.getAsColor(AF_REF_COLOR, Globals.DARK_MODE_BLUE);
+        final Color het = prefMgr.getAsColor(HETVAR_COLOR, Globals.DARK_MODE_BLUE);
+
         if (!prefMgr.getAsColor(AF_VAR_COLOR).equals(colorAlleleBandVar)) {
             colorAlleleBandVar = prefMgr.getAsColor(AF_VAR_COLOR);
             colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
 
         }
-        if (!prefMgr.getAsColor(AF_REF_COLOR).equals(colorAlleleBandRef)) {
-            colorAlleleBandRef = prefMgr.getAsColor(AF_REF_COLOR);
+        if (!alleleBandRef.equals(colorAlleleBandRef)) {
+            colorAlleleBandRef = alleleBandRef;
             colorAlleleBandRefAlpha = ColorUtilities.getCompositeColor(colorAlleleBandRef, alphaValue);
 
         }
@@ -92,8 +98,8 @@ public class VariantRenderer {
             colorHomVar = prefMgr.getAsColor(HOMVAR_COLOR);
             colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar, alphaValue);
         }
-        if (!prefMgr.getAsColor(HETVAR_COLOR).equals(colorHet)) {
-            colorHet = prefMgr.getAsColor(HETVAR_COLOR);
+        if (!het.equals(colorHet)) {
+            colorHet = het;
             colorHetAlpha = ColorUtilities.getCompositeColor(colorHet, alphaValue);
         }
         if (!prefMgr.getAsColor(NOCALL_COLOR).equals(colorNoCall)) {

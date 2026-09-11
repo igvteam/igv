@@ -1,5 +1,6 @@
 package org.igv.seg;
 
+import org.igv.Globals;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
 import org.igv.prefs.Constants;
@@ -48,7 +49,7 @@ public class CNFreqTrack extends AbstractTrack {
         float nSamples = data.getNumberOfSamples();
         this.setDataRange(new DataRange(-nSamples, 0, nSamples));
         this.color = Color.red;
-        this.altColor = Color.blue;
+        this.altColor = Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.blue;
 
         renderer = new BarChartRenderer();
         this.setHeight(50);

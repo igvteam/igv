@@ -8,6 +8,7 @@
  */
 package org.igv.renderer;
 
+import org.igv.ui.UIConstants;
 import org.igv.feature.LocusScore;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
@@ -66,7 +67,7 @@ public class FeatureDensityRenderer extends DataRenderer {
 
 
                 // Draw a single dividing line along the bottom or the rect
-                g.setColor(Color.BLACK);
+                g.setColor(UIConstants.getTrackPanelForeground());
                 g.drawLine((int) rect.getX(), (int) rect.getMaxY(), (int) rect.getMaxX(), (int) rect.getMaxY());
             }
         }

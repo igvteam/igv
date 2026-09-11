@@ -1,6 +1,8 @@
 package org.igv.circview.ui;
 
 import org.igv.circview.model.Assembly;
+import org.igv.Globals;
+import org.igv.ui.UIConstants;
 import org.igv.circview.model.ChordCollection;
 import org.igv.circview.model.Chord;
 import org.igv.circview.model.ChordSet;
@@ -104,7 +106,7 @@ public class CircularView extends JPanel {
 
     public CircularView(CircularViewConfig config) {
         this.config = (config != null) ? config : new CircularViewConfig();
-        setBackground(Color.WHITE);
+        setBackground(UIConstants.getTrackPanelBackground());
         setPreferredSize(new Dimension(this.config.width, this.config.height));
         MouseAdapter mouse = new MouseAdapter() {
             @Override
@@ -165,7 +167,7 @@ public class CircularView extends JPanel {
     public void addChords(List<Chord> chords, String name, Color color, Color trackColor) {
         String setName = (name != null) ? name : "*";
         String trackName = setName.split(" ")[0];
-        Color c = (color != null) ? color : Color.BLACK;
+        Color c = (color != null) ? color : UIConstants.getTrackPanelForeground();
         Color tc = (trackColor != null) ? trackColor : c;
         chordManager.addChordSet(new ChordSet(setName, trackName, chords, c, tc));
         fireStructureChanged();
@@ -304,7 +306,7 @@ public class CircularView extends JPanel {
     }
 
     private void drawLabels(Graphics2D g2, GenomeArcLayout layout, double outerRadius) {
-        g2.setColor(Color.DARK_GRAY);
+        g2.setColor(Globals.isDarkMode() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
         g2.setFont(getFont().deriveFont(Font.BOLD, 11f));
         FontMetrics fm = g2.getFontMetrics();
         double labelRadius = outerRadius + 14;
@@ -359,7 +361,7 @@ public class CircularView extends JPanel {
         // Redraw the hovered chord opaque-black and on top, so it is unambiguous
         // among overlapping arcs before the user clicks.
         if (hovered != null) {
-            g2.setColor(Color.BLACK);
+            g2.setColor(UIConstants.getTrackPanelForeground());
             g2.setStroke(HOVER_STROKE);
             g2.fill(hovered.shape);
             g2.draw(hovered.shape);

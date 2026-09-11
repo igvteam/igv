@@ -82,6 +82,8 @@ final public class Constants {
     public static final String FEATURE_NAME_PROPERTY = "FEATURE_NAME_PROPERTY";
     public static final String INITIAL_TRACK_HEIGHT = "15";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
+    /** Suffix marking the dark-theme variant of a color scale preference, e.g. COLOR_SCALE_COPY_NUMBER_DARK */
+    public static final String DARK_SCALE_SUFFIX = "_DARK";
     public static final String TRACK_HEIGHT_KEY = "IGV.track.height";
     public static final String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
     public static final String INTERACT_TRACK_HEIGHT = "IGV.interact.track.height";

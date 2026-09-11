@@ -17,7 +17,9 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
@@ -27,6 +29,7 @@ import org.igv.variant.vcf.MateVariant;
 import org.igv.variant.vcf.VCFVariant;
 import org.w3c.dom.Element;
 
+import javax.swing.UIManager;
 import java.awt.*;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -51,8 +54,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     private static final Color CIRC_VIEW_DEFAULT_COLOR = new Color(27, 192, 249);
     private static final int GROUP_BORDER_WIDTH = 0;
-    private static final Color BAND1_COLOR = new Color(245, 245, 245);
-    private static final Color BAND2_COLOR = Globals.isDarkMode() ? new Color(200, 200, 200) : Color.white;
+    // Alternating "greenbar" background for the genotype bands.  In dark mode these are derived from the panel
+    // background so the bands stay dark -- the sample names drawn over them are white.
+    private static final Color BAND1_COLOR;
+    private static final Color BAND2_COLOR;
+
+    static {
+        if (Globals.isDarkMode()) {
+            Color background = UIManager.getColor("Panel.background");
+            if (background == null) background = new Color(60, 63, 65);
+            BAND1_COLOR = ColorUtilities.shiftBrightness(background, 12);
+            BAND2_COLOR = background;
+        } else {
+            BAND1_COLOR = new Color(245, 245, 245);
+            BAND2_COLOR = Color.white;
+        }
+    }
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
     private final static int VARIANT_BAND_HEIGHT = 25;
@@ -387,6 +404,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                             String label = sampleGroup.label();
                             if (hasGroups && label != null) {
                                 var r = new Rectangle(variantRect.x, yLabel, genotypeRect.width, Math.min(20, genotypeRect.y - yLabel));
+                                context.getGraphics().setColor(UIConstants.getTrackPanelForeground());
                                 GraphicUtils.drawVerticallyCenteredText(label, 0, r, context.getGraphics(), false, true);
                                 drawGroupDivider(context.getGraphics(), genotypeRect, genotypeRect.y);
                             }
@@ -396,7 +414,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
                         boolean isSelected = selectedVariant != null && selectedVariant == variant;
                         if (isSelected) {
-                            Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
+                            Graphics2D selectionGraphics =
+                                    context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
                             selectionGraphics.drawRect(x, 0, w, this.getContentHeight());
                         }
                     }
@@ -460,7 +479,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             Rectangle clipRect = g2D.getClipBounds();
 
             g2D.setFont(FontManager.getFont(getFontSize()));
-            g2D.setColor(Color.black);
+            g2D.setColor(UIConstants.getTrackPanelForeground());
 
             //   if(visibleRect.y < getVariantsHeight()) {
             Rectangle variantRect = new Rectangle(trackRectangle);

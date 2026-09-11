@@ -13,6 +13,8 @@ import org.igv.util.ChromosomeColors;
 
 import javax.swing.*;
 import java.awt.*;
+import org.igv.Globals;
+import org.igv.ui.UIConstants;
 import java.awt.event.MouseEvent;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
@@ -31,8 +33,8 @@ class SupplementalAlignmentDiagram extends JPanel {
     public static final int BETWEEN_ALIGNMENT_GAP = 15;
     public static final int BETWEEN_CONTIG_GAP = 10;
     public static final int ALIGNMENT_HEIGHT = 10;
-    public static final Color SELECTED_COLOR = Color.BLUE;
-    public static final Color PRIMARY_BORDER_COLOR = Color.DARK_GRAY;
+    public static final Color SELECTED_COLOR = Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.BLUE;
+    public static final Color PRIMARY_BORDER_COLOR = Globals.isDarkMode() ? Color.LIGHT_GRAY : Color.DARK_GRAY;
     public static final int DEFAULT_WIDTH = 500;
 
     private Rectangle2D chrDiagramBounds = null;
@@ -45,7 +47,7 @@ class SupplementalAlignmentDiagram extends JPanel {
 
     public SupplementalAlignmentDiagram(final SupplementaryGroup toDraw) {
         this.toDraw = toDraw;
-        this.setBackground(Color.WHITE);
+        this.setBackground(UIConstants.getTrackPanelBackground());
         this.addMouseMotionListener(new IGVMouseInputAdapter() {
 
             @Override
@@ -95,7 +97,7 @@ class SupplementalAlignmentDiagram extends JPanel {
     @Override
     protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
-        setBackground(Color.WHITE);
+        setBackground(UIConstants.getTrackPanelBackground());
         ((Graphics2D) g).setComposite(getAlphaComposite());
         g.setColor(Color.LIGHT_GRAY);
         elementsOnScreen.clear();
@@ -108,7 +110,7 @@ class SupplementalAlignmentDiagram extends JPanel {
 
         if (!selected.isEmpty()) {
             final SupplementaryAlignment first = this.selected.iterator().next();
-            g.setColor(Color.BLACK);
+            g.setColor(UIConstants.getTrackPanelForeground());
             g.drawString(String.format("%s:%d-%d", first.getContig(), first.getStart(), first.getEnd()), 30, getHeight() - g.getFontMetrics().getHeight() + 2);
         }
     }

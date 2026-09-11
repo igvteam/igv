@@ -1,5 +1,6 @@
 package org.igv.renderer;
 
+import org.igv.Globals;
 import org.igv.feature.GisticScore;
 import org.igv.track.GisticTrack;
 import org.igv.track.RenderContext;
@@ -82,7 +83,8 @@ public class GisticTrackRenderer {
 
             scores = gisticTrack.getDelScores(chr);
             if (scores != null) {
-                Graphics2D g2D = context.getGraphic2DForColor(Color.BLUE);
+                Graphics2D g2D = context.getGraphic2DForColor(
+                        Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.BLUE);
                 plotScoresOn(scores, g2D, rect, xEnd, scale, context, xStart, yStart);
             }
         }

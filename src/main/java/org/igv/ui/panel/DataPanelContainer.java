@@ -10,6 +10,7 @@ import org.igv.track.Track;
 import org.igv.track.TrackGroup;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.MessageCollection;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.LongRunningTask;
@@ -114,7 +115,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         super.paintChildren(g);
         if (IGV.getInstance().isRulerEnabled()) {
             int start = MouseInfo.getPointerInfo().getLocation().x - getLocationOnScreen().x;
-            g.setColor(Color.BLACK);
+            g.setColor(UIConstants.getTrackPanelForeground());
             g.drawLine(start, 0, start, getHeight());
 
             ReferenceFrame frame = FrameManager.getDefaultFrame();

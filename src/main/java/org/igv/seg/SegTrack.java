@@ -12,6 +12,7 @@ import org.igv.sample.SampleMenuUtils;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
@@ -148,6 +149,7 @@ public class SegTrack extends AbstractTrack {
             String label = group.label();
             if (hasGroups && label != null) {
                 var r = new Rectangle(trackRect.x, yLabel, trackRect.width, Math.min(20, y - yLabel));
+                context.getGraphics().setColor(UIConstants.getTrackPanelForeground());
                 GraphicUtils.drawVerticallyCenteredText(label, 10, r, context.getGraphics(), false, true);
                 drawGroupDivider(context.getGraphics(), trackRect, y);
             }

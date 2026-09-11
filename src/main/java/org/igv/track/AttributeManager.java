@@ -399,7 +399,7 @@ public class AttributeManager implements AttributeSupplier {
                     Color color1 = ColorUtilities.stringToColor(tokens[2]);
                     Color color2 = ColorUtilities.stringToColor(tokens[3]);
                     if (min < 0) {
-                        scale = new ContinuousColorScale(min, 0, max, color1, Color.white, color2);
+                        scale = new ContinuousColorScale(min, 0, max, color1, AbstractColorScale.neutralColor(), color2);
                     } else {
                         scale = new ContinuousColorScale(min, max, color1, color2);
                     }
@@ -480,7 +480,7 @@ public class AttributeManager implements AttributeSupplier {
                     if (metaData.isDiverging()) {
                         // reg-blue diverging
                         Color minColor = new Color(198, 219, 239);
-                        Color midColor = Color.white;
+                        Color midColor = AbstractColorScale.neutralColor();
                         Color maxColor = new Color(33, 102, 172);
                         cs = new ContinuousColorScale(metaData.getMin(), 0, metaData.getMax(), minColor, midColor, maxColor);
                         colorScales.put(attKey, cs);

@@ -86,7 +86,7 @@ public class RulerPanel extends JPanel {
         if (Globals.isDarkMode()) {
             tickColor = Color.white;
             setBackground(UIManager.getColor("Panel.background"));
-            expandedInsertionColor = Color.CYAN;
+            expandedInsertionColor = Globals.DARK_MODE_BLUE;
             collapsedInsertionColor = Color.WHITE;
             zoomedoutInsertionColor = ColorUtilities.modifyAlpha(Color.LIGHT_GRAY, 50);
             dragColor = new Color(.8f, .8f, 1f, .3f);

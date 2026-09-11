@@ -734,7 +734,7 @@ public class TrackMenuUtils {
 
                 // Fallback: if none of the selected tracks provide a color scale, create a simple default
                 if (colorScale == null) {
-                    colorScale = new ContinuousColorScale(0, 10, Color.white, Color.red);
+                    colorScale = new ContinuousColorScale(0, 10, AbstractColorScale.neutralColor(), Color.red);
                 }
 
                 HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getInstance().getMainFrame(), colorScale);

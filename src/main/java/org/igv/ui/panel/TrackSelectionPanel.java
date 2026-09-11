@@ -3,6 +3,7 @@ package org.igv.ui.panel;
 import org.igv.event.IGVEventBus;
 import org.igv.event.TrackSelectionEvent;
 import org.igv.track.Track;
+import org.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,13 +23,13 @@ public class TrackSelectionPanel extends JPanel {
 
     public TrackSelectionPanel(TrackPanel trackPanel) {
         this.trackPanel = trackPanel;
-        setBackground(Color.WHITE);
+        setBackground(UIConstants.getTrackPanelBackground());
         setPreferredSize(new Dimension(SELECTION_PANEL_WIDTH, 0));
         setMinimumSize(new Dimension(SELECTION_PANEL_WIDTH, 0));
         setLayout(new GridBagLayout());
 
         checkBox = new JCheckBox();
-        checkBox.setBackground(Color.WHITE);
+        checkBox.setBackground(getBackground());
         checkBox.setOpaque(true);
         checkBox.addItemListener(e -> IGVEventBus.getInstance().post(new TrackSelectionEvent()));
 

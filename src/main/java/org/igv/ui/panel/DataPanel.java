@@ -74,11 +74,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
         setToolTipText("");
         painter = new DataPanelPainter();
 
-        if (darkMode && !PreferencesManager.getPreferences().hasExplicitValue(Constants.BACKGROUND_COLOR)) {
-            setBackground(UIManager.getColor("Panel.background"));
-        } else {
-            setBackground(PreferencesManager.getPreferences().getAsColor(Constants.BACKGROUND_COLOR));
-        }
+        setBackground(UIConstants.getTrackPanelBackground());
 
         ToolTipManager.sharedInstance().registerComponent(this);
     }
@@ -162,7 +158,7 @@ public class DataPanel extends JComponent implements Paintable, IGVEventObserver
                 int startLoc = ((RegionOfInterestTool) currentTool).getRoiStart();
                 if (startLoc > 0) {
                     int start = frame.getScreenPosition(startLoc);
-                    g.setColor(Color.BLACK);
+                    g.setColor(UIConstants.getTrackPanelForeground());
                     graphics2D.drawLine(start, 0, start, getHeight());
                 }
             }

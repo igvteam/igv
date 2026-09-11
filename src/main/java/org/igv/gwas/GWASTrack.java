@@ -10,6 +10,7 @@ import org.igv.renderer.DataRange;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.panel.IGVPopupMenu;
@@ -216,7 +217,7 @@ public class GWASTrack extends AbstractTrack {
         try {
             g = (Graphics2D) context.getGraphics().create();
 
-            g.setColor(Color.black);
+            g.setColor(UIConstants.getTrackPanelForeground());
             g.setFont(FontManager.getFont(11));
 
             Rectangle axisRect = new Rectangle(plotRect.x, plotRect.y + 1, AXIS_AREA_WIDTH, plotRect.height);

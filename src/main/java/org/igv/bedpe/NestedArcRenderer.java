@@ -1,6 +1,7 @@
 package org.igv.bedpe;
 
 import org.igv.Globals;
+import org.igv.ui.UIConstants;
 import org.igv.track.RenderContext;
 
 import java.awt.*;
@@ -18,7 +19,8 @@ public class NestedArcRenderer implements BedPERenderer {
     private Map<String, Color> alphaColors = new HashMap<>();
 
     // Default track color to use when track.getColor() returns null
-    private static final Color DEFAULT_TRACK_COLOR = Color.blue;
+    private static final Color DEFAULT_TRACK_COLOR =
+            Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.blue;
 
     InteractionTrack track;
     double theta = Math.toRadians(45);
@@ -128,7 +130,8 @@ public class NestedArcRenderer implements BedPERenderer {
                         feature.setShape(new NAShape(xc, yc, r));
 
                     } else {
-                        Color fcolor = bedPE.getColor() == null ? Color.black : bedPE.getColor();
+                        Color fcolor = bedPE.getColor() == null
+                                ? UIConstants.getTrackPanelForeground() : bedPE.getColor();
                         g.setColor(fcolor);
                         int h = trackRectangle.height / 2;
                         double ps = ((bedPE.getStart() + bedPE.getEnd()) / 2 - origin) / locScale;

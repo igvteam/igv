@@ -48,15 +48,10 @@ public class SequenceRenderer {
         nucleotideColors = new HashMap();
 
         Color a = ColorUtilities.stringToColor(prefs.get(COLOR_A), new Color(0, 150, 0));
-        Color c = ColorUtilities.stringToColor(prefs.get(COLOR_C), Color.blue);
+        Color c = prefs.getAsColor(COLOR_C, Globals.DARK_MODE_BLUE);
         Color t = ColorUtilities.stringToColor(prefs.get(COLOR_T), Color.red);
         Color g = ColorUtilities.stringToColor(prefs.get(COLOR_G), new Color(209, 113, 5));
         Color n = ColorUtilities.stringToColor(prefs.get(COLOR_N), Color.gray);
-
-        if(Globals.isDarkMode() && !prefs.hasExplicitValue(COLOR_C)) {
-            // If the user has not set a color for C, use a lighter blue in dark mode
-            c = new Color(0, 150, 255);
-        }
 
         nucleotideColors.put('A', a);
         nucleotideColors.put('a', a);
@@ -168,7 +163,8 @@ public class SequenceRenderer {
                         Color color = nucleotideColors.get(c);
                         if (fontSize >= 8) {
                             if (color == null) {
-                                color = Color.black;
+                                // Unmapped character, e.g. an IUPAC ambiguity code
+                                color = UIConstants.getTrackPanelForeground();
                             }
                             g.setColor(color);
                             drawCenteredText(g, new char[]{c}, pX0, yBase + 2, dX, dY - 2);

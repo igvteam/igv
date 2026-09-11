@@ -7,6 +7,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -125,7 +126,8 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
 
-        Color labelColor = prefs.getAsBoolean(CHART_COLOR_TRACK_NAME) ? track.getColor() : Color.black;
+        Color labelColor = prefs.getAsBoolean(CHART_COLOR_TRACK_NAME)
+                ? track.getColor() : UIConstants.getTrackPanelForeground();
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
 
         labelGraphics.setFont(FontManager.getFont(8));
@@ -136,7 +138,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
                 labelGraphics.setFont(FontManager.getFont(10));
-                GraphicUtils.drawCenteredText(track.getName(), labelRect, labelGraphics);
+                // Erase behind the label -- it is drawn over the plot area, and with CHART.COLOR_TRACK_NAME on it
+                // takes the track's own color, so a full height bar would otherwise swallow it.
+                GraphicUtils.drawCenteredText(track.getName(), labelRect, labelGraphics, true);
             }
         }
 

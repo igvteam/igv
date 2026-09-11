@@ -6,6 +6,7 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.panel.IGVPopupMenu;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
@@ -122,7 +123,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRect) {
 
         this.visibleNameRect = visibleRect;
-        g2D.setBackground(Color.WHITE);
+        g2D.setBackground(UIConstants.getTrackPanelBackground());
 
         Rectangle rect = new Rectangle(visibleRect);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
@@ -201,7 +202,7 @@ public class MultipleAlignmentTrack extends AbstractTrack {
                 r.height = visibleNameRect.height;
             }
 
-            Graphics2D g = context.getGraphic2DForColor(Color.black);
+            Graphics2D g = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", r, g);
             return;
 

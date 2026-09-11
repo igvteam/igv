@@ -126,7 +126,7 @@ public abstract class AbstractTrack implements Track {
 
     public AbstractTrack() {
         this.darkMode = Globals.isDarkMode();
-        defaultColor = darkMode ? Color.CYAN : Color.blue.darker();
+        defaultColor = darkMode ? Globals.DARK_MODE_BLUE : Color.blue.darker();
     }
 
     public AbstractTrack(
@@ -615,7 +615,7 @@ public abstract class AbstractTrack implements Track {
 
                 Color midColor = properties.getMidColor();
                 if (midColor == null) {
-                    midColor = Color.white;
+                    midColor = AbstractColorScale.neutralColor();
                 }
                 colorScale = new ContinuousColorScale(neutralFrom, min, neutralTo, max, minColor, midColor, maxColor);
             }
@@ -714,13 +714,14 @@ public abstract class AbstractTrack implements Track {
             // There is no default,  create one from the data range and track colors
             double min = dataRange == null ? 0 : dataRange.getMinimum();
             double max = dataRange == null ? 10 : dataRange.getMaximum();
+            final Color neutral = AbstractColorScale.neutralColor();
             if (min < 0) {
-                Color minColor = altColor == null ? oppositeColor(Color.white) : altColor;
-                colorScale = new ContinuousColorScale(min, 0, max, minColor, Color.white, getColor());
+                Color minColor = altColor == null ? oppositeColor(neutral) : altColor;
+                colorScale = new ContinuousColorScale(min, 0, max, minColor, neutral, getColor());
             } else {
-                colorScale = new ContinuousColorScale(min, max, Color.white, getColor());
+                colorScale = new ContinuousColorScale(min, max, neutral, getColor());
             }
-            colorScale.setNoDataColor(PreferencesManager.getPreferences().getAsColor(Constants.NO_DATA_COLOR));
+            colorScale.setNoDataColor(AbstractColorScale.noDataColor());
         }
 
         return colorScale;

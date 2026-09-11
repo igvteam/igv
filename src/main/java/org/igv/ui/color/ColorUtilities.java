@@ -2,6 +2,7 @@ package org.igv.ui.color;
 
 
 import org.igv.logging.*;
+import org.igv.ui.UIConstants;
 import org.igv.util.ObjectCache;
 
 import java.awt.*;
@@ -243,6 +244,17 @@ public class ColorUtilities {
         return d;
     }
 
+    /**
+     * Shift each color component by a fixed amount, clamped to [0, 255].  Unlike Color.brighter(), which scales,
+     * this lifts very dark colors -- Color.brighter() is a no-op on any component that is already zero.
+     */
+    public static Color shiftBrightness(Color color, int delta) {
+        return new Color(
+                Math.clamp(color.getRed() + delta, 0, 255),
+                Math.clamp(color.getGreen() + delta, 0, 255),
+                Math.clamp(color.getBlue() + delta, 0, 255));
+    }
+
 
     /**
      * Return  alphas shaded color.  This method is used, rather than the Color constructor, so that
@@ -282,8 +294,26 @@ public class ColorUtilities {
      * @return
      */
     public static Color getCompositeColor(Color source, float alpha) {
-        return getCompositeColor(Color.white, source, alpha);
+        return getCompositeColor(compositeBackground(), source, alpha);
     }
+
+    /**
+     * Backdrop that alpha-faded colors are composited against.  Fading has to move a color *towards the
+     * background* to read as de-emphasized; compositing against a fixed white made low-score features and
+     * filtered variants the brightest thing on a dark panel.
+     * <p>
+     * Cached because this sits in per-feature rendering paths.  That matches how the background behaves
+     * elsewhere -- the panels read BACKGROUND_COLOR once at construction, and the theme preference requires a
+     * restart -- so there is nothing to invalidate.
+     */
+    private static Color compositeBackground() {
+        if (compositeBackground == null) {
+            compositeBackground = UIConstants.getTrackPanelBackground();
+        }
+        return compositeBackground;
+    }
+
+    private static volatile Color compositeBackground;
 
 
     public static Map<String, ColorPalette> loadPalettes() throws IOException {

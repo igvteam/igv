@@ -101,6 +101,8 @@ public class CommandExecutor {
             result = setSnapshotDirectory(param1);
         } else if (cmd.equalsIgnoreCase("snapshot")) {
             result = createSnapshot(param1, param2);
+        } else if (cmd.equalsIgnoreCase("uisnapshot")) {
+            result = createUISnapshot(param1, param2, param3);
         } else if (cmd.equalsIgnoreCase("savesession")) {
             String filename = param1;
             result = saveSession(filename);
@@ -1176,6 +1178,57 @@ public class CommandExecutor {
         } catch (Exception e) {
             log.error(e);
             return e.getMessage();
+        }
+    }
+
+    /**
+     * Debugging aid -- write an image of the live UI, including the chrome that "snapshot" skips (scrollbars,
+     * the track selection strip, checkboxes, borders).  See SnapshotUtilities.writeComponentImage.
+     *
+     * @param filename destination file; defaults to igv-ui.png
+     * @param region   "content" (default, the whole IGV content pane), "mainpanel", or "trackpanels"
+     * @param scale    integer scale factor, default 1
+     */
+    private String createUISnapshot(String filename, String region, String scale) {
+
+        filename = filename == null ? "igv-ui.png" : StringUtils.stripQuotes(filename);
+
+        File file;
+        if (snapshotDirectory == null) {
+            file = getFile(filename);
+            if (!file.getAbsoluteFile().getParentFile().exists()) {
+                createParents(file);
+            }
+        } else {
+            file = new File(snapshotDirectory, filename);
+        }
+
+        Component target;
+        if (region == null || region.trim().isEmpty() || "content".equalsIgnoreCase(region)) {
+            target = this.igv.getContentPane();
+        } else if ("mainpanel".equalsIgnoreCase(region)) {
+            target = this.igv.getMainPanel();
+        } else if ("trackpanels".equalsIgnoreCase(region)) {
+            target = this.igv.getMainPanel().getTrackPanelContainer();
+        } else {
+            return "ERROR. Unknown region: " + region;
+        }
+
+        int scaleFactor = 1;
+        if (scale != null && !scale.trim().isEmpty()) {
+            try {
+                scaleFactor = Integer.parseInt(scale.trim());
+            } catch (NumberFormatException e) {
+                return "ERROR. Scale is not an integer: " + scale;
+            }
+        }
+
+        try {
+            SnapshotUtilities.writeComponentImage(target, file, scaleFactor);
+            return "OK";
+        } catch (Exception e) {
+            log.error("Error writing UI snapshot", e);
+            return "ERROR. " + e.getMessage();
         }
     }
 

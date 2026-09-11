@@ -21,7 +21,7 @@ public class HyperlinkFactory {
     public static JLabel createLink(String label, String link) throws HeadlessException {
 
         JLabel hyperLink = new JLabel(label);
-        hyperLink.setForeground(Globals.isDarkMode() ? Color.CYAN : Color.BLUE.darker());
+        hyperLink.setForeground(Globals.isDarkMode() ? Globals.DARK_MODE_BLUE : Color.BLUE.darker());
         hyperLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         hyperLink.setToolTipText(link);
 

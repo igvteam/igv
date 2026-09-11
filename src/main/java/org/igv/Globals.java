@@ -22,6 +22,13 @@ public class Globals {
 
     public static final Color DULL_BLUE = new Color(0, 0, 200);
     public static final Color DULL_RED = new Color(200, 0, 0);
+
+    /**
+     * Blue used in dark mode wherever a default blue would be too dark to read against the background.  This is the
+     * same blue used for "C" in the sequence and coverage tracks -- previously these sites used Color.cyan, which
+     * testers found uncomfortably bright.
+     */
+    public static final Color DARK_MODE_BLUE = new Color(0, 150, 255);
     private static Logger log = LogManager.getLogger(Globals.class);
 
     public static final int DESIGN_DPI = 96;

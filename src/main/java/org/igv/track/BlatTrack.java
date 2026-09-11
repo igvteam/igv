@@ -1,6 +1,7 @@
 package org.igv.track;
 
 import org.igv.event.DataLoadedEvent;
+import org.igv.Globals;
 import org.igv.event.IGVEventBus;
 import org.igv.feature.PSLRecord;
 import org.igv.feature.genome.Genome;
@@ -44,7 +45,7 @@ public class BlatTrack extends FeatureTrack {
      */
     public BlatTrack() {
         setDisplayMode(Track.DisplayMode.SQUISHED);
-        setColor(Color.DARK_GRAY);
+        setColor(Globals.isDarkMode() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
     }
 
     /**
@@ -56,7 +57,7 @@ public class BlatTrack extends FeatureTrack {
     public BlatTrack(String db, String sequence, List<PSLRecord> features, String trackLabel) {
         super(null, guid(), trackLabel);
         setDisplayMode(Track.DisplayMode.SQUISHED);
-        setColor(Color.DARK_GRAY);
+        setColor(Globals.isDarkMode() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
         this.db = db;
         this.sequence = sequence;
         this.features = features;

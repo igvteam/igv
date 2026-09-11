@@ -15,6 +15,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.UIConstants;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorTable;
 import org.igv.ui.color.ColorUtilities;
@@ -685,6 +686,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                         groupName = "S*";
                     }
                     Graphics2D g = context.getGraphics2D("LABEL");
+                    g.setColor(UIConstants.getTrackPanelForeground());
                     FontMetrics fm = g.getFontMetrics();
                     Rectangle2D stringBouds = fm.getStringBounds(groupName, g);
                     Rectangle rect = new Rectangle(alignmentsRect.x, (int) yGroup, (int) stringBouds.getWidth() + 10, (int) stringBouds.getHeight());

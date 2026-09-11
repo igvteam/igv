@@ -148,7 +148,7 @@ public class CytobandRenderer {
 
                     g2D.setColor(getCytobandColor(cytoband));
                     g2D.fillRect(s, y, (e - s), height);
-                    g2D.setColor(Color.BLACK);
+                    g2D.setColor(darkMode ? Color.GRAY : Color.BLACK);
                     g2D.drawRect(s, y, (e - s), height);
                 }
             }

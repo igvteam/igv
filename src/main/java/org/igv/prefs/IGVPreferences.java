@@ -146,6 +146,20 @@ public class IGVPreferences {
     }
 
     /**
+     * Return the preference as a color, substituting an alternative in dark mode.
+     * <p>
+     * Many of IGV's stock color defaults were chosen against a white background and are unreadable against a dark
+     * one -- a near-black blue, a near-white "no data" gray.  This returns {@code darkModeDefault} in dark mode,
+     * but only when the user has not chosen a color explicitly; an explicit choice is always honored.
+     *
+     * @param key             preference key
+     * @param darkModeDefault color to use in dark mode in place of the stock default
+     */
+    public Color getAsColor(String key, Color darkModeDefault) {
+        return (Globals.isDarkMode() && !hasExplicitValue(key)) ? darkModeDefault : getAsColor(key);
+    }
+
+    /**
      * Return the preference as an float.
      *
      * @param key
@@ -701,7 +715,10 @@ public class IGVPreferences {
             return null;
         }
 
-        String key = COLOR_SCALE_KEY + type.toString();
+        // In dark mode prefer the "_DARK" variant of the scale, which uses a dark rather than white neutral.
+        // preferences.tab defines these for COPY_NUMBER and GENE_EXPRESSION, and the preference editor exposes
+        // them; before this they were written but never read.
+        String key = COLOR_SCALE_KEY + type + (Globals.isDarkMode() ? DARK_SCALE_SUFFIX : "");
         ContinuousColorScale scale = colorScaleCache.get(key);
         if (scale == null) {
             String colorScaleString = get(key, null);
@@ -725,7 +742,7 @@ public class IGVPreferences {
             if (colorScaleString != null) {
                 scale = (ContinuousColorScale) ColorScaleFactory.getScaleFromString(colorScaleString);
             } else {
-                String typeString = key.replace(COLOR_SCALE_KEY, "").replace("_DARK", "");
+                String typeString = key.replace(COLOR_SCALE_KEY, "").replace(DARK_SCALE_SUFFIX, "");
                 try {
                     DataType type = DataType.valueOf(typeString);
                     scale = getDefaultColorScale(type);
@@ -749,29 +766,38 @@ public class IGVPreferences {
      * @return
      */
     static ContinuousColorScale getDefaultColorScale(DataType type) {
+
+        // A heatmap's neutral value and its "no data" fill both have to read as *background*.  A white neutral on
+        // a dark panel reads as a bright band of signal, which is exactly backwards.
+        final Color neutral = Globals.isDarkMode() ? UIConstants.getTrackPanelBackground() : Color.WHITE;
+        final Color noData = Globals.isDarkMode()
+                ? ColorUtilities.shiftBrightness(UIConstants.getTrackPanelBackground(), 12)
+                : new Color(225, 225, 225);
+
         switch (type) {
             case LOH:
-                return new ContinuousColorScale(0, -1, 0, 1, Color.red, UIConstants.LIGHT_YELLOW, Color.blue);
+                Color lohNeutral = Globals.isDarkMode() ? neutral : UIConstants.LIGHT_YELLOW;
+                return new ContinuousColorScale(0, -1, 0, 1, Color.red, lohNeutral, Color.blue);
             case RNAI:
             case POOLED_RNAI:
-                ContinuousColorScale cs = new ContinuousColorScale(0, -3, 0, 3, Color.red, Color.white, Color.blue);
-                cs.setNoDataColor(new Color(225, 225, 225));
+                ContinuousColorScale cs = new ContinuousColorScale(0, -3, 0, 3, Color.red, neutral, Color.blue);
+                cs.setNoDataColor(noData);
                 return cs;
 
             case DNA_METHYLATION:
                 cs = new ContinuousColorScale(0, 1, Color.BLUE, Color.RED);
-                cs.setNoDataColor(Color.WHITE);
+                cs.setNoDataColor(neutral);
                 return cs;
 
             case GENE_EXPRESSION:
-                cs = getDefaultColorScale(Color.BLUE, Color.WHITE, Color.RED);
-                cs.setNoDataColor(new Color(225, 225, 225));
+                cs = getDefaultColorScale(Color.BLUE, neutral, Color.RED);
+                cs.setNoDataColor(noData);
                 return cs;
 
             case COPY_NUMBER:
             case ALLELE_SPECIFIC_COPY_NUMBER:
             case CNV:
-                return getDefaultColorScale(Color.BLUE, Color.WHITE, Color.RED);
+                return getDefaultColorScale(Color.BLUE, neutral, Color.RED);
 
             default:
                 return null;

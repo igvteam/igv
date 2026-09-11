@@ -5,6 +5,7 @@ package org.igv.feature;
 import org.igv.ui.WaitCursorManager;
 
 import java.awt.*;
+import org.igv.ui.UIConstants;
 
 /**
  * @author eflakes
@@ -16,7 +17,7 @@ public class RegionOfInterest{
     private int start;    // In Chromosome coordinates
     private int end;      // In Chromosome coordinates
     private static Color backgroundColor = Color.RED;
-    private static Color foregroundColor = Color.BLACK;
+    private static Color foregroundColor = UIConstants.getTrackPanelForeground();
     boolean selected = false;
 
     private WaitCursorManager.CursorToken token;

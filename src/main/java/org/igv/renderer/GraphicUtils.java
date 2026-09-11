@@ -1,6 +1,6 @@
 package org.igv.renderer;
 
-import org.igv.Globals;
+import org.igv.ui.UIConstants;
 import org.igv.util.StringUtils;
 
 import java.awt.*;
@@ -54,6 +54,15 @@ public class GraphicUtils {
         drawCenteredText(text, x, y, w, h, g, null);
     }
 
+    /**
+     * Draw centered text, optionally erasing a tight box behind it first so the text stays legible over whatever
+     * has already been painted there.  See {@link #clearColor()} for the color used.
+     */
+    public static void drawCenteredText(String text, Rectangle rect, Graphics g, boolean clear) {
+        drawCenteredText(text, rect.x, rect.y, rect.width, rect.height, g,
+                clear ? clearColor() : null);
+    }
+
     public static void drawCenteredText(String text, int x, int y, int w, int h, Graphics g, Color backgroundColor) {
         FontMetrics fontMetrics = g.getFontMetrics();
 
@@ -64,19 +73,35 @@ public class GraphicUtils {
         int xs = x + xOffset;
         int ys = y + h - yOffset - (int) (textBounds.getHeight() / 4);
 
-        if(backgroundColor != null){
+        if (backgroundColor != null) {
             Graphics gb = g.create();
-            gb.setColor(backgroundColor);
-            int th = (int) textBounds.getHeight();
-            gb.fillRect(xs, ys - 3*th/4, (int) textBounds.getWidth(), th);
+            try {
+                gb.setColor(backgroundColor);
+                int th = (int) textBounds.getHeight();
+                int pad = 2;
+                gb.fillRect(xs - pad, ys - 3 * th / 4, (int) textBounds.getWidth() + 2 * pad, th);
+            } finally {
+                gb.dispose();
+            }
         }
 
-        Color origColor = g.getColor();
-        if(Globals.isDarkMode()) {
-            g.setColor(Color.WHITE);
-        }
+        // The caller's color is honored -- this text is not always on the panel background (amino acid letters sit
+        // on a colored block, indel labels on a filled callout), so forcing white in dark mode used to produce
+        // white-on-white.  Callers drawing on the panel use UIConstants.getTrackPanelForeground().
         g.drawString(text, xs, ys);
-        g.setColor(origColor);
+    }
+
+    /**
+     * Color used to erase the area behind text drawn with "clear".  Every caller draws on the name panel or the
+     * data panel, which share this background, so use it directly rather than a hardcoded black or white --
+     * neither theme's background is pure black or pure white, so a literal punches a visible hole in the panel.
+     * <p>
+     * Deliberately not {@code Graphics2D.getBackground()}: only some callers set it, and a graphics derived from a
+     * BufferedImage (the image export and uisnapshot paths) reports black, which would paint a black box behind
+     * text in light mode.
+     */
+    private static Color clearColor() {
+        return UIConstants.getTrackPanelBackground();
     }
 
     public static void drawVerticallyCenteredText(String text, int margin, Rectangle rect, Graphics g2D, boolean rightJustify) {
@@ -99,8 +124,6 @@ public class GraphicUtils {
              boolean rightJustify,
              boolean clear) {
 
-        boolean darkMode = Globals.isDarkMode();
-
         Color originalColor = g2D.getColor();
 
         FontMetrics fontMetrics = g2D.getFontMetrics();
@@ -112,12 +135,12 @@ public class GraphicUtils {
         int xPos = rightJustify ? rect.x + rect.width - margin - (int) textBounds.getWidth() : margin;
 
         if (clear) {
-            g2D.setColor(darkMode ? Color.BLACK : Color.WHITE);
+            g2D.setColor(clearColor());
             int th = (int) textBounds.getHeight();
             g2D.fillRect(xPos, yPos - 3 * th / 4, (int) textBounds.getWidth(), th);
         }
 
-        g2D.setColor(darkMode ? Color.WHITE : Color.BLACK);
+        g2D.setColor(originalColor);
 
         if (rightJustify) {
             drawRightJustifiedText(text, rect.x + rect.width - margin, yPos, g2D);

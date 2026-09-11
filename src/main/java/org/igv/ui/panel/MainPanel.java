@@ -8,6 +8,7 @@ import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.DataType;
 import org.igv.ui.IGV;
+import org.igv.ui.UIConstants;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.LongRunningTask;
 import org.igv.util.ResourceLocator;
@@ -231,7 +232,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         });
         add(trackPanelScrollPane, BorderLayout.CENTER);
 
-        setBackground(PreferencesManager.getPreferences().getAsColor(BACKGROUND_COLOR));
+        setBackground(UIConstants.getTrackPanelBackground());
 
 
     }
