@@ -167,7 +167,13 @@ public class VariantColorScheme {
 
         String key = tokens[0].trim().toUpperCase();
         String value = tokens[1].trim();
-        Color color = ColorUtilities.stringToColor(tokens[2].trim(), null);
+        Color color;
+        try {
+            color = ColorUtilities.stringToColor(tokens[2].trim(), null);
+        } catch (RuntimeException e) {
+            log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens), e);
+            return;
+        }
         if (color == null) {
             log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens));
             return;
