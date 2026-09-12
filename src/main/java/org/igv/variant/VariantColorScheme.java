@@ -10,6 +10,7 @@ import org.igv.ui.color.ColorUtilities;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,9 +66,15 @@ public class VariantColorScheme {
     private File file;
 
     /**
-     * INFO key (upper case) -> attribute value (lower case) -> color.
+     * INFO key (upper case) -> attribute value -> color.  Values keep the case they were written in, so a file
+     * IGV saves reads back the way the user wrote it; lookup is case insensitive via {@link #valueIndex}.
      */
     private final Map<String, Map<String, Color>> colors = new LinkedHashMap<>();
+
+    /**
+     * INFO key (upper case) -> lower case value -> the value as written, for case insensitive lookup.
+     */
+    private final Map<String, Map<String, String>> valueIndex = new LinkedHashMap<>();
 
     /**
      * INFO key (upper case) -> color for values not otherwise covered.
@@ -182,8 +189,15 @@ public class VariantColorScheme {
         } else if (WILDCARD.equals(value)) {
             defaultColors.put(key, color);
         } else {
-            colors.computeIfAbsent(key, k -> new LinkedHashMap<>()).put(value.toLowerCase(), color);
+            putColor(key, value, color);
         }
+    }
+
+    private void putColor(String key, String value, Color color) {
+        // Reuse the spelling already recorded, if any, so repeated edits do not create near duplicate rows
+        String existing = valueIndex.computeIfAbsent(key, k -> new LinkedHashMap<>())
+                .putIfAbsent(value.toLowerCase(), value);
+        colors.computeIfAbsent(key, k -> new LinkedHashMap<>()).put(existing == null ? value : existing, color);
     }
 
     /**
@@ -195,8 +209,10 @@ public class VariantColorScheme {
             return null;
         }
         String key = infoKey.toUpperCase();
+        Map<String, String> index = valueIndex.get(key);
+        String stored = index == null ? null : index.get(value.toLowerCase());
         Map<String, Color> valueColors = colors.get(key);
-        Color color = valueColors == null ? null : valueColors.get(value.toLowerCase());
+        Color color = stored == null || valueColors == null ? null : valueColors.get(stored);
         return color != null ? color : defaultColors.get(key);
     }
 
@@ -232,6 +248,91 @@ public class VariantColorScheme {
     public Map<String, Color> getColors(String infoKey) {
         Map<String, Color> valueColors = infoKey == null ? null : colors.get(infoKey.toUpperCase());
         return valueColors == null ? Collections.emptyMap() : Collections.unmodifiableMap(valueColors);
+    }
+
+    /**
+     * @return the color for values this scheme does not list, or null if it sets none.
+     */
+    public Color getDefaultColor(String infoKey) {
+        return infoKey == null ? null : defaultColors.get(infoKey.toUpperCase());
+    }
+
+    /**
+     * Set the color for one value of an INFO attribute.
+     */
+    public void setColor(String infoKey, String value, Color color) {
+        String key = infoKey.toUpperCase();
+        if (WILDCARD.equals(value)) {
+            defaultColors.put(key, color);
+        } else {
+            putColor(key, value, color);
+        }
+    }
+
+    /**
+     * Set the color scale for a numeric INFO attribute.
+     */
+    public void setScale(String infoKey, AbstractColorScale scale) {
+        scales.put(infoKey.toUpperCase(), scale);
+    }
+
+    /**
+     * Declare that a numeric INFO attribute holds categories rather than quantities.
+     */
+    public void setCategorical(String infoKey) {
+        categoricalKeys.add(infoKey.toUpperCase());
+    }
+
+    /**
+     * Write this scheme in the tab delimited form it is read from.  This is the only place the format is
+     * written, so hand edited and IGV written files stay interchangeable.
+     */
+    public void write(PrintWriter writer) {
+
+        writer.println(NAME_DIRECTIVE + name);
+        if (description != null) {
+            writer.println(DESCRIPTION_DIRECTIVE + description);
+        }
+        if (source != null) {
+            writer.println(SOURCE_DIRECTIVE + source);
+        }
+        writer.println(COLORS_SECTION);
+
+        for (String key : getKeys()) {
+            if (categoricalKeys.contains(key)) {
+                writer.println(key + "\t" + CATEGORICAL);
+            }
+            AbstractColorScale scale = scales.get(key);
+            if (scale instanceof ContinuousColorScale) {
+                writeScale(writer, key, (ContinuousColorScale) scale);
+            }
+            for (Map.Entry<String, Color> entry : colors.getOrDefault(key, Collections.emptyMap()).entrySet()) {
+                writer.println(key + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
+            }
+            Color defaultColor = defaultColors.get(key);
+            if (defaultColor != null) {
+                writer.println(key + "\t" + WILDCARD + "\t" + ColorUtilities.colorToString(defaultColor));
+            }
+        }
+    }
+
+    private static void writeScale(PrintWriter writer, String key, ContinuousColorScale scale) {
+        if (scale.isUseDoubleGradient()) {
+            writer.println(key
+                    + "\t" + scale.getMinimum() + ":" + scale.getNegStart() + ":" + scale.getMaximum()
+                    + "\t" + ColorUtilities.colorToString(scale.getMinColor())
+                    + "\t" + ColorUtilities.colorToString(scale.getMidColor())
+                    + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
+        } else {
+            writer.println(key
+                    + "\t" + scale.getMinimum() + ":" + scale.getMaximum()
+                    + "\t" + ColorUtilities.colorToString(scale.getMinColor())
+                    + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
+        }
+    }
+
+    void setName(String name) {
+        this.name = name;
     }
 
     public String getName() {

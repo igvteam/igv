@@ -35,6 +35,7 @@ public class VariantColorSchemePanel extends JPanel {
 
     private final SchemeTableModel tableModel = new SchemeTableModel();
     private final JTable table = new JTable(tableModel);
+    private final JButton editButton = new JButton("Edit...");
     private final JButton removeButton = new JButton("Remove");
 
     public VariantColorSchemePanel() {
@@ -60,11 +61,13 @@ public class VariantColorSchemePanel extends JPanel {
         JButton importUrlButton = new JButton("Import URL...");
         importUrlButton.addActionListener(e -> importUrl());
 
+        editButton.addActionListener(e -> editSelected());
         removeButton.addActionListener(e -> removeSelected());
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         buttonPanel.add(importFileButton);
         buttonPanel.add(importUrlButton);
+        buttonPanel.add(editButton);
         buttonPanel.add(removeButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -99,6 +102,22 @@ public class VariantColorSchemePanel extends JPanel {
         }
     }
 
+    /**
+     * Open the scheme for editing.  A scheme shipped with IGV is edited into a copy the user owns.
+     */
+    private void editSelected() {
+        VariantColorScheme scheme = getSelectedScheme();
+        if (scheme == null) {
+            return;
+        }
+        VariantColorSchemeEditor editor = new VariantColorSchemeEditor(
+                javax.swing.SwingUtilities.getWindowAncestor(this), scheme);
+        editor.setVisible(true);
+        if (editor.isSaved()) {
+            schemesChanged();
+        }
+    }
+
     private void removeSelected() {
         VariantColorScheme scheme = getSelectedScheme();
         if (scheme == null || scheme.isBuiltIn()) {
@@ -121,6 +140,7 @@ public class VariantColorSchemePanel extends JPanel {
 
     private void updateButtonState() {
         VariantColorScheme selected = getSelectedScheme();
+        editButton.setEnabled(selected != null);
         removeButton.setEnabled(selected != null && !selected.isBuiltIn());
     }
 

@@ -381,6 +381,51 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
     }
 
+    /**
+     * A whole scheme round trips through the file, every attribute it covers -- the editor saves it this way.
+     */
+    @Test
+    public void testSchemeRoundTrip() throws Exception {
+        String contents = String.join("\n",
+                "#name=Mixed",
+                "#description=Several attributes at once",
+                "#colors",
+                "CLNSIG\tPathogenic\t1,2,3",
+                "CLNSIG\t*\t9,9,9",
+                "DP\tcategorical",
+                "CADD\t0:40\t255,255,204\t202,0,32",
+                "");
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "Mixed");
+
+        VariantColorSchemes.save(scheme);
+        VariantColorSchemes.reset();
+
+        VariantColorScheme reloaded = VariantColorSchemes.getUserSchemes().get(0);
+        assertEquals("Mixed", reloaded.getName());
+        assertEquals("Several attributes at once", reloaded.getDescription());
+        assertEquals(new Color(1, 2, 3), reloaded.getColor("CLNSIG", "Pathogenic"));
+        assertEquals(new Color(9, 9, 9), reloaded.getColor("CLNSIG", "anything else"));
+        assertTrue(reloaded.isCategorical("DP"));
+        assertNotNull(reloaded.getScale("CADD"));
+    }
+
+    /**
+     * A scheme shipped with IGV cannot be written over, so editing one saves a copy that shadows it.
+     */
+    @Test
+    public void testEditingBuiltinSavesACopy() throws Exception {
+        VariantColorScheme builtin = VariantColorSchemes.getBuiltinSchemes().get(0);
+        assertNull(builtin.getFile());
+
+        builtin.setColor("CLNSIG", "Pathogenic", new Color(1, 1, 1));
+        VariantColorSchemes.save(builtin);
+        VariantColorSchemes.reset();
+
+        assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+        assertEquals(1, VariantColorSchemes.getUserSchemes().size());
+        assertFalse(VariantColorSchemes.getUserSchemes().get(0).isBuiltIn());
+    }
+
     private VariantTrack loadTrack() throws Exception {
         String filePath = TestUtils.DATA_DIR + "vcf/clinvar_info.vcf";
         TestUtils.createIndex(filePath);

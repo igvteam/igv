@@ -234,22 +234,33 @@ public class VariantColorSchemes {
     public static synchronized VariantColorScheme saveScheme(String name, String infoKey, Map<String, Color> colors,
                                                              boolean categorical) throws IOException {
 
-        File file = new File(createSchemeDirectory(), getLegalFileName(name) + ".txt");
+        VariantColorScheme scheme = new VariantColorScheme(name);
+        if (categorical) {
+            scheme.setCategorical(infoKey);
+        }
+        for (Map.Entry<String, Color> entry : colors.entrySet()) {
+            scheme.setColor(infoKey, entry.getKey(), entry.getValue());
+        }
+        return save(scheme);
+    }
 
-        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
-            writer.println("#name=" + name);
-            writer.println("#colors");
-            if (categorical) {
-                writer.println(infoKey + "\t" + VariantColorScheme.CATEGORICAL);
-            }
-            for (Map.Entry<String, Color> entry : colors.entrySet()) {
-                writer.println(infoKey + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
-            }
+    /**
+     * Write a scheme to the IGV directory and make it current.  A scheme shipped with IGV cannot be written, so
+     * saving one writes a copy the user owns, which then shadows it.
+     *
+     * @return the saved scheme
+     */
+    public static synchronized VariantColorScheme save(VariantColorScheme scheme) throws IOException {
+
+        File file = scheme.getFile();
+        if (file == null) {
+            file = new File(createSchemeDirectory(), getLegalFileName(scheme.getName()) + ".txt");
+        } else {
+            createSchemeDirectory();
         }
 
-        VariantColorScheme scheme;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            scheme = VariantColorScheme.parse(reader, name);
+        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
+            scheme.write(writer);
         }
         scheme.setFile(file);
 
@@ -266,33 +277,9 @@ public class VariantColorSchemes {
     public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
             throws IOException {
 
-        File file = new File(createSchemeDirectory(), getLegalFileName(name) + ".txt");
-
-        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
-            writer.println("#name=" + name);
-            writer.println("#colors");
-            if (scale.isUseDoubleGradient()) {
-                writer.println(infoKey
-                        + "\t" + scale.getMinimum() + ":" + scale.getNegStart() + ":" + scale.getMaximum()
-                        + "\t" + ColorUtilities.colorToString(scale.getMinColor())
-                        + "\t" + ColorUtilities.colorToString(scale.getMidColor())
-                        + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
-            } else {
-                writer.println(infoKey
-                        + "\t" + scale.getMinimum() + ":" + scale.getMaximum()
-                        + "\t" + ColorUtilities.colorToString(scale.getMinColor())
-                        + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
-            }
-        }
-
-        VariantColorScheme scheme;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            scheme = VariantColorScheme.parse(reader, name);
-        }
-        scheme.setFile(file);
-
-        register(scheme);
-        return scheme;
+        VariantColorScheme scheme = new VariantColorScheme(name);
+        scheme.setScale(infoKey, scale);
+        return save(scheme);
     }
 
     /**
