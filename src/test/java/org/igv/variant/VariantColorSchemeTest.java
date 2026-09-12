@@ -116,6 +116,21 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
+     * A scheme is the colors for one INFO attribute, so each built-in covers exactly one.
+     */
+    @Test
+    public void testSchemeCoversOneAttribute() {
+        for (VariantColorScheme scheme : VariantColorSchemes.getBuiltinSchemes()) {
+            assertEquals("Scheme " + scheme.getName() + " covers more than one attribute",
+                    1, scheme.getKeys().size());
+        }
+        assertEquals(List.of("CLNSIG", "SVTYPE", "VT"),
+                VariantColorSchemes.getBuiltinSchemes().stream()
+                        .map(s -> s.getKeys().iterator().next())
+                        .collect(Collectors.toList()));
+    }
+
+    /**
      * An imported scheme is searched before the built-in one, so a user can override IGV's colors.
      */
     @Test
@@ -186,7 +201,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testBuiltinCannotBeRemoved() {
-        VariantColorScheme builtin = VariantColorSchemes.getBuiltinSchemes().get(0);
+        VariantColorScheme builtin = builtinFor("CLNSIG");
         assertTrue(builtin.isBuiltIn());
         assertFalse(VariantColorSchemes.remove(builtin));
         assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
@@ -414,7 +429,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testEditingBuiltinSavesACopy() throws Exception {
-        VariantColorScheme builtin = VariantColorSchemes.getBuiltinSchemes().get(0);
+        VariantColorScheme builtin = builtinFor("CLNSIG");
         assertNull(builtin.getFile());
 
         builtin.setColor("CLNSIG", "Pathogenic", new Color(1, 1, 1));
@@ -480,6 +495,13 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(1, scheme.getColors("CLNSIG").size());
         assertEquals("Likely_pathogenic", scheme.getColors("CLNSIG").keySet().iterator().next());
         assertEquals(new Color(4, 5, 6), scheme.getColor("CLNSIG", "LIKELY_PATHOGENIC"));
+    }
+
+    private VariantColorScheme builtinFor(String infoKey) {
+        return VariantColorSchemes.getBuiltinSchemes().stream()
+                .filter(s -> s.getKeys().contains(infoKey))
+                .findFirst()
+                .orElseThrow();
     }
 
     private VariantTrack loadTrack() throws Exception {

@@ -33,11 +33,15 @@ import java.util.Set;
 /**
  * The color schemes available for coloring variants by a VCF INFO attribute.
  * <p>
- * Schemes are files, not individual preferences -- the set of INFO keys, and of values for each key, is unbounded,
- * so there is nothing to enumerate in a preferences grid.  Importing a scheme copies it into the IGV directory
- * ("variantcolors"), which IGV then owns: the directory is the registry, scanned at startup, in the same way gene
- * lists are managed (see {@link org.igv.lists.GeneListManager}).  Schemes shipped with IGV are read from the
- * classpath and are never copied, so upgrades can revise them.
+ * A scheme is one file, holding the colors for one INFO attribute.  Schemes are files rather than individual
+ * preferences because the set of INFO keys, and of values for each key, is unbounded, so there is nothing to
+ * enumerate in a preferences grid.  Importing a scheme copies it into the IGV directory ("variantcolors"), which
+ * IGV then owns: the directory is the registry, scanned at startup, in the same way gene lists are managed (see
+ * {@link org.igv.lists.GeneListManager}).  Schemes shipped with IGV are read from the classpath and are never
+ * copied, so upgrades can revise them.
+ * <p>
+ * Nothing stops a hand written file from covering several attributes -- every row names its own key -- but every
+ * file IGV writes covers one.
  * <p>
  * User schemes are searched before the built-in ones, so a user scheme covering CLNSIG shadows IGV's.
  */
@@ -47,7 +51,14 @@ public class VariantColorSchemes {
 
     static final String SCHEME_DIRECTORY = "variantcolors";
 
-    private static final String BUILTIN_RESOURCE = "resources/variant_colors.txt";
+    /**
+     * Schemes shipped with IGV, one per INFO attribute.
+     */
+    private static final String[] BUILTIN_RESOURCES = {
+            "resources/clnsig.txt",
+            "resources/svtype.txt",
+            "resources/vt.txt"
+    };
 
     private static List<VariantColorScheme> userSchemes;
     private static List<VariantColorScheme> builtinSchemes;
@@ -368,15 +379,17 @@ public class VariantColorSchemes {
     private static List<VariantColorScheme> loadBuiltinSchemes() {
 
         List<VariantColorScheme> schemes = new ArrayList<>();
-        try (InputStream is = VariantColorSchemes.class.getResourceAsStream(BUILTIN_RESOURCE)) {
-            if (is == null) {
-                log.error("Built in variant color scheme not found: " + BUILTIN_RESOURCE);
-            } else {
+        for (String resource : BUILTIN_RESOURCES) {
+            try (InputStream is = VariantColorSchemes.class.getResourceAsStream(resource)) {
+                if (is == null) {
+                    log.error("Built in variant color scheme not found: " + resource);
+                    continue;
+                }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-                schemes.add(VariantColorScheme.parse(reader, "IGV defaults"));
+                schemes.add(VariantColorScheme.parse(reader, stripExtension(new File(resource).getName())));
+            } catch (IOException e) {
+                log.error("Error loading built in variant color scheme " + resource, e);
             }
-        } catch (IOException e) {
-            log.error("Error loading built in variant color scheme", e);
         }
         return schemes;
     }

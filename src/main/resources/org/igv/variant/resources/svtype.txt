@@ -1,0 +1,9 @@
+#name=Structural variant type
+#description=SVTYPE colors, matching igv.js
+#colors
+SVTYPE	DEL	255,33,1
+SVTYPE	INS	0,24,136
+SVTYPE	DUP	2,132,1
+SVTYPE	INV	0,134,136
+SVTYPE	CNV	137,49,255
+SVTYPE	BND	137,17,0

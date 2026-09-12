@@ -1,0 +1,19 @@
+#name=ClinVar significance
+#description=Clinical significance, benign (blue) through pathogenic (red)
+#
+# Colors for the values of one VCF INFO attribute.  Tab delimited: INFO key, value, color.
+# A value of "*" is the color for values not listed.  A value of the form "min:max" defines a
+# continuous scale over a numeric attribute, shading from the first color to the second.
+#
+# Copy this file, edit it, and import it from View > Preferences > Variants.
+#
+#colors
+CLNSIG	Pathogenic	202,0,32
+CLNSIG	Pathogenic/Likely_pathogenic	202,0,32
+CLNSIG	Likely_pathogenic	244,109,67
+CLNSIG	Uncertain_significance	150,150,150
+CLNSIG	Conflicting_classifications_of_pathogenicity	230,171,2
+CLNSIG	Conflicting_interpretations_of_pathogenicity	230,171,2
+CLNSIG	Likely_benign	146,197,222
+CLNSIG	Benign/Likely_benign	5,113,176
+CLNSIG	Benign	5,113,176

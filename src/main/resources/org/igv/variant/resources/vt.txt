@@ -1,0 +1,7 @@
+#name=Variant type
+#description=VT, as annotated by the 1000 Genomes project
+#colors
+VT	SNP	55,126,184
+VT	MNP	152,78,163
+VT	INDEL	228,26,28
+VT	SV	77,175,74
