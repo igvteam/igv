@@ -213,6 +213,12 @@ public class VariantColorScheme {
         try {
             double min = Double.parseDouble(parts[0].trim());
             double max = Double.parseDouble(parts[1].trim());
+
+            if (max <= min) {
+                log.warn("Skipping color scheme row, a range must increase: " + String.join("\t", tokens));
+                return;
+            }
+
             Color maxColor = tokens.length > 3 ? ColorUtilities.stringToColor(tokens[3].trim(), null) : null;
 
             if (maxColor == null) {

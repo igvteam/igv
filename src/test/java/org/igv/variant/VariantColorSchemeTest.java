@@ -609,6 +609,61 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(4, 5, 6), scheme.getColor("CHR2", "chr1:12345"));
     }
 
+    /**
+     * With nothing in view there is no evidence about whether a numeric attribute is a quantity or a code.
+     * Coloring by value anyway would treat a quantity as a category and record nothing, so the same click would
+     * behave differently once the user moved to a region with data.
+     */
+    @Test
+    public void testNoValuesInViewDoesNotGuess() throws Exception {
+        VariantTrack track = loadTrack();
+        track.getFeatures("chr1", 0, 1000);     // loaded, but nothing packed into the render cache
+
+        assertTrue(track.isNumericAttribute("AF"));
+        assertTrue(track.getAttributeValues("AF").isEmpty());
+
+        assertFalse("Must not color by a numeric attribute without deciding how",
+                VariantTrackMenuHelper.defineScaleIfNeeded(track, "AF"));
+        assertFalse("Must not record a decision it did not make",
+                VariantColorSchemes.getKeys().contains("AF"));
+
+        // The selection itself is untouched, so the track keeps whatever coloring it had
+        assertNull(track.getColorByAttribute());
+    }
+
+    /**
+     * A zero width range is not a scale -- shading across it would paint everything the minimum color.
+     */
+    @Test
+    public void testZeroWidthRangeRejected() throws Exception {
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("DP\t7:7\t0,0,255\nDP\t10:2\t0,0,255\n")), "test");
+
+        assertNull(scheme.getScale("DP"));
+        assertTrue(scheme.getColors("DP").isEmpty());
+    }
+
+    /**
+     * An attribute a scheme already covers is never asked about again.
+     */
+    @Test
+    public void testCoveredAttributeIsNotPrompted() throws Exception {
+        VariantTrack track = loadTrack();
+        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;0.1;255,255,200;255,0,0");
+        VariantColorSchemes.reset();
+
+        assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "AF"));
+    }
+
+    /**
+     * A String attribute is categorical by declaration, so nothing is asked.
+     */
+    @Test
+    public void testNonNumericAttributeIsNotPrompted() throws Exception {
+        VariantTrack track = loadTrack();
+        assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "CLNSIG"));
+    }
+
     private VariantColorScheme builtinFor(String infoKey) {
         return VariantColorSchemes.getBuiltinSchemes().stream()
                 .filter(s -> s.getKeys().contains(infoKey))

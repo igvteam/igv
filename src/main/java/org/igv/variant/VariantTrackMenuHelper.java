@@ -199,7 +199,8 @@ public class VariantTrackMenuHelper {
      *
      * @return true if the track can be colored by this attribute
      */
-    private static boolean defineScaleIfNeeded(VariantTrack track, String infoKey) {
+    // Package private for testing -- the paths that do not open the dialog are worth covering
+    static boolean defineScaleIfNeeded(VariantTrack track, String infoKey) {
 
         // Any scheme covering the attribute settles it, whether with a scale or with discrete colors -- a user
         // who wrote discrete colors for a numeric attribute meant it.
@@ -210,13 +211,21 @@ public class VariantTrackMenuHelper {
         }
 
         double[] range = track.getAttributeRange(infoKey);
-        if (range == null) {
-            // Nothing numeric to scale over -- the values must be categorical whatever the header says
-            return true;
+
+        if (range == null && track.getAttributeValues(infoKey).isEmpty()) {
+            // Nothing in view to judge by.  Coloring by value anyway would quietly treat a quantity as a
+            // category and record nothing, so the same click would behave differently after navigating.  Leave
+            // the selection alone and say why.
+            MessageUtils.showMessage("No values for " + infoKey + " in the current view.  Move to a region where "
+                    + infoKey + " has values and choose it again, or import a color scheme for " + infoKey + ".");
+            return false;
         }
 
-        ContinuousColorScale scale = new ContinuousColorScale(range[0], range[1],
-                DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
+        // Values are in view.  Prefill the range from them when they are numeric; when they are not -- every
+        // record multi-valued, say -- still ask, rather than deciding the attribute is categorical unasked.
+        ContinuousColorScale scale = range == null
+                ? new ContinuousColorScale(0, 1, DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR)
+                : new ContinuousColorScale(range[0], rangeEnd(range), DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
 
         // IGV cannot tell a quantity from a code, so the dialog offers both: define a scale, or say the values
         // are categories after all and colour them individually.
@@ -240,6 +249,13 @@ public class VariantTrackMenuHelper {
             MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * A scale over a single repeated value has nothing to shade across, so give it somewhere to go.
+     */
+    private static double rangeEnd(double[] range) {
+        return range[1] > range[0] ? range[1] : range[0] + 1;
     }
 
     /**
