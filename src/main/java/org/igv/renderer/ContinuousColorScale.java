@@ -390,10 +390,9 @@ public class ContinuousColorScale extends AbstractColorScale {
          */
         private BufferedImage createGradientImage(Color color1, Color color2) {
 
-            BufferedImage image =
-                    (BufferedImage) java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-                            .getDefaultScreenDevice().getDefaultConfiguration()
-                            .createCompatibleImage(256, 1);
+            // Not a screen device compatible image -- the gradient is only sampled for RGB values, never drawn,
+            // and asking for the default screen device throws in headless mode (batch, igvtools, tests).
+            BufferedImage image = new BufferedImage(256, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = image.createGraphics();
             GradientPaint gp = new GradientPaint(0, 0, color1, 255, 0, color2);
 
