@@ -270,6 +270,48 @@ public class VariantColorScheme {
     }
 
     /**
+     * Remove the color for one value of an INFO attribute.  Values it no longer lists take their color from the
+     * palette, as they did before the scheme covered them.
+     */
+    public void removeColor(String infoKey, String value) {
+
+        String key = infoKey.toUpperCase();
+
+        if (WILDCARD.equals(value)) {
+            defaultColors.remove(key);
+            return;
+        }
+
+        Map<String, String> index = valueIndex.get(key);
+        String stored = index == null ? null : index.remove(value.toLowerCase());
+        Map<String, Color> valueColors = colors.get(key);
+        if (stored != null && valueColors != null) {
+            valueColors.remove(stored);
+        }
+    }
+
+    /**
+     * Return an independent copy, so an editor can discard its changes.
+     */
+    public VariantColorScheme copy() {
+
+        VariantColorScheme copy = new VariantColorScheme(name);
+        copy.description = description;
+        copy.source = source;
+        copy.file = file;
+        copy.defaultColors.putAll(defaultColors);
+        copy.scales.putAll(scales);
+        copy.categoricalKeys.addAll(categoricalKeys);
+        for (Map.Entry<String, Map<String, Color>> entry : colors.entrySet()) {
+            copy.colors.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
+        for (Map.Entry<String, Map<String, String>> entry : valueIndex.entrySet()) {
+            copy.valueIndex.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
+        return copy;
+    }
+
+    /**
      * Set the color scale for a numeric INFO attribute.
      */
     public void setScale(String infoKey, AbstractColorScale scale) {

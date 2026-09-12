@@ -5,7 +5,9 @@ import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
+import org.igv.ui.color.ColorPalette;
 import org.igv.ui.color.ColorSwatch;
+import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.legend.HeatmapLegendEditor;
 import org.igv.ui.util.MessageUtils;
 
@@ -23,7 +25,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Window;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -44,7 +48,9 @@ public class VariantColorSchemeEditor extends JDialog {
     public VariantColorSchemeEditor(Window owner, VariantColorScheme scheme) {
 
         super(owner, "Edit " + scheme.getName(), ModalityType.APPLICATION_MODAL);
-        this.scheme = scheme;
+        // Work on a copy -- the schemes handed out are the live ones, so editing in place would leave changes
+        // behind when the user cancels
+        this.scheme = scheme.copy();
 
         JPanel content = new JPanel(new BorderLayout(0, 8));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -118,6 +124,16 @@ public class VariantColorSchemeEditor extends JDialog {
             if (scheme.getColors(key).isEmpty() && defaultColor == null) {
                 contentPanel.add(note("No colors set -- values take them from the palette."));
             }
+
+            JButton add = new JButton("Add Value...");
+            add.setMargin(new Insets(1, 6, 1, 6));
+            add.addActionListener(e -> addValue(key));
+
+            JPanel addRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+            addRow.setAlignmentX(LEFT_ALIGNMENT);
+            addRow.add(add);
+            addRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, addRow.getPreferredSize().height));
+            contentPanel.add(addRow);
         }
 
         contentPanel.add(Box.createVerticalGlue());
@@ -127,16 +143,65 @@ public class VariantColorSchemeEditor extends JDialog {
 
     private JPanel createColorRow(String key, String value, Color color) {
 
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
-        row.setAlignmentX(LEFT_ALIGNMENT);
-
+        JPanel label = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
         ColorSwatch swatch = new ColorSwatch(color);
         swatch.addColorChangeListener(c -> scheme.setColor(key, value, c));
-        row.add(swatch);
-        row.add(new JLabel(VariantColorScheme.WILDCARD.equals(value) ? "* (all other values)" : value));
+        label.add(swatch);
+        label.add(new JLabel(VariantColorScheme.WILDCARD.equals(value) ? "* (all other values)" : value));
+
+        JButton remove = new JButton("×");
+        remove.setToolTipText("Remove this value from the scheme");
+        remove.setMargin(new Insets(0, 0, 0, 0));
+        remove.setPreferredSize(new Dimension(22, 20));
+        remove.addActionListener(e -> {
+            scheme.removeColor(key, value);
+            populate();
+        });
+
+        // Right align the remove buttons, they are otherwise ragged and hard to aim at
+        JPanel removePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+        removePanel.add(remove);
+
+        JPanel row = new JPanel(new BorderLayout());
+        row.setAlignmentX(LEFT_ALIGNMENT);
+        row.add(label, BorderLayout.WEST);
+        row.add(removePanel, BorderLayout.EAST);
 
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
         return row;
+    }
+
+    /**
+     * Add a value to an attribute.  Values are otherwise only added by coloring a track, which needs a file that
+     * contains them -- this lets a scheme be written for data not to hand.
+     */
+    private void addValue(String key) {
+
+        String value = MessageUtils.showInputDialog("Value of " + key
+                + " (\"" + VariantColorScheme.WILDCARD + "\" for all other values)");
+        if (value == null || value.trim().isEmpty()) {
+            return;
+        }
+
+        scheme.setColor(key, value.trim(), nextColor(key));
+        populate();
+    }
+
+    /**
+     * A palette color not already used for this attribute, so a new value starts out distinguishable.
+     */
+    private Color nextColor(String key) {
+
+        Collection<Color> used = scheme.getColors(key).values();
+        ColorPalette palette = ColorUtilities.getPalette("Set 1");
+        if (palette != null) {
+            for (Color candidate : palette.getColors()) {
+                if (!used.contains(candidate)) {
+                    return candidate;
+                }
+            }
+        }
+        return ColorUtilities.randomColor(used.size());
     }
 
     private JPanel createScalePanel(String key, ContinuousColorScale scale) {

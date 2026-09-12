@@ -426,6 +426,62 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertFalse(VariantColorSchemes.getUserSchemes().get(0).isBuiltIn());
     }
 
+    /**
+     * Values can be added to and removed from a scheme, including the wildcard.
+     */
+    @Test
+    public void testAddAndRemoveValues() throws Exception {
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("TIER\t1\t200,0,0\n")), "test");
+
+        scheme.setColor("TIER", "2", new Color(0, 200, 0));
+        scheme.setColor("TIER", "*", new Color(9, 9, 9));
+        assertEquals(new Color(0, 200, 0), scheme.getColor("TIER", "2"));
+        assertEquals(new Color(9, 9, 9), scheme.getColor("TIER", "unlisted"));
+
+        scheme.removeColor("TIER", "2");
+        // Falls back to the wildcard, which is what an uncovered value gets
+        assertEquals(new Color(9, 9, 9), scheme.getColor("TIER", "2"));
+
+        scheme.removeColor("TIER", "*");
+        assertNull(scheme.getColor("TIER", "2"));
+        assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
+    }
+
+    /**
+     * The editor works on a copy, so cancelling leaves the live scheme untouched.
+     */
+    @Test
+    public void testCopyIsIndependent() throws Exception {
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("TIER\t1\t200,0,0\n")), "test");
+
+        VariantColorScheme copy = scheme.copy();
+        copy.setColor("TIER", "1", new Color(1, 1, 1));
+        copy.setColor("TIER", "2", new Color(2, 2, 2));
+        copy.removeColor("TIER", "1");
+
+        assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
+        assertNull(scheme.getColor("TIER", "2"));
+    }
+
+    /**
+     * Values keep the case they were written in, so saving does not rewrite the user's spelling.
+     */
+    @Test
+    public void testValueCasePreserved() throws Exception {
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("CLNSIG\tLikely_pathogenic\t1,2,3\n")), "test");
+
+        assertEquals("Likely_pathogenic", scheme.getColors("CLNSIG").keySet().iterator().next());
+
+        // Editing via a different spelling updates in place rather than adding a near duplicate row
+        scheme.setColor("CLNSIG", "likely_pathogenic", new Color(4, 5, 6));
+        assertEquals(1, scheme.getColors("CLNSIG").size());
+        assertEquals("Likely_pathogenic", scheme.getColors("CLNSIG").keySet().iterator().next());
+        assertEquals(new Color(4, 5, 6), scheme.getColor("CLNSIG", "LIKELY_PATHOGENIC"));
+    }
+
     private VariantTrack loadTrack() throws Exception {
         String filePath = TestUtils.DATA_DIR + "vcf/clinvar_info.vcf";
         TestUtils.createIndex(filePath);
