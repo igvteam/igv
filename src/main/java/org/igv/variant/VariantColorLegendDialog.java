@@ -223,10 +223,14 @@ public class VariantColorLegendDialog extends JDialog {
         }
 
         VariantColorScheme existing = VariantColorSchemes.getSchemeForScale(infoKey);
-        String name = existing == null || existing.isBuiltIn() ? infoKey + " scale" : existing.getName();
+        VariantColorScheme updated = existing == null ? new VariantColorScheme(infoKey + " scale") : existing.copy();
+        if (updated.isBuiltIn()) {
+            updated.setName(infoKey + " scale");
+        }
+        updated.setScale(infoKey, editor.getColorScheme());
 
         try {
-            VariantColorSchemes.saveScale(name, infoKey, editor.getColorScheme());
+            VariantColorSchemes.save(updated);
             repaintTrack();
             populate();
         } catch (Exception e) {
