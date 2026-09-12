@@ -140,6 +140,12 @@ public class VariantRenderer {
             refColor = track.getColor();
             alleleColor = track.getColor();
             percent = 0;
+        } else if (track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE) {
+            // The whole band is drawn in the color assigned to the variant's value for the selected INFO attribute
+            Color attributeColor = track.getAttributeColor(variant);
+            refColor = useAlpha ? ColorUtilities.getCompositeColor(attributeColor, alphaValue) : attributeColor;
+            alleleColor = refColor;
+            percent = 0;
         } else if (track.getSiteColorMode() == VariantTrack.ColorMode.METHYLATION_RATE) {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();

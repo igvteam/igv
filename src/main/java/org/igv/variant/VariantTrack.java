@@ -4,6 +4,9 @@ package org.igv.variant;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderLineType;
+import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.Globals;
 import org.igv.event.IGVEventObserver;
 import org.igv.feature.FeatureUtils;
@@ -18,6 +21,7 @@ import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.color.ColorUtilities;
+import org.igv.ui.color.PaletteColorTable;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 import org.igv.ui.panel.FrameManager;
@@ -77,6 +81,20 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private final static int WG_TRACK_HEIGHT = 40;
     private final static int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
 
+    /**
+     * Color for variants with no value for the INFO attribute being colored by.
+     */
+    private static final Color NO_ATTRIBUTE_VALUE_COLOR = Color.gray;
+
+    /**
+     * INFO attribute types that can be colored by.  Float is excluded, its values are continuous.
+     */
+    private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
+            VCFHeaderLineType.String,
+            VCFHeaderLineType.Character,
+            VCFHeaderLineType.Integer,
+            VCFHeaderLineType.Flag);
+
 
     // TODO -- this needs to be settable
     public static int METHYLATION_MIN_BASE_COUNT = 10;
@@ -112,6 +130,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
     private ColorMode siteColorMode;
+
+    /**
+     * The VCF INFO attribute the variant band is colored by.  Only used when siteColorMode == ATTRIBUTE.
+     */
+    private String colorByAttribute;
+
+    /**
+     * Color tables for "color by INFO attribute", keyed by attribute ID.  Tables are created on demand and
+     * accumulate assignments as attribute values are encountered, so they are per-track state.
+     */
+    private final Map<String, PaletteColorTable> attributeColorTables = new HashMap<>();
 
     /**
      * When true, variants that are marked filtering are not drawn.
@@ -244,10 +273,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public Object getHeader() {
-        if (source instanceof TribbleFeatureSource) {
-            return ((TribbleFeatureSource) source).getHeader();
+        try {
+            return source == null ? null : source.getHeader();
+        } catch (IOException e) {
+            log.error("Error fetching header for " + getName(), e);
+            return null;
         }
-        return null;
     }
 
     /**
@@ -621,6 +652,111 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         this.siteColorMode = siteColorMode;
     }
 
+    /**
+     * @return the VCF INFO attribute the variant band is colored by, or null if not coloring by attribute.
+     */
+    public String getColorByAttribute() {
+        return colorByAttribute;
+    }
+
+    /**
+     * Color the variant band by the values of a VCF INFO attribute.  Passing null reverts to a flat track color.
+     *
+     * @param key an INFO attribute ID, or null
+     */
+    public void setColorByAttribute(String key) {
+        this.colorByAttribute = key;
+        if (key == null) {
+            if (siteColorMode == ColorMode.ATTRIBUTE) {
+                this.siteColorMode = ColorMode.NONE;
+            }
+        } else {
+            this.siteColorMode = ColorMode.ATTRIBUTE;
+            assignColorsForLoadedFeatures(key);
+        }
+    }
+
+    /**
+     * Return the color for a variant when coloring by an INFO attribute.  Variants with no value for the
+     * attribute are drawn gray, following igv.js.
+     */
+    public Color getAttributeColor(Variant variant) {
+        if (colorByAttribute == null) {
+            return getColor();
+        }
+        String value = normalizeAttributeValue(variant.getAttributeAsString(colorByAttribute));
+        return value == null ?
+                NO_ATTRIBUTE_VALUE_COLOR :
+                getAttributeColorTable(colorByAttribute).get(value);
+    }
+
+    /**
+     * Return the color table for the given INFO attribute, creating it if necessary.
+     */
+    public PaletteColorTable getAttributeColorTable(String key) {
+        synchronized (attributeColorTables) {
+            return attributeColorTables.computeIfAbsent(key, VariantColorTables::getColorTable);
+        }
+    }
+
+    /**
+     * Assign palette colors to the attribute values of the currently loaded features, in sorted order.  Colors
+     * are otherwise assigned in the order values happen to be drawn, which makes them depend on where the user
+     * navigated first.  This does not affect values with a predefined color, and values encountered later are
+     * appended as usual.
+     */
+    private void assignColorsForLoadedFeatures(String key) {
+
+        PaletteColorTable colorTable = getAttributeColorTable(key);
+        SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+        synchronized (packedFeaturesMap) {
+            for (PackedFeatures<PackedFeature> packedFeatures : packedFeaturesMap.values()) {
+                for (PackedFeature feature : packedFeatures.getFeatures()) {
+                    if (feature instanceof Variant) {
+                        String value = normalizeAttributeValue(((Variant) feature).getAttributeAsString(key));
+                        if (value != null) {
+                            values.add(value);
+                        }
+                    }
+                }
+            }
+        }
+
+        values.forEach(colorTable::get);
+    }
+
+    /**
+     * Normalize an attribute value for use as a color table key.  Multi-valued attributes are returned by htsjdk
+     * as a list ("[a, b]"), which is reduced to "a,b" here so the key matches what the user sees.
+     */
+    private static String normalizeAttributeValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        String v = value.trim();
+        if (v.startsWith("[") && v.endsWith("]")) {
+            v = v.substring(1, v.length() - 1);
+        }
+        v = v.replaceAll("\\s*,\\s*", ",").trim();
+        return v.isEmpty() || "null".equals(v) ? null : v;
+    }
+
+    /**
+     * Return the INFO header lines that make sense to color by, sorted by ID.  Float attributes are excluded --
+     * they are continuous, and coloring treats each distinct value as a category.
+     */
+    public List<VCFInfoHeaderLine> getColorableInfoFields() {
+        Object header = getHeader();
+        if (!(header instanceof VCFHeader)) {
+            return Collections.emptyList();
+        }
+        return ((VCFHeader) header).getInfoHeaderLines().stream()
+                .filter(line -> COLORABLE_INFO_TYPES.contains(line.getType()))
+                .sorted(Comparator.comparing(VCFInfoHeaderLine::getID, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
+    }
+
     @Override
     public void setColor(Color color) {
         // Setting color implicitly turns of "color by" modes
@@ -928,7 +1064,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public enum ColorMode {
-        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION
+        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION, ATTRIBUTE
     }
 
     public static enum BackgroundType {
@@ -1180,6 +1316,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.genotypeColorMode = ColorMode.valueOf(element.getAttribute("coloring"));
         }
 
+        if (element.hasAttribute("colorByAttribute")) {
+            this.colorByAttribute = element.getAttribute("colorByAttribute");
+            if (element.hasAttribute("attributeColorTable")) {
+                getAttributeColorTable(colorByAttribute).restoreMapFromString(element.getAttribute("attributeColorTable"));
+            }
+        }
+
         if (element.hasAttribute("siteColorMode")) {
             this.siteColorMode = ColorMode.valueOf(element.getAttribute("siteColorMode"));
 
@@ -1201,6 +1344,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode != null) {
             json.put("siteColorMode", siteColorMode.toString());
         }
+        if (colorByAttribute != null) {
+            json.put("colorByAttribute", colorByAttribute);
+            // Persist the value -> color assignments, they are otherwise made in the order values are encountered
+            PaletteColorTable colorTable = attributeColorTables.get(colorByAttribute);
+            if (colorTable != null && !colorTable.getColorMap().isEmpty()) {
+                json.put("attributeColorTable", colorTable.getMapAsString());
+            }
+        }
     }
 
 
@@ -1219,6 +1370,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         if (json.has("genotypeColorMode")) {
             this.genotypeColorMode = ColorMode.valueOf(json.getString("genotypeColorMode"));
+        }
+
+        // Restore the attribute and its color table before the color mode, setColorByAttribute would override it
+        if (json.has("colorByAttribute")) {
+            this.colorByAttribute = json.getString("colorByAttribute");
+            if (json.has("attributeColorTable")) {
+                getAttributeColorTable(colorByAttribute).restoreMapFromString(json.getString("attributeColorTable"));
+            }
         }
 
         if (json.has("siteColorMode")) {

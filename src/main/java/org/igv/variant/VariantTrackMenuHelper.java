@@ -11,6 +11,8 @@ import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.ui.IGV;
 
+import htsjdk.variant.vcf.VCFInfoHeaderLine;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
@@ -30,6 +32,13 @@ public class VariantTrackMenuHelper {
     private static boolean qualitySortingDirection;
 
     /**
+     * Maximum number of INFO fields listed directly in the "color by" menu.  Beyond this they are broken into
+     * alphabetical submenus -- some annotation pipelines define hundreds of them.
+     */
+    private static final int MAX_FLAT_INFO_FIELDS = 25;
+    private static final int INFO_FIELD_GROUP_SIZE = 20;
+
+    /**
      * Return menu items for the variant track popup menu.
      */
     static List<Component> getMenuItems(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
@@ -45,6 +54,11 @@ public class VariantTrackMenuHelper {
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
         items.add(getColorBandByAllelFrequency(variantTrack));
         items.add(getColorBandByAlleleFraction(variantTrack));
+        JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
+        if (infoFieldMenu != null) {
+            items.add(infoFieldMenu);
+        }
+        items.add(getColorByNone(variantTrack));
 
         // Methylation color options
         if (variantTrack.isEnableMethylationRateSupport()) {
@@ -110,6 +124,54 @@ public class VariantTrackMenuHelper {
         final JMenuItem item = new JCheckBoxMenuItem("Allele Fraction", track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION);
         item.addActionListener(evt -> {
             track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FRACTION);
+            IGV.getInstance().getContentPane().repaint();
+        });
+        return item;
+    }
+
+    /**
+     * Menu for coloring the variant band by a VCF INFO attribute.  Returns null if the file has no INFO fields
+     * that can be colored by.
+     */
+    private static JMenu getColorByInfoFieldMenu(VariantTrack track) {
+
+        List<VCFInfoHeaderLine> infoFields = track.getColorableInfoFields();
+        if (infoFields.isEmpty()) {
+            return null;
+        }
+
+        JMenu menu = new JMenu("INFO Field");
+
+        List<JMenuItem> fieldItems = new ArrayList<>(infoFields.size());
+        for (VCFInfoHeaderLine infoField : infoFields) {
+            fieldItems.add(getColorByInfoFieldItem(track, infoField));
+        }
+
+        if (fieldItems.size() <= MAX_FLAT_INFO_FIELDS) {
+            fieldItems.forEach(menu::add);
+        } else {
+            // Too many fields for a single menu -- break them into alphabetical groups
+            for (int i = 0; i < fieldItems.size(); i += INFO_FIELD_GROUP_SIZE) {
+                int end = Math.min(i + INFO_FIELD_GROUP_SIZE, fieldItems.size());
+                JMenu group = new JMenu(infoFields.get(i).getID() + " - " + infoFields.get(end - 1).getID());
+                fieldItems.subList(i, end).forEach(group::add);
+                menu.add(group);
+            }
+        }
+
+        return menu;
+    }
+
+    private static JMenuItem getColorByInfoFieldItem(VariantTrack track, VCFInfoHeaderLine infoField) {
+        final String id = infoField.getID();
+        final JMenuItem item = new JCheckBoxMenuItem(id,
+                track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && id.equals(track.getColorByAttribute()));
+        String description = infoField.getDescription();
+        if (description != null && description.length() > 0) {
+            item.setToolTipText(description);
+        }
+        item.addActionListener(evt -> {
+            track.setColorByAttribute(id);
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
