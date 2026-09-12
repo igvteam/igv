@@ -18,6 +18,7 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.LinkedHashMap;
 import java.util.*;
 import java.util.List;
 
@@ -202,23 +203,31 @@ public class VariantTrackMenuHelper {
 
         // Any scheme covering the attribute settles it, whether with a scale or with discrete colors -- a user
         // who wrote discrete colors for a numeric attribute meant it.
-        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
+        if (!track.isNumericAttribute(infoKey)
+                || VariantColorSchemes.isCategorical(infoKey)
+                || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
             return true;
         }
 
         double[] range = track.getAttributeRange(infoKey);
         if (range == null) {
-            MessageUtils.showMessage("No numeric values for " + infoKey + " in the current view.");
-            return false;
+            // Nothing numeric to scale over -- the values must be categorical whatever the header says
+            return true;
         }
 
         ContinuousColorScale scale = new ContinuousColorScale(range[0], range[1],
                 DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
 
-        HeatmapLegendEditor editor =
-                new HeatmapLegendEditor(IGV.getInstance().getMainFrame(), true, scale);
+        // IGV cannot tell a quantity from a code, so the dialog offers both: define a scale, or say the values
+        // are categories after all and colour them individually.
+        HeatmapLegendEditor editor = new HeatmapLegendEditor(
+                IGV.getInstance().getMainFrame(), true, scale, "Values Are Categories");
         editor.setTitle("Color scale for " + infoKey);
         editor.setVisible(true);
+
+        if (editor.isDiscreteSelected()) {
+            return saveDiscreteScheme(track, infoKey);
+        }
         if (editor.isCanceled()) {
             return false;
         }
@@ -229,6 +238,29 @@ public class VariantTrackMenuHelper {
         } catch (Exception e) {
             log.error("Error saving color scale for " + infoKey, e);
             MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Record that a numeric attribute holds categories, by saving a scheme with a color per value in view.  The
+     * scheme is what stops the scale dialog reappearing, and the colors are then editable from the legend and
+     * shareable like any other.  Values seen later still get colors from the palette.
+     */
+    private static boolean saveDiscreteScheme(VariantTrack track, String infoKey) {
+
+        Map<String, Color> colors = new LinkedHashMap<>();
+        for (String value : track.getAttributeValues(infoKey)) {
+            colors.put(value, track.getAttributeColor(infoKey, value));
+        }
+
+        try {
+            // The declaration persists the answer even when no values are in view to color
+            VariantColorSchemes.saveScheme(infoKey + " colors", infoKey, colors, true);
+            return true;
+        } catch (Exception e) {
+            log.error("Error saving colors for " + infoKey, e);
+            MessageUtils.showMessage("Error saving colors: " + e.getMessage());
             return false;
         }
     }

@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -346,6 +347,38 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         String contents = "SCORE\t-10:0:10\t0,0,255\t255,0,0\n";
         VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
         assertNull(scheme.getScale("SCORE"));
+    }
+
+    /**
+     * The answer to "is this numeric attribute categorical?" is stored in the scheme, so it is asked once.  It
+     * has to be stored as a declaration, not merely as colors -- there may be no values in view to color.
+     */
+    @Test
+    public void testCategoricalDeclaration() throws Exception {
+        assertFalse(VariantColorSchemes.isCategorical("DP"));
+
+        VariantColorSchemes.saveScheme("DP colors", "DP", Collections.emptyMap(), true);
+        VariantColorSchemes.reset();
+
+        assertTrue(VariantColorSchemes.isCategorical("DP"));
+        // The key counts as covered, which is what stops the scale dialog reappearing
+        assertTrue(VariantColorSchemes.getKeys().contains("DP"));
+        assertNull(VariantColorSchemes.getScale("DP"));
+        // No colors were recorded, so values still take them from the palette
+        assertNull(VariantColorSchemes.getColor("DP", "17"));
+    }
+
+    /**
+     * The declaration reads as plain text, so a scheme file can be written by hand.
+     */
+    @Test
+    public void testCategoricalDeclarationParsed() throws Exception {
+        String contents = "TIER\tcategorical\nTIER\t1\t200,0,0\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        assertTrue(scheme.isCategorical("TIER"));
+        assertTrue(scheme.getKeys().contains("TIER"));
+        assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
     }
 
     private VariantTrack loadTrack() throws Exception {

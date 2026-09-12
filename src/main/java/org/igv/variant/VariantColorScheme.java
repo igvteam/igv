@@ -49,6 +49,12 @@ public class VariantColorScheme {
      */
     static final String WILDCARD = "*";
 
+    /**
+     * Written in place of a value to record that a numeric attribute holds categories, not quantities, so it is
+     * colored by value rather than by a scale.  IGV cannot tell the two apart, so the answer is kept here.
+     */
+    static final String CATEGORICAL = "categorical";
+
     private String name;
     private String description;
     private String source;
@@ -72,6 +78,11 @@ public class VariantColorScheme {
      * INFO key (upper case) -> scale, for numeric attributes given as a "min:max" range.
      */
     private final Map<String, AbstractColorScale> scales = new LinkedHashMap<>();
+
+    /**
+     * Numeric INFO keys (upper case) declared to hold categories.
+     */
+    private final Set<String> categoricalKeys = new LinkedHashSet<>();
 
     VariantColorScheme(String name) {
         this.name = name;
@@ -110,6 +121,12 @@ public class VariantColorScheme {
             }
 
             String[] tokens = line.split("\t");
+
+            if (tokens.length == 2 && CATEGORICAL.equalsIgnoreCase(tokens[1].trim())) {
+                scheme.categoricalKeys.add(tokens[0].trim().toUpperCase());
+                continue;
+            }
+
             if (tokens.length < 3) {
                 log.warn("Skipping color scheme line, expected at least 3 tab delimited fields: " + line);
                 continue;
@@ -197,7 +214,15 @@ public class VariantColorScheme {
         Set<String> keys = new LinkedHashSet<>(colors.keySet());
         keys.addAll(defaultColors.keySet());
         keys.addAll(scales.keySet());
+        keys.addAll(categoricalKeys);
         return keys;
+    }
+
+    /**
+     * @return true if this scheme declares a numeric attribute to hold categories rather than quantities.
+     */
+    public boolean isCategorical(String infoKey) {
+        return infoKey != null && categoricalKeys.contains(infoKey.toUpperCase());
     }
 
     /**

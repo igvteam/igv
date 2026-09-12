@@ -107,6 +107,18 @@ public class VariantColorSchemes {
     }
 
     /**
+     * @return true if some scheme declares this numeric attribute to hold categories rather than quantities.
+     */
+    public static boolean isCategorical(String infoKey) {
+        for (VariantColorScheme scheme : getSchemes()) {
+            if (scheme.isCategorical(infoKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return the scheme providing the color scale for an INFO attribute, or null if none does.
      */
     public static VariantColorScheme getSchemeForScale(String infoKey) {
@@ -212,12 +224,24 @@ public class VariantColorSchemes {
      */
     public static synchronized VariantColorScheme saveScheme(String name, String infoKey, Map<String, Color> colors)
             throws IOException {
+        return saveScheme(name, infoKey, colors, false);
+    }
+
+    /**
+     * @param categorical true to record that this numeric attribute holds categories rather than quantities.  The
+     *                    declaration is what persists the answer -- the colors only cover the values seen so far.
+     */
+    public static synchronized VariantColorScheme saveScheme(String name, String infoKey, Map<String, Color> colors,
+                                                             boolean categorical) throws IOException {
 
         File file = new File(createSchemeDirectory(), getLegalFileName(name) + ".txt");
 
         try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
             writer.println("#name=" + name);
             writer.println("#colors");
+            if (categorical) {
+                writer.println(infoKey + "\t" + VariantColorScheme.CATEGORICAL);
+            }
             for (Map.Entry<String, Color> entry : colors.entrySet()) {
                 writer.println(infoKey + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
             }
