@@ -99,6 +99,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final int MIN_COLOR_DISTANCE = 60;
 
     /**
+     * Maximum number of values of an INFO attribute that are given a color.  Coloring is categorical, so an
+     * attribute with unbounded values -- a depth, a score, an identifier -- would otherwise get a color per
+     * variant, which says nothing and grows the session file without limit.  Values past the cap are drawn gray.
+     */
+    private static final int MAX_ATTRIBUTE_COLORS = 50;
+
+    /**
      * INFO attribute types that can be colored by.  Float is excluded -- there is no sensible default for a
      * continuous attribute, it is only colorable if a color scheme gives it a range.
      */
@@ -748,6 +755,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         PaletteColorTable colorTable = getAttributeColorTable(key);
 
         if (!colorTable.getColorMap().containsKey(value.toLowerCase())) {
+            if (colorTable.getColorMap().size() >= MAX_ATTRIBUTE_COLORS) {
+                return NO_ATTRIBUTE_VALUE_COLOR;
+            }
             Color color = nextDistinctColor(key, colorTable);
             if (color != null) {
                 colorTable.put(value, color);
@@ -755,6 +765,25 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             // If every palette entry is used or too close, fall through -- the table generates a color itself
         }
         return colorTable.get(value);
+    }
+
+    /**
+     * @return true if an attribute has more values than can be given distinct colors, so some are drawn gray.
+     * The legend says so, it is otherwise a puzzling result.
+     */
+    public boolean isAttributeColorLimitReached(String key) {
+        PaletteColorTable colorTable;
+        synchronized (attributeColorTables) {
+            colorTable = attributeColorTables.get(key);
+        }
+        return colorTable != null && colorTable.getColorMap().size() >= MAX_ATTRIBUTE_COLORS;
+    }
+
+    /**
+     * @return the maximum number of values of an INFO attribute that are given a color.
+     */
+    public static int getMaxAttributeColors() {
+        return MAX_ATTRIBUTE_COLORS;
     }
 
     /**

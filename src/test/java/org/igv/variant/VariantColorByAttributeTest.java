@@ -147,6 +147,37 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         }
     }
 
+    /**
+     * A Float attribute has no default treatment -- it is only offered if a scheme gives it a range.
+     */
+    @Test
+    public void testFloatAttributeNotOffered() {
+        List<String> ids = track.getColorableInfoFields().stream()
+                .map(VCFInfoHeaderLine::getID)
+                .collect(Collectors.toList());
+        assertFalse("AF is a Float attribute with no scheme", ids.contains("AF"));
+    }
+
+    /**
+     * Coloring is categorical, so an attribute with unbounded values must not get a color per variant.  This is
+     * reachable even though the menu does not offer Float attributes -- a session or a batch command can name
+     * any attribute, and an Integer or String attribute can be just as unbounded.
+     */
+    @Test
+    public void testColorLimit() {
+        int limit = VariantTrack.getMaxAttributeColors();
+        track.setColorByAttribute("SCORE");
+        assertFalse(track.isAttributeColorLimitReached("SCORE"));
+
+        for (int i = 0; i < limit + 20; i++) {
+            track.getAttributeColor("SCORE", "value-" + i);
+        }
+
+        assertTrue(track.isAttributeColorLimitReached("SCORE"));
+        assertEquals(limit, track.getAttributeColorTable("SCORE").getColorMap().size());
+        assertEquals(Color.gray, track.getAttributeColor("SCORE", "value-" + (limit + 100)));
+    }
+
     private static double distance(Color c1, Color c2) {
         int dr = c1.getRed() - c2.getRed();
         int dg = c1.getGreen() - c2.getGreen();
