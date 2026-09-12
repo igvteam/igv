@@ -39,6 +39,10 @@ jobs:
 
   dependency-submission:
 
+    # The dependency graph can only be submitted with a writable token, which is
+    # never granted to workflows triggered by a pull request from a fork.
+    if: github.event_name == 'push'
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
