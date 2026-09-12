@@ -361,7 +361,7 @@ public class SAMAlignment implements Alignment {
 
     public List<BaseModificationSet> getBaseModificationSets() {
 
-        if (baseModificationSets == null && record.hasAttribute("Mm") || record.hasAttribute("MM")) {
+        if (baseModificationSets == null && (record.hasAttribute("Mm") || record.hasAttribute("MM"))) {
 
             Object mm = record.hasAttribute("Mm") ? record.getAttribute("Mm") : record.getAttribute("MM");
             byte[] ml = (byte[]) (record.hasAttribute("Ml") ? record.getAttribute("Ml") : record.getAttribute("ML"));
