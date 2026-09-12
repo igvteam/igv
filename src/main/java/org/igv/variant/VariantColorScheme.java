@@ -20,21 +20,27 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A named set of colors for VCF INFO attribute values, read from a tab delimited file.  The format is the "#colors"
- * section of an IGV sample information file, so the same syntax works in both places.
+ * A named set of colors for the values of one VCF INFO attribute, read from a tab delimited file.  Discrete
+ * colors use the syntax of the "#colors" section of an IGV sample information file; color scales use the form
+ * IGV serializes heat map scales in (see {@link org.igv.renderer.ColorScaleFactory}), so there is one
+ * representation of a scale rather than two.
  *
  * <pre>
  * #name=ClinVar significance
  * #description=Benign (blue) through pathogenic (red)
  * #colors
- * CLNSIG   Pathogenic  202,0,32
- * CLNSIG   *           150,150,150
- * CADD_PHRED   0:40    255,255,200     255,0,0
+ * CLNSIG       Pathogenic  202,0,32
+ * CLNSIG       *           150,150,150
+ * CADD_PHRED   ContinuousColorScale;0.0;40.0;255,255,200;255,0,0
+ * DP           categorical
  * </pre>
  *
- * A row is "INFO key", "value", then one or two colors.  A value of "*" sets the color for values the scheme does
- * not otherwise cover.  A value of the form "min:max" defines a continuous scale over a numeric attribute --
- * one color shades from white to that color, two colors shade from the first to the second.
+ * A three field row is "INFO key", "value", "color"; a value of "*" sets the color for values the scheme does
+ * not otherwise cover.  A two field row is either a serialized color scale or the word "categorical", which
+ * records that a numeric attribute holds codes rather than quantities.
+ * <p>
+ * Note that the numeric "min:max" rows of a sample information file are NOT a color scale here -- they are
+ * rejected rather than read as a category whose name happens to contain a colon.
  */
 public class VariantColorScheme {
 
@@ -181,9 +187,39 @@ public class VariantColorScheme {
 
         if (WILDCARD.equals(value)) {
             defaultColors.put(key, color);
+        } else if (isNumericRange(value)) {
+            // The numeric form of a sample information file "#colors" row.  Storing it as a category would key a
+            // color on the literal text "0:40", quietly leave the attribute's real values uncolored, and mark the
+            // attribute as covered so IGV would never offer to build a scale for it.
+            log.warn("Skipping color scheme row: a color scale is one field, for example \"" + key
+                    + "\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0\", not a \"" + value + "\" range: "
+                    + String.join("\t", tokens));
         } else {
             putColor(key, value, color);
         }
+    }
+
+    /**
+     * Does this value look like a "min:max" or "min:mid:max" range rather than an attribute value?
+     */
+    private static boolean isNumericRange(String value) {
+
+        if (!value.contains(":")) {
+            return false;
+        }
+
+        String[] parts = value.split(":", -1);
+        if (parts.length < 2 || parts.length > 4) {
+            return false;
+        }
+        for (String part : parts) {
+            try {
+                Double.parseDouble(part.trim());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void putColor(String key, String value, Color color) {

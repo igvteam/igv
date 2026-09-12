@@ -66,7 +66,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
                 "#colors",
                 "CLNSIG\tPathogenic\t255,0,0",
                 "CLNSIG\t*\t10,10,10",
-                "CADD_PHRED\t0:40\t255,255,200\t255,0,0",
+                "CADD_PHRED\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0",
                 "");
 
         VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "fallback");
@@ -520,6 +520,34 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals("0.0", ColorScaleBar.format(0.0, 40));          // phred scaled
         assertEquals("40.0", ColorScaleBar.format(40.0, 40));
         assertEquals("1000", ColorScaleBar.format(1000.0, 1000));    // read depth
+    }
+
+    /**
+     * The numeric "min:max" row of a sample information file is not a color scale here.  Read as a category it
+     * would key a color on the literal text, leave the attribute's real values uncolored, and mark the attribute
+     * as covered so IGV would never offer to build a scale for it -- all without complaint.  It is rejected.
+     */
+    @Test
+    public void testSampleInfoRangeRowRejected() throws Exception {
+        String contents = "AF\t0:40\t255,255,200\t255,0,0\nAF\t0.5\t1,2,3\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        assertNull(scheme.getScale("AF"));
+        assertNull("A range must not become a category", scheme.getColor("AF", "0:40"));
+        assertEquals(1, scheme.getColors("AF").size());
+        assertEquals(new Color(1, 2, 3), scheme.getColor("AF", "0.5"));
+    }
+
+    /**
+     * A value that merely contains a colon is still a value.
+     */
+    @Test
+    public void testColonInValueIsNotARange() throws Exception {
+        String contents = "HGVS\tNM_007294.4:c.5266dupC\t1,2,3\nCHR2\tchr1:12345\t4,5,6\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        assertEquals(new Color(1, 2, 3), scheme.getColor("HGVS", "NM_007294.4:c.5266dupC"));
+        assertEquals(new Color(4, 5, 6), scheme.getColor("CHR2", "chr1:12345"));
     }
 
     private VariantColorScheme builtinFor(String infoKey) {
