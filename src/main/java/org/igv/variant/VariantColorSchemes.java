@@ -280,8 +280,8 @@ public class VariantColorSchemes {
     }
 
     /**
-     * Write a color scale for a numeric INFO attribute as a scheme, in the same human editable form as the rest
-     * of the file: a "min:max" or "min:mid:max" range followed by a color per stop.
+     * Write a color scale for a numeric INFO attribute as a scheme.  The scale is serialized in the form IGV
+     * uses for heat map scales elsewhere, so there is one representation of a color scale, not two.
      *
      * @return the saved scheme
      */

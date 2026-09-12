@@ -221,7 +221,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertTrue(colorableIds(track).contains("AF"));
         assertNull(VariantColorSchemes.getScale("AF"));
 
-        writeScheme("af.txt", "AF\t0:0.1\t255,255,200\t255,0,0");
+        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;0.1;255,255,200;255,0,0");
         VariantColorSchemes.reset();
 
         assertNotNull(VariantColorSchemes.getScale("AF"));
@@ -341,27 +341,37 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * A three stop gradient, written as "min:mid:max" with three colors.
+     * A double gradient round trips exactly, including the neutral band between negStart and posStart, which
+     * a three number range could not represent.
      */
     @Test
     public void testDoubleGradientScale() throws Exception {
-        String contents = "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+        // (negStart, negEnd, posStart, posEnd) -- negEnd is the minimum, negStart the inner edge of the band
+        ContinuousColorScale scale = new ContinuousColorScale(-2, -10, 2, 10,
+                new Color(0, 0, 255), new Color(255, 255, 255), new Color(255, 0, 0));
 
-        AbstractColorScale scale = scheme.getScale("SCORE");
-        assertNotNull(scale);
-        assertNotEquals(scale.getColor(-10f), scale.getColor(10f));
-        assertEquals(new Color(255, 255, 255), scale.getColor(0f));
+        VariantColorSchemes.saveScale("SCORE scale", "SCORE", scale);
+        VariantColorSchemes.reset();
+
+        ContinuousColorScale restored = (ContinuousColorScale) VariantColorSchemes.getScale("SCORE");
+        assertNotNull(restored);
+        assertTrue(restored.isUseDoubleGradient());
+        assertEquals(-10.0, restored.getMinimum(), 1e-9);
+        assertEquals(-2.0, restored.getNegStart(), 1e-9);
+        assertEquals(2.0, restored.getPosStart(), 1e-9);
+        assertEquals(10.0, restored.getMaximum(), 1e-9);
+        assertEquals(new Color(255, 255, 255), restored.getColor(0f));
     }
 
     /**
-     * A three stop range needs three colors -- two is ambiguous, so the row is skipped rather than guessed at.
+     * A two field row that is neither "categorical" nor a color scale is skipped, not guessed at.
      */
     @Test
-    public void testDoubleGradientNeedsThreeColors() throws Exception {
-        String contents = "SCORE\t-10:0:10\t0,0,255\t255,0,0\n";
+    public void testUnrecognizedTwoFieldRow() throws Exception {
+        String contents = "SCORE\t-10:0:10\nSCORE\tnonsense\n";
         VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
         assertNull(scheme.getScale("SCORE"));
+        assertFalse(scheme.isCategorical("SCORE"));
     }
 
     /**
@@ -408,7 +418,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
                 "CLNSIG\tPathogenic\t1,2,3",
                 "CLNSIG\t*\t9,9,9",
                 "DP\tcategorical",
-                "CADD\t0:40\t255,255,204\t202,0,32",
+                "CADD\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32",
                 "");
         VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "Mixed");
 

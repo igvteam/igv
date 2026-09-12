@@ -4,7 +4,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.renderer.MonocolorScale;
+import org.igv.renderer.ColorScaleFactory;
 import org.igv.ui.color.ColorUtilities;
 
 import java.awt.Color;
@@ -129,8 +129,8 @@ public class VariantColorScheme {
 
             String[] tokens = line.split("\t");
 
-            if (tokens.length == 2 && CATEGORICAL.equalsIgnoreCase(tokens[1].trim())) {
-                scheme.categoricalKeys.add(tokens[0].trim().toUpperCase());
+            if (tokens.length == 2) {
+                scheme.addTwoFieldRow(tokens[0].trim(), tokens[1].trim());
                 continue;
             }
 
@@ -144,6 +144,25 @@ public class VariantColorScheme {
         return scheme;
     }
 
+    /**
+     * A two field row is either the categorical declaration or a color scale, serialized in the same form
+     * IGV uses for heat map scales elsewhere (see {@link org.igv.renderer.ColorScaleFactory}).
+     */
+    private void addTwoFieldRow(String key, String value) {
+
+        if (CATEGORICAL.equalsIgnoreCase(value)) {
+            categoricalKeys.add(key.toUpperCase());
+            return;
+        }
+
+        try {
+            scales.put(key.toUpperCase(), (AbstractColorScale) ColorScaleFactory.getScaleFromString(value));
+        } catch (Exception e) {
+            log.warn("Skipping color scheme row, expected \"" + CATEGORICAL + "\" or a color scale: "
+                    + key + "\t" + value);
+        }
+    }
+
     private void addRow(String[] tokens) {
 
         String key = tokens[0].trim().toUpperCase();
@@ -154,39 +173,7 @@ public class VariantColorScheme {
             return;
         }
 
-        if (value.contains(":")) {
-            String[] range = value.split(":");
-            try {
-                if (range.length > 2) {
-                    // "min:mid:max" with three colors -- a gradient through a midpoint
-                    double min = Double.parseDouble(range[0].trim());
-                    double mid = Double.parseDouble(range[1].trim());
-                    double max = Double.parseDouble(range[2].trim());
-                    Color midColor = tokens.length > 3 ? ColorUtilities.stringToColor(tokens[3].trim(), null) : null;
-                    Color maxColor = tokens.length > 4 ? ColorUtilities.stringToColor(tokens[4].trim(), null) : null;
-                    if (midColor == null || maxColor == null) {
-                        log.warn("Skipping color scheme row, a min:mid:max range needs three colors: "
-                                + String.join("\t", tokens));
-                        return;
-                    }
-                    scales.put(key, new ContinuousColorScale(min, mid, max, color, midColor, maxColor));
-                    return;
-                }
-
-                float min = Float.parseFloat(range[0].trim());
-                float max = Float.parseFloat(range[1].trim());
-                if (tokens.length > 3) {
-                    Color maxColor = ColorUtilities.stringToColor(tokens[3].trim(), null);
-                    if (maxColor != null) {
-                        scales.put(key, new ContinuousColorScale(min, max, color, maxColor));
-                        return;
-                    }
-                }
-                scales.put(key, new MonocolorScale(min, max, color));
-            } catch (NumberFormatException e) {
-                log.warn("Skipping color scheme row with unparseable range: " + String.join("\t", tokens));
-            }
-        } else if (WILDCARD.equals(value)) {
+        if (WILDCARD.equals(value)) {
             defaultColors.put(key, color);
         } else {
             putColor(key, value, color);
@@ -346,7 +333,7 @@ public class VariantColorScheme {
             }
             AbstractColorScale scale = scales.get(key);
             if (scale instanceof ContinuousColorScale) {
-                writeScale(writer, key, (ContinuousColorScale) scale);
+                writer.println(key + "\t" + ((ContinuousColorScale) scale).asString());
             }
             for (Map.Entry<String, Color> entry : colors.getOrDefault(key, Collections.emptyMap()).entrySet()) {
                 writer.println(key + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
@@ -355,21 +342,6 @@ public class VariantColorScheme {
             if (defaultColor != null) {
                 writer.println(key + "\t" + WILDCARD + "\t" + ColorUtilities.colorToString(defaultColor));
             }
-        }
-    }
-
-    private static void writeScale(PrintWriter writer, String key, ContinuousColorScale scale) {
-        if (scale.isUseDoubleGradient()) {
-            writer.println(key
-                    + "\t" + scale.getMinimum() + ":" + scale.getNegStart() + ":" + scale.getMaximum()
-                    + "\t" + ColorUtilities.colorToString(scale.getMinColor())
-                    + "\t" + ColorUtilities.colorToString(scale.getMidColor())
-                    + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
-        } else {
-            writer.println(key
-                    + "\t" + scale.getMinimum() + ":" + scale.getMaximum()
-                    + "\t" + ColorUtilities.colorToString(scale.getMinColor())
-                    + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
         }
     }
 
