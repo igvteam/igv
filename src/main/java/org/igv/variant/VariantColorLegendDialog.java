@@ -112,13 +112,6 @@ public class VariantColorLegendDialog extends JDialog {
             }
         }
 
-        if (track.isAttributeColorLimitReached(infoKey)) {
-            JLabel note = new JLabel("<html><i>More than " + VariantTrack.getMaxAttributeColors()
-                    + " values -- the rest are drawn gray.  Is this attribute categorical?");
-            note.setBorder(BorderFactory.createEmptyBorder(6, 5, 2, 5));
-            valuePanel.add(note);
-        }
-
         valuePanel.add(Box.createVerticalGlue());
         valuePanel.revalidate();
         valuePanel.repaint();
