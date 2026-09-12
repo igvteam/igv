@@ -149,6 +149,43 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
+     * Reading schemes must not create the scheme directory -- opening preferences should not leave a directory
+     * behind for a feature the user never used.
+     */
+    @Test
+    public void testReadingDoesNotCreateDirectory() {
+        assertFalse(VariantColorSchemes.getSchemeDirectory().exists());
+        VariantColorSchemes.getColor("CLNSIG", "Pathogenic");
+        VariantColorSchemes.getSchemes();
+        assertFalse("Reading schemes created the scheme directory", VariantColorSchemes.getSchemeDirectory().exists());
+    }
+
+    @Test
+    public void testRemove() throws Exception {
+        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+        VariantColorSchemes.reset();
+
+        VariantColorScheme scheme = VariantColorSchemes.getUserSchemes().get(0);
+        assertTrue(VariantColorSchemes.remove(scheme));
+        assertFalse(scheme.getFile().exists());
+        assertTrue(VariantColorSchemes.getUserSchemes().isEmpty());
+
+        // Back to the built-in color
+        assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+    }
+
+    /**
+     * Schemes shipped with IGV cannot be removed.
+     */
+    @Test
+    public void testBuiltinCannotBeRemoved() {
+        VariantColorScheme builtin = VariantColorSchemes.getBuiltinSchemes().get(0);
+        assertTrue(builtin.isBuiltIn());
+        assertFalse(VariantColorSchemes.remove(builtin));
+        assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+    }
+
+    /**
      * A numeric attribute is only colorable if a scheme gives it a range, and then it shades across that range.
      */
     @Test
@@ -178,7 +215,9 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     private void writeScheme(String fileName, String... lines) throws Exception {
-        File file = new File(VariantColorSchemes.getSchemeDirectory(), fileName);
+        File directory = VariantColorSchemes.getSchemeDirectory();
+        directory.mkdirs();
+        File file = new File(directory, fileName);
         try (PrintWriter writer = new PrintWriter(file)) {
             for (String line : lines) {
                 writer.println(line);

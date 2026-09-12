@@ -9,6 +9,7 @@ import org.igv.ui.color.ColorUtilities;
 
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,11 @@ public class VariantColorScheme {
     private String name;
     private String description;
     private String source;
+
+    /**
+     * The file this scheme was read from, in the IGV scheme directory.  Null for schemes shipped with IGV.
+     */
+    private File file;
 
     /**
      * INFO key (upper case) -> attribute value (lower case) -> color.
@@ -201,6 +207,24 @@ public class VariantColorScheme {
 
     void setSource(String source) {
         this.source = source;
+    }
+
+    /**
+     * @return the file this scheme was read from, or null if it is shipped with IGV.
+     */
+    public File getFile() {
+        return file;
+    }
+
+    void setFile(File file) {
+        this.file = file;
+    }
+
+    /**
+     * @return true if this scheme ships with IGV, and so cannot be removed or edited in place.
+     */
+    public boolean isBuiltIn() {
+        return file == null;
     }
 
     @Override
