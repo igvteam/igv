@@ -8,7 +8,7 @@
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
 chr1	100	.	C	A	100	.	AF=0.01;ALLELEID=1;CLNSIG=Pathogenic;CLNREVSTAT=criteria_provided,_single_submitter;DB
-chr1	200	.	G	T	100	.	AF=0.02;ALLELEID=2;CLNSIG=Likely_pathogenic
+chr1	200	.	G	T	100	.	AF=0.02;ALLELEID=2;CLNSIG=Likely_pathogenic;CLNREVSTAT=.
 chr1	300	.	T	C	100	.	AF=0.03;ALLELEID=3;CLNSIG=Uncertain_significance
 chr1	400	.	A	G	100	.	AF=0.04;ALLELEID=4;CLNSIG=Likely_benign
 chr1	500	.	C	G	100	.	AF=0.05;ALLELEID=5;CLNSIG=Benign

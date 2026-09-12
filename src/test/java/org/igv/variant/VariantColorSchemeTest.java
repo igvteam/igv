@@ -523,19 +523,78 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * The numeric "min:max" row of a sample information file is not a color scale here.  Read as a category it
-     * would key a color on the literal text, leave the attribute's real values uncolored, and mark the attribute
-     * as covered so IGV would never offer to build a scale for it -- all without complaint.  It is rejected.
+     * The numeric "min:max" row of a sample information file "#colors" section is read as a scale, so such a
+     * section works here unchanged.  It must not become a category keyed on the literal text "0:40".
      */
     @Test
-    public void testSampleInfoRangeRowRejected() throws Exception {
-        String contents = "AF\t0:40\t255,255,200\t255,0,0\nAF\t0.5\t1,2,3\n";
+    public void testSampleInfoRangeRow() throws Exception {
+        String contents = "CADD\t0:40\t255,255,200\t255,0,0\n";
         VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
 
-        assertNull(scheme.getScale("AF"));
-        assertNull("A range must not become a category", scheme.getColor("AF", "0:40"));
-        assertEquals(1, scheme.getColors("AF").size());
-        assertEquals(new Color(1, 2, 3), scheme.getColor("AF", "0.5"));
+        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("CADD");
+        assertNotNull(scale);
+        assertEquals(0.0, scale.getMinimum(), 1e-9);
+        assertEquals(40.0, scale.getMaximum(), 1e-9);
+        assertEquals(new Color(255, 255, 200), scale.getMinColor());
+        assertEquals(new Color(255, 0, 0), scale.getMaxColor());
+        assertTrue(scheme.getColors("CADD").isEmpty());
+    }
+
+    /**
+     * A single color shades from white, as it does in a sample information file.
+     */
+    @Test
+    public void testSampleInfoRangeRowOneColor() throws Exception {
+        String contents = "DP\t0:100\t0,0,255\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("DP");
+        assertNotNull(scale);
+        assertEquals(Color.white, scale.getMinColor());
+        assertEquals(new Color(0, 0, 255), scale.getMaxColor());
+    }
+
+    /**
+     * A range starting below zero shades through a neutral midpoint at zero, matching AttributeManager.
+     */
+    @Test
+    public void testSampleInfoRangeRowNegative() throws Exception {
+        String contents = "SCORE\t-10:10\t0,0,255\t255,0,0\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("SCORE");
+        assertNotNull(scale);
+        assertTrue(scale.isUseDoubleGradient());
+        assertEquals(-10.0, scale.getMinimum(), 1e-9);
+        assertEquals(0.0, scale.getNegStart(), 1e-9);
+        assertEquals(10.0, scale.getMaximum(), 1e-9);
+    }
+
+    /**
+     * An imported range row is written back in the canonical form, so there is one form on disk.
+     */
+    @Test
+    public void testRangeRowNormalizedOnSave() throws Exception {
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("#name=CADD\nCADD\t0:40\t255,255,200\t255,0,0\n")), "test");
+
+        VariantColorSchemes.save(scheme);
+        String written = Files.readString(scheme.getFile().toPath());
+
+        assertTrue("Expected the canonical form, got:\n" + written,
+                written.contains("CADD\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0"));
+        assertFalse(written.contains("0:40"));
+    }
+
+    /**
+     * Only "min:max" is a range; three numbers are not a form IGV ever wrote.
+     */
+    @Test
+    public void testThreePartRangeRejected() throws Exception {
+        String contents = "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+        assertNull(scheme.getScale("SCORE"));
+        assertTrue(scheme.getColors("SCORE").isEmpty());
     }
 
     /**

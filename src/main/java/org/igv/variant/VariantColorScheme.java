@@ -39,8 +39,8 @@ import java.util.Set;
  * not otherwise cover.  A two field row is either a serialized color scale or the word "categorical", which
  * records that a numeric attribute holds codes rather than quantities.
  * <p>
- * Note that the numeric "min:max" rows of a sample information file are NOT a color scale here -- they are
- * rejected rather than read as a category whose name happens to contain a colon.
+ * The numeric "min:max" rows of a sample information file are also read, so a "#colors" section can be used
+ * here unchanged, but they are converted to a color scale and written back in the canonical form.
  */
 public class VariantColorScheme {
 
@@ -188,19 +188,49 @@ public class VariantColorScheme {
         if (WILDCARD.equals(value)) {
             defaultColors.put(key, color);
         } else if (isNumericRange(value)) {
-            // The numeric form of a sample information file "#colors" row.  Storing it as a category would key a
-            // color on the literal text "0:40", quietly leave the attribute's real values uncolored, and mark the
-            // attribute as covered so IGV would never offer to build a scale for it.
-            log.warn("Skipping color scheme row: a color scale is one field, for example \"" + key
-                    + "\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0\", not a \"" + value + "\" range: "
-                    + String.join("\t", tokens));
+            addRangeRow(key, value, color, tokens);
         } else {
             putColor(key, value, color);
         }
     }
 
     /**
-     * Does this value look like a "min:max" or "min:mid:max" range rather than an attribute value?
+     * Read the numeric "min:max" row of a sample information file "#colors" section, so such a section can be
+     * used here unchanged.  The scale is converted to a {@link ContinuousColorScale}, which is the form schemes
+     * are written in -- so importing one of these rows and saving normalizes it.
+     * <p>
+     * The semantics match {@link org.igv.track.AttributeManager}: one color shades from white, two colors shade
+     * between them, and two colors over a range starting below zero shade through a neutral midpoint at zero.
+     */
+    private void addRangeRow(String key, String value, Color color, String[] tokens) {
+
+        String[] parts = value.split(":");
+        if (parts.length != 2) {
+            log.warn("Skipping color scheme row, a range is \"min:max\": " + String.join("\t", tokens));
+            return;
+        }
+
+        try {
+            double min = Double.parseDouble(parts[0].trim());
+            double max = Double.parseDouble(parts[1].trim());
+            Color maxColor = tokens.length > 3 ? ColorUtilities.stringToColor(tokens[3].trim(), null) : null;
+
+            if (maxColor == null) {
+                scales.put(key, new ContinuousColorScale(min, max, Color.white, color));
+            } else if (min < 0) {
+                scales.put(key, new ContinuousColorScale(min, 0, max, color,
+                        AbstractColorScale.neutralColor(), maxColor));
+            } else {
+                scales.put(key, new ContinuousColorScale(min, max, color, maxColor));
+            }
+        } catch (RuntimeException e) {
+            log.warn("Skipping unparseable color scheme row: " + String.join("\t", tokens), e);
+        }
+    }
+
+    /**
+     * Does this value look like a numeric range rather than an attribute value?  A value that merely contains a
+     * colon -- an HGVS name, a locus -- is still a value.
      */
     private static boolean isNumericRange(String value) {
 

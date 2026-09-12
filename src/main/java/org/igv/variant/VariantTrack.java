@@ -99,6 +99,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final int MIN_COLOR_DISTANCE = 60;
 
     /**
+     * How many generated colors to try before settling for the furthest one found.
+     */
+    private static final int MAX_COLOR_ATTEMPTS = 500;
+
+    /**
      * INFO attribute types that can be colored by.
      */
     private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
@@ -756,46 +761,63 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         PaletteColorTable colorTable = getAttributeColorTable(key);
 
         if (!colorTable.getColorMap().containsKey(value.toLowerCase())) {
-            Color color = nextDistinctColor(key, colorTable);
-            if (color != null) {
-                colorTable.put(value, color);
-            }
-            // If every palette entry is used or too close, fall through -- the table generates a color itself
+            // Always store a color chosen here.  Leaving it to the table would undo the filtering below, as it
+            // takes palette[size] regardless of whether that entry was skipped as too similar.
+            colorTable.put(value, nextDistinctColor(key, colorTable));
         }
         return colorTable.get(value);
     }
 
     /**
-     * The first palette color that is neither already assigned for this attribute nor close to a color a scheme
-     * uses for it.  Null if there is no such color.
+     * A color that is neither already assigned for this attribute nor close to a color a scheme uses for it.
+     * Palette colors are preferred; once they are used up or rejected, colors are generated until one is far
+     * enough from everything in use.  Generation is deterministic, so the assignments are reproducible.
      */
     private Color nextDistinctColor(String key, PaletteColorTable colorTable) {
-
-        ColorPalette palette = ColorUtilities.getPalette(ATTRIBUTE_PALETTE);
-        if (palette == null) {
-            return null;
-        }
 
         List<Color> used = new ArrayList<>(colorTable.getColorMap().values());
         used.addAll(VariantColorSchemes.getColors(key));
 
-        for (Color candidate : palette.getColors()) {
-            if (used.stream().noneMatch(c -> isSimilar(c, candidate))) {
-                return candidate;
+        ColorPalette palette = ColorUtilities.getPalette(ATTRIBUTE_PALETTE);
+        if (palette != null) {
+            for (Color candidate : palette.getColors()) {
+                if (minDistance(candidate, used) >= MIN_COLOR_DISTANCE) {
+                    return candidate;
+                }
             }
         }
-        return null;
+
+        // Keep the furthest candidate seen, so that even a crowded attribute never repeats a color outright
+        Color best = ColorUtilities.randomColor(used.size());
+        double bestDistance = minDistance(best, used);
+
+        for (int i = 1; i <= MAX_COLOR_ATTEMPTS && bestDistance < MIN_COLOR_DISTANCE; i++) {
+            Color candidate = ColorUtilities.randomColor(used.size() + i);
+            double distance = minDistance(candidate, used);
+            if (distance > bestDistance) {
+                best = candidate;
+                bestDistance = distance;
+            }
+        }
+        return best;
     }
 
     /**
-     * Euclidean distance in RGB.  Crude, but enough to catch colors that read as the same at the size of a
-     * variant band.
+     * Distance from a color to the nearest of those already in use, or a large value if none are.
      */
-    private static boolean isSimilar(Color c1, Color c2) {
+    private static double minDistance(Color color, List<Color> used) {
+        double min = Double.MAX_VALUE;
+        for (Color c : used) {
+            min = Math.min(min, distance(color, c));
+        }
+        return min;
+    }
+
+    private static double distance(Color c1, Color c2) {
         int dr = c1.getRed() - c2.getRed();
         int dg = c1.getGreen() - c2.getGreen();
         int db = c1.getBlue() - c2.getBlue();
-        return dr * dr + dg * dg + db * db < MIN_COLOR_DISTANCE * MIN_COLOR_DISTANCE;
+        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
     /**
@@ -931,7 +953,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     /**
      * Normalize an attribute value for use as a color table key.  Multi-valued attributes are returned by htsjdk
-     * as a list ("[a, b]"), which is reduced to "a,b" here so the key matches what the user sees.
+     * as a list ("[a, b]"), which is reduced to "a,b" here so the key matches what the user sees.  Returns null
+     * for a value that means "missing", which is drawn in the no-value color.
      */
     private static String normalizeAttributeValue(String value) {
         if (value == null) {
@@ -942,7 +965,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             v = v.substring(1, v.length() - 1);
         }
         v = v.replaceAll("\\s*,\\s*", ",").trim();
-        return v.isEmpty() || "null".equals(v) ? null : v;
+        // "." is the VCF missing value marker.  htsjdk passes it through for a string attribute, and treated as
+        // a value it would take a color of its own and appear in the legend as if it meant something.
+        return v.isEmpty() || ".".equals(v) || "null".equals(v) ? null : v;
     }
 
     /**

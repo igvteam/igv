@@ -15,6 +15,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,11 +149,72 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         }
     }
 
+    /**
+     * Colors keep their distance once the palette runs out.  The palette has nine entries and the built-in
+     * CLNSIG scheme rejects four of them, so from the sixth unknown value on, colors have to be generated --
+     * a fallback that took palette[n] regardless would hand back near-duplicates and repeats.
+     */
+    @Test
+    public void testAssignedColorsStayDistinctBeyondThePalette() {
+
+        track.setColorByAttribute("CLNSIG");
+
+        List<Color> assigned = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            assigned.add(track.getAttributeColor("CLNSIG", "unknown-" + i));
+        }
+
+        Collection<Color> schemeColors = VariantColorSchemes.getColors("CLNSIG");
+        for (int i = 0; i < assigned.size(); i++) {
+            Color color = assigned.get(i);
+
+            // Beyond a couple of dozen colors the RGB cube runs out of room, so the guarantee is the best
+            // available rather than the full separation -- but it must never collapse
+            double required = i < 15 ? 60 : 55;
+
+            for (Color schemeColor : schemeColors) {
+                assertTrue("Value " + i + " got " + color + ", only " + distance(color, schemeColor)
+                                + " from scheme color " + schemeColor,
+                        distance(color, schemeColor) >= required);
+            }
+            for (int j = 0; j < i; j++) {
+                assertTrue("Value " + i + " repeats the color of value " + j,
+                        distance(color, assigned.get(j)) > 0);
+            }
+        }
+    }
+
+    /**
+     * The same value keeps its color, however many others have been assigned since.
+     */
+    @Test
+    public void testAssignedColorsAreStable() {
+        track.setColorByAttribute("CLNSIG");
+        Color first = track.getAttributeColor("CLNSIG", "unknown-0");
+        for (int i = 1; i < 20; i++) {
+            track.getAttributeColor("CLNSIG", "unknown-" + i);
+        }
+        assertEquals(first, track.getAttributeColor("CLNSIG", "unknown-0"));
+    }
+
     private static double distance(Color c1, Color c2) {
         int dr = c1.getRed() - c2.getRed();
         int dg = c1.getGreen() - c2.getGreen();
         int db = c1.getBlue() - c2.getBlue();
         return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    /**
+     * "." is the VCF missing value marker.  htsjdk passes it through for a string attribute, so it has to be
+     * recognized here or it takes a color of its own and shows in the legend as though it were a real value.
+     */
+    @Test
+    public void testMissingValueMarker() {
+        track.setColorByAttribute("CLNREVSTAT");
+
+        assertEquals("CLNREVSTAT=. must read as missing", Color.gray, colorAt(1));
+        assertEquals("A record with no CLNREVSTAT at all is missing too", Color.gray, colorAt(2));
+        assertFalse(track.getAttributeColorTable("CLNREVSTAT").getColorMap().containsKey("."));
     }
 
     /**
