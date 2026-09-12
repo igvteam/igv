@@ -1,0 +1,210 @@
+package org.igv.variant;
+
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ContinuousColorScale;
+import org.igv.renderer.MonocolorScale;
+import org.igv.ui.color.ColorUtilities;
+
+import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * A named set of colors for VCF INFO attribute values, read from a tab delimited file.  The format is the "#colors"
+ * section of an IGV sample information file, so the same syntax works in both places.
+ *
+ * <pre>
+ * #name=ClinVar significance
+ * #description=Benign (blue) through pathogenic (red)
+ * #colors
+ * CLNSIG   Pathogenic  202,0,32
+ * CLNSIG   *           150,150,150
+ * CADD_PHRED   0:40    255,255,200     255,0,0
+ * </pre>
+ *
+ * A row is "INFO key", "value", then one or two colors.  A value of "*" sets the color for values the scheme does
+ * not otherwise cover.  A value of the form "min:max" defines a continuous scale over a numeric attribute --
+ * one color shades from white to that color, two colors shade from the first to the second.
+ */
+public class VariantColorScheme {
+
+    private static Logger log = LogManager.getLogger(VariantColorScheme.class);
+
+    private static final String NAME_DIRECTIVE = "#name=";
+    private static final String DESCRIPTION_DIRECTIVE = "#description=";
+    private static final String SOURCE_DIRECTIVE = "#source=";
+    private static final String COLORS_SECTION = "#colors";
+
+    /**
+     * The value that sets the color for anything the scheme does not explicitly cover.
+     */
+    static final String WILDCARD = "*";
+
+    private String name;
+    private String description;
+    private String source;
+
+    /**
+     * INFO key (upper case) -> attribute value (lower case) -> color.
+     */
+    private final Map<String, Map<String, Color>> colors = new LinkedHashMap<>();
+
+    /**
+     * INFO key (upper case) -> color for values not otherwise covered.
+     */
+    private final Map<String, Color> defaultColors = new HashMap<>();
+
+    /**
+     * INFO key (upper case) -> scale, for numeric attributes given as a "min:max" range.
+     */
+    private final Map<String, AbstractColorScale> scales = new LinkedHashMap<>();
+
+    VariantColorScheme(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Parse a color scheme.  Unparseable rows are logged and skipped, a scheme is not rejected outright for one
+     * bad line.
+     *
+     * @param reader      the scheme contents
+     * @param defaultName name to use if the file has no "#name=" directive
+     */
+    public static VariantColorScheme parse(BufferedReader reader, String defaultName) throws IOException {
+
+        VariantColorScheme scheme = new VariantColorScheme(defaultName);
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            if (line.startsWith("#")) {
+                String lower = line.toLowerCase();
+                if (lower.startsWith(NAME_DIRECTIVE)) {
+                    scheme.name = line.substring(NAME_DIRECTIVE.length()).trim();
+                } else if (lower.startsWith(DESCRIPTION_DIRECTIVE)) {
+                    scheme.description = line.substring(DESCRIPTION_DIRECTIVE.length()).trim();
+                } else if (lower.startsWith(SOURCE_DIRECTIVE)) {
+                    scheme.source = line.substring(SOURCE_DIRECTIVE.length()).trim();
+                }
+                // Anything else, including the "#colors" section marker, is a comment
+                continue;
+            }
+
+            String[] tokens = line.split("\t");
+            if (tokens.length < 3) {
+                log.warn("Skipping color scheme line, expected at least 3 tab delimited fields: " + line);
+                continue;
+            }
+            scheme.addRow(tokens);
+        }
+
+        return scheme;
+    }
+
+    private void addRow(String[] tokens) {
+
+        String key = tokens[0].trim().toUpperCase();
+        String value = tokens[1].trim();
+        Color color = ColorUtilities.stringToColor(tokens[2].trim(), null);
+        if (color == null) {
+            log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens));
+            return;
+        }
+
+        if (value.contains(":")) {
+            String[] range = value.split(":");
+            try {
+                float min = Float.parseFloat(range[0].trim());
+                float max = Float.parseFloat(range[1].trim());
+                if (tokens.length > 3) {
+                    Color maxColor = ColorUtilities.stringToColor(tokens[3].trim(), null);
+                    if (maxColor != null) {
+                        scales.put(key, new ContinuousColorScale(min, max, color, maxColor));
+                        return;
+                    }
+                }
+                scales.put(key, new MonocolorScale(min, max, color));
+            } catch (NumberFormatException e) {
+                log.warn("Skipping color scheme row with unparseable range: " + String.join("\t", tokens));
+            }
+        } else if (WILDCARD.equals(value)) {
+            defaultColors.put(key, color);
+        } else {
+            colors.computeIfAbsent(key, k -> new LinkedHashMap<>()).put(value.toLowerCase(), color);
+        }
+    }
+
+    /**
+     * Return the color this scheme assigns to an attribute value, or null if it does not cover it.  Matching is
+     * case insensitive.
+     */
+    public Color getColor(String infoKey, String value) {
+        if (infoKey == null || value == null) {
+            return null;
+        }
+        String key = infoKey.toUpperCase();
+        Map<String, Color> valueColors = colors.get(key);
+        Color color = valueColors == null ? null : valueColors.get(value.toLowerCase());
+        return color != null ? color : defaultColors.get(key);
+    }
+
+    /**
+     * Return the continuous scale for a numeric attribute, or null if this scheme does not define one.
+     */
+    public AbstractColorScale getScale(String infoKey) {
+        return infoKey == null ? null : scales.get(infoKey.toUpperCase());
+    }
+
+    /**
+     * @return the INFO keys this scheme assigns colors to.
+     */
+    public Set<String> getKeys() {
+        Set<String> keys = new LinkedHashSet<>(colors.keySet());
+        keys.addAll(defaultColors.keySet());
+        keys.addAll(scales.keySet());
+        return keys;
+    }
+
+    /**
+     * @return the value -> color assignments for an INFO key, for display in a legend.  Does not include the
+     * wildcard default or continuous scales.
+     */
+    public Map<String, Color> getColors(String infoKey) {
+        Map<String, Color> valueColors = infoKey == null ? null : colors.get(infoKey.toUpperCase());
+        return valueColors == null ? Collections.emptyMap() : Collections.unmodifiableMap(valueColors);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    void setSource(String source) {
+        this.source = source;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}

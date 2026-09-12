@@ -16,6 +16,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
+import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
@@ -87,7 +88,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final Color NO_ATTRIBUTE_VALUE_COLOR = Color.gray;
 
     /**
-     * INFO attribute types that can be colored by.  Float is excluded, its values are continuous.
+     * Palette for attribute values no color scheme covers.  Matches the default used by igv.js.
+     */
+    private static final String ATTRIBUTE_PALETTE = "Set 1";
+
+    /**
+     * INFO attribute types that can be colored by.  Float is excluded -- there is no sensible default for a
+     * continuous attribute, it is only colorable if a color scheme gives it a range.
      */
     private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
             VCFHeaderLineType.String,
@@ -681,21 +688,39 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * attribute are drawn gray, following igv.js.
      */
     public Color getAttributeColor(Variant variant) {
+
         if (colorByAttribute == null) {
             return getColor();
         }
+
         String value = normalizeAttributeValue(variant.getAttributeAsString(colorByAttribute));
-        return value == null ?
-                NO_ATTRIBUTE_VALUE_COLOR :
-                getAttributeColorTable(colorByAttribute).get(value);
+        if (value == null) {
+            return NO_ATTRIBUTE_VALUE_COLOR;
+        }
+
+        // A color scheme wins over a color assigned earlier from the palette, so importing a scheme takes effect
+        // on tracks that are already open.
+        AbstractColorScale scale = VariantColorSchemes.getScale(colorByAttribute);
+        if (scale != null) {
+            try {
+                return scale.getColor(Float.parseFloat(value));
+            } catch (NumberFormatException e) {
+                return NO_ATTRIBUTE_VALUE_COLOR;
+            }
+        }
+
+        Color color = VariantColorSchemes.getColor(colorByAttribute, value);
+        return color != null ? color : getAttributeColorTable(colorByAttribute).get(value);
     }
 
     /**
-     * Return the color table for the given INFO attribute, creating it if necessary.
+     * Return the table of palette colors assigned to values of the given INFO attribute.  It holds only values no
+     * color scheme covers -- those are assigned a color as they are encountered.
      */
     public PaletteColorTable getAttributeColorTable(String key) {
         synchronized (attributeColorTables) {
-            return attributeColorTables.computeIfAbsent(key, VariantColorTables::getColorTable);
+            return attributeColorTables.computeIfAbsent(key,
+                    k -> new PaletteColorTable(ColorUtilities.getPalette(ATTRIBUTE_PALETTE)));
         }
     }
 
@@ -707,6 +732,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private void assignColorsForLoadedFeatures(String key) {
 
+        if (VariantColorSchemes.getScale(key) != null) {
+            return;     // Colors come from a continuous scale, nothing to assign
+        }
+
         PaletteColorTable colorTable = getAttributeColorTable(key);
         SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -715,7 +744,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 for (PackedFeature feature : packedFeatures.getFeatures()) {
                     if (feature instanceof Variant) {
                         String value = normalizeAttributeValue(((Variant) feature).getAttributeAsString(key));
-                        if (value != null) {
+                        if (value != null && VariantColorSchemes.getColor(key, value) == null) {
                             values.add(value);
                         }
                     }
@@ -751,8 +780,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (!(header instanceof VCFHeader)) {
             return Collections.emptyList();
         }
+        Set<String> schemeKeys = VariantColorSchemes.getKeys();
         return ((VCFHeader) header).getInfoHeaderLines().stream()
-                .filter(line -> COLORABLE_INFO_TYPES.contains(line.getType()))
+                .filter(line -> COLORABLE_INFO_TYPES.contains(line.getType())
+                        || schemeKeys.contains(line.getID().toUpperCase()))
                 .sorted(Comparator.comparing(VCFInfoHeaderLine::getID, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
     }

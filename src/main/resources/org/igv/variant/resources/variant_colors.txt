@@ -1,0 +1,36 @@
+#name=IGV defaults
+#description=Colors for commonly used VCF INFO attributes
+#
+# Colors for VCF INFO attribute values.  Tab delimited: INFO key, value, color.
+# A value of "*" is the color for values not listed.  A value of the form "min:max" defines a
+# continuous scale over a numeric attribute, shading from the first color to the second.
+#
+# Copy this file, edit it, and import it from View > Preferences > Variants to override these
+# colors or to add your own attributes.
+#
+#colors
+
+# ClinVar clinical significance, benign (blue) through pathogenic (red)
+CLNSIG	Pathogenic	202,0,32
+CLNSIG	Pathogenic/Likely_pathogenic	202,0,32
+CLNSIG	Likely_pathogenic	244,109,67
+CLNSIG	Uncertain_significance	150,150,150
+CLNSIG	Conflicting_classifications_of_pathogenicity	230,171,2
+CLNSIG	Conflicting_interpretations_of_pathogenicity	230,171,2
+CLNSIG	Likely_benign	146,197,222
+CLNSIG	Benign/Likely_benign	5,113,176
+CLNSIG	Benign	5,113,176
+
+# Structural variant type.  Colors match igv.js.
+SVTYPE	DEL	255,33,1
+SVTYPE	INS	0,24,136
+SVTYPE	DUP	2,132,1
+SVTYPE	INV	0,134,136
+SVTYPE	CNV	137,49,255
+SVTYPE	BND	137,17,0
+
+# Variant type, as annotated by the 1000 Genomes project
+VT	SNP	55,126,184
+VT	MNP	152,78,163
+VT	INDEL	228,26,28
+VT	SV	77,175,74
