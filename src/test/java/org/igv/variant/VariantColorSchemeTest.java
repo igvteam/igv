@@ -7,6 +7,7 @@ import org.igv.DirectoryManager;
 import org.igv.track.TrackLoader;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -208,6 +211,85 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         Color high = track.getAttributeColor((Variant) variants.get(8));  // AF=0.09
         assertNotEquals(low, high);
         assertTrue("Expected the high end of the scale to be redder", high.getRed() - high.getBlue() > low.getRed() - low.getBlue());
+    }
+
+    /**
+     * Colors chosen on a track win over a scheme, and over palette colors assigned earlier.
+     */
+    @Test
+    public void testTrackOverrideWinsOverScheme() throws Exception {
+        VariantTrack track = loadTrack();
+        List<Feature> variants = track.getFeatures("chr1", 0, 1000);
+        track.setColorByAttribute("CLNSIG");
+
+        assertEquals(new Color(202, 0, 32), track.getAttributeColor((Variant) variants.get(0)));   // built in
+
+        track.setAttributeColorOverride("CLNSIG", "Pathogenic", new Color(7, 8, 9));
+        assertEquals(new Color(7, 8, 9), track.getAttributeColor((Variant) variants.get(0)));
+
+        track.clearAttributeColorOverrides("CLNSIG");
+        assertEquals(new Color(202, 0, 32), track.getAttributeColor((Variant) variants.get(0)));
+    }
+
+    /**
+     * The legend offers the values present in the loaded features.
+     */
+    @Test
+    public void testAttributeValues() throws Exception {
+        VariantTrack track = loadTrack();
+        track.getFeatures("chr1", 0, 1000);
+        track.setColorByAttribute("CLNSIG");
+
+        // getFeatures does not pack features into the render cache, so nothing is "in view" until it does
+        assertTrue(track.getAttributeValues("CLNSIG").isEmpty());
+
+        track.setAttributeColorOverride("CLNSIG", "Pathogenic", Color.red);
+        assertTrue(track.getAttributeColorOverrides("CLNSIG").containsKey("pathogenic"));
+    }
+
+    /**
+     * Saving the legend writes a scheme that applies to every track, not just the one it was edited on.
+     */
+    @Test
+    public void testSaveScheme() throws Exception {
+        Map<String, Color> colors = new LinkedHashMap<>();
+        colors.put("Pathogenic", new Color(1, 2, 3));
+        colors.put("drug_response", new Color(4, 5, 6));
+
+        VariantColorScheme scheme = VariantColorSchemes.saveScheme("My colors", "CLNSIG", colors);
+
+        assertEquals("My colors", scheme.getName());
+        assertTrue(scheme.getFile().exists());
+
+        // Shadows the built-in, and covers a value the built-in does not
+        VariantColorSchemes.reset();
+        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+        assertEquals(new Color(4, 5, 6), VariantColorSchemes.getColor("CLNSIG", "drug_response"));
+    }
+
+    /**
+     * Colors the user chose survive a session round trip, separately from colors IGV assigned.
+     */
+    @Test
+    public void testOverridesRoundTrip() throws Exception {
+        VariantTrack track = loadTrack();
+        track.setColorByAttribute("CLNSIG");
+        track.setAttributeColorOverride("CLNSIG", "Pathogenic", new Color(7, 8, 9));
+
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        assertEquals("7,8,9", json.getJSONObject("colorTable").getString("pathogenic"));
+
+        VariantTrack restored = new VariantTrack();
+        restored.unmarshalJSON(json);
+        assertEquals(new Color(7, 8, 9), restored.getAttributeColor("CLNSIG", "Pathogenic"));
+        assertEquals(new Color(5, 113, 176), restored.getAttributeColor("CLNSIG", "Benign/Likely_benign"));
+    }
+
+    private VariantTrack loadTrack() throws Exception {
+        String filePath = TestUtils.DATA_DIR + "vcf/clinvar_info.vcf";
+        TestUtils.createIndex(filePath);
+        return (VariantTrack) (new TrackLoader()).load(new ResourceLocator(filePath), genome).get(0);
     }
 
     private List<String> colorableIds(VariantTrack track) {

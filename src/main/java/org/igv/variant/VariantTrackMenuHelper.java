@@ -57,6 +57,7 @@ public class VariantTrackMenuHelper {
         JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
         if (infoFieldMenu != null) {
             items.add(infoFieldMenu);
+            items.add(getEditInfoColorsItem(variantTrack));
         }
         items.add(getColorByNone(variantTrack));
 
@@ -174,6 +175,24 @@ public class VariantTrackMenuHelper {
             track.setColorByAttribute(id);
             IGV.getInstance().getContentPane().repaint();
         });
+        return item;
+    }
+
+    /**
+     * Opens the color legend for the attribute the track is colored by.  Only enabled in that mode -- there is
+     * nothing to show a legend for otherwise.
+     */
+    private static JMenuItem getEditInfoColorsItem(VariantTrack track) {
+
+        final String infoKey = track.getColorByAttribute();
+        final boolean active = track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && infoKey != null;
+
+        JMenuItem item = new JMenuItem(active ? "Edit " + infoKey + " Colors..." : "Edit INFO Colors...");
+        item.setEnabled(active);
+        if (active) {
+            item.addActionListener(evt ->
+                    new VariantColorLegendDialog(IGV.getInstance().getMainFrame(), track, infoKey).setVisible(true));
+        }
         return item;
     }
 

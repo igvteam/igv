@@ -7,6 +7,7 @@ import org.igv.renderer.AbstractColorScale;
 import org.igv.util.FileUtils;
 
 import java.awt.Color;
+import org.igv.ui.color.ColorUtilities;
 import org.igv.util.HttpUtils;
 
 import java.io.BufferedReader;
@@ -18,11 +19,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -102,6 +106,18 @@ public class VariantColorSchemes {
     }
 
     /**
+     * @return the colors any scheme assigns to values of an INFO attribute.  Used to keep colors assigned from
+     * the palette distinguishable from them.
+     */
+    public static Collection<Color> getColors(String infoKey) {
+        List<Color> colors = new ArrayList<>();
+        for (VariantColorScheme scheme : getSchemes()) {
+            colors.addAll(scheme.getColors(infoKey).values());
+        }
+        return colors;
+    }
+
+    /**
      * @return every INFO key covered by some scheme.  Used to offer numeric attributes that would otherwise not
      * be colorable.
      */
@@ -164,6 +180,39 @@ public class VariantColorSchemes {
                 writer.println("#source=" + url);
             }
             writer.print(contents);
+        }
+        scheme.setFile(file);
+
+        register(scheme);
+        return scheme;
+    }
+
+    /**
+     * Write the given value -> color assignments as a new scheme in the IGV directory, so they apply to every VCF
+     * with this attribute rather than only the track they were chosen on.  An existing scheme of the same name is
+     * replaced.
+     *
+     * @param name     the scheme name, also the basis for the file name
+     * @param infoKey  the INFO attribute the colors are for
+     * @param colors   value -> color
+     * @return the saved scheme
+     */
+    public static synchronized VariantColorScheme saveScheme(String name, String infoKey, Map<String, Color> colors)
+            throws IOException {
+
+        File file = new File(createSchemeDirectory(), getLegalFileName(name) + ".txt");
+
+        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
+            writer.println("#name=" + name);
+            writer.println("#colors");
+            for (Map.Entry<String, Color> entry : colors.entrySet()) {
+                writer.println(infoKey + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
+            }
+        }
+
+        VariantColorScheme scheme;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+            scheme = VariantColorScheme.parse(reader, name);
         }
         scheme.setFile(file);
 
@@ -268,6 +317,13 @@ public class VariantColorSchemes {
             log.error("Error loading built in variant color scheme", e);
         }
         return schemes;
+    }
+
+    /**
+     * Encode a scheme name so it can be used as a file name, as gene lists do.
+     */
+    private static String getLegalFileName(String name) {
+        return URLEncoder.encode(name, StandardCharsets.UTF_8);
     }
 
     private static String stripExtension(String fileName) {

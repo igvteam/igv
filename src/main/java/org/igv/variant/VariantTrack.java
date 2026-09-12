@@ -21,6 +21,7 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
+import org.igv.ui.color.ColorPalette;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.color.PaletteColorTable;
 import org.igv.ui.IGV;
@@ -93,6 +94,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final String ATTRIBUTE_PALETTE = "Set 1";
 
     /**
+     * How far apart, in RGB, two attribute colors have to be to count as distinguishable.
+     */
+    private static final int MIN_COLOR_DISTANCE = 60;
+
+    /**
      * INFO attribute types that can be colored by.  Float is excluded -- there is no sensible default for a
      * continuous attribute, it is only colorable if a color scheme gives it a range.
      */
@@ -148,6 +154,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * accumulate assignments as attribute values are encountered, so they are per-track state.
      */
     private final Map<String, PaletteColorTable> attributeColorTables = new HashMap<>();
+
+    /**
+     * Colors the user chose explicitly for attribute values, keyed by attribute ID then by value.  These take
+     * precedence over color schemes, which in turn take precedence over colors assigned from the palette.
+     */
+    private final Map<String, Map<String, Color>> attributeColorOverrides = new HashMap<>();
 
     /**
      * When true, variants that are marked filtering are not drawn.
@@ -697,10 +709,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (value == null) {
             return NO_ATTRIBUTE_VALUE_COLOR;
         }
+        return getAttributeColor(colorByAttribute, value);
+    }
 
-        // A color scheme wins over a color assigned earlier from the palette, so importing a scheme takes effect
-        // on tracks that are already open.
-        AbstractColorScale scale = VariantColorSchemes.getScale(colorByAttribute);
+    /**
+     * Return the color for a value of an INFO attribute.  Colors the user chose for this track win over colors
+     * from a scheme, which win over colors assigned from the palette -- so importing a scheme takes effect on
+     * tracks that are already open, without discarding the user's own choices.
+     */
+    public Color getAttributeColor(String key, String value) {
+
+        Color override = getAttributeColorOverrides(key).get(value.toLowerCase());
+        if (override != null) {
+            return override;
+        }
+
+        AbstractColorScale scale = VariantColorSchemes.getScale(key);
         if (scale != null) {
             try {
                 return scale.getColor(Float.parseFloat(value));
@@ -709,8 +733,117 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-        Color color = VariantColorSchemes.getColor(colorByAttribute, value);
-        return color != null ? color : getAttributeColorTable(colorByAttribute).get(value);
+        Color color = VariantColorSchemes.getColor(key, value);
+        return color != null ? color : assignPaletteColor(key, value);
+    }
+
+    /**
+     * Return the palette color for a value no scheme covers, assigning one if this is the first time it is seen.
+     * <p>
+     * Palette entries close to a color a scheme already uses for this attribute are skipped -- otherwise a value
+     * with no scheme entry can come out looking like one that has one, which is worse than an unrelated color.
+     */
+    private Color assignPaletteColor(String key, String value) {
+
+        PaletteColorTable colorTable = getAttributeColorTable(key);
+
+        if (!colorTable.getColorMap().containsKey(value.toLowerCase())) {
+            Color color = nextDistinctColor(key, colorTable);
+            if (color != null) {
+                colorTable.put(value, color);
+            }
+            // If every palette entry is used or too close, fall through -- the table generates a color itself
+        }
+        return colorTable.get(value);
+    }
+
+    /**
+     * The first palette color that is neither already assigned for this attribute nor close to a color a scheme
+     * uses for it.  Null if there is no such color.
+     */
+    private Color nextDistinctColor(String key, PaletteColorTable colorTable) {
+
+        ColorPalette palette = ColorUtilities.getPalette(ATTRIBUTE_PALETTE);
+        if (palette == null) {
+            return null;
+        }
+
+        List<Color> used = new ArrayList<>(colorTable.getColorMap().values());
+        used.addAll(VariantColorSchemes.getColors(key));
+
+        for (Color candidate : palette.getColors()) {
+            if (used.stream().noneMatch(c -> isSimilar(c, candidate))) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Euclidean distance in RGB.  Crude, but enough to catch colors that read as the same at the size of a
+     * variant band.
+     */
+    private static boolean isSimilar(Color c1, Color c2) {
+        int dr = c1.getRed() - c2.getRed();
+        int dg = c1.getGreen() - c2.getGreen();
+        int db = c1.getBlue() - c2.getBlue();
+        return dr * dr + dg * dg + db * db < MIN_COLOR_DISTANCE * MIN_COLOR_DISTANCE;
+    }
+
+    /**
+     * Set the color for one value of an INFO attribute on this track.  A null color clears the choice, reverting
+     * to the scheme or palette color.
+     */
+    public void setAttributeColorOverride(String key, String value, Color color) {
+        synchronized (attributeColorOverrides) {
+            Map<String, Color> overrides = attributeColorOverrides.computeIfAbsent(key, k -> new LinkedHashMap<>());
+            if (color == null) {
+                overrides.remove(value.toLowerCase());
+            } else {
+                overrides.put(value.toLowerCase(), color);
+            }
+        }
+    }
+
+    /**
+     * Discard the colors chosen for an INFO attribute on this track, reverting to scheme and palette colors.
+     */
+    public void clearAttributeColorOverrides(String key) {
+        synchronized (attributeColorOverrides) {
+            attributeColorOverrides.remove(key);
+        }
+    }
+
+    /**
+     * @return the colors chosen for values of an INFO attribute, keyed by lower case value.  Never null.
+     */
+    public Map<String, Color> getAttributeColorOverrides(String key) {
+        synchronized (attributeColorOverrides) {
+            Map<String, Color> overrides = attributeColorOverrides.get(key);
+            return overrides == null ? Collections.emptyMap() : new LinkedHashMap<>(overrides);
+        }
+    }
+
+    /**
+     * Return the distinct values of an INFO attribute among the currently loaded features, sorted.  This is what
+     * the color legend shows -- the values the user can actually see.
+     */
+    public SortedSet<String> getAttributeValues(String key) {
+
+        SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        synchronized (packedFeaturesMap) {
+            for (PackedFeatures<PackedFeature> packedFeatures : packedFeaturesMap.values()) {
+                for (PackedFeature feature : packedFeatures.getFeatures()) {
+                    if (feature instanceof Variant) {
+                        String value = normalizeAttributeValue(((Variant) feature).getAttributeAsString(key));
+                        if (value != null) {
+                            values.add(value);
+                        }
+                    }
+                }
+            }
+        }
+        return values;
     }
 
     /**
@@ -736,7 +869,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return;     // Colors come from a continuous scale, nothing to assign
         }
 
-        PaletteColorTable colorTable = getAttributeColorTable(key);
         SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
         synchronized (packedFeaturesMap) {
@@ -752,7 +884,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-        values.forEach(colorTable::get);
+        values.forEach(value -> assignPaletteColor(key, value));
     }
 
     /**
@@ -1377,10 +1509,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         if (colorByAttribute != null) {
             json.put("colorByAttribute", colorByAttribute);
-            // Persist the value -> color assignments, they are otherwise made in the order values are encountered
-            PaletteColorTable colorTable = attributeColorTables.get(colorByAttribute);
-            if (colorTable != null && !colorTable.getColorMap().isEmpty()) {
-                json.put("attributeColorTable", colorTable.getMapAsString());
+
+            // Colors the user chose.  Shaped like the igv.js "colorTable" track property.
+            Map<String, Color> overrides = getAttributeColorOverrides(colorByAttribute);
+            if (!overrides.isEmpty()) {
+                org.json.JSONObject colorTable = new org.json.JSONObject();
+                for (Map.Entry<String, Color> entry : overrides.entrySet()) {
+                    colorTable.put(entry.getKey(), ColorUtilities.colorToString(entry.getValue()));
+                }
+                json.put("colorTable", colorTable);
+            }
+
+            // Colors IGV assigned from the palette.  Persisted so they are reproducible, they are otherwise
+            // assigned in the order values are encountered.
+            PaletteColorTable paletteColors = attributeColorTables.get(colorByAttribute);
+            if (paletteColors != null && !paletteColors.getColorMap().isEmpty()) {
+                json.put("attributeColorTable", paletteColors.getMapAsString());
             }
         }
     }
@@ -1408,6 +1552,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.colorByAttribute = json.getString("colorByAttribute");
             if (json.has("attributeColorTable")) {
                 getAttributeColorTable(colorByAttribute).restoreMapFromString(json.getString("attributeColorTable"));
+            }
+            if (json.has("colorTable")) {
+                org.json.JSONObject colorTable = json.getJSONObject("colorTable");
+                for (String value : colorTable.keySet()) {
+                    setAttributeColorOverride(colorByAttribute, value,
+                            ColorUtilities.stringToColor(colorTable.getString(value)));
+                }
             }
         }
 

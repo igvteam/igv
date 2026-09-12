@@ -131,6 +131,30 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     }
 
     /**
+     * A value with no scheme entry must not come out looking like one that has one -- Set 1's red is close enough
+     * to the ClinVar "Pathogenic" red to be mistaken for it at the size of a variant band.
+     */
+    @Test
+    public void testPaletteColorsAvoidSchemeColors() {
+        track.setColorByAttribute("CLNSIG");
+
+        for (int index : new int[]{5, 6}) {          // drug_response, association -- no scheme entry
+            Color assigned = colorAt(index);
+            for (Color schemeColor : VariantColorSchemes.getColors("CLNSIG")) {
+                assertTrue("Assigned color " + assigned + " is too close to scheme color " + schemeColor,
+                        distance(assigned, schemeColor) >= 60);
+            }
+        }
+    }
+
+    private static double distance(Color c1, Color c2) {
+        int dr = c1.getRed() - c2.getRed();
+        int dg = c1.getGreen() - c2.getGreen();
+        int db = c1.getBlue() - c2.getBlue();
+        return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    /**
      * The renderer fills the whole variant band with the attribute color -- no allele frequency bar.
      */
     @Test
