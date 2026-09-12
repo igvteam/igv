@@ -4,6 +4,8 @@ import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.AbstractHeadlessTest;
 import org.igv.DirectoryManager;
+import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.TrackLoader;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -189,7 +192,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * A numeric attribute is only colorable if a scheme gives it a range, and then it shades across that range.
+     * A numeric attribute shades across the range a scheme gives it.
      */
     @Test
     public void testContinuousScale() throws Exception {
@@ -198,13 +201,14 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantTrack track = (VariantTrack) (new TrackLoader()).load(new ResourceLocator(filePath), genome).get(0);
         List<Feature> variants = track.getFeatures("chr1", 0, 1000);
 
-        // AF is a Float attribute, so it is not offered until a scheme covers it
-        assertFalse(colorableIds(track).contains("AF"));
+        // AF is offered, but has no scale until a scheme gives it one -- selecting it asks for one
+        assertTrue(colorableIds(track).contains("AF"));
+        assertNull(VariantColorSchemes.getScale("AF"));
 
         writeScheme("af.txt", "AF\t0:0.1\t255,255,200\t255,0,0");
         VariantColorSchemes.reset();
 
-        assertTrue(colorableIds(track).contains("AF"));
+        assertNotNull(VariantColorSchemes.getScale("AF"));
         track.setColorByAttribute("AF");
 
         Color low = track.getAttributeColor((Variant) variants.get(0));   // AF=0.01
@@ -284,6 +288,64 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         restored.unmarshalJSON(json);
         assertEquals(new Color(7, 8, 9), restored.getAttributeColor("CLNSIG", "Pathogenic"));
         assertEquals(new Color(5, 113, 176), restored.getAttributeColor("CLNSIG", "Benign/Likely_benign"));
+    }
+
+    /**
+     * A numeric attribute is a quantity, so it needs a color scale rather than a color per value.
+     */
+    @Test
+    public void testNumericAttributes() throws Exception {
+        VariantTrack track = loadTrack();
+        track.getFeatures("chr1", 0, 1000);
+
+        assertTrue(track.isNumericAttribute("AF"));           // Float
+        assertTrue(track.isNumericAttribute("ALLELEID"));     // Integer
+        assertFalse(track.isNumericAttribute("CLNSIG"));      // String
+        assertFalse(track.isNumericAttribute("NOT_AN_ATTRIBUTE"));
+    }
+
+    /**
+     * A saved scale round trips through the scheme file, in a form that can be edited by hand.
+     */
+    @Test
+    public void testSaveScale() throws Exception {
+        ContinuousColorScale scale =
+                new ContinuousColorScale(0, 40, new Color(255, 255, 204), new Color(202, 0, 32));
+
+        VariantColorSchemes.saveScale("CADD scale", "CADD_PHRED", scale);
+        VariantColorSchemes.reset();
+
+        AbstractColorScale restored = VariantColorSchemes.getScale("CADD_PHRED");
+        assertNotNull(restored);
+        assertEquals(scale.getColor(0f), restored.getColor(0f));
+        assertEquals(scale.getColor(40f), restored.getColor(40f));
+        assertNotEquals(restored.getColor(0f), restored.getColor(40f));
+
+        assertEquals("CADD scale", VariantColorSchemes.getSchemeForScale("CADD_PHRED").getName());
+    }
+
+    /**
+     * A three stop gradient, written as "min:mid:max" with three colors.
+     */
+    @Test
+    public void testDoubleGradientScale() throws Exception {
+        String contents = "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        AbstractColorScale scale = scheme.getScale("SCORE");
+        assertNotNull(scale);
+        assertNotEquals(scale.getColor(-10f), scale.getColor(10f));
+        assertEquals(new Color(255, 255, 255), scale.getColor(0f));
+    }
+
+    /**
+     * A three stop range needs three colors -- two is ambiguous, so the row is skipped rather than guessed at.
+     */
+    @Test
+    public void testDoubleGradientNeedsThreeColors() throws Exception {
+        String contents = "SCORE\t-10:0:10\t0,0,255\t255,0,0\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+        assertNull(scheme.getScale("SCORE"));
     }
 
     private VariantTrack loadTrack() throws Exception {

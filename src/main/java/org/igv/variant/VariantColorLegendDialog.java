@@ -2,8 +2,11 @@ package org.igv.variant;
 
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorSwatch;
+import org.igv.ui.legend.HeatmapLegendEditor;
 import org.igv.ui.util.MessageUtils;
 
 import javax.swing.BorderFactory;
@@ -43,6 +46,10 @@ public class VariantColorLegendDialog extends JDialog {
     private final VariantTrack track;
     private final String infoKey;
     private final JPanel valuePanel = new JPanel();
+    private final JLabel description = new JLabel();
+    private final JButton editScaleButton = new JButton("Edit Scale...");
+    private final JButton saveButton = new JButton("Save as Scheme...");
+    private final JButton resetButton = new JButton("Reset");
 
     public VariantColorLegendDialog(Frame owner, VariantTrack track, String infoKey) {
 
@@ -53,8 +60,6 @@ public class VariantColorLegendDialog extends JDialog {
         JPanel content = new JPanel(new BorderLayout(0, 8));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel description = new JLabel("<html>Values of <b>" + infoKey + "</b> in the current view.  "
-                + "Click a color to change it for this track.");
         content.add(description, BorderLayout.NORTH);
 
         valuePanel.setLayout(new BoxLayout(valuePanel, BoxLayout.Y_AXIS));
@@ -63,11 +68,13 @@ public class VariantColorLegendDialog extends JDialog {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         content.add(scrollPane, BorderLayout.CENTER);
 
-        JButton saveButton = new JButton("Save as Scheme...");
+        editScaleButton.setToolTipText("Change the range and colors of the scale");
+        editScaleButton.addActionListener(e -> editScale());
+
         saveButton.setToolTipText("Save these colors so they apply to every VCF with this attribute");
         saveButton.addActionListener(e -> saveAsScheme());
 
-        JButton resetButton = new JButton("Reset");
+        JButton resetButton = this.resetButton;
         resetButton.setToolTipText("Discard the colors chosen for this track");
         resetButton.addActionListener(e -> {
             track.clearAttributeColorOverrides(infoKey);
@@ -79,6 +86,7 @@ public class VariantColorLegendDialog extends JDialog {
         closeButton.addActionListener(e -> dispose());
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        buttonPanel.add(editScaleButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(resetButton);
         buttonPanel.add(closeButton);
@@ -98,6 +106,23 @@ public class VariantColorLegendDialog extends JDialog {
 
         valuePanel.removeAll();
 
+        AbstractColorScale scale = VariantColorSchemes.getScale(infoKey);
+
+        description.setText("<html>Values of <b>" + infoKey + "</b> in the current view.  "
+                + (scale == null ? "Click a color to change it for this track." : "Colored by a scale."));
+
+        editScaleButton.setVisible(scale instanceof ContinuousColorScale);
+        saveButton.setVisible(scale == null);
+        resetButton.setVisible(scale == null);
+
+        if (scale != null) {
+            valuePanel.add(createScaleRow(scale));
+            valuePanel.add(Box.createVerticalGlue());
+            valuePanel.revalidate();
+            valuePanel.repaint();
+            return;
+        }
+
         Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         values.addAll(track.getAttributeValues(infoKey));
         values.addAll(track.getAttributeColorOverrides(infoKey).keySet());
@@ -115,6 +140,51 @@ public class VariantColorLegendDialog extends JDialog {
         valuePanel.add(Box.createVerticalGlue());
         valuePanel.revalidate();
         valuePanel.repaint();
+    }
+
+    /**
+     * A numeric attribute is colored by a scale rather than by value, so the legend is the gradient itself.
+     */
+    private JPanel createScaleRow(AbstractColorScale scale) {
+
+        JPanel panel = new JPanel(new BorderLayout(0, 4));
+        panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
+        double[] range = track.getAttributeRange(infoKey);
+        JLabel label = new JLabel(range == null ? "Colored by a scale" :
+                String.format("Values in view: %s to %s", format(range[0]), format(range[1])));
+        panel.add(label, BorderLayout.NORTH);
+
+        JPanel gradient = new JPanel() {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                super.paintComponent(g);
+                double min = scaleMinimum(scale);
+                double max = scaleMaximum(scale);
+                for (int x = 0; x < getWidth(); x++) {
+                    double value = min + (max - min) * x / Math.max(1, getWidth() - 1);
+                    g.setColor(scale.getColor((float) value));
+                    g.drawLine(x, 0, x, getHeight());
+                }
+            }
+        };
+        gradient.setPreferredSize(new Dimension(340, 22));
+        panel.add(gradient, BorderLayout.CENTER);
+
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
+        return panel;
+    }
+
+    private static double scaleMinimum(AbstractColorScale scale) {
+        return scale instanceof ContinuousColorScale ? ((ContinuousColorScale) scale).getMinimum() : 0;
+    }
+
+    private static double scaleMaximum(AbstractColorScale scale) {
+        return scale instanceof ContinuousColorScale ? ((ContinuousColorScale) scale).getMaximum() : 1;
+    }
+
+    private static String format(double d) {
+        return d == Math.rint(d) ? String.valueOf((long) d) : String.valueOf(d);
     }
 
     private JPanel createRow(String value) {
@@ -152,6 +222,38 @@ public class VariantColorLegendDialog extends JDialog {
             }
         }
         return "(assigned)";
+    }
+
+    /**
+     * Reopen the scale editor and save the result back over the scheme it came from, so the change applies
+     * wherever the scale did.
+     */
+    private void editScale() {
+
+        AbstractColorScale scale = VariantColorSchemes.getScale(infoKey);
+        if (!(scale instanceof ContinuousColorScale)) {
+            return;
+        }
+
+        HeatmapLegendEditor editor = new HeatmapLegendEditor(getOwner() instanceof Frame ? (Frame) getOwner() : null,
+                true, (ContinuousColorScale) scale);
+        editor.setTitle("Color scale for " + infoKey);
+        editor.setVisible(true);
+        if (editor.isCanceled()) {
+            return;
+        }
+
+        VariantColorScheme existing = VariantColorSchemes.getSchemeForScale(infoKey);
+        String name = existing == null || existing.isBuiltIn() ? infoKey + " scale" : existing.getName();
+
+        try {
+            VariantColorSchemes.saveScale(name, infoKey, editor.getColorScheme());
+            repaintTrack();
+            populate();
+        } catch (Exception e) {
+            log.error("Error saving color scale for " + infoKey, e);
+            MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
+        }
     }
 
     private void saveAsScheme() {

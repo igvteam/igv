@@ -9,7 +9,10 @@ import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
+import org.igv.ui.legend.HeatmapLegendEditor;
+import org.igv.ui.util.MessageUtils;
 
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
@@ -36,6 +39,13 @@ public class VariantTrackMenuHelper {
      * alphabetical submenus -- some annotation pipelines define hundreds of them.
      */
     private static final int MAX_FLAT_INFO_FIELDS = 25;
+
+    /**
+     * Starting colors offered for a new color scale, pale to saturated.
+     */
+    private static final Color DEFAULT_SCALE_MIN_COLOR = new Color(255, 255, 204);
+    private static final Color DEFAULT_SCALE_MAX_COLOR = new Color(202, 0, 32);
+
     private static final int INFO_FIELD_GROUP_SIZE = 20;
 
     /**
@@ -172,10 +182,55 @@ public class VariantTrackMenuHelper {
             item.setToolTipText(description);
         }
         item.addActionListener(evt -> {
-            track.setColorByAttribute(id);
-            IGV.getInstance().getContentPane().repaint();
+            if (defineScaleIfNeeded(track, id)) {
+                track.setColorByAttribute(id);
+                IGV.getInstance().getContentPane().repaint();
+            }
         });
         return item;
+    }
+
+    /**
+     * A numeric attribute is a quantity, not a category -- coloring it by value would give a color per variant.
+     * The first time one is selected, have the user define a color scale, which is saved as a scheme so it
+     * applies to every VCF with this attribute and can be shared.  Attributes a scheme already covers, and
+     * attributes that are not numeric, need nothing.
+     *
+     * @return true if the track can be colored by this attribute
+     */
+    private static boolean defineScaleIfNeeded(VariantTrack track, String infoKey) {
+
+        // Any scheme covering the attribute settles it, whether with a scale or with discrete colors -- a user
+        // who wrote discrete colors for a numeric attribute meant it.
+        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
+            return true;
+        }
+
+        double[] range = track.getAttributeRange(infoKey);
+        if (range == null) {
+            MessageUtils.showMessage("No numeric values for " + infoKey + " in the current view.");
+            return false;
+        }
+
+        ContinuousColorScale scale = new ContinuousColorScale(range[0], range[1],
+                DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
+
+        HeatmapLegendEditor editor =
+                new HeatmapLegendEditor(IGV.getInstance().getMainFrame(), true, scale);
+        editor.setTitle("Color scale for " + infoKey);
+        editor.setVisible(true);
+        if (editor.isCanceled()) {
+            return false;
+        }
+
+        try {
+            VariantColorSchemes.saveScale(infoKey + " scale", infoKey, editor.getColorScheme());
+            return true;
+        } catch (Exception e) {
+            log.error("Error saving color scale for " + infoKey, e);
+            MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
+            return false;
+        }
     }
 
     /**

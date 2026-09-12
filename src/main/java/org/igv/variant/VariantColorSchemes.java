@@ -4,6 +4,7 @@ import org.igv.DirectoryManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ContinuousColorScale;
 import org.igv.util.FileUtils;
 
 import java.awt.Color;
@@ -100,6 +101,18 @@ public class VariantColorSchemes {
             AbstractColorScale scale = scheme.getScale(infoKey);
             if (scale != null) {
                 return scale;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return the scheme providing the color scale for an INFO attribute, or null if none does.
+     */
+    public static VariantColorScheme getSchemeForScale(String infoKey) {
+        for (VariantColorScheme scheme : getSchemes()) {
+            if (scheme.getScale(infoKey) != null) {
+                return scheme;
             }
         }
         return null;
@@ -207,6 +220,44 @@ public class VariantColorSchemes {
             writer.println("#colors");
             for (Map.Entry<String, Color> entry : colors.entrySet()) {
                 writer.println(infoKey + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
+            }
+        }
+
+        VariantColorScheme scheme;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+            scheme = VariantColorScheme.parse(reader, name);
+        }
+        scheme.setFile(file);
+
+        register(scheme);
+        return scheme;
+    }
+
+    /**
+     * Write a color scale for a numeric INFO attribute as a scheme, in the same human editable form as the rest
+     * of the file: a "min:max" or "min:mid:max" range followed by a color per stop.
+     *
+     * @return the saved scheme
+     */
+    public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
+            throws IOException {
+
+        File file = new File(createSchemeDirectory(), getLegalFileName(name) + ".txt");
+
+        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
+            writer.println("#name=" + name);
+            writer.println("#colors");
+            if (scale.isUseDoubleGradient()) {
+                writer.println(infoKey
+                        + "\t" + scale.getMinimum() + ":" + scale.getNegStart() + ":" + scale.getMaximum()
+                        + "\t" + ColorUtilities.colorToString(scale.getMinColor())
+                        + "\t" + ColorUtilities.colorToString(scale.getMidColor())
+                        + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
+            } else {
+                writer.println(infoKey
+                        + "\t" + scale.getMinimum() + ":" + scale.getMaximum()
+                        + "\t" + ColorUtilities.colorToString(scale.getMinColor())
+                        + "\t" + ColorUtilities.colorToString(scale.getMaxColor()));
             }
         }
 

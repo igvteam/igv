@@ -133,6 +133,22 @@ public class VariantColorScheme {
         if (value.contains(":")) {
             String[] range = value.split(":");
             try {
+                if (range.length > 2) {
+                    // "min:mid:max" with three colors -- a gradient through a midpoint
+                    double min = Double.parseDouble(range[0].trim());
+                    double mid = Double.parseDouble(range[1].trim());
+                    double max = Double.parseDouble(range[2].trim());
+                    Color midColor = tokens.length > 3 ? ColorUtilities.stringToColor(tokens[3].trim(), null) : null;
+                    Color maxColor = tokens.length > 4 ? ColorUtilities.stringToColor(tokens[4].trim(), null) : null;
+                    if (midColor == null || maxColor == null) {
+                        log.warn("Skipping color scheme row, a min:mid:max range needs three colors: "
+                                + String.join("\t", tokens));
+                        return;
+                    }
+                    scales.put(key, new ContinuousColorScale(min, mid, max, color, midColor, maxColor));
+                    return;
+                }
+
                 float min = Float.parseFloat(range[0].trim());
                 float max = Float.parseFloat(range[1].trim());
                 if (tokens.length > 3) {

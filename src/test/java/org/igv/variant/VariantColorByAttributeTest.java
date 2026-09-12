@@ -41,14 +41,14 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Only categorical INFO fields are offered, and they are sorted by ID.  AF is Float, hence excluded.
+     * INFO fields are offered sorted by ID.  Numeric fields are included -- selecting one asks for a color scale.
      */
     @Test
     public void testColorableInfoFields() {
         List<String> ids = track.getColorableInfoFields().stream()
                 .map(VCFInfoHeaderLine::getID)
                 .collect(Collectors.toList());
-        assertEquals(List.of("ALLELEID", "CLNREVSTAT", "CLNSIG", "DB", "SVTYPE"), ids);
+        assertEquals(List.of("AF", "ALLELEID", "CLNREVSTAT", "CLNSIG", "DB", "SVTYPE"), ids);
     }
 
     @Test

@@ -99,14 +99,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final int MIN_COLOR_DISTANCE = 60;
 
     /**
-     * INFO attribute types that can be colored by.  Float is excluded -- there is no sensible default for a
-     * continuous attribute, it is only colorable if a color scheme gives it a range.
+     * INFO attribute types that can be colored by.
      */
     private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
             VCFHeaderLineType.String,
             VCFHeaderLineType.Character,
             VCFHeaderLineType.Integer,
+            VCFHeaderLineType.Float,
             VCFHeaderLineType.Flag);
+
+    /**
+     * INFO attribute types that are quantities rather than categories.  Coloring these by value would give a
+     * color per variant, so a color scale is defined the first time one is selected.
+     */
+    private static final Set<VCFHeaderLineType> NUMERIC_INFO_TYPES = EnumSet.of(
+            VCFHeaderLineType.Integer,
+            VCFHeaderLineType.Float);
 
 
     // TODO -- this needs to be settable
@@ -822,6 +830,40 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             Map<String, Color> overrides = attributeColorOverrides.get(key);
             return overrides == null ? Collections.emptyMap() : new LinkedHashMap<>(overrides);
         }
+    }
+
+    /**
+     * @return true if the attribute is a quantity rather than a category, and so needs a color scale.
+     */
+    public boolean isNumericAttribute(String key) {
+        Object header = getHeader();
+        if (!(header instanceof VCFHeader)) {
+            return false;
+        }
+        VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
+        return line != null && NUMERIC_INFO_TYPES.contains(line.getType());
+    }
+
+    /**
+     * Return the range of an attribute's values among the currently loaded features, as {min, max}, or null if
+     * there are no numeric values.  Used to prefill the color scale editor with a range that suits the data.
+     */
+    public double[] getAttributeRange(String key) {
+
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+
+        for (String value : getAttributeValues(key)) {
+            try {
+                double d = Double.parseDouble(value);
+                min = Math.min(min, d);
+                max = Math.max(max, d);
+            } catch (NumberFormatException e) {
+                // Not all values of a numeric attribute parse -- "." and multi-valued entries, for example
+            }
+        }
+
+        return min > max ? null : new double[]{min, max};
     }
 
     /**
