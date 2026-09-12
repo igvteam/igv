@@ -210,21 +210,7 @@ public class VariantColorSchemeEditor extends JDialog {
         panel.setBorder(BorderFactory.createEmptyBorder(2, 4, 4, 4));
         panel.setAlignmentX(LEFT_ALIGNMENT);
 
-        JPanel gradient = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                ContinuousColorScale current = (ContinuousColorScale) scheme.getScale(key);
-                double min = current.getMinimum();
-                double max = current.getMaximum();
-                for (int x = 0; x < getWidth(); x++) {
-                    double value = min + (max - min) * x / Math.max(1, getWidth() - 1);
-                    g.setColor(current.getColor((float) value));
-                    g.drawLine(x, 0, x, getHeight());
-                }
-            }
-        };
-        gradient.setPreferredSize(new Dimension(260, 22));
+        ColorScaleBar gradient = new ColorScaleBar(scale, 260);
         panel.add(gradient, BorderLayout.CENTER);
 
         JButton edit = new JButton("Edit Scale...");
@@ -236,7 +222,7 @@ public class VariantColorSchemeEditor extends JDialog {
             editor.setVisible(true);
             if (!editor.isCanceled()) {
                 scheme.setScale(key, editor.getColorScheme());
-                gradient.repaint();
+                gradient.setScale(editor.getColorScheme());
             }
         });
         panel.add(edit, BorderLayout.EAST);

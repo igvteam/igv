@@ -155,32 +155,11 @@ public class VariantColorLegendDialog extends JDialog {
                 String.format("Values in view: %s to %s", format(range[0]), format(range[1])));
         panel.add(label, BorderLayout.NORTH);
 
-        JPanel gradient = new JPanel() {
-            @Override
-            protected void paintComponent(java.awt.Graphics g) {
-                super.paintComponent(g);
-                double min = scaleMinimum(scale);
-                double max = scaleMaximum(scale);
-                for (int x = 0; x < getWidth(); x++) {
-                    double value = min + (max - min) * x / Math.max(1, getWidth() - 1);
-                    g.setColor(scale.getColor((float) value));
-                    g.drawLine(x, 0, x, getHeight());
-                }
-            }
-        };
-        gradient.setPreferredSize(new Dimension(340, 22));
-        panel.add(gradient, BorderLayout.CENTER);
+        panel.add(new ColorScaleBar(scale instanceof ContinuousColorScale ? (ContinuousColorScale) scale : null, 340),
+                BorderLayout.CENTER);
 
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
         return panel;
-    }
-
-    private static double scaleMinimum(AbstractColorScale scale) {
-        return scale instanceof ContinuousColorScale ? ((ContinuousColorScale) scale).getMinimum() : 0;
-    }
-
-    private static double scaleMaximum(AbstractColorScale scale) {
-        return scale instanceof ContinuousColorScale ? ((ContinuousColorScale) scale).getMaximum() : 1;
     }
 
     private static String format(double d) {

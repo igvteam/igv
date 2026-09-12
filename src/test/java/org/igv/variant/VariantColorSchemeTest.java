@@ -507,6 +507,21 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(4, 5, 6), scheme.getColor("CLNSIG", "LIKELY_PATHOGENIC"));
     }
 
+    /**
+     * Scale labels need enough decimal places to differ -- allele frequencies and phred scores are orders of
+     * magnitude apart, so one fixed format would print "0.0" at both ends of one of them.
+     */
+    @Test
+    public void testScaleLabelPrecision() {
+        assertEquals("0.010", ColorScaleBar.format(0.01, 0.08));     // allele frequency
+        assertEquals("0.090", ColorScaleBar.format(0.09, 0.08));
+        assertEquals("0.00", ColorScaleBar.format(0.0, 5));
+        assertEquals("5.00", ColorScaleBar.format(5.0, 5));
+        assertEquals("0.0", ColorScaleBar.format(0.0, 40));          // phred scaled
+        assertEquals("40.0", ColorScaleBar.format(40.0, 40));
+        assertEquals("1000", ColorScaleBar.format(1000.0, 1000));    // read depth
+    }
+
     private VariantColorScheme builtinFor(String infoKey) {
         return VariantColorSchemes.getBuiltinSchemes().stream()
                 .filter(s -> s.getKeys().contains(infoKey))
