@@ -699,9 +699,14 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantTrack track = loadTrack();
         track.setColorByAttribute("RDP");
 
-        // 90 is the reference; the alternates are 5 and 20
-        assertEquals(track.getAttributeColor("RDP", "20"), track.getAttributeColor("RDP", "90,5,20"));
-        assertNotEquals(track.getAttributeColor("RDP", "90"), track.getAttributeColor("RDP", "90,5,20"));
+        // 90 is the reference; the alternates are 5 and 20.  "0,20" is a record whose only alternate is 20, so it
+        // colors the same -- and "0,90" does not, which shows the reference really is left out.
+        assertEquals(track.getAttributeColor("RDP", "0,20"), track.getAttributeColor("RDP", "90,5,20"));
+        assertNotEquals(track.getAttributeColor("RDP", "0,90"), track.getAttributeColor("RDP", "90,5,20"));
+
+        // A record with no alternate allele (ALT is ".") has only the reference value -- nothing to color by.
+        // Coloring by that value would make a reference-only site look like a variant with that score.
+        assertEquals(Color.gray, track.getAttributeColor("RDP", "90"));
     }
 
     /**

@@ -906,8 +906,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         String[] parts = value.split(",");
 
         // Number=R lists the reference allele first.  Per-allele coloring is about the alternates -- a sum that
-        // included the reference would not be the frequency of the non-reference alleles it claims to be.
-        int first = parts.length > 1 && getCountType(key) == VCFHeaderLineCount.R ? 1 : 0;
+        // included the reference would not be the frequency of the non-reference alleles it claims to be.  It is
+        // skipped whatever the list length: a record with no alternate allele has only the reference value, so
+        // nothing to color by, and is drawn missing -- as it is for a Number=A attribute, which has no values.
+        int first = getCountType(key) == VCFHeaderLineCount.R ? 1 : 0;
 
         return aggregate(parts, first, getAggregation(key));
     }
