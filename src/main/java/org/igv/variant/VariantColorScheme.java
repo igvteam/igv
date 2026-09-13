@@ -387,9 +387,12 @@ public class VariantColorScheme {
 
         Map<String, String> index = valueIndex.get(key);
         String stored = index == null ? null : index.remove(value.toLowerCase());
-        Map<String, Color> valueColors = colors.get(key);
-        if (stored != null && valueColors != null) {
+if (stored != null && valueColors != null) {
             valueColors.remove(stored);
+            if (valueColors.isEmpty()) {
+                colors.remove(key);
+                valueIndex.remove(key);
+            }
         }
     }
 
