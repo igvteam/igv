@@ -207,6 +207,32 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     }
 
     /**
+     * The generated sequence must not cycle -- ColorUtilities.randomColor repeats every 215 indices, and a
+     * search over a cycling sequence can only find duplicates once the cycle is used up.  Pairwise distinctness
+     * of the candidates is what makes the exhaustion policy exact.
+     */
+    @Test
+    public void testGeneratedColorsDoNotRepeat() {
+        java.util.Set<Color> seen = new java.util.HashSet<>();
+        for (int i = 0; i < 2000; i++) {
+            assertTrue("Generated color " + i + " repeats an earlier one", seen.add(VariantTrack.generatedColor(i)));
+        }
+    }
+
+    /**
+     * Well past the 215 colors the old generator could ever produce, values still get colors of their own.
+     */
+    @Test
+    public void testNoRepeatsBeyondTheOldGeneratorsPeriod() {
+        track.setColorByAttribute("CLNSIG");
+        java.util.Set<Color> assigned = new java.util.HashSet<>();
+        for (int i = 0; i < 400; i++) {
+            Color color = track.getAttributeColor("CLNSIG", "unknown-" + i);
+            assertTrue("Value " + i + " was given a color already in use", assigned.add(color));
+        }
+    }
+
+    /**
      * The same value keeps its color, however many others have been assigned since.
      */
     @Test

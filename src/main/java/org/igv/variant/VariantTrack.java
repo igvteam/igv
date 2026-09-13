@@ -100,9 +100,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final int MIN_COLOR_DISTANCE = 60;
 
     /**
-     * How many generated colors to try before settling for the furthest one found.
+     * How many generated colors to try before settling for the furthest one found.  Also, therefore, how many
+     * distinct colors an attribute can have before one is repeated.
      */
-    private static final int MAX_COLOR_ATTEMPTS = 500;
+    private static final int MAX_COLOR_ATTEMPTS = 2000;
 
     /**
      * INFO attribute types that can be colored by.
@@ -785,13 +786,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
 
-        // Keep the furthest candidate seen, so that even a crowded attribute never repeats a color outright
-        Color best = ColorUtilities.randomColor(used.size());
-        double bestDistance = minDistance(best, used);
+        // Walk a non-repeating sequence, keeping the furthest candidate seen.  Policy on exhaustion: the first
+        // candidate at the required distance is returned; failing that, the furthest; a color already in use is
+        // returned only if every one of the MAX_COLOR_ATTEMPTS candidates is -- which needs more distinct colors
+        // in use than there are candidates, since the candidates are pairwise distinct (see generatedColor).
+        Color best = null;
+        double bestDistance = -1;
 
-        for (int i = 1; i <= MAX_COLOR_ATTEMPTS && bestDistance < MIN_COLOR_DISTANCE; i++) {
-            Color candidate = ColorUtilities.randomColor(used.size() + i);
+        for (int i = 0; i < MAX_COLOR_ATTEMPTS; i++) {
+            Color candidate = generatedColor(i);
             double distance = minDistance(candidate, used);
+            if (distance >= MIN_COLOR_DISTANCE) {
+                return candidate;
+            }
             if (distance > bestDistance) {
                 best = candidate;
                 bestDistance = distance;
@@ -799,6 +806,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         return best;
     }
+
+    /**
+     * The i-th color of a sequence that does not repeat: the hue advances by the golden ratio each step, which
+     * never returns to a previous hue, at a few saturation and brightness levels so consecutive candidates
+     * differ in more than hue.  ({@link ColorUtilities#randomColor} is not usable here -- each channel is taken
+     * modulo 215, so it has only 215 distinct colors, after which a search over it can only find duplicates.)
+     */
+    static Color generatedColor(int i) {
+        float hue = (float) ((i * 0.618033988749895) % 1.0);
+        float saturation = SATURATION_LEVELS[i % SATURATION_LEVELS.length];
+        float brightness = BRIGHTNESS_LEVELS[(i / SATURATION_LEVELS.length) % BRIGHTNESS_LEVELS.length];
+        return Color.getHSBColor(hue, saturation, brightness);
+    }
+
+    private static final float[] SATURATION_LEVELS = {0.85f, 0.55f, 1.0f};
+    private static final float[] BRIGHTNESS_LEVELS = {0.85f, 0.65f, 1.0f};
 
     /**
      * Distance from a color to the nearest of those already in use, or a large value if none are.
