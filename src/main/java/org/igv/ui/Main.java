@@ -12,6 +12,7 @@ import org.igv.oauth.OAuthUtils;
 import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
+import org.igv.session.SessionReader;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.FileUtils;
 import org.igv.util.HttpUtils;
@@ -555,8 +556,7 @@ public class Main {
 
             if (firstArg != null) {
                 log.info("Loading: " + firstArg);
-                if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
-                        || firstArg.endsWith(".session")) {
+                if (SessionReader.isSessionFile(firstArg)) {
                     sessionFile = firstArg;
                 } else {
                     String[] paths = firstArg.split(",");
@@ -577,11 +577,18 @@ public class Main {
          * @param nonOptionArgs
          */
         private void decodeNonOptionArgs(String[] nonOptionArgs) {
-            dataFileStrings = new ArrayList<>();
-            for (String arg : nonOptionArgs) {
-                dataFileStrings.add(maybeDecodePath(arg));
-            }
 
+            dataFileStrings = new ArrayList<>();
+
+            for (String arg : nonOptionArgs) {
+                String path = maybeDecodePath(arg);
+                if (sessionFile == null && dataFileStrings.isEmpty() && SessionReader.isSessionFile(path)) {
+                    // A session is not a track.  Loading one as data fails with "Unknown file type".
+                    sessionFile = path;
+                } else {
+                    dataFileStrings.add(path);
+                }
+            }
         }
 
         private String maybeDecodePath(String path) {
