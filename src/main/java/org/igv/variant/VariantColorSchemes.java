@@ -307,9 +307,13 @@ public class VariantColorSchemes {
      *
      * @return the saved scheme
      */
-    public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
+public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
             throws IOException {
 
+        if (scale == null || !Double.isFinite(scale.getMinimum()) || !Double.isFinite(scale.getMaximum())
+                || scale.getMaximum() <= scale.getMinimum()) {
+            throw new IOException("Color scale range must be finite and increasing");
+        }
         VariantColorScheme scheme = new VariantColorScheme(name);
         scheme.setScale(infoKey, scale);
         return save(scheme);
