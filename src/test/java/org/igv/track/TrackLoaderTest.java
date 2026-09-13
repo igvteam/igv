@@ -302,5 +302,14 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
             //NOT FOOLPROOF
             assertTrue(bigBedFile.canWrite());
         }
+
+
+    }
+
+
+    //@Test
+    public void testLoadScratch() throws Exception {
+        String path = "http://data.broadinstitute.org/igvdata/annotations/hg19/EnsemblGenes.ensGene";
+        tstLoadFi(path, 1, genome, false);
     }
 }

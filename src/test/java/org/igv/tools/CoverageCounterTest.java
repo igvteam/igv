@@ -52,6 +52,41 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
         assertEquals("7", totalCount);
     }
 
+    @Ignore    // The test file no longer exists
+    @Test
+    public void testPairFlag() throws Exception{
+        String bamURL = "http://data.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
+        String queryString = "2:1000-1100";
+        File wigFile = new File(TestUtils.TMP_OUTPUT_DIR + "testPair.wig");
+        int windowSize = 1;
+
+        TestDataConsumer dc = new TestDataConsumer();
+
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, 0, CoverageCounter.PAIRED_COVERAGE);
+
+        cc.parse();
+
+        //Have manually checked these regions and verified that there is 1 pair
+        //in the 1000-1100 region, and 4 at location 851
+        //with
+        for(TestData td: dc.testDatas){
+            assertEquals(1.0f, td.data[0]);
+        }
+
+
+        queryString = "2:851";
+        dc = new TestDataConsumer();
+
+        cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, 0, CoverageCounter.PAIRED_COVERAGE);
+
+        cc.parse();
+
+        for(TestData td: dc.testDatas){
+            assertEquals(4.0f, td.data[0]);
+        }
+
+    }
+
     /*
     Test whether we count the number of features correctly.
      */
