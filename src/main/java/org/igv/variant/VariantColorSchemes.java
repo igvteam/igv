@@ -5,7 +5,6 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
-import org.igv.util.FileUtils;
 
 import java.awt.Color;
 import org.igv.ui.color.ColorUtilities;
@@ -22,6 +21,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -195,25 +195,18 @@ public class VariantColorSchemes {
      */
     public static synchronized VariantColorScheme importFile(File file) throws IOException {
 
-        VariantColorScheme scheme;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
-            scheme = VariantColorScheme.parse(reader, stripExtension(file.getName()));
-        }
+        String contents = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader(contents)), stripExtension(file.getName()));
 
         File directory = createSchemeDirectory();
         if (directory.equals(file.getParentFile())) {
             scheme.setFile(file);
-        } else {
-            if (scheme.getSource() == null) {
-                scheme.setSource(file.getAbsolutePath());
-            }
-            File copy = new File(directory, file.getName());
-            FileUtils.copyFile(file, copy);
-            scheme.setFile(copy);
+            register(scheme);
+            return scheme;
         }
 
-        register(scheme);
-        return scheme;
+        return store(scheme, contents, file.getAbsolutePath(), file.getName());
     }
 
     /**
@@ -222,20 +215,32 @@ public class VariantColorSchemes {
      *
      * @return the imported scheme
      */
-    public static synchronized VariantColorScheme importUrl(String url) throws IOException {
+    public static VariantColorScheme importUrl(String url) throws IOException {
 
+        // Not synchronized: the fetch can block for the full connect and read timeouts, and the event thread
+        // takes this class's lock on every repaint through the scheme accessors.  Fetch and parse first, and
+        // hold the lock only to write the file and update the cache.
         String contents = HttpUtils.getInstance().getContentsAsString(new URL(url));
-
         VariantColorScheme scheme = VariantColorScheme.parse(
                 new BufferedReader(new StringReader(contents)), stripExtension(fileNameFromUrl(url)));
-        if (scheme.getSource() == null) {
-            scheme.setSource(url);
-        }
 
-        File file = new File(createSchemeDirectory(), fileNameFromUrl(url));
+        return store(scheme, contents, url, fileNameFromUrl(url));
+    }
+
+    /**
+     * Save an imported scheme into the IGV directory and make it current.  The contents are written as they
+     * came -- comments and formatting intact -- with a "#source=" line added in front if the file did not carry
+     * one, so where the scheme came from survives a reload.  The in-memory object alone would forget it: the
+     * copy is what is parsed next time.
+     */
+    private static synchronized VariantColorScheme store(VariantColorScheme scheme, String contents,
+                                                         String source, String fileName) throws IOException {
+
+        File file = new File(createSchemeDirectory(), fileName);
         try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
-            if (!contents.toLowerCase().contains("#source=")) {
-                writer.println("#source=" + url);
+            if (scheme.getSource() == null) {
+                writer.println("#source=" + source);
+                scheme.setSource(source);
             }
             writer.print(contents);
         }

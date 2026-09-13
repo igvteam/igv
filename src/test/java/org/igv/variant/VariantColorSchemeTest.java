@@ -889,6 +889,64 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
     }
 
+    /**
+     * Where an imported file came from has to survive a reload.  Setting it on the in-memory object while
+     * copying the original bytes lost it the moment the copy was parsed, so after a restart the preferences
+     * table showed the copy's file name instead of the path.
+     */
+    @Test
+    public void testImportedSourceSurvivesReload() throws Exception {
+        File source = new File(TestUtils.TMP_OUTPUT_DIR, "lab-colors.txt");
+        try (PrintWriter writer = new PrintWriter(source)) {
+            writer.println("#name=Lab");
+            writer.println("# a comment worth keeping");
+            writer.println("TIER\t1\t200,0,0");
+        }
+
+        VariantColorSchemes.importFile(source);
+        VariantColorSchemes.reset();
+
+        VariantColorScheme reloaded = VariantColorSchemes.getUserSchemes().get(0);
+        assertEquals(source.getAbsolutePath(), reloaded.getSource());
+        assertEquals("Lab", reloaded.getName());
+        assertEquals(new Color(200, 0, 0), reloaded.getColor("TIER", "1"));
+
+        // The rest of the file is as it was, with only the source line added in front
+        String copy = Files.readString(reloaded.getFile().toPath());
+        assertTrue(copy.startsWith("#source=" + source.getAbsolutePath() + System.lineSeparator()));
+        assertTrue(copy.contains("# a comment worth keeping"));
+    }
+
+    /**
+     * A file that already says where it came from keeps saying so.
+     */
+    @Test
+    public void testExistingSourceIsKept() throws Exception {
+        File source = new File(TestUtils.TMP_OUTPUT_DIR, "shared.txt");
+        try (PrintWriter writer = new PrintWriter(source)) {
+            writer.println("#source=https://example.org/shared.txt");
+            writer.println("TIER\t1\t200,0,0");
+        }
+
+        VariantColorSchemes.importFile(source);
+        VariantColorSchemes.reset();
+
+        assertEquals("https://example.org/shared.txt", VariantColorSchemes.getUserSchemes().get(0).getSource());
+        assertEquals(1, Files.readString(VariantColorSchemes.getUserSchemes().get(0).getFile().toPath())
+                .split("#source=").length - 1);
+    }
+
+    /**
+     * The URL import blocks for the network; it must not do so while holding the class lock that repaint
+     * takes through the scheme accessors, or a slow server freezes the UI regardless of the SwingWorker.
+     */
+    @Test
+    public void testUrlImportDoesNotFetchUnderTheLock() throws Exception {
+        java.lang.reflect.Method importUrl = VariantColorSchemes.class.getMethod("importUrl", String.class);
+        assertFalse("importUrl must fetch before synchronizing",
+                java.lang.reflect.Modifier.isSynchronized(importUrl.getModifiers()));
+    }
+
     private VariantColorScheme builtinFor(String infoKey) {
         return VariantColorSchemes.getBuiltinSchemes().stream()
                 .filter(s -> s.getKeys().contains(infoKey))

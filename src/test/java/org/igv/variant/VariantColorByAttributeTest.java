@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -263,6 +264,20 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         assertEquals("CLNREVSTAT=. must read as missing", Color.gray, colorAt(1));
         assertEquals("A record with no CLNREVSTAT at all is missing too", Color.gray, colorAt(2));
         assertFalse(track.getAttributeColorTable("CLNREVSTAT").getColorMap().containsKey("."));
+    }
+
+    /**
+     * Only "." and an empty value mean missing.  An absent attribute arrives as a Java null, so the text
+     * "null" is a value the file actually contains, and must be colorable and visible in the legend.
+     */
+    @Test
+    public void testLiteralNullIsAValue() {
+        assertEquals("null", VariantTrack.normalizeAttributeValue("null"));
+        assertNull(VariantTrack.normalizeAttributeValue(null));
+        assertNull(VariantTrack.normalizeAttributeValue("."));
+        assertNull(VariantTrack.normalizeAttributeValue(""));
+        assertNull(VariantTrack.normalizeAttributeValue("  "));
+        assertEquals("a,b", VariantTrack.normalizeAttributeValue("[a, b]"));
     }
 
     /**

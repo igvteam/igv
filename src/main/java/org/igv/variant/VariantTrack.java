@@ -1075,7 +1075,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * as a list ("[a, b]"), which is reduced to "a,b" here so the key matches what the user sees.  Returns null
      * for a value that means "missing", which is drawn in the no-value color.
      */
-    private static String normalizeAttributeValue(String value) {
+    static String normalizeAttributeValue(String value) {
         if (value == null) {
             return null;
         }
@@ -1085,8 +1085,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         v = v.replaceAll("\\s*,\\s*", ",").trim();
         // "." is the VCF missing value marker.  htsjdk passes it through for a string attribute, and treated as
-        // a value it would take a color of its own and appear in the legend as if it meant something.
-        return v.isEmpty() || ".".equals(v) || "null".equals(v) ? null : v;
+        // a value it would take a color of its own and appear in the legend as if it meant something.  The
+        // text "null" is not special: an absent attribute arrives as a Java null, so a literal "null" is a
+        // value the file actually contains.
+        return v.isEmpty() || ".".equals(v) ? null : v;
     }
 
     /**
