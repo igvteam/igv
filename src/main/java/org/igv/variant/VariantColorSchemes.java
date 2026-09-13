@@ -308,21 +308,22 @@ public class VariantColorSchemes {
      * Write a scheme to the IGV directory and make it current.  A scheme shipped with IGV cannot be written, so
      * saving one writes a copy the user owns, which then shadows it.
      *
-     * @return the saved scheme
+     * @return the saved scheme -- for a scheme with no file yet this is a copy, so use it rather than the argument
      */
     public static synchronized VariantColorScheme save(VariantColorScheme scheme) throws IOException {
 
-        File file = scheme.getFile();
-        if (file == null) {
-            file = new File(createSchemeDirectory(), getLegalFileName(scheme.getName()) + ".txt");
+        if (scheme.getFile() == null) {
+            // New, or shipped with IGV.  Work on a copy: giving a cached built-in a file would make it user owned,
+            // and removable, while it is still listed among the built-ins -- so it would appear twice.
+            scheme = scheme.copy();
+            scheme.setFile(new File(createSchemeDirectory(), getLegalFileName(scheme.getName()) + ".txt"));
         } else {
             createSchemeDirectory();
         }
 
-        try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
+        try (PrintWriter writer = new PrintWriter(scheme.getFile(), StandardCharsets.UTF_8)) {
             scheme.write(writer);
         }
-        scheme.setFile(file);
 
         register(scheme);
         return scheme;

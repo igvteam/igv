@@ -445,13 +445,38 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantColorScheme builtin = builtinFor("CLNSIG");
         assertNull(builtin.getFile());
 
-        builtin.setColor("CLNSIG", "Pathogenic", new Color(1, 1, 1));
-        VariantColorSchemes.save(builtin);
+        VariantColorScheme edited = builtin.copy();
+        edited.setColor("CLNSIG", "Pathogenic", new Color(1, 1, 1));
+        VariantColorSchemes.save(edited);
+        assertEquals("The cached built-in is untouched", new Color(202, 0, 32), builtin.getColor("CLNSIG", "Pathogenic"));
         VariantColorSchemes.reset();
 
         assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
         assertEquals(1, VariantColorSchemes.getUserSchemes().size());
         assertFalse(VariantColorSchemes.getUserSchemes().get(0).isBuiltIn());
+    }
+
+    /**
+     * Saving the cached built-in object itself must leave it built in.  Giving it a file made it look user owned
+     * -- removable -- while it was still listed among the built-ins, so until the next reset it appeared twice.
+     */
+    @Test
+    public void testSavingCachedBuiltinLeavesItBuiltIn() throws Exception {
+
+        VariantColorScheme builtin = builtinFor("SVTYPE");
+        int before = VariantColorSchemes.getSchemes().size();
+
+        VariantColorScheme saved = VariantColorSchemes.save(builtin);
+
+        assertNull("The cached built-in was given a file", builtin.getFile());
+        assertTrue(builtin.isBuiltIn());
+        assertFalse("A built-in must not be removable", VariantColorSchemes.remove(builtin));
+
+        assertNotSame(builtin, saved);
+        assertFalse(saved.isBuiltIn());
+        assertEquals("One user scheme added, no duplicate", before + 1, VariantColorSchemes.getSchemes().size());
+        assertTrue(VariantColorSchemes.getBuiltinSchemes().contains(builtin));
+        assertFalse(VariantColorSchemes.getUserSchemes().contains(builtin));
     }
 
     /**
@@ -581,8 +606,8 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantColorScheme scheme = VariantColorScheme.parse(
                 new BufferedReader(new StringReader("#name=CADD\nCADD\t0:40\t255,255,200\t255,0,0\n")), "test");
 
-        VariantColorSchemes.save(scheme);
-        String written = Files.readString(scheme.getFile().toPath());
+        VariantColorScheme saved = VariantColorSchemes.save(scheme);
+        String written = Files.readString(saved.getFile().toPath());
 
         assertTrue("Expected the canonical form, got:\n" + written,
                 written.contains("CADD\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0"));
