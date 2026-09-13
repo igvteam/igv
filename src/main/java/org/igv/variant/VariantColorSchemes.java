@@ -312,7 +312,7 @@ public class VariantColorSchemes {
      *
      * @return the saved scheme
      */
-public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
+    public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
             throws IOException {
 
         if (scale == null || !Double.isFinite(scale.getMinimum()) || !Double.isFinite(scale.getMaximum())
@@ -348,8 +348,9 @@ public static synchronized VariantColorScheme saveScale(String name, String info
      */
     private static void register(VariantColorScheme scheme) {
         getUserSchemes();   // ensure loaded before adding
-userSchemes.removeIf(s -> scheme.getFile().equals(s.getFile()));
+        userSchemes.removeIf(s -> scheme.getFile().equals(s.getFile()));
         userSchemes.add(scheme);
+        // Same order as a fresh load, so a scheme's precedence does not change at the next restart
         userSchemes.sort(Comparator.comparing(
                 (VariantColorScheme s) -> s.getFile().getName(), String.CASE_INSENSITIVE_ORDER));
     }
