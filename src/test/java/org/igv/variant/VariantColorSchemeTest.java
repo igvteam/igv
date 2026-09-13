@@ -656,29 +656,45 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantTrack track = new VariantTrack();
         track.setColorByAttribute("AF");
 
-        Color expected = track.getAttributeColor("AF", "0.2");          // the largest of the pair
+        // The frequency of all non-reference alleles, so the pair sums
+        Color expected = track.getAttributeColor("AF", "0.3");
         assertEquals(expected, track.getAttributeColor("AF", "0.1,0.2"));
         assertEquals(expected, track.getAttributeColor("AF", "0.2,0.1"));
 
         // A missing element does not make the whole record unusable
-        assertEquals(expected, track.getAttributeColor("AF", "0.2,."));
-        assertEquals(expected, track.getAttributeColor("AF", ".,0.2"));
+        assertEquals(track.getAttributeColor("AF", "0.2"), track.getAttributeColor("AF", "0.2,."));
+        assertEquals(track.getAttributeColor("AF", "0.2"), track.getAttributeColor("AF", ".,0.2"));
 
         assertNotEquals(Color.gray, track.getAttributeColor("AF", "0.1,0.2"));
     }
 
     /**
-     * The largest value is taken, so a per allele list can never run off the end of the scale.
+     * Per allele values are summed, as the "Allele Frequency" color mode does -- the total is the frequency of
+     * all non-reference alleles, which is what the attribute means.
      */
     @Test
     public void testNumericValueAggregation() {
-        assertEquals(0.2, VariantTrack.numericValue("0.1,0.2"), 1e-9);
+        assertEquals(0.3, VariantTrack.numericValue("0.1,0.2"), 1e-9);
         assertEquals(0.2, VariantTrack.numericValue("0.2"), 1e-9);
-        assertEquals(-1.0, VariantTrack.numericValue("-3,-1"), 1e-9);
+        assertEquals(-4.0, VariantTrack.numericValue("-3,-1"), 1e-9);
         assertEquals(5.0, VariantTrack.numericValue(".,5"), 1e-9);
         assertNull(VariantTrack.numericValue("."));
         assertNull(VariantTrack.numericValue("Pathogenic"));
         assertNull(VariantTrack.numericValue(null));
+    }
+
+    /**
+     * A sum past the top of the scale saturates rather than falling back to the missing color.
+     */
+    @Test
+    public void testSumBeyondScaleSaturates() throws Exception {
+        writeScheme("af2.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
+        VariantColorSchemes.reset();
+
+        VariantTrack track = new VariantTrack();
+        track.setColorByAttribute("AF");
+
+        assertEquals(track.getAttributeColor("AF", "1.0"), track.getAttributeColor("AF", "0.7,0.8"));
     }
 
     /**

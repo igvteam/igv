@@ -950,11 +950,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The number to color a variant by, for an attribute colored by a scale.  Null if the value holds no number.
      * <p>
      * A "Number=A" or "Number=R" attribute carries one value per allele, so a multi-allelic record arrives here
-     * as a comma separated list.  The largest is used: for a score it is the most severe allele, which is what
-     * the eye should be drawn to, and for a frequency it is the most common alternate allele.  Note this is not
-     * the same choice as the separate "Allele Frequency" color mode, which sums the alternate frequencies --
-     * summing scores would run off the end of the scale.  Elements that are not numbers, such as the missing
-     * marker, are skipped rather than making the whole value unusable.
+     * as a comma separated list.  The values are summed, matching the separate "Allele Frequency" color mode
+     * (see {@link org.igv.variant.vcf.VCFVariant#getAlternateAlleleFrequency}): for a frequency the total is
+     * what the attribute means, the frequency of all non-reference alleles.  Elements that are not numbers,
+     * such as the missing marker, are skipped rather than making the whole value unusable.
      */
     static Double numericValue(String value) {
 
@@ -962,19 +961,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return null;
         }
 
-        double max = -Double.MAX_VALUE;
+        double sum = 0;
         boolean found = false;
 
         for (String part : value.split(",")) {
             try {
-                max = Math.max(max, Double.parseDouble(part.trim()));
+                sum += Double.parseDouble(part.trim());
                 found = true;
             } catch (NumberFormatException e) {
                 // One unusable element does not make the record unusable
             }
         }
 
-        return found ? max : null;
+        return found ? sum : null;
     }
 
     /**
