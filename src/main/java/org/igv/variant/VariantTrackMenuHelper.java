@@ -99,11 +99,17 @@ public class VariantTrackMenuHelper {
             item.setEnabled(variant != null);
         }
 
-        if (AttributeManager.getInstance().getVisibleAttributes().size() > 0) {
+        boolean hasAttributes = AttributeManager.getInstance().getVisibleAttributes().size() > 0;
+        if (hasAttributes || variantTrack.hasSamples()) {
             items.add(new JPopupMenu.Separator());
-            items.add(SampleMenuUtils.getSortByAttributeItem(variantTrack));
-            items.add(SampleMenuUtils.getGroupByAttributeItem(variantTrack));
-            items.add(SampleMenuUtils.getFilterByAttributeItem(variantTrack));
+            if (hasAttributes) {
+                items.add(SampleMenuUtils.getSortByAttributeItem(variantTrack));
+                items.add(SampleMenuUtils.getGroupByAttributeItem(variantTrack));
+                items.add(SampleMenuUtils.getFilterByAttributeItem(variantTrack));
+            }
+            if (variantTrack.hasSamples()) {
+                items.add(SampleMenuUtils.getFilterByIdItem(variantTrack));
+            }
         }
 
         items.add(new JPopupMenu.Separator());

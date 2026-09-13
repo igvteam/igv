@@ -217,12 +217,13 @@ public class SegTrack extends AbstractTrack {
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
+        items.add(new JPopupMenu.Separator());
         if (keys.size() > 0) {
-            items.add(new JPopupMenu.Separator());
             items.add(SampleMenuUtils.getSortByAttributeItem(this));
             items.add(SampleMenuUtils.getGroupByAttributeItem(this));
             items.add(SampleMenuUtils.getFilterByAttributeItem(this));
         }
+        items.add(SampleMenuUtils.getFilterByIdItem(this));
 
         return items;
     }

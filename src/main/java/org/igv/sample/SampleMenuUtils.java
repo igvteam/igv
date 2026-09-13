@@ -5,11 +5,15 @@ import org.igv.track.AttributeManager;
 import org.igv.ui.AttributeSelectionDialog;
 import org.igv.ui.IGV;
 import org.igv.ui.SampleFilterDialog;
+import org.igv.ui.SampleSelectionDialog;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.SortDialog;
 
 import javax.swing.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SampleMenuUtils {
 
@@ -95,8 +99,54 @@ public class SampleMenuUtils {
 
             if (!dialog.isCancelled()) {
                 sampleFilter = dialog.getFilter();
+                track.setSelectedSamples(null);     // Filtering by attribute turns off filtering by ID
                 track.setSampleFilter(sampleFilter);
 
+            }
+        });
+
+        return item;
+    }
+
+
+    public static JMenuItem getFilterByIdItem(AbstractTrack track) {
+
+        JMenuItem item = new JMenuItem("Filter Samples By ID...");
+
+        item.addActionListener(evt -> {
+
+            List<String> allSamples = track.getSampleNames();
+            List<String> currentSamples = track.getSelectedSamples() == null ? allSamples : track.getSelectedSamples();
+            SampleSelectionDialog dialog = new SampleSelectionDialog(IGV.getInstance().getMainFrame(), currentSamples, allSamples);
+            dialog.setVisible(true);
+
+            if (dialog.isCanceled()) {
+                return;
+            }
+
+            List<String> ids = dialog.getSampleIds();
+            if (ids == null) {
+                track.setSampleFilter(null);        // Filtering by ID turns off filtering by attribute
+                track.setSelectedSamples(null);
+                return;
+            }
+
+            Set<String> trackSamples = new HashSet<>(track.getSampleNames());
+            List<String> found = ids.stream().filter(trackSamples::contains).collect(Collectors.toList());
+            List<String> notFound = ids.stream().filter(id -> !trackSamples.contains(id)).collect(Collectors.toList());
+
+            if (found.isEmpty()) {
+                MessageUtils.showMessage("None of the entered sample IDs were found in this track.");
+                return;
+            }
+
+            track.setSampleFilter(null);
+            track.setSelectedSamples(found);
+
+            if (!notFound.isEmpty()) {
+                MessageUtils.showMessage(notFound.size() + " of " + ids.size() + " sample IDs were not found: " +
+                        String.join(", ", notFound.subList(0, Math.min(20, notFound.size()))) +
+                        (notFound.size() > 20 ? ", ..." : ""));
             }
         });
 

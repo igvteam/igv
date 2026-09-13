@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.igv.prefs.Constants.*;
 
@@ -112,6 +113,7 @@ public abstract class AbstractTrack implements Track {
     protected String groupBy;
     protected boolean samplesSorted;
     private SampleFilter sampleFilter;
+    private List<String> selectedSamples;
 
 
     @Override
@@ -1056,12 +1058,48 @@ public abstract class AbstractTrack implements Track {
         return sampleFilter;
     }
 
+    /**
+     * Filter samples by attribute.  Filtering by attribute and by ID are mutually exclusive, so a non-null
+     * filter clears the ID selection.
+     */
     public void setSampleFilter(SampleFilter sampleFilter) {
         this.sampleFilter = sampleFilter;
+        if (sampleFilter != null) {
+            this.selectedSamples = null;
+        }
+        resetSampleGroups();
+    }
+
+    public List<String> getSampleNames() {
+        return sampleNames;
+    }
+
+    public List<String> getSelectedSamples() {
+        return selectedSamples;
+    }
+
+    /**
+     * Restrict the displayed samples to the given IDs, or show all samples if null.  Samples keep the track's
+     * order, not the order of the list.  A list that includes every sample is stored as null, so sessions do not
+     * carry the full sample list.  Filtering by ID and by attribute are mutually exclusive, so a non-null
+     * selection clears the attribute filter.
+     */
+    public void setSelectedSamples(List<String> selectedSamples) {
+        if (selectedSamples != null && sampleNames != null && new HashSet<>(selectedSamples).containsAll(sampleNames)) {
+            selectedSamples = null;
+        }
+        this.selectedSamples = selectedSamples;
+        if (selectedSamples != null) {
+            this.sampleFilter = null;
+        }
         resetSampleGroups();
     }
 
     public List<String> getFilteredSamples() {
+        if (selectedSamples != null) {
+            Set<String> selected = new HashSet<>(selectedSamples);
+            return sampleNames.stream().filter(selected::contains).collect(Collectors.toList());
+        }
         return sampleFilter == null ? sampleNames : sampleFilter.evaluateSamples(sampleNames);
     }
 
@@ -1343,6 +1381,10 @@ public abstract class AbstractTrack implements Track {
             jsonObject.put("sampleFilter", sampleFilter.toJson());
         }
 
+        if (selectedSamples != null) {
+            jsonObject.put("selectedSamples", selectedSamples);
+        }
+
     }
 
 
@@ -1479,7 +1521,8 @@ public abstract class AbstractTrack implements Track {
         }
 
 
-        if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")) {
+        if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")
+                || jsonObject.has("selectedSamples")) {
 
             if (jsonObject.has("samples")) {
                 // Samples are sorted
@@ -1499,6 +1542,11 @@ public abstract class AbstractTrack implements Track {
                 } catch (Exception e) {
                     log.error("Unrecognized sampleFilter: " + jsonObject.getJSONObject("sampleFilter"));
                 }
+            }
+
+            if (jsonObject.has("selectedSamples")) {
+                this.selectedSamples = new ArrayList<>();
+                jsonObject.getJSONArray("selectedSamples").forEach(s -> selectedSamples.add((String) s));
             }
 
             resetSampleGroups();
