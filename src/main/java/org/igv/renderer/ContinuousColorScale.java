@@ -257,9 +257,11 @@ public class ContinuousColorScale extends AbstractColorScale {
             return noDataColor();
         }
 
-        // See if we are in the midrange.
+        // See if we are in the midrange.  Only a double gradient has one -- for a single gradient negStart and
+        // posStart both collapse to max(0, minimum), so this would return the midpoint color for the minimum
+        // value of every scale, a white notch at the bottom of an otherwise correct gradient.
 
-        if (val >= negStart && val <= posStart) {
+        if (useDoubleGradient && val >= negStart && val <= posStart) {
             return midColor;
         } else {
             //double f = (val - getMinimum()) / (getMaximum() - getMinimum());

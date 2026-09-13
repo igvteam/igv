@@ -11,10 +11,12 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingWorker;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.File;
@@ -35,6 +37,7 @@ public class VariantColorSchemePanel extends JPanel {
 
     private final SchemeTableModel tableModel = new SchemeTableModel();
     private final JTable table = new JTable(tableModel);
+    private final JButton importUrlButton = new JButton("Import URL...");
     private final JButton editButton = new JButton("Edit...");
     private final JButton removeButton = new JButton("Remove");
 
@@ -58,7 +61,6 @@ public class VariantColorSchemePanel extends JPanel {
         JButton importFileButton = new JButton("Import File...");
         importFileButton.addActionListener(e -> importFile());
 
-        JButton importUrlButton = new JButton("Import URL...");
         importUrlButton.addActionListener(e -> importUrl());
 
         editButton.addActionListener(e -> editSelected());
@@ -89,17 +91,38 @@ public class VariantColorSchemePanel extends JPanel {
     }
 
     private void importUrl() {
-        String url = MessageUtils.showInputDialog("Color scheme URL");
-        if (url == null || url.trim().isEmpty()) {
+
+        String input = MessageUtils.showInputDialog("Color scheme URL");
+        if (input == null || input.trim().isEmpty()) {
             return;
         }
-        try {
-            VariantColorSchemes.importUrl(url.trim());
-            schemesChanged();
-        } catch (Exception e) {
-            log.error("Error importing variant color scheme: " + url, e);
-            MessageUtils.showMessage("Error importing color scheme: " + e.getMessage());
-        }
+        final String url = input.trim();
+
+        // The fetch blocks for up to the connect and read timeouts, which on the event thread would freeze IGV
+        importUrlButton.setEnabled(false);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        new SwingWorker<VariantColorScheme, Void>() {
+
+            @Override
+            protected VariantColorScheme doInBackground() throws Exception {
+                return VariantColorSchemes.importUrl(url);
+            }
+
+            @Override
+            protected void done() {
+                importUrlButton.setEnabled(true);
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    get();
+                    schemesChanged();
+                } catch (Exception e) {
+                    log.error("Error importing variant color scheme: " + url, e);
+                    Throwable cause = e.getCause() == null ? e : e.getCause();
+                    MessageUtils.showMessage("Error importing color scheme: " + cause.getMessage());
+                }
+            }
+        }.execute();
     }
 
     /**

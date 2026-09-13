@@ -63,6 +63,13 @@ public class VariantColorSchemes {
     private static List<VariantColorScheme> userSchemes;
     private static List<VariantColorScheme> builtinSchemes;
 
+    /**
+     * The directory the cached user schemes were read from.  The IGV directory can move (Preferences > Advanced),
+     * which leaves cached schemes holding paths into a directory that no longer exists -- saving them would fail
+     * and removals would come back on restart.
+     */
+    private static File cacheDirectory;
+
     private VariantColorSchemes() {
     }
 
@@ -76,7 +83,9 @@ public class VariantColorSchemes {
     }
 
     public static synchronized List<VariantColorScheme> getUserSchemes() {
-        if (userSchemes == null) {
+        File directory = getSchemeDirectory();
+        if (userSchemes == null || !directory.equals(cacheDirectory)) {
+            cacheDirectory = directory;
             userSchemes = loadUserSchemes();
         }
         return Collections.unmodifiableList(userSchemes);
@@ -412,5 +421,6 @@ public class VariantColorSchemes {
     public static synchronized void reset() {
         userSchemes = null;
         builtinSchemes = null;
+        cacheDirectory = null;
     }
 }

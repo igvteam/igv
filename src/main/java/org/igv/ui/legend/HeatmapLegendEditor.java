@@ -95,14 +95,8 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
             negEnd = Double.parseDouble(negRangeEnd.getText());
 
 
-            colorScheme = new ContinuousColorScale(
-                    Math.max(negStart, negEnd),
-                    Math.min(negStart, negEnd),
-                    Math.min(posStart, posEnd),
-                    Math.max(posStart, posEnd),
-                    minColor.getSelectedColor(),
-                    midColor.getSelectedColor(),
-                    maxColor.getSelectedColor());
+            colorScheme = buildScale(doubleGradientCheckbox.isSelected(), negStart, negEnd, posStart, posEnd,
+                    minColor.getSelectedColor(), midColor.getSelectedColor(), maxColor.getSelectedColor());
 
             return true;
 
@@ -115,6 +109,33 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
 
     public ContinuousColorScale getColorScheme() {
         return colorScheme;
+    }
+
+    /**
+     * Build the scale the dialog describes.
+     * <p>
+     * With the double gradient box unticked this has to be a single gradient.  Building the three color form
+     * regardless leaves the negative half degenerate, which puts the midpoint color -- white by default -- at
+     * the bottom of the range and reduces the chosen minimum color to a single bucket, so the user does not get
+     * the gradient they asked for.
+     */
+    static ContinuousColorScale buildScale(boolean doubleGradient, double negStart, double negEnd,
+                                           double posStart, double posEnd,
+                                           Color minColor, Color midColor, Color maxColor) {
+
+        if (doubleGradient) {
+            return new ContinuousColorScale(
+                    Math.max(negStart, negEnd),
+                    Math.min(negStart, negEnd),
+                    Math.min(posStart, posEnd),
+                    Math.max(posStart, posEnd),
+                    minColor, midColor, maxColor);
+        }
+
+        return new ContinuousColorScale(
+                Math.min(posStart, posEnd),
+                Math.max(posStart, posEnd),
+                minColor, maxColor);
     }
 
 

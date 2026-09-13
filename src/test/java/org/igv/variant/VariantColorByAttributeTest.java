@@ -3,11 +3,13 @@ package org.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.AbstractHeadlessTest;
+import org.igv.DirectoryManager;
 import org.igv.track.RenderContext;
 import org.igv.track.TrackLoader;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,6 +17,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,9 +35,28 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
 
     private VariantTrack track;
     private List<Feature> variants;
+    private File previousIgvDirectory;
 
+    /**
+     * These tests assert exact built-in colors, so they must not see schemes the developer running them has
+     * installed, and must not leave cached schemes behind for the next test class.
+     */
+    @After
+    public void restoreIgvDirectory() {
+        DirectoryManager.setIgvDirectory(previousIgvDirectory);
+        VariantColorSchemes.reset();
+    }
+
+    // One @Before -- JUnit does not order them, and the directory has to be set before anything reads a scheme
     @Before
     public void loadTrack() throws Exception {
+
+        previousIgvDirectory = DirectoryManager.getIgvDirectory();
+        File igvDirectory = new File(TestUtils.TMP_OUTPUT_DIR, "igv");
+        igvDirectory.mkdirs();
+        DirectoryManager.setIgvDirectory(igvDirectory);
+        VariantColorSchemes.reset();
+
         String filePath = TestUtils.DATA_DIR + "vcf/clinvar_info.vcf";
         TestUtils.createIndex(filePath);
         track = (VariantTrack) (new TrackLoader()).load(new ResourceLocator(filePath), genome).get(0);

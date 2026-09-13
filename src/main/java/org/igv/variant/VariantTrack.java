@@ -732,7 +732,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     public Color getAttributeColor(String key, String value) {
 
-        Color override = getAttributeColorOverrides(key).get(value.toLowerCase());
+        Color override = getAttributeColorOverride(key, value);
         if (override != null) {
             return override;
         }
@@ -848,6 +848,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         synchronized (attributeColorOverrides) {
             Map<String, Color> overrides = attributeColorOverrides.get(key);
             return overrides == null ? Collections.emptyMap() : new LinkedHashMap<>(overrides);
+        }
+    }
+
+    /**
+     * Look up one chosen color.  This is on the per variant render path, so it reads the map under its lock
+     * rather than copying it -- copying makes a repaint cost variants x overrides once anything is edited.
+     */
+    private Color getAttributeColorOverride(String key, String value) {
+        synchronized (attributeColorOverrides) {
+            Map<String, Color> overrides = attributeColorOverrides.get(key);
+            return overrides == null ? null : overrides.get(value.toLowerCase());
         }
     }
 
@@ -996,8 +1007,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * Return the INFO header lines that make sense to color by, sorted by ID.  Float attributes are excluded --
-     * they are continuous, and coloring treats each distinct value as a category.
+     * Return the INFO header lines that make sense to color by, sorted by ID.  Numeric attributes are included:
+     * selecting one asks for a color scale rather than coloring each distinct value (see
+     * VariantTrackMenuHelper.defineScaleIfNeeded), so they must be offered.  Also included is any attribute a
+     * color scheme covers, whatever its declared type.
      */
     public List<VCFInfoHeaderLine> getColorableInfoFields() {
         Object header = getHeader();

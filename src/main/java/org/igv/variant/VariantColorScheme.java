@@ -4,6 +4,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
+import org.igv.renderer.ColorScale;
 import org.igv.renderer.ColorScaleFactory;
 import org.igv.ui.color.ColorUtilities;
 
@@ -162,11 +163,34 @@ public class VariantColorScheme {
         }
 
         try {
-            scales.put(key.toUpperCase(), (AbstractColorScale) ColorScaleFactory.getScaleFromString(value));
+            ColorScale scale = ColorScaleFactory.getScaleFromString(value);
+            if (!isUsableScale(scale)) {
+                log.warn("Skipping color scheme row, not a usable color scale: " + key + "\t" + value);
+                return;
+            }
+            scales.put(key.toUpperCase(), (AbstractColorScale) scale);
         } catch (Exception e) {
             log.warn("Skipping color scheme row, expected \"" + CATEGORICAL + "\" or a color scale: "
                     + key + "\t" + value);
         }
+    }
+
+    /**
+     * Coloring by a scale calls {@link AbstractColorScale#getColor(float)} and the legend draws the gradient, so
+     * only a {@link ContinuousColorScale} over a finite, increasing range is any use here.  ColorScaleFactory
+     * also builds MappedColorScale, which would return the abstract default color for every variant, show
+     * nothing in the legend, and be dropped silently on save.
+     */
+    private static boolean isUsableScale(ColorScale scale) {
+
+        if (!(scale instanceof ContinuousColorScale)) {
+            return false;
+        }
+
+        ContinuousColorScale continuous = (ContinuousColorScale) scale;
+        double min = continuous.getMinimum();
+        double max = continuous.getMaximum();
+        return Double.isFinite(min) && Double.isFinite(max) && max > min;
     }
 
     private void addRow(String[] tokens) {
@@ -219,7 +243,15 @@ public class VariantColorScheme {
                 return;
             }
 
-            Color maxColor = tokens.length > 3 ? ColorUtilities.stringToColor(tokens[3].trim(), null) : null;
+            Color maxColor = null;
+            if (tokens.length > 3) {
+                maxColor = ColorUtilities.stringToColor(tokens[3].trim(), null);
+                if (maxColor == null) {
+                    // Falling through to the one color form would quietly give a typo a different scale
+                    log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens));
+                    return;
+                }
+            }
 
             if (maxColor == null) {
                 scales.put(key, new ContinuousColorScale(min, max, Color.white, color));

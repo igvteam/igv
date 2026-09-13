@@ -5,6 +5,7 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.AbstractHeadlessTest;
 import org.igv.DirectoryManager;
 import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.TrackLoader;
 import org.igv.util.ResourceLocator;
@@ -716,6 +717,72 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     public void testNonNumericAttributeIsNotPrompted() throws Exception {
         VariantTrack track = loadTrack();
         assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "CLNSIG"));
+    }
+
+    /**
+     * ColorScaleFactory also builds MappedColorScale, which coloring cannot use, the legend cannot draw, and
+     * write() would drop -- so it must not be registered as though it were a scale.
+     */
+    @Test
+    public void testNonContinuousScaleRejected() throws Exception {
+        // A well formed MappedColorScale -- the point is that the type is rejected, not that the string is bad
+        String serialized = "MappedColorScale;a 1,2,3;b 4,5,6";
+        assertNotNull("Expected this to be a parseable scale", ColorScaleFactory.getScaleFromString(serialized));
+
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("DP\t" + serialized + "\n")), "test");
+        assertNull(scheme.getScale("DP"));
+        assertFalse(scheme.getKeys().contains("DP"));
+    }
+
+    /**
+     * A serialized scale gets the same range checks as a "min:max" row.
+     */
+    @Test
+    public void testSerializedScaleRangeValidated() throws Exception {
+        String contents = String.join("\n",
+                "ZERO\tContinuousColorScale;5.0;5.0;255,255,204;202,0,32",
+                "REVERSED\tContinuousColorScale;10.0;2.0;255,255,204;202,0,32",
+                "INFINITE\tContinuousColorScale;0.0;Infinity;255,255,204;202,0,32",
+                "GOOD\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32",
+                "");
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        assertNull(scheme.getScale("ZERO"));
+        assertNull(scheme.getScale("REVERSED"));
+        assertNull(scheme.getScale("INFINITE"));
+        assertNotNull(scheme.getScale("GOOD"));
+    }
+
+    /**
+     * A typo in the second color must not quietly fall back to the one-color form, which would give a different
+     * scale rather than the documented skipped row.
+     */
+    @Test
+    public void testRangeRowWithBadMaxColorRejected() throws Exception {
+        String contents = "CADD\t0:40\t255,255,200\tnot-a-color\n";
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+        assertNull(scheme.getScale("CADD"));
+    }
+
+    /**
+     * The IGV directory can move (Preferences > Advanced).  Schemes cached from the old one hold paths into a
+     * directory that no longer exists, so saving would fail and removals would reappear.
+     */
+    @Test
+    public void testCacheFollowsTheIgvDirectory() throws Exception {
+        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+        VariantColorSchemes.reset();
+        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+
+        File moved = new File(TestUtils.TMP_OUTPUT_DIR, "igv-moved");
+        moved.mkdirs();
+        DirectoryManager.setIgvDirectory(moved);
+
+        // No explicit reset -- the cache has to notice by itself
+        assertTrue(VariantColorSchemes.getUserSchemes().isEmpty());
+        assertEquals("Back to the built-in color", new Color(202, 0, 32),
+                VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
     }
 
     private VariantColorScheme builtinFor(String infoKey) {
