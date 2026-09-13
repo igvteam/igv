@@ -12,6 +12,7 @@ import org.igv.ui.util.FileDialogUtils;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.Utilities;
+import org.igv.variant.VariantColorSchemePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -319,6 +320,14 @@ public class PreferencesEditor {
                 });
             }
 
+
+            if (tabLabel.equalsIgnoreCase("Variants")) {
+                // Color schemes for INFO attributes are managed as files, not as individual color preferences --
+                // the set of attributes, and of values for each, is unbounded.  This is a special case.
+                JPanel schemePanel = new VariantColorSchemePanel();
+                contentGrid.addLayoutComponent(schemePanel, new GridBagConstraints(0, contentRow++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
+                content.add(schemePanel);
+            }
 
             if (tabLabel.equalsIgnoreCase("Advanced")) {
                 // Add IGV directory management at the end.  This is a special case

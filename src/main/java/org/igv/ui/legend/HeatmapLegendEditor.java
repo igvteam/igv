@@ -1,7 +1,3 @@
-/*
- * Created by JFormDesigner on Thu Jun 16 11:12:56 EDT 2011
- */
-
 package org.igv.ui.legend;
 
 import java.awt.*;
@@ -20,25 +16,65 @@ import org.jdesktop.layout.LayoutStyle;
  */
 public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     private boolean canceled = true;
+    private boolean discreteSelected = false;
     private ContinuousColorScale colorScheme;
 
-    /**
-     * Creates new form HeatmapLegendEditor2
-     */
     public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme) {
+        this(parent, modal, colorScheme, null);
+    }
+
+    /**
+     * @param discreteLabel label for a button offering an alternative to a scale, for callers where the data
+     *                      might be categorical rather than continuous.  Null for no such button.
+     */
+    public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme, String discreteLabel) {
         super(parent, modal);
         this.colorScheme = (ContinuousColorScale) colorScheme;
         initComponents();
+        if (discreteLabel != null) {
+            addDiscreteButton(discreteLabel);
+        }
         initValues();
         this.setLocationRelativeTo(parent);
         this.getRootPane().setDefaultButton(okButton);
+    }
+
+    private void addDiscreteButton(String label) {
+        JButton discreteButton = new JButton(label);
+        discreteButton.addActionListener(e -> {
+            discreteSelected = true;
+            canceled = false;
+            setVisible(false);
+        });
+        buttonPanel.add(discreteButton, 0);
+        pack();
+        setLocationRelativeTo(getOwner());
+    }
+
+    /**
+     * Show the editor for a scale, modal over the window holding {@code owner}.
+     *
+     * @return the scale the user accepted, or null if they cancelled
+     */
+    public static ContinuousColorScale edit(Component owner, String title, ContinuousColorScale scale) {
+        HeatmapLegendEditor editor = new HeatmapLegendEditor(JOptionPane.getFrameForComponent(owner), true, scale);
+        editor.setTitle(title);
+        editor.setVisible(true);
+        return editor.isCanceled() ? null : editor.getColorScheme();
+    }
+
+    /**
+     * @return true if the user chose the discrete alternative rather than defining a scale.
+     */
+    public boolean isDiscreteSelected() {
+        return discreteSelected;
     }
 
     private void initValues() {
         doubleGradientCheckbox.setSelected(colorScheme.isUseDoubleGradient());
         negRangeStart.setText(String.valueOf(colorScheme.getNegStart()));
         negRangeEnd.setText(String.valueOf(getColorScheme().getMinimum()));
-        posRangeStart.setText(String.valueOf(colorScheme.getPosStart()));
+        posRangeStart.setText(String.valueOf(visibleRangeStart(colorScheme)));
         posRangeEnd.setText(String.valueOf(colorScheme.getMaximum()));
         minColor.setSelectedColor(colorScheme.getMinColor());
         maxColor.setSelectedColor(colorScheme.getMaxColor());
@@ -71,14 +107,8 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
             negEnd = Double.parseDouble(negRangeEnd.getText());
 
 
-            colorScheme = new ContinuousColorScale(
-                    Math.max(negStart, negEnd),
-                    Math.min(negStart, negEnd),
-                    Math.min(posStart, posEnd),
-                    Math.max(posStart, posEnd),
-                    minColor.getSelectedColor(),
-                    midColor.getSelectedColor(),
-                    maxColor.getSelectedColor());
+            colorScheme = buildScale(doubleGradientCheckbox.isSelected(), negStart, negEnd, posStart, posEnd,
+                    minColor.getSelectedColor(), midColor.getSelectedColor(), maxColor.getSelectedColor());
 
             return true;
 
@@ -91,6 +121,42 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
 
     public ContinuousColorScale getColorScheme() {
         return colorScheme;
+    }
+
+    /**
+     * The value shown in the visible "Range" start field.  For a double gradient that is the start of the
+     * positive range.  A single gradient has no positive range -- its posStart is fixed at max(0, minimum) --
+     * so showing that would turn a -10..10 scale into 0..10 on an unedited OK.
+     */
+    static double visibleRangeStart(ContinuousColorScale scale) {
+        return scale.isUseDoubleGradient() ? scale.getPosStart() : scale.getMinimum();
+    }
+
+    /**
+     * Build the scale the dialog describes.
+     * <p>
+     * With the double gradient box unticked this has to be a single gradient.  Building the three color form
+     * regardless leaves the negative half degenerate, which puts the midpoint color -- white by default -- at
+     * the bottom of the range and reduces the chosen minimum color to a single bucket, so the user does not get
+     * the gradient they asked for.
+     */
+    static ContinuousColorScale buildScale(boolean doubleGradient, double negStart, double negEnd,
+                                           double posStart, double posEnd,
+                                           Color minColor, Color midColor, Color maxColor) {
+
+        if (doubleGradient) {
+            return new ContinuousColorScale(
+                    Math.max(negStart, negEnd),
+                    Math.min(negStart, negEnd),
+                    Math.min(posStart, posEnd),
+                    Math.max(posStart, posEnd),
+                    minColor, midColor, maxColor);
+        }
+
+        return new ContinuousColorScale(
+                Math.min(posStart, posEnd),
+                Math.max(posStart, posEnd),
+                minColor, maxColor);
     }
 
 
@@ -116,8 +182,6 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     }
 
     private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
         jPanel1 = new JPanel();
         midColorLabel = new JLabel();
         jLabel3 = new JLabel();
@@ -127,6 +191,7 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
         maxColor = new ColorChooserPanel();
         okButton = new JButton();
         cancelButton = new JButton();
+        buttonPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 6, 0));
         negRangePanel = new JPanel();
         negRangeLabel = new JLabel();
         negRangeStart = new JTextField();
@@ -219,6 +284,9 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
                 cancelButtonActionPerformed(e);
             }
         });
+
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
 
         //======== negRangePanel ========
         {
@@ -330,11 +398,9 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
                                         .add(GroupLayout.TRAILING, posRangePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap(101, Short.MAX_VALUE))
                         .add(GroupLayout.TRAILING, contentPaneLayout.createSequentialGroup()
-                        .addContainerGap(124, Short.MAX_VALUE)
-                        .add(okButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(cancelButton)
-                        .add(132, 132, 132))
+                        .addContainerGap()
+                        .add(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
         );
         contentPaneLayout.setVerticalGroup(
                 contentPaneLayout.createParallelGroup()
@@ -348,18 +414,13 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
                         .addPreferredGap(LayoutStyle.UNRELATED)
                         .add(posRangePanel, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
-                        .add(contentPaneLayout.createParallelGroup(GroupLayout.BASELINE)
-                                .add(okButton)
-                                .add(cancelButton))
+                        .add(buttonPanel)
                         .add(34, 34, 34))
         );
         setSize(425, 405);
         setLocationRelativeTo(getOwner());
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
     private JPanel jPanel1;
     private JLabel midColorLabel;
     private JLabel jLabel3;
@@ -369,6 +430,7 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     private ColorChooserPanel maxColor;
     private JButton okButton;
     private JButton cancelButton;
+    private JPanel buttonPanel;
     private JPanel negRangePanel;
     private JLabel negRangeLabel;
     private JTextField negRangeStart;
@@ -380,7 +442,6 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     private JTextField posRangeStart;
     private JLabel posRangeToLabel;
     private JTextField posRangeEnd;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     public boolean isCanceled() {
         return canceled;

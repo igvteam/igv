@@ -1,0 +1,521 @@
+package org.igv.variant;
+
+import org.igv.logging.LogManager;
+import org.igv.logging.Logger;
+import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ContinuousColorScale;
+import org.igv.renderer.ColorScale;
+import org.igv.renderer.ColorScaleFactory;
+import org.igv.ui.color.ColorUtilities;
+
+import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * A named set of colors for the values of one VCF INFO attribute, read from a tab delimited file.  Discrete
+ * colors use the syntax of the "#colors" section of an IGV sample information file; color scales use the form
+ * IGV serializes heat map scales in (see {@link org.igv.renderer.ColorScaleFactory}), so there is one
+ * representation of a scale rather than two.
+ *
+ * <pre>
+ * #name=ClinVar significance
+ * #description=Benign (blue) through pathogenic (red)
+ * #colors
+ * CLNSIG       Pathogenic  202,0,32
+ * CLNSIG       *           150,150,150
+ * CADD_PHRED   ContinuousColorScale;0.0;40.0;255,255,200;255,0,0
+ * DP           categorical
+ * </pre>
+ *
+ * A three field row is "INFO key", "value", "color"; a value of "*" sets the color for values the scheme does
+ * not otherwise cover.  A two field row is either a serialized color scale or the word "categorical", which
+ * records that a numeric attribute holds codes rather than quantities.
+ * <p>
+ * The numeric "min:max" rows of a sample information file are also read, so a "#colors" section can be used
+ * here unchanged, but they are converted to a color scale and written back in the canonical form.
+ */
+public class VariantColorScheme {
+
+    private static Logger log = LogManager.getLogger(VariantColorScheme.class);
+
+    private static final String NAME_DIRECTIVE = "#name=";
+    private static final String DESCRIPTION_DIRECTIVE = "#description=";
+    private static final String SOURCE_DIRECTIVE = "#source=";
+    private static final String COLORS_SECTION = "#colors";
+
+    /**
+     * The value that sets the color for anything the scheme does not explicitly cover.
+     */
+    static final String WILDCARD = "*";
+
+    /**
+     * Written in place of a value to record that a numeric attribute holds categories, not quantities, so it is
+     * colored by value rather than by a scale.  IGV cannot tell the two apart, so the answer is kept here.
+     */
+    static final String CATEGORICAL = "categorical";
+
+    private String name;
+    private String description;
+    private String source;
+
+    /**
+     * The file this scheme was read from, in the IGV scheme directory.  Null for schemes shipped with IGV.
+     */
+    private File file;
+
+    /**
+     * INFO key (upper case) -> attribute value -> color.  Values keep the case they were written in, so a file
+     * IGV saves reads back the way the user wrote it; lookup is case insensitive via {@link #valueIndex}.
+     */
+    private final Map<String, Map<String, Color>> colors = new LinkedHashMap<>();
+
+    /**
+     * INFO key (upper case) -> lower case value -> the value as written, for case insensitive lookup.
+     */
+    private final Map<String, Map<String, String>> valueIndex = new LinkedHashMap<>();
+
+    /**
+     * INFO key (upper case) -> color for values not otherwise covered.
+     */
+    private final Map<String, Color> defaultColors = new HashMap<>();
+
+    /**
+     * INFO key (upper case) -> scale, for numeric attributes given as a "min:max" range.
+     */
+    private final Map<String, AbstractColorScale> scales = new LinkedHashMap<>();
+
+    /**
+     * Numeric INFO keys (upper case) declared to hold categories.
+     */
+    private final Set<String> categoricalKeys = new LinkedHashSet<>();
+
+    VariantColorScheme(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Parse a color scheme.  Unparseable rows are logged and skipped, a scheme is not rejected outright for one
+     * bad line.
+     *
+     * @param reader      the scheme contents
+     * @param defaultName name to use if the file has no "#name=" directive
+     */
+    public static VariantColorScheme parse(BufferedReader reader, String defaultName) throws IOException {
+
+        VariantColorScheme scheme = new VariantColorScheme(defaultName);
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            if (line.startsWith("#")) {
+                String lower = line.toLowerCase();
+                if (lower.startsWith(NAME_DIRECTIVE)) {
+                    scheme.name = line.substring(NAME_DIRECTIVE.length()).trim();
+                } else if (lower.startsWith(DESCRIPTION_DIRECTIVE)) {
+                    scheme.description = line.substring(DESCRIPTION_DIRECTIVE.length()).trim();
+                } else if (lower.startsWith(SOURCE_DIRECTIVE)) {
+                    scheme.source = line.substring(SOURCE_DIRECTIVE.length()).trim();
+                }
+                // Anything else, including the "#colors" section marker, is a comment
+                continue;
+            }
+
+            String[] tokens = line.split("\t");
+
+            if (tokens.length == 2) {
+                scheme.addTwoFieldRow(tokens[0].trim(), tokens[1].trim());
+                continue;
+            }
+
+            if (tokens.length < 3) {
+                log.warn("Skipping color scheme line, expected at least 3 tab delimited fields: " + line);
+                continue;
+            }
+            scheme.addRow(tokens);
+        }
+
+        return scheme;
+    }
+
+    /**
+     * A two field row is either the categorical declaration or a color scale, serialized in the same form
+     * IGV uses for heat map scales elsewhere (see {@link org.igv.renderer.ColorScaleFactory}).
+     */
+    private void addTwoFieldRow(String key, String value) {
+
+        if (CATEGORICAL.equalsIgnoreCase(value)) {
+            categoricalKeys.add(key.toUpperCase());
+            return;
+        }
+
+        try {
+            ColorScale scale = ColorScaleFactory.getScaleFromString(value);
+            if (!isUsableScale(scale)) {
+                log.warn("Skipping color scheme row, not a usable color scale: " + key + "\t" + value);
+                return;
+            }
+            scales.put(key.toUpperCase(), (AbstractColorScale) scale);
+        } catch (Exception e) {
+            log.warn("Skipping color scheme row, expected \"" + CATEGORICAL + "\" or a color scale: "
+                    + key + "\t" + value);
+        }
+    }
+
+    /**
+     * Coloring by a scale calls {@link AbstractColorScale#getColor(float)} and the legend draws the gradient, so
+     * only a {@link ContinuousColorScale} over a finite, increasing range is any use here.  ColorScaleFactory
+     * also builds MappedColorScale, which would return the abstract default color for every variant, show
+     * nothing in the legend, and be dropped silently on save.
+     */
+    private static boolean isUsableScale(ColorScale scale) {
+
+        if (!(scale instanceof ContinuousColorScale)) {
+            return false;
+        }
+
+        ContinuousColorScale continuous = (ContinuousColorScale) scale;
+        return isUsableRange(continuous.getMinimum(), continuous.getMaximum());
+    }
+
+    /**
+     * NaN and infinity parse as numbers, and "max <= min" is false for NaN, so an explicit check is needed.  A
+     * scale accepted here but rejected on reload would be active until the next restart and then vanish.
+     */
+    static boolean isUsableRange(double min, double max) {
+        return Double.isFinite(min) && Double.isFinite(max) && max > min;
+    }
+
+    private void addRow(String[] tokens) {
+
+        String key = tokens[0].trim().toUpperCase();
+        String value = tokens[1].trim();
+        Color color;
+        try {
+            color = ColorUtilities.stringToColor(tokens[2].trim(), null);
+        } catch (RuntimeException e) {
+            log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens), e);
+            return;
+        }
+        if (color == null) {
+            log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens));
+            return;
+        }
+
+        if (WILDCARD.equals(value)) {
+            defaultColors.put(key, color);
+        } else if (isNumericRange(value)) {
+            addRangeRow(key, value, color, tokens);
+        } else {
+            putColor(key, value, color);
+        }
+    }
+
+    /**
+     * Read the numeric "min:max" row of a sample information file "#colors" section, so such a section can be
+     * used here unchanged.  The scale is converted to a {@link ContinuousColorScale}, which is the form schemes
+     * are written in -- so importing one of these rows and saving normalizes it.
+     * <p>
+     * The semantics match {@link org.igv.track.AttributeManager}: one color shades from white, two colors shade
+     * between them, and two colors over a range starting below zero shade through a neutral midpoint at zero.
+     */
+    private void addRangeRow(String key, String value, Color color, String[] tokens) {
+
+        String[] parts = value.split(":");
+        if (parts.length != 2) {
+            log.warn("Skipping color scheme row, a range is \"min:max\": " + String.join("\t", tokens));
+            return;
+        }
+
+        try {
+            double min = Double.parseDouble(parts[0].trim());
+            double max = Double.parseDouble(parts[1].trim());
+
+            if (!isUsableRange(min, max)) {
+                log.warn("Skipping color scheme row, a range must be finite and increase: " + String.join("\t", tokens));
+                return;
+            }
+
+            Color maxColor = null;
+            if (tokens.length > 3) {
+                maxColor = ColorUtilities.stringToColor(tokens[3].trim(), null);
+                if (maxColor == null) {
+                    // Falling through to the one color form would quietly give a typo a different scale
+                    log.warn("Skipping color scheme row with unparseable color: " + String.join("\t", tokens));
+                    return;
+                }
+            }
+
+            if (maxColor == null) {
+                scales.put(key, new ContinuousColorScale(min, max, Color.white, color));
+            } else if (min < 0) {
+                scales.put(key, new ContinuousColorScale(min, 0, max, color,
+                        AbstractColorScale.neutralColor(), maxColor));
+            } else {
+                scales.put(key, new ContinuousColorScale(min, max, color, maxColor));
+            }
+        } catch (RuntimeException e) {
+            log.warn("Skipping unparseable color scheme row: " + String.join("\t", tokens), e);
+        }
+    }
+
+    /**
+     * Does this value look like a numeric range rather than an attribute value?  A value that merely contains a
+     * colon -- an HGVS name, a locus -- is still a value.
+     */
+    private static boolean isNumericRange(String value) {
+
+        if (!value.contains(":")) {
+            return false;
+        }
+
+        String[] parts = value.split(":", -1);
+        if (parts.length < 2 || parts.length > 4) {
+            return false;
+        }
+        for (String part : parts) {
+            try {
+                Double.parseDouble(part.trim());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void putColor(String key, String value, Color color) {
+        // Reuse the spelling already recorded, if any, so repeated edits do not create near duplicate rows
+        String existing = valueIndex.computeIfAbsent(key, k -> new LinkedHashMap<>())
+                .putIfAbsent(value.toLowerCase(), value);
+        colors.computeIfAbsent(key, k -> new LinkedHashMap<>()).put(existing == null ? value : existing, color);
+    }
+
+    /**
+     * Return the color this scheme assigns to an attribute value, or null if it does not cover it.  Matching is
+     * case insensitive.
+     */
+    public Color getColor(String infoKey, String value) {
+        if (infoKey == null || value == null) {
+            return null;
+        }
+        String key = infoKey.toUpperCase();
+        Map<String, String> index = valueIndex.get(key);
+        String stored = index == null ? null : index.get(value.toLowerCase());
+        Map<String, Color> valueColors = colors.get(key);
+        Color color = stored == null || valueColors == null ? null : valueColors.get(stored);
+        return color != null ? color : defaultColors.get(key);
+    }
+
+    /**
+     * Return the continuous scale for a numeric attribute, or null if this scheme does not define one.
+     */
+    public AbstractColorScale getScale(String infoKey) {
+        return infoKey == null ? null : scales.get(infoKey.toUpperCase());
+    }
+
+    /**
+     * @return the INFO keys this scheme assigns colors to.
+     */
+    public Set<String> getKeys() {
+        Set<String> keys = new LinkedHashSet<>(colors.keySet());
+        keys.addAll(defaultColors.keySet());
+        keys.addAll(scales.keySet());
+        keys.addAll(categoricalKeys);
+        return keys;
+    }
+
+    /**
+     * @return true if this scheme covers the attribute at all -- getKeys().contains(key) without building a set,
+     * as it is asked for every variant drawn.
+     * @param upperCaseKey the INFO key, already upper case
+     */
+    boolean covers(String upperCaseKey) {
+        return colors.containsKey(upperCaseKey) || defaultColors.containsKey(upperCaseKey)
+                || scales.containsKey(upperCaseKey) || categoricalKeys.contains(upperCaseKey);
+    }
+
+    /**
+     * @return true if this scheme declares a numeric attribute to hold categories rather than quantities.
+     */
+    public boolean isCategorical(String infoKey) {
+        return infoKey != null && categoricalKeys.contains(infoKey.toUpperCase());
+    }
+
+    /**
+     * @return the value -> color assignments for an INFO key, for display in a legend.  Does not include the
+     * wildcard default or continuous scales.
+     */
+    public Map<String, Color> getColors(String infoKey) {
+        Map<String, Color> valueColors = infoKey == null ? null : colors.get(infoKey.toUpperCase());
+        return valueColors == null ? Collections.emptyMap() : Collections.unmodifiableMap(valueColors);
+    }
+
+    /**
+     * @return the color for values this scheme does not list, or null if it sets none.
+     */
+    public Color getDefaultColor(String infoKey) {
+        return infoKey == null ? null : defaultColors.get(infoKey.toUpperCase());
+    }
+
+    /**
+     * Set the color for one value of an INFO attribute.
+     */
+    public void setColor(String infoKey, String value, Color color) {
+        String key = infoKey.toUpperCase();
+        if (WILDCARD.equals(value)) {
+            defaultColors.put(key, color);
+        } else {
+            putColor(key, value, color);
+        }
+    }
+
+    /**
+     * Remove the color for one value of an INFO attribute.  Values it no longer lists take their color from the
+     * palette, as they did before the scheme covered them.
+     */
+    public void removeColor(String infoKey, String value) {
+
+        String key = infoKey.toUpperCase();
+
+        if (WILDCARD.equals(value)) {
+            defaultColors.remove(key);
+            return;
+        }
+
+        Map<String, String> index = valueIndex.get(key);
+        String stored = index == null ? null : index.remove(value.toLowerCase());
+        Map<String, Color> valueColors = colors.get(key);
+        if (stored != null && valueColors != null) {
+            valueColors.remove(stored);
+            if (valueColors.isEmpty()) {
+                // The attribute is no longer covered at all, so getKeys() must stop reporting it
+                colors.remove(key);
+                valueIndex.remove(key);
+            }
+        }
+    }
+
+    /**
+     * Return an independent copy, so an editor can discard its changes.
+     */
+    public VariantColorScheme copy() {
+
+        VariantColorScheme copy = new VariantColorScheme(name);
+        copy.description = description;
+        copy.source = source;
+        copy.file = file;
+        copy.defaultColors.putAll(defaultColors);
+        copy.scales.putAll(scales);
+        copy.categoricalKeys.addAll(categoricalKeys);
+        for (Map.Entry<String, Map<String, Color>> entry : colors.entrySet()) {
+            copy.colors.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
+        for (Map.Entry<String, Map<String, String>> entry : valueIndex.entrySet()) {
+            copy.valueIndex.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
+        return copy;
+    }
+
+    /**
+     * Set the color scale for a numeric INFO attribute.
+     */
+    public void setScale(String infoKey, AbstractColorScale scale) {
+        scales.put(infoKey.toUpperCase(), scale);
+    }
+
+    /**
+     * Declare that a numeric INFO attribute holds categories rather than quantities.
+     */
+    public void setCategorical(String infoKey) {
+        categoricalKeys.add(infoKey.toUpperCase());
+    }
+
+    /**
+     * Write this scheme in the tab delimited form it is read from.  This is the only place the format is
+     * written, so hand edited and IGV written files stay interchangeable.
+     */
+    public void write(PrintWriter writer) {
+
+        writer.println(NAME_DIRECTIVE + name);
+        if (description != null) {
+            writer.println(DESCRIPTION_DIRECTIVE + description);
+        }
+        if (source != null) {
+            writer.println(SOURCE_DIRECTIVE + source);
+        }
+        writer.println(COLORS_SECTION);
+
+        for (String key : getKeys()) {
+            if (categoricalKeys.contains(key)) {
+                writer.println(key + "\t" + CATEGORICAL);
+            }
+            AbstractColorScale scale = scales.get(key);
+            if (scale instanceof ContinuousColorScale) {
+                writer.println(key + "\t" + ((ContinuousColorScale) scale).asString());
+            }
+            for (Map.Entry<String, Color> entry : colors.getOrDefault(key, Collections.emptyMap()).entrySet()) {
+                writer.println(key + "\t" + entry.getKey() + "\t" + ColorUtilities.colorToString(entry.getValue()));
+            }
+            Color defaultColor = defaultColors.get(key);
+            if (defaultColor != null) {
+                writer.println(key + "\t" + WILDCARD + "\t" + ColorUtilities.colorToString(defaultColor));
+            }
+        }
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    void setSource(String source) {
+        this.source = source;
+    }
+
+    /**
+     * @return the file this scheme was read from, or null if it is shipped with IGV.
+     */
+    public File getFile() {
+        return file;
+    }
+
+    void setFile(File file) {
+        this.file = file;
+    }
+
+    /**
+     * @return true if this scheme ships with IGV, and so cannot be removed or edited in place.
+     */
+    public boolean isBuiltIn() {
+        return file == null;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}

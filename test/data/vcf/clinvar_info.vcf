@@ -1,0 +1,19 @@
+##fileformat=VCFv4.2
+##contig=<ID=chr1,length=8033585>
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">
+##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description="the ClinVar Allele ID">
+##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status">
+##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance for this single variant">
+##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership">
+##INFO=<ID=RDP,Number=R,Type=Integer,Description="Depth per allele, reference first">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	100	.	C	A	100	.	AF=0.01;ALLELEID=1;CLNSIG=Pathogenic;CLNREVSTAT=criteria_provided,_single_submitter;DB
+chr1	200	.	G	T	100	.	AF=0.02;ALLELEID=2;CLNSIG=Likely_pathogenic;CLNREVSTAT=.
+chr1	300	.	T	C	100	.	AF=0.03;ALLELEID=3;CLNSIG=Uncertain_significance
+chr1	400	.	A	G	100	.	AF=0.04;ALLELEID=4;CLNSIG=Likely_benign
+chr1	500	.	C	G	100	.	AF=0.05;ALLELEID=5;CLNSIG=Benign
+chr1	600	.	G	A	100	.	AF=0.06;ALLELEID=6;CLNSIG=drug_response
+chr1	700	.	T	G	100	.	AF=0.07;ALLELEID=7;CLNSIG=association
+chr1	800	.	A	C	100	.	AF=0.08;ALLELEID=8
+chr1	900	.	C	<DEL>	100	.	AF=0.09;ALLELEID=9;SVTYPE=DEL

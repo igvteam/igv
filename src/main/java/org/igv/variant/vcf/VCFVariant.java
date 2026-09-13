@@ -20,6 +20,13 @@ import java.util.*;
  */
 public class VCFVariant implements Variant, PackedFeature {
 
+    /**
+     * INFO attributes holding the frequency of each alternate allele.  Summed across alleles to give the
+     * frequency of all non-reference alleles, both by the "Allele Frequency" color mode and when one of these
+     * attributes is colored by a scale.
+     */
+    public static final String[] ALLELE_FREQUENCY_KEYS = {"AF", "GMAF"};
+
     private static Logger log = LogManager.getLogger(Variant.class);
 
     static final DecimalFormat numFormat = new DecimalFormat("###,###,###");
@@ -65,9 +72,8 @@ public class VCFVariant implements Variant, PackedFeature {
 //        }
 
         String afString = null;
-        String[] alleleFreqKeys = {"AF", "GMAF"};
         try {
-            for (String alleleFreqKey : alleleFreqKeys) {
+            for (String alleleFreqKey : ALLELE_FREQUENCY_KEYS) {
                 afString = variantContext.getAttributeAsString(alleleFreqKey, "-1");
                 alleleFreqs = parseDoubleArrayString(afString);
                 if (alleleFreqs[0] >= 0) break;

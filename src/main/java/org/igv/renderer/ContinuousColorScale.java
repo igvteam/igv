@@ -139,7 +139,7 @@ public class ContinuousColorScale extends AbstractColorScale {
         this.minColor = otherScale.minColor;
         this.midColor = otherScale.midColor;
         this.maxColor = otherScale.maxColor;
-        this.useDoubleGradient = true;
+        this.useDoubleGradient = otherScale.useDoubleGradient;
     }
 
     public void setDefault(boolean defaultCS) {
@@ -257,9 +257,11 @@ public class ContinuousColorScale extends AbstractColorScale {
             return noDataColor();
         }
 
-        // See if we are in the midrange.
+        // See if we are in the midrange.  Only a double gradient has one -- for a single gradient negStart and
+        // posStart both collapse to max(0, minimum), so this would return the midpoint color for the minimum
+        // value of every scale, a white notch at the bottom of an otherwise correct gradient.
 
-        if (val >= negStart && val <= posStart) {
+        if (useDoubleGradient && val >= negStart && val <= posStart) {
             return midColor;
         } else {
             //double f = (val - getMinimum()) / (getMaximum() - getMinimum());
@@ -390,10 +392,9 @@ public class ContinuousColorScale extends AbstractColorScale {
          */
         private BufferedImage createGradientImage(Color color1, Color color2) {
 
-            BufferedImage image =
-                    (BufferedImage) java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-                            .getDefaultScreenDevice().getDefaultConfiguration()
-                            .createCompatibleImage(256, 1);
+            // Not a screen device compatible image -- the gradient is only sampled for RGB values, never drawn,
+            // and asking for the default screen device throws in headless mode (batch, igvtools, tests).
+            BufferedImage image = new BufferedImage(256, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = image.createGraphics();
             GradientPaint gp = new GradientPaint(0, 0, color1, 255, 0, color2);
 
