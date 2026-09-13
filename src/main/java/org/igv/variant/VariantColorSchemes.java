@@ -5,11 +5,9 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
-
-import java.awt.Color;
-import org.igv.ui.color.ColorUtilities;
 import org.igv.util.HttpUtils;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -65,11 +63,18 @@ public class VariantColorSchemes {
     private static List<VariantColorScheme> builtinSchemes;
 
     /**
-     * The directory the cached user schemes were read from.  The IGV directory can move (Preferences > Advanced),
-     * which leaves cached schemes holding paths into a directory that no longer exists -- saving them would fail
-     * and removals would come back on restart.
+     * User schemes followed by built-ins.  Colors are resolved through this for every variant drawn, so it is
+     * built once and discarded only when the schemes change.
      */
-    private static File cacheDirectory;
+    private static List<VariantColorScheme> allSchemes;
+
+    /**
+     * The IGV directory the cached user schemes were read from.  The IGV directory can move (Preferences >
+     * Advanced), which leaves cached schemes holding paths into a directory that no longer exists -- saving them
+     * would fail and removals would come back on restart.  Compared by identity with DirectoryManager's own
+     * File, so checking it allocates nothing.
+     */
+    private static File cacheIgvDirectory;
 
     private VariantColorSchemes() {
     }
@@ -78,16 +83,21 @@ public class VariantColorSchemes {
      * @return the user imported schemes, followed by those shipped with IGV.
      */
     public static synchronized List<VariantColorScheme> getSchemes() {
-        List<VariantColorScheme> schemes = new ArrayList<>(getUserSchemes());
-        schemes.addAll(getBuiltinSchemes());
-        return schemes;
+        getUserSchemes();   // reloads, discarding allSchemes, if the IGV directory has moved
+        if (allSchemes == null) {
+            List<VariantColorScheme> schemes = new ArrayList<>(userSchemes);
+            schemes.addAll(getBuiltinSchemes());
+            allSchemes = Collections.unmodifiableList(schemes);
+        }
+        return allSchemes;
     }
 
     public static synchronized List<VariantColorScheme> getUserSchemes() {
-        File directory = getSchemeDirectory();
-        if (userSchemes == null || !directory.equals(cacheDirectory)) {
-            cacheDirectory = directory;
+        File igvDirectory = DirectoryManager.getIgvDirectory();
+        if (userSchemes == null || igvDirectory != cacheIgvDirectory) {
+            cacheIgvDirectory = igvDirectory;
             userSchemes = loadUserSchemes();
+            allSchemes = null;
         }
         return Collections.unmodifiableList(userSchemes);
     }
@@ -135,23 +145,11 @@ public class VariantColorSchemes {
         }
         String key = infoKey.toUpperCase();
         for (VariantColorScheme scheme : getSchemes()) {
-            if (scheme.getKeys().contains(key)) {
+            if (scheme.covers(key)) {
                 return scheme;
             }
         }
         return null;
-    }
-
-    /**
-     * @return true if some scheme declares this numeric attribute to hold categories rather than quantities.
-     */
-    public static boolean isCategorical(String infoKey) {
-        for (VariantColorScheme scheme : getSchemes()) {
-            if (scheme.isCategorical(infoKey)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -235,7 +233,8 @@ public class VariantColorSchemes {
     private static synchronized VariantColorScheme store(VariantColorScheme scheme, String contents,
                                                          String source, String fileName) throws IOException {
 
-        File file = new File(createSchemeDirectory(), fileName);
+        String effectiveSource = scheme.getSource() != null ? scheme.getSource() : source;
+        File file = targetFile(createSchemeDirectory(), fileName, effectiveSource);
         try (PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
             if (scheme.getSource() == null) {
                 writer.println("#source=" + source);
@@ -247,6 +246,30 @@ public class VariantColorSchemes {
 
         register(scheme);
         return scheme;
+    }
+
+    /**
+     * The file to store an import in.  Importing from the same source again replaces the earlier copy -- that is
+     * how a scheme is refreshed.  A different scheme that happens to have the same file name gets a numbered name
+     * instead of silently replacing it: two labs can each send "colors.txt".
+     */
+    private static File targetFile(File directory, String fileName, String source) {
+        String base = stripExtension(fileName);
+        String extension = fileName.substring(base.length());
+        File file = new File(directory, fileName);
+        for (int n = 2; file.exists() && !source.equals(sourceOf(file)); n++) {
+            file = new File(directory, base + "_" + n + extension);
+        }
+        return file;
+    }
+
+    private static String sourceOf(File file) {
+        for (VariantColorScheme scheme : getUserSchemes()) {
+            if (file.equals(scheme.getFile())) {
+                return scheme.getSource();
+            }
+        }
+        return null;
     }
 
     /**
@@ -314,8 +337,7 @@ public class VariantColorSchemes {
     public static synchronized VariantColorScheme saveScale(String name, String infoKey, ContinuousColorScale scale)
             throws IOException {
 
-        if (scale == null || !Double.isFinite(scale.getMinimum()) || !Double.isFinite(scale.getMaximum())
-                || scale.getMaximum() <= scale.getMinimum()) {
+        if (scale == null || !VariantColorScheme.isUsableRange(scale.getMinimum(), scale.getMaximum())) {
             throw new IOException("Color scale range must be finite and increasing");
         }
         VariantColorScheme scheme = new VariantColorScheme(name);
@@ -339,11 +361,12 @@ public class VariantColorSchemes {
         }
         getUserSchemes();
         userSchemes.remove(scheme);
+        allSchemes = null;
         return true;
     }
 
     /**
-     * Add a scheme to the head of the user list, replacing any scheme already loaded from the same file.
+     * Add a scheme to the user list, replacing any scheme already loaded from the same file.
      */
     private static void register(VariantColorScheme scheme) {
         getUserSchemes();   // ensure loaded before adding
@@ -352,6 +375,7 @@ public class VariantColorSchemes {
         // Same order as a fresh load, so a scheme's precedence does not change at the next restart
         userSchemes.sort(Comparator.comparing(
                 (VariantColorScheme s) -> s.getFile().getName(), String.CASE_INSENSITIVE_ORDER));
+        allSchemes = null;
     }
 
     /**
@@ -452,6 +476,7 @@ public class VariantColorSchemes {
     public static synchronized void reset() {
         userSchemes = null;
         builtinSchemes = null;
-        cacheDirectory = null;
+        allSchemes = null;
+        cacheIgvDirectory = null;
     }
 }

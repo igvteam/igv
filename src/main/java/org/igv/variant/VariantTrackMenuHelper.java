@@ -18,7 +18,6 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.LinkedHashMap;
 import java.util.*;
 import java.util.List;
 
@@ -202,11 +201,9 @@ public class VariantTrackMenuHelper {
     // Package private for testing -- the paths that do not open the dialog are worth covering
     static boolean defineScaleIfNeeded(VariantTrack track, String infoKey) {
 
-        // Any scheme covering the attribute settles it, whether with a scale or with discrete colors -- a user
-        // who wrote discrete colors for a numeric attribute meant it.
-        if (!track.isNumericAttribute(infoKey)
-                || VariantColorSchemes.isCategorical(infoKey)
-                || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
+        // Any scheme covering the attribute settles it -- with a scale, a categorical declaration, or discrete
+        // colors.  A user who wrote discrete colors for a numeric attribute meant it.
+        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
             return true;
         }
 

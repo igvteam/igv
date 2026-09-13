@@ -139,7 +139,7 @@ public class ContinuousColorScale extends AbstractColorScale {
         this.minColor = otherScale.minColor;
         this.midColor = otherScale.midColor;
         this.maxColor = otherScale.maxColor;
-        this.useDoubleGradient = true;
+        this.useDoubleGradient = otherScale.useDoubleGradient;
     }
 
     public void setDefault(boolean defaultCS) {

@@ -22,7 +22,6 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
-import org.igv.ui.color.ColorPalette;
 import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.color.PaletteColorTable;
 import org.igv.ui.IGV;
@@ -42,6 +41,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.igv.prefs.Constants.DEFAULT_VISIBILITY_WINDOW;
@@ -88,22 +88,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * Color for variants with no value for the INFO attribute being colored by.
      */
     private static final Color NO_ATTRIBUTE_VALUE_COLOR = Color.gray;
-
-    /**
-     * Palette for attribute values no color scheme covers.  Matches the default used by igv.js.
-     */
-    private static final String ATTRIBUTE_PALETTE = "Set 1";
-
-    /**
-     * How far apart, in RGB, two attribute colors have to be to count as distinguishable.
-     */
-    private static final int MIN_COLOR_DISTANCE = 60;
-
-    /**
-     * How many generated colors to try before settling for the furthest one found.  Also, therefore, how many
-     * distinct colors an attribute can have before one is repeated.
-     */
-    private static final int MAX_COLOR_ATTEMPTS = 2000;
 
     /**
      * INFO attribute types that can be colored by.
@@ -760,85 +744,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         PaletteColorTable colorTable = getAttributeColorTable(key);
 
         if (!colorTable.getColorMap().containsKey(value.toLowerCase())) {
-            // Always store a color chosen here.  Leaving it to the table would undo the filtering below, as it
+            // Always store a color chosen here.  Leaving it to the table would undo the distance filtering, as it
             // takes palette[size] regardless of whether that entry was skipped as too similar.
-            colorTable.put(value, nextDistinctColor(key, colorTable));
+            List<Color> used = new ArrayList<>(colorTable.getColorMap().values());
+            used.addAll(VariantColorSchemes.getColors(key));
+            colorTable.put(value, DistinctColors.next(used));
         }
         return colorTable.get(value);
-    }
-
-    /**
-     * A color that is neither already assigned for this attribute nor close to a color a scheme uses for it.
-     * Palette colors are preferred; once they are used up or rejected, colors are generated until one is far
-     * enough from everything in use.  Generation is deterministic, so the assignments are reproducible.
-     */
-    private Color nextDistinctColor(String key, PaletteColorTable colorTable) {
-
-        List<Color> used = new ArrayList<>(colorTable.getColorMap().values());
-        used.addAll(VariantColorSchemes.getColors(key));
-
-        ColorPalette palette = ColorUtilities.getPalette(ATTRIBUTE_PALETTE);
-        if (palette != null) {
-            for (Color candidate : palette.getColors()) {
-                if (minDistance(candidate, used) >= MIN_COLOR_DISTANCE) {
-                    return candidate;
-                }
-            }
-        }
-
-        // Walk a non-repeating sequence, keeping the furthest candidate seen.  Policy on exhaustion: the first
-        // candidate at the required distance is returned; failing that, the furthest; a color already in use is
-        // returned only if every one of the MAX_COLOR_ATTEMPTS candidates is -- which needs more distinct colors
-        // in use than there are candidates, since the candidates are pairwise distinct (see generatedColor).
-        Color best = null;
-        double bestDistance = -1;
-
-        for (int i = 0; i < MAX_COLOR_ATTEMPTS; i++) {
-            Color candidate = generatedColor(i);
-            double distance = minDistance(candidate, used);
-            if (distance >= MIN_COLOR_DISTANCE) {
-                return candidate;
-            }
-            if (distance > bestDistance) {
-                best = candidate;
-                bestDistance = distance;
-            }
-        }
-        return best;
-    }
-
-    /**
-     * The i-th color of a sequence that does not repeat: the hue advances by the golden ratio each step, which
-     * never returns to a previous hue, at a few saturation and brightness levels so consecutive candidates
-     * differ in more than hue.  ({@link ColorUtilities#randomColor} is not usable here -- each channel is taken
-     * modulo 215, so it has only 215 distinct colors, after which a search over it can only find duplicates.)
-     */
-    static Color generatedColor(int i) {
-        float hue = (float) ((i * 0.618033988749895) % 1.0);
-        float saturation = SATURATION_LEVELS[i % SATURATION_LEVELS.length];
-        float brightness = BRIGHTNESS_LEVELS[(i / SATURATION_LEVELS.length) % BRIGHTNESS_LEVELS.length];
-        return Color.getHSBColor(hue, saturation, brightness);
-    }
-
-    private static final float[] SATURATION_LEVELS = {0.85f, 0.55f, 1.0f};
-    private static final float[] BRIGHTNESS_LEVELS = {0.85f, 0.65f, 1.0f};
-
-    /**
-     * Distance from a color to the nearest of those already in use, or a large value if none are.
-     */
-    private static double minDistance(Color color, List<Color> used) {
-        double min = Double.MAX_VALUE;
-        for (Color c : used) {
-            min = Math.min(min, distance(color, c));
-        }
-        return min;
-    }
-
-    private static double distance(Color c1, Color c2) {
-        int dr = c1.getRed() - c2.getRed();
-        int dg = c1.getGreen() - c2.getGreen();
-        int db = c1.getBlue() - c2.getBlue();
-        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
     /**
@@ -847,11 +759,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     public void setAttributeColorOverride(String key, String value, Color color) {
         synchronized (attributeColorOverrides) {
-            Map<String, Color> overrides = attributeColorOverrides.computeIfAbsent(key, k -> new LinkedHashMap<>());
+            // Case insensitive, but keeping the spelling first used, so a scheme saved from them reads like the file
+            Map<String, Color> overrides = attributeColorOverrides.computeIfAbsent(key,
+                    k -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
             if (color == null) {
-                overrides.remove(value.toLowerCase());
+                overrides.remove(value);
             } else {
-                overrides.put(value.toLowerCase(), color);
+                overrides.put(value, color);
             }
         }
     }
@@ -866,12 +780,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * @return the colors chosen for values of an INFO attribute, keyed by lower case value.  Never null.
+     * @return a copy of the colors chosen for values of an INFO attribute, keyed by value as first spelled and
+     * looked up case insensitively.  Never null.
      */
     public Map<String, Color> getAttributeColorOverrides(String key) {
         synchronized (attributeColorOverrides) {
+            Map<String, Color> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             Map<String, Color> overrides = attributeColorOverrides.get(key);
-            return overrides == null ? Collections.emptyMap() : new LinkedHashMap<>(overrides);
+            if (overrides != null) {
+                copy.putAll(overrides);
+            }
+            return copy;
         }
     }
 
@@ -882,7 +801,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private Color getAttributeColorOverride(String key, String value) {
         synchronized (attributeColorOverrides) {
             Map<String, Color> overrides = attributeColorOverrides.get(key);
-            return overrides == null ? null : overrides.get(value.toLowerCase());
+            return overrides == null ? null : overrides.get(value);
         }
     }
 
@@ -947,7 +866,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public PaletteColorTable getAttributeColorTable(String key) {
         synchronized (attributeColorTables) {
             return attributeColorTables.computeIfAbsent(key,
-                    k -> new PaletteColorTable(ColorUtilities.getPalette(ATTRIBUTE_PALETTE)));
+                    k -> new PaletteColorTable(ColorUtilities.getPalette(DistinctColors.PALETTE)));
         }
     }
 
@@ -963,22 +882,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             return;     // Colors come from a continuous scale, nothing to assign
         }
 
-        SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-        synchronized (packedFeaturesMap) {
-            for (PackedFeatures<PackedFeature> packedFeatures : packedFeaturesMap.values()) {
-                for (PackedFeature feature : packedFeatures.getFeatures()) {
-                    if (feature instanceof Variant) {
-                        String value = normalizeAttributeValue(((Variant) feature).getAttributeAsString(key));
-                        if (value != null && VariantColorSchemes.getColor(key, value) == null) {
-                            values.add(value);
-                        }
-                    }
-                }
+        for (String value : getAttributeValues(key)) {      // sorted
+            if (VariantColorSchemes.getColor(key, value) == null) {
+                assignPaletteColor(key, value);
             }
         }
-
-        values.forEach(value -> assignPaletteColor(key, value));
     }
 
     /**
@@ -1031,17 +939,29 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
+     * Header cardinality per INFO attribute.  The header does not change, and this is consulted for multi-valued
+     * records on every repaint.
+     */
+    private final Map<String, VCFHeaderLineCount> countTypes = new ConcurrentHashMap<>();
+
+    /**
      * The header's declared cardinality for an attribute, or UNBOUNDED if it is not declared.
      */
     private VCFHeaderLineCount getCountType(String key) {
-        Object header = getHeader();
-        if (header instanceof VCFHeader) {
-            VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
-            if (line != null) {
-                return line.getCountType();
-            }
+
+        VCFHeaderLineCount cached = countTypes.get(key);
+        if (cached != null) {
+            return cached;
         }
-        return VCFHeaderLineCount.UNBOUNDED;
+
+        Object header = getHeader();
+        if (!(header instanceof VCFHeader)) {
+            return VCFHeaderLineCount.UNBOUNDED;    // not cached -- the header may simply not be loaded yet
+        }
+        VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
+        VCFHeaderLineCount count = line == null ? VCFHeaderLineCount.UNBOUNDED : line.getCountType();
+        countTypes.put(key, count);
+        return count;
     }
 
     /**

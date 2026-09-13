@@ -5,9 +5,7 @@ import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
-import org.igv.ui.color.ColorPalette;
 import org.igv.ui.color.ColorSwatch;
-import org.igv.ui.color.ColorUtilities;
 import org.igv.ui.legend.HeatmapLegendEditor;
 import org.igv.ui.util.MessageUtils;
 
@@ -24,10 +22,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Window;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -188,20 +186,15 @@ public class VariantColorSchemeEditor extends JDialog {
     }
 
     /**
-     * A palette color not already used for this attribute, so a new value starts out distinguishable.
+     * A color distinguishable from those the scheme already uses for this attribute, so a new value starts out
+     * looking different -- the same rule a track uses for values no scheme covers.
      */
     private Color nextColor(String key) {
-
-        Collection<Color> used = scheme.getColors(key).values();
-        ColorPalette palette = ColorUtilities.getPalette("Set 1");
-        if (palette != null) {
-            for (Color candidate : palette.getColors()) {
-                if (!used.contains(candidate)) {
-                    return candidate;
-                }
-            }
+        List<Color> used = new ArrayList<>(scheme.getColors(key).values());
+        if (scheme.getDefaultColor(key) != null) {
+            used.add(scheme.getDefaultColor(key));
         }
-        return ColorUtilities.randomColor(used.size());
+        return DistinctColors.next(used);
     }
 
     private JPanel createScalePanel(String key, ContinuousColorScale scale) {
@@ -215,14 +208,11 @@ public class VariantColorSchemeEditor extends JDialog {
 
         JButton edit = new JButton("Edit Scale...");
         edit.addActionListener(e -> {
-            ContinuousColorScale current = (ContinuousColorScale) scheme.getScale(key);
-            HeatmapLegendEditor editor = new HeatmapLegendEditor(
-                    getOwner() instanceof java.awt.Frame ? (java.awt.Frame) getOwner() : null, true, current);
-            editor.setTitle("Color scale for " + key);
-            editor.setVisible(true);
-            if (!editor.isCanceled()) {
-                scheme.setScale(key, editor.getColorScheme());
-                gradient.setScale(editor.getColorScheme());
+            ContinuousColorScale edited = HeatmapLegendEditor.edit(this, "Color scale for " + key,
+                    (ContinuousColorScale) scheme.getScale(key));
+            if (edited != null) {
+                scheme.setScale(key, edited);
+                gradient.setScale(edited);
             }
         });
         panel.add(edit, BorderLayout.EAST);

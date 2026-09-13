@@ -32,7 +32,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -299,7 +301,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
-        assertEquals("7,8,9", json.getJSONObject("colorTable").getString("pathogenic"));
+        assertEquals("7,8,9", json.getJSONObject("colorTable").getString("Pathogenic"));
 
         VariantTrack restored = new VariantTrack();
         restored.unmarshalJSON(json);
@@ -381,12 +383,12 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testCategoricalDeclaration() throws Exception {
-        assertFalse(VariantColorSchemes.isCategorical("DP"));
+        assertFalse(VariantColorSchemes.getKeys().contains("DP"));
 
         VariantColorSchemes.saveScheme("DP colors", "DP", Collections.emptyMap(), true);
         VariantColorSchemes.reset();
 
-        assertTrue(VariantColorSchemes.isCategorical("DP"));
+        assertTrue(VariantColorSchemes.getUserSchemes().get(0).isCategorical("DP"));
         // The key counts as covered, which is what stops the scale dialog reappearing
         assertTrue(VariantColorSchemes.getKeys().contains("DP"));
         assertNull(VariantColorSchemes.getScale("DP"));
@@ -851,7 +853,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         writeScheme("a-categorical.txt", "#name=New categories", "DP\tcategorical", "DP\t7\t1,2,3");
         VariantColorSchemes.reset();
 
-        assertTrue(VariantColorSchemes.isCategorical("DP"));
+        assertTrue(VariantColorSchemes.getUserSchemes().get(0).isCategorical("DP"));
         assertNull("The lower priority scale must not apply", VariantColorSchemes.getScale("DP"));
         assertNull(VariantColorSchemes.getSchemeForScale("DP"));
         assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("DP", "7"));
@@ -962,6 +964,69 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         ContinuousColorScale scale = new ContinuousColorScale(0, 2004, new Color(255, 255, 204), new Color(202, 0, 32));
         VariantColorScheme saved = VariantColorSchemes.saveScale("AC colorscale", "AC", scale);
         assertEquals("AC_colorscale.txt", saved.getFile().getName());
+    }
+
+    /**
+     * Two different schemes that share a file name both survive import -- two labs can each send "colors.txt".
+     * Importing from the same source again refreshes its copy rather than adding another.
+     */
+    @Test
+    public void testImportNameCollisionKeepsBoth() throws Exception {
+
+        File labA = new File(TestUtils.TMP_OUTPUT_DIR, "labA");
+        File labB = new File(TestUtils.TMP_OUTPUT_DIR, "labB");
+        labA.mkdirs();
+        labB.mkdirs();
+        File a = new File(labA, "colors.txt");
+        File b = new File(labB, "colors.txt");
+        try (PrintWriter writer = new PrintWriter(a)) {
+            writer.println("#name=Lab A");
+            writer.println("TIER\t1\t200,0,0");
+        }
+        try (PrintWriter writer = new PrintWriter(b)) {
+            writer.println("#name=Lab B");
+            writer.println("REVIEW\tyes\t0,200,0");
+        }
+
+        VariantColorSchemes.importFile(a);
+        VariantColorSchemes.importFile(b);
+        VariantColorSchemes.reset();
+
+        assertEquals(List.of("colors.txt", "colors_2.txt"), userSchemeFileNames());
+        assertEquals(new Color(200, 0, 0), VariantColorSchemes.getColor("TIER", "1"));
+        assertEquals(new Color(0, 200, 0), VariantColorSchemes.getColor("REVIEW", "yes"));
+
+        try (PrintWriter writer = new PrintWriter(a)) {
+            writer.println("#name=Lab A");
+            writer.println("TIER\t1\t9,9,9");
+        }
+        VariantColorSchemes.importFile(a);
+        VariantColorSchemes.reset();
+
+        assertEquals(List.of("colors.txt", "colors_2.txt"), userSchemeFileNames());
+        assertEquals(new Color(9, 9, 9), VariantColorSchemes.getColor("TIER", "1"));
+    }
+
+    /**
+     * The combined scheme list is resolved for every variant drawn, so it is cached -- and must be rebuilt when
+     * a scheme is added, or new colors would not appear.
+     */
+    @Test
+    public void testSchemeListIsCachedUntilChanged() throws Exception {
+
+        List<VariantColorScheme> first = VariantColorSchemes.getSchemes();
+        assertSame(first, VariantColorSchemes.getSchemes());
+
+        VariantColorSchemes.saveScheme("Mine", "CLNSIG", Map.of("Pathogenic", new Color(1, 2, 3)));
+
+        assertNotSame(first, VariantColorSchemes.getSchemes());
+        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+    }
+
+    private List<String> userSchemeFileNames() {
+        return VariantColorSchemes.getUserSchemes().stream()
+                .map(s -> s.getFile().getName())
+                .collect(Collectors.toList());
     }
 
     private VariantColorScheme builtinFor(String infoKey) {

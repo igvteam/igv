@@ -52,6 +52,18 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     }
 
     /**
+     * Show the editor for a scale, modal over the window holding {@code owner}.
+     *
+     * @return the scale the user accepted, or null if they cancelled
+     */
+    public static ContinuousColorScale edit(Component owner, String title, ContinuousColorScale scale) {
+        HeatmapLegendEditor editor = new HeatmapLegendEditor(JOptionPane.getFrameForComponent(owner), true, scale);
+        editor.setTitle(title);
+        editor.setVisible(true);
+        return editor.isCanceled() ? null : editor.getColorScheme();
+    }
+
+    /**
      * @return true if the user chose the discrete alternative rather than defining a scale.
      */
     public boolean isDiscreteSelected() {

@@ -89,7 +89,6 @@ public class ColorScaleBar extends JPanel {
 
         if (x > minEnd + 4 && x + metrics.stringWidth(label) < maxStart - 4) {
             g2d.drawString(label, x, baseline);
-            g2d.setColor(getForeground());
             g2d.drawLine(centre, BAR_HEIGHT, centre, BAR_HEIGHT + 2);
         }
     }

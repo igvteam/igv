@@ -216,7 +216,7 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     public void testGeneratedColorsDoNotRepeat() {
         java.util.Set<Color> seen = new java.util.HashSet<>();
         for (int i = 0; i < 2000; i++) {
-            assertTrue("Generated color " + i + " repeats an earlier one", seen.add(VariantTrack.generatedColor(i)));
+            assertTrue("Generated color " + i + " repeats an earlier one", seen.add(DistinctColors.generated(i)));
         }
     }
 
@@ -244,6 +244,43 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
             track.getAttributeColor("CLNSIG", "unknown-" + i);
         }
         assertEquals(first, track.getAttributeColor("CLNSIG", "unknown-0"));
+    }
+
+    /**
+     * With every palette color already in use -- as in a scheme being edited -- new colors still keep their
+     * distance and never repeat.  The scheme editor used to fall back to ColorUtilities.randomColor, which has
+     * no distance check and only 215 colors.
+     */
+    @Test
+    public void testNextDistinctColorPastThePalette() {
+
+        List<Color> used = new ArrayList<>(List.of(org.igv.ui.color.ColorUtilities.getPalette("Set 1").getColors()));
+
+        Color first = DistinctColors.next(used);
+        assertTrue(DistinctColors.minDistance(first, used) >= DistinctColors.MIN_DISTANCE);
+
+        for (int i = 0; i < 300; i++) {
+            Color next = DistinctColors.next(used);
+            assertFalse("Color " + i + " repeats one already in use", used.contains(next));
+            used.add(next);
+        }
+    }
+
+    /**
+     * Per-track colors are looked up case insensitively but keep the spelling first used, so a scheme saved from
+     * the legend reads like the file rather than being lowercased.
+     */
+    @Test
+    public void testOverrideKeepsSpelling() {
+
+        track.setAttributeColorOverride("CLNSIG", "Likely_pathogenic", new Color(1, 2, 3));
+        track.setAttributeColorOverride("CLNSIG", "LIKELY_PATHOGENIC", new Color(4, 5, 6));
+
+        assertEquals(java.util.Set.of("Likely_pathogenic"), track.getAttributeColorOverrides("CLNSIG").keySet());
+        assertEquals(new Color(4, 5, 6), track.getAttributeColor("CLNSIG", "likely_pathogenic"));
+
+        track.setAttributeColorOverride("CLNSIG", "likely_Pathogenic", null);
+        assertTrue(track.getAttributeColorOverrides("CLNSIG").isEmpty());
     }
 
     private static double distance(Color c1, Color c2) {

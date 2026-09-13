@@ -195,7 +195,7 @@ public class VariantColorScheme {
      * NaN and infinity parse as numbers, and "max <= min" is false for NaN, so an explicit check is needed.  A
      * scale accepted here but rejected on reload would be active until the next restart and then vanish.
      */
-    private static boolean isUsableRange(double min, double max) {
+    static boolean isUsableRange(double min, double max) {
         return Double.isFinite(min) && Double.isFinite(max) && max > min;
     }
 
@@ -335,6 +335,16 @@ public class VariantColorScheme {
         keys.addAll(scales.keySet());
         keys.addAll(categoricalKeys);
         return keys;
+    }
+
+    /**
+     * @return true if this scheme covers the attribute at all -- getKeys().contains(key) without building a set,
+     * as it is asked for every variant drawn.
+     * @param upperCaseKey the INFO key, already upper case
+     */
+    boolean covers(String upperCaseKey) {
+        return colors.containsKey(upperCaseKey) || defaultColors.containsKey(upperCaseKey)
+                || scales.containsKey(upperCaseKey) || categoricalKeys.contains(upperCaseKey);
     }
 
     /**

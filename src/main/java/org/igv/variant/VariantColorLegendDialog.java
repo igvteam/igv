@@ -74,7 +74,6 @@ public class VariantColorLegendDialog extends JDialog {
         saveButton.setToolTipText("Save these colors so they apply to every VCF with this attribute");
         saveButton.addActionListener(e -> saveAsScheme());
 
-        JButton resetButton = this.resetButton;
         resetButton.setToolTipText("Discard the colors chosen for this track");
         resetButton.addActionListener(e -> {
             track.clearAttributeColorOverrides(infoKey);
@@ -123,9 +122,7 @@ public class VariantColorLegendDialog extends JDialog {
             return;
         }
 
-        Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        values.addAll(track.getAttributeValues(infoKey));
-        values.addAll(track.getAttributeColorOverrides(infoKey).keySet());
+        Set<String> values = valuesToShow();
 
         if (values.isEmpty()) {
             JLabel empty = new JLabel("No variants in view have a value for " + infoKey + ".");
@@ -143,6 +140,17 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
+     * The values to list: those in view, plus any this track has a color for, which may have scrolled out of
+     * view.  Sorted case insensitively, keeping the spelling seen in view.
+     */
+    private Set<String> valuesToShow() {
+        Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        values.addAll(track.getAttributeValues(infoKey));
+        values.addAll(track.getAttributeColorOverrides(infoKey).keySet());
+        return values;
+    }
+
+    /**
      * A numeric attribute is colored by a scale rather than by value, so the legend is the gradient itself.
      */
     private JPanel createScaleRow(AbstractColorScale scale) {
@@ -152,7 +160,9 @@ public class VariantColorLegendDialog extends JDialog {
 
         double[] range = track.getAttributeRange(infoKey);
         JLabel label = new JLabel(range == null ? "Colored by a scale" :
-                String.format("Values in view: %s to %s", format(range[0]), format(range[1])));
+                String.format("Values in view: %s to %s",
+                        ColorScaleBar.format(range[0], range[1] - range[0]),
+                        ColorScaleBar.format(range[1], range[1] - range[0])));
         panel.add(label, BorderLayout.NORTH);
 
         panel.add(new ColorScaleBar(scale instanceof ContinuousColorScale ? (ContinuousColorScale) scale : null, 340),
@@ -160,10 +170,6 @@ public class VariantColorLegendDialog extends JDialog {
 
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
         return panel;
-    }
-
-    private static String format(double d) {
-        return d == Math.rint(d) ? String.valueOf((long) d) : String.valueOf(d);
     }
 
     private JPanel createRow(String value) {
@@ -192,7 +198,7 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     private String colorOrigin(String value) {
-        if (track.getAttributeColorOverrides(infoKey).containsKey(value.toLowerCase())) {
+        if (track.getAttributeColorOverrides(infoKey).containsKey(value)) {
             return "(this track)";
         }
         for (VariantColorScheme scheme : VariantColorSchemes.getSchemes()) {
@@ -214,11 +220,9 @@ public class VariantColorLegendDialog extends JDialog {
             return;
         }
 
-        HeatmapLegendEditor editor = new HeatmapLegendEditor(getOwner() instanceof Frame ? (Frame) getOwner() : null,
-                true, (ContinuousColorScale) scale);
-        editor.setTitle("Color scale for " + infoKey);
-        editor.setVisible(true);
-        if (editor.isCanceled()) {
+        ContinuousColorScale edited =
+                HeatmapLegendEditor.edit(this, "Color scale for " + infoKey, (ContinuousColorScale) scale);
+        if (edited == null) {
             return;
         }
 
@@ -227,7 +231,7 @@ public class VariantColorLegendDialog extends JDialog {
         if (updated.isBuiltIn()) {
             updated.setName(infoKey + " colorscale");
         }
-        updated.setScale(infoKey, editor.getColorScheme());
+        updated.setScale(infoKey, edited);
 
         try {
             VariantColorSchemes.save(updated);
@@ -246,12 +250,8 @@ public class VariantColorLegendDialog extends JDialog {
             return;
         }
 
-        Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        values.addAll(track.getAttributeValues(infoKey));
-        values.addAll(track.getAttributeColorOverrides(infoKey).keySet());
-
         Map<String, Color> colors = new LinkedHashMap<>();
-        for (String value : values) {
+        for (String value : valuesToShow()) {
             colors.put(value, track.getAttributeColor(infoKey, value));
         }
 
