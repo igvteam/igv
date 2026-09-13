@@ -839,7 +839,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     /**
      * Return the distinct values of an INFO attribute among the currently loaded features, sorted.  This is what
-     * the color legend shows -- the values the user can actually see.
+     * the color legend shows, and what the scale editor's range and palette color seeding are taken from.
+     * <p>
+     * "Loaded" means the features packed for display in each current frame: for a track with a visibility window,
+     * the visible range plus half its width either side (see FeatureTrack.loadFeatures), not the whole file.  The
+     * user is told "loaded features" rather than "in view", as that is wider than what is on screen.
      */
     public SortedSet<String> getAttributeValues(String key) {
 

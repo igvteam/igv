@@ -210,15 +210,15 @@ public class VariantTrackMenuHelper {
         double[] range = track.getAttributeRange(infoKey);
 
         if (range == null && track.getAttributeValues(infoKey).isEmpty()) {
-            // Nothing in view to judge by.  Coloring by value anyway would quietly treat a quantity as a
-            // category and record nothing, so the same click would behave differently after navigating.  Leave
-            // the selection alone and say why.
-            MessageUtils.showMessage("No values for " + infoKey + " in the current view.  Move to a region where "
+            // Nothing loaded to judge by.  Coloring by value anyway would quietly treat a quantity as a category
+            // and record nothing, so the same click would behave differently after navigating.  Leave the
+            // selection alone and say why.
+            MessageUtils.showMessage("No loaded features have a value for " + infoKey + ".  Move to a region where "
                     + infoKey + " has values and choose it again, or import a color scheme for " + infoKey + ".");
             return false;
         }
 
-        // Values are in view.  Prefill the range from them when they are numeric; when they are not -- every
+        // Values are loaded.  Prefill the range from them when they are numeric; when they are not -- every
         // record multi-valued, say -- still ask, rather than deciding the attribute is categorical unasked.
         ContinuousColorScale scale = range == null
                 ? new ContinuousColorScale(0, 1, DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR)
@@ -256,7 +256,7 @@ public class VariantTrackMenuHelper {
     }
 
     /**
-     * Record that a numeric attribute holds categories, by saving a scheme with a color per value in view.  The
+     * Record that a numeric attribute holds categories, by saving a scheme with a color per loaded value.  The
      * scheme is what stops the scale dialog reappearing, and the colors are then editable from the legend and
      * shareable like any other.  Values seen later still get colors from the palette.
      */
@@ -268,7 +268,7 @@ public class VariantTrackMenuHelper {
         }
 
         try {
-            // The declaration persists the answer even when no values are in view to color
+            // The declaration persists the answer even when no values are loaded to color
             VariantColorSchemes.saveScheme(infoKey + " colors", infoKey, colors, true);
             return true;
         } catch (Exception e) {

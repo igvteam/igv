@@ -106,7 +106,7 @@ public class VariantColorLegendDialog extends JDialog {
 
         AbstractColorScale scale = VariantColorSchemes.getScale(infoKey);
 
-        description.setText("<html>Values of <b>" + infoKey + "</b> in the current view.  "
+        description.setText("<html>Values of <b>" + infoKey + "</b> among the loaded features.  "
                 + (scale == null ? "Click a color to change it for this track." : "Colored by a scale."));
 
         editScaleButton.setVisible(scale instanceof ContinuousColorScale);
@@ -124,7 +124,7 @@ public class VariantColorLegendDialog extends JDialog {
         Set<String> values = valuesToShow();
 
         if (values.isEmpty()) {
-            JLabel empty = new JLabel("No variants in view have a value for " + infoKey + ".");
+            JLabel empty = new JLabel("No loaded features have a value for " + infoKey + ".");
             empty.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             valuePanel.add(empty);
         } else {
@@ -139,11 +139,11 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * The values to list, and to write on "Save as Scheme": those in view, plus any the user chose a color for
-     * on this track, which may have scrolled out of view.  Sorted case insensitively, keeping the spelling seen
-     * in view.
+     * The values to list, and to write on "Save as Scheme": those among the loaded features (see
+     * {@link VariantTrack#getAttributeValues}), plus any the user chose a color for on this track, which may no
+     * longer be loaded.  Sorted case insensitively, keeping the spelling seen in the loaded features.
      * <p>
-     * Colors IGV assigned from the palette to values that have scrolled out of view are deliberately left out.
+     * Colors IGV assigned from the palette to values that are no longer loaded are deliberately left out.
      * That table grows with every value ever drawn -- thousands, for an attribute like a gene name -- and keys
      * it by lower case value.  The assignments are not lost: the track keeps them, they are saved in sessions,
      * and they come back when the values do.
@@ -165,7 +165,7 @@ public class VariantColorLegendDialog extends JDialog {
 
         double[] range = track.getAttributeRange(infoKey);
         JLabel label = new JLabel(range == null ? "Colored by a scale" :
-                String.format("Values in view: %s to %s",
+                String.format("Values in loaded features: %s to %s",
                         ColorScaleBar.format(range[0], range[1] - range[0]),
                         ColorScaleBar.format(range[1], range[1] - range[0])));
         panel.add(label, BorderLayout.NORTH);

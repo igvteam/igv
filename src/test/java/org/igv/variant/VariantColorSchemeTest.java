@@ -263,7 +263,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         track.getFeatures("chr1", 0, 1000);
         track.setColorByAttribute("CLNSIG");
 
-        // getFeatures does not pack features into the render cache, so nothing is "in view" until it does
+        // getFeatures does not pack features into the render cache, so nothing counts as loaded until it does
         assertTrue(track.getAttributeValues("CLNSIG").isEmpty());
 
         track.setAttributeColorOverride("CLNSIG", "Pathogenic", Color.red);
@@ -379,7 +379,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
     /**
      * The answer to "is this numeric attribute categorical?" is stored in the scheme, so it is asked once.  It
-     * has to be stored as a declaration, not merely as colors -- there may be no values in view to color.
+     * has to be stored as a declaration, not merely as colors -- there may be no values loaded to color.
      */
     @Test
     public void testCategoricalDeclaration() throws Exception {
@@ -638,7 +638,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * With nothing in view there is no evidence about whether a numeric attribute is a quantity or a code.
+     * With nothing loaded there is no evidence about whether a numeric attribute is a quantity or a code.
      * Coloring by value anyway would treat a quantity as a category and record nothing, so the same click would
      * behave differently once the user moved to a region with data.
      */
