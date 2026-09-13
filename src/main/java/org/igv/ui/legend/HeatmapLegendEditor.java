@@ -62,7 +62,7 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
         doubleGradientCheckbox.setSelected(colorScheme.isUseDoubleGradient());
         negRangeStart.setText(String.valueOf(colorScheme.getNegStart()));
         negRangeEnd.setText(String.valueOf(getColorScheme().getMinimum()));
-        posRangeStart.setText(String.valueOf(colorScheme.getPosStart()));
+        posRangeStart.setText(String.valueOf(visibleRangeStart(colorScheme)));
         posRangeEnd.setText(String.valueOf(colorScheme.getMaximum()));
         minColor.setSelectedColor(colorScheme.getMinColor());
         maxColor.setSelectedColor(colorScheme.getMaxColor());
@@ -109,6 +109,15 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
 
     public ContinuousColorScale getColorScheme() {
         return colorScheme;
+    }
+
+    /**
+     * The value shown in the visible "Range" start field.  For a double gradient that is the start of the
+     * positive range.  A single gradient has no positive range -- its posStart is fixed at max(0, minimum) --
+     * so showing that would turn a -10..10 scale into 0..10 on an unedited OK.
+     */
+    static double visibleRangeStart(ContinuousColorScale scale) {
+        return scale.isUseDoubleGradient() ? scale.getPosStart() : scale.getMinimum();
     }
 
     /**

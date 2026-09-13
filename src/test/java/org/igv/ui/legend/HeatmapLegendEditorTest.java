@@ -50,6 +50,33 @@ public class HeatmapLegendEditorTest {
     }
 
     /**
+     * Opening a -10..10 single gradient and pressing OK without edits must save -10..10.  A single gradient's
+     * posStart is fixed at max(0, minimum), so filling the visible start field from it saved 0..10.
+     */
+    @Test
+    public void testUneditedSingleGradientRoundTrips() {
+        ContinuousColorScale scale = new ContinuousColorScale(-10, 10, MIN, MAX);
+        assertEquals(0.0, scale.getPosStart(), 1e-9);    // the field the old code read
+
+        double start = HeatmapLegendEditor.visibleRangeStart(scale);
+        assertEquals(-10.0, start, 1e-9);
+
+        ContinuousColorScale saved = HeatmapLegendEditor.buildScale(false, scale.getNegStart(),
+                scale.getMinimum(), start, scale.getMaximum(), MIN, MID, MAX);
+        assertEquals(-10.0, saved.getMinimum(), 1e-9);
+        assertEquals(10.0, saved.getMaximum(), 1e-9);
+    }
+
+    /**
+     * A double gradient still shows the start of its positive range.
+     */
+    @Test
+    public void testDoubleGradientVisibleStart() {
+        ContinuousColorScale scale = new ContinuousColorScale(-2, -10, 2, 10, MIN, MID, MAX);
+        assertEquals(2.0, HeatmapLegendEditor.visibleRangeStart(scale), 1e-9);
+    }
+
+    /**
      * Reversed entries are ordered rather than producing an inverted scale.
      */
     @Test

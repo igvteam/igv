@@ -23,8 +23,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -117,10 +119,25 @@ public class VariantColorSchemes {
      * attributes are only colorable if a scheme gives them a range -- there is no sensible default.
      */
     public static AbstractColorScale getScale(String infoKey) {
+        VariantColorScheme scheme = getSchemeFor(infoKey);
+        return scheme == null ? null : scheme.getScale(infoKey);
+    }
+
+    /**
+     * The highest priority scheme covering an attribute, or null.  Whether an attribute is a scale or a set
+     * of categories is decided by this one scheme: a scheme that declares it categorical, or lists discrete
+     * colors for it, must not be overridden by a scale in a lower priority scheme.  (Discrete colors are
+     * different -- a scheme that lists some values does not claim the rest, so those fall through, see
+     * {@link #getColor}.)
+     */
+    private static VariantColorScheme getSchemeFor(String infoKey) {
+        if (infoKey == null) {
+            return null;
+        }
+        String key = infoKey.toUpperCase();
         for (VariantColorScheme scheme : getSchemes()) {
-            AbstractColorScale scale = scheme.getScale(infoKey);
-            if (scale != null) {
-                return scale;
+            if (scheme.getKeys().contains(key)) {
+                return scheme;
             }
         }
         return null;
@@ -142,12 +159,8 @@ public class VariantColorSchemes {
      * @return the scheme providing the color scale for an INFO attribute, or null if none does.
      */
     public static VariantColorScheme getSchemeForScale(String infoKey) {
-        for (VariantColorScheme scheme : getSchemes()) {
-            if (scheme.getScale(infoKey) != null) {
-                return scheme;
-            }
-        }
-        return null;
+        VariantColorScheme scheme = getSchemeFor(infoKey);
+        return scheme != null && scheme.getScale(infoKey) != null ? scheme : null;
     }
 
     /**
@@ -369,6 +382,10 @@ public class VariantColorSchemes {
         if (files == null) {
             return schemes;
         }
+
+        // listFiles() order is unspecified.  Sort so that when two schemes cover the same attribute the winner
+        // is the same after every restart, and can be worked out from the file names.
+        Arrays.sort(files, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
 
         for (File file : files) {
             if (file.isDirectory() || file.isHidden()) {

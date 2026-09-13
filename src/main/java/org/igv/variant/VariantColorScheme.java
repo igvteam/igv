@@ -188,8 +188,14 @@ public class VariantColorScheme {
         }
 
         ContinuousColorScale continuous = (ContinuousColorScale) scale;
-        double min = continuous.getMinimum();
-        double max = continuous.getMaximum();
+        return isUsableRange(continuous.getMinimum(), continuous.getMaximum());
+    }
+
+    /**
+     * NaN and infinity parse as numbers, and "max <= min" is false for NaN, so an explicit check is needed.  A
+     * scale accepted here but rejected on reload would be active until the next restart and then vanish.
+     */
+    private static boolean isUsableRange(double min, double max) {
         return Double.isFinite(min) && Double.isFinite(max) && max > min;
     }
 
@@ -238,8 +244,8 @@ public class VariantColorScheme {
             double min = Double.parseDouble(parts[0].trim());
             double max = Double.parseDouble(parts[1].trim());
 
-            if (max <= min) {
-                log.warn("Skipping color scheme row, a range must increase: " + String.join("\t", tokens));
+            if (!isUsableRange(min, max)) {
+                log.warn("Skipping color scheme row, a range must be finite and increase: " + String.join("\t", tokens));
                 return;
             }
 

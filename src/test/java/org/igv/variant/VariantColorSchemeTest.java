@@ -819,6 +819,76 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
                 VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
     }
 
+    /**
+     * NaN and infinity parse as numbers and slip past "max <= min".  The legacy range row must apply the same
+     * finite check as a serialized scale, or a scheme is active until restart and then silently gone.
+     */
+    @Test
+    public void testRangeRowRejectsNonFinite() throws Exception {
+        String contents = String.join("\n",
+                "NAN\t0:NaN\t255,255,204\t202,0,32",
+                "INF\t0:Infinity\t255,255,204\t202,0,32",
+                "NEGINF\t-Infinity:0\t255,255,204\t202,0,32",
+                "GOOD\t0:40\t255,255,204\t202,0,32",
+                "");
+        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
+
+        assertNull(scheme.getScale("NAN"));
+        assertNull(scheme.getScale("INF"));
+        assertNull(scheme.getScale("NEGINF"));
+        assertNotNull(scheme.getScale("GOOD"));
+    }
+
+    /**
+     * Whether an attribute is a scale or a set of categories is decided by the highest priority scheme that
+     * covers it.  A categorical declaration imported later must beat an older scale, not merely sit beside it
+     * while rendering keeps using the scale.
+     */
+    @Test
+    public void testCategoricalOverridesLowerPriorityScale() throws Exception {
+        // Built in order is by file name, so "a-" sorts ahead of "b-"
+        writeScheme("b-scale.txt", "#name=Old scale", "DP\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
+        writeScheme("a-categorical.txt", "#name=New categories", "DP\tcategorical", "DP\t7\t1,2,3");
+        VariantColorSchemes.reset();
+
+        assertTrue(VariantColorSchemes.isCategorical("DP"));
+        assertNull("The lower priority scale must not apply", VariantColorSchemes.getScale("DP"));
+        assertNull(VariantColorSchemes.getSchemeForScale("DP"));
+        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("DP", "7"));
+
+        // Rendering agrees with the declaration
+        VariantTrack track = new VariantTrack();
+        track.setColorByAttribute("DP");
+        assertEquals(new Color(1, 2, 3), track.getAttributeColor("DP", "7"));
+    }
+
+    /**
+     * Discrete colors still fall through per value: a scheme listing some values does not claim the others.
+     */
+    @Test
+    public void testDiscreteColorsStillFallThrough() throws Exception {
+        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+        VariantColorSchemes.reset();
+
+        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+        assertEquals(new Color(5, 113, 176), VariantColorSchemes.getColor("CLNSIG", "Benign"));
+    }
+
+    /**
+     * Two user schemes covering the same attribute resolve the same way after every restart: by file name.
+     * (listFiles() order is unspecified, so without sorting this is a coin toss.)
+     */
+    @Test
+    public void testUserSchemeOrderIsByFileName() throws Exception {
+        writeScheme("zebra.txt", "CLNSIG\tPathogenic\t9,9,9");
+        writeScheme("apple.txt", "CLNSIG\tPathogenic\t1,1,1");
+        VariantColorSchemes.reset();
+
+        assertEquals(List.of("apple", "zebra"),
+                VariantColorSchemes.getUserSchemes().stream().map(VariantColorScheme::getName).collect(Collectors.toList()));
+        assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
+    }
+
     private VariantColorScheme builtinFor(String infoKey) {
         return VariantColorSchemes.getBuiltinSchemes().stream()
                 .filter(s -> s.getKeys().contains(infoKey))
