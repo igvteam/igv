@@ -343,8 +343,10 @@ public static synchronized VariantColorScheme saveScale(String name, String info
      */
     private static void register(VariantColorScheme scheme) {
         getUserSchemes();   // ensure loaded before adding
-        userSchemes.removeIf(s -> scheme.getFile().equals(s.getFile()));
-        userSchemes.add(0, scheme);
+userSchemes.removeIf(s -> scheme.getFile().equals(s.getFile()));
+        userSchemes.add(scheme);
+        userSchemes.sort(Comparator.comparing(
+                (VariantColorScheme s) -> s.getFile().getName(), String.CASE_INSENSITIVE_ORDER));
     }
 
     /**
