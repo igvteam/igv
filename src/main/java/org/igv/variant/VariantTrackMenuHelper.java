@@ -49,6 +49,13 @@ public class VariantTrackMenuHelper {
     private static final int INFO_FIELD_GROUP_SIZE = 20;
 
     /**
+     * Most distinct values an attribute can have and still be colored by category.  Colors stop being
+     * distinguishable, or useful, in the tens of values; past this the legend is unusable and the palette would
+     * be handing out hundreds of colors.
+     */
+    static final int MAX_CATEGORICAL_VALUES = 500;
+
+    /**
      * Return menu items for the variant track popup menu.
      */
     static List<Component> getMenuItems(final VariantTrack variantTrack, final Variant variant, TrackClickEvent e) {
@@ -182,7 +189,7 @@ public class VariantTrackMenuHelper {
             item.setToolTipText(description);
         }
         item.addActionListener(evt -> {
-            if (defineScaleIfNeeded(track, id)) {
+            if (defineScaleIfNeeded(track, id) && isWithinCategoryLimit(track, id)) {
                 track.setColorByAttribute(id);
                 IGV.getInstance().getContentPane().repaint();
             }
@@ -249,6 +256,30 @@ public class VariantTrackMenuHelper {
     }
 
     /**
+     * An attribute colored by category may have at most MAX_CATEGORICAL_VALUES distinct values among the loaded
+     * features; if it has more, say so and leave the track's coloring alone.  An attribute colored by a scale has
+     * no limit -- a depth or a frequency can take any number of values.
+     *
+     * @return true if the track can be colored by this attribute
+     */
+    // Package private for testing
+    static boolean isWithinCategoryLimit(VariantTrack track, String infoKey) {
+
+        if (VariantColorSchemes.getScale(infoKey) != null) {
+            return true;
+        }
+
+        int count = track.getAttributeValues(infoKey).size();
+        if (count <= MAX_CATEGORICAL_VALUES) {
+            return true;
+        }
+
+        MessageUtils.showMessage("Color by is not available for attributes with more than " + MAX_CATEGORICAL_VALUES
+                + " distinct values.  " + infoKey + " has " + count + " among the loaded features.");
+        return false;
+    }
+
+    /**
      * A scale over a single repeated value has nothing to shade across, so give it somewhere to go.
      */
     private static double rangeEnd(double[] range) {
@@ -261,6 +292,11 @@ public class VariantTrackMenuHelper {
      * shareable like any other.  Values seen later still get colors from the palette.
      */
     private static boolean saveDiscreteScheme(VariantTrack track, String infoKey) {
+
+        // Checked before writing anything, so an attribute over the limit does not leave a scheme behind
+        if (!isWithinCategoryLimit(track, infoKey)) {
+            return false;
+        }
 
         Map<String, Color> colors = new LinkedHashMap<>();
         for (String value : track.getAttributeValues(infoKey)) {

@@ -8,6 +8,7 @@ import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.TrackLoader;
+import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.json.JSONObject;
@@ -1057,6 +1058,47 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         return VariantColorSchemes.getUserSchemes().stream()
                 .map(s -> s.getFile().getName())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Coloring by category is refused above MAX_CATEGORICAL_VALUES distinct values among the loaded features --
+     * colors are not distinguishable, or useful, long before that.  A scale has no such limit.
+     */
+    @Test
+    public void testCategoryLimit() throws Exception {
+
+        int n = VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES + 1;
+
+        File vcf = new File(TestUtils.TMP_OUTPUT_DIR, "many_values.vcf");
+        try (PrintWriter writer = new PrintWriter(vcf)) {
+            writer.println("##fileformat=VCFv4.2");
+            writer.println("##contig=<ID=chr1,length=8033585>");
+            writer.println("##INFO=<ID=NAME,Number=1,Type=String,Description=\"A different value on every record\">");
+            writer.println("##INFO=<ID=DEPTH,Number=1,Type=Integer,Description=\"A different depth on every record\">");
+            writer.println("##INFO=<ID=KIND,Number=1,Type=String,Description=\"One of three values\">");
+            writer.println("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO");
+            for (int i = 0; i < n; i++) {
+                writer.println("chr1\t" + (1000 + i * 10) + "\t.\tA\tC\t100\t.\tNAME=v" + i + ";DEPTH=" + i + ";KIND=k" + (i % 3));
+            }
+        }
+        TestUtils.createIndex(vcf.getAbsolutePath());
+        VariantTrack track = (VariantTrack) (new TrackLoader()).load(new ResourceLocator(vcf.getAbsolutePath()), genome).get(0);
+
+        // Pack the records the way drawing would, so they count as loaded
+        ReferenceFrame frame = new ReferenceFrame("test");
+        frame.setBounds(0, 1000);
+        frame.jumpTo("chr1", 900, 1000 + n * 10 + 100);
+        track.load(frame);
+        assertEquals(n, track.getAttributeValues("NAME").size());
+
+        assertFalse("Over the limit, coloring by category is refused",
+                VariantTrackMenuHelper.isWithinCategoryLimit(track, "NAME"));
+        assertTrue(VariantTrackMenuHelper.isWithinCategoryLimit(track, "KIND"));
+
+        // A scale takes any number of values
+        writeScheme("depth.txt", "DEPTH\tContinuousColorScale;0.0;600.0;255,255,204;202,0,32");
+        VariantColorSchemes.reset();
+        assertTrue(VariantTrackMenuHelper.isWithinCategoryLimit(track, "DEPTH"));
     }
 
     private VariantColorScheme builtinFor(String infoKey) {
