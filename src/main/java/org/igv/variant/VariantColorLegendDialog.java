@@ -98,8 +98,7 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * Build a row per value -- the values in view, plus any the user has already assigned a color to, which may
-     * have scrolled out of view.
+     * Build a row per value -- see {@link #valuesToShow()}.
      */
     private void populate() {
 
@@ -140,8 +139,14 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * The values to list: those in view, plus any this track has a color for, which may have scrolled out of
-     * view.  Sorted case insensitively, keeping the spelling seen in view.
+     * The values to list, and to write on "Save as Scheme": those in view, plus any the user chose a color for
+     * on this track, which may have scrolled out of view.  Sorted case insensitively, keeping the spelling seen
+     * in view.
+     * <p>
+     * Colors IGV assigned from the palette to values that have scrolled out of view are deliberately left out.
+     * That table grows with every value ever drawn -- thousands, for an attribute like a gene name -- and keys
+     * it by lower case value.  The assignments are not lost: the track keeps them, they are saved in sessions,
+     * and they come back when the values do.
      */
     private Set<String> valuesToShow() {
         Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
