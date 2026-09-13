@@ -644,6 +644,44 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
+     * "Number=A" and "Number=R" attributes carry one value per allele, so a multi-allelic record arrives as a
+     * comma separated list.  Parsing the whole string as one number fails, which would render every such record
+     * missing-gray even with a scale defined.
+     */
+    @Test
+    public void testMultiValuedNumericAttribute() throws Exception {
+        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
+        VariantColorSchemes.reset();
+
+        VariantTrack track = new VariantTrack();
+        track.setColorByAttribute("AF");
+
+        Color expected = track.getAttributeColor("AF", "0.2");          // the largest of the pair
+        assertEquals(expected, track.getAttributeColor("AF", "0.1,0.2"));
+        assertEquals(expected, track.getAttributeColor("AF", "0.2,0.1"));
+
+        // A missing element does not make the whole record unusable
+        assertEquals(expected, track.getAttributeColor("AF", "0.2,."));
+        assertEquals(expected, track.getAttributeColor("AF", ".,0.2"));
+
+        assertNotEquals(Color.gray, track.getAttributeColor("AF", "0.1,0.2"));
+    }
+
+    /**
+     * The largest value is taken, so a per allele list can never run off the end of the scale.
+     */
+    @Test
+    public void testNumericValueAggregation() {
+        assertEquals(0.2, VariantTrack.numericValue("0.1,0.2"), 1e-9);
+        assertEquals(0.2, VariantTrack.numericValue("0.2"), 1e-9);
+        assertEquals(-1.0, VariantTrack.numericValue("-3,-1"), 1e-9);
+        assertEquals(5.0, VariantTrack.numericValue(".,5"), 1e-9);
+        assertNull(VariantTrack.numericValue("."));
+        assertNull(VariantTrack.numericValue("Pathogenic"));
+        assertNull(VariantTrack.numericValue(null));
+    }
+
+    /**
      * An attribute a scheme already covers is never asked about again.
      */
     @Test

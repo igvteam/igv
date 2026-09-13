@@ -739,11 +739,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         AbstractColorScale scale = VariantColorSchemes.getScale(key);
         if (scale != null) {
-            try {
-                return scale.getColor(Float.parseFloat(value));
-            } catch (NumberFormatException e) {
-                return NO_ATTRIBUTE_VALUE_COLOR;
-            }
+            Double number = numericValue(value);
+            return number == null ? NO_ATTRIBUTE_VALUE_COLOR : scale.getColor(number.floatValue());
         }
 
         Color color = VariantColorSchemes.getColor(key, value);
@@ -876,12 +873,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         double max = -Double.MAX_VALUE;
 
         for (String value : getAttributeValues(key)) {
-            try {
-                double d = Double.parseDouble(value);
-                min = Math.min(min, d);
-                max = Math.max(max, d);
-            } catch (NumberFormatException e) {
-                // Not all values of a numeric attribute parse -- "." and multi-valued entries, for example
+            Double number = numericValue(value);
+            if (number != null) {
+                min = Math.min(min, number);
+                max = Math.max(max, number);
             }
         }
 
@@ -949,6 +944,37 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
 
         values.forEach(value -> assignPaletteColor(key, value));
+    }
+
+    /**
+     * The number to color a variant by, for an attribute colored by a scale.  Null if the value holds no number.
+     * <p>
+     * A "Number=A" or "Number=R" attribute carries one value per allele, so a multi-allelic record arrives here
+     * as a comma separated list.  The largest is used: for a score it is the most severe allele, which is what
+     * the eye should be drawn to, and for a frequency it is the most common alternate allele.  Note this is not
+     * the same choice as the separate "Allele Frequency" color mode, which sums the alternate frequencies --
+     * summing scores would run off the end of the scale.  Elements that are not numbers, such as the missing
+     * marker, are skipped rather than making the whole value unusable.
+     */
+    static Double numericValue(String value) {
+
+        if (value == null) {
+            return null;
+        }
+
+        double max = -Double.MAX_VALUE;
+        boolean found = false;
+
+        for (String part : value.split(",")) {
+            try {
+                max = Math.max(max, Double.parseDouble(part.trim()));
+                found = true;
+            } catch (NumberFormatException e) {
+                // One unusable element does not make the record unusable
+            }
+        }
+
+        return found ? max : null;
     }
 
     /**
