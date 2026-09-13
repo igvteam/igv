@@ -223,9 +223,9 @@ public class VariantColorLegendDialog extends JDialog {
         }
 
         VariantColorScheme existing = VariantColorSchemes.getSchemeForScale(infoKey);
-        VariantColorScheme updated = existing == null ? new VariantColorScheme(infoKey + " scale") : existing.copy();
+        VariantColorScheme updated = existing == null ? new VariantColorScheme(infoKey + " colorscale") : existing.copy();
         if (updated.isBuiltIn()) {
-            updated.setName(infoKey + " scale");
+            updated.setName(infoKey + " colorscale");
         }
         updated.setScale(infoKey, editor.getColorScheme());
 

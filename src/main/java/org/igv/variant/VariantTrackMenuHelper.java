@@ -242,7 +242,7 @@ public class VariantTrackMenuHelper {
         }
 
         try {
-            VariantColorSchemes.saveScale(infoKey + " scale", infoKey, editor.getColorScheme());
+            VariantColorSchemes.saveScale(infoKey + " colorscale", infoKey, editor.getColorScheme());
             return true;
         } catch (Exception e) {
             log.error("Error saving color scale for " + infoKey, e);

@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -433,10 +432,13 @@ public class VariantColorSchemes {
     }
 
     /**
-     * Encode a scheme name so it can be used as a file name, as gene lists do.
+     * Turn a scheme name into a file name: "AC colorscale" becomes "AC_colorscale".  Anything outside letters,
+     * digits, dot and dash is replaced with an underscore, runs collapsed and ends trimmed, so the name reads
+     * back plainly in a directory listing.  (URL encoding, which gene lists use, gave "AC+scale".)
      */
-    private static String getLegalFileName(String name) {
-        return URLEncoder.encode(name, StandardCharsets.UTF_8);
+    static String getLegalFileName(String name) {
+        String legal = name.trim().replaceAll("[^A-Za-z0-9.\\-]+", "_").replaceAll("^_+|_+$", "");
+        return legal.isEmpty() ? "scheme" : legal;
     }
 
     private static String stripExtension(String fileName) {

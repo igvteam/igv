@@ -947,6 +947,23 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
                 java.lang.reflect.Modifier.isSynchronized(importUrl.getModifiers()));
     }
 
+    /**
+     * Saved scheme files are named after the scheme, in a form that reads plainly in a directory listing.
+     */
+    @Test
+    public void testFileNameFromSchemeName() throws Exception {
+        assertEquals("AC_colorscale", VariantColorSchemes.getLegalFileName("AC colorscale"));
+        assertEquals("CLNSIG_colors", VariantColorSchemes.getLegalFileName("CLNSIG colors"));
+        assertEquals("ClinVar_significance_edited", VariantColorSchemes.getLegalFileName("ClinVar significance (edited)"));
+        assertEquals("a_b_c", VariantColorSchemes.getLegalFileName("a/b:c"));
+        assertEquals("gnomAD.v4-AF", VariantColorSchemes.getLegalFileName("gnomAD.v4-AF"));
+        assertEquals("scheme", VariantColorSchemes.getLegalFileName("  ?? "));
+
+        ContinuousColorScale scale = new ContinuousColorScale(0, 2004, new Color(255, 255, 204), new Color(202, 0, 32));
+        VariantColorScheme saved = VariantColorSchemes.saveScale("AC colorscale", "AC", scale);
+        assertEquals("AC_colorscale.txt", saved.getFile().getName());
+    }
+
     private VariantColorScheme builtinFor(String infoKey) {
         return VariantColorSchemes.getBuiltinSchemes().stream()
                 .filter(s -> s.getKeys().contains(infoKey))
