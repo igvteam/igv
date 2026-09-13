@@ -647,17 +647,17 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     /**
      * "Number=A" and "Number=R" attributes carry one value per allele, so a multi-allelic record arrives as a
      * comma separated list.  Parsing the whole string as one number fails, which would render every such record
-     * missing-gray even with a scale defined.
+     * missing-gray even with a scale defined.  An allele frequency sums -- the total across alternate alleles is
+     * what the attribute means, and it matches the "Allele Frequency" color mode.
      */
     @Test
-    public void testMultiValuedNumericAttribute() throws Exception {
+    public void testAlleleFrequencyIsSummed() throws Exception {
         writeScheme("af.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
         VariantColorSchemes.reset();
 
-        VariantTrack track = new VariantTrack();
+        VariantTrack track = loadTrack();
         track.setColorByAttribute("AF");
 
-        // The frequency of all non-reference alleles, so the pair sums
         Color expected = track.getAttributeColor("AF", "0.3");
         assertEquals(expected, track.getAttributeColor("AF", "0.1,0.2"));
         assertEquals(expected, track.getAttributeColor("AF", "0.2,0.1"));
@@ -670,18 +670,52 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Per allele values are summed, as the "Allele Frequency" color mode does -- the total is the frequency of
-     * all non-reference alleles, which is what the attribute means.
+     * Summing is only right for a frequency.  Anything else -- a score, a depth -- takes its maximum, so a
+     * multi-allelic record never runs off the end of the scale.
      */
     @Test
-    public void testNumericValueAggregation() {
-        assertEquals(0.3, VariantTrack.numericValue("0.1,0.2"), 1e-9);
-        assertEquals(0.2, VariantTrack.numericValue("0.2"), 1e-9);
-        assertEquals(-4.0, VariantTrack.numericValue("-3,-1"), 1e-9);
-        assertEquals(5.0, VariantTrack.numericValue(".,5"), 1e-9);
-        assertNull(VariantTrack.numericValue("."));
-        assertNull(VariantTrack.numericValue("Pathogenic"));
-        assertNull(VariantTrack.numericValue(null));
+    public void testOtherAttributesTakeTheMaximum() throws Exception {
+        writeScheme("id.txt", "ALLELEID\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
+        VariantColorSchemes.reset();
+
+        VariantTrack track = loadTrack();
+        track.setColorByAttribute("ALLELEID");
+
+        assertEquals(track.getAttributeColor("ALLELEID", "40"), track.getAttributeColor("ALLELEID", "10,40"));
+        assertEquals(track.getAttributeColor("ALLELEID", "40"), track.getAttributeColor("ALLELEID", "40,10"));
+    }
+
+    /**
+     * Number=R lists the reference allele's value first.  It is not an alternate, so it must not be counted --
+     * neither into a sum that claims to be the non-reference total, nor as the maximum.
+     */
+    @Test
+    public void testReferenceValueIsSkipped() throws Exception {
+        writeScheme("rdp.txt", "RDP\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
+        VariantColorSchemes.reset();
+
+        VariantTrack track = loadTrack();
+        track.setColorByAttribute("RDP");
+
+        // 90 is the reference; the alternates are 5 and 20
+        assertEquals(track.getAttributeColor("RDP", "20"), track.getAttributeColor("RDP", "90,5,20"));
+        assertNotEquals(track.getAttributeColor("RDP", "90"), track.getAttributeColor("RDP", "90,5,20"));
+    }
+
+    /**
+     * The aggregation itself, apart from any header.
+     */
+    @Test
+    public void testAggregate() {
+        assertEquals(0.3, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
+        assertEquals(0.2, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
+        assertEquals(-1.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
+        assertEquals(-4.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
+        assertEquals(5.0, VariantTrack.aggregate(new String[]{".", "5"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
+        assertEquals(2.0, VariantTrack.aggregate(new String[]{"9", "1", "2"}, 1, VariantTrack.Aggregation.MAX), 1e-9);
+        assertNull(VariantTrack.aggregate(new String[]{"."}, 0, VariantTrack.Aggregation.MAX));
+        assertNull(VariantTrack.aggregate(new String[]{"Pathogenic"}, 0, VariantTrack.Aggregation.SUM));
+        assertNull(VariantTrack.aggregate(new String[]{"9"}, 1, VariantTrack.Aggregation.MAX));
     }
 
     /**

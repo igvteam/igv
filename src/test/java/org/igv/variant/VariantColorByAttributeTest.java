@@ -72,7 +72,7 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         List<String> ids = track.getColorableInfoFields().stream()
                 .map(VCFInfoHeaderLine::getID)
                 .collect(Collectors.toList());
-        assertEquals(List.of("AF", "ALLELEID", "CLNREVSTAT", "CLNSIG", "DB", "SVTYPE"), ids);
+        assertEquals(List.of("AF", "ALLELEID", "CLNREVSTAT", "CLNSIG", "DB", "RDP", "SVTYPE"), ids);
     }
 
     @Test

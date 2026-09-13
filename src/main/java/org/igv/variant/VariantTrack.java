@@ -5,6 +5,7 @@ package org.igv.variant;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
 import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderLineCount;
 import htsjdk.variant.vcf.VCFHeaderLineType;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.Globals;
@@ -739,7 +740,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         AbstractColorScale scale = VariantColorSchemes.getScale(key);
         if (scale != null) {
-            Double number = numericValue(value);
+            Double number = numericValue(key, value);
             return number == null ? NO_ATTRIBUTE_VALUE_COLOR : scale.getColor(number.floatValue());
         }
 
@@ -884,7 +885,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         double max = -Double.MAX_VALUE;
 
         for (String value : getAttributeValues(key)) {
-            Double number = numericValue(value);
+            Double number = numericValue(key, value);
             if (number != null) {
                 min = Math.min(min, number);
                 max = Math.max(max, number);
@@ -961,30 +962,89 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The number to color a variant by, for an attribute colored by a scale.  Null if the value holds no number.
      * <p>
      * A "Number=A" or "Number=R" attribute carries one value per allele, so a multi-allelic record arrives here
-     * as a comma separated list.  The values are summed, matching the separate "Allele Frequency" color mode
-     * (see {@link org.igv.variant.vcf.VCFVariant#getAlternateAlleleFrequency}): for a frequency the total is
-     * what the attribute means, the frequency of all non-reference alleles.  Elements that are not numbers,
-     * such as the missing marker, are skipped rather than making the whole value unusable.
+     * as a comma separated list.  Which values count, and how they combine, follows the header: the reference
+     * allele's value in a Number=R list is skipped, and the alternate values are summed for an allele frequency
+     * and otherwise reduced to their maximum (see {@link Aggregation}).
      */
-    static Double numericValue(String value) {
+    private Double numericValue(String key, String value) {
 
         if (value == null) {
             return null;
         }
 
-        double sum = 0;
-        boolean found = false;
+        String[] parts = value.split(",");
 
-        for (String part : value.split(",")) {
-            try {
-                sum += Double.parseDouble(part.trim());
-                found = true;
-            } catch (NumberFormatException e) {
-                // One unusable element does not make the record unusable
+        // Number=R lists the reference allele first.  Per-allele coloring is about the alternates -- a sum that
+        // included the reference would not be the frequency of the non-reference alleles it claims to be.
+        int first = parts.length > 1 && getCountType(key) == VCFHeaderLineCount.R ? 1 : 0;
+
+        return aggregate(parts, first, getAggregation(key));
+    }
+
+    /**
+     * How the per-allele values of an attribute combine into the one number a variant is colored by.
+     */
+    enum Aggregation {
+        /**
+         * The largest value.  The default: for a score it is the most severe allele, and it never runs off the
+         * end of the scale.
+         */
+        MAX,
+        /**
+         * The total.  For an allele frequency the total across alternate alleles is what the attribute means,
+         * and it matches the "Allele Frequency" color mode (see
+         * {@link org.igv.variant.vcf.VCFVariant#getAlternateAlleleFrequency}).
+         */
+        SUM
+    }
+
+    private static Aggregation getAggregation(String key) {
+        for (String frequencyKey : VCFVariant.ALLELE_FREQUENCY_KEYS) {
+            if (frequencyKey.equalsIgnoreCase(key)) {
+                return Aggregation.SUM;
             }
         }
+        return Aggregation.MAX;
+    }
 
-        return found ? sum : null;
+    /**
+     * The header's declared cardinality for an attribute, or UNBOUNDED if it is not declared.
+     */
+    private VCFHeaderLineCount getCountType(String key) {
+        Object header = getHeader();
+        if (header instanceof VCFHeader) {
+            VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
+            if (line != null) {
+                return line.getCountType();
+            }
+        }
+        return VCFHeaderLineCount.UNBOUNDED;
+    }
+
+    /**
+     * Combine the elements of a value from {@code first} on.  Null if none of them is a number.  Elements that
+     * are not numbers, such as the missing marker, are skipped rather than making the whole value unusable.
+     */
+    static Double aggregate(String[] parts, int first, Aggregation aggregation) {
+
+        Double result = null;
+
+        for (int i = first; i < parts.length; i++) {
+            double d;
+            try {
+                d = Double.parseDouble(parts[i].trim());
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            if (result == null) {
+                result = d;
+            } else if (aggregation == Aggregation.SUM) {
+                result += d;
+            } else {
+                result = Math.max(result, d);
+            }
+        }
+        return result;
     }
 
     /**

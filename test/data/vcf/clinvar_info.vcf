@@ -5,6 +5,7 @@
 ##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status">
 ##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance for this single variant">
 ##INFO=<ID=DB,Number=0,Type=Flag,Description="dbSNP membership">
+##INFO=<ID=RDP,Number=R,Type=Integer,Description="Depth per allele, reference first">
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
 chr1	100	.	C	A	100	.	AF=0.01;ALLELEID=1;CLNSIG=Pathogenic;CLNREVSTAT=criteria_provided,_single_submitter;DB
