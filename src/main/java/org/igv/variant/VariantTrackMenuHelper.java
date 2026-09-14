@@ -156,7 +156,7 @@ public class VariantTrackMenuHelper {
     }
 
     /**
-     * How allele frequency and fraction are drawn: colored by rarity, or as a bar whose height is the frequency.
+     * How allele frequency and fraction are drawn: by a color scale, or as a bar whose height is the frequency.
      * Choosing a display while coloring by something else switches to allele frequency, so the choice is visible.
      */
     private static JMenu getAlleleFrequencyDisplayMenu(VariantTrack track) {
@@ -164,7 +164,7 @@ public class VariantTrackMenuHelper {
         JMenu menu = new JMenu("Allele Frequency Display");
         boolean bars = track.isAlleleFrequencyBars();
 
-        JRadioButtonMenuItem colorItem = new JRadioButtonMenuItem("Color by Rarity", !bars);
+        JRadioButtonMenuItem colorItem = new JRadioButtonMenuItem("Color Scale", !bars);
         colorItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, false));
         JRadioButtonMenuItem barItem = new JRadioButtonMenuItem("Bar Height", bars);
         barItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, true));
@@ -176,9 +176,16 @@ public class VariantTrackMenuHelper {
         menu.add(barItem);
 
         menu.addSeparator();
-        JMenuItem editItem = new JMenuItem("Edit Rarity Colors...");
-        editItem.addActionListener(evt ->
-                new AlleleFrequencyColorsDialog(IGV.getInstance().getMainFrame()).setVisible(true));
+        // The colors, and legend, for the display the track shows
+        JMenuItem editItem = new JMenuItem("Allele Frequency Colors...");
+        editItem.addActionListener(evt -> {
+            Frame frame = IGV.getInstance().getMainFrame();
+            if (track.isAlleleFrequencyBars()) {
+                new AlleleFrequencyBarColorsDialog(frame, track).setVisible(true);
+            } else {
+                new AlleleFrequencyColorsDialog(frame).setVisible(true);
+            }
+        });
         menu.add(editItem);
 
         return menu;

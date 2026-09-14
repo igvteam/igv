@@ -487,7 +487,7 @@ public class PreferencesEditor {
             case "NIMBUS" -> "Nimbus";
             case "METAL" -> "Metal";
             case "AUTOMATIC" -> "Automatic";
-            case "COLOR_SCALE" -> "Color by rarity";
+            case "COLOR_SCALE" -> "Color scale";
             case "BAR" -> "Bar height";
             default -> value;
         };

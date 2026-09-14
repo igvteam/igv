@@ -69,7 +69,7 @@ NOCALL.COLOR	No call	color	230,230,230
 AF_REF.COLOR	Allele frequency - reference	color	0,0,220
 AF_VAR.COLOR	Allele frequency - variant	color	255,0,0
 VARIANT_COLOR_BY_ALLELE_FREQ	Color by allele frequency (uncheck to color by allele fraction)	boolean	TRUE
-VARIANT_ALLELE_FREQUENCY_DISPLAY	Show allele frequency / fraction as	select AUTOMATIC|COLOR_SCALE|BAR	AUTOMATIC	Color by rarity, or a bar whose height is the frequency (the reference and variant colors above).  Automatic colors by rarity, except for files without genotypes that have allele frequencies.
+VARIANT_ALLELE_FREQUENCY_DISPLAY	Show allele frequency / fraction as	select AUTOMATIC|COLOR_SCALE|BAR	AUTOMATIC	A color scale, or a bar whose height is the frequency (the reference and variant colors above).  Automatic uses the color scale, except for files without genotypes that have allele frequencies.
 
 #Mutations
 info	Settings on this tab apply to TCGA  "maf" and "mut" files.
