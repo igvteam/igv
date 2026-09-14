@@ -72,6 +72,7 @@ public class VariantTrackMenuHelper {
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
         items.add(getColorBandByAllelFrequency(variantTrack));
         items.add(getColorBandByAlleleFraction(variantTrack));
+        items.add(getAlleleFrequencyDisplayMenu(variantTrack));
         JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
         if (infoFieldMenu != null) {
             items.add(infoFieldMenu);
@@ -155,12 +156,57 @@ public class VariantTrackMenuHelper {
     }
 
     /**
+     * How allele frequency and fraction are drawn: by a color scale, or as a bar whose height is the frequency.
+     * Choosing a display while coloring by something else switches to allele frequency, so the choice is visible.
+     */
+    private static JMenu getAlleleFrequencyDisplayMenu(VariantTrack track) {
+
+        JMenu menu = new JMenu("Allele Frequency Display");
+        boolean bars = track.isAlleleFrequencyBars();
+
+        JRadioButtonMenuItem colorItem = new JRadioButtonMenuItem("Color Scale", !bars);
+        colorItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, false));
+        JRadioButtonMenuItem barItem = new JRadioButtonMenuItem("Bar Height", bars);
+        barItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, true));
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(colorItem);
+        group.add(barItem);
+        menu.add(colorItem);
+        menu.add(barItem);
+
+        menu.addSeparator();
+        // The colors, and legend, for the display the track shows
+        JMenuItem editItem = new JMenuItem("Allele Frequency Colors...");
+        editItem.addActionListener(evt -> {
+            Frame frame = IGV.getInstance().getMainFrame();
+            if (track.isAlleleFrequencyBars()) {
+                new AlleleFrequencyBarColorsDialog(frame, track).setVisible(true);
+            } else {
+                new AlleleFrequencyColorsDialog(frame).setVisible(true);
+            }
+        });
+        menu.add(editItem);
+
+        return menu;
+    }
+
+    private static void setAlleleFrequencyDisplay(VariantTrack track, boolean bars) {
+        track.setAlleleFrequencyBars(bars);
+        VariantTrack.ColorMode mode = track.getSiteColorMode();
+        if (mode != VariantTrack.ColorMode.ALLELE_FREQUENCY && mode != VariantTrack.ColorMode.ALLELE_FRACTION) {
+            track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
+        }
+        IGV.getInstance().getContentPane().repaint();
+    }
+
+    /**
      * Menu for coloring the variant band by a VCF INFO attribute.  Returns null if the file has no INFO fields
      * that can be colored by.
      */
     private static JMenu getColorByInfoFieldMenu(VariantTrack track) {
 
-        List<VCFInfoHeaderLine> infoFields = track.getColorableInfoFields();
+        List<VCFInfoHeaderLine> infoFields = getMenuInfoFields(track);
         if (infoFields.isEmpty()) {
             return null;
         }
@@ -185,6 +231,16 @@ public class VariantTrackMenuHelper {
         }
 
         return menu;
+    }
+
+    /**
+     * The INFO fields offered in the color-by menu.  AF is left out, as it has its own item, "Allele Frequency".
+     */
+    // Package private for testing
+    static List<VCFInfoHeaderLine> getMenuInfoFields(VariantTrack track) {
+        return track.getColorableInfoFields().stream()
+                .filter(line -> !"AF".equals(line.getID()))
+                .toList();
     }
 
     private static JMenuItem getColorByInfoFieldItem(VariantTrack track, VCFInfoHeaderLine infoField) {
@@ -217,7 +273,9 @@ public class VariantTrackMenuHelper {
 
         // Any scheme covering the attribute settles it -- with a scale, a categorical declaration, or discrete
         // colors.  A user who wrote discrete colors for a numeric attribute meant it.
-        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
+        // A well-known allele frequency field has a scale already -- it is colored by rarity.
+        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())
+                || VariantColorSchemes.getScale(infoKey) != null) {
             return true;
         }
 

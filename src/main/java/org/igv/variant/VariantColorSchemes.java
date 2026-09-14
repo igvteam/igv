@@ -124,12 +124,16 @@ public class VariantColorSchemes {
     }
 
     /**
-     * Return the continuous scale for a numeric INFO attribute, or null if no scheme defines one.  Numeric
-     * attributes are only colorable if a scheme gives them a range -- there is no sensible default.
+     * Return the scale for a numeric INFO attribute, or null if there is none.  A scheme covering the attribute
+     * decides.  Otherwise a well-known allele frequency field (GMAF, gnomAD_AF, ...) is colored by rarity -- see
+     * {@link AlleleFrequencyColors} -- and other numeric attributes have no scale, as there is no sensible default.
      */
     public static AbstractColorScale getScale(String infoKey) {
         VariantColorScheme scheme = getSchemeFor(infoKey);
-        return scheme == null ? null : scheme.getScale(infoKey);
+        if (scheme != null) {
+            return scheme.getScale(infoKey);
+        }
+        return AlleleFrequencyColors.isFrequencyField(infoKey) ? AlleleFrequencyColors.getScale() : null;
     }
 
     /**

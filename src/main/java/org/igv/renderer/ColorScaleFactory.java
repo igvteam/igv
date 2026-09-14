@@ -21,6 +21,8 @@ public class ColorScaleFactory {
                 cs = new ContinuousColorScale(string);
             } else if (tokens[0].trim().equals(MappedColorScale.serializationClassId)) {
                 cs = new MappedColorScale(string);
+            } else if (tokens[0].trim().equals(ColorStopScale.serializedClassName)) {
+                cs = new ColorStopScale(string);
             } else {
                 throw new RuntimeException("Illegal ColorScale: " + string);
             }

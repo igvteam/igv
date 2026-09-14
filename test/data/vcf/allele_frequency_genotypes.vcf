@@ -1,0 +1,9 @@
+##fileformat=VCFv4.2
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##contig=<ID=chr1>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	S1	S2
+chr1	100	.	A	G	50	PASS	AC=1;AN=4	GT	0/1	0/0
+chr1	200	.	A	G,T	50	PASS	AC=2,1;AN=2000	GT	0/1	0/2
+chr1	300	.	A	G	50	PASS	.	GT	0/0	0/0

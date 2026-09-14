@@ -150,6 +150,13 @@ public class VariantRenderer {
             alleleColor = this.convertMethylationRateToColor((float) variant.getMethlationRate() / 100);
             percent = variant.getCoveredSampleFraction();
             refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;   // Gray
+        } else if (!track.isAlleleFrequencyBars()) {
+            // Allele frequency or fraction, colored by how rare the variant is.  A reference block (only <NON_REF> or
+            // <*> alternate alleles) isn't a variant and has no frequency, so it keeps the non-ref color.
+            Color frequencyColor = variant.isNonRef() ? colorAlleleRef : track.getAlleleFrequencyColor(variant);
+            refColor = useAlpha ? ColorUtilities.getCompositeColor(frequencyColor, alphaValue) : frequencyColor;
+            alleleColor = refColor;
+            percent = 0;
         } else {
             alleleColor = useAlpha ? colorAlleleBandVarAlpha : colorAlleleBandVar; // Red
 
