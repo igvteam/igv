@@ -3,10 +3,13 @@ package org.igv.ui.panel;
 import org.igv.event.IGVEventBus;
 import org.igv.event.TrackSelectionEvent;
 import org.igv.track.Track;
+import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.List;
 
 /**
  * A panel that contains a checkbox for selecting a track.
@@ -17,6 +20,9 @@ import java.awt.*;
 public class TrackSelectionPanel extends JPanel {
 
     public static final int SELECTION_PANEL_WIDTH = 24;
+
+    /** Panel of the last ordinary (non-Shift) selection click; one end of a Shift-click range. */
+    private static TrackSelectionPanel anchor;
 
     private final TrackPanel trackPanel;
     private final JCheckBox checkBox;
@@ -32,11 +38,55 @@ public class TrackSelectionPanel extends JPanel {
         checkBox.setBackground(getBackground());
         checkBox.setOpaque(true);
         checkBox.addItemListener(e -> IGVEventBus.getInstance().post(new TrackSelectionEvent()));
+        // Action events fire only for user clicks, not setSelected(), so programmatic changes never move the anchor
+        checkBox.addActionListener(e -> {
+            boolean shift = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
+            if (!(shift && selectRangeFromAnchor())) {
+                anchor = this;
+            }
+        });
 
         add(checkBox);
 
         // Initially invisible
         setVisible(false);
+    }
+
+    /**
+     * Toggle this track's selection in response to a user click.  With {@code extendRange} (Shift-click),
+     * instead select every visible track between the last ordinary click and this one.
+     */
+    public void toggleTrackSelection(boolean extendRange) {
+        if (extendRange && selectRangeFromAnchor()) {
+            return;
+        }
+        setTrackSelected(!isTrackSelected());
+        anchor = this;
+    }
+
+    /**
+     * Select the inclusive range of tracks, in visual order, from the anchor to this track.
+     *
+     * @return false if there is no usable anchor, in which case nothing is changed
+     */
+    private boolean selectRangeFromAnchor() {
+        if (anchor == null || anchor == this) {
+            return false;
+        }
+        List<TrackPanel> trackPanels = IGV.getInstance().getMainPanel().getTrackPanels();
+        int anchorIndex = trackPanels.indexOf(anchor.trackPanel);
+        int index = trackPanels.indexOf(trackPanel);
+        if (anchorIndex < 0 || index < 0) {
+            return false;
+        }
+        for (int i = Math.min(anchorIndex, index); i <= Math.max(anchorIndex, index); i++) {
+            TrackPanel tp = trackPanels.get(i);
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp != null && sp.getSelectionPanel() != null && tp.getTrack().isVisible()) {
+                sp.getSelectionPanel().setTrackSelected(true);
+            }
+        }
+        return true;
     }
 
     /**

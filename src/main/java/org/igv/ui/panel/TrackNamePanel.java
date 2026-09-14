@@ -206,19 +206,20 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             if (e.getX() < LEFT_CLICK_MARGIN) {
                 return;
             }
-            toggleTrackSelection();
+            toggleTrackSelection(e.isShiftDown());
             getTrack().handleNameClick(e);
         }
 
     }
 
     /**
-     * Toggle the selection state of the track associated with this name panel.
+     * Toggle the selection state of the track associated with this name panel, or with
+     * {@code extendRange} (Shift-click) select the range from the last ordinary click.
      * Selection state is held by the checkbox in the {@link TrackSelectionPanel}, not by the
      * track itself.  If the selection checkboxes are not currently visible, reveal them first
      * (revealing leaves the checkbox unchecked, so the toggle then selects the track).
      */
-    private void toggleTrackSelection() {
+    private void toggleTrackSelection(boolean extendRange) {
         TrackPanelScrollPane scrollPane = getTrackPanel().getScrollPane();
         if (scrollPane == null) {
             return;
@@ -228,7 +229,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         }
         TrackSelectionPanel selectionPanel = scrollPane.getSelectionPanel();
         if (selectionPanel != null) {
-            selectionPanel.setTrackSelected(!selectionPanel.isTrackSelected());
+            selectionPanel.toggleTrackSelection(extendRange);
         }
     }
 
