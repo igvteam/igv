@@ -202,9 +202,10 @@ public class AlleleFrequencyColorsDialog extends JDialog {
     }
 
     /**
-     * The scale as a bar, from the highest stop down to a factor of 10 below the lowest, with each stop marked.
+     * The scale as a bar, from the highest stop down to a factor of 10 below the lowest, with each stop marked.  Also
+     * the legend for an INFO field colored by rarity.
      */
-    private static class ScalePreview extends JComponent {
+    static class ScalePreview extends JComponent {
 
         private static final int BAR_HEIGHT = 20;
         private ColorStopScale scale;

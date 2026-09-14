@@ -9,12 +9,13 @@ import org.igv.renderer.ColorStopScale;
 import org.igv.variant.vcf.VCFVariant;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Coloring the variant band by allele frequency, or allele fraction, so that rare variants stand out.  Frequencies
- * span orders of magnitude, so colors come from a {@link ColorStopScale}, blended on a log scale between stops.
+ * Coloring variants by allele frequency so that rare variants stand out: the top-level "Allele Frequency" (AF or
+ * GMAF) and "Allele Fraction" (AC / AN) modes, and well-known allele frequency INFO fields such as gnomAD_AF.
+ * Frequencies span orders of magnitude, so colors come from a {@link ColorStopScale}, blended on a log scale between
+ * stops.
  */
 public class AlleleFrequencyColors {
 
@@ -28,17 +29,17 @@ public class AlleleFrequencyColors {
     public static final String DISPLAY_BAR = "BAR";
 
     /**
-     * Population frequency fields written by common annotation tools (VEP, vcfanno, bcftools annotate, gnomAD's own
-     * VCFs), checked in order when a variant has no AF or GMAF value.
+     * Well-known allele frequency INFO fields, colored by rarity by default when chosen under color by INFO field.
+     * AF is not among them -- it has the top-level "Allele Frequency" item.
      */
-    public static final String[] ANNOTATION_FREQUENCY_KEYS = {
-            "gnomAD_AF", "gnomADe_AF", "gnomADg_AF", "gnomAD_exomes_AF", "gnomAD_genomes_AF",
-            "AF_joint", "AF_grpmax", "AF_popmax", "MAX_AF", "ExAC_AF"};
+    public static final List<String> FREQUENCY_INFO_FIELDS = List.of(
+            "GMAF", "gnomAD_AF", "gnomADe_AF", "gnomADg_AF", "gnomAD_exomes_AF", "gnomAD_genomes_AF",
+            "AF_joint", "AF_grpmax", "AF_popmax", "MAX_AF", "ExAC_AF");
 
     /**
      * Default stops, following gnomAD usage.  Common variants (5% and above) are a neutral blue-gray; low frequency
      * (1-5%) shifts toward yellow; rare (0.1-1%) to orange; 0.01% is red; 0.0001% magenta -- about the frequency of
-     * a single allele among gnomAD v4's roughly 1.6 million.  Missing values take the lowest stop's color.
+     * a single allele among gnomAD v4's roughly 1.6 million.
      */
     public static final ColorStopScale DEFAULT_SCALE = new ColorStopScale(List.of(
             new ColorStopScale.Stop(1, new Color(130, 145, 175)),
@@ -84,9 +85,16 @@ public class AlleleFrequencyColors {
     }
 
     /**
-     * The frequency to color a variant by.  For ALLELE_FREQUENCY, the AF or GMAF value, or if the variant has
-     * neither, the first annotation frequency field it has ({@link #ANNOTATION_FREQUENCY_KEYS}).  For ALLELE_FRACTION,
-     * AC / AN.  At a multi-allelic site the rarest alternate allele is used.
+     * @return true if the INFO field is a well-known allele frequency field, colored by rarity by default
+     */
+    public static boolean isFrequencyField(String infoKey) {
+        return infoKey != null && FREQUENCY_INFO_FIELDS.stream().anyMatch(infoKey::equalsIgnoreCase);
+    }
+
+    /**
+     * The frequency to color a variant by in the top-level modes: for ALLELE_FREQUENCY the AF value, or GMAF if there
+     * is no AF -- the fields the bar display reads -- and for ALLELE_FRACTION AC / AN.  At a multi-allelic site the
+     * rarest alternate allele is used.
      *
      * @return the frequency, or -1 if the variant has no value
      */
@@ -105,7 +113,7 @@ public class AlleleFrequencyColors {
             return (double) min / total;
         }
 
-        for (String key : frequencyKeys()) {
+        for (String key : VCFVariant.ALLELE_FREQUENCY_KEYS) {
             double frequency = minimumValue(variant.getAttributeAsString(key));
             if (frequency >= 0) {
                 return frequency;
@@ -115,25 +123,19 @@ public class AlleleFrequencyColors {
     }
 
     /**
-     * @return true if the header declares a field the mode takes values from.  If it doesn't, a missing value means
-     * the file has no frequencies at all, not that the variant is unobserved, so it shouldn't be colored as rare.
+     * @return true if the header declares the field(s) the mode takes values from.  If it doesn't, a missing value
+     * means the file has no frequencies at all, not that the variant is unobserved, so it shouldn't be colored as rare.
      */
     public static boolean hasFrequencyFields(VCFHeader header, VariantTrack.ColorMode mode) {
         if (mode == VariantTrack.ColorMode.ALLELE_FRACTION) {
             return header.getInfoHeaderLine("AC") != null && header.getInfoHeaderLine("AN") != null;
         }
-        for (String key : frequencyKeys()) {
+        for (String key : VCFVariant.ALLELE_FREQUENCY_KEYS) {
             if (header.getInfoHeaderLine(key) != null) {
                 return true;
             }
         }
         return false;
-    }
-
-    private static List<String> frequencyKeys() {
-        List<String> keys = new ArrayList<>(List.of(VCFVariant.ALLELE_FREQUENCY_KEYS));
-        keys.addAll(List.of(ANNOTATION_FREQUENCY_KEYS));
-        return keys;
     }
 
     /**

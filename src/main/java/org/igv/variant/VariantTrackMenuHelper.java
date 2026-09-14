@@ -199,7 +199,7 @@ public class VariantTrackMenuHelper {
      */
     private static JMenu getColorByInfoFieldMenu(VariantTrack track) {
 
-        List<VCFInfoHeaderLine> infoFields = track.getColorableInfoFields();
+        List<VCFInfoHeaderLine> infoFields = getMenuInfoFields(track);
         if (infoFields.isEmpty()) {
             return null;
         }
@@ -224,6 +224,16 @@ public class VariantTrackMenuHelper {
         }
 
         return menu;
+    }
+
+    /**
+     * The INFO fields offered in the color-by menu.  AF is left out, as it has its own item, "Allele Frequency".
+     */
+    // Package private for testing
+    static List<VCFInfoHeaderLine> getMenuInfoFields(VariantTrack track) {
+        return track.getColorableInfoFields().stream()
+                .filter(line -> !"AF".equals(line.getID()))
+                .toList();
     }
 
     private static JMenuItem getColorByInfoFieldItem(VariantTrack track, VCFInfoHeaderLine infoField) {
@@ -256,7 +266,9 @@ public class VariantTrackMenuHelper {
 
         // Any scheme covering the attribute settles it -- with a scale, a categorical declaration, or discrete
         // colors.  A user who wrote discrete colors for a numeric attribute meant it.
-        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())) {
+        // A well-known allele frequency field has a scale already -- it is colored by rarity.
+        if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())
+                || VariantColorSchemes.getScale(infoKey) != null) {
             return true;
         }
 

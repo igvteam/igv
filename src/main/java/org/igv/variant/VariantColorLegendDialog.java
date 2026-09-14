@@ -3,6 +3,7 @@ package org.igv.variant;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ColorStopScale;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorSwatch;
@@ -109,7 +110,7 @@ public class VariantColorLegendDialog extends JDialog {
         description.setText("<html>Values of <b>" + infoKey + "</b> among the loaded features.  "
                 + (scale == null ? "Click a color to change it for this track." : "Colored by a scale."));
 
-        editScaleButton.setVisible(scale instanceof ContinuousColorScale);
+        editScaleButton.setVisible(scale instanceof ContinuousColorScale || scale instanceof ColorStopScale);
         saveButton.setVisible(scale == null);
         resetButton.setVisible(scale == null);
 
@@ -170,8 +171,15 @@ public class VariantColorLegendDialog extends JDialog {
                         ColorScaleBar.format(range[1], range[1] - range[0])));
         panel.add(label, BorderLayout.NORTH);
 
-        panel.add(new ColorScaleBar(scale instanceof ContinuousColorScale ? (ContinuousColorScale) scale : null, 340),
-                BorderLayout.CENTER);
+        if (scale instanceof ColorStopScale) {
+            // A well-known allele frequency field, colored by rarity
+            AlleleFrequencyColorsDialog.ScalePreview preview = new AlleleFrequencyColorsDialog.ScalePreview();
+            preview.setScale((ColorStopScale) scale);
+            panel.add(preview, BorderLayout.CENTER);
+        } else {
+            panel.add(new ColorScaleBar(scale instanceof ContinuousColorScale ? (ContinuousColorScale) scale : null, 340),
+                    BorderLayout.CENTER);
+        }
 
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, panel.getPreferredSize().height));
         return panel;
@@ -221,6 +229,13 @@ public class VariantColorLegendDialog extends JDialog {
     private void editScale() {
 
         AbstractColorScale scale = VariantColorSchemes.getScale(infoKey);
+        if (scale instanceof ColorStopScale) {
+            // Rarity colors are shared by all allele frequency coloring, and edited in one place
+            new AlleleFrequencyColorsDialog(getOwner() instanceof Frame frame ? frame : null).setVisible(true);
+            populate();
+            repaintTrack();
+            return;
+        }
         if (!(scale instanceof ContinuousColorScale)) {
             return;
         }
