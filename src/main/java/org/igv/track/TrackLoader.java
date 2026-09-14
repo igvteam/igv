@@ -340,8 +340,31 @@ public class TrackLoader {
     }
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
+        if ("bcf".equals(locator.getFormat())) {
+            checkBCFSupported(locator);   // Before opening the file, which may offer to create an index
+        }
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
         loadVCFWithSource(locator, src, newTracks);
+    }
+
+    /**
+     * htsjdk, and so IGV, reads only uncompressed BCF version 2.1.  Files written by bcftools are version 2.2 and usually
+     * compressed, and htsjdk rejects them with a header parsing error that reads like a damaged file, so explain instead.
+     */
+    private static void checkBCFSupported(ResourceLocator locator) throws IOException {
+        FileFormatUtils.BCFHeader header = FileFormatUtils.readBCFHeader(locator.getPath());
+        if (header == null || header.isSupported()) {
+            return;     // Not recognizably BCF, or supported -- leave any error to htsjdk
+        }
+        String path = locator.getPath();
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        String vcfName = name.replaceFirst("\\.bcf(\\.gz)?$", "") + ".vcf.gz";
+        throw new DataLoadException("This is a " + (header.compressed() ? "compressed " : "") + "BCF version " +
+                header.majorVersion() + "." + header.minorVersion() + " file.  IGV can read only uncompressed BCF " +
+                "version 2.1; BCF files written by bcftools are version 2.2.<br>" +
+                "To view it, convert it to an indexed VCF, for example:<br>" +
+                "bcftools view -Oz -o " + vcfName + " " + name + "<br>" +
+                "bcftools index -t " + vcfName);
     }
 
     private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) throws IOException {

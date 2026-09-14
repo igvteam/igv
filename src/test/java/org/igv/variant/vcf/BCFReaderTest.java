@@ -1,7 +1,10 @@
 package org.igv.variant.vcf;
 
+import htsjdk.samtools.util.BlockCompressedOutputStream;
 import org.igv.AbstractHeadlessTest;
+import org.igv.exceptions.DataLoadException;
 import org.igv.track.FeatureSource;
+import org.igv.track.TrackLoader;
 import org.igv.track.TribbleFeatureSource;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
@@ -11,13 +14,20 @@ import htsjdk.variant.bcf2.BCF2Codec;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author jacob
@@ -43,6 +53,48 @@ public class BCFReaderTest extends AbstractHeadlessTest {
             count++;
         }
         assertTrue("No features read", count > 0);
+    }
+
+    /**
+     * BCF other than uncompressed version 2.1 fails with an explanation, not a header parsing error (issue #1495).
+     * The test files are made from ex2.bcf (version 2.1, uncompressed).
+     */
+    @Test
+    public void unsupportedBCFExplained() throws Exception {
+        byte[] v21 = Files.readAllBytes(Paths.get(TestUtils.DATA_DIR + "bcf/ex2.bcf"));
+        byte[] v22 = v21.clone();
+        v22[4] = 2;     // minor version
+        File dir = new File(TestUtils.TMP_OUTPUT_DIR, "bcf");
+        dir.mkdirs();
+
+        assertExplained(writeBCF(dir, "v22.bcf", v22, false), "This is a BCF version 2.2 file");
+        assertExplained(writeBCF(dir, "v21_compressed.bcf", v21, true), "This is a compressed BCF version 2.1 file");
+        assertExplained(writeBCF(dir, "v22_compressed.bcf", v22, true), "This is a compressed BCF version 2.2 file");
+        assertEquals(1, new TrackLoader().load(new ResourceLocator(TestUtils.DATA_DIR + "bcf/ex2.bcf"), genome).size());
+
+        // Without a .bcf extension, the format is recognized from the file contents
+        assertExplained(writeBCF(dir, "v22_compressed_no_extension", v22, true), "This is a compressed BCF version 2.2 file");
+        assertEquals(1, new TrackLoader().load(new ResourceLocator(writeBCF(dir, "v21_no_extension", v21, false)), genome).size());
+    }
+
+    private static String writeBCF(File dir, String name, byte[] bytes, boolean compressed) throws IOException {
+        File file = new File(dir, name);
+        try (OutputStream out = compressed ? new BlockCompressedOutputStream(file) : new FileOutputStream(file)) {
+            out.write(bytes);
+        }
+        return file.getAbsolutePath();
+    }
+
+    private void assertExplained(String path, String expected) {
+        try {
+            new TrackLoader().load(new ResourceLocator(path), genome);
+            fail("Expected an error loading " + path);
+        } catch (DataLoadException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains(expected));
+            String name = new File(path).getName();
+            String vcfName = name.replaceFirst("\\.bcf$", "") + ".vcf.gz";
+            assertTrue(e.getMessage(), e.getMessage().contains("bcftools view -Oz -o " + vcfName + " " + name));
+        }
     }
 
     @Test
