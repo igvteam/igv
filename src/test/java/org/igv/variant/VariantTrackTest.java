@@ -20,6 +20,20 @@ import static junit.framework.Assert.assertEquals;
  */
 public class VariantTrackTest extends AbstractHeadlessTest {
 
+    /**
+     * Allele frequencies in the tooltip are a plain decimal, never scientific notation, with the percentage.
+     */
+    @Test
+    public void testFormatAlleleFrequency() {
+        assertEquals("0.0002 (0.02%)", VariantTrack.formatAlleleFrequency(0.0002));
+        assertEquals("0.3 (30%)", VariantTrack.formatAlleleFrequency(0.3));
+        assertEquals("1 (100%)", VariantTrack.formatAlleleFrequency(1.0));
+        assertEquals("0.0714 (7.14%)", VariantTrack.formatAlleleFrequency(0.0714));
+        assertEquals("0.333333 (33.3%)", VariantTrack.formatAlleleFrequency(0.333333));
+        assertEquals("0.0000015 (0.00015%)", VariantTrack.formatAlleleFrequency(0.0000015));
+        assertEquals("0 (0%)", VariantTrack.formatAlleleFrequency(0));
+    }
+
     @Test
     public void testLoadMultiAlleleFreqs() throws Exception {
         String filePath = TestUtils.DATA_DIR + "vcf/multi_allele_freqs.vcf";

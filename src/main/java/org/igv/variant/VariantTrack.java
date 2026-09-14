@@ -41,6 +41,8 @@ import org.w3c.dom.Element;
 import javax.swing.UIManager;
 import java.awt.*;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -1333,10 +1335,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 if (af[i] >= 0) nonNegativeCounts++;
             }
             if (nonNegativeCounts > 0) {
-                String afString = nonNegativeCounts > 1 ? "<br>Allele Fequencies: " : "<br>Allele Frequency: ";
+                String afString = nonNegativeCounts > 1 ? "<br>Allele Frequencies: " : "<br>Allele Frequency: ";
                 for (int i = 0; i < af.length; i++) {
                     if (af[i] >= 0) {
-                        afString += Double.toString(af[i]);
+                        afString += formatAlleleFrequency(af[i]);
                         if (i < af.length - 1) afString += ", ";
                     }
                 }
@@ -1349,6 +1351,16 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
 
         return toolTip.toString();
+    }
+
+    /**
+     * An allele frequency as a plain decimal fraction, as in the file, followed by the percentage to 3 significant
+     * digits -- e.g. "0.0002 (0.02%)".  Double.toString would give "2.0E-4" for the rare variants that matter most.
+     */
+    static String formatAlleleFrequency(double frequency) {
+        BigDecimal fraction = BigDecimal.valueOf(frequency);
+        String percent = fraction.movePointRight(2).round(new MathContext(3)).stripTrailingZeros().toPlainString();
+        return fraction.stripTrailingZeros().toPlainString() + " (" + percent + "%)";
     }
 
     protected String getVariantInfo(Variant variant) {
