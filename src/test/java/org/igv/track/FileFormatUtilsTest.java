@@ -47,4 +47,14 @@ public class FileFormatUtilsTest extends TestCase {
         format = FileFormatUtils.determineFormat(wigFile);
         assertEquals("wig", format);
     }
+
+    public void testBCF() throws Exception {
+        String bcfFile = TestUtils.DATA_DIR + "bcf/ex2.bcf";
+        assertEquals("bcf", FileFormatUtils.determineFormat(bcfFile));
+
+        FileFormatUtils.BCFHeader header = FileFormatUtils.readBCFHeader(bcfFile);
+        assertEquals(new FileFormatUtils.BCFHeader(false, 2, 1), header);
+
+        assertNull(FileFormatUtils.readBCFHeader(TestUtils.DATA_DIR + "vcf/ex2.vcf"));
+    }
 }
