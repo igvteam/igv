@@ -54,7 +54,6 @@ public class FileFormatUtilsTest extends TestCase {
 
         FileFormatUtils.BCFHeader header = FileFormatUtils.readBCFHeader(bcfFile);
         assertEquals(new FileFormatUtils.BCFHeader(false, 2, 1), header);
-        assertTrue(header.isSupported());
 
         assertNull(FileFormatUtils.readBCFHeader(TestUtils.DATA_DIR + "vcf/ex2.vcf"));
     }

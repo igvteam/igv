@@ -68,13 +68,29 @@ public class BCFReaderTest extends AbstractHeadlessTest {
         dir.mkdirs();
 
         assertExplained(writeBCF(dir, "v22.bcf", v22, false), "This is a BCF version 2.2 file");
-        assertExplained(writeBCF(dir, "v21_compressed.bcf", v21, true), "This is a compressed BCF version 2.1 file");
+        assertExplained(writeBCF(dir, "v21_compressed.bcf", v21, true),
+                "This is a compressed BCF file, but its name does not end in .gz or .bgz");
         assertExplained(writeBCF(dir, "v22_compressed.bcf", v22, true), "This is a compressed BCF version 2.2 file");
         assertEquals(1, new TrackLoader().load(new ResourceLocator(TestUtils.DATA_DIR + "bcf/ex2.bcf"), genome).size());
+
+        // htsjdk decompresses based on the file name, so compressed BCF 2.1 named .gz or .bgz is readable
+        assertEquals(1, new TrackLoader().load(new ResourceLocator(writeBCF(dir, "v21_compressed.bcf.gz", v21, true)), genome).size());
+        assertEquals(1, new TrackLoader().load(new ResourceLocator(writeBCF(dir, "v21_compressed.bcf.bgz", v21, true)), genome).size());
+        assertExplained(writeBCF(dir, "v22_compressed.bcf.gz", v22, true), "This is a compressed BCF version 2.2 file");
 
         // Without a .bcf extension, the format is recognized from the file contents
         assertExplained(writeBCF(dir, "v22_compressed_no_extension", v22, true), "This is a compressed BCF version 2.2 file");
         assertEquals(1, new TrackLoader().load(new ResourceLocator(writeBCF(dir, "v21_no_extension", v21, false)), genome).size());
+    }
+
+    /**
+     * The suggested bcftools command is built from the URL path, which must not include a query string such as a
+     * signed URL's signature.
+     */
+    @Test
+    public void urlPathExcludesQuery() {
+        assertEquals("https://example.org/data/x.bcf",
+                new ResourceLocator("https://example.org/data/x.bcf?X-Amz-Signature=abc").getURLPath());
     }
 
     private static String writeBCF(File dir, String name, byte[] bytes, boolean compressed) throws IOException {
@@ -92,7 +108,7 @@ public class BCFReaderTest extends AbstractHeadlessTest {
         } catch (DataLoadException e) {
             assertTrue(e.getMessage(), e.getMessage().contains(expected));
             String name = new File(path).getName();
-            String vcfName = name.replaceFirst("\\.bcf$", "") + ".vcf.gz";
+            String vcfName = name.replaceFirst("\\.bcf(\\.gz|\\.bgz)?$", "") + ".vcf.gz";
             assertTrue(e.getMessage(), e.getMessage().contains("bcftools view -Oz -o " + vcfName + " " + name));
         }
     }

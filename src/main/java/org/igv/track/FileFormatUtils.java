@@ -40,13 +40,6 @@ public class FileFormatUtils {
      * The start of a BCF file: whether the file is compressed, and its BCF version.
      */
     public record BCFHeader(boolean compressed, int majorVersion, int minorVersion) {
-
-        /**
-         * htsjdk reads only uncompressed BCF version 2.1.
-         */
-        public boolean isSupported() {
-            return !compressed && majorVersion == 2 && minorVersion == 1;
-        }
     }
 
     /**
