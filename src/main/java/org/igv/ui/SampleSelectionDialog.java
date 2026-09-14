@@ -55,8 +55,9 @@ public class SampleSelectionDialog extends IGVDialog {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setContentPane(contentPanel);
 
-        contentPanel.add(new JLabel("<html>Samples listed are shown.  Remove IDs to hide samples, or enter IDs<br>" +
-                "one per line or separated by commas or tabs."), BorderLayout.NORTH);
+        contentPanel.add(new JLabel("<html>Only the samples listed are shown, in list order.  Remove IDs to hide samples,<br>" +
+                "or enter IDs one per line or separated by commas or tabs.  A filter by attribute also applies."),
+                BorderLayout.NORTH);
 
         textArea = new JTextArea(15, 40);
         textArea.setText(String.join("\n", currentSamples));

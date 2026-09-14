@@ -14,14 +14,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 /**
- * Tests for restricting a track's samples to a list of IDs (issue #1215).
+ * Tests for filtering a track's samples by a list of IDs (issue #1215).
  */
 public class SampleSelectionTest extends AbstractHeadlessTest {
 
@@ -49,15 +51,23 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Selected samples are shown in track order, not the order they were entered.
+     * Selected samples are shown in the order of the list, as in igv.js.
      */
     @Test
     public void testSelection() {
         track.setSelectedSamples(Arrays.asList("D66", "CC-124", "2137"));
-        assertEquals(Arrays.asList("2137", "CC-124", "D66"), visibleSamples());
+        assertEquals(Arrays.asList("D66", "CC-124", "2137"), visibleSamples());
 
         track.setSelectedSamples(null);
         assertEquals(15, track.sampleCount());
+    }
+
+    @Test
+    public void testSortWithSelection() {
+        track.setSelectedSamples(Arrays.asList("D66", "CC-124", "2137"));
+        track.sortSamples(Comparator.naturalOrder());
+        assertEquals(Arrays.asList("2137", "CC-124", "D66"), visibleSamples());
+        assertEquals(Arrays.asList("2137", "CC-124", "D66"), track.getSelectedSamples());
     }
 
     /**
@@ -72,14 +82,32 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
 
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
-        assertEquals(false, json.has("selectedSamples"));
+        assertFalse(json.has("samples"));
     }
 
     /**
-     * Filtering by ID and by attribute are mutually exclusive -- choosing one turns the other off.
+     * Sorting writes the full sample list as the sort order, and restoring it reorders the samples without filtering.
      */
     @Test
-    public void testIdAndAttributeFiltersAreExclusive() {
+    public void testSortOrderRoundTrip() {
+        track.sortSamples(Comparator.reverseOrder());
+        List<String> sorted = track.getSampleNames();
+
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        assertEquals(sorted, json.getJSONArray("samples").toList());
+
+        VariantTrack restored = loadVariantTrack();
+        restored.unmarshalJSON(json);
+        assertNull(restored.getSelectedSamples());
+        assertEquals(sorted, visibleSamples(restored));
+    }
+
+    /**
+     * Samples must pass both the ID filter and the attribute filter to be shown.
+     */
+    @Test
+    public void testIdAndAttributeFiltersCombine() {
         AttributeManager attributeManager = AttributeManager.getInstance();
         attributeManager.addAttribute("CC-124", "strain", "lab");
         attributeManager.addAttribute("CC-125", "strain", "lab");
@@ -87,32 +115,65 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
         SampleFilter labFilter = new SampleFilter(true,
                 List.of(new FilterElement("strain", FilterElement.Operator.EQUAL, "lab")));
 
-        track.setSelectedSamples(Arrays.asList("CC-124", "D66"));
+        track.setSelectedSamples(Arrays.asList("D66", "CC-124"));
         track.setSampleFilter(labFilter);
-        assertNull(track.getSelectedSamples());
+        assertEquals(List.of("CC-124"), visibleSamples());
+
+        // Each filter stays on when the other is cleared
+        track.setSelectedSamples(null);
         assertEquals(Arrays.asList("CC-124", "CC-125"), visibleSamples());
 
-        track.setSelectedSamples(Arrays.asList("CC-124", "D66"));
-        assertNull(track.getSampleFilter());
-        assertEquals(Arrays.asList("CC-124", "D66"), visibleSamples());
-
-        // Clearing one filter does not restore the other
-        track.setSelectedSamples(null);
-        assertNull(track.getSampleFilter());
-        assertEquals(15, track.sampleCount());
+        track.setSelectedSamples(Arrays.asList("D66", "CC-124"));
+        track.setSampleFilter(null);
+        assertEquals(Arrays.asList("D66", "CC-124"), visibleSamples());
     }
 
     @Test
-    public void testSessionRoundTrip() throws Exception {
-        track.setSelectedSamples(Arrays.asList("CC-125", "cw15"));
+    public void testSessionRoundTrip() {
+        track.setSelectedSamples(Arrays.asList("cw15", "CC-125"));
+
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        assertEquals(Arrays.asList("cw15", "CC-125"), json.getJSONArray("samples").toList());
+
+        VariantTrack restored = loadVariantTrack();
+        restored.unmarshalJSON(json);
+        assertEquals(Arrays.asList("cw15", "CC-125"), restored.getSelectedSamples());
+        assertEquals(Arrays.asList("cw15", "CC-125"), visibleSamples(restored));
+    }
+
+    /**
+     * Both filters are saved and restored together.
+     */
+    @Test
+    public void testCombinedFiltersRoundTrip() {
+        AttributeManager.getInstance().addAttribute("CC-124", "strain", "lab");
+        track.setSelectedSamples(Arrays.asList("D66", "CC-124"));
+        track.setSampleFilter(new SampleFilter(true,
+                List.of(new FilterElement("strain", FilterElement.Operator.EQUAL, "lab"))));
 
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
 
         VariantTrack restored = loadVariantTrack();
         restored.unmarshalJSON(json);
-        assertEquals(Arrays.asList("CC-125", "cw15"), restored.getSelectedSamples());
-        assertEquals(Arrays.asList("CC-125", "cw15"), visibleSamples(restored));
+        assertEquals(Arrays.asList("D66", "CC-124"), restored.getSelectedSamples());
+        assertEquals(List.of("CC-124"), visibleSamples(restored));
+    }
+
+    /**
+     * An igv.js track configuration's "samples" filters the track, and the rest of the samples are still
+     * available to show again.  IDs not in the file are ignored.
+     */
+    @Test
+    public void testIgvJsSamplesProperty() {
+        JSONObject json = new JSONObject("{\"samples\": [\"S1D2\", \"not-a-sample\", \"2137\"]}");
+        track.unmarshalJSON(json);
+        assertEquals(Arrays.asList("S1D2", "2137"), visibleSamples());
+        assertEquals(15, track.getSampleNames().size());
+
+        track.setSelectedSamples(null);
+        assertEquals(15, track.sampleCount());
     }
 
     private VariantTrack loadVariantTrack() {

@@ -1047,6 +1047,9 @@ public abstract class AbstractTrack implements Track {
         if (sampleNames != null) {
             sampleNames.sort(comparator);
             this.samplesSorted = true;
+            if (selectedSamples != null) {
+                selectedSamples.sort(comparator);
+            }
             for (var group : getSampleGroups()) {
                 group.samples().sort(comparator);
             }
@@ -1059,14 +1062,10 @@ public abstract class AbstractTrack implements Track {
     }
 
     /**
-     * Filter samples by attribute.  Filtering by attribute and by ID are mutually exclusive, so a non-null
-     * filter clears the ID selection.
+     * Filter samples by attribute.  Samples must also pass the ID filter, if any, to be shown.
      */
     public void setSampleFilter(SampleFilter sampleFilter) {
         this.sampleFilter = sampleFilter;
-        if (sampleFilter != null) {
-            this.selectedSamples = null;
-        }
         resetSampleGroups();
     }
 
@@ -1079,28 +1078,29 @@ public abstract class AbstractTrack implements Track {
     }
 
     /**
-     * Restrict the displayed samples to the given IDs, or show all samples if null.  Samples keep the track's
-     * order, not the order of the list.  A list that includes every sample is stored as null, so sessions do not
-     * carry the full sample list.  Filtering by ID and by attribute are mutually exclusive, so a non-null
-     * selection clears the attribute filter.
+     * Restrict the displayed samples to the given IDs, shown in the order of the list, or show all samples if null.
+     * This is the "samples" property of igv.js track configurations.  A list that includes every sample is stored
+     * as null.  Samples must also pass the attribute filter, if any, to be shown.
      */
     public void setSelectedSamples(List<String> selectedSamples) {
-        if (selectedSamples != null && sampleNames != null && new HashSet<>(selectedSamples).containsAll(sampleNames)) {
-            selectedSamples = null;
-        }
-        this.selectedSamples = selectedSamples;
-        if (selectedSamples != null) {
-            this.sampleFilter = null;
-        }
+        this.selectedSamples = normalizeSelection(selectedSamples);
         resetSampleGroups();
     }
 
-    public List<String> getFilteredSamples() {
-        if (selectedSamples != null) {
-            Set<String> selected = new HashSet<>(selectedSamples);
-            return sampleNames.stream().filter(selected::contains).collect(Collectors.toList());
+    private List<String> normalizeSelection(List<String> samples) {
+        if (samples == null || (sampleNames != null && new HashSet<>(samples).containsAll(sampleNames))) {
+            return null;
         }
-        return sampleFilter == null ? sampleNames : sampleFilter.evaluateSamples(sampleNames);
+        return new ArrayList<>(samples);
+    }
+
+    public List<String> getFilteredSamples() {
+        List<String> samples = sampleNames;
+        if (selectedSamples != null) {
+            Set<String> trackSamples = new HashSet<>(sampleNames);
+            samples = selectedSamples.stream().filter(trackSamples::contains).collect(Collectors.toList());
+        }
+        return sampleFilter == null ? samples : sampleFilter.evaluateSamples(samples);
     }
 
     public void setSampleGroupBy(String attribute) {
@@ -1369,10 +1369,6 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        if (samplesSorted && sampleNames != null) {
-            jsonObject.put("samples", sampleNames);
-        }
-
         if (groupBy != null) {
             jsonObject.put("groupBy", groupBy);
         }
@@ -1381,8 +1377,11 @@ public abstract class AbstractTrack implements Track {
             jsonObject.put("sampleFilter", sampleFilter.toJson());
         }
 
+        // "samples" is the ID filter if there is one, otherwise the sort order of all samples
         if (selectedSamples != null) {
-            jsonObject.put("selectedSamples", selectedSamples);
+            jsonObject.put("samples", selectedSamples);
+        } else if (samplesSorted && sampleNames != null) {
+            jsonObject.put("samples", sampleNames);
         }
 
     }
@@ -1521,15 +1520,7 @@ public abstract class AbstractTrack implements Track {
         }
 
 
-        if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")
-                || jsonObject.has("selectedSamples")) {
-
-            if (jsonObject.has("samples")) {
-                // Samples are sorted
-                this.samplesSorted = true;
-                this.sampleNames = new ArrayList<>();
-                jsonObject.getJSONArray("samples").forEach(s -> sampleNames.add((String) s));
-            }
+        if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")) {
 
             if (jsonObject.has("groupBy")) {
                 // Samples are also grouped
@@ -1544,9 +1535,20 @@ public abstract class AbstractTrack implements Track {
                 }
             }
 
-            if (jsonObject.has("selectedSamples")) {
-                this.selectedSamples = new ArrayList<>();
-                jsonObject.getJSONArray("selectedSamples").forEach(s -> selectedSamples.add((String) s));
+            if (jsonObject.has("samples")) {
+                // Samples to show, in order, as in igv.js.  A list of every sample is a sort order.
+                List<String> samples = new ArrayList<>();
+                jsonObject.getJSONArray("samples").forEach(s -> samples.add((String) s));
+                if (sampleNames == null) {
+                    this.sampleNames = samples;
+                    this.samplesSorted = true;
+                } else if (new HashSet<>(samples).containsAll(sampleNames)) {
+                    Set<String> trackSamples = new HashSet<>(sampleNames);
+                    this.sampleNames = samples.stream().filter(trackSamples::contains).distinct().collect(Collectors.toList());
+                    this.samplesSorted = true;
+                } else {
+                    this.selectedSamples = samples;
+                }
             }
 
             resetSampleGroups();

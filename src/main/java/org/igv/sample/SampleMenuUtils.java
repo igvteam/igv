@@ -99,7 +99,6 @@ public class SampleMenuUtils {
 
             if (!dialog.isCancelled()) {
                 sampleFilter = dialog.getFilter();
-                track.setSelectedSamples(null);     // Filtering by attribute turns off filtering by ID
                 track.setSampleFilter(sampleFilter);
 
             }
@@ -115,9 +114,9 @@ public class SampleMenuUtils {
 
         item.addActionListener(evt -> {
 
-            List<String> allSamples = track.getSampleNames();
-            List<String> currentSamples = track.getSelectedSamples() == null ? allSamples : track.getSelectedSamples();
-            SampleSelectionDialog dialog = new SampleSelectionDialog(IGV.getInstance().getMainFrame(), currentSamples, allSamples);
+            // Start with the current ID filter, or all samples.  The attribute filter is separate and not reflected here.
+            List<String> currentSamples = track.getSelectedSamples() == null ? track.getSampleNames() : track.getSelectedSamples();
+            SampleSelectionDialog dialog = new SampleSelectionDialog(IGV.getInstance().getMainFrame(), currentSamples, track.getSampleNames());
             dialog.setVisible(true);
 
             if (dialog.isCanceled()) {
@@ -125,8 +124,13 @@ public class SampleMenuUtils {
             }
 
             List<String> ids = dialog.getSampleIds();
+
+            // OK without editing the list is the same as Cancel.  Samples are shown in list order, so reordering is an edit.
+            if ((ids == null ? List.of() : ids).equals(currentSamples)) {
+                return;
+            }
+
             if (ids == null) {
-                track.setSampleFilter(null);        // Filtering by ID turns off filtering by attribute
                 track.setSelectedSamples(null);
                 return;
             }
@@ -140,7 +144,6 @@ public class SampleMenuUtils {
                 return;
             }
 
-            track.setSampleFilter(null);
             track.setSelectedSamples(found);
 
             if (!notFound.isEmpty()) {
