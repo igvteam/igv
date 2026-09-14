@@ -901,8 +901,8 @@ public class TrackMenuUtils {
     }
 
     /**
-     * Return the display mode items for feature tracks:  Collapse / Squish / Expand radio buttons followed by the
-     * row height items.
+     * Return the display mode items for feature and variant tracks:  Collapse / Squish / Expand radio buttons followed
+     * by the row height items.
      */
     public static List<Component> getDisplayModeMenuItems(final Collection<Track> tracks) {
 
@@ -919,13 +919,12 @@ public class TrackMenuUtils {
 
     /**
      * Return display mode items for a multi-track selection.  {@code rowTracks} should contain only tracks with
-     * rows.  "Collapse" is offered only if every track is a plain feature track, since alignment, variant, and
-     * segmented data tracks do not support a collapsed mode.
+     * rows.  "Collapse" is offered only if every track is a feature or variant track, since alignment and segmented
+     * data tracks do not support a collapsed mode.
      */
     public static List<Component> getMultiTrackDisplayModeItems(final Collection<Track> rowTracks) {
 
-        boolean allFeatureTracks = rowTracks.stream()
-                .allMatch(t -> t instanceof FeatureTrack && !(t instanceof VariantTrack));
+        boolean allFeatureTracks = rowTracks.stream().allMatch(t -> t instanceof FeatureTrack);
 
         Map<String, Track.DisplayMode> modes = new LinkedHashMap<>();
         if (allFeatureTracks) {
@@ -942,7 +941,7 @@ public class TrackMenuUtils {
 
     /**
      * Return "Squish" and "Expand" radio button items.  Used by tracks with rows that do not support a
-     * collapsed mode (alignment, variant, and segmented data tracks).
+     * collapsed mode (alignment and segmented data tracks).
      */
     public static List<Component> getSquishExpandItems(final Collection<Track> tracks) {
         Map<String, Track.DisplayMode> modes = new LinkedHashMap<>();

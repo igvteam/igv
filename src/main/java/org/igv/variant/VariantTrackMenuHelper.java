@@ -64,9 +64,7 @@ public class VariantTrackMenuHelper {
         List<Component> items = new ArrayList<>();
 
 
-        items.addAll(TrackMenuUtils.getSquishExpandItems(Collections.singletonList(variantTrack)));
-        items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(variantTrack)));
-        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(variantTrack)));
+        items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
@@ -407,9 +405,10 @@ public class VariantTrackMenuHelper {
     }
 
     private static JMenuItem getShowGenotypes(VariantTrack track) {
-        final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.isShowGenotypes());
+        // Reflects what is drawn -- a collapsed track shows no genotypes, and turning them on expands it
+        final JMenuItem item = new JCheckBoxMenuItem("Show Genotypes", track.areGenotypesShown());
         item.addActionListener(evt -> {
-            track.setShowGenotypes(item.isSelected());
+            track.setGenotypesShown(item.isSelected());
             IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().getContentPane().repaint();
         });

@@ -1256,8 +1256,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
+        // Each panel is packed separately, so it may have fewer rows than the tallest (getNumberOfFeatureLevels)
         int row = (y / getVariantBandHeight());
-        if (y < 0 || getDisplayMode() == DisplayMode.COLLAPSED || row >= getNumberOfFeatureLevels()) {
+        if (y < 0 || getDisplayMode() == DisplayMode.COLLAPSED || row >= packedFeatures.getRows().size()) {
             features = packedFeatures.getFeatures();
         } else {
             features = packedFeatures.getRows().get(row).getFeatures();
@@ -1421,6 +1422,24 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     public void setShowGenotypes(boolean showGenotypes) {
         this.showGenotypes = showGenotypes;
+    }
+
+    /**
+     * @return true if genotypes are drawn: "Show Genotypes" is on and the track is not collapsed
+     */
+    public boolean areGenotypesShown() {
+        return showGenotypes && getDisplayMode() != DisplayMode.COLLAPSED;
+    }
+
+    /**
+     * Show or hide genotypes, as the "Show Genotypes" menu item does.  A collapsed track doesn't draw genotypes, so
+     * showing them also expands the track.
+     */
+    public void setGenotypesShown(boolean show) {
+        if (show && getDisplayMode() == DisplayMode.COLLAPSED) {
+            setDisplayMode(DisplayMode.EXPANDED);
+        }
+        this.showGenotypes = show;
     }
 
     /**

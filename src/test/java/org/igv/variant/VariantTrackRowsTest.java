@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,9 +38,11 @@ public class VariantTrackRowsTest extends AbstractHeadlessTest {
         try (PrintWriter writer = new PrintWriter(vcf)) {
             writer.println("##fileformat=VCFv4.2");
             writer.println("##contig=<ID=chr1,length=8033585>");
+            writer.println("##contig=<ID=chr2,length=8033585>");
             writer.println("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO");
             writer.println("chr1\t1000\tdel\tAAAAAAAAAAA\tA\t100\t.\t.");     // Deletes 1001-1010
             writer.println("chr1\t1005\tsnp\tA\tC\t100\t.\t.");               // Overlaps the deletion
+            writer.println("chr2\t5000\tsolo\tA\tC\t100\t.\t.");              // Alone, on another chromosome
         }
     }
 
@@ -76,6 +79,53 @@ public class VariantTrackRowsTest extends AbstractHeadlessTest {
      * The deletion covers the SNP's position, so the SNP's column shows the deletion's bar in its row as well as the
      * SNP's bar in its own.  The rows the deletion is drawn in are taken from a column only the deletion covers.
      */
+    /**
+     * In a multi-panel view (gene list) each panel is packed separately.  A panel with fewer rows than the tallest is
+     * still searched without error when the mouse is below its rows.
+     */
+    @Test
+    public void testPanelWithFewerRows() {
+        VariantTrack track = loadTrack(Track.DisplayMode.EXPANDED, frame());
+        ReferenceFrame soloFrame = new ReferenceFrame("solo");
+        soloFrame.setBounds(0, WIDTH);
+        soloFrame.jumpTo("chr2", 4990, 5020);
+        track.load(soloFrame);
+        assertEquals("The tallest panel has two rows", 2, track.getNumberOfFeatureLevels());
+
+        // y = 30 is row 1, which the chr2 panel doesn't have
+        Variant found = track.getFeatureClosest(4999.5, 30, soloFrame, 10 * soloFrame.getScale());
+        assertNotNull(found);
+        assertEquals("solo", found.getID());
+    }
+
+    /**
+     * A collapsed track doesn't draw genotypes, and "Show Genotypes" says so.  Turning it on expands the track.
+     */
+    @Test
+    public void testShowGenotypesWhenCollapsed() throws Exception {
+        File withSamples = new File(TestUtils.TMP_OUTPUT_DIR, "variants_with_samples.vcf");
+        try (PrintWriter writer = new PrintWriter(withSamples)) {
+            writer.println("##fileformat=VCFv4.2");
+            writer.println("##contig=<ID=chr1,length=8033585>");
+            writer.println("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">");
+            writer.println("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1");
+            writer.println("chr1\t1005\tsnp\tA\tC\t100\t.\t.\tGT\t0/1");
+        }
+        VariantTrack track = (VariantTrack) new TrackLoader().load(new ResourceLocator(withSamples.getAbsolutePath()), genome).get(0);
+        assertTrue(track.areGenotypesShown());
+
+        track.setDisplayMode(Track.DisplayMode.COLLAPSED);
+        assertFalse(track.areGenotypesShown());
+
+        track.setGenotypesShown(true);
+        assertEquals(Track.DisplayMode.EXPANDED, track.getDisplayMode());
+        assertTrue(track.areGenotypesShown());
+
+        track.setGenotypesShown(false);
+        assertEquals(Track.DisplayMode.EXPANDED, track.getDisplayMode());
+        assertFalse(track.areGenotypesShown());
+    }
+
     private void assertVariantUnderMouseIsDrawn(Track.DisplayMode mode, int rows, int rowHeight) {
 
         ReferenceFrame frame = frame();
