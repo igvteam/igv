@@ -5,6 +5,7 @@ import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.sample.SampleMenuUtils;
+import org.igv.sample.SampleSort;
 import org.igv.track.AttributeManager;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
@@ -391,7 +392,7 @@ public class VariantTrackMenuHelper {
         JMenuItem item = new JMenuItem("Sort By Genotype");
         if (variant != null) {
             item.addActionListener(evt -> {
-                track.sortSamples(new GenotypeComparator(variant, genotypeSortingDirection));
+                track.sortSamples(SampleSort.GENOTYPE, variant, !genotypeSortingDirection);
                 genotypeSortingDirection = !genotypeSortingDirection;
                 IGV.getInstance().getContentPane().repaint();
             });
@@ -404,8 +405,7 @@ public class VariantTrackMenuHelper {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
         if (variant != null) {
             item.addActionListener(evt -> {
-                Comparator<String> comparator = sampleSortingDirection ? String::compareTo : (s1, s2) -> s2.compareTo(s1);
-                track.sortSamples(comparator);
+                track.sortSamplesByName(sampleSortingDirection);
                 sampleSortingDirection = !sampleSortingDirection;
                 IGV.getInstance().getContentPane().repaint();
             });
@@ -417,7 +417,7 @@ public class VariantTrackMenuHelper {
         JMenuItem item = new JMenuItem("Sort By Depth");
         if (variant != null) {
             item.addActionListener(evt -> {
-                track.sortSamples(new DepthComparator(variant, depthSortingDirection));
+                track.sortSamples(SampleSort.DEPTH, variant, !depthSortingDirection);
                 depthSortingDirection = !depthSortingDirection;
                 IGV.getInstance().getContentPane().repaint();
             });
@@ -432,7 +432,7 @@ public class VariantTrackMenuHelper {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
                 item.addActionListener(evt -> {
-                    track.sortSamples(new QualityComparator(variant, qualitySortingDirection));
+                    track.sortSamples(SampleSort.QUALITY, variant, !qualitySortingDirection);
                     qualitySortingDirection = !qualitySortingDirection;
                     IGV.getInstance().getContentPane().repaint();
                 });

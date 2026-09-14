@@ -34,8 +34,7 @@ public class SampleMenuUtils {
             final String[] attributeNames = dialog.getSelectedSortKeys();
             if (attributeNames != null) {
                 final boolean[] ascending = dialog.isAscending();
-                SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
-                track.sortSamples(comparator);
+                track.sortSamplesByAttributes(attributeNames, ascending);
                 track.repaint();
             }
         });

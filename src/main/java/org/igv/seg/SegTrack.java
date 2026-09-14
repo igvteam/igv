@@ -9,6 +9,7 @@ import org.igv.renderer.*;
 import org.igv.renderer.Renderer;
 import org.igv.sample.SampleGroup;
 import org.igv.sample.SampleMenuUtils;
+import org.igv.sample.SampleSort;
 import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
@@ -283,13 +284,22 @@ public class SegTrack extends AbstractTrack {
      */
     @Override
     public void sortSamplesByValue(String chr, int start, int end, RegionScoreType type) {
+        sortSamplesByValue(chr, start, end, type == RegionScoreType.DELETION);
+    }
+
+    /**
+     * Sort samples within each group by their average value over the region, and remember the sort for sessions.
+     * Samples with no value in the region, then samples whose only values are NaN, are sorted to the end in either
+     * direction.
+     */
+    public void sortSamplesByValue(String chr, int start, int end, boolean ascending) {
 
         if (end <= start) {
             return;
         }
 
         for (var group : getSampleGroups()) {
-            // Compute a value for each sample
+            // Compute a value for each sample.  No entry means no scores in the region.
             var sampleScores = new HashMap<String, Float>();
             for (String s : group.samples()) {
                 var scores = dataset.getFeatures(s, chr);
@@ -309,31 +319,40 @@ public class SegTrack extends AbstractTrack {
                         intervalSum += interval;
                     }
                 }
-                if (intervalSum <= 0) {
-                    if (hasNan) {
-                        //If the only existing scores are NaN, the overall score should be NaN
-                        sampleScores.put(s, Float.NaN);
-                    } else {
-                        // No scores in interval
-                        sampleScores.put(s, -Float.MAX_VALUE);
-                    }
-                } else {
-                    regionScore /= intervalSum;
-                    sampleScores.put(s, (type == RegionScoreType.DELETION) ? -regionScore : regionScore);
+                if (intervalSum > 0) {
+                    sampleScores.put(s, regionScore / intervalSum);
+                } else if (hasNan) {
+                    //If the only existing scores are NaN, the overall score should be NaN
+                    sampleScores.put(s, Float.NaN);
                 }
             }
 
             group.samples().sort((o1, o2) -> {
                 var v1 = sampleScores.get(o1);
                 var v2 = sampleScores.get(o2);
-                // Put NaNs at the end
-                if (v1.isNaN()) {
-                    return (v2.isNaN()) ? 0 : 1;
-                } else if (v2.isNaN()) {
-                    return -1;
+                int rank1 = scoreRank(v1);
+                int rank2 = scoreRank(v2);
+                if (rank1 != rank2 || rank1 != 0) {
+                    return Integer.compare(rank1, rank2);
                 }
-                return -Float.compare(v1, v2);
+                return ascending ? Float.compare(v1, v2) : Float.compare(v2, v1);
             });
+        }
+
+        this.sampleSort = SampleSort.locus(SampleSort.VALUE, chr, start, end, ascending);
+    }
+
+    // Values sort first, then no value, then NaN
+    private static int scoreRank(Float score) {
+        return score == null ? 1 : score.isNaN() ? 2 : 0;
+    }
+
+    @Override
+    protected void applySampleSort(SampleSort sort) {
+        if (sort.getOption() == null || SampleSort.VALUE.equals(sort.getOption())) {    // VALUE is the igv.js default
+            sortSamplesByValue(sort.getChr(), sort.getStart(), sort.getEnd(), sort.isAscending());
+        } else {
+            super.applySampleSort(sort);
         }
     }
 

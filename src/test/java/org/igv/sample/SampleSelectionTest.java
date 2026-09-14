@@ -86,21 +86,14 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Sorting writes the full sample list as the sort order, and restoring it reorders the samples without filtering.
+     * "samples" is only the ID filter -- a sort is saved as "sort", not as the sample list.
      */
     @Test
-    public void testSortOrderRoundTrip() {
-        track.sortSamples(Comparator.reverseOrder());
-        List<String> sorted = track.getSampleNames();
-
+    public void testSortDoesNotWriteSamples() {
+        track.sortSamplesByName(false);
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
-        assertEquals(sorted, json.getJSONArray("samples").toList());
-
-        VariantTrack restored = loadVariantTrack();
-        restored.unmarshalJSON(json);
-        assertNull(restored.getSelectedSamples());
-        assertEquals(sorted, visibleSamples(restored));
+        assertFalse(json.has("samples"));
     }
 
     /**
@@ -126,6 +119,20 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
         track.setSelectedSamples(Arrays.asList("D66", "CC-124"));
         track.setSampleFilter(null);
         assertEquals(Arrays.asList("D66", "CC-124"), visibleSamples());
+    }
+
+    /**
+     * The attribute filter's match mode survives a session round trip.
+     */
+    @Test
+    public void testSampleFilterMatchModeRoundTrip() {
+        for (boolean matchAll : new boolean[]{true, false}) {
+            SampleFilter filter = new SampleFilter(matchAll,
+                    List.of(new FilterElement("strain", FilterElement.Operator.EQUAL, "lab")));
+            JSONObject json = filter.toJson();
+            assertEquals(matchAll ? "all" : "any", json.getString("match"));
+            assertEquals(matchAll, SampleFilter.fromJson(json).isMatchAll());
+        }
     }
 
     @Test

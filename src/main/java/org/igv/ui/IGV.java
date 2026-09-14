@@ -1363,11 +1363,9 @@ public class IGV implements IGVEventObserver {
 
         assert attributeNames.length == ascending.length;
 
-        SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
-
         for (Track track : getAllTracks()) {
             if (track instanceof AbstractTrack && ((AbstractTrack) track).hasSamples()) {
-                ((AbstractTrack) track).sortSamples(comparator);
+                ((AbstractTrack) track).sortSamplesByAttributes(attributeNames, ascending);
             }
         }
 
@@ -1399,7 +1397,7 @@ public class IGV implements IGVEventObserver {
 
         // Sort samples within each track
         for (Track t : getAllTracks()) {
-            t.sortSamplesByValue(region.getChr(), region.getStart(), region.getEnd(), type);
+            t.sortSamplesByValue(r.getChr(), r.getStart(), r.getEnd(), type);
         }
 
         repaint();
