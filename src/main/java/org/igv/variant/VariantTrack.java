@@ -82,7 +82,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final static int VARIANT_BAND_HEIGHT = 25;
+    private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
+    private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
     private final static int MAX_FILTER_LINES = 15;
     private final static int WG_TRACK_HEIGHT = 40;
     private final static int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
@@ -319,7 +320,14 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return
      */
     private int getVariantsHeight() {
-        return getVariantBandHeight() * getNumberOfFeatureLevels();
+        return getVariantBandHeight() * getVariantRowCount();
+    }
+
+    /**
+     * Overlapping variants are stacked in rows, except in COLLAPSED mode, which draws them all on a single row.
+     */
+    private int getVariantRowCount() {
+        return getDisplayMode() == DisplayMode.COLLAPSED ? 1 : getNumberOfFeatureLevels();
     }
 
 
@@ -392,8 +400,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             final double pXMin = variantRect.getMinX();
             final double pXMax = variantRect.getMaxX();
 
+            int rowTop = trackRectangle.y;
             for (PackedFeatures.FeatureRow row : rows) {
 
+                // Each row of variants is drawn in its own band, below the previous row
+                Rectangle rowRect = new Rectangle(variantRect.x, rowTop, variantRect.width, getVariantBandHeight());
                 List<Variant> features = row.getFeatures();
                 for (Variant feature : features) {
                     Variant variant = feature;
@@ -427,12 +438,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                         w -= 2;
                     }
 
-                    if (variantRect.intersects(clipBounds)) {
-                        renderer.renderSiteBand(variant, variantRect, x, w, context);
+                    if (rowRect.intersects(clipBounds)) {
+                        renderer.renderSiteBand(variant, rowRect, x, w, context);
                     }
 
 
-                    if (showGenotypes) {
+                    if (showGenotypes && getDisplayMode() != DisplayMode.COLLAPSED) {
 
                         // Reset y position for each variant, it will be incremented as we loop through the samples
                         genotypeRect.y = trackRectangle.y + getVariantsHeight();
@@ -486,6 +497,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                     lastClipBounds = context.getClipBounds();
 
                 }
+                if (getDisplayMode() != DisplayMode.COLLAPSED) {
+                    rowTop += getVariantBandHeight();
+                }
             }
         } else {
             g2D.setColor(Color.gray);
@@ -517,7 +531,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         final int right = visibleRectangle.width;
 
         // Variant / Genotype border
-        if (sampleCount() > 0 && showGenotypes) {
+        if (sampleCount() > 0 && showGenotypes && getDisplayMode() != DisplayMode.COLLAPSED) {
             int variantGenotypeBorderY = getVariantsHeight();
             drawVariantBandBorder(g2D, visibleRectangle, variantGenotypeBorderY, left, right);
         }
@@ -1243,7 +1257,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         //We search only the specified row if y is a meaningful value.
         //Otherwise we search everything
         int row = (y / getVariantBandHeight());
-        if (y < 0 || row >= getNumberOfFeatureLevels()) {
+        if (y < 0 || getDisplayMode() == DisplayMode.COLLAPSED || row >= getNumberOfFeatureLevels()) {
             features = packedFeatures.getFeatures();
         } else {
             features = packedFeatures.getRows().get(row).getFeatures();
@@ -1413,8 +1427,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The height of the top band representing the variant call
      */
     public int getVariantBandHeight() {
-        // The variant band is not a "row", its height is independent of the display mode
-        return VARIANT_BAND_HEIGHT;
+        return getDisplayMode() == DisplayMode.SQUISHED ? DEFAULT_SQUISHED_VARIANT_HEIGHT : DEFAULT_EXPANDED_VARIANT_HEIGHT;
     }
 
     public enum ColorMode {
@@ -1626,21 +1639,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         } else {
             return super.getVisibleFeatures(frame);
         }
-    }
-
-    /**
-     * SQUISHED and EXPANDED set the genotype band (row) height.  The legacy COLLAPSED mode is translated to
-     * "hide genotypes".
-     *
-     * @param mode
-     */
-    @Override
-    public void setDisplayMode(DisplayMode mode) {
-        if (mode == DisplayMode.COLLAPSED) {
-            this.showGenotypes = false;
-            mode = DisplayMode.EXPANDED;
-        }
-        super.setDisplayMode(mode);
     }
 
     /**
