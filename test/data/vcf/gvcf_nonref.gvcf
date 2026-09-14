@@ -1,0 +1,12 @@
+##fileformat=VCFv4.2
+##ALT=<ID=NON_REF,Description="Represents any possible alternative allele at this location">
+##INFO=<ID=END,Number=1,Type=Integer,Description="Stop position of the interval">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##contig=<ID=chr1>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	S1
+chr1	1000	.	A	<NON_REF>	.	.	END=1006	GT	0/0
+chr1	1007	.	AT	A,<NON_REF>	0	.	.	GT	1/1
+chr1	1010	.	C	G,<NON_REF>	50	.	.	GT	0/1
+chr1	1020	.	ACG	A,<NON_REF>	50	.	.	GT	0/1
+chr1	1030	.	AT	A,<*>	50	.	.	GT	0/1
+chr1	1040	.	A	ATT,<NON_REF>	50	.	.	GT	0/1

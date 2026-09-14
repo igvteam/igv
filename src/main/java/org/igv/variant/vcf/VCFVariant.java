@@ -362,7 +362,10 @@ public class VCFVariant implements Variant, PackedFeature {
     private void calcStart() {
         int prefixLength = 0;
 
-        if (variantContext.getType() == VariantContext.Type.INDEL || variantContext.getType() == VariantContext.Type.MIXED) {
+        // The type ignoring gVCF <NON_REF> and <*> alleles, which stand for "any other allele" rather than sequence.
+        // With them, a gVCF deletion "AT -> A,<NON_REF>" would be MIXED rather than INDEL.
+        VariantContext.Type type = variantContext.getType(true);
+        if (type == VariantContext.Type.INDEL || type == VariantContext.Type.MIXED) {
             prefixLength = findCommonPrefixLength();
         }
 
@@ -389,7 +392,10 @@ public class VCFVariant implements Variant, PackedFeature {
         boolean foundmisMatch = false;
         for (int refPos = 0; refPos < ref.length(); refPos++) {
             char refChar = ref.charAt(refPos);
-            for (Allele var : getAlternateAlleles()) {
+            for (htsjdk.variant.variantcontext.Allele var : variantContext.getAlternateAlleles()) {
+                if (var.isNonRefAllele()) {
+                    continue;   // <NON_REF> or <*> -- not sequence, so it shares no prefix with the reference
+                }
                 byte[] varBases = var.getBases();
                 if (refPos >= varBases.length || varBases[refPos] != refChar) {
                     foundmisMatch = true;
