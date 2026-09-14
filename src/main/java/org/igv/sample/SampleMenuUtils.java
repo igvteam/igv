@@ -124,7 +124,8 @@ public class SampleMenuUtils {
 
             List<String> ids = dialog.getSampleIds();
 
-            // OK without editing the list is the same as Cancel.  Samples are shown in list order, so reordering is an edit.
+            // OK without editing the list is the same as Cancel.  Reordering a partial list is an edit, as it sets the
+            // display order of an unsorted track.
             if ((ids == null ? List.of() : ids).equals(currentSamples)) {
                 return;
             }

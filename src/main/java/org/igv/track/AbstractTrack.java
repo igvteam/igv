@@ -1110,12 +1110,21 @@ public abstract class AbstractTrack implements Track {
     }
 
     /**
-     * Restrict the displayed samples to the given IDs, shown in the order of the list, or show all samples if null.
-     * This is the "samples" property of igv.js track configurations.  A list that includes every sample is stored
-     * as null.  Samples must also pass the attribute filter, if any, to be shown.
+     * Restrict the displayed samples to the given IDs, or show all samples if null.  Samples are shown in the order of
+     * the list, or in the current sort order if the samples have been sorted, so that a saved session restores the
+     * order shown.  This is the "samples" property of igv.js track configurations.  A list that includes every
+     * sample is stored as null.  Samples must also pass the attribute filter, if any, to be shown.
      */
     public void setSelectedSamples(List<String> selectedSamples) {
-        this.selectedSamples = normalizeSelection(selectedSamples);
+        List<String> selection = normalizeSelection(selectedSamples);
+        if (selection != null && sampleSort != null) {
+            Map<String, Integer> sortOrder = new HashMap<>();
+            for (int i = 0; i < sampleNames.size(); i++) {
+                sortOrder.put(sampleNames.get(i), i);
+            }
+            selection.sort(Comparator.comparingInt(sample -> sortOrder.getOrDefault(sample, Integer.MAX_VALUE)));
+        }
+        this.selectedSamples = selection;
         resetSampleGroups();
     }
 
@@ -1579,7 +1588,11 @@ public abstract class AbstractTrack implements Track {
         }
 
         if (jsonObject.has("sort")) {
-            applySampleSort(SampleSort.fromJson(jsonObject.getJSONObject("sort")));
+            try {
+                applySampleSort(SampleSort.fromJson(jsonObject.getJSONObject("sort")));
+            } catch (Exception e) {
+                log.error("Unrecognized sort: " + jsonObject.get("sort"), e);
+            }
         }
     }
 

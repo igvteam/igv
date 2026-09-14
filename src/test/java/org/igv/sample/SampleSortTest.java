@@ -204,6 +204,58 @@ public class SampleSortTest extends AbstractHeadlessTest {
         }
     }
 
+    /**
+     * A seg value sort survives a later ID filter, and the session restores the order shown.
+     */
+    @Test
+    public void testSegSortThenIdFilter() {
+        SegTrack segTrack = loadSegTrack();
+        segTrack.sortSamplesByValue("chr1", 0, 250000000, RegionScoreType.AMPLIFICATION);
+        List<String> sorted = visibleSamples(segTrack);
+
+        List<String> subset = Arrays.asList(sorted.get(3), sorted.get(0), sorted.get(2));
+        segTrack.setSelectedSamples(subset);
+        List<String> expected = sorted.stream().filter(subset::contains).collect(Collectors.toList());
+        assertEquals(expected, visibleSamples(segTrack));
+
+        JSONObject json = new JSONObject();
+        segTrack.marshalJSON(json);
+        SegTrack restored = loadSegTrack();
+        restored.unmarshalJSON(json);
+        assertEquals(expected, visibleSamples(restored));
+    }
+
+    /**
+     * An ID filter set after a sort is shown in sort order, not list order, so the session restores the order shown.
+     */
+    @Test
+    public void testVariantSortThenIdFilter() {
+        track.sortSamples(SampleSort.GENOTYPE, variant, false);
+        List<String> sorted = visibleSamples(track);
+
+        List<String> subset = Arrays.asList(sorted.get(5), sorted.get(1), sorted.get(10), sorted.get(0));
+        track.setSelectedSamples(subset);
+        assertEquals(sorted.stream().filter(subset::contains).collect(Collectors.toList()), visibleSamples(track));
+        assertRestoredOrder(sessionJson(), "sort then ID filter");
+    }
+
+    /**
+     * A sort that can't be read is skipped; the rest of the track's settings are restored.
+     */
+    @Test
+    public void testUnreadableSortIsSkipped() {
+        JSONObject json = new JSONObject("{\"samples\": [\"D66\", \"2137\"], \"sort\": {\"option\": \"GENOTYPE\", \"direction\": \"ASC\"}}");
+        track.unmarshalJSON(json);
+        assertNull(track.getSampleSort());
+        assertEquals(List.of("D66", "2137"), visibleSamples(track));
+    }
+
+    private JSONObject sessionJson() {
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        return json;
+    }
+
     private void assertRestoredOrder(JSONObject json, String message) {
         VariantTrack restored = loadVariantTrack();
         restored.unmarshalJSON(json);
