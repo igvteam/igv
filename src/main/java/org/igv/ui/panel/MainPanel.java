@@ -746,8 +746,10 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             dtde.acceptDrop(DnDConstants.ACTION_COPY);
             Transferable transferable = dtde.getTransferable();
 
-            List<File> droppedFiles = new ArrayList<>();
-            List<String> droppedUrls = new ArrayList<>();
+            // A single resource can arrive through more than one flavor (e.g. Finder supplies both
+            // javaFileListFlavor and text/uri-list), so collect into ordered sets to remove duplicates.
+            Set<File> droppedFiles = new LinkedHashSet<>();
+            Set<String> droppedUrls = new LinkedHashSet<>();
 
             // Try to get files
             if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
@@ -800,12 +802,12 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
             // First check for a session
             String sessionPath = null;
-            if (droppedFiles.size() == 1 && droppedFiles.get(0).getName().endsWith(".xml")) {
+            if (droppedFiles.size() == 1 && droppedFiles.iterator().next().getName().endsWith(".xml")) {
                 // If it's a single XML file, treat it as a session file
-                sessionPath = droppedFiles.get(0).getAbsolutePath();
-            } else if (droppedUrls.size() == 1 && droppedUrls.get(0).endsWith(".xml")) {
+                sessionPath = droppedFiles.iterator().next().getAbsolutePath();
+            } else if (droppedUrls.size() == 1 && droppedUrls.iterator().next().endsWith(".xml")) {
                 // If it's a single URL ending in .xml, treat it as a session URL
-                sessionPath = droppedUrls.get(0);
+                sessionPath = droppedUrls.iterator().next();
             }
             if (sessionPath != null) {
                 final String sp = sessionPath;
