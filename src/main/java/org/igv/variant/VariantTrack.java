@@ -20,6 +20,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
+import org.igv.sample.SampleSort;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.color.ColorUtilities;
@@ -1608,6 +1609,43 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
     }
 
+
+    /**
+     * Sort samples by genotype, depth, or quality at the given variant, and remember the sort for sessions.
+     *
+     * @param option SampleSort.GENOTYPE, DEPTH, or QUALITY
+     */
+    public void sortSamples(String option, Variant variant, boolean ascending) {
+        Comparator<String> comparator = switch (option) {
+            case SampleSort.DEPTH -> new DepthComparator(variant, !ascending);
+            case SampleSort.QUALITY -> new QualityComparator(variant, !ascending);
+            default -> new GenotypeComparator(variant, !ascending);
+        };
+        sortSamples(comparator);
+        this.sampleSort = SampleSort.locus(option, variant.getContig(), variant.getStart(), variant.getEnd(), ascending);
+    }
+
+    @Override
+    protected void applySampleSort(SampleSort sort) {
+        String option = sort.getOption() == null ? SampleSort.GENOTYPE : sort.getOption();   // igv.js default
+        if (SampleSort.GENOTYPE.equals(option) || SampleSort.DEPTH.equals(option) || SampleSort.QUALITY.equals(option)) {
+            // Prefer the variant starting at the sort position, otherwise the first in the region
+            Variant variant = null;
+            for (Feature f : getFeatures(sort.getChr(), sort.getStart(), sort.getEnd())) {
+                if (f instanceof Variant v && (variant == null || v.getStart() == sort.getStart())) {
+                    variant = v;
+                    if (v.getStart() == sort.getStart()) {
+                        break;
+                    }
+                }
+            }
+            if (variant != null) {
+                sortSamples(option, variant, sort.isAscending());
+            }
+        } else {
+            super.applySampleSort(sort);
+        }
+    }
 
     @Override
     public void marshalJSON(org.json.JSONObject json) {

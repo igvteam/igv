@@ -13,8 +13,10 @@ import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.*;
 import org.igv.renderer.Renderer;
+import org.igv.sample.SampleAttributeComparator;
 import org.igv.sample.SampleFilter;
 import org.igv.sample.SampleGroup;
+import org.igv.sample.SampleSort;
 import org.igv.session.SessionAttribute;
 import org.igv.ui.FontManager;
 import org.igv.ui.IGV;
@@ -32,6 +34,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.igv.prefs.Constants.*;
 
@@ -110,8 +113,9 @@ public abstract class AbstractTrack implements Track {
     protected List<SampleGroup> sampleGroups = new ArrayList<>();
     protected List<String> sampleNames;
     protected String groupBy;
-    protected boolean samplesSorted;
+    protected SampleSort sampleSort;
     private SampleFilter sampleFilter;
+    private List<String> selectedSamples;
 
 
     @Override
@@ -1044,7 +1048,9 @@ public abstract class AbstractTrack implements Track {
         // Sort both master list and groups
         if (sampleNames != null) {
             sampleNames.sort(comparator);
-            this.samplesSorted = true;
+            if (selectedSamples != null) {
+                selectedSamples.sort(comparator);
+            }
             for (var group : getSampleGroups()) {
                 group.samples().sort(comparator);
             }
@@ -1052,17 +1058,90 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
+    public SampleSort getSampleSort() {
+        return sampleSort;
+    }
+
+    /**
+     * Sort samples by attribute values, and remember the sort for sessions.
+     */
+    public void sortSamplesByAttributes(String[] attributeNames, boolean[] ascending) {
+        sortSamples(new SampleAttributeComparator(attributeNames, ascending));
+        this.sampleSort = SampleSort.attributes(attributeNames, ascending);
+    }
+
+    /**
+     * Sort samples by name, and remember the sort for sessions.
+     */
+    public void sortSamplesByName(boolean ascending) {
+        sortSamples(ascending ? Comparator.naturalOrder() : Comparator.reverseOrder());
+        this.sampleSort = SampleSort.sampleName(ascending);
+    }
+
+    /**
+     * Reapply a sort restored from a session.  Subclasses handle sorts by data at a locus.
+     */
+    protected void applySampleSort(SampleSort sort) {
+        if (SampleSort.ATTRIBUTE.equals(sort.getOption())) {
+            sortSamplesByAttributes(sort.getAttributes(), sort.getAttributeAscending());
+        } else if (SampleSort.SAMPLE_NAME.equals(sort.getOption())) {
+            sortSamplesByName(sort.isAscending());
+        }
+    }
+
     public SampleFilter getSampleFilter() {
         return sampleFilter;
     }
 
+    /**
+     * Filter samples by attribute.  Samples must also pass the ID filter, if any, to be shown.
+     */
     public void setSampleFilter(SampleFilter sampleFilter) {
         this.sampleFilter = sampleFilter;
         resetSampleGroups();
     }
 
+    public List<String> getSampleNames() {
+        return sampleNames;
+    }
+
+    public List<String> getSelectedSamples() {
+        return selectedSamples;
+    }
+
+    /**
+     * Restrict the displayed samples to the given IDs, or show all samples if null.  Samples are shown in the order of
+     * the list, or in the current sort order if the samples have been sorted, so that a saved session restores the
+     * order shown.  This is the "samples" property of igv.js track configurations.  A list that includes every
+     * sample is stored as null.  Samples must also pass the attribute filter, if any, to be shown.
+     */
+    public void setSelectedSamples(List<String> selectedSamples) {
+        List<String> selection = normalizeSelection(selectedSamples);
+        if (selection != null && sampleSort != null) {
+            Map<String, Integer> sortOrder = new HashMap<>();
+            for (int i = 0; i < sampleNames.size(); i++) {
+                sortOrder.put(sampleNames.get(i), i);
+            }
+            selection.sort(Comparator.comparingInt(sample -> sortOrder.getOrDefault(sample, Integer.MAX_VALUE)));
+        }
+        this.selectedSamples = selection;
+        resetSampleGroups();
+    }
+
+    private List<String> normalizeSelection(List<String> samples) {
+        if (samples == null || (sampleNames != null && new HashSet<>(samples).containsAll(sampleNames))) {
+            return null;
+        }
+        return new ArrayList<>(samples);
+    }
+
     public List<String> getFilteredSamples() {
-        return sampleFilter == null ? sampleNames : sampleFilter.evaluateSamples(sampleNames);
+        List<String> samples = sampleNames;
+        if (selectedSamples != null) {
+            Set<String> trackSamples = new HashSet<>(sampleNames);
+            samples = selectedSamples.stream().filter(trackSamples::contains).collect(Collectors.toList());
+        }
+        return sampleFilter == null ? samples : sampleFilter.evaluateSamples(samples);
     }
 
     public void setSampleGroupBy(String attribute) {
@@ -1331,16 +1410,20 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        if (samplesSorted && sampleNames != null) {
-            jsonObject.put("samples", sampleNames);
-        }
-
         if (groupBy != null) {
             jsonObject.put("groupBy", groupBy);
         }
 
         if (sampleFilter != null) {
             jsonObject.put("sampleFilter", sampleFilter.toJson());
+        }
+
+        if (selectedSamples != null) {
+            jsonObject.put("samples", selectedSamples);
+        }
+
+        if (sampleSort != null) {
+            jsonObject.put("sort", sampleSort.toJson());
         }
 
     }
@@ -1481,13 +1564,6 @@ public abstract class AbstractTrack implements Track {
 
         if (jsonObject.has("samples") || jsonObject.has("groupBy") || jsonObject.has("sampleFilter")) {
 
-            if (jsonObject.has("samples")) {
-                // Samples are sorted
-                this.samplesSorted = true;
-                this.sampleNames = new ArrayList<>();
-                jsonObject.getJSONArray("samples").forEach(s -> sampleNames.add((String) s));
-            }
-
             if (jsonObject.has("groupBy")) {
                 // Samples are also grouped
                 this.groupBy = jsonObject.getString("groupBy");
@@ -1501,7 +1577,22 @@ public abstract class AbstractTrack implements Track {
                 }
             }
 
+            if (jsonObject.has("samples")) {
+                // Samples to show, in order, as in igv.js
+                List<String> samples = new ArrayList<>();
+                jsonObject.getJSONArray("samples").forEach(s -> samples.add((String) s));
+                this.selectedSamples = normalizeSelection(samples);
+            }
+
             resetSampleGroups();
+        }
+
+        if (jsonObject.has("sort")) {
+            try {
+                applySampleSort(SampleSort.fromJson(jsonObject.getJSONObject("sort")));
+            } catch (Exception e) {
+                log.error("Unrecognized sort: " + jsonObject.get("sort"), e);
+            }
         }
     }
 

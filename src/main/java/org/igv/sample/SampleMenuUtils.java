@@ -5,11 +5,15 @@ import org.igv.track.AttributeManager;
 import org.igv.ui.AttributeSelectionDialog;
 import org.igv.ui.IGV;
 import org.igv.ui.SampleFilterDialog;
+import org.igv.ui.SampleSelectionDialog;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.SortDialog;
 
 import javax.swing.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SampleMenuUtils {
 
@@ -30,8 +34,7 @@ public class SampleMenuUtils {
             final String[] attributeNames = dialog.getSelectedSortKeys();
             if (attributeNames != null) {
                 final boolean[] ascending = dialog.isAscending();
-                SampleAttributeComparator comparator = new SampleAttributeComparator(attributeNames, ascending);
-                track.sortSamples(comparator);
+                track.sortSamplesByAttributes(attributeNames, ascending);
                 track.repaint();
             }
         });
@@ -97,6 +100,56 @@ public class SampleMenuUtils {
                 sampleFilter = dialog.getFilter();
                 track.setSampleFilter(sampleFilter);
 
+            }
+        });
+
+        return item;
+    }
+
+
+    public static JMenuItem getFilterByIdItem(AbstractTrack track) {
+
+        JMenuItem item = new JMenuItem("Filter Samples By ID...");
+
+        item.addActionListener(evt -> {
+
+            // Start with the current ID filter, or all samples.  The attribute filter is separate and not reflected here.
+            List<String> currentSamples = track.getSelectedSamples() == null ? track.getSampleNames() : track.getSelectedSamples();
+            SampleSelectionDialog dialog = new SampleSelectionDialog(IGV.getInstance().getMainFrame(), currentSamples, track.getSampleNames());
+            dialog.setVisible(true);
+
+            if (dialog.isCanceled()) {
+                return;
+            }
+
+            List<String> ids = dialog.getSampleIds();
+
+            // OK without editing the list is the same as Cancel.  Reordering a partial list is an edit, as it sets the
+            // display order of an unsorted track.
+            if ((ids == null ? List.of() : ids).equals(currentSamples)) {
+                return;
+            }
+
+            if (ids == null) {
+                track.setSelectedSamples(null);
+                return;
+            }
+
+            Set<String> trackSamples = new HashSet<>(track.getSampleNames());
+            List<String> found = ids.stream().filter(trackSamples::contains).collect(Collectors.toList());
+            List<String> notFound = ids.stream().filter(id -> !trackSamples.contains(id)).collect(Collectors.toList());
+
+            if (found.isEmpty()) {
+                MessageUtils.showMessage("None of the entered sample IDs were found in this track.");
+                return;
+            }
+
+            track.setSelectedSamples(found);
+
+            if (!notFound.isEmpty()) {
+                MessageUtils.showMessage(notFound.size() + " of " + ids.size() + " sample IDs were not found: " +
+                        String.join(", ", notFound.subList(0, Math.min(20, notFound.size()))) +
+                        (notFound.size() > 20 ? ", ..." : ""));
             }
         });
 
