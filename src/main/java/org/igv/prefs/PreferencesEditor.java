@@ -486,6 +486,9 @@ public class PreferencesEditor {
             case "CROSS" -> "Cross Platform";
             case "NIMBUS" -> "Nimbus";
             case "METAL" -> "Metal";
+            case "AUTOMATIC" -> "Automatic";
+            case "COLOR_SCALE" -> "Color by rarity";
+            case "BAR" -> "Bar height";
             default -> value;
         };
     }

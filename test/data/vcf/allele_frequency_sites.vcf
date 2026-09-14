@@ -1,0 +1,10 @@
+##fileformat=VCFv4.2
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele frequency">
+##INFO=<ID=gnomAD_AF,Number=A,Type=Float,Description="gnomAD allele frequency">
+##contig=<ID=chr1>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+chr1	100	.	A	G	50	PASS	AF=0.2
+chr1	200	.	A	G,T	50	PASS	AF=0.3,0.0002
+chr1	300	.	A	G	50	PASS	gnomAD_AF=0.004
+chr1	400	.	A	G	50	PASS	AF=.;gnomAD_AF=0.00005
+chr1	500	.	A	G	50	PASS	.

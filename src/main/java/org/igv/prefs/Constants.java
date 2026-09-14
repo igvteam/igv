@@ -254,6 +254,8 @@ final public class Constants {
 
     // Variant (VCF) track settings
     public static final String VARIANT_COLOR_BY_ALLELE_FREQ = "VARIANT_COLOR_BY_ALLELE_FREQ";
+    public static final String VARIANT_ALLELE_FREQUENCY_DISPLAY = "VARIANT_ALLELE_FREQUENCY_DISPLAY";
+    public static final String VARIANT_ALLELE_FREQUENCY_COLORS = "VARIANT_ALLELE_FREQUENCY_COLORS";
     public static final String HOMREF_COLOR = "HOMREF.COLOR";
     public static final String HETVAR_COLOR = "HETVAR.COLOR";
     public static final String HOMVAR_COLOR = "HOMVAR.COLOR";

@@ -15,6 +15,7 @@ import org.igv.feature.PackedFeature;
 import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.AbstractColorScale;
@@ -148,6 +149,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The VCF INFO attribute the variant band is colored by.  Only used when siteColorMode == ATTRIBUTE.
      */
     private String colorByAttribute;
+
+    /**
+     * Whether allele frequency and fraction are drawn as a bar whose height is the frequency, rather than colored by
+     * rarity.  Null until chosen for this track -- the default depends on the preference and the file.
+     */
+    private Boolean alleleFrequencyBars;
+
+    /**
+     * Whether the file declares a field each allele frequency mode reads, cached per mode.
+     */
+    private final Map<ColorMode, Boolean> frequencyFieldsDeclared = new EnumMap<>(ColorMode.class);
 
     /**
      * Color tables for "color by INFO attribute", keyed by attribute ID.  Tables are created on demand and
@@ -669,6 +681,58 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     public void setSiteColorMode(ColorMode siteColorMode) {
         this.siteColorMode = siteColorMode;
+    }
+
+    /**
+     * @return true if allele frequency and fraction are drawn as a bar whose height is the frequency, false if the
+     * band is colored by rarity.  Unless chosen for the track this follows the preference: bars, rarity colors, or
+     * automatic -- rarity colors, except bars for a file without genotypes that has allele frequencies.
+     */
+    public boolean isAlleleFrequencyBars() {
+        if (alleleFrequencyBars != null) {
+            return alleleFrequencyBars;
+        }
+        String display = PreferencesManager.getPreferences().get(Constants.VARIANT_ALLELE_FREQUENCY_DISPLAY);
+        if (AlleleFrequencyColors.DISPLAY_BAR.equals(display)) {
+            return true;
+        }
+        if (AlleleFrequencyColors.DISPLAY_COLOR_SCALE.equals(display)) {
+            return false;
+        }
+        return !hasSamples() && hasFrequencyFields(ColorMode.ALLELE_FREQUENCY);
+    }
+
+    public void setAlleleFrequencyBars(boolean bars) {
+        this.alleleFrequencyBars = bars;
+    }
+
+    /**
+     * @return true if the file declares a field the allele frequency mode takes values from, or its header can't
+     * be read as a VCF header
+     */
+    public boolean hasFrequencyFields(ColorMode mode) {
+        Boolean declared = frequencyFieldsDeclared.get(mode);
+        if (declared == null) {
+            Object header = getHeader();
+            if (header == null) {
+                return true;
+            }
+            declared = !(header instanceof VCFHeader) || AlleleFrequencyColors.hasFrequencyFields((VCFHeader) header, mode);
+            frequencyFieldsDeclared.put(mode, declared);
+        }
+        return declared;
+    }
+
+    /**
+     * The color of a variant's band when coloring allele frequency or fraction by rarity.  A variant without a
+     * value is colored as the rarest, unless the file declares no field to take a value from, in which case every
+     * variant is drawn in the track color.
+     */
+    public Color getAlleleFrequencyColor(Variant variant) {
+        if (!hasFrequencyFields(siteColorMode)) {
+            return getColor();
+        }
+        return AlleleFrequencyColors.getScale().getColor(AlleleFrequencyColors.getFrequency(variant, siteColorMode));
     }
 
     /**
@@ -1661,6 +1725,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode != null) {
             json.put("siteColorMode", siteColorMode.toString());
         }
+        if (alleleFrequencyBars != null) {
+            json.put("alleleFrequencyBars", alleleFrequencyBars);
+        }
         if (colorByAttribute != null) {
             json.put("colorByAttribute", colorByAttribute);
 
@@ -1718,6 +1785,9 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         if (json.has("siteColorMode")) {
             this.siteColorMode = ColorMode.valueOf(json.getString("siteColorMode"));
+        }
+        if (json.has("alleleFrequencyBars")) {
+            this.alleleFrequencyBars = json.getBoolean("alleleFrequencyBars");
         }
     }
 

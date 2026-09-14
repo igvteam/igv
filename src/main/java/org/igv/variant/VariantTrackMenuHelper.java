@@ -72,6 +72,7 @@ public class VariantTrackMenuHelper {
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
         items.add(getColorBandByAllelFrequency(variantTrack));
         items.add(getColorBandByAlleleFraction(variantTrack));
+        items.add(getAlleleFrequencyDisplayMenu(variantTrack));
         JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
         if (infoFieldMenu != null) {
             items.add(infoFieldMenu);
@@ -152,6 +153,44 @@ public class VariantTrackMenuHelper {
             IGV.getInstance().getContentPane().repaint();
         });
         return item;
+    }
+
+    /**
+     * How allele frequency and fraction are drawn: colored by rarity, or as a bar whose height is the frequency.
+     * Choosing a display while coloring by something else switches to allele frequency, so the choice is visible.
+     */
+    private static JMenu getAlleleFrequencyDisplayMenu(VariantTrack track) {
+
+        JMenu menu = new JMenu("Allele Frequency Display");
+        boolean bars = track.isAlleleFrequencyBars();
+
+        JRadioButtonMenuItem colorItem = new JRadioButtonMenuItem("Color by Rarity", !bars);
+        colorItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, false));
+        JRadioButtonMenuItem barItem = new JRadioButtonMenuItem("Bar Height", bars);
+        barItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, true));
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(colorItem);
+        group.add(barItem);
+        menu.add(colorItem);
+        menu.add(barItem);
+
+        menu.addSeparator();
+        JMenuItem editItem = new JMenuItem("Edit Rarity Colors...");
+        editItem.addActionListener(evt ->
+                new AlleleFrequencyColorsDialog(IGV.getInstance().getMainFrame()).setVisible(true));
+        menu.add(editItem);
+
+        return menu;
+    }
+
+    private static void setAlleleFrequencyDisplay(VariantTrack track, boolean bars) {
+        track.setAlleleFrequencyBars(bars);
+        VariantTrack.ColorMode mode = track.getSiteColorMode();
+        if (mode != VariantTrack.ColorMode.ALLELE_FREQUENCY && mode != VariantTrack.ColorMode.ALLELE_FRACTION) {
+            track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
+        }
+        IGV.getInstance().getContentPane().repaint();
     }
 
     /**
