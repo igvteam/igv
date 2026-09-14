@@ -742,6 +742,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     public void testAggregate() {
         assertEquals(0.3, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
         assertEquals(0.2, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
+        assertEquals(0.1, VariantTrack.aggregate(new String[]{"0.2", ".", "0.1"}, 0, VariantTrack.Aggregation.MIN), 1e-9);
         assertEquals(-1.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
         assertEquals(-4.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
         assertEquals(5.0, VariantTrack.aggregate(new String[]{".", "5"}, 0, VariantTrack.Aggregation.SUM), 1e-9);

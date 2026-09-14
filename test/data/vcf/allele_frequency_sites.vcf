@@ -11,3 +11,4 @@ chr1	400	.	A	G	50	PASS	AF=.;gnomAD_AF=0.00005
 chr1	500	.	A	G	50	PASS	.
 chr1	600	.	A	<NON_REF>	50	PASS	.
 chr1	700	.	A	G	50	PASS	GMAF=0.03
+chr1	800	.	A	G,T	50	PASS	gnomAD_AF=0.3,0.00001

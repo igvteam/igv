@@ -67,7 +67,7 @@ public class AlleleFrequencyColorsTest extends AbstractHeadlessTest {
     public void testFrequencies() {
         List<Variant> variants = variants(load(SITES));
         // gnomAD_AF only, AF=., no fields, and the reference block have no value; the last has only GMAF
-        double[] expected = {0.2, 0.0002, -1, -1, -1, -1, 0.03};
+        double[] expected = {0.2, 0.0002, -1, -1, -1, -1, 0.03, -1};
         for (int i = 0; i < expected.length; i++) {
             assertEquals("variant " + i, expected[i],
                     AlleleFrequencyColors.getFrequency(variants.get(i), VariantTrack.ColorMode.ALLELE_FREQUENCY), 1e-12);
@@ -141,8 +141,13 @@ public class AlleleFrequencyColorsTest extends AbstractHeadlessTest {
         assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "gnomAD_AF"));
 
         track.setColorByAttribute("gnomAD_AF");
-        Variant variant = variants(track).get(2);       // gnomAD_AF=0.004
-        assertEquals(AlleleFrequencyColors.getScale().getColor((float) 0.004), track.getAttributeColor(variant));
+        List<Variant> variants = variants(track);
+        assertEquals(AlleleFrequencyColors.getScale().getColor((float) 0.004),
+                track.getAttributeColor(variants.get(2)));                          // gnomAD_AF=0.004
+
+        // A multi-allelic site is colored by its rarest allele
+        assertEquals(AlleleFrequencyColors.getScale().getColor((float) 0.00001),
+                track.getAttributeColor(variants.get(7)));                          // gnomAD_AF=0.3,0.00001
     }
 
     /**

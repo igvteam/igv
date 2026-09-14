@@ -19,6 +19,7 @@ import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ColorStopScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
 import org.igv.sample.SampleSort;
@@ -980,7 +981,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         // nothing to color by, and is drawn missing -- as it is for a Number=A attribute, which has no values.
         int first = getCountType(key) == VCFHeaderLineCount.R ? 1 : 0;
 
-        return aggregate(parts, first, getAggregation(key));
+        // The rarity scale colors a variant by its rarest allele, as the top-level Allele Frequency mode does
+        Aggregation aggregation = VariantColorSchemes.getScale(key) instanceof ColorStopScale ?
+                Aggregation.MIN : getAggregation(key);
+        return aggregate(parts, first, aggregation);
     }
 
     /**
@@ -997,7 +1001,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
          * and it matches the "Allele Frequency" color mode (see
          * {@link org.igv.variant.vcf.VCFVariant#getAlternateAlleleFrequency}).
          */
-        SUM
+        SUM,
+        /**
+         * The smallest value.  For an allele frequency colored by rarity, the rarest allele.
+         */
+        MIN
     }
 
     private static Aggregation getAggregation(String key) {
@@ -1054,6 +1062,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 result = d;
             } else if (aggregation == Aggregation.SUM) {
                 result += d;
+            } else if (aggregation == Aggregation.MIN) {
+                result = Math.min(result, d);
             } else {
                 result = Math.max(result, d);
             }
