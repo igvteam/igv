@@ -843,7 +843,8 @@ public class AlignmentRenderer {
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
                             } else if (colorOption.isBaseMod() ||
-                                    colorOption.isSMRTKinetics()) {
+                                    colorOption.isSMRTKinetics() ||
+                                    colorOption == ColorOption.FIBERSEQ) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
