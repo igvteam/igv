@@ -28,7 +28,7 @@ public class FiberseqRenderer {
             return;
         }
         int h = Math.max(1, rowRect.height - (leaveMargin ? 2 : 0));
-        int y = rowRect.y + (rowRect.height - h) / 2;
+        int y = rowRect.y;
 
         g.setColor(NUCLEOSOME_COLOR);
         drawIntervals(annotations.getNucleosomes(), false, bpStart, locScale, rowRect, g, y, h);
