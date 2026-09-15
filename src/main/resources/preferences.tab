@@ -166,7 +166,7 @@ SAM.SHOW_CONNECTED_CHR_NAME	Show connected chromosome name	boolean	TRUE
 SAM.QUICK_CONSENSUS_MODE	Quick consensus mode	boolean	FALSE
 
 ---
-SAM.HIDDEN_TAGS	Hide tags in popup text (comma delimited list)	string	SA,MD,XA,RG
+SAM.HIDDEN_TAGS	Hide tags in popup text (comma delimited list)	string	SA,MD,XA,RG,MA,MM,ML,Ma,Mm,Ml
 ---
 SAM.LINK_BY_TAGS	Tags to be used for linking alignments (comma delimited list)	string	 
 ---
@@ -270,6 +270,10 @@ BASEMOD.NONE_T_COLOR	T	color	0,0,255
 BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
+## Fiber-seq colors
+FIBERSEQ.NUCLEOSOME_COLOR	Nucleosome	color	150,150,150
+FIBERSEQ.MSP_COLOR	MSP (methylation sensitive patch)	color	0,150,150
+FIBERSEQ.FIRE_COLOR	FIRE (opacity increases with FIRE quality)	color	200,0,0
 
 ##Validation
 BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE

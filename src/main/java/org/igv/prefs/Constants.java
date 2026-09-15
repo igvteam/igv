@@ -242,6 +242,11 @@ final public class Constants {
 
     public static final String BASEMOD_CYTOSINE_CONTEXT = "BASEMOD.CYTOSINE_CONTEXT";
 
+    // Fiber-seq settings
+    public static final String FIBERSEQ_NUCLEOSOME_COLOR = "FIBERSEQ.NUCLEOSOME_COLOR";
+    public static final String FIBERSEQ_MSP_COLOR = "FIBERSEQ.MSP_COLOR";
+    public static final String FIBERSEQ_FIRE_COLOR = "FIBERSEQ.FIRE_COLOR";
+
     // Sequence track settings
     public static final String SEQUENCE_TRANSLATION_STRAND = "SEQUENCE_TRANSLATION_STRAND";
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
@@ -376,7 +381,10 @@ final public class Constants {
             SAM_SHADE_QUALITY_HIGH,
             SAM_SHADE_ALIGNMENT_BY,
             BASEMOD_THRESHOLD,
-            SMRT_KINETICS_SHOW_OPTIONS
+            SMRT_KINETICS_SHOW_OPTIONS,
+            FIBERSEQ_NUCLEOSOME_COLOR,
+            FIBERSEQ_MSP_COLOR,
+            FIBERSEQ_FIRE_COLOR
     );
 
     static java.util.List<String> BASEMOD_COLOR_KEYS = Arrays.asList(
