@@ -727,6 +727,7 @@ public class SAMAlignment implements Alignment {
 
         boolean atInsertion = false;
         boolean atBaseMod = false;
+        StringBuilder fiberseqBuf = new StringBuilder();   // shown below the flags
 
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
@@ -788,13 +789,13 @@ public class SAMAlignment implements Alignment {
                 if (fiberseq != null) {
                     for (FiberseqAnnotations.Interval interval : fiberseq.getNucleosomes()) {
                         if (interval.contains(basePosition)) {
-                            buf.append("Nucleosome: " + (interval.start() + 1) + "-" + interval.end() +
+                            fiberseqBuf.append("Nucleosome: " + (interval.start() + 1) + "-" + interval.end() +
                                     " (" + (interval.end() - interval.start()) + " bp)<br>");
                         }
                     }
                     for (FiberseqAnnotations.Interval interval : fiberseq.getMsps()) {
                         if (interval.contains(basePosition)) {
-                            buf.append("MSP: " + (interval.start() + 1) + "-" + interval.end() +
+                            fiberseqBuf.append("MSP: " + (interval.start() + 1) + "-" + interval.end() +
                                     " (" + (interval.end() - interval.start()) + " bp)" +
                                     (interval.quality() > 0 ? ", FIRE quality " + interval.quality() : "") + "<br>");
                         }
@@ -854,6 +855,11 @@ public class SAMAlignment implements Alignment {
         buf.append("Read length = " + getReadLengthString() + "<br>");
 
         buf.append("Flags = " + record.getFlags() + "<br>");
+
+        if (fiberseqBuf.length() > 0) {
+            buf.append("----------------------" + "<br>");
+            buf.append(fiberseqBuf);
+        }
 
         buf.append("----------------------" + "<br>");
         String cigarString = getCigarString();

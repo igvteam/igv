@@ -4,6 +4,7 @@ IGV.single.track.pane	Display all tracks at full height in a single panel	boolea
 IGV.track.show.attribute.views	Show attribute panel	boolean	FALSE
 SHOW_DEFAULT_TRACK_ATTRIBUTES	Show default track attributes	boolean	FALSE
 SHOW_REGION_BARS	Show region-of-interest boundaries	boolean	FALSE
+SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	TRUE
 ENABLE_GOOGLE_MENU	Enable Google access	boolean	FALSE	Enable loading from Google apis.
 FLANKING_REGION	"Search for feature" padding region in bp, < 0 is interpreted as a percentage.	integer	2000	
 DEFAULT_VISIBILITY_WINDOW	Default visibility window (kilobases), < 0 disables visibility window.	float	-1
@@ -100,7 +101,6 @@ ALIGNMENT_TRACK_HEIGHT	Default alignment track height (pixels)	integer	300
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	FALSE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	30	Range at which alignments become visible
 
 ##Downsampling
@@ -196,7 +196,6 @@ info Settings below override defaults for RNA alignments.
 SAM.SHOW_ALIGNMENT_TRACK	Show alignment track	boolean	TRUE
 SAM.SHOW_COV_TRACK	Show coverage track	boolean	TRUE
 SAM.SHOW_JUNCTION_TRACK	Show junction track	boolean	TRUE
-SAM.SHOW_INSERTION_MARKERS	Show insertion markers	boolean	FALSE
 SAM.MAX_VISIBLE_RANGE	Visibility range threshold (kb)	float	300	Range at which alignments become visibile
 
 ##Splice Junction Track

@@ -636,17 +636,7 @@ public class AlignmentRenderer {
 
                 // Label the size of the deletion if it is "large" and the label fits.
                 if (flagLargeIndels && (gap.getType() == SAMAlignment.DELETION) && gapWidth > largeInsertionsThreshold) {
-                    drawLargeIndelLabel(largeIndelGraphics,
-                            false,
-                            Globals.DECIMAL_FORMAT.format(gapWidth),
-                            ((gapPxStart + gapPxEnd) / 2),
-                            y,
-                            h,
-                            gapPxEnd - gapPxStart - 2,
-                            context.translateX,
-                            null,
-                            alignment,
-                            context);
+                    drawDeletionLabel(largeIndelGraphics, gapWidth, gapPxStart, gapPxEnd, y, h, alignment, context);
                 }
 
                 // gap extensions
@@ -886,7 +876,23 @@ public class AlignmentRenderer {
 
         // Fiber-seq nucleosomes and MSPs
         if (colorOption == ColorOption.FIBERSEQ) {
-            FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), leaveMargin);
+            FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), leaveMargin,
+                    hideSmallIndelsBP ? indelThresholdBP : 0);
+            // The overlay covers deletion labels; draw them again on top
+            if (flagLargeIndels && gaps != null) {
+                for (Gap gap : gaps) {
+                    int gapStart = gap.getStart();
+                    int gapEnd = gapStart + gap.getnBases();
+                    if (gap.getType() != SAMAlignment.DELETION || gap.getnBases() <= largeInsertionsThreshold ||
+                            gapEnd <= bpStart || gapStart >= bpEnd) {
+                        continue;
+                    }
+                    int gapPxStart = (int) ((Math.max(bpStart, gapStart) - bpStart) / locScale);
+                    int gapPxEnd = (int) ((Math.min(bpEnd, gapEnd) - bpStart) / locScale);
+                    drawDeletionLabel(largeIndelGraphics, gap.getnBases(), gapPxStart, gapPxEnd, y, h, alignment,
+                            context);
+                }
+            }
         }
 
         // DRAW Insertions
@@ -925,6 +931,9 @@ public class AlignmentRenderer {
                                 aBlock,
                                 alignment,
                                 context);
+                    } else if (colorOption.isBaseMod() || colorOption == ColorOption.FIBERSEQ) {
+                        // Markers distract from the modification / fiber-seq overlays; hidden markers are not clickable
+                        aBlock.setPixelRange(Integer.MIN_VALUE, Integer.MIN_VALUE);
                     } else {
                         int pxWing = (h > 10 ? 2 : (h > 5) ? 1 : 0);
                         Graphics2D ig = context.getGraphics();
@@ -1120,6 +1129,21 @@ public class AlignmentRenderer {
         } finally {
             g.setColor(savedColor);
         }
+    }
+
+    private void drawDeletionLabel(Graphics2D g, int gapWidth, int gapPxStart, int gapPxEnd, int y, int h,
+                                   Alignment alignment, RenderContext context) {
+        drawLargeIndelLabel(g,
+                false,
+                Globals.DECIMAL_FORMAT.format(gapWidth),
+                ((gapPxStart + gapPxEnd) / 2),
+                y,
+                h,
+                gapPxEnd - gapPxStart - 2,
+                context.translateX,
+                null,
+                alignment,
+                context);
     }
 
     private void drawLargeIndelLabel(Graphics2D g, boolean isInsertion, String labelText, int pxCenter,
