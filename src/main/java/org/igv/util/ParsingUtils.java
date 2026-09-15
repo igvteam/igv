@@ -594,24 +594,3 @@ public class ParsingUtils {
         return url != null && url.startsWith("data:") && !((new File(url)).exists());
     }
 }
-
-class GZIPSafeBufferedStream extends BufferedInputStream {
-
-    public GZIPSafeBufferedStream(InputStream in) {
-        super(in);
-    }
-
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        int ret = super.read(b, off, len);
-        if (available() == 0) {
-            mark(26);
-            read();
-            reset();
-        }
-        return ret;
-    }
-
-
-}
