@@ -415,10 +415,8 @@ public class SAMAlignment implements Alignment {
     @Override
     public FiberseqAnnotations getFiberseqAnnotations() {
         if (!fiberseqAnnotationsLoaded) {
-            fiberseqAnnotations = FiberseqAnnotations.create(
-                    record.getAttribute("ns"), record.getAttribute("nl"),
-                    record.getAttribute("as"), record.getAttribute("al"), record.getAttribute("aq"),
-                    record.getReadLength(), isNegativeStrand(), getAlignmentBlocks());
+            fiberseqAnnotations = FiberseqAnnotations.fromTags(record::getAttribute, record.getReadLength(),
+                    isNegativeStrand(), getAlignmentBlocks());
             fiberseqAnnotationsLoaded = true;
         }
         return fiberseqAnnotations;

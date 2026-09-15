@@ -2,6 +2,7 @@ package org.igv.alignment;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
+import org.igv.alignment.fiberseq.FiberseqAnnotations;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
@@ -193,7 +194,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     ycTags = true;
                 }
 
-                if (!fiberseqTags && (record.getAttribute("ns") != null || record.getAttribute("as") != null)) {
+                if (!fiberseqTags && FiberseqAnnotations.hasTags(record::getAttribute)) {
                     fiberseqTags = true;
                 }
 
