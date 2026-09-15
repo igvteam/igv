@@ -79,10 +79,11 @@ public class TrackMenuUtils {
 
         // Try multi-track menu first.  If multiple tracks are selected a menu with a subset of shared items is
         // created.  If the track clicked is not one of the selected tracks selections are cleared and we proceed
-        // as usual with a single-track menu.  This behavior mimics google sheets.
+        // as usual with a single-track menu.  This behavior mimics google sheets.  A track that is the only
+        // selection gets the single-track menu, so its track-specific items are not lost.
         List<Track> selectedTracks = IGV.getSelectedTracks();
         if (!selectedTracks.isEmpty()) {
-            if (selectedTracks.contains(track)) {
+            if (selectedTracks.size() > 1 && selectedTracks.contains(track)) {
                 IGVPopupMenu multiMenu = new IGVPopupMenu();
                 JLabel multiTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
                 multiTitle.setFont(FontManager.getFont(Font.BOLD, 12));
@@ -141,7 +142,7 @@ public class TrackMenuUtils {
                 multiMenu.add(TrackMenuUtils.getRemoveMenuItem(selectedTracks));
 
                 return multiMenu;
-            } else {
+            } else if (!selectedTracks.contains(track)) {
                 clearTrackSelections();
             }
         }
