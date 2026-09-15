@@ -519,7 +519,8 @@ public class AttributeManager {
         if (metaData == null) {
             return Color.gray;
         }
-        if (metaData.isNumeric()) {
+        // Autoscale group ids are numbered labels, not measurements, so color them as categories
+        if (metaData.isNumeric() && !attKey.equalsIgnoreCase(GROUP_AUTOSCALE)) {
             AbstractColorScale cs = colorScales.get(attKey);
             {
                 if (cs == null) {
