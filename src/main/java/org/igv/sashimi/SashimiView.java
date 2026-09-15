@@ -40,7 +40,8 @@ public class SashimiView {
         double end = toGenomic(plotFrame.getWidthInPixels());
         map = newMap;
         int plotStart = (int) Math.round(map.toPlot(start));
-        int plotEnd = (int) Math.round(map.toPlot(end));
+        // Keep a non-zero width -- a heavily shrunk view can round to a single coordinate
+        int plotEnd = Math.max(plotStart + 1, (int) Math.round(map.toPlot(end)));
         plotFrame.jumpTo(new Locus(plotFrame.getChrName(), plotStart, plotEnd));
         syncDataFrame();
     }
