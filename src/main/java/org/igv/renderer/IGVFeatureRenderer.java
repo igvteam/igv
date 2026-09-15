@@ -128,8 +128,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
                 double effectiveEnd = Math.max(feature.getStart() + 0.25, feature.getEnd());
 
-                double virtualPixelStart = (feature.getStart() - origin) / locScale;
-                double virtualPixelEnd = (effectiveEnd - origin) / locScale;
+                double virtualPixelStart = getVirtualPixel(feature.getStart(), origin, locScale);
+                double virtualPixelEnd = getVirtualPixel(effectiveEnd, origin, locScale);
 
                 // if pixel width > 5 pixels create gap between variants
                 int pixelStart = (int) Math.round(Math.max(trackRectangleX, virtualPixelStart));
@@ -175,8 +175,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 boolean hasExons = false;
                 if (feature instanceof BasicFeature) {
                     BasicFeature bf = (BasicFeature) feature;
-                    pixelThickStart = (int) Math.max(trackRectangleX, Math.round((bf.getThickStart() - origin) / locScale));
-                    pixelThickEnd = (int) Math.min(trackRectangleMaxX, Math.round((bf.getThickEnd() - origin) / locScale));
+                    pixelThickStart = (int) Math.max(trackRectangleX, Math.round(getVirtualPixel(bf.getThickStart(), origin, locScale)));
+                    pixelThickEnd = (int) Math.min(trackRectangleMaxX, Math.round(getVirtualPixel(bf.getThickEnd(), origin, locScale)));
                     hasExons = bf.hasExons();
                 }
 
@@ -207,7 +207,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                             int peakPosition = Integer.parseInt(feature.getAttribute("peak"));
                             if (peakPosition > 0) {
                                 Color c = g2D.getColor();
-                                int peakPixelPosition = (int) ((feature.getStart() + peakPosition - origin) / locScale);
+                                int peakPixelPosition = (int) getVirtualPixel(feature.getStart() + peakPosition, origin, locScale);
                                 Color peakColor = Globals.DARK_MODE_BLUE.equals(c) ? Color.red : Color.cyan;
                                 g2D.setColor(peakColor);
                                 int pw = Math.min(4, pixelWidth / 5);
@@ -488,7 +488,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 drawStrandArrows(gene.getStrand(), pStart + ARROW_SPACING / 2, pEnd, curYOffset, 0, rowHeight,
                         trackRectangle, whiteArrowGraphics);
 
-                if (locationScale < 0.25 && rowHeight > 10) {
+                // Scale at which this exon is drawn, which differs from locationScale for non-linear coordinates
+                double exonScale = (exon.getEnd() - exon.getStart()) /
+                        (getVirtualPixel(exon.getEnd(), theOrigin, locationScale) - getVirtualPixel(exon.getStart(), theOrigin, locationScale));
+                if (exonScale < 0.25 && rowHeight > 10) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
                             curYOffset, trackRectangle, idx);
                 }
@@ -689,7 +692,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     protected int getPixelFromChromosomeLocation(String chr, int chromosomeLocation, double origin,
                                                  double locationScale) {
-        return (int) Math.round((chromosomeLocation - origin) / locationScale);
+        return (int) Math.round(getVirtualPixel(chromosomeLocation, origin, locationScale));
+    }
+
+    /**
+     * Unrounded pixel position of a chromosome location.  Overridden by renderers whose coordinates are not linear
+     * in chromosome position, e.g. the Sashimi plot with compressed introns.
+     */
+    protected double getVirtualPixel(double chromosomeLocation, double origin, double locationScale) {
+        return (chromosomeLocation - origin) / locationScale;
     }
 
 }
