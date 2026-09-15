@@ -177,7 +177,7 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             int newY = coverageRectangle.y + coverageRectangle.height / 2 - newHeight;
             coverageRectangle.setBounds(coverageRectangle.x, newY, coverageRectangle.width, newHeight);
 
-            coverageTrack.render(context);
+            coverageTrack.render(context, coverageRectangle);
         }
 
         double origin = context.getOrigin();
