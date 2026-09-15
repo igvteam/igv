@@ -190,14 +190,20 @@ public class CoverageTrack extends AbstractTrack implements ScalableTrack {
     }
 
     public void render(RenderContext context) {
+        render(context, context.getTrackRectangle());
+    }
+
+    /**
+     * Render coverage in the given rectangle, which is not necessarily the full track rectangle.  The Sashimi plot
+     * draws coverage in the upper half of its track, leaving room for junction arcs below.
+     */
+    public void render(RenderContext context, Rectangle rect) {
 
         int viewWindowSize = context.getReferenceFrame().getCurrentRange().getLength();
         if (viewWindowSize > getVisibilityWindow() && dataSource == null) {
             return;
         }
 
-
-        Rectangle rect = context.getTrackRectangle();
         drawData(context, rect);
 
         if (dataSourceRenderer != null) {
