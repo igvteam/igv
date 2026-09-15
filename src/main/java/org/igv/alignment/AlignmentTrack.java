@@ -82,6 +82,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         SMRT_CCS_FWD_PW,
         SMRT_CCS_REV_IPD,
         SMRT_CCS_REV_PW,
+        FIBERSEQ,
         READ_NAME;
 
         public boolean isBaseMod() {
