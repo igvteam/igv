@@ -123,7 +123,8 @@ public class BaseRenderer {
                         //     color = bisinfo.getDisplayColor(idx);
                         // } else
                         if (colorOption.isBaseMod() ||
-                                colorOption.isSMRTKinetics()) {
+                                colorOption.isSMRTKinetics() ||
+                                colorOption == AlignmentTrack.ColorOption.FIBERSEQ) {
                             color = Color.GRAY;
                         } else {
                             //color = nucleotideColors.get(c);

@@ -3,6 +3,7 @@ package org.igv.alignment;
 import htsjdk.samtools.Cigar;
 import org.igv.feature.LocusScore;
 import org.igv.feature.Strand;
+import org.igv.alignment.fiberseq.FiberseqAnnotations;
 import org.igv.alignment.mods.BaseModificationUtils;
 import org.igv.alignment.mods.BaseModificationSet;
 import org.igv.alignment.smrt.SMRTKinetics;
@@ -165,6 +166,8 @@ public interface Alignment extends LocusScore {
     default List<BaseModificationSet> getBaseModificationSets() { return null;}
 
     default SMRTKinetics getSmrtKinetics() { return null;}
+
+    default FiberseqAnnotations getFiberseqAnnotations() { return null;}
 
 
     default String getAlignmentValueString(double position, int mouseX, RenderOptions renderOptions) {

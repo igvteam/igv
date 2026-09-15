@@ -12,6 +12,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.GraphicUtils;
 import org.igv.alignment.AlignmentTrack.ColorOption;
 import org.igv.alignment.BisulfiteBaseInfo.DisplayStatus;
+import org.igv.alignment.fiberseq.FiberseqRenderer;
 import org.igv.alignment.mods.BaseModificationRenderer;
 import org.igv.alignment.smrt.SMRTKineticsRenderer;
 import org.igv.track.RenderContext;
@@ -326,7 +327,8 @@ public class AlignmentRenderer {
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
                                 colorOption.isBaseMod() ||
-                                colorOption.isSMRTKinetics()) &&
+                                colorOption.isSMRTKinetics() ||
+                                colorOption == ColorOption.FIBERSEQ) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -841,7 +843,8 @@ public class AlignmentRenderer {
                             if (bisulfiteMode) {
                                 color = bisinfo.getDisplayColor(idx);
                             } else if (colorOption.isBaseMod() ||
-                                    colorOption.isSMRTKinetics()) {
+                                    colorOption.isSMRTKinetics() ||
+                                    colorOption == ColorOption.FIBERSEQ) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -879,6 +882,11 @@ public class AlignmentRenderer {
         // Kinetic data
         if (colorOption.isSMRTKinetics()) {
             SMRTKineticsRenderer.drawSmrtKinetics(alignment, bpStart, locScale, rowRect, context.getGraphics(), colorOption);
+        }
+
+        // Fiber-seq nucleosomes and MSPs
+        if (colorOption == ColorOption.FIBERSEQ) {
+            FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), leaveMargin);
         }
 
         // DRAW Insertions
@@ -1199,6 +1207,7 @@ public class AlignmentRenderer {
             case SMRT_CCS_FWD_PW:
             case SMRT_CCS_REV_IPD:
             case SMRT_CCS_REV_PW:
+            case FIBERSEQ:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

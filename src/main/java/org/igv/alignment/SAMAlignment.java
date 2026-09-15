@@ -12,6 +12,7 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
+import org.igv.alignment.fiberseq.FiberseqAnnotations;
 import org.igv.alignment.mods.BaseModificationSet;
 import org.igv.alignment.mods.BaseModificationUtils;
 import org.igv.alignment.smrt.SMRTKinetics;
@@ -98,6 +99,8 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
+    private FiberseqAnnotations fiberseqAnnotations;
+    private boolean fiberseqAnnotationsLoaded;
 
     private enum CacheKey {CLIPPING_COUNTS, SA_GROUP}
 
@@ -407,6 +410,16 @@ public class SAMAlignment implements Alignment {
             smrtKinetics = new SMRTKinetics(this);
         }
         return smrtKinetics;
+    }
+
+    @Override
+    public FiberseqAnnotations getFiberseqAnnotations() {
+        if (!fiberseqAnnotationsLoaded) {
+            fiberseqAnnotations = FiberseqAnnotations.fromTags(record::getAttribute, record.getReadLength(),
+                    isNegativeStrand(), getAlignmentBlocks());
+            fiberseqAnnotationsLoaded = true;
+        }
+        return fiberseqAnnotations;
     }
 
     /**
@@ -767,6 +780,23 @@ public class SAMAlignment implements Alignment {
                             buf.append(modString);
                             buf.append("<br");
                             atBaseMod = true;
+                        }
+                    }
+                }
+            } else if (colorOption == AlignmentTrack.ColorOption.FIBERSEQ) {
+                FiberseqAnnotations fiberseq = getFiberseqAnnotations();
+                if (fiberseq != null) {
+                    for (FiberseqAnnotations.Interval interval : fiberseq.getNucleosomes()) {
+                        if (interval.contains(basePosition)) {
+                            buf.append("Nucleosome: " + (interval.start() + 1) + "-" + interval.end() +
+                                    " (" + (interval.end() - interval.start()) + " bp)<br>");
+                        }
+                    }
+                    for (FiberseqAnnotations.Interval interval : fiberseq.getMsps()) {
+                        if (interval.contains(basePosition)) {
+                            buf.append("MSP: " + (interval.start() + 1) + "-" + interval.end() +
+                                    " (" + (interval.end() - interval.start()) + " bp)" +
+                                    (interval.quality() > 0 ? ", FIRE quality " + interval.quality() : "") + "<br>");
                         }
                     }
                 }

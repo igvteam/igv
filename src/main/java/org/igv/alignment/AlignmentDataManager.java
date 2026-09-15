@@ -125,6 +125,10 @@ public class AlignmentDataManager implements IGVEventObserver {
         return getLoader().hasYCTags();
     }
 
+    public boolean hasFiberseqTags() {
+        return getLoader().hasFiberseqTags();
+    }
+
     public boolean hasIndex() {
         return getLoader().hasIndex();
     }

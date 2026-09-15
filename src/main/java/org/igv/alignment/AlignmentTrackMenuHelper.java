@@ -864,6 +864,14 @@ class AlignmentTrackMenuHelper {
         }
 
 
+        // Fiber-seq nucleosomes and methylation sensitive patches (fibertools Ma/Aq or legacy ns/nl and as/al/aq tags)
+        if (dataManager.hasFiberseqTags()) {
+            colorMenu.addSeparator();
+            JRadioButtonMenuItem fiberseqItem = getColorMenuItem("fiber-seq nucleosomes / MSPs", AlignmentTrack.ColorOption.FIBERSEQ);
+            colorMenu.add(fiberseqItem);
+            group.add(fiberseqItem);
+        }
+
         // SMRT kinetics
         if (alignmentTrack.getPreferences().getAsBoolean(SMRT_KINETICS_SHOW_OPTIONS)) {
             // Show additional options to help visualize SMRT kinetics data

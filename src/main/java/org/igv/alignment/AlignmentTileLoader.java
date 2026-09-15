@@ -2,6 +2,7 @@ package org.igv.alignment;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.util.CloseableIterator;
+import org.igv.alignment.fiberseq.FiberseqAnnotations;
 import org.igv.Globals;
 import org.igv.event.IGVEvent;
 import org.igv.event.IGVEventBus;
@@ -50,6 +51,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
     private boolean phased = false;
     private boolean moleculo = false;
     private boolean ycTags = false;
+    private boolean fiberseqTags = false;
 
     static void cancelReaders() {
         for (WeakReference<AlignmentTileLoader> readerRef : activeLoaders) {
@@ -92,6 +94,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
     public boolean hasYCTags() {
         return ycTags;
+    }
+
+    public boolean hasFiberseqTags() {
+        return fiberseqTags;
     }
 
     AlignmentTile loadTile(String chr,
@@ -186,6 +192,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
                 if (!ycTags && record.getAttribute("YC") != null) {
                     ycTags = true;
+                }
+
+                if (!fiberseqTags && FiberseqAnnotations.hasTags(record::getAttribute)) {
+                    fiberseqTags = true;
                 }
 
                 // TODO -- this is not reliable tests for TenX.  Other platforms might use BX
