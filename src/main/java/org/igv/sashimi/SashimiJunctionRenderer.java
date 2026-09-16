@@ -299,8 +299,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         for (int idx = 0; idx < nPoints; idx++) {
 
             int pos = isSparse ? ((SparseAlignmentCounts) counts).getPosition(idx) : start + idx * step;
-            double x0 = rect.x + view.toPixel(pos);
-            double x1 = rect.x + view.toPixel(pos + step);
+            double x0 = view.toPixel(pos);
+            double x1 = view.toPixel(pos + step);
             if (x0 > rect.getMaxX()) {
                 break;
             } else if (x1 < rect.x) {
@@ -368,10 +368,14 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return 0;
     }
 
+    /**
+     * Y offset from the center line of the top of the coverage bar for this count.  Must match the bar heights
+     * computed in {@link #drawCoverageBar}, so that arcs meet the coverage they start from.
+     */
     private int getYOffset(Rectangle rect, DataRange range, int totalCount) {
 
-        double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
-        double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+        double maxRange = range.isLog() ? Math.log10(range.getMaximum() + 1) : range.getMaximum();
+        double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
         int height = (int) (tmp * rect.height);
 
         height = Math.min(height, rect.height - 1);
