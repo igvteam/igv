@@ -29,6 +29,8 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -88,6 +90,14 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         sashimiPanel.setBackground(darkMode ? Color.black : Color.white);
         BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
         sashimiPanel.setLayout(boxLayout);
+
+        // The tracks are drawn to the panel's width, so the view has to follow it
+        sashimiPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                view.setWidthInPixels(sashimiPanel.getWidth());
+            }
+        });
 
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
 

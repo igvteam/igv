@@ -39,6 +39,28 @@ public class SashimiView {
         double start = toGenomic(0);
         double end = toGenomic(plotFrame.getWidthInPixels());
         map = newMap;
+        showGenomicRange(start, end);
+    }
+
+    /**
+     * Re-fit the view to a new pixel width, keeping the genomic range in view.  Called when the window is resized;
+     * without it the plot is drawn at the scale computed for the old width.
+     */
+    public void setWidthInPixels(int widthInPixels) {
+        if (widthInPixels <= 0 || widthInPixels == plotFrame.getWidthInPixels()) {
+            return;
+        }
+        double start = toGenomic(0);
+        double end = toGenomic(plotFrame.getWidthInPixels());
+        plotFrame.setWidthInPixels(widthInPixels);
+        dataFrame.setWidthInPixels(widthInPixels);
+        showGenomicRange(start, end);
+    }
+
+    /**
+     * Fit the given genomic range to the plot frame's width.  The plot frame posts a view change event.
+     */
+    private void showGenomicRange(double start, double end) {
         int plotStart = (int) Math.round(map.toPlot(start));
         // Keep a non-zero width -- a heavily shrunk view can round to a single coordinate
         int plotEnd = Math.max(plotStart + 1, (int) Math.round(map.toPlot(end)));
