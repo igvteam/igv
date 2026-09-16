@@ -270,9 +270,9 @@ BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
 ## Fiber-seq colors
-FIBERSEQ.NUCLEOSOME_COLOR	Nucleosome	color	150,150,150
-FIBERSEQ.MSP_COLOR	MSP (methylation sensitive patch)	color	0,150,150
-FIBERSEQ.FIRE_COLOR	FIRE (opacity increases with FIRE quality)	color	200,0,0
+FIBERSEQ.NUCLEOSOME_COLOR	Nucleosome	color	169,169,169
+FIBERSEQ.MSP_COLOR	MSP (methylation sensitive patch)	color	147,112,219
+FIBERSEQ.FIRE_COLOR	FIRE (opacity increases with FIRE quality)	color	139,0,0
 
 ##Validation
 BASEMOD.VALIDATE_BASE_COUNT	Validate base count required by MM tag vs actual base count in read sequence	boolean	TRUE
