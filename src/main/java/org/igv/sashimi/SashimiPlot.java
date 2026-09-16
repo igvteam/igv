@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private final SashimiContentPane sashimiContentPane;
+
+    private static final float DEFAULT_INTRON_COMPRESSION_EXPONENT = 1.0f;
+
     private final boolean darkMode;
 
     private final SelectableFeatureTrack featureTrack;
@@ -161,15 +164,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
      * Compression exponent in effect.  Held here rather than read from preferences as the slider moves, so that
      * dragging redraws without rewriting the preferences file on every tick.
      */
-    private double intronExponent = clampExponent(
-            PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT));
+    private double intronExponent = DEFAULT_INTRON_COMPRESSION_EXPONENT;
 
-    /**
-     * A preference file can hold anything, and an unparsable value reads as zero.  Keep it within the slider bounds.
-     */
-    private static double clampExponent(double exponent) {
-        return Math.max(MIN_EXPONENT_PERCENT / 100.0, Math.min(MAX_EXPONENT_PERCENT / 100.0, exponent));
-    }
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
@@ -199,16 +195,12 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         intronSlider.addChangeListener(e -> {
             intronExponent = intronSlider.getValue() / 100.0;
             intronValueLabel.setText(formatExponent(intronExponent));
-            if (!intronSlider.getValueIsAdjusting()) {
-                // Storing a preference rewrites the preferences file, so not while the slider is being dragged
-                PreferencesManager.getPreferences().put(Constants.SASHIMI_INTRON_EXPONENT, String.valueOf(intronExponent));
-            }
             updateCoordinateMap();
             SashimiPlot.this.repaint();
         });
 
         controlPanel.add(Box.createHorizontalStrut(30));
-        controlPanel.add(new JLabel("Compress Introns"));
+        controlPanel.add(new JLabel("Intron Compression Exponent:"));
         controlPanel.add(intronSlider);
         controlPanel.add(intronValueLabel);
 
