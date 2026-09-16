@@ -10,16 +10,20 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.DataRange;
+import org.igv.renderer.DataRenderer;
 import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.IGVFeatureRenderer;
+import org.igv.alignment.AlignmentCounts;
 import org.igv.alignment.AlignmentDataManager;
 import org.igv.alignment.AlignmentInterval;
 import org.igv.alignment.CoverageTrack;
+import org.igv.alignment.SparseAlignmentCounts;
 import org.igv.track.RenderContext;
 import org.igv.track.Track;
 import org.igv.ui.FontManager;
 import org.igv.ui.UIConstants;
 import org.igv.ui.color.ColorUtilities;
+import org.igv.ui.panel.ReferenceFrame;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -77,7 +81,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
      */
     private Map<Feature, Boolean> drawFeatureAbove = null;
 
-    public SashimiJunctionRenderer() {
+    private final SashimiView view;
+
+    public SashimiJunctionRenderer(SashimiView view) {
+        this.view = view;
         this.darkMode = Globals.isDarkMode();
         this.color = darkMode ? ColorUtilities.modifyAlpha(Color.RED, 140) : ARC_COLOR_POS;
         this.colorCenterline = darkMode ?
@@ -177,11 +184,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             int newY = coverageRectangle.y + coverageRectangle.height / 2 - newHeight;
             coverageRectangle.setBounds(coverageRectangle.x, newY, coverageRectangle.width, newHeight);
 
-            coverageTrack.render(context, coverageRectangle);
+            renderCoverage(context, coverageRectangle);
         }
-
-        double origin = context.getOrigin();
-        double locScale = context.getScale();
 
         if ((featureList != null) && !featureList.isEmpty()) {
 
@@ -232,8 +236,8 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
                     if (!inSelected) continue;
                 }
 
-                double virtualPixelJunctionStart = Math.round((junctionStart - origin) / locScale);
-                double virtualPixelJunctionEnd = Math.round((junctionEnd - origin) / locScale);
+                double virtualPixelJunctionStart = Math.round(view.toPixel(junctionStart));
+                double virtualPixelJunctionEnd = Math.round(view.toPixel(junctionEnd));
 
                 // If the any part of the feature fits in the track rectangle draw it
                 if ((virtualPixelJunctionEnd >= trackRectangleX) && (virtualPixelJunctionStart <= trackRectangleMaxX)) {
@@ -268,6 +272,75 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     }
 
     /**
+     * Draw coverage positioned through the view's coordinate map.  Where several positions share a pixel column the
+     * maximum count is drawn, so narrow exons stay visible in compressed and zoomed out views.
+     */
+    private void renderCoverage(RenderContext context, Rectangle rect) {
+
+        ReferenceFrame frame = context.getReferenceFrame();
+        if (dataManager == null || frame.getEnd() - frame.getOrigin() > dataManager.getVisibilityWindow()) return;
+        AlignmentInterval interval = dataManager.getLoadedInterval(frame, true);
+        if (interval == null) return;
+
+        AlignmentCounts counts = interval.getCounts();
+        DataRange range = coverageTrack.getDataRange();
+        double maxRange = range.isLog() ? Math.log10(range.getMaximum() + 1) : range.getMaximum();
+        Graphics2D g2D = context.getGraphic2DForColor(coverageTrack.getColor());
+
+        int start = counts.getStart();
+        int step = counts.getBucketSize();
+        int nPoints = counts.getNumberOfPoints();
+        boolean isSparse = counts instanceof SparseAlignmentCounts;
+
+        // Pixel column accumulating positions narrower than a pixel
+        int columnX = Integer.MIN_VALUE;
+        int columnCount = 0;
+
+        for (int idx = 0; idx < nPoints; idx++) {
+
+            int pos = isSparse ? ((SparseAlignmentCounts) counts).getPosition(idx) : start + idx * step;
+            double x0 = view.toPixel(pos);
+            double x1 = view.toPixel(pos + step);
+            if (x0 > rect.getMaxX()) {
+                break;
+            } else if (x1 < rect.x) {
+                continue;
+            }
+
+            int count = counts.getTotalCount(pos);
+            int pX = (int) x0;
+            if (x1 - x0 >= 1) {
+                int dX = (int) (x1 - x0);
+                if (dX > 3) dX--;
+                drawCoverageBar(g2D, rect, pX, dX, count, range, maxRange);
+            } else {
+                if (pX != columnX) {
+                    if (columnX != Integer.MIN_VALUE) {
+                        drawCoverageBar(g2D, rect, columnX, 1, columnCount, range, maxRange);
+                    }
+                    columnX = pX;
+                    columnCount = 0;
+                }
+                columnCount = Math.max(columnCount, count);
+            }
+        }
+        if (columnX != Integer.MIN_VALUE) {
+            drawCoverageBar(g2D, rect, columnX, 1, columnCount, range, maxRange);
+        }
+
+        DataRenderer.drawScale(range, context, rect);
+    }
+
+    private static void drawCoverageBar(Graphics2D g2D, Rectangle rect, int x, int width, int count,
+                                        DataRange range, double maxRange) {
+        double fraction = range.isLog() ? Math.log10(count + 1) / maxRange : count / maxRange;
+        int barHeight = (int) Math.min(fraction * rect.height, rect.height - 1);
+        if (barHeight > 0) {
+            g2D.fillRect(x, rect.y + rect.height - barHeight, width, barHeight);
+        }
+    }
+
+    /**
      * Get the coverage around this approximate genome position. We actually look
      * for a maximum around a certain window. This is intended for plotting, we just
      * want the arc to look like it's coming from the top
@@ -295,10 +368,16 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         return 0;
     }
 
+    /**
+     * Y offset from the center line of the top of the coverage bar for this count, computed as the bar heights are
+     * in {@link #drawCoverageBar} so that arcs meet the coverage they start from.  The two can still differ where a
+     * pixel column spans many bases, as the bar is drawn from the maximum count over the column while the arc is
+     * positioned from the coverage near the junction.
+     */
     private int getYOffset(Rectangle rect, DataRange range, int totalCount) {
 
-        double maxRange = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
-        double tmp = range.isLog() ? Math.log10(totalCount) / maxRange : totalCount / maxRange;
+        double maxRange = range.isLog() ? Math.log10(range.getMaximum() + 1) : range.getMaximum();
+        double tmp = range.isLog() ? Math.log10(totalCount + 1) / maxRange : totalCount / maxRange;
         int height = (int) (tmp * rect.height);
 
         height = Math.min(height, rect.height - 1);

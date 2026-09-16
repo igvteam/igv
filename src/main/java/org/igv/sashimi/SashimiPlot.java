@@ -9,6 +9,8 @@ import org.igv.feature.IExon;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
 import org.igv.alignment.AlignmentDataManager;
+import org.igv.alignment.AlignmentInterval;
+import org.igv.feature.SpliceJunctionFeature;
 import org.igv.alignment.AlignmentTrack;
 import org.igv.alignment.CoverageTrack;
 import org.igv.alignment.SpliceJunctionTrack;
@@ -27,6 +29,8 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -45,13 +49,16 @@ import java.util.stream.Collectors;
 public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private final SashimiContentPane sashimiContentPane;
+
+    private static final float DEFAULT_INTRON_COMPRESSION_EXPONENT = 1.0f;
+
     private final boolean darkMode;
 
     private final SelectableFeatureTrack featureTrack;
 
     private List<SpliceJunctionTrack> spliceJunctionTracks;
 
-    private ReferenceFrame referenceFrame;
+    private final SashimiView view;
 
     private IGVEventBus eventBus;
 
@@ -74,29 +81,29 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         this.eventBus = new IGVEventBus();
 
-        this.referenceFrame = new ReferenceFrame(iframe, eventBus);
+        this.view = new SashimiView(iframe, eventBus);
 
         int height = IGV.hasInstance() ? IGV.getInstance().getMainFrame().getHeight() : 800;
-        setSize(referenceFrame.getWidthInPixels(), height);
-
-        //Add control elements to the top
-        final JPanel controlPanel = generateControlPanel(this.referenceFrame);
-        controlPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        getContentPane().add(controlPanel, BorderLayout.NORTH);
-
+        setSize(iframe.getWidthInPixels(), height);
 
         JPanel sashimiPanel = new JPanel();
         sashimiPanel.setBackground(darkMode ? Color.black : Color.white);
         BoxLayout boxLayout = new BoxLayout(sashimiPanel, BoxLayout.Y_AXIS);
         sashimiPanel.setLayout(boxLayout);
 
+        // The tracks are drawn to the panel's width, so the view has to follow it
+        sashimiPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                view.setWidthInPixels(sashimiPanel.getWidth());
+            }
+        });
+
         spliceJunctionTracks = new ArrayList<>(alignmentTracks.size());
 
         int colorInd = 0;
 
         junctionRendererMap = new HashMap<>();
-
-        eventBus.subscribe(ViewChange.class, this);
 
         for (AlignmentTrack alignmentTrack : alignmentTracks) {
 
@@ -108,7 +115,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             // Override expand/collpase setting -- expanded sashimi plots make no sense
             spliceJunctionTrack.setDisplayMode(Track.DisplayMode.COLLAPSED);
 
-            SashimiJunctionRenderer renderer = new SashimiJunctionRenderer();
+            SashimiJunctionRenderer renderer = new SashimiJunctionRenderer(view);
             spliceJunctionTrack.setRenderer(renderer);
             junctionRendererMap.put(spliceJunctionTrack, renderer);
 
@@ -116,7 +123,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             colorInd = (colorInd + 1) % plotColors.size();
             spliceJunctionTrack.setColor(color);
 
-            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<>(referenceFrame, spliceJunctionTrack);
+            TrackComponent<SpliceJunctionTrack> trackComponent = new TrackComponent<>(view.getDataFrame(), spliceJunctionTrack);
             trackComponent.originalFrame = iframe;
 
             initSpliceJunctionComponent(trackComponent, dataManager, dataManager.getCoverageTrack());
@@ -127,23 +134,57 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             spliceJunctionTrack.load(iframe);  // <= Must "load" tracks with frame of alignment track (actually just fetches from cache)
         }
 
-        Axis axis = createAxis(referenceFrame);
+        // Lay out the plot over the main window's view, compressing introns if enabled
+        view.setMap(createCoordinateMap(iframe));
+
+        //Add control elements to the top
+        final JPanel controlPanel = generateControlPanel(view.getPlotFrame());
+        controlPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        getContentPane().add(controlPanel, BorderLayout.NORTH);
+
+        Axis axis = createAxis(view);
         sashimiPanel.add(axis);
 
-        featureTrack = new SelectableFeatureTrack(geneTrack);
-        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(referenceFrame, featureTrack);
+        featureTrack = new SelectableFeatureTrack(geneTrack, new SashimiGeneRenderer(view));
+        TrackComponent<SelectableFeatureTrack> geneComponent = new TrackComponent<>(view.getDataFrame(), featureTrack);
         initGeneComponent(geneComponent, featureTrack);
 
         JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
         scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollableGenePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        // A border here would inset the gene track relative to the tracks above, so that a vertical line through
+        // the plot no longer meets the same position in the gene model.  When the scroll bar appears the gene
+        // track is cropped rather than scaled, which keeps the two in register.
+        scrollableGenePane.setBorder(BorderFactory.createEmptyBorder());
 
         sashimiContentPane = new SashimiContentPane(sashimiPanel, scrollableGenePane);
         sashimiContentPane.setDividerLocation(2 * height / 3);
         getContentPane().add(sashimiContentPane);
 
+        // Subscribe last.  Setting the coordinate map posts a view change, and receiveEvent uses the tracks
+        // created above.
+        eventBus.subscribe(ViewChange.class, this);
+
         validate();
     }
+
+    // Bounds of the intron compression slider, as percent of the compression exponent.  An intron of length L is
+    // drawn with width L^exponent, so at 1 introns are drawn at their true width.  Below 0.5 introns are already
+    // reduced to a few percent of the plot, so there is nothing to be gained from a lower minimum.
+    private static final int MIN_EXPONENT_PERCENT = 50;
+    private static final int MAX_EXPONENT_PERCENT = 100;
+
+    /**
+     * Exponent a new plot opens with, the last one chosen in this IGV session.  Deliberately not a preference --
+     * the useful amount of compression differs from gene to gene, and the slider makes it easy to change.
+     */
+    private static double lastIntronExponent = DEFAULT_INTRON_COMPRESSION_EXPONENT;
+
+    /**
+     * Compression exponent for this plot.  Plots opened at the same time keep their own values.
+     */
+    private double intronExponent = lastIntronExponent;
+
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
@@ -163,10 +204,33 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         controlPanel.add(zoomSliderPanel);
         setFixedSize(zoomSliderPanel, controlSize);
 
-        Dimension panelSize = controlSize;
-        setFixedSize(controlPanel, panelSize);
+        JSlider intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT,
+                (int) Math.round(100 * intronExponent));
+        intronSlider.setToolTipText("An intron of length L is drawn with width L^value.  " +
+                "At 1.00 introns are drawn at their true width.");
+        setFixedSize(intronSlider, new Dimension(140, 30));
+        JLabel intronValueLabel = new JLabel(formatExponent(intronExponent));
+
+        intronSlider.addChangeListener(e -> {
+            intronExponent = intronSlider.getValue() / 100.0;
+            lastIntronExponent = intronExponent;
+            intronValueLabel.setText(formatExponent(intronExponent));
+            updateCoordinateMap();
+            SashimiPlot.this.repaint();
+        });
+
+        controlPanel.add(Box.createHorizontalStrut(30));
+        controlPanel.add(new JLabel("Intron Compression Exponent:"));
+        controlPanel.add(intronSlider);
+        controlPanel.add(intronValueLabel);
+
+        setFixedSize(controlPanel, new Dimension(580, 30));
 
         return controlPanel;
+    }
+
+    private static String formatExponent(double exponent) {
+        return String.format("%.2f", exponent);
     }
 
     private static void setFixedSize(Component component, Dimension dimension) {
@@ -175,13 +239,13 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         component.setMaximumSize(dimension);
     }
 
-    private Axis createAxis(ReferenceFrame frame) {
-        Axis axis = new Axis(frame);
+    private Axis createAxis(SashimiView view) {
+        Axis axis = new Axis(view);
 
         Dimension maxDim = new Dimension(Integer.MAX_VALUE, 25);
         axis.setMaximumSize(maxDim);
         Dimension prefDim = new Dimension(maxDim);
-        prefDim.setSize(frame.getWidthInPixels(), prefDim.height);
+        prefDim.setSize(view.getPlotFrame().getWidthInPixels(), prefDim.height);
         axis.setPreferredSize(prefDim);
 
         return axis;
@@ -192,8 +256,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         geneTrack.setDisplayMode(Track.DisplayMode.SQUISHED);
 
         geneTrack.clearPackedFeatures();
-        RenderContext context = new RenderContext(geneComponent, null, referenceFrame, null, null, null);
-        geneTrack.load(context.getReferenceFrame());
+        geneTrack.load(view.getDataFrame());
 
         GeneTrackMouseAdapter ad2 = new GeneTrackMouseAdapter(geneComponent);
         geneComponent.addMouseListener(ad2);
@@ -215,24 +278,62 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         return junctionRendererMap.get(spliceJunctionTrack);
     }
 
+    /**
+     * Create the coordinate map from the junctions loaded for {@code frame}, across all samples.  Junctions below
+     * a track's minimum junction coverage are excluded.
+     */
+    private SashimiCoordinateMap createCoordinateMap(ReferenceFrame frame) {
+        List<int[]> junctions = new ArrayList<>();
+        for (SpliceJunctionTrack track : spliceJunctionTracks) {
+            AlignmentInterval interval = getRenderer(track).getDataManager().getLoadedInterval(frame, true);
+            if (interval == null) continue;
+            List<SpliceJunctionFeature> features = interval.getSpliceJunctionHelper()
+                    .getFilteredJunctions(SpliceJunctionTrack.getStrandOption(), track.getMinJunctionCoverage());
+            for (SpliceJunctionFeature f : features) {
+                junctions.add(new int[]{f.getJunctionStart(), f.getJunctionEnd()});
+            }
+        }
+        return SashimiCoordinateMap.fromJunctions(junctions, intronExponent);
+    }
+
+    /**
+     * Recompute the coordinate map, e.g. after data is loaded or junction filters change, keeping the genomic
+     * range in view.
+     */
+    private void updateCoordinateMap() {
+        SashimiCoordinateMap map = createCoordinateMap(view.getDataFrame());
+        if (!map.equals(view.getMap())) {
+            view.setMap(map);
+        }
+    }
+
     @Override
     public void receiveEvent(IGVEvent event) {
+        view.syncDataFrame();
+        ReferenceFrame dataFrame = view.getDataFrame();
+
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        if(!featureTrack.isReadyToPaint(referenceFrame)) {
-            futures.add(CompletableFuture.runAsync(() -> featureTrack.load(referenceFrame), IGV.threadExecutor));
+        if(!featureTrack.isReadyToPaint(dataFrame)) {
+            futures.add(CompletableFuture.runAsync(() -> featureTrack.load(dataFrame), IGV.threadExecutor));
         }
         for (SpliceJunctionTrack t : spliceJunctionTracks) {
-            if (!t.isReadyToPaint(referenceFrame)) {
-                futures.add(CompletableFuture.runAsync(() -> t.load(referenceFrame), IGV.threadExecutor));
+            if (!t.isReadyToPaint(dataFrame)) {
+                futures.add(CompletableFuture.runAsync(() -> t.load(dataFrame), IGV.threadExecutor));
             }
         }
 
         if (futures.isEmpty()) {
+            // Data for this view can already be loaded, e.g. panning into another cached interval, and the
+            // junctions it contributes may not be in the current map
+            updateCoordinateMap();
             repaint();
         } else {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                    .whenCompleteAsync((value, throwable) -> repaint(), UIUtilities::invokeOnEventThread);
+                    .whenCompleteAsync((value, throwable) -> {
+                        updateCoordinateMap();
+                        repaint();
+                    }, UIUtilities::invokeOnEventThread);
         }
     }
 
@@ -337,6 +438,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                     int newMinJunctionCoverage = Integer.parseInt(input);
                     trackComponent.track.setMinJunctionCoverage(newMinJunctionCoverage);
                     trackComponent.repaint();
+                    updateCoordinateMap();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(SashimiPlot.this, input + " is not an integer");
                 }
@@ -459,6 +561,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                     for (SpliceJunctionTrack t : spliceJunctionTracks) {
                         t.clear();
                     }
+                    updateCoordinateMap();
                     repaint();
                 }
             });
@@ -507,7 +610,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         TrackComponentMouseAdapter(TrackComponent<T> trackComponent) {
             this.trackComponent = trackComponent;
             currentTool = new PanTool(null);
-            currentTool.setReferenceFrame(this.trackComponent.frame);
+            currentTool.setReferenceFrame(view.getPlotFrame());
         }
 
 
@@ -651,17 +754,17 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
     private static class Axis extends JComponent {
 
-        private ReferenceFrame frame;
+        private final SashimiView view;
 
-        Axis(ReferenceFrame frame) {
-            this.frame = frame;
+        Axis(SashimiView view) {
+            this.view = view;
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Rectangle visibleRect = getVisibleRect();
-            RenderContext context = new RenderContext(this, (Graphics2D) g, frame, visibleRect, visibleRect, visibleRect);
+            RenderContext context = new RenderContext(this, (Graphics2D) g, view.getDataFrame(), visibleRect, visibleRect, visibleRect);
             drawGenomicAxis(context, visibleRect);
         }
 
@@ -678,17 +781,11 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             double pixelPadding = trackRectangle.getWidth() / 20;
             int yLoc = ticHeight + 1;
 
-            double origin = context.getOrigin();
-            double locScale = context.getScale();
-
             //Pixel start/end positions of ruler
             double startPix = trackRectangle.getX() + pixelPadding;
             double endPix = trackRectangle.getMaxX() - pixelPadding;
 
             double ticIntervalPix = (endPix - startPix) / (numTicks - 1);
-            double ticIntervalCoord = locScale * ticIntervalPix;
-
-            int startCoord = (int) (origin + (locScale * startPix));
 
             Graphics2D g2D = context.getGraphic2DForColor(UIConstants.getTrackPanelForeground());
 
@@ -698,7 +795,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 int xLoc = (int) (startPix + tic * ticIntervalPix);
                 g2D.drawLine(xLoc, yLoc, xLoc, yLoc - ticHeight);
 
-                int ticCoord = (int) (startCoord + tic * ticIntervalCoord);
+                int ticCoord = (int) view.toGenomic(xLoc);
                 String text = "" + ticCoord;
                 Rectangle2D textBounds = g2D.getFontMetrics().getStringBounds(text, g2D);
                 g2D.drawString(text, (int) (xLoc - textBounds.getWidth() / 2), (int) (yLoc + textBounds.getHeight()));
