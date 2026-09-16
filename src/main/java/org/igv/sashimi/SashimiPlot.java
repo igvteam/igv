@@ -152,8 +152,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
     }
 
     // Bounds of the intron compression slider, as percent of the compression exponent.  An intron of length L is
-    // drawn with width L^exponent, so at 1 introns are drawn at their true width.
-    private static final int MIN_EXPONENT_PERCENT = 0;
+    // drawn with width L^exponent, so at 1 introns are drawn at their true width.  Below 0.5 introns are already
+    // reduced to a few percent of the plot, so there is nothing to be gained from a lower minimum.
+    private static final int MIN_EXPONENT_PERCENT = 50;
     private static final int MAX_EXPONENT_PERCENT = 100;
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
