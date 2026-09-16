@@ -53,6 +53,12 @@ public class SashimiCoordinateMapTest {
         // Same regions at different exponents must not compare equal, or the plot would skip the rebuild
         assertNotEquals(SashimiCoordinateMap.fromJunctions(junctions, 0.3),
                 SashimiCoordinateMap.fromJunctions(junctions, 0.9));
+
+        // An exponent of 1 leaves introns at their true width
+        SashimiCoordinateMap uncompressed = SashimiCoordinateMap.fromJunctions(junctions, 1.0);
+        for (double position : new double[]{0, 1000, 6000, 11000, 20000}) {
+            assertEquals(position, uncompressed.toPlot(position), 0);
+        }
     }
 
     @Test

@@ -151,13 +151,10 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         validate();
     }
 
-    // Bounds of the intron compression slider, as percent.  An intron of length L is drawn with width L^exponent.
+    // Bounds of the intron compression slider, as percent.  An intron of length L is drawn with width L^exponent,
+    // so an exponent of 1 draws introns at their true width.
     private static final int MIN_EXPONENT_PERCENT = 30;
-    private static final int MAX_EXPONENT_PERCENT = 90;
-
-    private JLabel intronSliderLabel;
-    private JSlider intronSlider;
-    private JLabel intronValueLabel;
+    private static final int MAX_EXPONENT_PERCENT = 100;
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
@@ -179,11 +176,10 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
 
-        intronSliderLabel = new JLabel("Introns");
-        intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT, (int) Math.round(100 * exponent));
-        intronSlider.setToolTipText("Intron compression -- an intron of length L is drawn with width L^value");
+        JSlider intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT, (int) Math.round(100 * exponent));
+        intronSlider.setToolTipText("An intron of length L is drawn with width L^value.  At 1.00 introns are not compressed.");
         setFixedSize(intronSlider, new Dimension(140, 30));
-        intronValueLabel = new JLabel(formatExponent(exponent));
+        JLabel intronValueLabel = new JLabel(formatExponent(exponent));
 
         intronSlider.addChangeListener(e -> {
             double newExponent = intronSlider.getValue() / 100.0;
@@ -193,28 +189,18 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             SashimiPlot.this.repaint();
         });
 
-        controlPanel.add(intronSliderLabel);
+        controlPanel.add(Box.createHorizontalStrut(30));
+        controlPanel.add(new JLabel("Compress Introns"));
         controlPanel.add(intronSlider);
         controlPanel.add(intronValueLabel);
-        updateIntronControls();
 
-        setFixedSize(controlPanel, new Dimension(480, 30));
+        setFixedSize(controlPanel, new Dimension(580, 30));
 
         return controlPanel;
     }
 
     private static String formatExponent(double exponent) {
         return String.format("%.2f", exponent);
-    }
-
-    /**
-     * The intron compression slider applies only when introns are compressed.
-     */
-    private void updateIntronControls() {
-        boolean compress = PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS);
-        intronSliderLabel.setEnabled(compress);
-        intronSlider.setEnabled(compress);
-        intronValueLabel.setEnabled(compress);
     }
 
     private static void setFixedSize(Component component, Dimension dimension) {
@@ -267,9 +253,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
      * a track's minimum junction coverage are excluded.
      */
     private SashimiCoordinateMap createCoordinateMap(ReferenceFrame frame) {
-        if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS)) {
-            return SashimiCoordinateMap.identity();
-        }
         double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
         List<int[]> junctions = new ArrayList<>();
         for (SpliceJunctionTrack track : spliceJunctionTracks) {
@@ -394,15 +377,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 SashimiPlot.this.repaint();
             });
 
-            final JCheckBoxMenuItem compressIntrons = new JCheckBoxMenuItem("Compress Introns");
-            compressIntrons.setSelected(PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS));
-            compressIntrons.addActionListener(e17 -> {
-                PreferencesManager.getPreferences().put(Constants.SASHIMI_COMPRESS_INTRONS, compressIntrons.isSelected());
-                updateIntronControls();
-                updateCoordinateMap();
-                SashimiPlot.this.repaint();
-            });
-
             CoverageTrack covTrack = getRenderer(this.trackComponent.track).getCoverageTrack();
             covTrack.setWindowFunction(WindowFunction.max);
             JMenuItem setCoverageDataRange = CoverageTrack.addDataRangeItem(SashimiPlot.this, null, Arrays.asList(covTrack));
@@ -508,7 +482,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
             // Coverage data  -- applies to all plots
             menu.add(showCoverageData);
-            menu.add(compressIntrons);
 
             // Shape options -- all plots
             menu.addSeparator();

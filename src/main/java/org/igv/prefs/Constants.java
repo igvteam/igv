@@ -94,7 +94,6 @@ final public class Constants {
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String IGV_PLUGIN_LIST_KEY = "IGV_PLUGIN_LIST";
     public static final String SASHIMI_SHOW_COVERAGE = "SASHIMI.SHOW_COVERAGE";
-    public static final String SASHIMI_COMPRESS_INTRONS = "SASHIMI.COMPRESS_INTRONS";
     public static final String SASHIMI_INTRON_EXPONENT = "SASHIMI.INTRON_EXPONENT";
     public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
     public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
