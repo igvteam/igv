@@ -157,6 +157,20 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
     private static final int MIN_EXPONENT_PERCENT = 50;
     private static final int MAX_EXPONENT_PERCENT = 100;
 
+    /**
+     * Compression exponent in effect.  Held here rather than read from preferences as the slider moves, so that
+     * dragging redraws without rewriting the preferences file on every tick.
+     */
+    private double intronExponent = clampExponent(
+            PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT));
+
+    /**
+     * A preference file can hold anything, and an unparsable value reads as zero.  Keep it within the slider bounds.
+     */
+    private static double clampExponent(double exponent) {
+        return Math.max(MIN_EXPONENT_PERCENT / 100.0, Math.min(MAX_EXPONENT_PERCENT / 100.0, exponent));
+    }
+
     private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
 
@@ -175,18 +189,20 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         controlPanel.add(zoomSliderPanel);
         setFixedSize(zoomSliderPanel, controlSize);
 
-        double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
-
-        JSlider intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT, (int) Math.round(100 * exponent));
+        JSlider intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT,
+                (int) Math.round(100 * intronExponent));
         intronSlider.setToolTipText("An intron of length L is drawn with width L^value.  " +
                 "At 1.00 introns are drawn at their true width.");
         setFixedSize(intronSlider, new Dimension(140, 30));
-        JLabel intronValueLabel = new JLabel(formatExponent(exponent));
+        JLabel intronValueLabel = new JLabel(formatExponent(intronExponent));
 
         intronSlider.addChangeListener(e -> {
-            double newExponent = intronSlider.getValue() / 100.0;
-            PreferencesManager.getPreferences().put(Constants.SASHIMI_INTRON_EXPONENT, String.valueOf(newExponent));
-            intronValueLabel.setText(formatExponent(newExponent));
+            intronExponent = intronSlider.getValue() / 100.0;
+            intronValueLabel.setText(formatExponent(intronExponent));
+            if (!intronSlider.getValueIsAdjusting()) {
+                // Storing a preference rewrites the preferences file, so not while the slider is being dragged
+                PreferencesManager.getPreferences().put(Constants.SASHIMI_INTRON_EXPONENT, String.valueOf(intronExponent));
+            }
             updateCoordinateMap();
             SashimiPlot.this.repaint();
         });
@@ -255,7 +271,6 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
      * a track's minimum junction coverage are excluded.
      */
     private SashimiCoordinateMap createCoordinateMap(ReferenceFrame frame) {
-        double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
         List<int[]> junctions = new ArrayList<>();
         for (SpliceJunctionTrack track : spliceJunctionTracks) {
             AlignmentInterval interval = getRenderer(track).getDataManager().getLoadedInterval(frame, true);
@@ -266,7 +281,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 junctions.add(new int[]{f.getJunctionStart(), f.getJunctionEnd()});
             }
         }
-        return SashimiCoordinateMap.fromJunctions(junctions, exponent);
+        return SashimiCoordinateMap.fromJunctions(junctions, intronExponent);
     }
 
     /**
@@ -297,6 +312,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         }
 
         if (futures.isEmpty()) {
+            // Data for this view can already be loaded, e.g. panning into another cached interval, and the
+            // junctions it contributes may not be in the current map
+            updateCoordinateMap();
             repaint();
         } else {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))

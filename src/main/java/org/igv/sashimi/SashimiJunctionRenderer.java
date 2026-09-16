@@ -369,8 +369,10 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
     }
 
     /**
-     * Y offset from the center line of the top of the coverage bar for this count.  Must match the bar heights
-     * computed in {@link #drawCoverageBar}, so that arcs meet the coverage they start from.
+     * Y offset from the center line of the top of the coverage bar for this count, computed as the bar heights are
+     * in {@link #drawCoverageBar} so that arcs meet the coverage they start from.  The two can still differ where a
+     * pixel column spans many bases, as the bar is drawn from the maximum count over the column while the arc is
+     * positioned from the coverage near the junction.
      */
     private int getYOffset(Rectangle rect, DataRange range, int totalCount) {
 

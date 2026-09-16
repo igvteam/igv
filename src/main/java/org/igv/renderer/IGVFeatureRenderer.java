@@ -489,8 +489,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         trackRectangle, whiteArrowGraphics);
 
                 // Scale at which this exon is drawn, which differs from locationScale for non-linear coordinates
-                double exonScale = (exon.getEnd() - exon.getStart()) /
-                        (getVirtualPixel(exon.getEnd(), theOrigin, locationScale) - getVirtualPixel(exon.getStart(), theOrigin, locationScale));
+                double exonPixelWidth = getVirtualPixel(exon.getEnd(), theOrigin, locationScale)
+                        - getVirtualPixel(exon.getStart(), theOrigin, locationScale);
+                double exonScale = exonPixelWidth > 0 ? (exon.getEnd() - exon.getStart()) / exonPixelWidth : locationScale;
                 if (exonScale < 0.25 && rowHeight > 10) {
                     labelAminoAcids(pStart, fontGraphics, theOrigin, context, gene, locationScale,
                             curYOffset, trackRectangle, idx);
