@@ -13,7 +13,10 @@ egfr.bam / egfr.bam.bai   Synthetic reads over EGFR (hg19), NM_005228 exon struc
                           Raise "Visibility range threshold (kb)" in Preferences > Alignments (or the RNA
                           tab) to ~300 before the reads and junctions will load.
 
-egfr.sam                  The generating SAM text, for reference.
+                          To regenerate: take the NM_005228 exonStarts/exonEnds from UCSC refGene, emit
+                          100 bp reads tiled every 10 bp across each exon (depth 2), plus one read per
+                          intron with CIGAR 50M<intron length>N50M at depth 20 + intron index, then sort
+                          and index with samtools.
 
 heart.bam / .bai          The real RNA-seq test BAM (hg19, SLC25A3, chr12:98,986,000-98,998,500) from
                           igvteam/igv-data.  All its introns are under 2 kb, so intron compression leaves
