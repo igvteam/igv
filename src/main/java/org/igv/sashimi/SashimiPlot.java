@@ -151,6 +151,14 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         validate();
     }
 
+    // Bounds of the intron compression slider, as percent.  An intron of length L is drawn with width L^exponent.
+    private static final int MIN_EXPONENT_PERCENT = 30;
+    private static final int MAX_EXPONENT_PERCENT = 90;
+
+    private JLabel intronSliderLabel;
+    private JSlider intronSlider;
+    private JLabel intronValueLabel;
+
     private JPanel generateControlPanel(ReferenceFrame frame) {
         JPanel controlPanel = new JPanel();
 
@@ -169,10 +177,44 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         controlPanel.add(zoomSliderPanel);
         setFixedSize(zoomSliderPanel, controlSize);
 
-        Dimension panelSize = controlSize;
-        setFixedSize(controlPanel, panelSize);
+        double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
+
+        intronSliderLabel = new JLabel("Introns");
+        intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT, (int) Math.round(100 * exponent));
+        intronSlider.setToolTipText("Intron compression -- an intron of length L is drawn with width L^value");
+        setFixedSize(intronSlider, new Dimension(140, 30));
+        intronValueLabel = new JLabel(formatExponent(exponent));
+
+        intronSlider.addChangeListener(e -> {
+            double newExponent = intronSlider.getValue() / 100.0;
+            PreferencesManager.getPreferences().put(Constants.SASHIMI_INTRON_EXPONENT, String.valueOf(newExponent));
+            intronValueLabel.setText(formatExponent(newExponent));
+            updateCoordinateMap();
+            SashimiPlot.this.repaint();
+        });
+
+        controlPanel.add(intronSliderLabel);
+        controlPanel.add(intronSlider);
+        controlPanel.add(intronValueLabel);
+        updateIntronControls();
+
+        setFixedSize(controlPanel, new Dimension(480, 30));
 
         return controlPanel;
+    }
+
+    private static String formatExponent(double exponent) {
+        return String.format("%.2f", exponent);
+    }
+
+    /**
+     * The intron compression slider applies only when introns are compressed.
+     */
+    private void updateIntronControls() {
+        boolean compress = PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS);
+        intronSliderLabel.setEnabled(compress);
+        intronSlider.setEnabled(compress);
+        intronValueLabel.setEnabled(compress);
     }
 
     private static void setFixedSize(Component component, Dimension dimension) {
@@ -228,6 +270,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         if (!PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS)) {
             return SashimiCoordinateMap.identity();
         }
+        double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
         List<int[]> junctions = new ArrayList<>();
         for (SpliceJunctionTrack track : spliceJunctionTracks) {
             AlignmentInterval interval = getRenderer(track).getDataManager().getLoadedInterval(frame, true);
@@ -238,7 +281,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
                 junctions.add(new int[]{f.getJunctionStart(), f.getJunctionEnd()});
             }
         }
-        return SashimiCoordinateMap.fromJunctions(junctions);
+        return SashimiCoordinateMap.fromJunctions(junctions, exponent);
     }
 
     /**
@@ -355,6 +398,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
             compressIntrons.setSelected(PreferencesManager.getPreferences().getAsBoolean(Constants.SASHIMI_COMPRESS_INTRONS));
             compressIntrons.addActionListener(e17 -> {
                 PreferencesManager.getPreferences().put(Constants.SASHIMI_COMPRESS_INTRONS, compressIntrons.isSelected());
+                updateIntronControls();
                 updateCoordinateMap();
                 SashimiPlot.this.repaint();
             });

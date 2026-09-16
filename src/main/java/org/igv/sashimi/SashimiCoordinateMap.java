@@ -8,11 +8,11 @@ import java.util.List;
 /**
  * Maps genomic positions to Sashimi plot positions, shrinking intronic regions.  Regions are chosen as in ggsashimi
  * (https://github.com/guigolab/ggsashimi):  overlapping junctions are intersected, and each intersection of length L
- * is drawn with length L^0.7.  Positions between regions keep their width.
+ * is drawn with length L^exponent.  Positions between regions keep their width.
  */
 public class SashimiCoordinateMap {
 
-    private static final double EXPONENT = 0.7;
+    public static final double DEFAULT_EXPONENT = 0.7;
 
     // Shrunk regions, sorted and non-overlapping, in genomic and plot coordinates
     private final double[] gStart;
@@ -21,14 +21,15 @@ public class SashimiCoordinateMap {
     private final double[] pEnd;
 
     public static SashimiCoordinateMap identity() {
-        return new SashimiCoordinateMap(List.of());
+        return new SashimiCoordinateMap(List.of(), DEFAULT_EXPONENT);
     }
 
     /**
      * @param junctions junction {start, end} pairs
+     * @param exponent  a region of length L is drawn with width L^exponent
      */
-    public static SashimiCoordinateMap fromJunctions(List<int[]> junctions) {
-        return new SashimiCoordinateMap(intersectJunctions(junctions));
+    public static SashimiCoordinateMap fromJunctions(List<int[]> junctions, double exponent) {
+        return new SashimiCoordinateMap(intersectJunctions(junctions), exponent);
     }
 
     /**
@@ -61,7 +62,7 @@ public class SashimiCoordinateMap {
         return regions;
     }
 
-    SashimiCoordinateMap(List<int[]> regions) {
+    SashimiCoordinateMap(List<int[]> regions, double exponent) {
         int n = regions.size();
         gStart = new double[n];
         gEnd = new double[n];
@@ -71,7 +72,7 @@ public class SashimiCoordinateMap {
         for (int i = 0; i < n; i++) {
             int[] r = regions.get(i);
             double length = r[1] - r[0];
-            double shrunkLength = Math.pow(length, EXPONENT);
+            double shrunkLength = Math.pow(length, exponent);
             gStart[i] = r[0];
             gEnd[i] = r[1];
             pStart[i] = r[0] - shift;
@@ -107,16 +108,21 @@ public class SashimiCoordinateMap {
         return i >= 0 ? i : -i - 2;
     }
 
+    /**
+     * Maps are equal if they place the same genomic regions at the same plot positions, so two maps computed from the
+     * same junctions but with different exponents are not equal.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SashimiCoordinateMap)) return false;
         SashimiCoordinateMap other = (SashimiCoordinateMap) o;
-        return Arrays.equals(gStart, other.gStart) && Arrays.equals(gEnd, other.gEnd);
+        return Arrays.equals(gStart, other.gStart) && Arrays.equals(gEnd, other.gEnd)
+                && Arrays.equals(pStart, other.pStart) && Arrays.equals(pEnd, other.pEnd);
     }
 
     @Override
     public int hashCode() {
-        return 31 * Arrays.hashCode(gStart) + Arrays.hashCode(gEnd);
+        return 31 * (31 * Arrays.hashCode(gStart) + Arrays.hashCode(gEnd)) + Arrays.hashCode(pEnd);
     }
 }
