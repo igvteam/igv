@@ -456,15 +456,15 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
         Stroke stroke = new BasicStroke((float) strokeSize);
         g2D.setStroke(stroke);
 
+        //We use corners of a square as control points because why not
+        //The control point is never actually reached
+        int arcControlPeakY = arcBeginY + yPosModifier * arcHeight;
+
         if (pixelJunctionStart == pixelJunctionEnd) {
             // Junction is less than a pixel wide, draw a vertical line.
             int lineEndY = arcBeginY + yPosModifier * arcHeight;
             g2D.drawLine(pixelJunctionStart, arcBeginY, pixelJunctionStart, lineEndY);
         } else {
-            //We use corners of a square as control points because why not
-            //The control point is never actually reached
-            int arcControlPeakY = arcBeginY + yPosModifier * arcHeight;
-
             GeneralPath arcPath = new GeneralPath();
             arcPath.moveTo(pixelJunctionStart, arcBeginY);
             arcPath.curveTo(pixelJunctionStart, arcControlPeakY,
@@ -476,6 +476,17 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
 
         float midX = ((float) pixelJunctionStart + (float) pixelJunctionEnd) / 2;
         double actArcPeakY = arcBeginY + yPosModifier * Math.pow(0.5, 3) * (6) * arcHeight;
+
+        // Zoomed in, both ends of a long junction can be off screen, taking the mid point with them and the
+        // depth label with it.  Label the visible stretch of the arc instead.
+        double visibleStart = Math.max(pixelJunctionStart, trackRectangle.getX());
+        double visibleEnd = Math.min(pixelJunctionEnd, trackRectangle.getMaxX());
+        if (pixelJunctionEnd > pixelJunctionStart && visibleEnd > visibleStart
+                && (midX < visibleStart || midX > visibleEnd)) {
+            midX = (float) ((visibleStart + visibleEnd) / 2);
+            double t = arcParameterAtX(midX, pixelJunctionStart, pixelJunctionEnd);
+            actArcPeakY = arcY(t, arcBeginY, arcControlPeakY, arcEndY);
+        }
         int maxPossibleArcHeight = (trackRectangle.height - 1) / 4;
         float depthProportionOfMax = Math.min(1, (float) depth / maxDepth);
         float maxPossibleShapeHeight = maxPossibleArcHeight / 2.0f;
@@ -512,6 +523,33 @@ public class SashimiJunctionRenderer extends IGVFeatureRenderer {
             g2D.draw(shape);
             g2D.fill(shape);
         }
+    }
+
+    /**
+     * Parameter of the arc at the given x.  Both control points sit directly above the ends, so x depends only on
+     * them:  x(t) = start + (end - start) * t^2 * (3 - 2t), which increases with t.
+     */
+    static double arcParameterAtX(double x, double start, double end) {
+        double target = (x - start) / (end - start);
+        double low = 0;
+        double high = 1;
+        for (int i = 0; i < 30; i++) {
+            double t = (low + high) / 2;
+            if (t * t * (3 - 2 * t) < target) {
+                low = t;
+            } else {
+                high = t;
+            }
+        }
+        return (low + high) / 2;
+    }
+
+    /**
+     * Y coordinate of the arc at parameter t.  Both control points share the peak y.
+     */
+    static double arcY(double t, double beginY, double peakY, double endY) {
+        double u = 1 - t;
+        return u * u * u * beginY + 3 * t * u * peakY + t * t * t * endY;
     }
 
     private Shape createDepthEllipse(double maxPossibleShapeHeight, double depthProportionOfMax, double arcMidX, double actArcPeakY) {
