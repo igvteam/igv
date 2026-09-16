@@ -9,7 +9,6 @@ import static org.junit.Assert.*;
 public class SashimiCoordinateMapTest {
 
     private static final double EXPONENT = SashimiCoordinateMap.DEFAULT_EXPONENT;
-    private static final int THRESHOLD = (int) SashimiCoordinateMap.THRESHOLD;
 
     @Test
     public void intersectJunctions() {
@@ -29,17 +28,17 @@ public class SashimiCoordinateMapTest {
 
     @Test
     public void drawnLength() {
-        // Introns up to the threshold are never compressed, at any exponent
-        for (double exponent : new double[]{0, 0.3, 0.5, 1.0}) {
-            assertEquals(99, SashimiCoordinateMap.drawnLength(99, exponent), 0);
-            assertEquals(THRESHOLD, SashimiCoordinateMap.drawnLength(THRESHOLD, exponent), 0);
+        // An intron of length L is drawn with width L^exponent
+        assertEquals(Math.pow(10000, EXPONENT), SashimiCoordinateMap.drawnLength(10000, EXPONENT), 1e-9);
+
+        // An exponent of 1 draws introns at their true width
+        for (double length : new double[]{99, 1500, 123000}) {
+            assertEquals(length, SashimiCoordinateMap.drawnLength(length, 1), 1e-9);
         }
 
-        // Longer introns are compressed relative to the threshold
-        double long1 = 100 * THRESHOLD;
-        assertEquals(THRESHOLD, SashimiCoordinateMap.drawnLength(long1, 0), 1e-9);
-        assertEquals(long1, SashimiCoordinateMap.drawnLength(long1, 1), 1e-9);
-        assertEquals(THRESHOLD * Math.pow(100, 0.3), SashimiCoordinateMap.drawnLength(long1, 0.3), 1e-9);
+        // Longer introns are compressed harder, in proportion
+        assertTrue(SashimiCoordinateMap.drawnLength(100000, EXPONENT) / 100000
+                < SashimiCoordinateMap.drawnLength(1000, EXPONENT) / 1000);
 
         // Monotonic in both length and exponent
         assertTrue(SashimiCoordinateMap.drawnLength(50000, EXPONENT) > SashimiCoordinateMap.drawnLength(10000, EXPONENT));
@@ -48,18 +47,19 @@ public class SashimiCoordinateMapTest {
 
     @Test
     public void toPlot() {
-        // A long intron, a short one below the threshold, and a 100 bp exon between them
+        // A long intron, a shorter one, and a 100 bp exon between them
         SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(
                 new int[]{1000, 101000}, new int[]{101100, 102100}), EXPONENT);
-        double shrunk = SashimiCoordinateMap.drawnLength(100000, EXPONENT);
+        double shrunkLong = SashimiCoordinateMap.drawnLength(100000, EXPONENT);
+        double shrunkShort = SashimiCoordinateMap.drawnLength(1000, EXPONENT);
 
         assertEquals(500, map.toPlot(500), 1e-9);
         assertEquals(1000, map.toPlot(1000), 1e-9);
-        assertEquals(1000 + shrunk / 2, map.toPlot(51000), 1e-9);
-        assertEquals(1000 + shrunk, map.toPlot(101000), 1e-9);
-        // The exon keeps its width, and the short intron is not compressed at all
-        assertEquals(1000 + shrunk + 100, map.toPlot(101100), 1e-9);
-        assertEquals(1000 + shrunk + 100 + 1000, map.toPlot(102100), 1e-9);
+        assertEquals(1000 + shrunkLong / 2, map.toPlot(51000), 1e-9);
+        assertEquals(1000 + shrunkLong, map.toPlot(101000), 1e-9);
+        // The exon between the introns keeps its width
+        assertEquals(1000 + shrunkLong + 100, map.toPlot(101100), 1e-9);
+        assertEquals(1000 + shrunkLong + 100 + shrunkShort, map.toPlot(102100), 1e-9);
     }
 
     @Test
