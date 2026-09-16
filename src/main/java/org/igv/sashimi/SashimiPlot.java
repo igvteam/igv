@@ -175,11 +175,15 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
     private static final int MAX_EXPONENT_PERCENT = 100;
 
     /**
-     * Compression exponent in effect.  Static, so a plot opens with the value last chosen in this IGV session,
-     * but deliberately not a preference -- the useful amount of compression differs from gene to gene, and the
-     * slider makes it easy to change.
+     * Exponent a new plot opens with, the last one chosen in this IGV session.  Deliberately not a preference --
+     * the useful amount of compression differs from gene to gene, and the slider makes it easy to change.
      */
-    private static double intronExponent = DEFAULT_INTRON_COMPRESSION_EXPONENT;
+    private static double lastIntronExponent = DEFAULT_INTRON_COMPRESSION_EXPONENT;
+
+    /**
+     * Compression exponent for this plot.  Plots opened at the same time keep their own values.
+     */
+    private double intronExponent = lastIntronExponent;
 
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
@@ -209,6 +213,7 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
 
         intronSlider.addChangeListener(e -> {
             intronExponent = intronSlider.getValue() / 100.0;
+            lastIntronExponent = intronExponent;
             intronValueLabel.setText(formatExponent(intronExponent));
             updateCoordinateMap();
             SashimiPlot.this.repaint();
