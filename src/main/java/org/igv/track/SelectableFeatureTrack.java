@@ -25,8 +25,12 @@ public class SelectableFeatureTrack extends FeatureTrack {
     }
 
     public SelectableFeatureTrack(FeatureTrack geneTrack) {
+        this(geneTrack, new SelectableFeatureRenderer());
+    }
+
+    public SelectableFeatureTrack(FeatureTrack geneTrack, SelectableFeatureRenderer renderer) {
         super(geneTrack);
-        this.renderer = new SelectableFeatureRenderer();
+        this.renderer = renderer;
     }
 
     @Override
