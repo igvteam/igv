@@ -144,6 +144,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         sashimiContentPane.setDividerLocation(2 * height / 3);
         getContentPane().add(sashimiContentPane);
 
+        // Subscribe last.  Setting the coordinate map posts a view change, and receiveEvent uses the tracks
+        // created above.
         eventBus.subscribe(ViewChange.class, this);
 
         validate();
