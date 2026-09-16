@@ -151,9 +151,9 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         validate();
     }
 
-    // Bounds of the intron compression slider, as percent.  An intron of length L is drawn with width L^exponent,
-    // so an exponent of 1 draws introns at their true width.
-    private static final int MIN_EXPONENT_PERCENT = 30;
+    // Bounds of the intron compression slider, as percent of the compression exponent.  At 1 introns are drawn at
+    // their true width, at 0 every long intron is drawn at the threshold width.
+    private static final int MIN_EXPONENT_PERCENT = 0;
     private static final int MAX_EXPONENT_PERCENT = 100;
 
     private JPanel generateControlPanel(ReferenceFrame frame) {
@@ -177,7 +177,8 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         double exponent = PreferencesManager.getPreferences().getAsFloat(Constants.SASHIMI_INTRON_EXPONENT);
 
         JSlider intronSlider = new JSlider(MIN_EXPONENT_PERCENT, MAX_EXPONENT_PERCENT, (int) Math.round(100 * exponent));
-        intronSlider.setToolTipText("An intron of length L is drawn with width L^value.  At 1.00 introns are not compressed.");
+        intronSlider.setToolTipText("Compression of introns longer than " + (int) SashimiCoordinateMap.THRESHOLD +
+                " bp.  At 1.00 introns are drawn at their true width, at 0.00 all long introns are drawn alike.");
         setFixedSize(intronSlider, new Dimension(140, 30));
         JLabel intronValueLabel = new JLabel(formatExponent(exponent));
 

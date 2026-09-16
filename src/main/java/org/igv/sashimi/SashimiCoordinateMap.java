@@ -7,12 +7,17 @@ import java.util.List;
 
 /**
  * Maps genomic positions to Sashimi plot positions, shrinking intronic regions.  Regions are chosen as in ggsashimi
- * (https://github.com/guigolab/ggsashimi):  overlapping junctions are intersected, and each intersection of length L
- * is drawn with length L^exponent.  Positions between regions keep their width.
+ * (https://github.com/guigolab/ggsashimi):  overlapping junctions are intersected.  Introns shorter than
+ * {@link #THRESHOLD} are drawn at their true width, longer ones are compressed relative to the threshold, so that a
+ * gene with one very long intron and many short ones keeps the short ones readable.  An exponent of 1 leaves all
+ * introns at true width, an exponent of 0 draws every long intron at the threshold width.
  */
 public class SashimiCoordinateMap {
 
-    public static final double DEFAULT_EXPONENT = 0.7;
+    public static final double DEFAULT_EXPONENT = 0.3;
+
+    /** Introns up to this length (bp) are never compressed */
+    public static final double THRESHOLD = 2000;
 
     // Shrunk regions, sorted and non-overlapping, in genomic and plot coordinates
     private final double[] gStart;
@@ -72,13 +77,21 @@ public class SashimiCoordinateMap {
         for (int i = 0; i < n; i++) {
             int[] r = regions.get(i);
             double length = r[1] - r[0];
-            double shrunkLength = Math.pow(length, exponent);
+            double shrunkLength = drawnLength(length, exponent);
             gStart[i] = r[0];
             gEnd[i] = r[1];
             pStart[i] = r[0] - shift;
             pEnd[i] = pStart[i] + shrunkLength;
             shift += length - shrunkLength;
         }
+    }
+
+    /**
+     * Width an intron of the given length is drawn with.  Introns at or below the threshold keep their width;
+     * beyond it the excess is compressed, so drawn width grows as threshold * (length/threshold)^exponent.
+     */
+    static double drawnLength(double length, double exponent) {
+        return length <= THRESHOLD ? length : THRESHOLD * Math.pow(length / THRESHOLD, exponent);
     }
 
     public double toPlot(double position) {

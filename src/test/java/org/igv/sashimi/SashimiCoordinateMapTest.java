@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 public class SashimiCoordinateMapTest {
 
     private static final double EXPONENT = SashimiCoordinateMap.DEFAULT_EXPONENT;
+    private static final int THRESHOLD = (int) SashimiCoordinateMap.THRESHOLD;
 
     @Test
     public void intersectJunctions() {
@@ -27,46 +28,65 @@ public class SashimiCoordinateMapTest {
     }
 
     @Test
+    public void drawnLength() {
+        // Introns up to the threshold are never compressed, at any exponent
+        for (double exponent : new double[]{0, 0.3, 0.5, 1.0}) {
+            assertEquals(99, SashimiCoordinateMap.drawnLength(99, exponent), 0);
+            assertEquals(THRESHOLD, SashimiCoordinateMap.drawnLength(THRESHOLD, exponent), 0);
+        }
+
+        // Longer introns are compressed relative to the threshold
+        double long1 = 100 * THRESHOLD;
+        assertEquals(THRESHOLD, SashimiCoordinateMap.drawnLength(long1, 0), 1e-9);
+        assertEquals(long1, SashimiCoordinateMap.drawnLength(long1, 1), 1e-9);
+        assertEquals(THRESHOLD * Math.pow(100, 0.3), SashimiCoordinateMap.drawnLength(long1, 0.3), 1e-9);
+
+        // Monotonic in both length and exponent
+        assertTrue(SashimiCoordinateMap.drawnLength(50000, EXPONENT) > SashimiCoordinateMap.drawnLength(10000, EXPONENT));
+        assertTrue(SashimiCoordinateMap.drawnLength(50000, 0.5) > SashimiCoordinateMap.drawnLength(50000, 0.3));
+    }
+
+    @Test
     public void toPlot() {
+        // A long intron, a short one below the threshold, and a 100 bp exon between them
         SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(
-                new int[]{1000, 11000}, new int[]{11100, 12100}), EXPONENT);
-        double shrunk1 = Math.pow(10000, EXPONENT);
-        double shrunk2 = Math.pow(1000, EXPONENT);
+                new int[]{1000, 101000}, new int[]{101100, 102100}), EXPONENT);
+        double shrunk = SashimiCoordinateMap.drawnLength(100000, EXPONENT);
 
         assertEquals(500, map.toPlot(500), 1e-9);
         assertEquals(1000, map.toPlot(1000), 1e-9);
-        assertEquals(1000 + shrunk1 / 2, map.toPlot(6000), 1e-9);
-        assertEquals(1000 + shrunk1, map.toPlot(11000), 1e-9);
-        // The exon between the introns keeps its width
-        assertEquals(1000 + shrunk1 + 100, map.toPlot(11100), 1e-9);
-        assertEquals(1000 + shrunk1 + 100 + shrunk2 + 50, map.toPlot(12150), 1e-9);
+        assertEquals(1000 + shrunk / 2, map.toPlot(51000), 1e-9);
+        assertEquals(1000 + shrunk, map.toPlot(101000), 1e-9);
+        // The exon keeps its width, and the short intron is not compressed at all
+        assertEquals(1000 + shrunk + 100, map.toPlot(101100), 1e-9);
+        assertEquals(1000 + shrunk + 100 + 1000, map.toPlot(102100), 1e-9);
     }
 
     @Test
     public void exponent() {
-        List<int[]> junctions = List.of(new int[]{1000, 11000});
+        List<int[]> junctions = List.of(new int[]{1000, 101000});
 
         // A larger exponent compresses less
-        assertEquals(1000 + Math.pow(10000, 0.3), SashimiCoordinateMap.fromJunctions(junctions, 0.3).toPlot(11000), 1e-9);
-        assertEquals(1000 + Math.pow(10000, 0.9), SashimiCoordinateMap.fromJunctions(junctions, 0.9).toPlot(11000), 1e-9);
+        assertTrue(SashimiCoordinateMap.fromJunctions(junctions, 0.5).toPlot(101000)
+                > SashimiCoordinateMap.fromJunctions(junctions, 0.3).toPlot(101000));
 
         // Same regions at different exponents must not compare equal, or the plot would skip the rebuild
         assertNotEquals(SashimiCoordinateMap.fromJunctions(junctions, 0.3),
-                SashimiCoordinateMap.fromJunctions(junctions, 0.9));
+                SashimiCoordinateMap.fromJunctions(junctions, 0.5));
 
         // An exponent of 1 leaves introns at their true width
         SashimiCoordinateMap uncompressed = SashimiCoordinateMap.fromJunctions(junctions, 1.0);
-        for (double position : new double[]{0, 1000, 6000, 11000, 20000}) {
-            assertEquals(position, uncompressed.toPlot(position), 0);
+        for (double position : new double[]{0, 1000, 51000, 101000, 200000}) {
+            assertEquals(position, uncompressed.toPlot(position), 1e-9);
         }
     }
 
     @Test
     public void toGenomicInvertsToPlot() {
-        for (double exponent : new double[]{0.3, EXPONENT, 0.9}) {
+        for (double exponent : new double[]{0, 0.3, 0.5, 1.0}) {
             SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(
-                    new int[]{1000, 11000}, new int[]{11100, 12100}), exponent);
-            for (double position : new double[]{0, 999.5, 1000, 4321, 10999, 11000, 11050, 11100, 12000, 20000}) {
+                    new int[]{1000, 101000}, new int[]{101100, 102100}), exponent);
+            for (double position : new double[]{0, 999.5, 1000, 4321, 100999, 101000, 101050, 101100, 102000, 200000}) {
                 assertEquals(position, map.toGenomic(map.toPlot(position)), 1e-6);
             }
         }
@@ -82,8 +102,8 @@ public class SashimiCoordinateMapTest {
 
     @Test
     public void equality() {
-        SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(new int[]{100, 400}), EXPONENT);
-        assertEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{100, 400}), EXPONENT));
-        assertNotEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{100, 500}), EXPONENT));
+        SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 101000}), EXPONENT);
+        assertEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 101000}), EXPONENT));
+        assertNotEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 102000}), EXPONENT));
     }
 }
