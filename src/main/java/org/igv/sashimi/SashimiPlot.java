@@ -152,6 +152,10 @@ public class SashimiPlot extends JFrame implements IGVEventObserver {
         JScrollPane scrollableGenePane = new JScrollPane(geneComponent);
         scrollableGenePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollableGenePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        // A border here would inset the gene track relative to the tracks above, so that a vertical line through
+        // the plot no longer meets the same position in the gene model.  When the scroll bar appears the gene
+        // track is cropped rather than scaled, which keeps the two in register.
+        scrollableGenePane.setBorder(BorderFactory.createEmptyBorder());
 
         sashimiContentPane = new SashimiContentPane(sashimiPanel, scrollableGenePane);
         sashimiContentPane.setDividerLocation(2 * height / 3);
