@@ -11,6 +11,7 @@ import org.igv.util.HttpUtils;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.igv.prefs.Constants.BACKUP_GENOMES_SERVER_URL;
@@ -40,9 +41,9 @@ public class HostedGenomes {
      * genomes can be restored from their ID alone, so sessions reference them by ID rather than by an expanded
      * genome definition.
      */
-    private static Set<String> igvHostedIds = new HashSet<>();
+    private static Set<String> igvHostedIds = ConcurrentHashMap.newKeySet();
 
-    public static List<GenomeListItem> getRecords() {
+    public static synchronized List<GenomeListItem> getRecords() {
         if (records == null) {
             records = new CopyOnWriteArrayList<>(readRecords());
         }
@@ -62,7 +63,7 @@ public class HostedGenomes {
         return genomeId != null && igvHostedIds.contains(genomeId);
     }
 
-    public static GenomeListItem getGenomeListItem(String genomeId) {
+    public static synchronized GenomeListItem getGenomeListItem(String genomeId) {
         if (hostedGenomesMap == null) {
             hostedGenomesMap = new HashMap<>();
             for (GenomeListItem record : getRecords()) {
