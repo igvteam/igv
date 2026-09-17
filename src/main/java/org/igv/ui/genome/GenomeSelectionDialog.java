@@ -261,7 +261,9 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
 
             if (rec != null) {
 
-                final String id = rec.getAttributeValue("accession");
+                // The record ID, which for an IGV hosted genome is the assembly ("hg38") -- the name any legacy
+                // .genome archive in the genome directory is filed under.
+                final String id = rec.getId();
 
                 // The location of the genome definition -- the json URL for an IGV hosted genome, the hub URL for a
                 // Genark genome, whose list has no "url" column.
