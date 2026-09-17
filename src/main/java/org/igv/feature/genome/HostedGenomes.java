@@ -1,6 +1,7 @@
 package org.igv.feature.genome;
 
 import org.igv.Globals;
+import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.IGVPreferences;
@@ -152,8 +153,10 @@ private static List<GenomeListItem> readRecords() {
         recordIGVHostedGenomes(igvGenomes);
     }
 
-    // UCSC Genark hosted genome list
-    List<GenomeListItem> genarkGenomes = fetchGenomeList(genarkURL, "assembly", errors);
+    // UCSC Genark hosted genome list.  These records are keyed by accession, which is the ID a Genark genome takes
+    // when loaded -- the "genome" property of its hub is the accession.  The "assembly" column is a name such as
+    // "Loxafr3.0", which is not what a session, batch command, or the last genome preference will name.
+    List<GenomeListItem> genarkGenomes = fetchGenomeList(genarkURL, "accession", errors);
     if (genarkGenomes == null) {
         log.error("Error connecting to UCSC Genark server URL: " + genarkURL);
     } else {
@@ -235,6 +238,11 @@ private static List<GenomeListItem> fetchGenomeList(String url, String idColumn,
                 String id = attributes.get(idColumn);
                 String displayableName = attributes.get("common name");
                 String path = attributes.get("url");
+                if (path == null && id != null) {
+                    // The UCSC Genark list has no "url" column.  Those genomes are loaded from the track hub for
+                    // their accession, which is also their ID.
+                    path = HubGenomeLoader.convertToHubURL(id);
+                }
                 items.add(new GenomeListItem(displayableName, path, id, attributes));
             }
         }
