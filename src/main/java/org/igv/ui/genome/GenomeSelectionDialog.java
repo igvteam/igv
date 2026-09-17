@@ -11,7 +11,6 @@ import org.igv.event.IGVEventBus;
 import org.igv.feature.genome.GenomeDownloadUtils;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.GenomeConfig;
-import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.feature.genome.load.JsonGenomeLoader;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
@@ -261,7 +260,6 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
 
             if (rec != null) {
 
-                final String url = rec.getAttributeValue("url");
                 final String id = rec.getAttributeValue("accession");
 
                 // The location of the genome definition -- the json URL for an IGV hosted genome, the hub URL for a
@@ -272,14 +270,12 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                     try {
 
                         GenomeConfig config;
-                        if (url != null && url.endsWith(".json")) {
-                            config = (new JsonGenomeLoader(url)).loadGenomeConfig();
+                        if (genomePath.endsWith(".json")) {
+                            config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
                         } else {
-                            String accession = rec.getAttributeValue("accession");
-                            String hubURL = HubGenomeLoader.convertToHubURL(accession);
-                            Hub hub = HubParser.loadHub(hubURL);
+                            Hub hub = HubParser.loadHub(genomePath);
                             config = hub.getGenomeConfigs().get(0);
-                            config.setHubs(Arrays.asList(hubURL));
+                            config.setHubs(Arrays.asList(genomePath));
                         }
 
                         config.setName(rec.getAttributeValue("common name"));
