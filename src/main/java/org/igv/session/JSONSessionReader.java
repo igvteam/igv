@@ -53,8 +53,18 @@ public class JSONSessionReader implements SessionReader {
         String jsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = new JSONObject(jsonString);
         if (jsonObject.has("genome")) {
-            if (!GenomeManager.getInstance().getCurrentGenome().getId().equals(jsonObject.getString("genome"))) {
-                GenomeManager.getInstance().loadGenomeById(jsonObject.getString("genome"));
+
+            // Genome referenced by ID.  The genome's default annotation tracks are not loaded -- the session "tracks"
+            // property lists every track, including those annotations.
+            String genomeId = jsonObject.getString("genome");
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            if (currentGenome == null || !genomeId.equals(currentGenome.getId())) {
+                GenomeManager.getInstance().loadGenomeById(genomeId, false, false);
+            } else if (IGV.hasInstance()) {
+                // The genome is already loaded.  Reset the session and restore the genome's sequence track, which
+                // loadGenome would otherwise have done.
+                IGV.getInstance().resetSession(null);
+                GenomeManager.getInstance().restoreGenomeTracks(currentGenome, false);
             }
 
         } else if (jsonObject.has("reference")) {

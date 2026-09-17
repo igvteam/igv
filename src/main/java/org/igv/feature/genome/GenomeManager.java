@@ -107,6 +107,16 @@ public class GenomeManager {
     }
 
     public boolean loadGenomeById(String genomeId, boolean force) throws IOException {
+        return loadGenomeById(genomeId, force, true);
+    }
+
+    /**
+     * @param genomeId
+     * @param force                 reload the genome even if it is the current genome
+     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     *                              Used when loading a session, which lists all tracks explicitly.
+     */
+    public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
         if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {
@@ -125,7 +135,7 @@ public class GenomeManager {
                 genomePath = item.getPath();
             }
         }
-        return loadGenome(genomePath) != null; // monitor[0]);
+        return loadGenome(genomePath, loadAnnotationTracks) != null; // monitor[0]);
     }
 
     /**
@@ -139,6 +149,14 @@ public class GenomeManager {
      * @throws IOException
      */
     public Genome loadGenome(String genomePath) throws IOException {
+        return loadGenome(genomePath, true);
+    }
+
+    /**
+     * @param genomePath
+     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     */
+    public Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
 
         WaitCursorManager.CursorToken cursorToken = null;
         try {
@@ -174,7 +192,7 @@ public class GenomeManager {
             GenomeListItem genomeListItem = new GenomeListItem(newGenome.getDisplayName(), genomePath, newGenome.getId());
             GenomeListManager.getInstance().addGenomeItem(genomeListItem);
 
-            setCurrentGenome(newGenome);
+            setCurrentGenome(newGenome, loadAnnotationTracks);
 
             return currentGenome;
 
@@ -189,6 +207,14 @@ public class GenomeManager {
     }
 
     public void setCurrentGenome(Genome newGenome) {
+        setCurrentGenome(newGenome, true);
+    }
+
+    /**
+     * @param newGenome
+     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     */
+    public void setCurrentGenome(Genome newGenome, boolean loadAnnotationTracks) {
 
         this.currentGenome = newGenome;
 
@@ -197,7 +223,7 @@ public class GenomeManager {
             IGV.getInstance().goToLocus(newGenome.getHomeChromosome()); //  newGenome.getDefaultPos());
             FrameManager.getDefaultFrame().setChromosomeName(newGenome.getHomeChromosome(), true);
 
-            restoreGenomeTracks(newGenome);
+            restoreGenomeTracks(newGenome, loadAnnotationTracks);
 
             IGV.getInstance().resetFrames();
             IGV.getInstance().getSession().clearHistory();
@@ -217,6 +243,14 @@ public class GenomeManager {
      * @param genome
      */
     public void restoreGenomeTracks(Genome genome) {
+        restoreGenomeTracks(genome, true);
+    }
+
+    /**
+     * @param genome
+     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     */
+    public void restoreGenomeTracks(Genome genome, boolean loadAnnotationTracks) {
 
         IGV.getInstance().setSequenceTrack();
 
@@ -226,7 +260,7 @@ public class GenomeManager {
             IGV.getInstance().addTrack(geneFeatureTrack);
         }
 
-        List<ResourceLocator> resources = genome.getAnnotationResources();
+        List<ResourceLocator> resources = loadAnnotationTracks ? genome.getAnnotationResources() : null;
         List<Track> annotationTracks = new ArrayList<>();
         if (resources != null) {
             for (ResourceLocator locator : resources) {

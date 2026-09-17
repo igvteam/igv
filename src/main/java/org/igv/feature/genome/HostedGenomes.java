@@ -35,6 +35,13 @@ public class HostedGenomes {
 
     private static Map<String, GenomeListItem> hostedGenomesMap = null;
 
+    /**
+     * IDs of genomes listed by the IGV genome server (the GENOMES_SERVER_URL preference, or its backup).  These
+     * genomes can be restored from their ID alone, so sessions reference them by ID rather than by an expanded
+     * genome definition.
+     */
+    private static Set<String> igvHostedIds = new HashSet<>();
+
     public static List<GenomeListItem> getRecords() {
         if (records == null) {
             records = new CopyOnWriteArrayList<>(readRecords());
@@ -42,6 +49,18 @@ public class HostedGenomes {
         return records;
     }
 
+
+    /**
+     * Return true if the genome ID is that of a genome hosted by the IGV genome server.  Genomes from other sources,
+     * including the UCSC GenArk list, return false.
+     *
+     * @param genomeId
+     * @return
+     */
+    public static boolean isIGVHosted(String genomeId) {
+        getRecords();   // Insure records, and thus the ID set, have been loaded
+        return genomeId != null && igvHostedIds.contains(genomeId);
+    }
 
     public static GenomeListItem getGenomeListItem(String genomeId) {
         if (hostedGenomesMap == null) {
@@ -65,18 +84,18 @@ private static List<GenomeListItem> readRecords() {
     List<String> errors = new ArrayList<>();
 
     // IGV hosted genome list
-    boolean genomeListLoaded = loadGenomeList(genomesServerURL, "assembly", errors);
+    boolean genomeListLoaded = loadGenomeList(genomesServerURL, "assembly", errors, true);
     if (!genomeListLoaded) {
         log.error("Error loading genome list from: " + genomesServerURL);
         errors.add("Error loading genome list from: " + genomesServerURL);
         // Try backup server
-        if (!loadGenomeList(backupGenomesServerURL, "assembly", errors)) {
+        if (!loadGenomeList(backupGenomesServerURL, "assembly", errors, true)) {
             errors.add("Error loading genome list from: " + backupGenomesServerURL);
         }
     }
 
     // UCSC Genark hosted genome list
-    if (!loadGenomeList(genarkURL, "assembly", errors)) {
+    if (!loadGenomeList(genarkURL, "assembly", errors, false)) {
         log.error("Error connecting to UCSC Genark server URL: " + genarkURL);
         errors.add("Error connecting to UCSC Genark server: " + genarkURL);
     }
@@ -92,12 +111,12 @@ private static List<GenomeListItem> readRecords() {
     return records;
 }
 
-private static boolean loadGenomeList(String url, String idColumn, List<String> errors) {
+private static boolean loadGenomeList(String url, String idColumn, List<String> errors, boolean igvHosted) {
     try {
         String genomeListContent = HttpUtils.getInstance().getContentsAsString(new URL(url));
         List<String> genomeListLines = Arrays.asList(genomeListContent.split("\\r?\\n"));
         String[] headers = parseHeaders(genomeListLines);
-        parseRecords(genomeListLines, headers, idColumn);
+        parseRecords(genomeListLines, headers, idColumn, igvHosted);
         return true;
     } catch (Exception e) {
         log.error("Error loading genome list from: " + url, e);
@@ -136,7 +155,7 @@ private static boolean loadGenomeList(String url, String idColumn, List<String> 
     }
 
 
-    private static void parseRecords(List<String> genomeListLines, String [] headers, String idColumn) {
+    private static void parseRecords(List<String> genomeListLines, String [] headers, String idColumn, boolean igvHosted) {
 
         for (String line : genomeListLines) {
 
@@ -154,6 +173,9 @@ private static boolean loadGenomeList(String url, String idColumn, List<String> 
                 String displayableName = attributes.get("common name");
                 String path = attributes.get("url");
                 records.add(new GenomeListItem(displayableName, path, id, attributes));
+                if (igvHosted && id != null) {
+                    igvHostedIds.add(id);
+                }
             }
         }
     }
