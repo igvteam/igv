@@ -3,10 +3,12 @@ package org.igv.feature.genome;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.ui.genome.GenomeListItem;
 import org.igv.ui.util.MessageUtils;
+import org.igv.util.FileUtils;
 import org.igv.util.HttpUtils;
 
 import java.net.URL;
@@ -43,6 +45,13 @@ public class HostedGenomes {
      */
     private static Set<String> igvHostedIds = ConcurrentHashMap.newKeySet();
 
+    /**
+     * Sequence URL (twoBitURL, or fastaURL if there is no twoBitURL) of each hosted genome definition examined so
+     * far, keyed by genome ID.  A null value means the definition could not be read, and is cached to avoid
+     * repeating the attempt.
+     */
+    private static Map<String, String> hostedSequenceURLs = new HashMap<>();
+
     public static synchronized List<GenomeListItem> getRecords() {
         if (records == null) {
             records = new CopyOnWriteArrayList<>(readRecords());
@@ -52,15 +61,63 @@ public class HostedGenomes {
 
 
     /**
-     * Return true if the genome ID is that of a genome hosted by the IGV genome server.  Genomes from other sources,
-     * including the UCSC GenArk list, return false.
+     * Return true if this is a genome hosted by the IGV genome server, and so can be restored from its ID alone.
+     * Genomes from other sources, including the UCSC GenArk list, return false.
+     * <p>
+     * The ID alone is not sufficient -- a user genome is free to reuse a hosted ID such as "hg38" -- so the genome's
+     * sequence URL, which is unique to our definitions, must match the hosted definition as well.  A genome whose
+     * sequence has been downloaded to a local file therefore does not match, nor does one whose definition could not
+     * be read.  The cost of such a miss is only that the session records the expanded genome definition, as it did
+     * before genomes were recorded by ID.
+     *
+     * @param config the genome's configuration, as loaded
+     * @return
+     */
+    public static synchronized boolean isIGVHosted(GenomeConfig config) {
+
+        if (config == null || config.id == null) {
+            return false;
+        }
+
+        getRecords();   // Insure records, and thus the ID set, have been loaded
+        if (!igvHostedIds.contains(config.id)) {
+            return false;
+        }
+
+        String sequenceURL = config.twoBitURL != null ? config.twoBitURL : config.fastaURL;
+        return sequenceURL != null && sequenceURL.equals(getHostedSequenceURL(config.id));
+    }
+
+    /**
+     * Return the sequence URL declared by the hosted definition for this genome ID, or null if it cannot be read.
+     * The definition is fetched on first use and the result, including null, is cached.
      *
      * @param genomeId
      * @return
      */
-    public static boolean isIGVHosted(String genomeId) {
-        getRecords();   // Insure records, and thus the ID set, have been loaded
-        return genomeId != null && igvHostedIds.contains(genomeId);
+    private static String getHostedSequenceURL(String genomeId) {
+
+        if (hostedSequenceURLs.containsKey(genomeId)) {
+            return hostedSequenceURLs.get(genomeId);
+        }
+
+        String sequenceURL = null;
+        GenomeListItem item = getGenomeListItem(genomeId);
+        if (item != null && item.getPath() != null && item.getPath().endsWith(".json")) {
+            try {
+                GenomeConfig config = GenomeConfig.fromJson(FileUtils.getContents(item.getPath()));
+                sequenceURL = config.twoBitURL != null ? config.twoBitURL : config.fastaURL;
+                if (sequenceURL != null) {
+                    // Hosted definitions use absolute URLs, but resolve relative ones the way the loader would
+                    sequenceURL = FileUtils.getAbsolutePath(sequenceURL, item.getPath());
+                }
+            } catch (Exception e) {
+                log.error("Error reading hosted genome definition: " + item.getPath(), e);
+            }
+        }
+
+        hostedSequenceURLs.put(genomeId, sequenceURL);
+        return sequenceURL;
     }
 
     public static synchronized GenomeListItem getGenomeListItem(String genomeId) {

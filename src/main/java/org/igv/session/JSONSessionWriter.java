@@ -89,7 +89,7 @@ public class JSONSessionWriter {
         // Genomes hosted by the IGV genome server can be restored from their ID alone.  Everything else is saved as
         // an expanded genome definition, minus its tracks (which are included in the session "tracks" property).
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        if (HostedGenomes.isIGVHosted(currentGenome.getId())) {
+        if (HostedGenomes.isIGVHosted(currentGenome.getConfig())) {
             sessionObject.put("genome", currentGenome.getId());
         } else {
             JSONObject genomeJson = currentGenome.getConfig().toJSON();
