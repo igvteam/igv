@@ -269,34 +269,43 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                 Runnable showDialog = () -> {
                     try {
 
-                        GenomeConfig config;
+                        GenomeConfig config = null;
                         if (genomePath.endsWith(".json")) {
                             config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
-                        } else {
+                        } else if (genomePath.endsWith("hub.txt")) {
                             Hub hub = HubParser.loadHub(genomePath);
                             config = hub.getGenomeConfigs().get(0);
                             config.setHubs(Arrays.asList(genomePath));
                         }
 
-                        config.setName(rec.getAttributeValue("common name"));
+                        if (config == null) {
 
-                        // If config has a hub,  allow changing default annotation.
-                        if (config.getHubs() != null && config.getHubs().size() > 0) {
-
-                            List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-                            if (selectedTracks != null && selectedTracks.size() > 0) {
-                                config.setTracks(selectedTracks);
-                            }
-                        }
-
-                        File localFile = GenomeDownloadUtils.downloadGenome(config,
-                                downloadSequenceRB.isSelected(),
-                                downloadAnnotationsRB.isSelected());
-
-                        if (localFile != null) {
-                            GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
-                        } else {
+                            // A format that carries its own sequence and annotations, such as genbank (.gbk).  There
+                            // is no separate definition to rename, choose annotations from, or download.
                             GenomeManager.getInstance().loadGenome(genomePath);
+
+                        } else {
+
+                            config.setName(rec.getAttributeValue("common name"));
+
+                            // If config has a hub,  allow changing default annotation.
+                            if (config.getHubs() != null && config.getHubs().size() > 0) {
+
+                                List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+                                if (selectedTracks != null && selectedTracks.size() > 0) {
+                                    config.setTracks(selectedTracks);
+                                }
+                            }
+
+                            File localFile = GenomeDownloadUtils.downloadGenome(config,
+                                    downloadSequenceRB.isSelected(),
+                                    downloadAnnotationsRB.isSelected());
+
+                            if (localFile != null) {
+                                GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
+                            } else {
+                                GenomeManager.getInstance().loadGenome(genomePath);
+                            }
                         }
 
                         // Legacy cleanup
