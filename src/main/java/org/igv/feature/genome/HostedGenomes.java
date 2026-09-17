@@ -1,5 +1,6 @@
 package org.igv.feature.genome;
 
+import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
@@ -10,7 +11,10 @@ import org.igv.ui.genome.GenomeListItem;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.HttpUtils;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
@@ -51,6 +55,12 @@ public class HostedGenomes {
     private static final Object igvGenomeLock = new Object();
 
     /**
+     * Local copy of the last IGV genome list read, in the genome directory.  A live list is fetched every session;
+     * this is only a fallback, so that an unreachable server does not cost a session its genome IDs.
+     */
+    private static final String IGV_GENOMES_CACHE_FILE = "hosted-genomes.tsv";
+
+    /**
      * Errors from loading the IGV genome list, reported when the full record set is built.  The list may be loaded
      * silently, when writing a session, long before anything is in a position to show a dialog.
      */
@@ -88,24 +98,71 @@ public class HostedGenomes {
 
         synchronized (igvGenomeLock) {
             if (igvHostedGenomes == null) {
-                Map<String, GenomeListItem> genomes = new LinkedHashMap<>();
-                final IGVPreferences preferences = PreferencesManager.getPreferences();
-                List<GenomeListItem> items = fetchGenomeList(preferences.get(GENOMES_SERVER_URL), "assembly",
-                        igvGenomeErrors, null);
-                if (items == null) {
-                    items = fetchGenomeList(preferences.get(BACKUP_GENOMES_SERVER_URL), "assembly",
-                            igvGenomeErrors, null);
-                }
-                if (items != null) {
-                    for (GenomeListItem item : items) {
-                        if (item.getId() != null) {
-                            genomes.put(item.getId(), item);
-                        }
-                    }
-                }
-                igvHostedGenomes = genomes;
+                igvHostedGenomes = loadIGVHostedGenomes();
             }
             return igvHostedGenomes;
+        }
+    }
+
+    /**
+     * Read the IGV genome list, from the genome server if it can be reached and from the local copy if it cannot.
+     * A list read from the server replaces the local copy.
+     */
+    private static Map<String, GenomeListItem> loadIGVHostedGenomes() {
+
+        final IGVPreferences preferences = PreferencesManager.getPreferences();
+
+        String content = fetchGenomeListContent(preferences.get(GENOMES_SERVER_URL), igvGenomeErrors);
+        if (content == null) {
+            content = fetchGenomeListContent(preferences.get(BACKUP_GENOMES_SERVER_URL), igvGenomeErrors);
+        }
+
+        List<GenomeListItem> items = parseGenomeList(content, "assembly", null);
+        if (items == null || items.isEmpty()) {
+            // Neither server could be read, or returned nothing usable.  Fall back to the last list read.
+            items = parseGenomeList(readCachedGenomeList(), "assembly", null);
+        } else {
+            cacheGenomeList(content);
+        }
+
+        Map<String, GenomeListItem> genomes = new LinkedHashMap<>();
+        if (items != null) {
+            for (GenomeListItem item : items) {
+                if (item.getId() != null) {
+                    genomes.put(item.getId(), item);
+                }
+            }
+        }
+        return genomes;
+    }
+
+    /**
+     * Return the contents of the local copy of the IGV genome list, or null if there is none to read.
+     */
+    private static String readCachedGenomeList() {
+        File cacheFile = new File(DirectoryManager.getGenomeCacheDirectory(), IGV_GENOMES_CACHE_FILE);
+        if (!cacheFile.exists()) {
+            return null;
+        }
+        try {
+            log.info("Using cached genome list: " + cacheFile.getAbsolutePath());
+            return Files.readString(cacheFile.toPath(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            log.error("Error reading cached genome list: " + cacheFile.getAbsolutePath(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Save the genome list just read, for use in a session that cannot reach the server.  A failure to write is of
+     * no consequence beyond losing that fallback, so it is logged and otherwise ignored.
+     */
+    private static void cacheGenomeList(String content) {
+        File cacheFile = new File(DirectoryManager.getGenomeCacheDirectory(), IGV_GENOMES_CACHE_FILE);
+        try {
+            Files.writeString(cacheFile.toPath(), content, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            log.error("Error caching genome list: " + cacheFile.getAbsolutePath(), e);
         }
     }
 
@@ -170,14 +227,38 @@ private static List<GenomeListItem> readRecords() {
  */
 private static List<GenomeListItem> fetchGenomeList(String url, String idColumn, List<String> errors,
                                                     Function<String, String> pathFunction) {
+    return parseGenomeList(fetchGenomeListContent(url, errors), idColumn, pathFunction);
+}
+
+/**
+ * Fetch the contents of a genome list, returning null if the url could not be read.
+ */
+private static String fetchGenomeListContent(String url, List<String> errors) {
     try {
-        String genomeListContent = HttpUtils.getInstance().getContentsAsString(new URL(url));
-        List<String> genomeListLines = Arrays.asList(genomeListContent.split("\\r?\\n"));
-        String[] headers = parseHeaders(genomeListLines);
-        return parseRecords(genomeListLines, headers, idColumn, pathFunction);
+        return HttpUtils.getInstance().getContentsAsString(new URL(url));
     } catch (Exception e) {
         log.error("Error loading genome list from: " + url, e);
         errors.add("Error loading genome list from: " + url + "   (" + e.getMessage() + ")");
+        return null;
+    }
+}
+
+/**
+ * Parse the contents of a genome list, returning its records, or null for null or unparsable content.
+ *
+ * @param pathFunction derives a record's path from its ID, for a list with no "url" column.  May be null.
+ */
+private static List<GenomeListItem> parseGenomeList(String content, String idColumn,
+                                                    Function<String, String> pathFunction) {
+    if (content == null) {
+        return null;
+    }
+    try {
+        List<String> genomeListLines = Arrays.asList(content.split("\\r?\\n"));
+        String[] headers = parseHeaders(genomeListLines);
+        return parseRecords(genomeListLines, headers, idColumn, pathFunction);
+    } catch (Exception e) {
+        log.error("Error parsing genome list", e);
         return null;
     }
 }
