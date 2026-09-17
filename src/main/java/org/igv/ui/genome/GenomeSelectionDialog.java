@@ -264,6 +264,10 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                 final String url = rec.getAttributeValue("url");
                 final String id = rec.getAttributeValue("accession");
 
+                // The location of the genome definition -- the json URL for an IGV hosted genome, the hub URL for a
+                // Genark genome, whose list has no "url" column.
+                final String genomePath = rec.getPath();
+
                 Runnable showDialog = () -> {
                     try {
 
@@ -296,15 +300,15 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                         if (localFile != null) {
                             GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
                         } else {
-                            GenomeManager.getInstance().loadGenome(url);
+                            GenomeManager.getInstance().loadGenome(genomePath);
                         }
 
                         // Legacy cleanup
                         removeDotGenomeFile(id);
 
                     } catch (IOException e) {
-                        MessageUtils.showErrorMessage("Error loading genome " + url, e);
-                        log.error("Error loading genome " + url, e);
+                        MessageUtils.showErrorMessage("Error loading genome " + genomePath, e);
+                        log.error("Error loading genome " + genomePath, e);
                     }
                 };
 
