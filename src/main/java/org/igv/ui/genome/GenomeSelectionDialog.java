@@ -261,50 +261,62 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
 
             if (rec != null) {
 
-                final String url = rec.getAttributeValue("url");
-                final String id = rec.getAttributeValue("accession");
+                // The record ID, which for an IGV hosted genome is the assembly ("hg38") -- the name any legacy
+                // .genome archive in the genome directory is filed under.
+                final String id = rec.getId();
+
+                // The location of the genome definition -- the json URL for an IGV hosted genome, the hub URL for a
+                // Genark genome, whose list has no "url" column.
+                final String genomePath = rec.getPath();
 
                 Runnable showDialog = () -> {
                     try {
 
-                        GenomeConfig config;
-                        if (url != null && url.endsWith(".json")) {
-                            config = (new JsonGenomeLoader(url)).loadGenomeConfig();
-                        } else {
-                            String accession = rec.getAttributeValue("accession");
-                            String hubURL = HubGenomeLoader.convertToHubURL(accession);
-                            Hub hub = HubParser.loadHub(hubURL);
+                        GenomeConfig config = null;
+                        if (genomePath.endsWith(".json")) {
+                            config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
+                        } else if (HubGenomeLoader.isHubURL(genomePath)) {
+                            Hub hub = HubParser.loadHub(genomePath);
                             config = hub.getGenomeConfigs().get(0);
-                            config.setHubs(Arrays.asList(hubURL));
+                            config.setHubs(Arrays.asList(genomePath));
                         }
 
-                        config.setName(rec.getAttributeValue("common name"));
+                        if (config == null) {
 
-                        // If config has a hub,  allow changing default annotation.
-                        if (config.getHubs() != null && config.getHubs().size() > 0) {
+                            // A format that carries its own sequence and annotations, such as genbank (.gbk).  There
+                            // is no separate definition to rename, choose annotations from, or download.
+                            GenomeManager.getInstance().loadGenome(genomePath);
 
-                            List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-                            if (selectedTracks != null && selectedTracks.size() > 0) {
-                                config.setTracks(selectedTracks);
-                            }
-                        }
-
-                        File localFile = GenomeDownloadUtils.downloadGenome(config,
-                                downloadSequenceRB.isSelected(),
-                                downloadAnnotationsRB.isSelected());
-
-                        if (localFile != null) {
-                            GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
                         } else {
-                            GenomeManager.getInstance().loadGenome(url);
+
+                            config.setName(rec.getAttributeValue("common name"));
+
+                            // If config has a hub,  allow changing default annotation.
+                            if (config.getHubs() != null && config.getHubs().size() > 0) {
+
+                                List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+                                if (selectedTracks != null && selectedTracks.size() > 0) {
+                                    config.setTracks(selectedTracks);
+                                }
+                            }
+
+                            File localFile = GenomeDownloadUtils.downloadGenome(config,
+                                    downloadSequenceRB.isSelected(),
+                                    downloadAnnotationsRB.isSelected());
+
+                            if (localFile != null) {
+                                GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
+                            } else {
+                                GenomeManager.getInstance().loadGenome(genomePath);
+                            }
                         }
 
                         // Legacy cleanup
                         removeDotGenomeFile(id);
 
                     } catch (IOException e) {
-                        MessageUtils.showErrorMessage("Error loading genome " + url, e);
-                        log.error("Error loading genome " + url, e);
+                        MessageUtils.showErrorMessage("Error loading genome " + genomePath, e);
+                        log.error("Error loading genome " + genomePath, e);
                     }
                 };
 

@@ -36,7 +36,10 @@ public class GenbankLoader extends GenomeLoader {
         Sequence sequence = new InMemorySequence(chr, seq);
 
         GenomeConfig config = new GenomeConfig();
-        config.id = (chr);
+
+        // The genome ID is the versioned accession ("NC_012920.1"), which is how the genome is listed and so how a
+        // session or batch command will name it.  The sequence keeps the unversioned name.
+        config.id = genbankParser.getGenomeId();
         config.setName(name);
         config.setSequence(sequence);
 

@@ -52,9 +52,28 @@ public class JSONSessionReader implements SessionReader {
 
         String jsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = new JSONObject(jsonString);
+        // Sessions written by IGV list every track explicitly, including the genome's default annotation tracks, so
+        // by default those are not loaded again with the genome.  A hand written session that names a genome by ID
+        // can set "loadGenomeTracks" to merge the genome's "tracks" property with the session's.  A "reference"
+        // section carries its tracks inline, and those are always merged.
+        boolean loadGenomeTracks = jsonObject.optBoolean("loadGenomeTracks", false);
+
         if (jsonObject.has("genome")) {
-            if (!GenomeManager.getInstance().getCurrentGenome().getId().equals(jsonObject.getString("genome"))) {
-                GenomeManager.getInstance().loadGenomeById(jsonObject.getString("genome"));
+
+            // Genome referenced by ID.
+            String genomeId = jsonObject.getString("genome");
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            if (currentGenome == null || !genomeId.equals(currentGenome.getId())) {
+                if (!GenomeManager.getInstance().loadGenomeById(genomeId, false, loadGenomeTracks)) {
+                    // Loading the session tracks against the previous genome would silently plot them on the wrong
+                    // assembly.  loadGenomeById has already reported the reason.
+                    throw new RuntimeException("Unable to load genome: " + genomeId);
+                }
+            } else if (IGV.hasInstance()) {
+                // The genome is already loaded.  Reset the session and restore the genome's tracks, which loadGenome
+                // would otherwise have done.
+                IGV.getInstance().resetSession(null);
+                GenomeManager.getInstance().restoreGenomeTracks(currentGenome, loadGenomeTracks);
             }
 
         } else if (jsonObject.has("reference")) {

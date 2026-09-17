@@ -223,7 +223,7 @@ public class GenomeListManager {
                     }
                 } else if (file.getName().toLowerCase().endsWith(".gbk")) {
                     try {
-                        String id = (new GenbankParser(file.getAbsolutePath())).getAccession();
+                        String id = (new GenbankParser(file.getAbsolutePath())).getGenomeId();
                         String name = id;
                         GenomeListItem item = new GenomeListItem(name, file.getAbsolutePath(), id);
                         downloadedGenomesMap.put(id, item);
