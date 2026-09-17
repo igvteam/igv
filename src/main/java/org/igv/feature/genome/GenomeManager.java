@@ -113,8 +113,8 @@ public class GenomeManager {
     /**
      * @param genomeId
      * @param force                 reload the genome even if it is the current genome
-     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
-     *                              Used when loading a session, which lists all tracks explicitly.
+     * @param loadAnnotationTracks  if false the genome's default annotation tracks (its "tracks" property) are not
+     *                              loaded.  Used when loading a session, which lists all tracks explicitly.
      */
     public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks) throws IOException {
 
@@ -153,10 +153,9 @@ public class GenomeManager {
     }
 
     /**
-     * @param genomePath
-     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     * @see #loadGenomeById(String, boolean, boolean)
      */
-    public Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
+    private Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
 
         WaitCursorManager.CursorToken cursorToken = null;
         try {
@@ -211,10 +210,9 @@ public class GenomeManager {
     }
 
     /**
-     * @param newGenome
-     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     * @see #loadGenomeById(String, boolean, boolean)
      */
-    public void setCurrentGenome(Genome newGenome, boolean loadAnnotationTracks) {
+    private void setCurrentGenome(Genome newGenome, boolean loadAnnotationTracks) {
 
         this.currentGenome = newGenome;
 
@@ -247,8 +245,7 @@ public class GenomeManager {
     }
 
     /**
-     * @param genome
-     * @param loadAnnotationTracks  if false the genome's default annotation tracks ("tracks" property) are not loaded.
+     * @see #loadGenomeById(String, boolean, boolean)
      */
     public void restoreGenomeTracks(Genome genome, boolean loadAnnotationTracks) {
 

@@ -53,8 +53,9 @@ public class JSONSessionReader implements SessionReader {
         String jsonString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         JSONObject jsonObject = new JSONObject(jsonString);
         // Sessions written by IGV list every track explicitly, including the genome's default annotation tracks, so
-        // by default those are not loaded again with the genome.  A hand written session can set "loadGenomeTracks"
-        // to merge the genome's "tracks" property with the session's.
+        // by default those are not loaded again with the genome.  A hand written session that names a genome by ID
+        // can set "loadGenomeTracks" to merge the genome's "tracks" property with the session's.  A "reference"
+        // section carries its tracks inline, and those are always merged.
         boolean loadGenomeTracks = jsonObject.optBoolean("loadGenomeTracks", false);
 
         if (jsonObject.has("genome")) {

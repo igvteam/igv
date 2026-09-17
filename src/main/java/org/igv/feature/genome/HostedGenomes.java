@@ -12,8 +12,8 @@ import org.igv.util.HttpUtils;
 
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 
 import static org.igv.prefs.Constants.BACKUP_GENOMES_SERVER_URL;
 import static org.igv.prefs.Constants.GENOMES_SERVER_URL;
@@ -38,14 +38,23 @@ public class HostedGenomes {
     private static Map<String, GenomeListItem> hostedGenomesMap = null;
 
     /**
-     * Genomes listed by the IGV genome server (the GENOMES_SERVER_URL preference, or its backup), keyed by ID.  These
-     * genomes can be restored from their ID alone, so sessions reference them by ID rather than by an expanded
-     * genome definition.  There are a few dozen of them, as against the ~50,000 of the UCSC GenArk list, so this is
-     * consulted before the full record set wherever an IGV hosted genome is the likely answer.
+     * Genomes listed by the IGV genome server (the GENOMES_SERVER_URL preference, or its backup), keyed by ID, or
+     * null until first loaded.  These genomes can be restored from their ID alone, so sessions reference them by ID
+     * rather than by an expanded genome definition.  There are a few dozen of them, as against the ~50,000 of the
+     * UCSC GenArk list, so this is consulted before the full record set wherever an IGV hosted genome is the likely
+     * answer.
+     * <p>
+     * Guarded by igvGenomeLock rather than the class monitor, which is held across the GenArk download.
      */
-    private static Map<String, GenomeListItem> igvHostedGenomes = new ConcurrentHashMap<>();
+    private static Map<String, GenomeListItem> igvHostedGenomes;
 
-    private static boolean igvHostedGenomesLoaded = false;
+    private static final Object igvGenomeLock = new Object();
+
+    /**
+     * Errors from loading the IGV genome list, reported when the full record set is built.  The list may be loaded
+     * silently, when writing a session, long before anything is in a position to show a dialog.
+     */
+    private static final List<String> igvGenomeErrors = new ArrayList<>();
 
     public static synchronized List<GenomeListItem> getRecords() {
         if (records == null) {
@@ -67,40 +76,37 @@ public class HostedGenomes {
      * @param genomeId
      * @return
      */
-    public static synchronized boolean isIGVHosted(String genomeId) {
-        loadIGVHostedGenomes();
-        return genomeId != null && igvHostedGenomes.containsKey(genomeId);
+    public static boolean isIGVHosted(String genomeId) {
+        return igvHostedGenomes().containsKey(genomeId);
     }
 
     /**
-     * Populate the IGV hosted genome map from the IGV genome list, if that has not already happened as part of
-     * reading the full record set.  A failure is logged and not retried.
+     * Return the IGV hosted genome list keyed by ID, fetching it on first use.  A failure leaves the map empty and
+     * is not retried, so one unreachable server does not cost every later call another timeout.
      */
-    private static void loadIGVHostedGenomes() {
+    private static Map<String, GenomeListItem> igvHostedGenomes() {
 
-        if (igvHostedGenomesLoaded) {
-            return;
-        }
-        igvHostedGenomesLoaded = true;
-
-        final IGVPreferences preferences = PreferencesManager.getPreferences();
-        List<String> errors = new ArrayList<>();
-        List<GenomeListItem> items = fetchGenomeList(preferences.get(GENOMES_SERVER_URL), "assembly", errors);
-        if (items == null) {
-            items = fetchGenomeList(preferences.get(BACKUP_GENOMES_SERVER_URL), "assembly", errors);
-        }
-        if (items != null) {
-            recordIGVHostedGenomes(items);
-        }
-    }
-
-    private static void recordIGVHostedGenomes(List<GenomeListItem> items) {
-        for (GenomeListItem item : items) {
-            if (item.getId() != null) {
-                igvHostedGenomes.put(item.getId(), item);
+        synchronized (igvGenomeLock) {
+            if (igvHostedGenomes == null) {
+                Map<String, GenomeListItem> genomes = new LinkedHashMap<>();
+                final IGVPreferences preferences = PreferencesManager.getPreferences();
+                List<GenomeListItem> items = fetchGenomeList(preferences.get(GENOMES_SERVER_URL), "assembly",
+                        igvGenomeErrors, null);
+                if (items == null) {
+                    items = fetchGenomeList(preferences.get(BACKUP_GENOMES_SERVER_URL), "assembly",
+                            igvGenomeErrors, null);
+                }
+                if (items != null) {
+                    for (GenomeListItem item : items) {
+                        if (item.getId() != null) {
+                            genomes.put(item.getId(), item);
+                        }
+                    }
+                }
+                igvHostedGenomes = genomes;
             }
+            return igvHostedGenomes;
         }
-        igvHostedGenomesLoaded = true;
     }
 
     /**
@@ -115,8 +121,7 @@ public class HostedGenomes {
      */
     public static synchronized GenomeListItem getGenomeListItem(String genomeId) {
 
-        loadIGVHostedGenomes();
-        GenomeListItem item = genomeId == null ? null : igvHostedGenomes.get(genomeId);
+        GenomeListItem item = igvHostedGenomes().get(genomeId);
         if (item != null) {
             return item;
         }
@@ -132,35 +137,19 @@ public class HostedGenomes {
 
 private static List<GenomeListItem> readRecords() {
 
-    records = new CopyOnWriteArrayList<>();
-
-    final IGVPreferences preferences = PreferencesManager.getPreferences();
-    final String genomesServerURL = preferences.get(GENOMES_SERVER_URL);
-    final String backupGenomesServerURL = preferences.get(BACKUP_GENOMES_SERVER_URL);
     final String genarkURL = "https://hgdownload.soe.ucsc.edu/hubs/UCSC_GI.assemblyHubList.txt";
 
-    List<String> errors = new ArrayList<>();
-
-    // IGV hosted genome list
-    List<GenomeListItem> igvGenomes = fetchGenomeList(genomesServerURL, "assembly", errors);
-    if (igvGenomes == null) {
-        log.error("Error loading genome list from: " + genomesServerURL);
-        // Try backup server
-        igvGenomes = fetchGenomeList(backupGenomesServerURL, "assembly", errors);
-    }
-    if (igvGenomes != null) {
-        records.addAll(igvGenomes);
-        recordIGVHostedGenomes(igvGenomes);
-    }
+    List<GenomeListItem> allRecords = new ArrayList<>(igvHostedGenomes().values());
+    List<String> errors = new ArrayList<>(igvGenomeErrors);
 
     // UCSC Genark hosted genome list.  These records are keyed by accession, which is the ID a Genark genome takes
     // when loaded -- the "genome" property of its hub is the accession.  The "assembly" column is a name such as
-    // "Loxafr3.0", which is not what a session, batch command, or the last genome preference will name.
-    List<GenomeListItem> genarkGenomes = fetchGenomeList(genarkURL, "accession", errors);
-    if (genarkGenomes == null) {
-        log.error("Error connecting to UCSC Genark server URL: " + genarkURL);
-    } else {
-        records.addAll(genarkGenomes);
+    // "Loxafr3.0", which is not what a session, batch command, or the last genome preference will name.  The list
+    // has no "url" column either, so the path is derived from the accession.
+    List<GenomeListItem> genarkGenomes =
+            fetchGenomeList(genarkURL, "accession", errors, HubGenomeLoader::convertToHubURL);
+    if (genarkGenomes != null) {
+        allRecords.addAll(genarkGenomes);
     }
 
     if (!errors.isEmpty()) {
@@ -171,18 +160,21 @@ private static List<GenomeListItem> readRecords() {
         MessageUtils.showMessage(sb.toString());
     }
 
-    return records;
+    return allRecords;
 }
 
 /**
  * Fetch and parse a genome list, returning its records, or null if it could not be read.
+ *
+ * @param pathFunction derives a record's path from its ID, for a list with no "url" column.  May be null.
  */
-private static List<GenomeListItem> fetchGenomeList(String url, String idColumn, List<String> errors) {
+private static List<GenomeListItem> fetchGenomeList(String url, String idColumn, List<String> errors,
+                                                    Function<String, String> pathFunction) {
     try {
         String genomeListContent = HttpUtils.getInstance().getContentsAsString(new URL(url));
         List<String> genomeListLines = Arrays.asList(genomeListContent.split("\\r?\\n"));
         String[] headers = parseHeaders(genomeListLines);
-        return parseRecords(genomeListLines, headers, idColumn);
+        return parseRecords(genomeListLines, headers, idColumn, pathFunction);
     } catch (Exception e) {
         log.error("Error loading genome list from: " + url, e);
         errors.add("Error loading genome list from: " + url + "   (" + e.getMessage() + ")");
@@ -220,7 +212,8 @@ private static List<GenomeListItem> fetchGenomeList(String url, String idColumn,
     }
 
 
-    private static List<GenomeListItem> parseRecords(List<String> genomeListLines, String [] headers, String idColumn) {
+    private static List<GenomeListItem> parseRecords(List<String> genomeListLines, String [] headers, String idColumn,
+                                                     Function<String, String> pathFunction) {
 
         List<GenomeListItem> items = new ArrayList<>();
         for (String line : genomeListLines) {
@@ -238,10 +231,8 @@ private static List<GenomeListItem> fetchGenomeList(String url, String idColumn,
                 String id = attributes.get(idColumn);
                 String displayableName = attributes.get("common name");
                 String path = attributes.get("url");
-                if (path == null && id != null) {
-                    // The UCSC Genark list has no "url" column.  Those genomes are loaded from the track hub for
-                    // their accession, which is also their ID.
-                    path = HubGenomeLoader.convertToHubURL(id);
+                if (path == null && pathFunction != null && id != null) {
+                    path = pathFunction.apply(id);
                 }
                 items.add(new GenomeListItem(displayableName, path, id, attributes));
             }

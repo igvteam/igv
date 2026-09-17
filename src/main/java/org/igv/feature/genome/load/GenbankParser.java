@@ -30,6 +30,7 @@ public class GenbankParser {
     private List<Feature> features;
     private String locusName;
     private String[] aliases;
+    private boolean headerRead;
 
     private static List<String> nameFields = Arrays.asList("gene");
 
@@ -83,6 +84,7 @@ public class GenbankParser {
             }
         }
         while (line != null && !line.startsWith("FEATURES"));
+        headerRead = true;
 
         readFeatures(reader);
         if (readSequence) readOriginSequence(reader);
@@ -118,23 +120,42 @@ public class GenbankParser {
 
 
     public String getAccession() throws IOException {
+        readHeader();
         if (accession == null) {
-            try (BufferedReader reader = ParsingUtils.openBufferedReader(path)) {
-                String line;
-                while ((line = reader.readLine()) != null && !line.startsWith("FEATURES")) {
-                    if (line.startsWith("ACCESSION")) {
-                        String[] tokens = Globals.whitespacePattern.split(line);
-                        if (tokens.length >= 2) {
-                            accession = tokens[1].trim();
-                        } else {
-                            log.warn("Genbank file missing ACCESSION number.");
-                        }
-                    }
-                }
-            }
-            accession = accession != null ? accession : (new File(path)).getName(); // Default to file name if no accession found
+            accession = (new File(path)).getName();   // Default to file name if no accession found
         }
         return accession;
+    }
+
+    /**
+     * Return the identifier for the genome defined by this file: the versioned accession ("NC_012920.1") where the
+     * file has a VERSION line, otherwise the accession.  The sequence name, see getChr, stays unversioned.
+     *
+     * @return the genome id
+     */
+    public String getGenomeId() throws IOException {
+        readHeader();
+        return version != null ? version : getAccession();
+    }
+
+    /**
+     * Read the lines preceding the FEATURES section, if that has not been done already.
+     */
+    private void readHeader() throws IOException {
+        if (headerRead) {
+            return;
+        }
+        try (BufferedReader reader = ParsingUtils.openBufferedReader(path)) {
+            String line;
+            while ((line = reader.readLine()) != null && !line.startsWith("FEATURES")) {
+                if (line.startsWith("ACCESSION")) {
+                    readAccession(line);
+                } else if (line.startsWith("VERSION")) {
+                    readVersion(line);
+                }
+            }
+        }
+        headerRead = true;
     }
 
     /**
@@ -171,7 +192,7 @@ public class GenbankParser {
      * Read the version line, that is the accession with its version suffix.
      * VERSION     NC_012920.1  GI:251831106
      *
-     * @throws IOException
+     * @param line
      */
     private void readVersion(String line) {
 
@@ -180,17 +201,6 @@ public class GenbankParser {
             version = tokens[1].trim();
         }
     }
-
-    /**
-     * Return the versioned accession, e.g. "NC_012920.1", or null if the file has no VERSION line.  This is the
-     * identifier a genbank genome is known by -- see getChr() for the sequence name, which is unversioned.
-     *
-     * @return
-     */
-    public String getVersion() {
-        return version;
-    }
-
 
     /**
      * Read the sequence aliases line  -- Note: this is an IGV extension

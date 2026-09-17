@@ -11,6 +11,7 @@ import org.igv.event.IGVEventBus;
 import org.igv.feature.genome.GenomeDownloadUtils;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.GenomeConfig;
+import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.feature.genome.load.JsonGenomeLoader;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
@@ -272,7 +273,7 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                         GenomeConfig config = null;
                         if (genomePath.endsWith(".json")) {
                             config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
-                        } else if (genomePath.endsWith("hub.txt")) {
+                        } else if (HubGenomeLoader.isHubURL(genomePath)) {
                             Hub hub = HubParser.loadHub(genomePath);
                             config = hub.getGenomeConfigs().get(0);
                             config.setHubs(Arrays.asList(genomePath));
