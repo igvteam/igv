@@ -29,7 +29,7 @@ public class FiberseqRenderer {
      */
     public static void draw(Alignment alignment, double bpStart, double locScale, Rectangle rowRect, Graphics g,
                             boolean leaveMargin, int minGapWidth) {
-        FiberseqAnnotations annotations = alignment.getFiberseqAnnotations();
+        MolecularAnnotations annotations = alignment.getMolecularAnnotations();
         if (annotations == null) {
             return;
         }
@@ -37,10 +37,10 @@ public class FiberseqRenderer {
         Geometry geom = new Geometry(bpStart, locScale, rowRect, g, rowRect.y, h, alignment.getGaps(), minGapWidth);
 
         IGVPreferences prefs = PreferencesManager.getPreferences();
-        g.setColor(prefs.getAsColor(FIBERSEQ_NUCLEOSOME_COLOR));
+        g.setColor(prefs.getAsColor(MA_NUCLEOSOME_COLOR));
         drawIntervals(annotations.getNucleosomes(), null, null, geom);
-        drawIntervals(annotations.getMsps(), prefs.getAsColor(FIBERSEQ_MSP_COLOR),
-                getFireColors(prefs.getAsColor(FIBERSEQ_FIRE_COLOR)), geom);
+        drawIntervals(annotations.getMsps(), prefs.getAsColor(MA_MSP_COLOR),
+                getFireColors(prefs.getAsColor(MA_FIRE_COLOR)), geom);
     }
 
     private record Geometry(double bpStart, double locScale, Rectangle rowRect, Graphics g, int y, int h,
@@ -62,9 +62,9 @@ public class FiberseqRenderer {
     /**
      * Draw intervals in the current color, or for MSPs (mspColor non-null) in the MSP or FIRE color.
      */
-    private static void drawIntervals(List<FiberseqAnnotations.Interval> intervals, Color mspColor,
+    private static void drawIntervals(List<MolecularAnnotations.Interval> intervals, Color mspColor,
                                       Color[] fireColors, Geometry geom) {
-        for (FiberseqAnnotations.Interval interval : intervals) {
+        for (MolecularAnnotations.Interval interval : intervals) {
             int pStart = (int) ((interval.start() - geom.bpStart) / geom.locScale);
             int pEnd = (int) ((interval.end() - geom.bpStart) / geom.locScale);
             // Intervals are in molecular order, which is descending reference order for reverse-strand reads,

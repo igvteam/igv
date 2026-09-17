@@ -328,7 +328,7 @@ public class AlignmentRenderer {
                         !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
                                 colorOption.isBaseMod() ||
                                 colorOption.isSMRTKinetics() ||
-                                colorOption == ColorOption.FIBERSEQ) &&
+                                colorOption == ColorOption.MOLECULAR_ANNOTATION) &&
                                 (pixelWidth >= 1))) {
                     // Optimization for really zoomed out views.  If this alignment occupies screen space already taken,
                     // and it is the default color, skip drawing.
@@ -834,7 +834,7 @@ public class AlignmentRenderer {
                                 color = bisinfo.getDisplayColor(idx);
                             } else if (colorOption.isBaseMod() ||
                                     colorOption.isSMRTKinetics() ||
-                                    colorOption == ColorOption.FIBERSEQ) {
+                                    colorOption == ColorOption.MOLECULAR_ANNOTATION) {
                                 color = Color.GRAY;
                             } else {
                                 color = nucleotideColors.get(c);
@@ -875,7 +875,7 @@ public class AlignmentRenderer {
         }
 
         // Fiber-seq nucleosomes and MSPs
-        if (colorOption == ColorOption.FIBERSEQ) {
+        if (colorOption == ColorOption.MOLECULAR_ANNOTATION) {
             FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), leaveMargin,
                     hideSmallIndelsBP ? indelThresholdBP : 0);
             // The overlay covers deletion labels; draw them again on top
@@ -931,7 +931,7 @@ public class AlignmentRenderer {
                                 aBlock,
                                 alignment,
                                 context);
-                    } else if (colorOption.isBaseMod() || colorOption == ColorOption.FIBERSEQ) {
+                    } else if (colorOption.isBaseMod() || colorOption == ColorOption.MOLECULAR_ANNOTATION) {
                         // Markers distract from the modification / fiber-seq overlays; hidden markers are not clickable
                         aBlock.setPixelRange(Integer.MIN_VALUE, Integer.MIN_VALUE);
                     } else {
@@ -1231,7 +1231,7 @@ public class AlignmentRenderer {
             case SMRT_CCS_FWD_PW:
             case SMRT_CCS_REV_IPD:
             case SMRT_CCS_REV_PW:
-            case FIBERSEQ:
+            case MOLECULAR_ANNOTATION:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

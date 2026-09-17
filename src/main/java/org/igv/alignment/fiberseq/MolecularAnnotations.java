@@ -21,7 +21,7 @@ import java.util.function.Function;
  * In both encodings coordinates are in the original molecule's orientation, so for reverse-strand alignments an
  * interval [s, s+l) corresponds to [L-(s+l), L-s) of the stored read sequence, where L is its length.
  */
-public class FiberseqAnnotations {
+public class MolecularAnnotations {
 
     /**
      * A 0-based, half-open reference interval.  quality is the FIRE quality (0-255) for MSPs, 0 for nucleosomes.
@@ -39,7 +39,7 @@ public class FiberseqAnnotations {
     private final List<Interval> nucleosomes;
     private final List<Interval> msps;
 
-    private FiberseqAnnotations(List<Interval> nucleosomes, List<Interval> msps) {
+    private MolecularAnnotations(List<Interval> nucleosomes, List<Interval> msps) {
         this.nucleosomes = nucleosomes;
         this.msps = msps;
     }
@@ -63,8 +63,8 @@ public class FiberseqAnnotations {
      * @param seqLength length of the stored read sequence including soft clips, 0 if the sequence is absent
      * @param blocks    alignment blocks, whose bases offsets index the stored read sequence
      */
-    public static FiberseqAnnotations fromTags(Function<String, Object> tags, int seqLength, boolean isNegativeStrand,
-                                               AlignmentBlock[] blocks) {
+    public static MolecularAnnotations fromTags(Function<String, Object> tags, int seqLength, boolean isNegativeStrand,
+                                                AlignmentBlock[] blocks) {
         if (tags.apply("MA") instanceof String ma) {
             return createFromMa(ma, tags.apply("AQ"), seqLength, isNegativeStrand, blocks);
         } else if (tags.apply("Ma") instanceof String ma) {
@@ -85,8 +85,8 @@ public class FiberseqAnnotations {
     /**
      * Build annotations from legacy ns/nl/as/al/aq tag values.
      */
-    static FiberseqAnnotations create(Object ns, Object nl, Object as, Object al, Object aq,
-                                      int readLength, boolean isNegativeStrand, AlignmentBlock[] blocks) {
+    static MolecularAnnotations create(Object ns, Object nl, Object as, Object al, Object aq,
+                                       int readLength, boolean isNegativeStrand, AlignmentBlock[] blocks) {
         return build(toIntArray(ns), toIntArray(nl), toIntArray(as), toIntArray(al), toIntArray(aq),
                 readLength, isNegativeStrand, blocks);
     }
@@ -96,8 +96,8 @@ public class FiberseqAnnotations {
      * whose read length disagrees with the stored sequence (the read was rewritten after tagging).  Without a stored
      * sequence the tag's read length is used to flip reverse-strand intervals.
      */
-    static FiberseqAnnotations createFromMa(String ma, Object aqTag, int seqLength, boolean isNegativeStrand,
-                                            AlignmentBlock[] blocks) {
+    static MolecularAnnotations createFromMa(String ma, Object aqTag, int seqLength, boolean isNegativeStrand,
+                                             AlignmentBlock[] blocks) {
         int[] aq = aqTag instanceof byte[] ? toIntArray(aqTag) : null;
         List<int[]> nucleosomes = new ArrayList<>();       // {start, length}
         List<int[]> msps = new ArrayList<>();              // {start, length, quality}
@@ -171,9 +171,9 @@ public class FiberseqAnnotations {
                 readLength, isNegativeStrand, blocks);
     }
 
-    private static FiberseqAnnotations build(int[] nucStarts, int[] nucLengths, int[] mspStarts, int[] mspLengths,
-                                             int[] mspQualities, int readLength, boolean isNegativeStrand,
-                                             AlignmentBlock[] blocks) {
+    private static MolecularAnnotations build(int[] nucStarts, int[] nucLengths, int[] mspStarts, int[] mspLengths,
+                                              int[] mspQualities, int readLength, boolean isNegativeStrand,
+                                              AlignmentBlock[] blocks) {
         if (readLength <= 0 || blocks == null) {
             return null;
         }
@@ -182,7 +182,7 @@ public class FiberseqAnnotations {
         if (nucleosomes.isEmpty() && msps.isEmpty()) {
             return null;
         }
-        return new FiberseqAnnotations(nucleosomes, msps);
+        return new MolecularAnnotations(nucleosomes, msps);
     }
 
     private static List<Interval> liftIntervals(int[] starts, int[] lengths, int[] qualities, int readLength,

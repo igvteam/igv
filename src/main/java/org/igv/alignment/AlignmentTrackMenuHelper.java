@@ -867,7 +867,7 @@ class AlignmentTrackMenuHelper {
         // Fiber-seq nucleosomes and methylation sensitive patches (fibertools Ma/Aq or legacy ns/nl and as/al/aq tags)
         if (dataManager.hasFiberseqTags()) {
             colorMenu.addSeparator();
-            JRadioButtonMenuItem fiberseqItem = getColorMenuItem("fiber-seq nucleosomes / MSPs", AlignmentTrack.ColorOption.FIBERSEQ);
+            JRadioButtonMenuItem fiberseqItem = getColorMenuItem("molecular annotations (Ma)", AlignmentTrack.ColorOption.MOLECULAR_ANNOTATION);
             colorMenu.add(fiberseqItem);
             group.add(fiberseqItem);
         }

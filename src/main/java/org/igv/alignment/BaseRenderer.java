@@ -124,7 +124,7 @@ public class BaseRenderer {
                         // } else
                         if (colorOption.isBaseMod() ||
                                 colorOption.isSMRTKinetics() ||
-                                colorOption == AlignmentTrack.ColorOption.FIBERSEQ) {
+                                colorOption == AlignmentTrack.ColorOption.MOLECULAR_ANNOTATION) {
                             color = Color.GRAY;
                         } else {
                             //color = nucleotideColors.get(c);

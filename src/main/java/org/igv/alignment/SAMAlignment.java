@@ -3,6 +3,7 @@ package org.igv.alignment;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.SequenceUtil;
 import org.igv.Globals;
+import org.igv.alignment.fiberseq.MolecularAnnotations;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.ClinVar;
 import org.igv.feature.genome.Genome;
@@ -12,7 +13,6 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.prefs.Constants;
 import org.igv.prefs.PreferencesManager;
-import org.igv.alignment.fiberseq.FiberseqAnnotations;
 import org.igv.alignment.mods.BaseModificationSet;
 import org.igv.alignment.mods.BaseModificationUtils;
 import org.igv.alignment.smrt.SMRTKinetics;
@@ -99,7 +99,7 @@ public class SAMAlignment implements Alignment {
      */
     private List<BaseModificationSet> baseModificationSets;
     private SMRTKinetics smrtKinetics;
-    private FiberseqAnnotations fiberseqAnnotations;
+    private MolecularAnnotations molecularAnnotations;
     private boolean fiberseqAnnotationsLoaded;
 
     private enum CacheKey {CLIPPING_COUNTS, SA_GROUP}
@@ -413,13 +413,13 @@ public class SAMAlignment implements Alignment {
     }
 
     @Override
-    public FiberseqAnnotations getFiberseqAnnotations() {
+    public MolecularAnnotations getMolecularAnnotations() {
         if (!fiberseqAnnotationsLoaded) {
-            fiberseqAnnotations = FiberseqAnnotations.fromTags(record::getAttribute, record.getReadLength(),
+            molecularAnnotations = MolecularAnnotations.fromTags(record::getAttribute, record.getReadLength(),
                     isNegativeStrand(), getAlignmentBlocks());
             fiberseqAnnotationsLoaded = true;
         }
-        return fiberseqAnnotations;
+        return molecularAnnotations;
     }
 
     /**
@@ -784,16 +784,16 @@ public class SAMAlignment implements Alignment {
                         }
                     }
                 }
-            } else if (colorOption == AlignmentTrack.ColorOption.FIBERSEQ) {
-                FiberseqAnnotations fiberseq = getFiberseqAnnotations();
+            } else if (colorOption == AlignmentTrack.ColorOption.MOLECULAR_ANNOTATION) {
+                MolecularAnnotations fiberseq = getMolecularAnnotations();
                 if (fiberseq != null) {
-                    for (FiberseqAnnotations.Interval interval : fiberseq.getNucleosomes()) {
+                    for (MolecularAnnotations.Interval interval : fiberseq.getNucleosomes()) {
                         if (interval.contains(basePosition)) {
                             fiberseqBuf.append("Nucleosome: " + (interval.start() + 1) + "-" + interval.end() +
                                     " (" + (interval.end() - interval.start()) + " bp)<br>");
                         }
                     }
-                    for (FiberseqAnnotations.Interval interval : fiberseq.getMsps()) {
+                    for (MolecularAnnotations.Interval interval : fiberseq.getMsps()) {
                         if (interval.contains(basePosition)) {
                             fiberseqBuf.append("MSP: " + (interval.start() + 1) + "-" + interval.end() +
                                     " (" + (interval.end() - interval.start()) + " bp)" +
