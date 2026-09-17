@@ -25,6 +25,7 @@ public class GenbankParser {
 
     private String path;
     private String accession;
+    private String version;
     private byte[] sequence;
     private List<Feature> features;
     private String locusName;
@@ -75,6 +76,8 @@ public class GenbankParser {
             line = reader.readLine();
             if (line.startsWith("ACCESSION")) {
                 readAccession(line);
+            } else if (line.startsWith("VERSION")) {
+                readVersion(line);
             } else if (line.startsWith("ALIASES")) {
                 readAliases(line);
             }
@@ -161,6 +164,31 @@ public class GenbankParser {
         } else {
             accession = tokens[1].trim();
         }
+    }
+
+
+    /**
+     * Read the version line, that is the accession with its version suffix.
+     * VERSION     NC_012920.1  GI:251831106
+     *
+     * @throws IOException
+     */
+    private void readVersion(String line) {
+
+        String[] tokens = Globals.whitespacePattern.split(line);
+        if (tokens.length >= 2) {
+            version = tokens[1].trim();
+        }
+    }
+
+    /**
+     * Return the versioned accession, e.g. "NC_012920.1", or null if the file has no VERSION line.  This is the
+     * identifier a genbank genome is known by -- see getChr() for the sequence name, which is unversioned.
+     *
+     * @return
+     */
+    public String getVersion() {
+        return version;
     }
 
 

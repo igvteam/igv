@@ -32,6 +32,9 @@ public class GenbankParserTest {
         String expectedChr = "NT_030059";
         assertEquals(expectedChr, genbankParser.getChr());
 
+        // The versioned accession, which becomes the genome ID.  The sequence name stays unversioned.
+        assertEquals("NT_030059.13", genbankParser.getVersion());
+
         String[] expectedTypes = {"gene", "mRNA", "CDS", "gene", "variation", "variation"};
         int[] expectedStarts = {0, 0, 1032, 82042, -79, 10554};
         int[] expectedEnds = {105338, 105338, 102035, 82643, -78, 10555};
