@@ -37,13 +37,14 @@ public class HostedGenomes {
     private static Map<String, GenomeListItem> hostedGenomesMap = null;
 
     /**
-     * IDs of genomes listed by the IGV genome server (the GENOMES_SERVER_URL preference, or its backup).  These
+     * Genomes listed by the IGV genome server (the GENOMES_SERVER_URL preference, or its backup), keyed by ID.  These
      * genomes can be restored from their ID alone, so sessions reference them by ID rather than by an expanded
-     * genome definition.
+     * genome definition.  There are a few dozen of them, as against the ~50,000 of the UCSC GenArk list, so this is
+     * consulted before the full record set wherever an IGV hosted genome is the likely answer.
      */
-    private static Set<String> igvHostedIds = ConcurrentHashMap.newKeySet();
+    private static Map<String, GenomeListItem> igvHostedGenomes = new ConcurrentHashMap<>();
 
-    private static boolean igvHostedIdsLoaded = false;
+    private static boolean igvHostedGenomesLoaded = false;
 
     public static synchronized List<GenomeListItem> getRecords() {
         if (records == null) {
@@ -66,20 +67,20 @@ public class HostedGenomes {
      * @return
      */
     public static synchronized boolean isIGVHosted(String genomeId) {
-        loadIGVHostedIds();
-        return genomeId != null && igvHostedIds.contains(genomeId);
+        loadIGVHostedGenomes();
+        return genomeId != null && igvHostedGenomes.containsKey(genomeId);
     }
 
     /**
-     * Populate the set of IGV hosted genome IDs from the IGV genome list, if that has not already happened as part of
+     * Populate the IGV hosted genome map from the IGV genome list, if that has not already happened as part of
      * reading the full record set.  A failure is logged and not retried.
      */
-    private static void loadIGVHostedIds() {
+    private static void loadIGVHostedGenomes() {
 
-        if (igvHostedIdsLoaded) {
+        if (igvHostedGenomesLoaded) {
             return;
         }
-        igvHostedIdsLoaded = true;
+        igvHostedGenomesLoaded = true;
 
         final IGVPreferences preferences = PreferencesManager.getPreferences();
         List<String> errors = new ArrayList<>();
@@ -88,20 +89,37 @@ public class HostedGenomes {
             items = fetchGenomeList(preferences.get(BACKUP_GENOMES_SERVER_URL), "assembly", errors);
         }
         if (items != null) {
-            recordIGVHostedIds(items);
+            recordIGVHostedGenomes(items);
         }
     }
 
-    private static void recordIGVHostedIds(List<GenomeListItem> items) {
+    private static void recordIGVHostedGenomes(List<GenomeListItem> items) {
         for (GenomeListItem item : items) {
             if (item.getId() != null) {
-                igvHostedIds.add(item.getId());
+                igvHostedGenomes.put(item.getId(), item);
             }
         }
-        igvHostedIdsLoaded = true;
+        igvHostedGenomesLoaded = true;
     }
 
+    /**
+     * Return the record for a hosted genome ID, or null if there is none.
+     * <p>
+     * The IGV genome list is consulted first.  Only if the ID is not one of ours is the full record set built, which
+     * means fetching the ~50,000 entry UCSC GenArk list -- so restoring a session that names an IGV hosted genome by
+     * ID does not pay for it.  The two lists have no IDs in common, so looking at ours first changes no answer.
+     *
+     * @param genomeId
+     * @return
+     */
     public static synchronized GenomeListItem getGenomeListItem(String genomeId) {
+
+        loadIGVHostedGenomes();
+        GenomeListItem item = genomeId == null ? null : igvHostedGenomes.get(genomeId);
+        if (item != null) {
+            return item;
+        }
+
         if (hostedGenomesMap == null) {
             hostedGenomesMap = new HashMap<>();
             for (GenomeListItem record : getRecords()) {
@@ -131,7 +149,7 @@ private static List<GenomeListItem> readRecords() {
     }
     if (igvGenomes != null) {
         records.addAll(igvGenomes);
-        recordIGVHostedIds(igvGenomes);
+        recordIGVHostedGenomes(igvGenomes);
     }
 
     // UCSC Genark hosted genome list
