@@ -32,6 +32,28 @@ public class MolecularAnnotations {
         }
     }
 
+    /**
+     * An annotation covering a position, and the interval carrying it.
+     */
+    public record Annotation(Type type, Interval interval) {
+    }
+
+    /**
+     * The annotation an alignment carries at a position, in the order the group and sort options rank them.
+     * A FIRE is an MSP with a FIRE quality.
+     */
+    public enum Type {
+        FIRE("FIRE"),
+        MSP("MSP"),
+        NUCLEOSOME("nucleosome");
+
+        public final String label;
+
+        Type(String label) {
+            this.label = label;
+        }
+    }
+
     private static final String NUC_TYPE = "nuc";
     private static final String MSP_TYPE = "msp";
     private static final String FIRE_TYPE = "fire";
@@ -80,6 +102,29 @@ public class MolecularAnnotations {
 
     public List<Interval> getMsps() {
         return msps;
+    }
+
+    /**
+     * The annotation covering a reference position, or null if none does.  Should intervals overlap the highest
+     * precedence one is returned: a FIRE over another MSP, the highest quality FIRE of several, and an MSP over a
+     * nucleosome.
+     */
+    public Annotation annotationAt(int position) {
+        Interval msp = null;
+        for (Interval interval : msps) {
+            if (interval.contains(position) && (msp == null || interval.quality() > msp.quality())) {
+                msp = interval;
+            }
+        }
+        if (msp != null) {
+            return new Annotation(msp.quality() > 0 ? Type.FIRE : Type.MSP, msp);
+        }
+        for (Interval interval : nucleosomes) {
+            if (interval.contains(position)) {
+                return new Annotation(Type.NUCLEOSOME, interval);
+            }
+        }
+        return null;
     }
 
     /**
