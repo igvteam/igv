@@ -42,6 +42,17 @@ public class MolecularAnnotationsTest {
     }
 
     @Test
+    public void fireWinsOverOverlappingMsp() {
+        // MSP [102,110) with no FIRE quality overlapping MSP [105,112) called as a FIRE
+        MolecularAnnotations a = MolecularAnnotations.create(null, null, new int[]{2, 5}, new int[]{8, 7},
+                new int[]{0, 200}, 20, false, FULL);
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.MSP, new Interval(102, 110, 0)),
+                a.annotationAt(104));
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.FIRE, new Interval(105, 112, 200)),
+                a.annotationAt(105));
+    }
+
+    @Test
     public void forwardStrand() {
         MolecularAnnotations a = MolecularAnnotations.create(new int[]{2}, new int[]{5}, null, null, null, 20, false, FULL);
         assertEquals(List.of(new Interval(102, 107, 0)), a.getNucleosomes());

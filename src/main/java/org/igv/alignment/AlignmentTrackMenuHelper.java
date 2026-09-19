@@ -681,9 +681,6 @@ class AlignmentTrackMenuHelper {
         mappings.put("aligned read length", SortOption.ALIGNED_READ_LENGTH);
         mappings.put("left clip", SortOption.LEFT_CLIP);
         mappings.put("right clip", SortOption.RIGHT_CLIP);
-        if (dataManager.hasFiberseqTags()) {
-            mappings.put("molecular annotation", SortOption.MOLECULAR_ANNOTATION);
-        }
         if (dataManager.isPairedEnd()) {
             mappings.put("insert size", SortOption.INSERT_SIZE);
             mappings.put("chromosome of mate", SortOption.MATE_CHR);
@@ -717,6 +714,18 @@ class AlignmentTrackMenuHelper {
         });
         sortMenu.add(tagOption);
         group.add(tagOption);
+
+        // Fiber-seq nucleosomes and methylation sensitive patches (fibertools Ma/Aq or legacy ns/nl and as/al/aq tags)
+        if (dataManager.hasFiberseqTags()) {
+            JCheckBoxMenuItem annotationOption = new JCheckBoxMenuItem("molecular annotation");
+            annotationOption.setSelected(currentSortOption == SortOption.MOLECULAR_ANNOTATION);
+            annotationOption.addActionListener(aEvt -> {
+                renderOptions.setSortOption(SortOption.MOLECULAR_ANNOTATION);
+                sortAlignmentTracks(SortOption.MOLECULAR_ANNOTATION, null, renderOptions.isInvertSorting());
+            });
+            sortMenu.add(annotationOption);
+            group.add(annotationOption);
+        }
 
         sortMenu.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse sorting");

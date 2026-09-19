@@ -105,14 +105,19 @@ public class MolecularAnnotations {
     }
 
     /**
-     * The annotation covering a reference position, or null if none does.  MSPs take precedence over nucleosomes
-     * should the two overlap.
+     * The annotation covering a reference position, or null if none does.  Should intervals overlap the highest
+     * precedence one is returned: a FIRE over another MSP, the highest quality FIRE of several, and an MSP over a
+     * nucleosome.
      */
     public Annotation annotationAt(int position) {
+        Interval msp = null;
         for (Interval interval : msps) {
-            if (interval.contains(position)) {
-                return new Annotation(interval.quality() > 0 ? Type.FIRE : Type.MSP, interval);
+            if (interval.contains(position) && (msp == null || interval.quality() > msp.quality())) {
+                msp = interval;
             }
+        }
+        if (msp != null) {
+            return new Annotation(msp.quality() > 0 ? Type.FIRE : Type.MSP, msp);
         }
         for (Interval interval : nucleosomes) {
             if (interval.contains(position)) {
