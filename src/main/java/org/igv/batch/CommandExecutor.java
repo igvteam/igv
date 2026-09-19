@@ -1118,7 +1118,9 @@ public class CommandExecutor {
     private String group(String groupArg, String tagArg) {
         final AlignmentTrack.GroupOption groupOption = getAlignmentGroupOption(groupArg);
         Range r = null;
-        if (groupOption == AlignmentTrack.GroupOption.BASE_AT_POS || groupOption == AlignmentTrack.GroupOption.INSERTION_AT_POS) {
+        if (groupOption == AlignmentTrack.GroupOption.BASE_AT_POS ||
+                groupOption == AlignmentTrack.GroupOption.INSERTION_AT_POS ||
+                groupOption == AlignmentTrack.GroupOption.MOLECULAR_ANNOTATION_AT_POS) {
             if (tagArg == null) {
                 return "Error: position is required";
             } else {

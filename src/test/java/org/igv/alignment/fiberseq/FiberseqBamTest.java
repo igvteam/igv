@@ -4,16 +4,24 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
+import org.igv.alignment.Alignment;
+import org.igv.alignment.Row;
 import org.igv.alignment.SAMAlignment;
+import org.igv.alignment.SortOption;
 import org.igv.alignment.fiberseq.MolecularAnnotations.Interval;
 import org.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 
 import static org.junit.Assert.*;
 
@@ -28,6 +36,12 @@ public class FiberseqBamTest {
 
     // The same reverse-strand read is in msp_nuc.bam (legacy tags) and ma_spelled.bam (Ma tags)
     private static final String MSP_NUC_READ = "m54329U_220210_004342/140313102/ccs";
+
+    // chr19:47,515,230, an accessible site in NAPA.bam where most covering reads carry a FIRE
+    private static final int FIRE_POSITION = 47515229;
+
+    // Group and sort order of the annotation types at a position
+    private static final List<String> ORDER = List.of("FIRE", "MSP", "nucleosome", "none", "offPosition");
 
     /**
      * Annotations for every mapped record with fiber-seq tags, keyed by read name.
@@ -108,5 +122,74 @@ public class FiberseqBamTest {
         assertEquals(new Interval(47518537, 47518555, 0), reverse.getMsps().get(0));
         assertEquals(2, fire(reverse).size());
         assertEquals(new Interval(47518265, 47518421, 250), fire(reverse).get(0));
+    }
+
+    /**
+     * The annotation type at a position, as "group by molecular annotation at position" uses it.
+     */
+    @Test
+    public void annotationTypeAtPosition() throws IOException {
+        Map<String, Integer> counts = new TreeMap<>();
+        for (Alignment alignment : loadAlignments()) {
+            counts.merge(annotationType(alignment, FIRE_POSITION), 1, Integer::sum);
+        }
+        assertEquals(Map.of("FIRE", 90, "MSP", 1, "nucleosome", 5, "none", 5, "offPosition", 53), counts);
+    }
+
+    /**
+     * Sorting by molecular annotation brings the FIRE reads to the top, highest quality first, and leaves the reads
+     * with no annotation at the position, then those not covering it, at the bottom.
+     */
+    @Test
+    public void sortByAnnotationAtPosition() throws IOException {
+        List<Row> rows = new ArrayList<>();
+        for (Alignment alignment : loadAlignments()) {
+            Row row = new Row();
+            row.addAlignment(alignment);
+            rows.add(row);
+        }
+        Collections.shuffle(rows, new Random(42));
+        rows.sort(SortOption.MOLECULAR_ANNOTATION.getComparator(FIRE_POSITION, (byte) 0, null, false));
+
+        List<Integer> ranks = new ArrayList<>();
+        List<Integer> fireQualities = new ArrayList<>();
+        for (Row row : rows) {
+            Alignment alignment = row.getAlignments().get(0);
+            ranks.add(ORDER.indexOf(annotationType(alignment, FIRE_POSITION)));
+            MolecularAnnotations.Annotation annotation = alignment.getMolecularAnnotations() == null ? null :
+                    alignment.getMolecularAnnotations().annotationAt(FIRE_POSITION);
+            if (annotation != null && annotation.type() == MolecularAnnotations.Type.FIRE) {
+                fireQualities.add(annotation.interval().quality());
+            }
+        }
+        assertEquals(ranks.stream().sorted().toList(), ranks);
+        assertEquals(90, fireQualities.size());
+        assertEquals(fireQualities.stream().sorted(Comparator.reverseOrder()).toList(), fireQualities);
+    }
+
+    private static List<Alignment> loadAlignments() throws IOException {
+        List<Alignment> alignments = new ArrayList<>();
+        try (SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT)
+                .open(new File(DIR + "NAPA.bam"))) {
+            for (SAMRecord record : reader) {
+                if (!record.getReadUnmappedFlag()) {
+                    alignments.add(new SAMAlignment(record));
+                }
+            }
+        }
+        return alignments;
+    }
+
+    /**
+     * The group label for an alignment at a position: its annotation type, "none" if it covers the position with no
+     * annotation there, or "offPosition" if it does not cover it.
+     */
+    private static String annotationType(Alignment alignment, int position) {
+        if (alignment.getAlignmentStart() > position || alignment.getAlignmentEnd() <= position) {
+            return "offPosition";
+        }
+        MolecularAnnotations annotations = alignment.getMolecularAnnotations();
+        MolecularAnnotations.Annotation annotation = annotations == null ? null : annotations.annotationAt(position);
+        return annotation == null ? "none" : annotation.type().label;
     }
 }
