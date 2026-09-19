@@ -66,7 +66,7 @@ public class BaseRenderer {
                                               List<Alignment> alignments,
                                               RenderContext context,
                                               Rectangle rect,
-                                              boolean leaveMargin,
+                                              int margin,
                                               RenderOptions renderOptions) {
 
         Graphics2D g = null;
@@ -143,7 +143,7 @@ public class BaseRenderer {
                             g.setColor(color);
                             g.fill(new Rectangle2D.Double(pX, rect.y, dX, rect.height));
                         } else {
-                            drawBase(g, color, c, (int) pX, rect.y, (int) dX, rect.height - (leaveMargin ? 2 : 0), false, null);
+                            drawBase(g, color, c, (int) pX, rect.y, (int) dX, rect.height - margin, false, null);
                         }
                     }
                     insertion.setPixelRange(context.translateX + pixelStart, context.translateX + pixelEnd);

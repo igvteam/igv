@@ -35,8 +35,8 @@ public class BaseModificationRenderer {
         float threshold = renderOptions.getBasemodThreshold();
         boolean distinguishStrands = renderOptions.getBasemodDistinguishStrands();
 
-        // Determine if we should leave a margin (same logic as AlignmentRenderer)
-        boolean leaveMargin = rowRect.height > 2;
+        // Determine the margin to leave between rows (same logic as AlignmentRenderer)
+        int margin = AlignmentRenderer.rowMargin(rowRect.height);
 
         int pY = (int) rowRect.getY();
         int dY = (int) rowRect.getHeight();
@@ -94,7 +94,7 @@ public class BaseModificationRenderer {
                     }
 
                     int rectY = pY;
-                    int rectHeight = Math.max(1, dY - (leaveMargin ? 2 : 0));
+                    int rectHeight = Math.max(1, dY - margin);
 
                     // Draw strand-specific half-height rectangles
                     // if "distinguish strands" setting is active

@@ -28,12 +28,12 @@ public class FiberseqRenderer {
      *                    across them
      */
     public static void draw(Alignment alignment, double bpStart, double locScale, Rectangle rowRect, Graphics g,
-                            boolean leaveMargin, int minGapWidth) {
+                            int margin, int minGapWidth) {
         MolecularAnnotations annotations = alignment.getMolecularAnnotations();
         if (annotations == null) {
             return;
         }
-        int h = Math.max(1, rowRect.height - (leaveMargin ? 2 : 0));
+        int h = Math.max(1, rowRect.height - margin);
         Geometry geom = new Geometry(bpStart, locScale, rowRect, g, rowRect.y, h, alignment.getGaps(), minGapWidth);
 
         IGVPreferences prefs = PreferencesManager.getPreferences();

@@ -41,6 +41,14 @@ public class AlignmentRenderer {
 
     private static final Logger log = LogManager.getLogger(AlignmentRenderer.class);
 
+    /**
+     * Vertical space left blank between alignment rows.  The margin is scaled with the row height; a fixed
+     * 2 pixel margin would consume most of a small row and dramatically lighten the overall tone.
+     */
+    public static int rowMargin(int rowHeight) {
+        return rowHeight > 10 ? 2 : (rowHeight >= 5 ? 1 : 0);
+    }
+
 
     private static final Color negStrandColor = new Color(150, 150, 230);
     private static final Color posStrandColor = new Color(230, 150, 150);
@@ -322,7 +330,7 @@ public class AlignmentRenderer {
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
                 Color alignmentColor = getAlignmentColor(alignment, track);
-                final boolean leaveMargin = (this.track.getRowHeight() > 2);
+                final int margin = rowMargin(this.track.getRowHeight());
                 final ColorOption colorOption = renderOptions.getColorOption();
                 if ((pixelWidth < 2) &&
                         !((AlignmentTrack.isBisulfiteColorType(colorOption) ||
@@ -338,16 +346,16 @@ public class AlignmentRenderer {
                     Graphics2D g = context.getGraphics2D("ALIGNMENT");
                     g.setColor(alignmentColor);
                     int w = Math.max(1, (int) (pixelWidth));
-                    int h = (int) Math.max(1, rowRect.getHeight() - 2);
+                    int h = (int) Math.max(1, rowRect.getHeight() - margin);
                     int y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
                     lastPixelDrawn = (int) pixelStart + w;
                 } else if (alignment instanceof PairedAlignment) {
-                    drawPairedAlignment((PairedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, alignmentCounts);
+                    drawPairedAlignment((PairedAlignment) alignment, rowRect, context, renderOptions, margin, alignmentCounts);
                 } else if (alignment instanceof LinkedAlignment) {
-                    drawLinkedAlignment((LinkedAlignment) alignment, rowRect, context, renderOptions, leaveMargin, alignmentCounts);
+                    drawLinkedAlignment((LinkedAlignment) alignment, rowRect, context, renderOptions, margin, alignmentCounts);
                 } else {
-                    drawAlignment(alignment, rowRect, context, alignmentColor, renderOptions, leaveMargin, alignmentCounts, false);
+                    drawAlignment(alignment, rowRect, context, alignmentColor, renderOptions, margin, alignmentCounts, false);
                 }
             }
 
@@ -372,7 +380,7 @@ public class AlignmentRenderer {
     }
 
     private void drawLinkedAlignment(LinkedAlignment alignment, Rectangle rowRect, RenderContext context,
-                                     RenderOptions renderOptions, boolean leaveMargin,
+                                     RenderOptions renderOptions, int margin,
                                      AlignmentCounts alignmentCounts) {
 
         double origin = context.getOrigin();
@@ -388,7 +396,7 @@ public class AlignmentRenderer {
                 gline.setColor(alignmentColor);
                 int startX = (int) ((firstAlignment.getEnd() - origin) / locScale);
                 int endX = (int) ((barcodedAlignments.get(barcodedAlignments.size() - 1).getStart() - origin) / locScale);
-                int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+                int h = (int) Math.max(1, rowRect.getHeight() - margin);
                 int y = (int) (rowRect.getY());
                 startX = Math.max(rowRect.x, startX);
                 endX = Math.min(rowRect.x + rowRect.width, endX);
@@ -404,7 +412,7 @@ public class AlignmentRenderer {
                     if (mixedStrand) alignmentColor = posStrandColor;
                     overlapped = i < barcodedAlignments.size() - 1 && al.getAlignmentEnd() > barcodedAlignments.get(i + 1).getAlignmentStart();
                 }
-                drawAlignment(al, rowRect, context, alignmentColor, renderOptions, leaveMargin, alignmentCounts, overlapped);
+                drawAlignment(al, rowRect, context, alignmentColor, renderOptions, margin, alignmentCounts, overlapped);
             }
         }
     }
@@ -417,6 +425,7 @@ public class AlignmentRenderer {
                                      Rectangle rect,
                                      Graphics2D g,
                                      RenderContext context,
+                                     int margin,
                                      boolean flagUnmappedPair) {
 
         double origin = context.getOrigin();
@@ -424,7 +433,7 @@ public class AlignmentRenderer {
         int x = (int) ((alignment.getStart() - origin) / locScale);
         int length = alignment.getEnd() - alignment.getStart();
         int w = (int) Math.ceil(length / locScale);
-        int h = (int) Math.max(1, rect.getHeight() - 2);
+        int h = (int) Math.max(1, rect.getHeight() - margin);
         int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
         int arrowLength = Math.min(5, w / 6);
         int d = Math.max(0, (int) (arrowLength + 2 - AlignmentPacker.MIN_ALIGNMENT_SPACING / context.getScale()));
@@ -475,7 +484,7 @@ public class AlignmentRenderer {
             Rectangle rowRect,
             RenderContext context,
             RenderOptions renderOptions,
-            boolean leaveMargin,
+            int margin,
             AlignmentCounts alignmentCounts) {
 
         double locScale = context.getScale();
@@ -489,7 +498,7 @@ public class AlignmentRenderer {
         Graphics2D g = context.getGraphics2D("ALIGNMENT");
         g.setColor(alignmentColor1);
 
-        drawAlignment(pair.firstAlignment, rowRect, context, alignmentColor1, renderOptions, leaveMargin, alignmentCounts, overlapped);
+        drawAlignment(pair.firstAlignment, rowRect, context, alignmentColor1, renderOptions, margin, alignmentCounts, overlapped);
 
         //If the paired alignment is in memory, we draw it.
         //However, we get the coordinates from the first alignment
@@ -499,7 +508,7 @@ public class AlignmentRenderer {
             }
             g.setColor(alignmentColor2);
 
-            drawAlignment(pair.secondAlignment, rowRect, context, alignmentColor2, renderOptions, leaveMargin, alignmentCounts, overlapped);
+            drawAlignment(pair.secondAlignment, rowRect, context, alignmentColor2, renderOptions, margin, alignmentCounts, overlapped);
         } else {
             return;
         }
@@ -513,7 +522,7 @@ public class AlignmentRenderer {
         double origin = context.getOrigin();
         int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
         int endX = (int) ((pair.firstAlignment.getMate().getStart() - origin) / locScale);
-        int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+        int h = (int) Math.max(1, rowRect.getHeight() - margin);
         int y = (int) (rowRect.getY());
         startX = Math.max(rowRect.x, startX);
         endX = Math.min(rowRect.x + rowRect.width, endX);
@@ -531,7 +540,7 @@ public class AlignmentRenderer {
             RenderContext context,
             Color alignmentColor,
             RenderOptions renderOptions,
-            boolean leaveMargin,
+            int margin,
             AlignmentCounts alignmentCounts,
             boolean overlapped) {
 
@@ -542,7 +551,7 @@ public class AlignmentRenderer {
 
         // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
-            drawSimpleAlignment(alignment, rowRect, gAlignment, context, renderOptions.isFlagUnmappedPairs());
+            drawSimpleAlignment(alignment, rowRect, gAlignment, context, margin, renderOptions.isFlagUnmappedPairs());
             return;
         }
 
@@ -556,7 +565,7 @@ public class AlignmentRenderer {
 
         // Scale and position of the alignment rendering.
         double locScale = context.getScale();
-        int h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
+        int h = (int) Math.max(1, rowRect.getHeight() - margin);
         int y = (int) (rowRect.getY());
 
 
@@ -856,7 +865,7 @@ public class AlignmentRenderer {
                                     // In "quick consensus" mode, only show mismatches at positions with a consistent alternative basepair.
                                     (!quickConsensus || alignmentCounts.isConsensusMismatch(loc, reference[idx], chr, snpThreshold));
                             if (showBase) {
-                                BaseRenderer.drawBase(gAlignment, color, c, pX, pY, dX, dY - (leaveMargin ? 2 : 0), bisulfiteMode, bisstatus);
+                                BaseRenderer.drawBase(gAlignment, color, c, pX, pY, dX, dY - margin, bisulfiteMode, bisstatus);
                             }
                         }
                     }
@@ -876,7 +885,7 @@ public class AlignmentRenderer {
 
         // Fiber-seq nucleosomes and MSPs
         if (colorOption == ColorOption.MOLECULAR_ANNOTATION) {
-            FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), leaveMargin,
+            FiberseqRenderer.draw(alignment, bpStart, locScale, rowRect, context.getGraphics(), margin,
                     hideSmallIndelsBP ? indelThresholdBP : 0);
             // The overlay covers deletion labels; draw them again on top
             if (flagLargeIndels && gaps != null) {
@@ -907,8 +916,8 @@ public class AlignmentRenderer {
                 int x = (int) ((aBlock.getStart() - bpStart) / locScale);
                 int bpWidth = aBlock.getBasesLength();
                 double pxWidthExact = ((double) bpWidth) / locScale;
-                h = (int) Math.max(1, rowRect.getHeight() - (leaveMargin ? 2 : 0));
-                y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2) - (leaveMargin ? 1 : 0);
+                h = (int) Math.max(1, rowRect.getHeight() - margin);
+                y = (int) (rowRect.getY() + (rowRect.getHeight() - h) / 2) - margin / 2;
 
                 // Don't draw out of clipping rect
                 if (x > rowRect.getMaxX()) {

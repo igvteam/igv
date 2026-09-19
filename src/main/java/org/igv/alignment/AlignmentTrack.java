@@ -711,7 +711,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
      */
     public void renderExpandedInsertion(InsertionMarker insertionMarker, RenderContext context, Rectangle inputRect) {
 
-        boolean leaveMargin = rowHeight > 2;
+        int margin = AlignmentRenderer.rowMargin(rowHeight);
         inputRect.y += DS_MARGIN_0 + DOWNSAMPLED_ROW_HEIGHT + DS_MARGIN_0;
 
         final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context.getReferenceFrame(), true);
@@ -739,7 +739,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
                 if (y + intH > clipBounds.getY()) {
                     Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, intH);
                     if (row.alignments != null)  // TODO -- not sure this is needed
-                        BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, leaveMargin, renderOptions);
+                        BaseRenderer.drawExpandedInsertions(insertionMarker, row.alignments, context, rowRectangle, margin, renderOptions);
                     row.y = y;
                     row.h = intH;
                 }
