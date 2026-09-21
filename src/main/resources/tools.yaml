@@ -222,6 +222,8 @@
           description: Group by sequencing library
         - value: MATE_CHROMOSOME
           description: Group by mate chromosome
+        - value: MOLECULAR_ANNOTATION_AT_POS
+          description: Group by fiber-seq molecular annotation (FIRE, MSP, or nucleosome) at a position (requires tag_name_or_position)
         - value: MOVIE
           description: Group by movie (PacBio)
         - value: NONE
@@ -273,6 +275,8 @@
           description: Sort by insert size
         - value: MATECHR
           description: Sort by mate chromosome
+        - value: MOLECULAR_ANNOTATION
+          description: Sort by fiber-seq molecular annotation (FIRE, MSP, or nucleosome) at a position. Requires position
         - value: POSITION
           description: Sort by alignment start position
         - value: QUALITY

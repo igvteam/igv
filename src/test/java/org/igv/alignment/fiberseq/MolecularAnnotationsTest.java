@@ -27,6 +27,32 @@ public class MolecularAnnotationsTest {
     }
 
     @Test
+    public void annotationAtPosition() {
+        // nucleosome [102,107), MSP [107,112) with a FIRE quality, MSP [112,115)
+        MolecularAnnotations a = MolecularAnnotations.create(new int[]{2}, new int[]{5}, new int[]{7, 12},
+                new int[]{5, 3}, new int[]{200, 0}, 20, false, FULL);
+        assertNull(a.annotationAt(101));
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.NUCLEOSOME, new Interval(102, 107, 0)),
+                a.annotationAt(102));
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.FIRE, new Interval(107, 112, 200)),
+                a.annotationAt(107));
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.MSP, new Interval(112, 115, 0)),
+                a.annotationAt(112));
+        assertNull(a.annotationAt(115));
+    }
+
+    @Test
+    public void fireWinsOverOverlappingMsp() {
+        // MSP [102,110) with no FIRE quality overlapping MSP [105,112) called as a FIRE
+        MolecularAnnotations a = MolecularAnnotations.create(null, null, new int[]{2, 5}, new int[]{8, 7},
+                new int[]{0, 200}, 20, false, FULL);
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.MSP, new Interval(102, 110, 0)),
+                a.annotationAt(104));
+        assertEquals(new MolecularAnnotations.Annotation(MolecularAnnotations.Type.FIRE, new Interval(105, 112, 200)),
+                a.annotationAt(105));
+    }
+
+    @Test
     public void forwardStrand() {
         MolecularAnnotations a = MolecularAnnotations.create(new int[]{2}, new int[]{5}, null, null, null, 20, false, FULL);
         assertEquals(List.of(new Interval(102, 107, 0)), a.getNucleosomes());

@@ -1,10 +1,14 @@
 package org.igv.alignment;
 
 import htsjdk.samtools.util.Locatable;
+import org.igv.alignment.fiberseq.MolecularAnnotations;
 import org.igv.feature.genome.ChromosomeNameComparator;
 
 import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
@@ -149,6 +153,26 @@ public enum SortOption {
         @Override
         Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
             return Comparator.comparingInt(a -> a.getAlignmentStart() - a.getAlignmentEnd());
+        }
+    }, MOLECULAR_ANNOTATION {
+        @Override
+        Comparator<Alignment> getAlignmentComparator(final int center, final String tag, final byte referenceBase) {
+
+            // FIRE MSPs first, highest quality first, then other MSPs, nucleosomes, and reads with no annotation.
+            // Looking up an annotation scans the read's intervals, of which there can be hundreds, so the result is
+            // cached for the life of the sort rather than recomputed on every comparison.
+            final Map<Alignment, Optional<MolecularAnnotations.Annotation>> cache = new IdentityHashMap<>();
+            final Function<Alignment, MolecularAnnotations.Annotation> annotation = (Alignment a) ->
+                    cache.computeIfAbsent(a, read -> {
+                        MolecularAnnotations annotations = read.getMolecularAnnotations();
+                        return Optional.ofNullable(annotations == null ? null : annotations.annotationAt(center));
+                    }).orElse(null);
+
+            final ToIntFunction<MolecularAnnotations.Annotation> typeRank = an -> an.type().ordinal();
+            final ToIntFunction<MolecularAnnotations.Annotation> qualityCompare = an -> -an.interval().quality();
+
+            return Comparator.comparing(annotation, Comparator.nullsLast(
+                    Comparator.comparingInt(typeRank).thenComparingInt(qualityCompare)));
         }
     };
 

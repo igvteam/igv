@@ -1,6 +1,7 @@
 package org.igv.alignment;
 
 import htsjdk.samtools.SAMTag;
+import org.igv.alignment.fiberseq.MolecularAnnotations;
 import org.igv.logging.*;
 import org.igv.feature.Range;
 import org.igv.feature.Strand;
@@ -31,6 +32,7 @@ public class AlignmentPacker {
     };
 
     private static final String NULL_GROUP_VALUE = "";
+    private static final String NO_ANNOTATION_GROUP_VALUE = "none";
     public static final int tenMB = 10000000;
 
     /**
@@ -362,6 +364,8 @@ public class AlignmentPacker {
         switch (groupByOption) {
             case PAIR_ORIENTATION:
                 return new PairOrientationComparator();
+            case MOLECULAR_ANNOTATION_AT_POS:
+                return new MolecularAnnotationComparator();
             default:
                 //Sort null values towards the end
                 return new Comparator<Object>() {
@@ -509,6 +513,22 @@ public class AlignmentPacker {
 
                 } else {
                     yield 0;
+                }
+            }
+            case MOLECULAR_ANNOTATION_AT_POS -> {
+                // Groups are ordered FIRE, MSP, nucleosome, reads with no annotation at the position, and finally
+                // (as the null group) reads that do not overlap it
+                if (pos != null &&
+                        al.getChr().equals(pos.getChr()) &&
+                        al.getAlignmentStart() <= pos.getStart() &&
+                        al.getAlignmentEnd() > pos.getStart()) {
+
+                    MolecularAnnotations annotations = al.getMolecularAnnotations();
+                    MolecularAnnotations.Annotation annotation =
+                            annotations == null ? null : annotations.annotationAt(pos.getStart());
+                    yield annotation == null ? NO_ANNOTATION_GROUP_VALUE : annotation.type().label;
+                } else {
+                    yield null;
                 }
             }
             case MOVIE -> {
@@ -717,6 +737,24 @@ public class AlignmentPacker {
 
         public int getBucketCount() {
             return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * Orders molecular annotation groups by annotation type, most open chromatin first.
+     */
+    private static class MolecularAnnotationComparator implements Comparator<Object> {
+
+        private static final List<String> ORDER = List.of(
+                MolecularAnnotations.Type.FIRE.label,
+                MolecularAnnotations.Type.MSP.label,
+                MolecularAnnotations.Type.NUCLEOSOME.label,
+                NO_ANNOTATION_GROUP_VALUE,
+                NULL_GROUP_VALUE);
+
+        @Override
+        public int compare(Object o0, Object o1) {
+            return ORDER.indexOf(o0.toString()) - ORDER.indexOf(o1.toString());
         }
     }
 

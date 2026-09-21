@@ -616,6 +616,17 @@ class AlignmentTrackMenuHelper {
         groupMenu.add(newGroupByInsOption);
         group.add(newGroupByInsOption);
 
+        // Fiber-seq nucleosomes and methylation sensitive patches (fibertools Ma/Aq or legacy ns/nl and as/al/aq tags)
+        if (dataManager.hasFiberseqTags()) {
+            JCheckBoxMenuItem newGroupByAnnotationOption = new JCheckBoxMenuItem("molecular annotation at " + chrom +
+                    ":" + Globals.DECIMAL_FORMAT.format(1 + chromStart));
+            newGroupByAnnotationOption.addActionListener(aEvt -> {
+                Range groupByPos = new Range(chrom, chromStart, chromStart + 1);
+                groupAlignments(AlignmentTrack.GroupOption.MOLECULAR_ANNOTATION_AT_POS, null, groupByPos);
+            });
+            groupMenu.add(newGroupByAnnotationOption);
+            group.add(newGroupByAnnotationOption);
+        }
 
         groupMenu.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("Reverse group order");
@@ -703,6 +714,18 @@ class AlignmentTrackMenuHelper {
         });
         sortMenu.add(tagOption);
         group.add(tagOption);
+
+        // Fiber-seq nucleosomes and methylation sensitive patches (fibertools Ma/Aq or legacy ns/nl and as/al/aq tags)
+        if (dataManager.hasFiberseqTags()) {
+            JCheckBoxMenuItem annotationOption = new JCheckBoxMenuItem("molecular annotation");
+            annotationOption.setSelected(currentSortOption == SortOption.MOLECULAR_ANNOTATION);
+            annotationOption.addActionListener(aEvt -> {
+                renderOptions.setSortOption(SortOption.MOLECULAR_ANNOTATION);
+                sortAlignmentTracks(SortOption.MOLECULAR_ANNOTATION, null, renderOptions.isInvertSorting());
+            });
+            sortMenu.add(annotationOption);
+            group.add(annotationOption);
+        }
 
         sortMenu.add(new JPopupMenu.Separator());
         JCheckBoxMenuItem invertGroupNameSortingOption = new JCheckBoxMenuItem("reverse sorting");

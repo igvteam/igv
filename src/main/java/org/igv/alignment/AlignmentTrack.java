@@ -144,6 +144,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         SUPPLEMENTARY("supplementary flag"),
         BASE_AT_POS("base at position"),
         INSERTION_AT_POS("insertion at position", true),
+        MOLECULAR_ANNOTATION_AT_POS("molecular annotation at position"),
         MOVIE("movie"),
         ZMW("ZMW"),
         CLUSTER("cluster"),
@@ -799,7 +800,8 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
         if (option == GroupOption.TAG && tag != null) {
             renderOptions.setGroupByTag(tag);
         }
-        if ((option == GroupOption.BASE_AT_POS || option == GroupOption.INSERTION_AT_POS) && pos != null) {
+        if ((option == GroupOption.BASE_AT_POS || option == GroupOption.INSERTION_AT_POS ||
+                option == GroupOption.MOLECULAR_ANNOTATION_AT_POS) && pos != null) {
             renderOptions.setGroupByPos(pos);
         }
         renderOptions.setGroupByOption(option);
