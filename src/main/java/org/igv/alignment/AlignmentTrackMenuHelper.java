@@ -546,14 +546,13 @@ class AlignmentTrackMenuHelper {
     }
 
     void addGroupMenuItem(final TrackClickEvent te) {//ReferenceFrame frame) {
-        final MouseEvent me = te.getMouseEvent();
         ReferenceFrame frame = te.getFrame();
         if (frame == null) {
             frame = FrameManager.getDefaultFrame();  // Clicked over name panel, not a specific frame
         }
         final Range range = frame.getCurrentRange();
         final String chrom = range.getChr();
-        final int chromStart = (int) frame.getChromosomePosition(me);
+        final int chromStart = (int) frame.getCenter();   // Center of view, consistent with "sort by"
 
         // Change track height by attribute
         JMenu groupMenu = new JMenu("Group alignments by");
