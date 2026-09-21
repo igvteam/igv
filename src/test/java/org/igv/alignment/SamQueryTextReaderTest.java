@@ -138,30 +138,5 @@ public class SamQueryTextReaderTest {
 
     }
 
-    @Test @Ignore("Requires largedata bundle")
-    public void testMoran() throws Exception {
-        String testFile = TestUtils.LARGE_DATA_DIR + "r2.allProb.sorted.sam";
-        String chr = "mm9chrY";
-        int start = 799939;
-        int end = 800152;
-
-        // Test posA query that includes overlaps (contained == false)
-        boolean contained = false;
-
-        SAMReader reader = new SAMReader(testFile);
-        CloseableIterator<SAMAlignment> iter = reader.query(chr, start, end, contained);
-        int count = 0;
-        while (iter.hasNext()) {
-            Alignment record = iter.next();
-            assertEquals(chr, record.getChr());
-            assertTrue(record.getEnd() >= start);
-            assertTrue(record.getStart() <= end);
-            count++;
-        }
-        assertEquals(134, count);
-        iter.close();
-        reader.close();
-    }
-
 
 }

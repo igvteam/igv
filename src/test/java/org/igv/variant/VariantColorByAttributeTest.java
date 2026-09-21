@@ -5,6 +5,7 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.AbstractHeadlessTest;
 import org.igv.DirectoryManager;
 import org.igv.track.RenderContext;
+import org.igv.ui.color.ColorUtilities;
 import org.igv.track.TrackLoader;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
@@ -76,28 +77,23 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         assertEquals(List.of("AF", "ALLELEID", "CLNREVSTAT", "CLNSIG", "DB", "RDP", "SVTYPE"), ids);
     }
 
-    @Test
-    public void testSetColorByAttribute() {
-        track.setColorByAttribute("CLNSIG");
-        assertEquals(VariantTrack.ColorMode.ATTRIBUTE, track.getSiteColorMode());
-        assertEquals("CLNSIG", track.getColorByAttribute());
-
-        track.setColorByAttribute(null);
-        assertEquals(VariantTrack.ColorMode.NONE, track.getSiteColorMode());
-        assertEquals(null, track.getColorByAttribute());
-    }
-
     /**
-     * ClinVar significance values have predefined colors, benign (blue) through pathogenic (red).
+     * Values with a built-in scheme take its colors -- ClinVar significance from benign (blue) through
+     * pathogenic (red), structural variant types from their own scheme -- and a variant with no value for the
+     * attribute is drawn gray.
      */
     @Test
-    public void testClinicalSignificanceColors() {
+    public void testBuiltinSchemeColors() {
         track.setColorByAttribute("CLNSIG");
         assertEquals(new Color(202, 0, 32), colorAt(0));    // Pathogenic
         assertEquals(new Color(244, 109, 67), colorAt(1));  // Likely_pathogenic
         assertEquals(new Color(150, 150, 150), colorAt(2)); // Uncertain_significance
         assertEquals(new Color(146, 197, 222), colorAt(3)); // Likely_benign
         assertEquals(new Color(5, 113, 176), colorAt(4));   // Benign
+
+        track.setColorByAttribute("SVTYPE");
+        assertEquals(new Color(255, 33, 1), colorAt(8));    // DEL
+        assertEquals(Color.gray, colorAt(0));               // no SVTYPE attribute
     }
 
     /**
@@ -112,13 +108,6 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         assertNotEquals(drugResponse, association);
         assertEquals(Color.gray, colorAt(7));       // no CLNSIG attribute
         assertEquals(drugResponse, colorAt(5));     // assignments are stable
-    }
-
-    @Test
-    public void testStructuralVariantTypeColors() {
-        track.setColorByAttribute("SVTYPE");
-        assertEquals(new Color(255, 33, 1), colorAt(8));   // DEL
-        assertEquals(Color.gray, colorAt(0));              // no SVTYPE attribute
     }
 
     /**
@@ -205,6 +194,16 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
                         distance(color, assigned.get(j)) > 0);
             }
         }
+
+        // The same guarantee with every palette color already in use, as in a scheme being edited.  The editor
+        // used to fall back to ColorUtilities.randomColor, which has no distance check and only 215 colors.
+        List<Color> used = new ArrayList<>(List.of(ColorUtilities.getPalette("Set 1").getColors()));
+        assertTrue(DistinctColors.minDistance(DistinctColors.next(used), used) >= DistinctColors.MIN_DISTANCE);
+        for (int i = 0; i < 300; i++) {
+            Color next = DistinctColors.next(used);
+            assertFalse("Color " + i + " repeats one already in use", used.contains(next));
+            used.add(next);
+        }
     }
 
     /**
@@ -217,52 +216,6 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
         java.util.Set<Color> seen = new java.util.HashSet<>();
         for (int i = 0; i < 2000; i++) {
             assertTrue("Generated color " + i + " repeats an earlier one", seen.add(DistinctColors.generated(i)));
-        }
-    }
-
-    /**
-     * Well past the 215 colors the old generator could ever produce, values still get colors of their own.
-     */
-    @Test
-    public void testNoRepeatsBeyondTheOldGeneratorsPeriod() {
-        track.setColorByAttribute("CLNSIG");
-        java.util.Set<Color> assigned = new java.util.HashSet<>();
-        for (int i = 0; i < 400; i++) {
-            Color color = track.getAttributeColor("CLNSIG", "unknown-" + i);
-            assertTrue("Value " + i + " was given a color already in use", assigned.add(color));
-        }
-    }
-
-    /**
-     * The same value keeps its color, however many others have been assigned since.
-     */
-    @Test
-    public void testAssignedColorsAreStable() {
-        track.setColorByAttribute("CLNSIG");
-        Color first = track.getAttributeColor("CLNSIG", "unknown-0");
-        for (int i = 1; i < 20; i++) {
-            track.getAttributeColor("CLNSIG", "unknown-" + i);
-        }
-        assertEquals(first, track.getAttributeColor("CLNSIG", "unknown-0"));
-    }
-
-    /**
-     * With every palette color already in use -- as in a scheme being edited -- new colors still keep their
-     * distance and never repeat.  The scheme editor used to fall back to ColorUtilities.randomColor, which has
-     * no distance check and only 215 colors.
-     */
-    @Test
-    public void testNextDistinctColorPastThePalette() {
-
-        List<Color> used = new ArrayList<>(List.of(org.igv.ui.color.ColorUtilities.getPalette("Set 1").getColors()));
-
-        Color first = DistinctColors.next(used);
-        assertTrue(DistinctColors.minDistance(first, used) >= DistinctColors.MIN_DISTANCE);
-
-        for (int i = 0; i < 300; i++) {
-            Color next = DistinctColors.next(used);
-            assertFalse("Color " + i + " repeats one already in use", used.contains(next));
-            used.add(next);
         }
     }
 

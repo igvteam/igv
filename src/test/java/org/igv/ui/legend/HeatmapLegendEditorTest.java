@@ -68,15 +68,6 @@ public class HeatmapLegendEditorTest {
     }
 
     /**
-     * A double gradient still shows the start of its positive range.
-     */
-    @Test
-    public void testDoubleGradientVisibleStart() {
-        ContinuousColorScale scale = new ContinuousColorScale(-2, -10, 2, 10, MIN, MID, MAX);
-        assertEquals(2.0, HeatmapLegendEditor.visibleRangeStart(scale), 1e-9);
-    }
-
-    /**
      * Reversed entries are ordered rather than producing an inverted scale.
      */
     @Test

@@ -15,17 +15,12 @@ import static org.junit.Assert.assertTrue;
 public class MainArgsTest {
 
     @Test
-    public void testJsonSession() {
-        Main.IGVArgs args = new Main.IGVArgs(new String[]{"test/sessions/json/vcf-session.json"});
-        assertEquals("test/sessions/json/vcf-session.json", args.getSessionFile());
-        assertTrue(empty(args.getDataFileStrings()));
-    }
-
-    @Test
-    public void testXmlSession() {
-        Main.IGVArgs args = new Main.IGVArgs(new String[]{"session.xml"});
-        assertEquals("session.xml", args.getSessionFile());
-        assertTrue(empty(args.getDataFileStrings()));
+    public void testSessionOnItsOwn() {
+        for (String path : new String[]{"test/sessions/json/vcf-session.json", "session.xml"}) {
+            Main.IGVArgs args = new Main.IGVArgs(new String[]{path});
+            assertEquals(path, args.getSessionFile());
+            assertTrue(empty(args.getDataFileStrings()));
+        }
     }
 
     /**
@@ -50,18 +45,15 @@ public class MainArgsTest {
     }
 
     /**
-     * Data files are still data files.
+     * Data files are still data files, alone and among other arguments.
      */
     @Test
     public void testDataFiles() {
         Main.IGVArgs args = new Main.IGVArgs(new String[]{"reads.bam"});
         assertNull(args.getSessionFile());
         assertEquals(List.of("reads.bam"), args.getDataFileStrings());
-    }
 
-    @Test
-    public void testSeveralDataFiles() {
-        Main.IGVArgs args = new Main.IGVArgs(new String[]{"-l", "chr1:100-200", "a.bam", "b.vcf"});
+        args = new Main.IGVArgs(new String[]{"-l", "chr1:100-200", "a.bam", "b.vcf"});
         assertNull(args.getSessionFile());
         assertEquals(List.of("a.bam", "b.vcf"), args.getDataFileStrings());
     }

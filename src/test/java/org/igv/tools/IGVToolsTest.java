@@ -14,17 +14,11 @@ import org.igv.tdf.TDFDataset;
 import org.igv.tdf.TDFReader;
 import org.igv.tdf.TDFTile;
 import org.igv.tools.sort.SorterTest;
-import org.igv.util.FileUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
-import htsjdk.tribble.AbstractFeatureReader;
-import htsjdk.tribble.FeatureCodec;
 import htsjdk.tribble.index.Block;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCF3Codec;
-import htsjdk.variant.vcf.VCFCodec;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
@@ -117,49 +111,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         Block block = blocks.get(0);
         assertEquals("Unexpected start position ", 46, block.getStartPosition());
 
-    }
-
-    @Test @Ignore("Requires largedata bundle")
-    public void testIntervalIndex33() throws Exception {
-        String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
-        FeatureCodec codec = new VCF3Codec();
-        tstIntervalIndex(testFile, codec);
-    }
-
-    @Test @Ignore("Requires largedata bundle")
-    public void testIntervalIndex40() throws Exception {
-        String testFile = TestUtils.LARGE_DATA_DIR + "CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
-        FeatureCodec codec = new VCFCodec();
-        tstIntervalIndex(testFile, codec);
-    }
-
-    private void tstIntervalIndex(String testFile, FeatureCodec codec) throws IOException {
-
-        // Create an interval tree index with 5 features per interval
-        File indexFile = new File(testFile + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(testFile, null, 2, 5);
-        indexFile.deleteOnExit();
-
-        // Now use the index
-        String chr = "1";
-        int start = 1718546;
-        int end = 1748915;
-        int[] expectedStarts = {1718547, 1718829, 1723079, 1724830, 1731376, 1733967, 1735586, 1736016, 1738594,
-                1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
-
-        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(testFile, codec);
-        Iterator<VariantContext> iter = bfr.query(chr, start, end);
-        int count = 0;
-        while (iter.hasNext()) {
-            VariantContext feat = iter.next();
-            int expStart = expectedStarts[count];
-            assertEquals(expStart, feat.getStart());
-            count++;
-        }
-        Assert.assertEquals(15, count);
     }
 
 
@@ -382,42 +333,6 @@ public class IGVToolsTest extends AbstractHeadlessTest {
         String command = "tile -z 1 --fileType mage-tab " + mageTabFile + " " + outputFile + " " + genfile;
 
         igvTools.run(command.split("\\s+"));
-    }
-
-
-    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
-        return generateRepLargebamsList(listPath, bamFiName, reps, false);
-    }
-
-    /*
-    Generate a bam.list file, with rep entries, all having the same content bamPath.
-     If makeAbsolute is true and bamPath not absolute, the listPath parent directory is prepended.
-     The file is saved to listPath
-     */
-    public static String[] generateRepLargebamsList(String listPath, String bamPath, int reps, boolean makeAbsolute) throws IOException {
-
-        File listFile = new File(listPath);
-        listFile.delete();
-        listFile.deleteOnExit();
-        File f = new File(bamPath);
-        String eachPath = null;
-        if (makeAbsolute && !f.isAbsolute()) {
-            eachPath = FileUtils.getAbsolutePath(bamPath, listPath);
-        } else {
-            eachPath = f.getPath();
-        }
-        //We generate the file on each test, because largedata dir can change
-        List<String> largebams = new ArrayList<String>(reps);
-        for (int ii = 0; ii < reps; ii++) {
-            largebams.add(eachPath);
-        }
-        FileWriter writer = new FileWriter(listFile);
-        for (String s : largebams) {
-            writer.write(s + "\n");
-        }
-        writer.close();
-
-        return largebams.toArray(new String[0]);
     }
 
 }

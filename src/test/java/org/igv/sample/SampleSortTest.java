@@ -117,6 +117,30 @@ public class SampleSortTest extends AbstractHeadlessTest {
                 assertRestoredOrder(json, option + " " + sortJson.getString("direction"));
             }
         }
+
+        // A sort by sample name, which needs no variant
+        for (boolean ascending : new boolean[]{true, false}) {
+            track = loadVariantTrack();
+            track.sortSamplesByName(ascending);
+            JSONObject json = new JSONObject();
+            track.marshalJSON(json);
+            assertEquals(SampleSort.SAMPLE_NAME, json.getJSONObject("sort").getString("option"));
+            assertRestoredOrder(json, "SAMPLE_NAME " + ascending);
+        }
+
+        // A sort by several attributes, written as parallel arrays
+        track = loadVariantTrack();
+        AttributeManager attributeManager = AttributeManager.getInstance();
+        for (String sample : track.getSampleNames()) {
+            attributeManager.addAttribute(sample, "group", sample.startsWith("CC") ? "b" : "a");
+            attributeManager.addAttribute(sample, "rank", String.valueOf(sample.length()));
+        }
+        track.sortSamplesByAttributes(new String[]{"group", "rank"}, new boolean[]{false, true});
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        assertEquals(List.of("group", "rank"), json.getJSONObject("sort").getJSONArray("attribute").toList());
+        assertTrue(visibleSamples(track).get(0).startsWith("CC"));
+        assertRestoredOrder(json, "ATTRIBUTE");
     }
 
     /**
@@ -142,49 +166,9 @@ public class SampleSortTest extends AbstractHeadlessTest {
         assertEquals(visibleSamples(track), visibleSamples(restored));
     }
 
-    @Test
-    public void testSampleNameSortRoundTrip() {
-        for (boolean ascending : new boolean[]{true, false}) {
-            track.sortSamplesByName(ascending);
-            JSONObject json = new JSONObject();
-            track.marshalJSON(json);
-            assertEquals(SampleSort.SAMPLE_NAME, json.getJSONObject("sort").getString("option"));
-            assertRestoredOrder(json, "SAMPLE_NAME " + ascending);
-        }
-    }
-
-    @Test
-    public void testAttributeSortRoundTrip() {
-        AttributeManager attributeManager = AttributeManager.getInstance();
-        for (String sample : track.getSampleNames()) {
-            attributeManager.addAttribute(sample, "group", sample.startsWith("CC") ? "b" : "a");
-            attributeManager.addAttribute(sample, "rank", String.valueOf(sample.length()));
-        }
-
-        track.sortSamplesByAttributes(new String[]{"group", "rank"}, new boolean[]{false, true});
-        JSONObject json = new JSONObject();
-        track.marshalJSON(json);
-        assertEquals(List.of("group", "rank"), json.getJSONObject("sort").getJSONArray("attribute").toList());
-        assertTrue(visibleSamples(track).get(0).startsWith("CC"));
-
-        assertRestoredOrder(json, "ATTRIBUTE");
-    }
-
     /**
-     * The sort is restored after the ID filter, and applies to the filtered samples.
-     */
-    @Test
-    public void testSortWithIdFilterRoundTrip() {
-        track.setSelectedSamples(Arrays.asList("D66", "CC-124", "2137", "cw15"));
-        track.sortSamplesByName(true);
-        JSONObject json = new JSONObject();
-        track.marshalJSON(json);
-        assertEquals(List.of("2137", "CC-124", "D66", "cw15"), json.getJSONArray("samples").toList());
-        assertRestoredOrder(json, "ID filter");
-    }
-
-    /**
-     * Seg region sorts are saved as igv.js VALUE sorts -- deletion is ascending, the others descending.
+     * Seg region sorts are saved as igv.js VALUE sorts -- deletion is ascending, the others descending -- and
+     * survive a later ID filter, so the session restores the order shown.
      */
     @Test
     public void testSegValueSortRoundTrip() {
@@ -202,17 +186,9 @@ public class SampleSortTest extends AbstractHeadlessTest {
             restored.unmarshalJSON(json);
             assertEquals(type.toString(), visibleSamples(segTrack), visibleSamples(restored));
         }
-    }
 
-    /**
-     * A seg value sort survives a later ID filter, and the session restores the order shown.
-     */
-    @Test
-    public void testSegSortThenIdFilter() {
-        SegTrack segTrack = loadSegTrack();
-        segTrack.sortSamplesByValue("chr1", 0, 250000000, RegionScoreType.AMPLIFICATION);
+        // An ID filter applied after the sort keeps the sorted order, and that is what the session restores
         List<String> sorted = visibleSamples(segTrack);
-
         List<String> subset = Arrays.asList(sorted.get(3), sorted.get(0), sorted.get(2));
         segTrack.setSelectedSamples(subset);
         List<String> expected = sorted.stream().filter(subset::contains).collect(Collectors.toList());
@@ -226,10 +202,11 @@ public class SampleSortTest extends AbstractHeadlessTest {
     }
 
     /**
-     * An ID filter set after a sort is shown in sort order, not list order, so the session restores the order shown.
+     * An ID filter and a sort combine whichever order they are applied in: the filtered samples are shown in sort
+     * order, and the session restores the order shown.
      */
     @Test
-    public void testVariantSortThenIdFilter() {
+    public void testVariantSortAndIdFilter() {
         track.sortSamples(SampleSort.GENOTYPE, variant, false);
         List<String> sorted = visibleSamples(track);
 
@@ -237,6 +214,14 @@ public class SampleSortTest extends AbstractHeadlessTest {
         track.setSelectedSamples(subset);
         assertEquals(sorted.stream().filter(subset::contains).collect(Collectors.toList()), visibleSamples(track));
         assertRestoredOrder(sessionJson(), "sort then ID filter");
+
+        // The other order -- the filter first, then a sort over the filtered samples
+        track = loadVariantTrack();
+        track.setSelectedSamples(Arrays.asList("D66", "CC-124", "2137", "cw15"));
+        track.sortSamplesByName(true);
+        JSONObject json = sessionJson();
+        assertEquals(List.of("2137", "CC-124", "D66", "cw15"), json.getJSONArray("samples").toList());
+        assertRestoredOrder(json, "ID filter then sort");
     }
 
     /**

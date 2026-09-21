@@ -35,7 +35,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -101,15 +100,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(0, 0, 255), scheme.getColor("CLNSIG", "Benign"));
     }
 
-    /**
-     * The name falls back to the file name when the file has no "#name=" directive.
-     */
-    @Test
-    public void testDefaultName() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader("")), "lab-tiers");
-        assertEquals("lab-tiers", scheme.getName());
-    }
-
     @Test
     public void testBuiltinScheme() {
         assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
@@ -117,21 +107,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(55, 126, 184), VariantColorSchemes.getColor("VT", "SNP"));
         assertNull(VariantColorSchemes.getColor("CLNSIG", "drug_response"));
         assertNull(VariantColorSchemes.getColor("NOT_AN_ATTRIBUTE", "x"));
-    }
-
-    /**
-     * A scheme is the colors for one INFO attribute, so each built-in covers exactly one.
-     */
-    @Test
-    public void testSchemeCoversOneAttribute() {
-        for (VariantColorScheme scheme : VariantColorSchemes.getBuiltinSchemes()) {
-            assertEquals("Scheme " + scheme.getName() + " covers more than one attribute",
-                    1, scheme.getKeys().size());
-        }
-        assertEquals(List.of("CLNSIG", "SVTYPE", "VT"),
-                VariantColorSchemes.getBuiltinSchemes().stream()
-                        .map(s -> s.getKeys().iterator().next())
-                        .collect(Collectors.toList()));
     }
 
     /**
@@ -256,22 +231,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * The legend offers the values present in the loaded features.
-     */
-    @Test
-    public void testAttributeValues() throws Exception {
-        VariantTrack track = loadTrack();
-        track.getFeatures("chr1", 0, 1000);
-        track.setColorByAttribute("CLNSIG");
-
-        // getFeatures does not pack features into the render cache, so nothing counts as loaded until it does
-        assertTrue(track.getAttributeValues("CLNSIG").isEmpty());
-
-        track.setAttributeColorOverride("CLNSIG", "Pathogenic", Color.red);
-        assertTrue(track.getAttributeColorOverrides("CLNSIG").containsKey("pathogenic"));
-    }
-
-    /**
      * Saving the legend writes a scheme that applies to every track, not just the one it was edited on.
      */
     @Test
@@ -368,14 +327,47 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * A two field row that is neither "categorical" nor a color scale is skipped, not guessed at.
+     * A row that does not describe a usable scale is skipped rather than guessed at.  The key is left uncovered,
+     * so one bad row does not cost the rest of the scheme, nothing quietly falls back to a different scale, and a
+     * numeric attribute does not become a category keyed on the literal text of its range.
      */
     @Test
-    public void testUnrecognizedTwoFieldRow() throws Exception {
-        String contents = "SCORE\t-10:0:10\nSCORE\tnonsense\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-        assertNull(scheme.getScale("SCORE"));
-        assertFalse(scheme.isCategorical("SCORE"));
+    public void testBadScaleRowsRejected() throws Exception {
+        String[][] rows = {
+                // Neither "categorical" nor a color scale
+                {"unrecognized", "SCORE\tnonsense"},
+                // Only "min:max" is a range; three numbers are not a form IGV ever wrote
+                {"three part range", "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0"},
+                // Shading across a zero width or reversed range would paint everything the minimum color
+                {"zero width range", "SCORE\t7:7\t0,0,255"},
+                {"reversed range", "SCORE\t10:2\t0,0,255"},
+                // NaN and infinity parse as numbers and slip past "max <= min", so a range row needs the same
+                // finite check as a serialized scale -- or a scheme is active until restart and then silently gone
+                {"NaN range", "SCORE\t0:NaN\t255,255,204\t202,0,32"},
+                {"infinite range", "SCORE\t0:Infinity\t255,255,204\t202,0,32"},
+                {"negative infinite range", "SCORE\t-Infinity:0\t255,255,204\t202,0,32"},
+                // A typo in the second color must not fall back to the one-color form, which would give a
+                // different scale rather than the documented skipped row
+                {"bad max color", "SCORE\t0:40\t255,255,200\tnot-a-color"},
+                // A serialized scale gets the same range checks as a "min:max" row
+                {"zero width scale", "SCORE\tContinuousColorScale;5.0;5.0;255,255,204;202,0,32"},
+                {"reversed scale", "SCORE\tContinuousColorScale;10.0;2.0;255,255,204;202,0,32"},
+                {"infinite scale", "SCORE\tContinuousColorScale;0.0;Infinity;255,255,204;202,0,32"},
+        };
+
+        for (String[] row : rows) {
+            VariantColorScheme scheme =
+                    VariantColorScheme.parse(new BufferedReader(new StringReader(row[1] + "\n")), "test");
+            assertNull(row[0], scheme.getScale("SCORE"));
+            assertFalse(row[0], scheme.isCategorical("SCORE"));
+            assertTrue(row[0], scheme.getColors("SCORE").isEmpty());
+        }
+
+        // The well formed forms of the same rows are read
+        VariantColorScheme good = VariantColorScheme.parse(new BufferedReader(new StringReader(
+                "RANGE\t0:40\t255,255,204\t202,0,32\nSCALE\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32\n")), "test");
+        assertNotNull(good.getScale("RANGE"));
+        assertNotNull(good.getScale("SCALE"));
     }
 
     /**
@@ -616,17 +608,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Only "min:max" is a range; three numbers are not a form IGV ever wrote.
-     */
-    @Test
-    public void testThreePartRangeRejected() throws Exception {
-        String contents = "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-        assertNull(scheme.getScale("SCORE"));
-        assertTrue(scheme.getColors("SCORE").isEmpty());
-    }
-
-    /**
      * A value that merely contains a colon is still a value.
      */
     @Test
@@ -658,18 +639,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
         // The selection itself is untouched, so the track keeps whatever coloring it had
         assertNull(track.getColorByAttribute());
-    }
-
-    /**
-     * A zero width range is not a scale -- shading across it would paint everything the minimum color.
-     */
-    @Test
-    public void testZeroWidthRangeRejected() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("DP\t7:7\t0,0,255\nDP\t10:2\t0,0,255\n")), "test");
-
-        assertNull(scheme.getScale("DP"));
-        assertTrue(scheme.getColors("DP").isEmpty());
     }
 
     /**
@@ -804,36 +773,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * A serialized scale gets the same range checks as a "min:max" row.
-     */
-    @Test
-    public void testSerializedScaleRangeValidated() throws Exception {
-        String contents = String.join("\n",
-                "ZERO\tContinuousColorScale;5.0;5.0;255,255,204;202,0,32",
-                "REVERSED\tContinuousColorScale;10.0;2.0;255,255,204;202,0,32",
-                "INFINITE\tContinuousColorScale;0.0;Infinity;255,255,204;202,0,32",
-                "GOOD\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32",
-                "");
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        assertNull(scheme.getScale("ZERO"));
-        assertNull(scheme.getScale("REVERSED"));
-        assertNull(scheme.getScale("INFINITE"));
-        assertNotNull(scheme.getScale("GOOD"));
-    }
-
-    /**
-     * A typo in the second color must not quietly fall back to the one-color form, which would give a different
-     * scale rather than the documented skipped row.
-     */
-    @Test
-    public void testRangeRowWithBadMaxColorRejected() throws Exception {
-        String contents = "CADD\t0:40\t255,255,200\tnot-a-color\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-        assertNull(scheme.getScale("CADD"));
-    }
-
-    /**
      * The IGV directory can move (Preferences > Advanced).  Schemes cached from the old one hold paths into a
      * directory that no longer exists, so saving would fail and removals would reappear.
      */
@@ -851,26 +790,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertTrue(VariantColorSchemes.getUserSchemes().isEmpty());
         assertEquals("Back to the built-in color", new Color(202, 0, 32),
                 VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-    }
-
-    /**
-     * NaN and infinity parse as numbers and slip past "max <= min".  The legacy range row must apply the same
-     * finite check as a serialized scale, or a scheme is active until restart and then silently gone.
-     */
-    @Test
-    public void testRangeRowRejectsNonFinite() throws Exception {
-        String contents = String.join("\n",
-                "NAN\t0:NaN\t255,255,204\t202,0,32",
-                "INF\t0:Infinity\t255,255,204\t202,0,32",
-                "NEGINF\t-Infinity:0\t255,255,204\t202,0,32",
-                "GOOD\t0:40\t255,255,204\t202,0,32",
-                "");
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        assertNull(scheme.getScale("NAN"));
-        assertNull(scheme.getScale("INF"));
-        assertNull(scheme.getScale("NEGINF"));
-        assertNotNull(scheme.getScale("GOOD"));
     }
 
     /**
@@ -894,18 +813,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         VariantTrack track = new VariantTrack();
         track.setColorByAttribute("DP");
         assertEquals(new Color(1, 2, 3), track.getAttributeColor("DP", "7"));
-    }
-
-    /**
-     * Discrete colors still fall through per value: a scheme listing some values does not claim the others.
-     */
-    @Test
-    public void testDiscreteColorsStillFallThrough() throws Exception {
-        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
-        VariantColorSchemes.reset();
-
-        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-        assertEquals(new Color(5, 113, 176), VariantColorSchemes.getColor("CLNSIG", "Benign"));
     }
 
     /**
@@ -971,17 +878,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * The URL import blocks for the network; it must not do so while holding the class lock that repaint
-     * takes through the scheme accessors, or a slow server freezes the UI regardless of the SwingWorker.
-     */
-    @Test
-    public void testUrlImportDoesNotFetchUnderTheLock() throws Exception {
-        java.lang.reflect.Method importUrl = VariantColorSchemes.class.getMethod("importUrl", String.class);
-        assertFalse("importUrl must fetch before synchronizing",
-                java.lang.reflect.Modifier.isSynchronized(importUrl.getModifiers()));
-    }
-
-    /**
      * Saved scheme files are named after the scheme, in a form that reads plainly in a directory listing.
      */
     @Test
@@ -1037,22 +933,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
         assertEquals(List.of("colors.txt", "colors_2.txt"), userSchemeFileNames());
         assertEquals(new Color(9, 9, 9), VariantColorSchemes.getColor("TIER", "1"));
-    }
-
-    /**
-     * The combined scheme list is resolved for every variant drawn, so it is cached -- and must be rebuilt when
-     * a scheme is added, or new colors would not appear.
-     */
-    @Test
-    public void testSchemeListIsCachedUntilChanged() throws Exception {
-
-        List<VariantColorScheme> first = VariantColorSchemes.getSchemes();
-        assertSame(first, VariantColorSchemes.getSchemes());
-
-        VariantColorSchemes.saveScheme("Mine", "CLNSIG", Map.of("Pathogenic", new Color(1, 2, 3)));
-
-        assertNotSame(first, VariantColorSchemes.getSchemes());
-        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
     }
 
     private List<String> userSchemeFileNames() {

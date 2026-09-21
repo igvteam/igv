@@ -5,7 +5,6 @@ import org.igv.exceptions.DataLoadException;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.util.TestUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -106,26 +105,6 @@ public class FastaUtilsTest extends AbstractHeadlessTest {
     public void testCreateIndexBlankLines() throws Exception {
         String inPath = TestUtils.DATA_DIR + "fasta/blank_lines.fas";
         tstCreateIndex(inPath);
-    }
-
-    @Test @Ignore("Requires largedata bundle")
-    public void testCreateIndexEcoli() throws Exception {
-        String inPath = TestUtils.LARGE_DATA_DIR + "ecoli.fasta";
-        String outPath = tstCreateIndex(inPath);
-
-        GenomeManager manager = GenomeManager.getInstance();
-        Genome genome = manager.loadGenome(inPath);
-        String chr = "gi|110640213|ref|NC_008253.1|";
-        assertNotNull(genome.getChromosome(chr));
-        //See http://www.ncbi.nlm.nih.gov/nuccore/110640213
-
-        String beg = "ATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAG";
-        int begloc = 30 - 1;
-        int endloc = begloc + beg.length();
-
-        byte[] seq = genome.getSequence(chr, begloc, endloc);
-        String sseq = new String(seq);
-        assertEquals(beg, sseq);
     }
 
     static Map<String, Integer> testFastaBlanks;

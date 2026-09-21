@@ -8,11 +8,9 @@ import org.igv.tools.parsers.DataConsumer;
 import org.igv.track.DataType;
 import org.igv.util.TestUtils;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,28 +26,6 @@ public class CoverageCounterTest extends AbstractHeadlessTest {
     public static void setUpClass() throws Exception {
         AbstractHeadlessTest.setUpClass();
         preferenceManager = PreferencesManager.getPreferences();
-    }
-
-    /**
-     * Test the "mapping quality" flag.  Also indirectly tests the query parameters.
-     */
-    @Test @Ignore("Requires largedata bundle")
-    public void testMappingQualityFlag() throws IOException {
-        String bamURL = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        String queryString = "chr1:152522155-152522155";
-        int minMapQuality = 40;
-        File wigFile = new File(TestUtils.TMP_OUTPUT_DIR + "testMapQual.wig");
-        int windowSize = 1;
-
-        TestDataConsumer dc = new TestDataConsumer();
-
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, queryString, minMapQuality, 0);
-
-        cc.parse();
-
-        String totalCount = dc.attributes.get("totalCount");
-
-        assertEquals("7", totalCount);
     }
 
     /*

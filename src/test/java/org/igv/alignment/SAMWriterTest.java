@@ -4,11 +4,8 @@ import htsjdk.samtools.*;
 import org.igv.AbstractHeadlessTest;
 import org.igv.alignment.reader.AlignmentReader;
 import org.igv.alignment.reader.AlignmentReaderFactory;
-import org.igv.alignment.reader.MergedAlignmentReaderTest;
 import org.igv.alignment.reader.SAMReader;
-import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
@@ -17,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * User: jacob
@@ -115,66 +111,5 @@ public class SAMWriterTest extends AbstractHeadlessTest {
             }
         }
 
-    }
-
-    @Test @Ignore("Requires largedata bundle")
-    public void testCopyBAMFile_01() throws Exception {
-        String sequence = "chr1";
-        int end = 300000000;
-        int start = end / 5 - 1;
-        String inpath = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        ResourceLocator inlocator = new ResourceLocator(inpath);
-        tstCopyBAMFile(inlocator, sequence, start, end);
-    }
-
-    @Test @Ignore("Requires largedata bundle")
-    public void testCopyMergedBAM_01() throws Exception {
-        String sequence = "chr1";
-        int start = 151667156;
-        int end = start + 10000;
-
-        File listFile = new File(TestUtils.LARGE_DATA_DIR, "2largebams.bam.list");
-        MergedAlignmentReaderTest.generateRepLargebamsList(listFile);
-        ResourceLocator inlocator = new ResourceLocator(listFile.getAbsolutePath());
-        tstCopyBAMFile(inlocator, sequence, start, end);
-    }
-
-    public void tstCopyBAMFile(ResourceLocator inlocator, String sequence, int start, int end) throws IOException {
-
-        boolean createIndex = true;
-
-
-        String outPath = TestUtils.TMP_OUTPUT_DIR + "tmpbam.bam";
-        File outFile = new File(outPath);
-        File indexFile = new File(outPath.replace(".bam", ".bai"));
-        outFile.delete();
-        indexFile.delete();
-        outFile.deleteOnExit();
-        indexFile.deleteOnExit();
-
-        int writtenCount = SAMWriter.writeAlignmentFilePicard(inlocator, outPath, sequence, start, end);
-
-        assertEquals("Index file existence unexpected: " + indexFile.getAbsolutePath(), createIndex, indexFile.exists());
-
-        SamInputResource resource = SamInputResource.of(outPath);
-        SamReader writtenReader = SamReaderFactory.makeDefault().
-                validationStringency(ValidationStringency.SILENT).open(resource);
-
-        SAMRecordIterator iter = null;
-        if (createIndex) {
-            iter = writtenReader.queryOverlapping(sequence, start + 1, end);
-        } else {
-            iter = writtenReader.iterator();
-        }
-
-        int readCount = 0;
-        while (iter.hasNext()) {
-            readCount++;
-            iter.next();
-        }
-
-        System.out.println(readCount + " alignments read");
-        assertTrue("No alignments read", readCount > 0);
-        assertEquals("Read a different number of alignments than written", writtenCount, readCount);
     }
 }

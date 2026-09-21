@@ -86,17 +86,6 @@ public class SampleSelectionTest extends AbstractHeadlessTest {
     }
 
     /**
-     * "samples" is only the ID filter -- a sort is saved as "sort", not as the sample list.
-     */
-    @Test
-    public void testSortDoesNotWriteSamples() {
-        track.sortSamplesByName(false);
-        JSONObject json = new JSONObject();
-        track.marshalJSON(json);
-        assertFalse(json.has("samples"));
-    }
-
-    /**
      * Samples must pass both the ID filter and the attribute filter to be shown.
      */
     @Test

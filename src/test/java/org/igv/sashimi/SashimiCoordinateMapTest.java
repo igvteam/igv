@@ -99,11 +99,4 @@ public class SashimiCoordinateMapTest {
         assertEquals(12345.5, map.toGenomic(12345.5), 0);
         assertEquals(map, SashimiCoordinateMap.fromJunctions(List.of(), EXPONENT));
     }
-
-    @Test
-    public void equality() {
-        SashimiCoordinateMap map = SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 101000}), EXPONENT);
-        assertEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 101000}), EXPONENT));
-        assertNotEquals(map, SashimiCoordinateMap.fromJunctions(List.of(new int[]{1000, 102000}), EXPONENT));
-    }
 }

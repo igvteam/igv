@@ -45,10 +45,18 @@ After `createDist`, launch with `build/IGV-dist/igv.sh` (Linux), `igv.command` (
 - Run existing tests before making any changes to establish a baseline.
 - Run tests after changes to ensure absolute zero regression.
 
+### Testing Rules & Constraints
+- **Do Not Default to Writing Tests:** Not every change or implementation requires a new unit test. Only add or update tests if introducing new business logic, complex state mutations, or fixing a bug with reproducible edge cases.
+- **Banned Test Patterns:**
+    - **No Trivial Tests:** Never write tests for simple getters/setters, configuration files, logger statements, or basic wrapper functions.
+    - **No Tautological Tests:** Avoid tests that simply mirror the implementation code or check if a function returns what it was hardcoded to return.
+    - **No "Mock-Everything" Tests:** Do not write tests where every single dependency is mocked out to the point where the test only verifies that dependencies were called.
+- **Verification Rule:** If a code change does not warrant a new test, explicitly state: *"No new unit tests required because [reason]."* Do not generate placeholder, empty, or redundant test files.
+  
+
 ## Test Notes
 
 - Tests run headless (`java.awt.headless=true`); long-running tests excluded by default
-- Large test data (~1GB) available separately from ftp://ftp.broadinstitute.org/pub/igv/largedata.zip — unzip to `test/largedata/`
 
 ## Architecture
 

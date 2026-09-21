@@ -153,45 +153,6 @@ public class AlignmentDataManagerTest extends AbstractHeadlessTest {
         }
     }
 
-    @Ignore
-    @Test
-    public void testQueryLargeFile() throws Exception {
-        PreferencesManager.getPreferences().put(Constants.SAM_MAX_VISIBLE_RANGE, "5");
-        String path = TestUtils.LARGE_DATA_DIR + "ABCD_igvSample.bam";
-
-        ResourceLocator loc = new ResourceLocator(path);
-        AlignmentDataManager manager = new AlignmentDataManager(loc, genome);
-
-        //Edge location
-        String sequence = "chr12";
-        int start = 56815621 - 1;
-        int end = start + 1;
-        int expSize = 1066;
-
-        tstSize(manager, sequence, start, end, (int) (expSize * 1.6), expSize);
-        tstQuery(path, sequence, start, end, false, 10000);
-
-        //Edge location, downsampled
-        sequence = "chr12";
-        start = 56815635 - 1;
-        end = start + 1;
-        expSize = 165;
-
-
-        tstSize(manager, sequence, start, end, expSize + 20, expSize);
-        tstQuery(path, sequence, start, end, false, 10000);
-
-        //Center location
-        sequence = "chr12";
-        start = 56815675 - 1;
-        end = start + 1;
-
-        expSize = 3288;
-
-        tstSize(manager, sequence, start, end, expSize + 20, expSize);
-        tstQuery(path, sequence, start, end, false, 10000);
-    }
-
     @Test @Ignore("Fails unless tests are run in separate JVMs")
     public void testQueryPiledUp() throws Exception {
         PreferencesManager.getPreferences().put(Constants.SAM_MAX_VISIBLE_RANGE, "5");

@@ -4,12 +4,10 @@ package org.igv.alignment;
 import htsjdk.samtools.util.CloseableIterator;
 import org.igv.Globals;
 import org.igv.alignment.reader.BAMReader;
-import org.igv.alignment.reader.SAMReader;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -30,68 +28,6 @@ public class BAMFileReaderTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-    }
-
-    /**
-     * Test of close method, of class BAMQueryReader.
-     */
-    @Test @Ignore("Requires largedata bundle")
-    public void testClose() throws Exception {
-        String bamfile = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        String chr = "chr1";
-        int end = 300000000;
-        int start = end / 5;
-        int stopafter = 10;
-        int counter = 0;
-        BAMReader bamreader = new BAMReader(new ResourceLocator(bamfile), true);
-        CloseableIterator<SAMAlignment> bamiter = bamreader.query(chr, start, end, true);
-        while (bamiter.hasNext()) {
-            Alignment bamrecord = bamiter.next();
-            if (counter >= stopafter) {
-                break;
-            } else {
-                counter++;
-            }
-        }
-        bamreader.close();
-        boolean closeSucceeded = false;
-        try {
-            CloseableIterator<SAMAlignment> bamiter2 = bamreader.query(chr, start, end, true);
-        } catch (NullPointerException npe) {
-            closeSucceeded = true;
-        }
-        assertTrue(closeSucceeded);
-    }
-
-    /**
-     * Test of query method, of class BAMQueryReader.
-     */
-    @Test @Ignore("Requires largedata bundle")
-    public void testQueryAgainstSam() throws Exception {
-
-        String bamfile = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.bam";
-        String samfile = TestUtils.LARGE_DATA_DIR + "HG00171.hg18.sam";
-        String chr = "chr1";
-        int end = 300000000;
-        int start = end / 5;
-
-        BAMReader bamreader = new BAMReader(new ResourceLocator(bamfile), true);
-        SAMReader samreader = new SAMReader(samfile);
-        CloseableIterator<SAMAlignment> bamiter = bamreader.query(chr, start, end, true);
-        CloseableIterator<SAMAlignment> samiter = samreader.iterator();
-        int count = 0;
-        while (bamiter.hasNext()) {
-            Alignment bamrecord = bamiter.next();
-            Alignment samrecord = samiter.next();
-            assertTrue(bamrecord.getStart() >= start);
-            assertTrue(bamrecord.getEnd() <= end);
-            assertEquals(bamrecord.getReadName(), samrecord.getReadName());
-            assertEquals(bamrecord.getSample(), samrecord.getSample());
-            count++;
-        }
-        assertTrue("No data retrieved", count > 0);
-        System.out.println("Retrieved " + count + " rows");
-
     }
 
     @Test

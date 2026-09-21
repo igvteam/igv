@@ -54,14 +54,6 @@ public class TestUtils {
 
     public static final String defaultGenome = DATA_DIR + "genomes/hg18.unittest.genome";
 
-    //This is so ant can set the large data directory
-    private static String LARGE_DATA_DIR_KEY = "LARGE_DATA_DIR";
-    public static String LARGE_DATA_DIR = "test/largedata/";
-
-    static {
-        LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY, LARGE_DATA_DIR);
-    }
-
     static Map<Integer, Integer> chromSizes;
 
     static {
@@ -510,11 +502,10 @@ public class TestUtils {
     }
 
 
-    private static Map<String, String> replaceMap = new HashMap<String, String>(2);
+    private static Map<String, String> replaceMap = new HashMap<String, String>(1);
 
     static {
         replaceMap.put("${DATA_DIR}", TestUtils.DATA_DIR);
-        replaceMap.put("${LARGE_DATA_DIR}", TestUtils.LARGE_DATA_DIR);
     }
 
     /**

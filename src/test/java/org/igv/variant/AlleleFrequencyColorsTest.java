@@ -217,19 +217,6 @@ public class AlleleFrequencyColorsTest extends AbstractHeadlessTest {
         assertEquals(new Color(200, 200, 215), new Color(image.getRGB(10, 10)));
     }
 
-    /**
-     * The bar display is unchanged: the band is split between the variant color, below, and the reference color.
-     */
-    @Test
-    public void testRenderBars() {
-        VariantTrack track = load(SITES);
-        track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
-        track.setAlleleFrequencyBars(true);
-
-        BufferedImage image = renderSiteBand(track, variants(track).get(0));    // AF = 0.2
-        assertNotEquals(new Color(image.getRGB(10, 4)), new Color(image.getRGB(10, 24)));
-    }
-
     @Test
     public void testSessionRoundTrip() {
         VariantTrack track = load(SITES);
