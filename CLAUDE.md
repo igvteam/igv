@@ -30,6 +30,21 @@ IGV (Integrative Genomics Viewer) is a desktop Java application for visualizing 
 
 After `createDist`, launch with `build/IGV-dist/igv.sh` (Linux), `igv.command` (Mac), or `igv.bat` (Windows).
 
+# Project Constraints & Rules
+
+## Codebase Status
+- This project is mature, highly stable, and has been in production for many years.
+- DO NOT rewrite, refactor, or optimize any working code unless required or explicitly requested.
+
+## Coding Style & Principles
+- **Minimalist Changes:** Always choose the path that modifies the fewest lines of code necessary to accomplish the objective.
+- **Scope Restriction:** Confine your modifications strictly to the files directly responsible for the task.
+- **Maintain Layout & Formatting:** Respect all existing architecture, naming conventions, and code formatting rules exactly. Avoid modernizing patterns if they deviate from the legacy standard.  Making suggestions for modernization is encouraged, but do not implement them unless explicitly requested.
+
+## Verification
+- Run existing tests before making any changes to establish a baseline.
+- Run tests after changes to ensure absolute zero regression.
+
 ## Test Notes
 
 - Tests run headless (`java.awt.headless=true`); long-running tests excluded by default
