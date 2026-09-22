@@ -79,7 +79,7 @@ public class InsertSizeSettingsDialog extends org.igv.ui.IGVDialog  {
         }
         catch (NumberFormatException ex) {
             MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
-            minThresholdField.setText(String.valueOf(minThresholdField));
+            minThresholdField.setText(String.valueOf(minThreshold));
         }
     }
 
@@ -120,7 +120,8 @@ public class InsertSizeSettingsDialog extends org.igv.ui.IGVDialog  {
     private void minPercentileFieldActionPerformed(ActionEvent e) {
         try {
             double tmp = Double.parseDouble(minPercentileField.getText());
-            if (tmp <= 0 || tmp >= 100) throw new NumberFormatException();
+            // Zero is allowed -- it means no read is colored as a small insert
+            if (tmp < 0 || tmp >= 100) throw new NumberFormatException();
             minPercentile = tmp;
         }
         catch (NumberFormatException ex) {
