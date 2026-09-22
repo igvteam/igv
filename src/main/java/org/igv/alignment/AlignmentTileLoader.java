@@ -246,6 +246,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
                     if (memoryTooLow()) {
                         Runtime.getRuntime().gc();
                         cancelReaders();
+                        mergePEStats(peStats, tileStats, renderOptions, preferences);
                         t.finish();
                         return t;
                     }
@@ -260,18 +261,7 @@ public class AlignmentTileLoader implements IGVEventObserver {
             }
             // End iteration over alignments
 
-            // Merge this tile's sample into the pool for each library and recompute
-            if (peStats != null) {
-                // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
-                double minPercentile = preferences.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
-                double maxPercentile = preferences.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
-                for (Map.Entry<String, PEStats> entry : tileStats.entrySet()) {
-                    PEStats stats = peStats.computeIfAbsent(entry.getKey(), PEStats::new);
-                    stats.merge(entry.getValue());
-                    stats.computeInsertSize(minPercentile, maxPercentile);
-                    stats.computeExpectedOrientation();
-                }
-            }
+            mergePEStats(peStats, tileStats, renderOptions, preferences);
 
             // Clean up any remaining unmapped mate sequences
             for (String mappedMateName : mappedMates.getKeys()) {
@@ -323,6 +313,41 @@ public class AlignmentTileLoader implements IGVEventObserver {
 
         return t;
 
+    }
+
+
+    /**
+     * Merge the sample accumulated for a tile into the shared per-library statistics and recompute the
+     * thresholds.  The reads of a tile are sampled into thread confined instances (see PEStats.forLoad)
+     * because tiles are loaded in parallel; this is the only point at which the shared stats are touched.
+     *
+     * @param peStats      shared statistics, by library.  May be null.
+     * @param tileStats    statistics accumulated for this tile, by library
+     * @param renderOptions track options, which may override the percentiles from the preferences
+     * @param preferences
+     */
+    private void mergePEStats(Map<String, PEStats> peStats,
+                              Map<String, PEStats> tileStats,
+                              RenderOptions renderOptions,
+                              IGVPreferences preferences) {
+
+        if (peStats == null) {
+            return;
+        }
+
+        // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
+        double minPercentile = renderOptions != null ?
+                renderOptions.getMinInsertSizePercentile() : preferences.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
+        double maxPercentile = renderOptions != null ?
+                renderOptions.getMaxInsertSizePercentile() : preferences.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
+
+        for (Map.Entry<String, PEStats> entry : tileStats.entrySet()) {
+            PEStats stats = peStats.computeIfAbsent(entry.getKey(), PEStats::new);
+            stats.merge(entry.getValue());
+            stats.computeInsertSize(minPercentile, maxPercentile);
+            stats.computeExpectedOrientation();
+        }
+        tileStats.clear();    // the sample has been merged;  it must not be merged a second time
     }
 
 
