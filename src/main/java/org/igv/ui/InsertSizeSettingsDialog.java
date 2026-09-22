@@ -79,7 +79,7 @@ public class InsertSizeSettingsDialog extends org.igv.ui.IGVDialog  {
         }
         catch (NumberFormatException ex) {
             MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
-            minThresholdField.setText(String.valueOf(minThresholdField));
+            minThresholdField.setText(String.valueOf(minThreshold));
         }
     }
 
