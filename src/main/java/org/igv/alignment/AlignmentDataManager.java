@@ -23,6 +23,7 @@ import org.igv.util.ResourceLocator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.igv.prefs.Constants.*;
@@ -64,7 +65,7 @@ public class AlignmentDataManager implements IGVEventObserver {
         reader = AlignmentReaderFactory.getReader(locator);
         loader = new AlignmentTileLoader(reader);
         this.inferType();
-        peStats = new HashMap();
+        peStats = new ConcurrentHashMap<>();   // Tiles, and so the stats they contribute to, load in parallel
         this.genome = genome;
         intervalCache = Collections.synchronizedList(new ArrayList<>());
         subscribedTracks = Collections.synchronizedSet(new HashSet<>());

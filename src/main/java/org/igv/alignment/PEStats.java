@@ -4,7 +4,16 @@ import org.apache.commons.math3.stat.StatUtils;
 import org.igv.logging.*;
 import org.igv.util.collections.DownsampledDoubleArrayList;
 
+import java.util.Arrays;
+
 /**
+ * Insert size ("TLEN") and pair orientation statistics for a single library.
+ * <p>
+ * Samples are pooled over every load, and no single load can contribute more than a small fraction of the
+ * pool, so the thresholds do not depend on which region happened to be loaded first.  Loads run in
+ * parallel, so each accumulates into its own instance (see {@link #forLoad}) and merges that into the
+ * shared instance for the library when it completes, rather than updating shared state read by read.
+ *
  * @author jrobinso
  * @date Mar 11, 2011
  */
@@ -18,10 +27,23 @@ public class PEStats {
 
 
     //Maximum number of insertSizes to store
-    private static final int MAX = 1000;
+    private static final int MAX = 20000;
+
+    // Maximum number of insertSizes contributed by a single load.  A deep load can supply more proper pairs
+    // than the whole pool holds, so without this cap a single region could set the thresholds for the
+    // entire session, which is the behavior this class exists to avoid.
+    private static final int MAX_PER_LOAD = 1000;
+
+    // Minimum number of insertSizes required before thresholds are computed
+    private static final int MIN_SAMPLES = 100;
+
+    // Trim at this many robust standard deviations before taking a percentile.  Wide enough that a well
+    // behaved library loses nothing, narrow enough to separate out a discordant population.
+    private static final int TRIM_DEVIATIONS = 10;
+
     private DownsampledDoubleArrayList insertSizes;
-    private int minThreshold = 10;
-    private int maxThreshold = 5000;
+    private volatile int minThreshold = 10;
+    private volatile int maxThreshold = 5000;
 
     // Orientation counts
     int frCount = 0;
@@ -32,7 +54,7 @@ public class PEStats {
 
     int totalCount = 0;
 
-    Orientation orientation = Orientation.FR;
+    volatile Orientation orientation = Orientation.FR;
 
 
     /**
@@ -42,16 +64,28 @@ public class PEStats {
     private static final int minOutlierInsertSizePercentile = 95;
     private static final int maxOutlierInsertSizePercentile = 5;
 
-    private int minOutlierInsertSize = minThreshold;
-    private int maxOutlierInsertSize = maxThreshold;
+    private volatile int minOutlierInsertSize = minThreshold;
+    private volatile int maxOutlierInsertSize = maxThreshold;
 
     public PEStats(String library) {
+        this(library, MAX);
+    }
+
+    /**
+     * Return an instance for accumulating the sample of a single load.  Its sample is capped at
+     * MAX_PER_LOAD and merged into the shared instance for the library when the load completes.
+     */
+    static PEStats forLoad(String library) {
+        return new PEStats(library, MAX_PER_LOAD);
+    }
+
+    private PEStats(String library, int maxSamples) {
         this.library = library;
-        this.insertSizes = new DownsampledDoubleArrayList(100, MAX);
+        this.insertSizes = new DownsampledDoubleArrayList(100, maxSamples);
     }
 
 
-    public void update(Alignment alignment) {
+    public synchronized void update(Alignment alignment) {
 
         if (alignment.isProperPair()) {
             insertSizes.add(Math.abs(alignment.getInferredInsertSize()));
@@ -84,14 +118,44 @@ public class PEStats {
         }
     }
 
-    public void computeInsertSize(double minPercentile, double maxPercentile) {
+    /**
+     * Merge the statistics accumulated by a single load.  The merged instance is not shared with any
+     * other thread, so only this instance needs guarding.
+     *
+     * @param other
+     */
+    public synchronized void merge(PEStats other) {
 
-        if (insertSizes.size() > 100) {
-            minThreshold = computePercentile(minPercentile);
-            maxThreshold = computePercentile(maxPercentile);
+        for (double isize : other.insertSizes.toArray()) {
+            insertSizes.add(isize);
+        }
+        frCount += other.frCount;
+        rfCount += other.rfCount;
+        f1f2Count += other.f1f2Count;
+        f2f1Count += other.f2f1Count;
+        totalCount += other.totalCount;
+    }
 
-            minOutlierInsertSize = computePercentile(minOutlierInsertSizePercentile);
-            maxOutlierInsertSize = computePercentile(maxOutlierInsertSizePercentile);
+    public synchronized void computeInsertSize(double minPercentile, double maxPercentile) {
+
+        // A minimum percentile of zero means no read is to be colored as a small insert.  It is not a
+        // percentile an estimate can be taken at, and it applies before there is a sample to estimate from.
+        final boolean noMinimum = minPercentile <= 0;
+        if (noMinimum) {
+            minThreshold = 0;
+        }
+
+        if (insertSizes.size() > MIN_SAMPLES) {
+
+            final double[] sample = trimOutliers(insertSizes.toArray());
+
+            if (!noMinimum) {
+                minThreshold = computePercentile(sample, minPercentile);
+            }
+            maxThreshold = computePercentile(sample, maxPercentile);
+
+            minOutlierInsertSize = computePercentile(sample, minOutlierInsertSizePercentile);
+            maxOutlierInsertSize = computePercentile(sample, maxOutlierInsertSizePercentile);
         }
     }
 
@@ -110,7 +174,7 @@ public class PEStats {
         return orientation;
     }
 
-    public void computeExpectedOrientation() {
+    public synchronized void computeExpectedOrientation() {
 
         if(totalCount > 100) {
             int ffCount = f1f2Count + f2f1Count;
@@ -131,8 +195,51 @@ public class PEStats {
         }
     }
 
-    private int computePercentile(double percentile) {
-        return (int) StatUtils.percentile(insertSizes.toArray(), 0, insertSizes.size(), percentile);
+    private static int computePercentile(double[] sample, double percentile) {
+        return (int) StatUtils.percentile(sample, 0, sample.length, percentile);
+    }
+
+    /**
+     * Return the sample with its outlier population, if any, removed.  The percentiles used for the
+     * thresholds sit in the tails of the distribution, so a small fraction of discordant pairs -- which
+     * form a separate population far from the mode -- is enough to drag a threshold past every read worth
+     * flagging.  That population is located with the median and the median absolute deviation, neither of
+     * which a minority of outliers can shift.  A library with no such population loses nothing, so
+     * ordinary data is unaffected.
+     *
+     * @param insertSizes
+     */
+    private static double[] trimOutliers(double[] insertSizes) {
+
+        double[] sorted = insertSizes.clone();
+        Arrays.sort(sorted);
+
+        double median = medianOfSorted(sorted);
+        double[] deviations = new double[sorted.length];
+        for (int i = 0; i < sorted.length; i++) {
+            deviations[i] = Math.abs(sorted[i] - median);
+        }
+        Arrays.sort(deviations);
+        double scale = 1.4826 * medianOfSorted(deviations);
+        if (scale <= 0) {
+            return sorted;
+        }
+
+        double low = median - TRIM_DEVIATIONS * scale;
+        double high = median + TRIM_DEVIATIONS * scale;
+        int from = 0;
+        while (from < sorted.length && sorted[from] < low) from++;
+        int to = sorted.length;
+        while (to > from && sorted[to - 1] > high) to--;
+
+        // Refuse to trim away a majority.  If that happens the sample is not a contaminated unimodal
+        // distribution, and there is no basis for calling any part of it an outlier.
+        return 2 * (to - from) >= sorted.length ? Arrays.copyOfRange(sorted, from, to) : sorted;
+    }
+
+    private static double medianOfSorted(double[] sorted) {
+        int n = sorted.length;
+        return n % 2 == 1 ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
     }
 
     int getMinOutlierInsertSize() {

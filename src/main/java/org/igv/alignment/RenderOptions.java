@@ -72,7 +72,7 @@ public class RenderOptions implements Cloneable {
 
 
     AlignmentTrack.BisulfiteContext bisulfiteContext = AlignmentTrack.BisulfiteContext.CG;
-    Map<String, PEStats> peStats;
+    volatile Map<String, PEStats> peStats;   // Assigned on the event thread, read by loading threads
 
     RenderOptions(AlignmentTrack track) {
         this.track = track;
@@ -773,10 +773,10 @@ public class RenderOptions implements Cloneable {
             computeIsizes = json.getBoolean("computeIsizes");
         }
         if (json.has("minTLENPercentile")) {
-            minInsertSizePercentile = Double.parseDouble(json.getString("minTLENPercentile"));
+            minInsertSizePercentile = json.getDouble("minTLENPercentile");
         }
         if (json.has("maxTLENPercentile")) {
-            maxInsertSizePercentile = Double.parseDouble(json.getString("maxTLENPercentile"));
+            maxInsertSizePercentile = json.getDouble("maxTLENPercentile");
         }
         if (json.has("pairedArcView")) {
             pairedArcView = json.getBoolean("pairedArcView");

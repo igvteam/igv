@@ -139,6 +139,10 @@ public class AlignmentTileLoader implements IGVEventObserver {
             ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
             ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
 
+            // PE stats for this tile only, merged into the shared stats below.  Tiles are loaded in
+            // parallel, so per-read updates must not touch state shared with the other loads.
+            Map<String, PEStats> tileStats = new HashMap<>();
+
             activeLoaders.add(ref);
             IGVEventBus.getInstance().subscribe(StopEvent.class, this);
 
@@ -251,23 +255,19 @@ public class AlignmentTileLoader implements IGVEventObserver {
                 if (peStats != null && record.isPaired() && record.isProperPair()) {
                     String lb = record.getLibrary();
                     if (lb == null) lb = "null";
-                    PEStats stats = peStats.get(lb);
-                    if (stats == null) {
-                        stats = new PEStats(lb);
-                        peStats.put(lb, stats);
-                    }
-                    stats.update(record);
-
+                    tileStats.computeIfAbsent(lb, PEStats::forLoad).update(record);
                 }
             }
             // End iteration over alignments
 
-            // Compute peStats
+            // Merge this tile's sample into the pool for each library and recompute
             if (peStats != null) {
                 // TODO -- something smarter re the percentiles.  For small samples these will revert to min and max
                 double minPercentile = preferences.getAsFloat(SAM_MIN_INSERT_SIZE_PERCENTILE);
                 double maxPercentile = preferences.getAsFloat(SAM_MAX_INSERT_SIZE_PERCENTILE);
-                for (PEStats stats : peStats.values()) {
+                for (Map.Entry<String, PEStats> entry : tileStats.entrySet()) {
+                    PEStats stats = peStats.computeIfAbsent(entry.getKey(), PEStats::new);
+                    stats.merge(entry.getValue());
                     stats.computeInsertSize(minPercentile, maxPercentile);
                     stats.computeExpectedOrientation();
                 }
