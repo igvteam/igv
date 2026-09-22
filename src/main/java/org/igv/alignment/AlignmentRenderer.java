@@ -1604,7 +1604,8 @@ class NucleotideColors {
         IGVPreferences prefs = PreferencesManager.getPreferences();
         Color a = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_A), Color.green);
         // Dark-mode C matches the sequence and coverage tracks, which sit directly above the alignments.
-        Color c = prefs.getAsColor(SAM_COLOR_C, Globals.DARK_MODE_BLUE);
+        Color c = Globals.isDarkMode() && !prefs.hasExplicitValue(SAM_COLOR_C) ?
+                Globals.DARK_MODE_BLUE : ColorUtilities.stringToColor(prefs.get(SAM_COLOR_C), Color.blue);
         Color t = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_T), Color.red);
         Color g = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_G), new Color(209, 113, 5));
         Color n = ColorUtilities.stringToColor(prefs.get(SAM_COLOR_N), new Color(64, 64, 64));
