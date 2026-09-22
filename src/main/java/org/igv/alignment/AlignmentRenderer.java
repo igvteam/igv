@@ -1240,7 +1240,6 @@ public class AlignmentRenderer {
             case SMRT_CCS_FWD_PW:
             case SMRT_CCS_REV_IPD:
             case SMRT_CCS_REV_PW:
-            case MOLECULAR_ANNOTATION:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
                 c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;

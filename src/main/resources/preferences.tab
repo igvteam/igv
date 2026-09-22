@@ -270,7 +270,7 @@ BASEMOD.NONE_G_COLOR	G	color	0,0,255
 BASEMOD.NONE_N_COLOR	G	color	0,0,255
 
 ## Molecular Annotation colors
-MA.NUCLEOSOME_COLOR	Nucleosome	color	169,169,169
+MA.NUCLEOSOME_COLOR	Nucleosome	color	180,170,150
 MA.MSP_COLOR	MSP (methylation sensitive patch)	color	147,112,219
 MA.FIRE_COLOR	FIRE (opacity increases with FIRE quality)	color	139,0,0
 
