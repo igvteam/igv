@@ -703,9 +703,13 @@ public class RenderOptions implements Cloneable {
 
         if (json.has("minTLEN")) {
             minInsertSize = json.getInt("minTLEN");
+        } else if (json.has("minFragmentLength")) {
+            minInsertSize = json.getInt("minFragmentLength");     // Legacy igv.js alias
         }
         if (json.has("maxTLEN")) {
             maxInsertSize = json.getInt("maxTLEN");
+        } else if (json.has("maxFragmentLength")) {
+            maxInsertSize = json.getInt("maxFragmentLength");     // Legacy igv.js alias
         }
         if (json.has("colorOption")) {
             // Convert deprecated options
