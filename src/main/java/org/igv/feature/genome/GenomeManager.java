@@ -158,6 +158,7 @@ public class GenomeManager {
     private Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
 
         WaitCursorManager.CursorToken cursorToken = null;
+        boolean loaded = false;
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
@@ -192,6 +193,7 @@ public class GenomeManager {
             GenomeListManager.getInstance().addGenomeItem(genomeListItem);
 
             setCurrentGenome(newGenome, loadAnnotationTracks);
+            loaded = true;
 
             return currentGenome;
 
@@ -199,6 +201,12 @@ public class GenomeManager {
             throw new RuntimeException("Server connection error", e);
         } finally {
             if (IGV.hasInstance()) {
+                // On success menus are re-enabled by the GenomeChangeEvent.  On failure no event fires, so
+                // restore them here, leaving the previous genome in place.
+                if (!loaded) {
+                    IGVMenuBar.getInstance().setAllMenusEnabled(true);
+                    IGVMenuBar.getInstance().resetSessionActions();
+                }
                 IGV.getInstance().setStatusBarMessage("");
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
