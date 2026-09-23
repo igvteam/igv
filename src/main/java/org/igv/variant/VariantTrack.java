@@ -30,6 +30,7 @@ import org.igv.ui.color.PaletteColorTable;
 import org.igv.ui.IGV;
 import org.igv.ui.UIConstants;
 import org.igv.ui.panel.FrameManager;
+import org.igv.ui.panel.MouseableRegion;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ResourceLocator;
@@ -84,8 +85,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final static int DEFAULT_EXPANDED_VARIANT_HEIGHT = 25;
-    private final static int DEFAULT_SQUISHED_VARIANT_HEIGHT = 6;
+    private final static int VARIANT_BAND_HEIGHT = 25;
     private final static int MAX_FILTER_LINES = 15;
     private final static int WG_TRACK_HEIGHT = 40;
     private final static int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
@@ -602,6 +602,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     @Override
     public int getSampleOffset() {
         return getVariantsHeight();
+    }
+
+    /**
+     * Sample attributes are drawn beside the genotype rows, so they are hidden with the genotypes.
+     */
+    @Override
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle,
+                                 List<String> attributeNames, List<MouseableRegion> mouseRegions) {
+        if (areGenotypesShown()) {
+            super.renderAttributes(graphics, trackRectangle, attributeNames, mouseRegions);
+        }
     }
 
     /**
@@ -1455,10 +1466,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * The height of the top band representing the variant call
+     * The height of each row of the top band representing the variant calls.  Constant in every display mode; the
+     * display mode and row height apply to the genotype rows.
      */
     public int getVariantBandHeight() {
-        return getDisplayMode() == DisplayMode.SQUISHED ? DEFAULT_SQUISHED_VARIANT_HEIGHT : DEFAULT_EXPANDED_VARIANT_HEIGHT;
+        return VARIANT_BAND_HEIGHT;
     }
 
     public enum ColorMode {

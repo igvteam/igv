@@ -452,6 +452,19 @@ public abstract class AbstractTrack implements Track {
         this.rowHeight = rowHeight;
     }
 
+    /**
+     * Set the mode field directly rather than through setDisplayMode, which pins the height of an auto-sized track.
+     * A new row height should resize the track to its content.  CUSTOM packs rows as SQUISHED and EXPANDED do, so
+     * no repacking is needed.
+     */
+    @Override
+    public void setCustomRowHeight(int rowHeight) {
+        if (hasRows() && (displayMode == DisplayMode.SQUISHED || displayMode == DisplayMode.EXPANDED)) {
+            this.displayMode = DisplayMode.CUSTOM;
+        }
+        setRowHeight(rowHeight);
+    }
+
     @Override
     public int getDefaultSquishedRowHeight() {
         return defaultSquishedRowHeight;

@@ -53,7 +53,13 @@ public class VariantTrackRowsTest extends AbstractHeadlessTest {
 
     @Test
     public void testSquished() {
-        assertVariantUnderMouseIsDrawn(Track.DisplayMode.SQUISHED, 2, 6);
+        assertVariantUnderMouseIsDrawn(Track.DisplayMode.SQUISHED, 2, 25);
+    }
+
+    @Test
+    public void testCustom() {
+        // Variant rows keep their height; a custom row height applies to the genotype rows only
+        assertVariantUnderMouseIsDrawn(Track.DisplayMode.CUSTOM, 2, 25);
     }
 
     @Test

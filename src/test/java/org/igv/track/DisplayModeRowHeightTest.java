@@ -74,6 +74,11 @@ public class DisplayModeRowHeightTest extends AbstractHeadlessTest {
         track.setDisplayMode(DisplayMode.SQUISHED);
         assertEquals(track.getDefaultSquishedRowHeight(), track.getRowHeight());
 
+        // A displayed, auto-sized track resizes to the new row height rather than being pinned by the mode change
+        track.setViewport(new TrackPanelScrollPane());
+        track.setCustomRowHeight(60);
+        assertEquals(track.getContentHeight(), track.getHeight());
+
         // COLLAPSED is a packing mode, not a row height, and is kept
         track.setDisplayMode(DisplayMode.COLLAPSED);
         track.setCustomRowHeight(40);

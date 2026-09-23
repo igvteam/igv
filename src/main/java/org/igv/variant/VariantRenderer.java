@@ -5,7 +5,6 @@ import org.igv.logging.*;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.track.RenderContext;
-import org.igv.track.Track;
 import org.igv.ui.FontManager;
 import org.igv.ui.color.ColorUtilities;
 
@@ -26,6 +25,8 @@ public class VariantRenderer {
 
     private static final int BOTTOM_MARGIN = 0;
     private static final int TOP_MARGIN = 3;
+    // Gap above and below each genotype as a fraction of the row height, giving 1 px for the 15 px expanded row
+    private static final float GENOTYPE_GAP_FRACTION = 1 / 15f;
     private static float alphaValue = 0.2f;
 
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
@@ -276,9 +277,9 @@ public class VariantRenderer {
             }
 
 
-            boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED || track.getDisplayMode() == Track.DisplayMode.CUSTOM;
-            int y0 = expanded ? pY + 1 : pY;
-            int h = Math.max(1, expanded ? dY - 2 : dY);
+            int gap = Math.round(dY * GENOTYPE_GAP_FRACTION);
+            int y0 = pY + gap;
+            int h = Math.max(1, dY - 2 * gap);
 
             if (coloring == VariantTrack.ColorMode.GENOTYPE) {
 
