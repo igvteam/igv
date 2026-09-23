@@ -133,6 +133,7 @@ public class BlatClient {
                 BlatTrack newTrack = new BlatTrack(db, userSeq, features, trackLabel); //species, userSeq, db, genome, trackLabel);
                 IGV.getInstance().addTrack(newTrack);
                 IGV.getInstance().repaint();
+                IGV.getInstance().scrollToTracks(List.of(newTrack));
                 BlatQueryWindow win = new BlatQueryWindow(IGV.getInstance().getMainFrame(), userSeq, newTrack.getFeatures());
                 win.setVisible(true);
             }

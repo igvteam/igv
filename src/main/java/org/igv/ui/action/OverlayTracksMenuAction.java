@@ -68,6 +68,7 @@ public class OverlayTracksMenuAction extends MenuAction {
         mergedTracks.setOrder(dataTrackList.get(0).getOrder());
         IGV.getInstance().removeTracks(dataTrackList);
         IGV.getInstance().addTracks(List.of(mergedTracks));
+        IGV.getInstance().scrollToTracks(List.of(mergedTracks));
     }
 
     public static void unmerge(Collection<Track> tracks) {
@@ -82,6 +83,7 @@ public class OverlayTracksMenuAction extends MenuAction {
                 }
                 IGV.getInstance().deleteTracks(List.of(mergedTracks));
                 IGV.getInstance().addTracks(new ArrayList<>(mergedTracks.getMemberTracks()));
+                IGV.getInstance().scrollToTracks(mergedTracks.getMemberTracks());
             }
         }
         IGV.getInstance().repaint();

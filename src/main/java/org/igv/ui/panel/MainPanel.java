@@ -587,6 +587,34 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
         return trackPanelScrollPane;
     }
 
+    /**
+     * Scroll the track stack, if needed, so the given track panels are visible.  Panels that fit are brought
+     * into view with the minimum scroll; panels taller than the viewport are aligned with its top.  The
+     * scroll is clamped so the view never extends past the bottom of the track stack.
+     */
+    public void scrollToTrackPanels(List<TrackPanel> panels) {
+        trackPanelScrollPane.validate();
+        int top = Integer.MAX_VALUE;
+        int bottom = Integer.MIN_VALUE;
+        for (TrackPanel tp : panels) {
+            TrackPanelScrollPane sp = tp.getScrollPane();
+            if (sp != null && sp.getParent() == trackPanelContainer) {
+                top = Math.min(top, sp.getY());
+                bottom = Math.max(bottom, sp.getY() + sp.getHeight());
+            }
+        }
+        if (top > bottom) return;
+
+        JScrollBar bar = trackPanelScrollPane.getVerticalScrollBar();
+        int viewHeight = trackPanelScrollPane.getViewport().getHeight();
+        int value = bar.getValue();
+        if (top >= value && bottom <= value + viewHeight) return;   // Already fully visible
+
+        int newValue = top < value ? top : Math.min(top, bottom - viewHeight);
+        newValue = Math.max(0, Math.min(newValue, bar.getMaximum() - bar.getVisibleAmount()));
+        bar.setValue(newValue);
+    }
+
     public HeaderSelectAllPanel getHeaderSelectAllPanel() {
         return headerSelectAllPanel;
     }

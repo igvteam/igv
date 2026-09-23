@@ -79,6 +79,7 @@ public class CombinedDataSourceDialog extends org.igv.ui.IGVDialog  {
         newTrack.setColorScale(track0.getColorScale());
 
         IGV.getInstance().addTracks(Arrays.asList(newTrack));
+        IGV.getInstance().scrollToTracks(Arrays.asList(newTrack));
         this.setVisible(false);
 
     }

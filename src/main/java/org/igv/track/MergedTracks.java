@@ -333,6 +333,7 @@ public class MergedTracks extends DataTrack implements ScalableTrack {
             }
             IGV.getInstance().deleteTracks(List.of(this));
             IGV.getInstance().addTracks(new ArrayList<>(getMemberTracks()));
+            IGV.getInstance().scrollToTracks(getMemberTracks());
             IGV.getInstance().repaint();
         });
         items.add(unmergeItem);

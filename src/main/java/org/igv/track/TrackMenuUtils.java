@@ -122,6 +122,7 @@ public class TrackMenuUtils {
                             mergedTracks.setOrder(dataTrackList.get(0).getOrder());
                             IGV.getInstance().removeTracks(dataTrackList);
                             IGV.getInstance().addTracks(List.of(mergedTracks));
+                            IGV.getInstance().scrollToTracks(List.of(mergedTracks));
                             IGV.getInstance().repaint();
                         });
                         multiMenu.addSeparator();

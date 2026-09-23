@@ -353,6 +353,7 @@ public class IGV implements IGVEventObserver {
                 public void run() {
                     //Collect size statistics before loading
                     List<Map<TrackPanelScrollPane, Integer>> trackPanelAttrs = getTrackPanelAttrs();
+                    List<Track> loadedTracks = new ArrayList<>();
 
                     final MessageCollection messages = new MessageCollection();
                     for (final ResourceLocator locator : locators) {
@@ -369,6 +370,7 @@ public class IGV implements IGVEventObserver {
                         try {
                             List<Track> tracks = load(locator);
                             addTracks(tracks);
+                            loadedTracks.addAll(tracks);
                         } catch (Exception e) {
                             log.error("Error loading track", e);
                             messages.append("Error loading " + locator + ": " + e.getMessage());
@@ -386,6 +388,7 @@ public class IGV implements IGVEventObserver {
                     //resetPanelHeights(trackPanelAttrs.get(0), trackPanelAttrs.get(1));
                     showLoadedTrackCount();
                     revalidateTrackPanels();
+                    scrollToTracks(loadedTracks);
                 }
 
                 public String getName() {
@@ -566,6 +569,23 @@ public class IGV implements IGVEventObserver {
 
     public void addTrack(Track track) {
         addTrackPanel(track);
+    }
+
+    /**
+     * Scroll the track stack, if needed, so the panels containing the given tracks are visible.  Deferred to the
+     * event thread so pending layout changes are applied first.  Not used for session loads, and a no-op in batch mode.
+     */
+    public void scrollToTracks(Collection<? extends Track> tracks) {
+        if (tracks.isEmpty() || Globals.isBatch()) return;
+        UIUtilities.invokeOnEventThread(() -> {
+            List<TrackPanel> panels = new ArrayList<>();
+            for (TrackPanel tp : getTrackPanels()) {
+                if (!Collections.disjoint(tp.getTracks(), tracks)) {
+                    panels.add(tp);
+                }
+            }
+            getMainPanel().scrollToTrackPanels(panels);
+        });
     }
 
     /**
