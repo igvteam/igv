@@ -79,7 +79,7 @@ public class ResourceLocator {
 
         List<ResourceLocator> locators = new ArrayList<>();
 
-        Set<String> indexExtensions = new HashSet<>(Arrays.asList("bai", "crai", "sai", "tbi", "tbx"));
+        Set<String> indexExtensions = new HashSet<>(Arrays.asList("bai", "crai", "csi", "idx", "sai", "tbi", "tbx"));
         Set<File> indexes = new HashSet<>();
         Map<String, File> indexMap = new HashMap<>();
         for (File f : files) {
@@ -89,9 +89,9 @@ public class ResourceLocator {
                 String ext = fn.substring(idx + 1);
                 if (indexExtensions.contains(ext)) {
                     String base = fn.substring(0, idx);
-                    if (ext.equals(".bai") && !base.endsWith(".bam")) {
+                    if (ext.equals("bai") && !base.endsWith(".bam")) {
                         base += ".bam";   // Picard convention
-                    } else if (ext.equals(".crai") && !base.endsWith(".cram")) {
+                    } else if (ext.equals("crai") && !base.endsWith(".cram")) {
                         base += ".cram";  // Possible Picard convention
                     }
                     indexes.add(f);

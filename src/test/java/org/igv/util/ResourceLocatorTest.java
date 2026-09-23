@@ -2,6 +2,10 @@ package org.igv.util;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -51,6 +55,24 @@ public class ResourceLocatorTest {
         trackName = resourceLocator.getTrackName();
         assertEquals("track", trackName);
 
+    }
+
+    @Test
+    public void getLocatorsPairsIndexes() {
+
+        List<File> files = Arrays.asList(
+                new File("/data/a.bam"), new File("/data/a.bai"),
+                new File("/data/b.cram"), new File("/data/b.crai"),
+                new File("/data/c.vcf.gz"), new File("/data/c.vcf.gz.csi"),
+                new File("/data/d.vcf"), new File("/data/d.vcf.idx"));
+
+        List<ResourceLocator> locators = ResourceLocator.getLocators(files);
+
+        assertEquals(4, locators.size());
+        assertEquals(new File("/data/a.bai").getAbsolutePath(), locators.get(0).getIndexPath());
+        assertEquals(new File("/data/b.crai").getAbsolutePath(), locators.get(1).getIndexPath());
+        assertEquals(new File("/data/c.vcf.gz.csi").getAbsolutePath(), locators.get(2).getIndexPath());
+        assertEquals(new File("/data/d.vcf.idx").getAbsolutePath(), locators.get(3).getIndexPath());
     }
 
 }
