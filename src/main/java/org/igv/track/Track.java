@@ -27,8 +27,11 @@ import java.util.List;
 public interface Track {
 
 
+    /**
+     * CUSTOM is an expanded mode with a user specified row height, entered by setting the row height explicitly.
+     */
     enum DisplayMode {
-        COLLAPSED, SQUISHED, EXPANDED, FULL
+        COLLAPSED, SQUISHED, EXPANDED, FULL, CUSTOM
     }
 
     /**
@@ -228,6 +231,17 @@ public interface Track {
     void setRowHeight(int rowHeight);
 
     /**
+     * Set a user specified row height.  Tracks with rows in the SQUISHED or EXPANDED mode switch to CUSTOM, so
+     * that SQUISHED and EXPANDED always mean their default row heights.  COLLAPSED and FULL are kept.
+     */
+    default void setCustomRowHeight(int rowHeight) {
+        if (hasRows() && (getDisplayMode() == DisplayMode.SQUISHED || getDisplayMode() == DisplayMode.EXPANDED)) {
+            setDisplayMode(DisplayMode.CUSTOM);
+        }
+        setRowHeight(rowHeight);
+    }
+
+    /**
      * Return true if this track is composed of rows (feature, alignment, variant, and segmented data tracks).
      * Tracks with rows respond to the SQUISHED and EXPANDED display modes by resetting their row height to the
      * corresponding default.
@@ -256,7 +270,7 @@ public interface Track {
      * or to size based on content. Only shrinks; never grows the current track height.
      */
     default void minimizeHeight() {
-        setRowHeight(1);
+        setCustomRowHeight(1);
         setHeight(Math.min(getHeight(), getMinimumHeight()));
     }
 

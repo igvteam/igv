@@ -4,6 +4,7 @@ import org.igv.AbstractHeadlessTest;
 import org.igv.feature.BasicFeature;
 import org.igv.track.Track.DisplayMode;
 import org.igv.ui.panel.TrackPanelScrollPane;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -59,5 +60,48 @@ public class DisplayModeRowHeightTest extends AbstractHeadlessTest {
         assertEquals(expandedHeight, track.getHeight());
         track.setDisplayMode(DisplayMode.EXPANDED);
         assertEquals(expandedHeight, track.getHeight());
+    }
+
+    @Test
+    public void testCustomRowHeight() {
+        FeatureTrack track = newFeatureTrack();
+        track.setDisplayMode(DisplayMode.SQUISHED);
+
+        // A custom row height leaves SQUISHED, so that SQUISHED can be selected again to restore its default
+        track.setCustomRowHeight(40);
+        assertEquals(DisplayMode.CUSTOM, track.getDisplayMode());
+        assertEquals(40, track.getRowHeight());
+        track.setDisplayMode(DisplayMode.SQUISHED);
+        assertEquals(track.getDefaultSquishedRowHeight(), track.getRowHeight());
+
+        // COLLAPSED is a packing mode, not a row height, and is kept
+        track.setDisplayMode(DisplayMode.COLLAPSED);
+        track.setCustomRowHeight(40);
+        assertEquals(DisplayMode.COLLAPSED, track.getDisplayMode());
+    }
+
+    @Test
+    public void testCustomSessionRoundTrip() {
+        FeatureTrack track = newFeatureTrack();
+        track.setDisplayMode(DisplayMode.EXPANDED);
+        track.setCustomRowHeight(40);
+
+        // Written as EXPANDED for igv.js, which has no CUSTOM mode
+        JSONObject json = new JSONObject();
+        track.marshalJSON(json);
+        assertEquals("EXPANDED", json.getString("displayMode"));
+
+        FeatureTrack restored = newFeatureTrack();
+        restored.unmarshalJSON(json);
+        assertEquals(DisplayMode.CUSTOM, restored.getDisplayMode());
+        assertEquals(40, restored.getRowHeight());
+
+        // A default row height restores the plain mode
+        track.setDisplayMode(DisplayMode.SQUISHED);
+        json = new JSONObject();
+        track.marshalJSON(json);
+        restored = newFeatureTrack();
+        restored.unmarshalJSON(json);
+        assertEquals(DisplayMode.SQUISHED, restored.getDisplayMode());
     }
 }

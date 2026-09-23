@@ -558,7 +558,7 @@ public class CommandExecutor {
         List<Track> tracks = tracksMatchingName(trackName);
         if (tracks.size() > 0) {
             for (Track track : tracks) {
-                track.setRowHeight(height);
+                track.setCustomRowHeight(height);
             }
             igv.repaint();
             return "OK";

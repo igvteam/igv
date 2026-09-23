@@ -276,8 +276,9 @@ public class VariantRenderer {
             }
 
 
-            int y0 = track.getDisplayMode() == Track.DisplayMode.EXPANDED ? pY + 1 : pY;
-            int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY - 2 : dY);
+            boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED || track.getDisplayMode() == Track.DisplayMode.CUSTOM;
+            int y0 = expanded ? pY + 1 : pY;
+            int h = Math.max(1, expanded ? dY - 2 : dY);
 
             if (coloring == VariantTrack.ColorMode.GENOTYPE) {
 

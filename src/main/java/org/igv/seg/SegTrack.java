@@ -107,7 +107,7 @@ public class SegTrack extends AbstractTrack {
 
     @Override
     public void minimizeHeight() {
-        setRowHeight(1);
+        setCustomRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
@@ -214,7 +214,6 @@ public class SegTrack extends AbstractTrack {
 
         items.addAll(TrackMenuUtils.getSquishExpandItems(Collections.singletonList(this)));
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
-        items.add(TrackMenuUtils.getMinimizeHeightItem(Collections.singletonList(this)));
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 

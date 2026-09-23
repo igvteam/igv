@@ -494,7 +494,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
-        setRowHeight(1);
+        setCustomRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
@@ -1030,7 +1030,7 @@ public class AlignmentTrack extends AbstractTrack implements IGVEventObserver {
             }
             showGroupLine = false;
             setDisplayMode(DisplayMode.EXPANDED);
-            setRowHeight(2);   // Must follow setDisplayMode, which resets the row height
+            setCustomRowHeight(2);   // Must follow setDisplayMode, which resets the row height
         }
         dataManager.packAlignments(renderOptions, getDisplayMode());
         repaint();

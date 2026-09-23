@@ -251,7 +251,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
-        setRowHeight(1);
+        setCustomRowHeight(1);
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
