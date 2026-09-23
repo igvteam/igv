@@ -452,6 +452,19 @@ public abstract class AbstractTrack implements Track {
         this.rowHeight = rowHeight;
     }
 
+    /**
+     * Set the mode field directly rather than through setDisplayMode, which pins the height of an auto-sized track.
+     * A new row height should resize the track to its content.  CUSTOM packs rows as SQUISHED and EXPANDED do, so
+     * no repacking is needed.
+     */
+    @Override
+    public void setCustomRowHeight(int rowHeight) {
+        if (hasRows() && (displayMode == DisplayMode.SQUISHED || displayMode == DisplayMode.EXPANDED)) {
+            this.displayMode = DisplayMode.CUSTOM;
+        }
+        setRowHeight(rowHeight);
+    }
+
     @Override
     public int getDefaultSquishedRowHeight() {
         return defaultSquishedRowHeight;
@@ -824,7 +837,7 @@ public abstract class AbstractTrack implements Track {
     /**
      * Set the display mode.  For tracks with rows the SQUISHED and EXPANDED modes reset the row height to the
      * corresponding default.  COLLAPSED tracks draw a single row at the expanded height.  FULL (alignments only)
-     * leaves the current row height unchanged.
+     * and CUSTOM leave the current row height unchanged.
      */
     public void setDisplayMode(DisplayMode mode) {
         if (hasRows() && mode != this.displayMode && height == 0 && viewport != null) {
@@ -1379,7 +1392,9 @@ public abstract class AbstractTrack implements Track {
             jsonObject.put("visibilityWindow", String.valueOf(visibilityWindow));
         }
         if (displayMode != DEFAULT_DISPLAY_MODE) {
-            jsonObject.put(SessionAttribute.DISPLAY_MODE, displayMode.toString());
+            // igv.js has no CUSTOM mode.  CUSTOM is written as EXPANDED and restored from the rowHeight on reading.
+            DisplayMode mode = displayMode == DisplayMode.CUSTOM ? DisplayMode.EXPANDED : displayMode;
+            jsonObject.put(SessionAttribute.DISPLAY_MODE, mode.toString());
         }
         if (colorScale != null) {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
@@ -1546,6 +1561,11 @@ public abstract class AbstractTrack implements Track {
                 this.rowHeight = jsonObject.getInt("rowHeight");
             } catch (Exception e) {
                 log.error("Unrecognized rowHeight: " + jsonObject.getString("rowHeight"));
+            }
+            if (hasRows() &&
+                    ((displayMode == DisplayMode.SQUISHED && rowHeight != defaultSquishedRowHeight) ||
+                            (displayMode == DisplayMode.EXPANDED && rowHeight != defaultExpandedRowHeight))) {
+                this.displayMode = DisplayMode.CUSTOM;
             }
         }
 

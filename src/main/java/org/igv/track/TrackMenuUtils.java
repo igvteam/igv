@@ -914,7 +914,6 @@ public class TrackMenuUtils {
 
         List<Component> items = new ArrayList<>(getDisplayModeRadioItems(tracks, modes));
         items.add(getRowHeightItem(tracks));
-        items.add(getMinimizeHeightItem(tracks));
         return items;
     }
 
@@ -936,7 +935,6 @@ public class TrackMenuUtils {
 
         List<Component> items = new ArrayList<>(getDisplayModeRadioItems(rowTracks, modes));
         items.add(getRowHeightItem(rowTracks));
-        items.add(getMinimizeHeightItem(rowTracks));
         return items;
     }
 
@@ -996,26 +994,12 @@ public class TrackMenuUtils {
             Integer newHeight = getIntegerInput("Row Height", currentHeight);
             if (newHeight != null && newHeight > 0) {
                 for (Track t : tracks) {
-                    t.setRowHeight(newHeight);
+                    t.setCustomRowHeight(newHeight);
                 }
                 IGV.getInstance().repaint(tracks);
             }
         });
         return rowHeightItem;
-    }
-
-    public static JMenuItem getMinimizeHeightItem(Collection<Track> tracks) {
-        JMenuItem item = new JMenuItem("Minimize Track Height");
-        item.addActionListener(evt -> {
-            for (Track t : tracks) {
-                TrackPanelScrollPane viewport = t.getViewport();
-                if (viewport != null) {
-                    t.minimizeHeight();
-                }
-            }
-            IGV.getInstance().repaint(tracks);
-        });
-        return item;
     }
 
     /**

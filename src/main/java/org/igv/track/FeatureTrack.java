@@ -225,7 +225,13 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
 
     @Override
     public void minimizeHeight() {
-        setRowHeight(defaultSquishedRowHeight);
+        if (getRowHeight() > defaultSquishedRowHeight) {   // Never grow rows that are already smaller
+            if (getDisplayMode() == DisplayMode.COLLAPSED) {
+                setRowHeight(defaultSquishedRowHeight);
+            } else {
+                setDisplayMode(DisplayMode.SQUISHED);
+            }
+        }
         int newHeight = Math.max(getContentHeight(), getMinimumHeight());
         setHeight(Math.min(newHeight, getHeight()));
     }
