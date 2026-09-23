@@ -12,6 +12,7 @@ import org.igv.ui.UIConstants;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.LongRunningTask;
 import org.igv.util.ResourceLocator;
+import org.igv.util.URLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
@@ -833,11 +835,11 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
 
             // First check for a session
             String sessionPath = null;
-            if (droppedFiles.size() == 1 && droppedFiles.iterator().next().getName().endsWith(".xml")) {
-                // If it's a single XML file, treat it as a session file
+            if (droppedFiles.size() == 1 && isSessionExtension(droppedFiles.iterator().next().getName())) {
+                // If it's a single XML or JSON file, treat it as a session file
                 sessionPath = droppedFiles.iterator().next().getAbsolutePath();
-            } else if (droppedUrls.size() == 1 && droppedUrls.iterator().next().endsWith(".xml")) {
-                // If it's a single URL ending in .xml, treat it as a session URL
+            } else if (droppedUrls.size() == 1 && isSessionUrl(droppedUrls.iterator().next())) {
+                // If it's a single URL ending in .xml or .json, treat it as a session URL
                 sessionPath = droppedUrls.iterator().next();
             }
             if (sessionPath != null) {
@@ -879,6 +881,18 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
                 lower.startsWith("ftp://") ||
                 lower.startsWith("s3://") ||
                 lower.startsWith("gs://");
+    }
+
+    private static boolean isSessionExtension(String path) {
+        return path.endsWith(".xml") || path.endsWith(".json");
+    }
+
+    private static boolean isSessionUrl(String url) {
+        try {
+            return isSessionExtension(URLUtils.getPath(url));   // Ignore query string and fragment
+        } catch (MalformedURLException e) {
+            return isSessionExtension(url);
+        }
     }
 
     /**

@@ -52,6 +52,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -830,12 +831,22 @@ public class IGV implements IGVEventObserver {
 
     public boolean loadSessionFromStream(String sessionPath, InputStream inputStream) throws IOException {
 
+        // Ignore any URL query string or fragment when choosing the reader
+        String path = sessionPath;
+        if (path != null && URLUtils.isURL(path)) {
+            try {
+                path = URLUtils.getPath(path);
+            } catch (MalformedURLException e) {
+                // Use the full path
+            }
+        }
+
         final SessionReader sessionReader;
-        if (sessionPath != null && (sessionPath.endsWith(".session") || sessionPath.endsWith(".session.txt"))) {
+        if (path != null && (path.endsWith(".session") || path.endsWith(".session.txt"))) {
             sessionReader = new UCSCSessionReader(this);
-        } else if (sessionPath != null && (sessionPath.endsWith(".idxsession") || sessionPath.endsWith(".idxsession.txt"))) {
+        } else if (path != null && (path.endsWith(".idxsession") || path.endsWith(".idxsession.txt"))) {
             sessionReader = new IndexAwareSessionReader(this);
-        } else if (sessionPath != null && sessionPath.endsWith(".json")) {
+        } else if (path != null && path.endsWith(".json")) {
             sessionReader = new JSONSessionReader(this);
         } else {
             sessionReader = new XMLSessionReader(this);
