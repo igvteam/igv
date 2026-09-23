@@ -1140,10 +1140,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     @Override
     public void setColor(Color color) {
-        // Setting color implicitly turns of "color by" modes
-        this.genotypeColorMode = ColorMode.NONE;
-        this.siteColorMode = ColorMode.NONE;
-        super.setColor(color);
+        // No-op -- variants are colored by attribute, not by a track color
     }
 
     public String getTooltipText(int y) {

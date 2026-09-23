@@ -76,7 +76,6 @@ public class VariantTrackMenuHelper {
             items.add(infoFieldMenu);
             items.add(getEditInfoColorsItem(variantTrack));
         }
-        items.add(getColorByNone(variantTrack));
 
         // Methylation color options
         if (variantTrack.isEnableMethylationRateSupport()) {
@@ -392,15 +391,6 @@ public class VariantTrackMenuHelper {
             item.addActionListener(evt ->
                     new VariantColorLegendDialog(IGV.getInstance().getMainFrame(), track, infoKey).setVisible(true));
         }
-        return item;
-    }
-
-    private static JMenuItem getColorByNone(VariantTrack track) {
-        final JMenuItem item = new JCheckBoxMenuItem("None", track.getSiteColorMode() == VariantTrack.ColorMode.NONE);
-        item.addActionListener(evt -> {
-            track.setSiteColorMode(VariantTrack.ColorMode.NONE);
-            IGV.getInstance().getContentPane().repaint();
-        });
         return item;
     }
 

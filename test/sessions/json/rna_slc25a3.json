@@ -1,0 +1,107 @@
+{
+  "genome": "hg19",
+  "locus": "chr12:98985464-99002145",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://igv.org/genomes/data/hg19/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://igv.org/genomes/data/hg19/ncbiRefSeq.txt.gz",
+      "order": 1,
+      "rowHeight": 35
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "max": 554,
+      "format": "bam",
+      "mid": 0,
+      "type": "coverage",
+      "autoscale": "true",
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam",
+      "logScale": false,
+      "min": 0,
+      "name": "Heart Coverage",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam_coverage",
+      "alleleFreqThreshold": 0.2,
+      "order": 2
+    },
+    {
+      "format": "bam",
+      "name": "Heart Junctions",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam_junctions",
+      "type": "junction",
+      "maxdepth": 50,
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam",
+      "order": 3,
+      "height": 60,
+      "rowHeight": 35,
+      "autoScale": "true"
+    },
+    {
+      "color": "185,185,185",
+      "duplicatesOption": "FILTER",
+      "format": "bam",
+      "name": "Heart",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam",
+      "type": "alignment",
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/heart_slc25a3.bam",
+      "displayMode": "EXPANDED",
+      "experimentType": "RNA",
+      "order": 4,
+      "height": 300,
+      "rowHeight": 14
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "max": 319,
+      "format": "bam",
+      "mid": 0,
+      "type": "coverage",
+      "autoscale": "true",
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam",
+      "logScale": false,
+      "min": 0,
+      "name": "Liver Coverage",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam_coverage",
+      "alleleFreqThreshold": 0.2,
+      "order": 5
+    },
+    {
+      "format": "bam",
+      "name": "Liver Junctions",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam_junctions",
+      "type": "junction",
+      "maxdepth": 50,
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam",
+      "order": 6,
+      "height": 60,
+      "rowHeight": 35,
+      "autoScale": "true"
+    },
+    {
+      "color": "185,185,185",
+      "duplicatesOption": "FILTER",
+      "format": "bam",
+      "name": "Liver",
+      "id": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam",
+      "type": "alignment",
+      "url": "https://raw.githubusercontent.com/igvteam/igv-data/refs/heads/main/data/tutorials/rna/liver_slc25a3.bam",
+      "displayMode": "EXPANDED",
+      "experimentType": "RNA",
+      "order": 7,
+      "height": 300,
+      "rowHeight": 14
+    }
+  ]
+}

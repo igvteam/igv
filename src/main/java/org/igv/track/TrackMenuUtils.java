@@ -160,8 +160,10 @@ public class TrackMenuUtils {
             for (Component item : getSharedMenuItems(Collections.singleton(track))) {
                 menu.add(item);
             }
-            for (Component item : getColorMenuItems(Collections.singleton(track))) {
-                menu.add(item);
+            if (track.getType() != TrackType.variant) {
+                for (Component item : getColorMenuItems(Collections.singleton(track))) {
+                    menu.add(item);
+                }
             }
         }
 
