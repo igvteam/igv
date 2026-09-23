@@ -814,6 +814,9 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
                                 URI uri = new URI(uriStr);
                                 if ("file".equals(uri.getScheme())) {
                                     droppedFiles.add(new File(uri));
+                                } else if (uri.getScheme() == null) {
+                                    // macOS supplies plain paths, not file:// URIs, in text/uri-list
+                                    droppedFiles.add(new File(uriStr));
                                 } else {
                                     droppedUrls.add(uriStr);
                                 }
