@@ -845,6 +845,7 @@ public class MainPanel extends JPanel implements Paintable, DropTargetListener {
             if (sessionPath != null) {
                 final String sp = sessionPath;
                 LongRunningTask.submit(() -> this.igv.loadSession(sp, null));
+                dtde.dropComplete(true);
                 return;
             }
 
