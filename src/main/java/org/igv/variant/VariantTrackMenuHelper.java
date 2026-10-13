@@ -70,10 +70,12 @@ public class VariantTrackMenuHelper {
         items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
         items.add(getColorBandByAllelFrequency(variantTrack));
         items.add(getColorBandByAlleleFraction(variantTrack));
-        items.add(getAlleleFrequencyDisplayMenu(variantTrack));
         JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
         if (infoFieldMenu != null) {
             items.add(infoFieldMenu);
+        }
+        items.add(getAlleleFrequencyColorsItem(variantTrack));
+        if (infoFieldMenu != null) {
             items.add(getEditInfoColorsItem(variantTrack));
         }
 
@@ -153,27 +155,9 @@ public class VariantTrackMenuHelper {
     }
 
     /**
-     * How allele frequency and fraction are drawn: by a color scale, or as a bar whose height is the frequency.
-     * Choosing a display while coloring by something else switches to allele frequency, so the choice is visible.
+     * The colors, and legend, for the allele frequency display the track shows -- a color scale or bars.
      */
-    private static JMenu getAlleleFrequencyDisplayMenu(VariantTrack track) {
-
-        JMenu menu = new JMenu("Allele Frequency Display");
-        boolean bars = track.isAlleleFrequencyBars();
-
-        JRadioButtonMenuItem colorItem = new JRadioButtonMenuItem("Color Scale", !bars);
-        colorItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, false));
-        JRadioButtonMenuItem barItem = new JRadioButtonMenuItem("Bar Height", bars);
-        barItem.addActionListener(evt -> setAlleleFrequencyDisplay(track, true));
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(colorItem);
-        group.add(barItem);
-        menu.add(colorItem);
-        menu.add(barItem);
-
-        menu.addSeparator();
-        // The colors, and legend, for the display the track shows
+    private static JMenuItem getAlleleFrequencyColorsItem(VariantTrack track) {
         JMenuItem editItem = new JMenuItem("Allele Frequency Colors...");
         editItem.addActionListener(evt -> {
             Frame frame = IGV.getInstance().getMainFrame();
@@ -183,18 +167,7 @@ public class VariantTrackMenuHelper {
                 new AlleleFrequencyColorsDialog(frame).setVisible(true);
             }
         });
-        menu.add(editItem);
-
-        return menu;
-    }
-
-    private static void setAlleleFrequencyDisplay(VariantTrack track, boolean bars) {
-        track.setAlleleFrequencyBars(bars);
-        VariantTrack.ColorMode mode = track.getSiteColorMode();
-        if (mode != VariantTrack.ColorMode.ALLELE_FREQUENCY && mode != VariantTrack.ColorMode.ALLELE_FRACTION) {
-            track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
-        }
-        IGV.getInstance().getContentPane().repaint();
+        return editItem;
     }
 
     /**
@@ -209,6 +182,10 @@ public class VariantTrackMenuHelper {
         }
 
         JMenu menu = new JMenu("INFO Field");
+        if (track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && track.getColorByAttribute() != null) {
+            // A JMenu has no checkbox -- show one, so the selection is visible without opening the submenu
+            menu.setIcon(new CheckIcon());
+        }
 
         List<JMenuItem> fieldItems = new ArrayList<>(infoFields.size());
         for (VCFInfoHeaderLine infoField : infoFields) {
@@ -505,4 +482,27 @@ public class VariantTrackMenuHelper {
         return items;
     }
 
+
+    /**
+     * A check mark, for a menu that stands for a selected item.
+     */
+    private static class CheckIcon implements Icon {
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c.getForeground());
+            g2.setStroke(new BasicStroke(1.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawPolyline(new int[]{x + 2, x + 5, x + 10}, new int[]{y + 6, y + 9, y + 2}, 3);
+            g2.dispose();
+        }
+
+        public int getIconWidth() {
+            return 12;
+        }
+
+        public int getIconHeight() {
+            return 12;
+        }
+    }
 }
