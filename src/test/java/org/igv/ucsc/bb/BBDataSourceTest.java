@@ -66,4 +66,30 @@ public class BBDataSourceTest {
         }
 
     }
+
+    /**
+     * Test zoom data from a zoom block shared by 2 chromosomes.  bedGraphToBigWig packs zoom records into blocks across
+     * chromosome boundaries, here chr1 (id 0) and chr2 (id 1).  Each chromosome should get only its own record.
+     */
+    @Test
+    public void testZoomBlockSharedByChromosomes() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/sharedZoomBlock.bw";
+
+        Genome genome = TestUtils.mockUCSCGenome();
+        BBFile bbFile = new BBFile(path, genome);
+        BBDataSource bbDataSource = new BBDataSource(bbFile, genome);
+
+        List<LocusScore> scores = bbDataSource.getPrecomputedSummaryScores("chr1", 0, Integer.MAX_VALUE, 0);
+        assertEquals(1, scores.size());
+        assertEquals(0, scores.get(0).getStart());
+        assertEquals(1000, scores.get(0).getEnd());
+        assertEquals(1.0f, scores.get(0).getScore(), 0);
+
+        scores = bbDataSource.getPrecomputedSummaryScores("chr2", 0, Integer.MAX_VALUE, 0);
+        assertEquals(1, scores.size());
+        assertEquals(5000, scores.get(0).getStart());
+        assertEquals(6000, scores.get(0).getEnd());
+        assertEquals(100.0f, scores.get(0).getScore(), 0);
+    }
 }

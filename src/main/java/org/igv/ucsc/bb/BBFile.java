@@ -588,7 +588,7 @@ public class BBFile {
             float sumData = bb.getFloat();
             float sumSquares = bb.getFloat();
 
-            if (chrIdx > 0) {
+            if (chrIdx >= 0) {
                 if (chromId < chrIdx || (chromId == chrIdx && chromEnd < start)) continue;
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }
