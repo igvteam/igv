@@ -66,4 +66,38 @@ public class BBDataSourceTest {
         }
 
     }
+
+    /**
+     * Test a big-endian bigWig.  Contents:
+     * chr1  bedGraph section   100-200 1.5, 300-400 2.5
+     * chr2  fixedStep section  1000-1050 0.25, 1100-1150 0.5, 1200-1250 0.75
+     * One zoom level, reduction 1000.
+     */
+    @Test
+    public void testBigEndian() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/bigEndian.bw";
+
+        Genome genome = TestUtils.mockUCSCGenome();
+        BBFile bbFile = new BBFile(path, genome);
+        assertEquals(2, bbFile.getChromosomeCount());
+        BBDataSource bbDataSource = new BBDataSource(bbFile, genome);
+
+        DataTile data = bbDataSource.getRawData("chr1", 0, 1000);
+        assertArrayEquals(new int[]{100, 300}, data.getStartLocations());
+        assertArrayEquals(new int[]{200, 400}, data.getEndLocations());
+        assertArrayEquals(new float[]{1.5f, 2.5f}, data.getValues(), 0);
+
+        // chr2 has chromosome id 1, which reads as 16777216 in the wrong byte order
+        data = bbDataSource.getRawData("chr2", 0, 2000);
+        assertArrayEquals(new int[]{1000, 1100, 1200}, data.getStartLocations());
+        assertArrayEquals(new int[]{1050, 1150, 1250}, data.getEndLocations());
+        assertArrayEquals(new float[]{0.25f, 0.5f, 0.75f}, data.getValues(), 0);
+
+        List<LocusScore> scores = bbDataSource.getPrecomputedSummaryScores("chr2", 0, Integer.MAX_VALUE, 0);
+        assertEquals(1, scores.size());
+        assertEquals(1000, scores.get(0).getStart());
+        assertEquals(1250, scores.get(0).getEnd());
+        assertEquals(0.5f, scores.get(0).getScore(), 0);
+    }
 }
