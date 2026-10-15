@@ -223,10 +223,10 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
         assertEquals(new Color(202, 0, 32), track.getAttributeColor((Variant) variants.get(0)));   // built in
 
-        track.setAttributeColorOverride("CLNSIG", "Pathogenic", new Color(7, 8, 9));
+        track.setAttributeColor("CLNSIG", "Pathogenic", new Color(7, 8, 9));
         assertEquals(new Color(7, 8, 9), track.getAttributeColor((Variant) variants.get(0)));
 
-        track.clearAttributeColorOverrides("CLNSIG");
+        track.clearAttributeColors("CLNSIG");
         assertEquals(new Color(202, 0, 32), track.getAttributeColor((Variant) variants.get(0)));
     }
 
@@ -257,11 +257,11 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     public void testOverridesRoundTrip() throws Exception {
         VariantTrack track = loadTrack();
         track.setColorByAttribute("CLNSIG");
-        track.setAttributeColorOverride("CLNSIG", "Pathogenic", new Color(7, 8, 9));
+        track.setAttributeColor("CLNSIG", "Pathogenic", new Color(7, 8, 9));
 
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
-        assertEquals("7,8,9", json.getJSONObject("colorTable").getString("Pathogenic"));
+        assertEquals("#070809", json.getJSONObject("colorTable").getString("Pathogenic"));
 
         VariantTrack restored = new VariantTrack();
         restored.unmarshalJSON(json);

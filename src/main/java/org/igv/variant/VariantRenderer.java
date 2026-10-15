@@ -77,12 +77,13 @@ public class VariantRenderer {
         final IGVPreferences prefMgr = PreferencesManager.getPreferences();
 
         // The allele frequency "reference" band and the heterozygous genotype color both default to a near-black
-        // blue, which disappears against a dark background.
-        final Color alleleBandRef = prefMgr.getAsColor(AF_REF_COLOR, Globals.DARK_MODE_BLUE);
+        // blue, which disappears against a dark background.  The bar colors may be chosen on the track.
+        final Color alleleBandRef = track.getAlleleFrequencyReferenceColor();
+        final Color alleleBandVar = track.getAlleleFrequencyVariantColor();
         final Color het = prefMgr.getAsColor(HETVAR_COLOR, Globals.DARK_MODE_BLUE);
 
-        if (!prefMgr.getAsColor(AF_VAR_COLOR).equals(colorAlleleBandVar)) {
-            colorAlleleBandVar = prefMgr.getAsColor(AF_VAR_COLOR);
+        if (!alleleBandVar.equals(colorAlleleBandVar)) {
+            colorAlleleBandVar = alleleBandVar;
             colorAlleleBandVarAlpha = ColorUtilities.getCompositeColor(colorAlleleBandVar, alphaValue);
 
         }

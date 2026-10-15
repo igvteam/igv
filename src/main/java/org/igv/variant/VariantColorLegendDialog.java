@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,8 +36,9 @@ import java.util.TreeSet;
  * <p>
  * This is where colors are actually chosen, rather than in preferences: the attribute's values are not knowable
  * in advance, but they are knowable here -- they are harvested from the loaded variants, which is also the point
- * at which the user can see what needs recoloring.  Nothing changes until "OK", which saves the colors as a
- * scheme that applies to every VCF with this attribute; "Cancel" discards them.
+ * at which the user can see what needs recoloring.  Nothing changes until "OK", which applies the edits to this
+ * track -- and, with "Update Preferences" checked, also saves them in a scheme that applies to every VCF with
+ * this attribute.  "Cancel" discards them.
  */
 public class VariantColorLegendDialog extends JDialog {
 
@@ -47,10 +49,14 @@ public class VariantColorLegendDialog extends JDialog {
     private final JPanel valuePanel = new JPanel();
     private final JLabel description = new JLabel();
     private final JButton editScaleButton = new JButton("Edit Scale...");
+    private final JCheckBox updatePreferencesBox = new JCheckBox("Update Preferences");
 
     // Edits not yet saved -- applied on "OK", discarded on "Cancel"
     private final Map<String, Color> pendingColors = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private ContinuousColorScale pendingScale;
+
+    // The track's color table, read once per populate() -- it can hold thousands of values
+    private Map<String, Color> trackColors = Map.of();
 
     public VariantColorLegendDialog(Frame owner, VariantTrack track, String infoKey) {
 
@@ -72,8 +78,12 @@ public class VariantColorLegendDialog extends JDialog {
         editScaleButton.setToolTipText("Change the range and colors of the scale");
         editScaleButton.addActionListener(e -> editScale());
 
+        // Checked when there is no preference for the attribute yet, so the first colors chosen become the default.
+        // An existing preference is not replaced unless asked.
+        updatePreferencesBox.setSelected(getSchemeForColors() == null);
+        updatePreferencesBox.setToolTipText("Also save these colors so they apply to every VCF with this attribute");
+
         JButton okButton = new JButton("OK");
-        okButton.setToolTipText("Save these colors so they apply to every VCF with this attribute");
         okButton.addActionListener(e -> {
             if (save()) {
                 dispose();
@@ -83,10 +93,15 @@ public class VariantColorLegendDialog extends JDialog {
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> dispose());
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        buttonPanel.add(editScaleButton);
-        buttonPanel.add(okButton);
-        buttonPanel.add(cancelButton);
+        JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        leftButtons.add(updatePreferencesBox);
+        JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        rightButtons.add(editScaleButton);
+        rightButtons.add(okButton);
+        rightButtons.add(cancelButton);
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.add(leftButtons, BorderLayout.WEST);
+        buttonPanel.add(rightButtons, BorderLayout.EAST);
         content.add(buttonPanel, BorderLayout.SOUTH);
 
         setContentPane(content);
@@ -101,13 +116,16 @@ public class VariantColorLegendDialog extends JDialog {
     private void populate() {
 
         valuePanel.removeAll();
+        trackColors = track.getAttributeColors(infoKey);
 
-        AbstractColorScale scale = pendingScale != null ? pendingScale : VariantColorSchemes.getScale(infoKey);
+        AbstractColorScale scale = pendingScale != null ? pendingScale : track.getAttributeScale(infoKey);
 
         description.setText("<html>Values of <b>" + infoKey + "</b> among the loaded features.  "
                 + (scale == null ? "Click a color to change it." : "Colored by a scale."));
 
         editScaleButton.setVisible(scale instanceof ContinuousColorScale || scale instanceof ColorStopScale);
+        // Allele frequency colors are edited, and saved, in their own dialog
+        updatePreferencesBox.setVisible(!(scale instanceof ColorStopScale));
 
         if (scale != null) {
             valuePanel.add(createScaleRow(scale));
@@ -135,19 +153,19 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * The values to list, and to write on "OK": those among the loaded features (see
-     * {@link VariantTrack#getAttributeValues}), plus any the user chose a color for on this track, which may no
-     * longer be loaded.  Sorted case insensitively, keeping the spelling seen in the loaded features.
+     * The values to list: those among the loaded features (see {@link VariantTrack#getAttributeValues}), plus the
+     * track's "*" entry if it has one.  Sorted case insensitively, keeping the spelling seen in the loaded features.
      * <p>
-     * Colors IGV assigned from the palette to values that are no longer loaded are deliberately left out.
-     * That table grows with every value ever drawn -- thousands, for an attribute like a gene name -- and keys
-     * it by lower case value.  The assignments are not lost: the track keeps them, they are saved in sessions,
-     * and they come back when the values do.
+     * Values in the track's color table that are no longer loaded are deliberately left out.  The table grows with
+     * every value ever drawn -- thousands, for an attribute like a gene name.  Their colors are not lost: the track
+     * keeps them, they are saved in sessions, and they come back when the values do.
      */
     private Set<String> valuesToShow() {
         Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         values.addAll(track.getAttributeValues(infoKey));
-        values.addAll(track.getAttributeColorOverrides(infoKey).keySet());
+        if (trackColors.containsKey(VariantTrack.WILDCARD_VALUE)) {
+            values.add(VariantTrack.WILDCARD_VALUE);
+        }
         return values;
     }
 
@@ -203,7 +221,10 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     private String colorOrigin(String value) {
-        if (track.getAttributeColorOverrides(infoKey).containsKey(value)) {
+        if (VariantTrack.WILDCARD_VALUE.equals(value)) {
+            return "(all other values)";
+        }
+        if (trackColors.containsKey(value)) {
             return "(this track)";
         }
         for (VariantColorScheme scheme : VariantColorSchemes.getSchemes()) {
@@ -224,10 +245,11 @@ public class VariantColorLegendDialog extends JDialog {
      */
     private void editScale() {
 
-        AbstractColorScale scale = pendingScale != null ? pendingScale : VariantColorSchemes.getScale(infoKey);
+        AbstractColorScale scale = pendingScale != null ? pendingScale : track.getAttributeScale(infoKey);
         if (scale instanceof ColorStopScale) {
-            // Rarity colors are shared by all allele frequency coloring, and edited in one place
-            new AlleleFrequencyColorsDialog(getOwner() instanceof Frame frame ? frame : null).setVisible(true);
+            // A well-known allele frequency field -- edited, and saved, like the allele frequency modes
+            new AlleleFrequencyColorsDialog(getOwner() instanceof Frame frame ? frame : null, track, infoKey)
+                    .setVisible(true);
             populate();
             repaintTrack();
             return;
@@ -245,18 +267,37 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * Save the edits back over the scheme the colors came from, so the change applies wherever that scheme did.
-     * A scheme shipped with IGV cannot be written, so it is copied under a default name, which then shadows it.
-     * Updating the existing scheme rather than writing a new one keeps what it holds beyond these edits -- colors
-     * for values not loaded now, a categorical declaration.
+     * Apply the edits to the track.  The track keeps them whether or not they are also saved as preferences, so a
+     * session shows them to whoever opens it.
      *
-     * @return true if saved, or there was nothing to save
+     * @return true if applied, or there was nothing to apply
      */
     private boolean save() {
 
         if (pendingScale == null && pendingColors.isEmpty()) {
             return true;
         }
+        if (updatePreferencesBox.isSelected() && !saveToPreferences()) {
+            return false;
+        }
+
+        if (pendingScale != null) {
+            track.setColorScale(infoKey, pendingScale);
+        }
+        pendingColors.forEach((value, color) -> track.setAttributeColor(infoKey, value, color));
+        repaintTrack();
+        return true;
+    }
+
+    /**
+     * Save the edits into the scheme the colors came from, adding to or replacing its entries, so the change
+     * applies wherever that scheme did.  A scheme shipped with IGV cannot be written, so it is copied under a
+     * default name, which then shadows it.  Updating the existing scheme rather than writing a new one keeps what
+     * it holds beyond these edits -- colors for other values, a categorical declaration.
+     *
+     * @return true if saved
+     */
+    private boolean saveToPreferences() {
 
         VariantColorScheme existing = pendingScale != null
                 ? VariantColorSchemes.getSchemeForScale(infoKey) : getSchemeForColors();
@@ -269,11 +310,7 @@ public class VariantColorLegendDialog extends JDialog {
         if (pendingScale != null) {
             updated.setScale(infoKey, pendingScale);
         } else {
-            // All listed values, not just the edited ones -- colors assigned from the palette depend on the order
-            // values are encountered, so they are fixed here along with the user's choices
-            for (String value : valuesToShow()) {
-                updated.setColor(infoKey, value, currentColor(value));
-            }
+            pendingColors.forEach((value, color) -> updated.setColor(infoKey, value, color));
             if (track.isNumericAttribute(infoKey)) {
                 // Colored by value, so it holds categories -- without the declaration it would be asked for a scale
                 updated.setCategorical(infoKey);
@@ -282,10 +319,6 @@ public class VariantColorLegendDialog extends JDialog {
 
         try {
             VariantColorSchemes.save(updated);
-            // The colors now come from the scheme, so drop any per-track copies (from a session) -- otherwise they
-            // would hide the change.
-            track.clearAttributeColorOverrides(infoKey);
-            repaintTrack();
             return true;
         } catch (Exception e) {
             log.error("Error saving colors for " + infoKey, e);

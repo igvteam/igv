@@ -164,7 +164,10 @@ public class VariantTrackMenuHelper {
             if (track.isAlleleFrequencyBars()) {
                 new AlleleFrequencyBarColorsDialog(frame, track).setVisible(true);
             } else {
-                new AlleleFrequencyColorsDialog(frame).setVisible(true);
+                // The scale for the mode shown, or for allele frequency if the track is colored by something else
+                String colorBy = track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION ?
+                        VariantTrack.COLOR_BY_ALLELE_FRACTION : VariantTrack.COLOR_BY_ALLELE_FREQUENCY;
+                new AlleleFrequencyColorsDialog(frame, track, colorBy).setVisible(true);
             }
         });
         return editItem;
@@ -236,9 +239,10 @@ public class VariantTrackMenuHelper {
 
     /**
      * A numeric attribute is a quantity, not a category -- coloring it by value would give a color per variant.
-     * The first time one is selected, have the user define a color scale, which is saved as a scheme so it
-     * applies to every VCF with this attribute and can be shared.  Attributes a scheme already covers, and
-     * attributes that are not numeric, need nothing.
+     * The first time one is selected, have the user define a color scale, prefilled from the loaded values.  The
+     * scale applies to the track, and with "Update Preferences" is also saved as a scheme so it applies to every
+     * VCF with this attribute and can be shared.  Attributes the track or a scheme already covers, and attributes
+     * that are not numeric, need nothing.
      *
      * @return true if the track can be colored by this attribute
      */
@@ -248,8 +252,10 @@ public class VariantTrackMenuHelper {
         // Any scheme covering the attribute settles it -- with a scale, a categorical declaration, or discrete
         // colors.  A user who wrote discrete colors for a numeric attribute meant it.
         // A well-known allele frequency field has a scale already -- it is colored by rarity.
+        // A track with a scale for the attribute, or colors for its values -- it was chosen on this track to be
+        // categorical -- is settled too.
         if (!track.isNumericAttribute(infoKey) || VariantColorSchemes.getKeys().contains(infoKey.toUpperCase())
-                || VariantColorSchemes.getScale(infoKey) != null) {
+                || track.getAttributeScale(infoKey) != null || !track.getAllAttributeColors(infoKey).isEmpty()) {
             return true;
         }
 
@@ -275,23 +281,29 @@ public class VariantTrackMenuHelper {
         HeatmapLegendEditor editor = new HeatmapLegendEditor(
                 IGV.getInstance().getMainFrame(), true, scale, "Values Are Categories");
         editor.setTitle("Color scale for " + infoKey);
+        // Checked: there is no preference for the attribute yet -- that is why the dialog is shown
+        JCheckBox updatePreferences = editor.addCheckBox("Update Preferences", true);
         editor.setVisible(true);
 
         if (editor.isDiscreteSelected()) {
-            return saveDiscreteScheme(track, infoKey);
+            // Without a scheme the track's colors record the choice -- see the check above
+            return updatePreferences.isSelected() ? saveDiscreteScheme(track, infoKey)
+                    : isWithinCategoryLimit(track, infoKey);
         }
         if (editor.isCanceled()) {
             return false;
         }
 
-        try {
-            VariantColorSchemes.saveScale(infoKey + " colorscale", infoKey, editor.getColorScheme());
-            return true;
-        } catch (Exception e) {
-            log.error("Error saving color scale for " + infoKey, e);
-            MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
-            return false;
+        track.setColorScale(infoKey, editor.getColorScheme());
+        if (updatePreferences.isSelected()) {
+            try {
+                VariantColorSchemes.saveScale(infoKey + " colorscale", infoKey, editor.getColorScheme());
+            } catch (Exception e) {
+                log.error("Error saving color scale for " + infoKey, e);
+                MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
+            }
         }
+        return true;
     }
 
     /**
@@ -304,7 +316,7 @@ public class VariantTrackMenuHelper {
     // Package private for testing
     static boolean isWithinCategoryLimit(VariantTrack track, String infoKey) {
 
-        if (VariantColorSchemes.getScale(infoKey) != null) {
+        if (track.getAttributeScale(infoKey) != null) {
             return true;
         }
 

@@ -19,6 +19,7 @@ import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
 import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.AbstractColorScale;
+import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ColorStopScale;
 import org.igv.renderer.GraphicUtils;
 import org.igv.sample.SampleGroup;
@@ -96,6 +97,18 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private static final Color NO_ATTRIBUTE_VALUE_COLOR = Color.gray;
 
     /**
+     * "colorBy" values for the top-level modes -- see {@link #getColorBy()}.
+     */
+    public static final String COLOR_BY_ALLELE_FREQUENCY = "AF";
+    public static final String COLOR_BY_ALLELE_FRACTION = "AC/AN";
+    public static final String COLOR_BY_NONE = "none";
+
+    /**
+     * The color table entry for values the table does not list, as in igv.js
+     */
+    public static final String WILDCARD_VALUE = "*";
+
+    /**
      * INFO attribute types that can be colored by.
      */
     private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
@@ -166,16 +179,32 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     private final Map<ColorMode, Boolean> frequencyFieldsDeclared = new EnumMap<>(ColorMode.class);
 
     /**
-     * Color tables for "color by INFO attribute", keyed by attribute ID.  Tables are created on demand and
-     * accumulate assignments as attribute values are encountered, so they are per-track state.
+     * Colors for "color by INFO attribute" chosen on this track, or read from a session, keyed by attribute ID then
+     * by value.  They win over color schemes.  A "*" entry colors every value the table does not list, as in igv.js.
+     * Values are matched case insensitively but keep the spelling first seen -- the colors are written to sessions as
+     * igv.js's "colorTable", which matches exactly.
      */
-    private final Map<String, PaletteColorTable> attributeColorTables = new HashMap<>();
+    private final Map<String, Map<String, Color>> attributeColorTables = new HashMap<>();
 
     /**
-     * Colors the user chose explicitly for attribute values, keyed by attribute ID then by value.  These take
-     * precedence over color schemes, which in turn take precedence over colors assigned from the palette.
+     * Colors assigned from the palette to values nothing else covers, keyed as attributeColorTables.  They rank below
+     * schemes, so a change to the preferences reaches every value the user did not choose a color for.  They are
+     * written to sessions in the same "colorTable" -- they depend on the order values are encountered -- and come
+     * back as chosen colors, since the table does not say which is which.  Guarded by attributeColorTables' lock.
      */
-    private final Map<String, Map<String, Color>> attributeColorOverrides = new HashMap<>();
+    private final Map<String, Map<String, Color>> paletteColorTables = new HashMap<>();
+
+    /**
+     * Color scales chosen on this track, keyed by color-by option (see {@link #getColorBy()}): an allele frequency
+     * mode or an INFO attribute.  They win over preferences, so a session shows the scale it was saved with.
+     */
+    private final Map<String, AbstractColorScale> colorScales = new ConcurrentHashMap<>();
+
+    /**
+     * The reference color of the allele frequency bar chosen on this track, or null to follow the preference.  The
+     * variant color is {@code altColor}, as in igv.js.
+     */
+    private Color refColor;
 
     /**
      * When true, variants that are marked filtering are not drawn.
@@ -760,7 +789,104 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (!hasFrequencyFields(siteColorMode)) {
             return getColor();
         }
-        return AlleleFrequencyColors.getScale().getColor(AlleleFrequencyColors.getFrequency(variant, siteColorMode));
+        return getAlleleFrequencyScale().getColor(AlleleFrequencyColors.getFrequency(variant, siteColorMode));
+    }
+
+    /**
+     * @return the scale allele frequency or fraction is colored by: the one chosen on this track for the mode, or
+     * the preference
+     */
+    public ColorStopScale getAlleleFrequencyScale() {
+        String colorBy = getColorBy();
+        AbstractColorScale scale = colorBy == null ? null : colorScales.get(colorBy);
+        return scale instanceof ColorStopScale stops ? stops : AlleleFrequencyColors.getScale();
+    }
+
+    /**
+     * @return the color scale chosen on this track for a color-by option (see {@link #getColorBy()}), or null if
+     * none was -- the preference applies
+     */
+    public AbstractColorScale getColorScale(String colorBy) {
+        return colorBy == null ? null : colorScales.get(colorBy);
+    }
+
+    /**
+     * Set the color scale for a color-by option on this track.  Null reverts to the preference.
+     */
+    public void setColorScale(String colorBy, AbstractColorScale scale) {
+        if (scale == null) {
+            colorScales.remove(colorBy);
+        } else {
+            colorScales.put(colorBy, scale);
+        }
+    }
+
+    /**
+     * @return the scale for a numeric INFO attribute: the one chosen on this track, else the scheme's, else null
+     */
+    public AbstractColorScale getAttributeScale(String key) {
+        AbstractColorScale scale = getColorScale(key);
+        return scale != null ? scale : VariantColorSchemes.getScale(key);
+    }
+
+    /**
+     * @return the variant color of the allele frequency bar: chosen on this track, or the preference
+     */
+    public Color getAlleleFrequencyVariantColor() {
+        return altColor != null ? altColor : PreferencesManager.getPreferences().getAsColor(Constants.AF_VAR_COLOR);
+    }
+
+    /**
+     * @return the reference color of the allele frequency bar: chosen on this track, or the preference
+     */
+    public Color getAlleleFrequencyReferenceColor() {
+        return refColor != null ? refColor :
+                PreferencesManager.getPreferences().getAsColor(Constants.AF_REF_COLOR, Globals.DARK_MODE_BLUE);
+    }
+
+    /**
+     * Set the bar's variant color on this track.  Null reverts to the preference.
+     */
+    public void setAlleleFrequencyVariantColor(Color color) {
+        this.altColor = color;
+    }
+
+    /**
+     * Set the bar's reference color on this track.  Null reverts to the preference.
+     */
+    public void setAlleleFrequencyReferenceColor(Color color) {
+        this.refColor = color;
+    }
+
+    /**
+     * The variant band's color-by option, as igv.js's "colorBy" names it: "AF", an INFO attribute, or "none" --
+     * and "AC/AN" for allele fraction, which is not a legal INFO ID, so it cannot collide with one.
+     *
+     * @return the option, or null for a mode "colorBy" cannot express (methylation rate, from legacy sessions)
+     */
+    public String getColorBy() {
+        if (siteColorMode == null) {
+            return null;
+        }
+        return switch (siteColorMode) {
+            case ALLELE_FREQUENCY -> COLOR_BY_ALLELE_FREQUENCY;
+            case ALLELE_FRACTION -> COLOR_BY_ALLELE_FRACTION;
+            case ATTRIBUTE -> colorByAttribute;
+            case NONE -> COLOR_BY_NONE;
+            default -> null;
+        };
+    }
+
+    /**
+     * Set the color-by option -- see {@link #getColorBy()}.  Any other value is an INFO attribute.
+     */
+    public void setColorBy(String colorBy) {
+        switch (colorBy) {
+            case COLOR_BY_ALLELE_FREQUENCY -> siteColorMode = ColorMode.ALLELE_FREQUENCY;
+            case COLOR_BY_ALLELE_FRACTION -> siteColorMode = ColorMode.ALLELE_FRACTION;
+            case COLOR_BY_NONE -> siteColorMode = ColorMode.NONE;
+            default -> setColorByAttribute(colorBy);
+        }
     }
 
     /**
@@ -805,25 +931,34 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * Return the color for a value of an INFO attribute.  Colors the user chose for this track win over colors
-     * from a scheme, which win over colors assigned from the palette -- so importing a scheme takes effect on
-     * tracks that are already open, without discarding the user's own choices.
+     * Return the color for a value of an INFO attribute.  What was chosen on this track -- a scale, or colors --
+     * wins over the preferences (schemes), so a session shows the colors it was saved with.  A value nothing covers
+     * is assigned a color from the palette, which a scheme covering it later replaces.
      */
     public Color getAttributeColor(String key, String value) {
 
-        Color override = getAttributeColorOverride(key, value);
-        if (override != null) {
-            return override;
+        AbstractColorScale trackScale = getColorScale(key);
+        if (trackScale != null) {
+            return scaleColor(trackScale, key, value);
+        }
+
+        Color tableColor = getTableColor(key, value);
+        if (tableColor != null) {
+            return tableColor;
         }
 
         AbstractColorScale scale = VariantColorSchemes.getScale(key);
         if (scale != null) {
-            Double number = numericValue(key, value);
-            return number == null ? NO_ATTRIBUTE_VALUE_COLOR : scale.getColor(number.floatValue());
+            return scaleColor(scale, key, value);
         }
 
         Color color = VariantColorSchemes.getColor(key, value);
         return color != null ? color : assignPaletteColor(key, value);
+    }
+
+    private Color scaleColor(AbstractColorScale scale, String key, String value) {
+        Double number = numericValue(key, value);
+        return number == null ? NO_ATTRIBUTE_VALUE_COLOR : scale.getColor(number.floatValue());
     }
 
     /**
@@ -833,32 +968,30 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * with no scheme entry can come out looking like one that has one, which is worse than an unrelated color.
      */
     private Color assignPaletteColor(String key, String value) {
-
-        PaletteColorTable colorTable = getAttributeColorTable(key);
-
-        if (!colorTable.getColorMap().containsKey(value.toLowerCase())) {
-            // Always store a color chosen here.  Leaving it to the table would undo the distance filtering, as it
-            // takes palette[size] regardless of whether that entry was skipped as too similar.
-            List<Color> used = new ArrayList<>(colorTable.getColorMap().values());
-            used.addAll(VariantColorSchemes.getColors(key));
-            colorTable.put(value, DistinctColors.next(used));
+        synchronized (attributeColorTables) {
+            Map<String, Color> palette = getTable(paletteColorTables, key);
+            Color color = palette.get(value);
+            if (color == null) {
+                List<Color> used = new ArrayList<>(palette.values());
+                used.addAll(getTable(attributeColorTables, key).values());
+                used.addAll(VariantColorSchemes.getColors(key));
+                color = DistinctColors.next(used);
+                palette.put(value, color);
+            }
+            return color;
         }
-        return colorTable.get(value);
     }
 
     /**
-     * Set the color for one value of an INFO attribute on this track.  A null color clears the choice, reverting
-     * to the scheme or palette color.
+     * Set the color for one value of an INFO attribute on this track, or "*" for every value the table does not
+     * list.  A null color removes the entry.
      */
-    public void setAttributeColorOverride(String key, String value, Color color) {
-        synchronized (attributeColorOverrides) {
-            // Case insensitive, but keeping the spelling first used, so a scheme saved from them reads like the file
-            Map<String, Color> overrides = attributeColorOverrides.computeIfAbsent(key,
-                    k -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
+    public void setAttributeColor(String key, String value, Color color) {
+        synchronized (attributeColorTables) {
             if (color == null) {
-                overrides.remove(value);
+                getTable(attributeColorTables, key).remove(value);
             } else {
-                overrides.put(value, color);
+                getTable(attributeColorTables, key).put(value, color);
             }
         }
     }
@@ -866,36 +999,67 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     /**
      * Discard the colors chosen for an INFO attribute on this track, reverting to scheme and palette colors.
      */
-    public void clearAttributeColorOverrides(String key) {
-        synchronized (attributeColorOverrides) {
-            attributeColorOverrides.remove(key);
+    public void clearAttributeColors(String key) {
+        synchronized (attributeColorTables) {
+            attributeColorTables.remove(key);
         }
     }
 
     /**
-     * @return a copy of the colors chosen for values of an INFO attribute, keyed by value as first spelled and
+     * @return a copy of the colors chosen for an INFO attribute on this track, keyed by value as first spelled and
      * looked up case insensitively.  Never null.
      */
-    public Map<String, Color> getAttributeColorOverrides(String key) {
-        synchronized (attributeColorOverrides) {
+    public Map<String, Color> getAttributeColors(String key) {
+        synchronized (attributeColorTables) {
             Map<String, Color> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-            Map<String, Color> overrides = attributeColorOverrides.get(key);
-            if (overrides != null) {
-                copy.putAll(overrides);
+            Map<String, Color> table = attributeColorTables.get(key);
+            if (table != null) {
+                copy.putAll(table);
             }
             return copy;
         }
     }
 
     /**
-     * Look up one chosen color.  This is on the per variant render path, so it reads the map under its lock
-     * rather than copying it -- copying makes a repaint cost variants x overrides once anything is edited.
+     * @return a copy of the colors the track shows for an INFO attribute from its own tables -- assigned from the
+     * palette, overlaid by those chosen -- as written to sessions.  Palette colors a scheme has since replaced are
+     * left out: the scheme is a preference, and a preference is not written.  Never null.
      */
-    private Color getAttributeColorOverride(String key, String value) {
-        synchronized (attributeColorOverrides) {
-            Map<String, Color> overrides = attributeColorOverrides.get(key);
-            return overrides == null ? null : overrides.get(value);
+    public Map<String, Color> getAllAttributeColors(String key) {
+        boolean schemeScale = VariantColorSchemes.getScale(key) != null;
+        synchronized (attributeColorTables) {
+            Map<String, Color> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, Color> palette = paletteColorTables.get(key);
+            if (palette != null && !schemeScale) {
+                palette.forEach((value, color) -> {
+                    if (VariantColorSchemes.getColor(key, value) == null) {
+                        copy.put(value, color);
+                    }
+                });
+            }
+            copy.putAll(getAttributeColors(key));
+            return copy;
         }
+    }
+
+    /**
+     * Look up a chosen color for a value, falling back to the "*" entry.  This is on the per variant render path,
+     * so it reads the map under its lock rather than copying it.
+     */
+    private Color getTableColor(String key, String value) {
+        synchronized (attributeColorTables) {
+            Map<String, Color> table = attributeColorTables.get(key);
+            if (table == null) {
+                return null;
+            }
+            Color color = table.get(value);
+            return color != null ? color : table.get(WILDCARD_VALUE);
+        }
+    }
+
+    // Callers hold the attributeColorTables lock
+    private static Map<String, Color> getTable(Map<String, Map<String, Color>> tables, String key) {
+        return tables.computeIfAbsent(key, k -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
     }
 
     /**
@@ -957,17 +1121,6 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * Return the table of palette colors assigned to values of the given INFO attribute.  It holds only values no
-     * color scheme covers -- those are assigned a color as they are encountered.
-     */
-    public PaletteColorTable getAttributeColorTable(String key) {
-        synchronized (attributeColorTables) {
-            return attributeColorTables.computeIfAbsent(key,
-                    k -> new PaletteColorTable(ColorUtilities.getPalette(DistinctColors.PALETTE)));
-        }
-    }
-
-    /**
      * Assign palette colors to the attribute values of the currently loaded features, in sorted order.  Colors
      * are otherwise assigned in the order values happen to be drawn, which makes them depend on where the user
      * navigated first.  This does not affect values with a predefined color, and values encountered later are
@@ -975,12 +1128,12 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      */
     private void assignColorsForLoadedFeatures(String key) {
 
-        if (VariantColorSchemes.getScale(key) != null) {
+        if (getAttributeScale(key) != null) {
             return;     // Colors come from a continuous scale, nothing to assign
         }
 
         for (String value : getAttributeValues(key)) {      // sorted
-            if (VariantColorSchemes.getColor(key, value) == null) {
+            if (getTableColor(key, value) == null && VariantColorSchemes.getColor(key, value) == null) {
                 assignPaletteColor(key, value);
             }
         }
@@ -1009,7 +1162,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         int first = getCountType(key) == VCFHeaderLineCount.R ? 1 : 0;
 
         // The rarity scale colors a variant by its rarest allele, as the top-level Allele Frequency mode does
-        Aggregation aggregation = VariantColorSchemes.getScale(key) instanceof ColorStopScale ?
+        Aggregation aggregation = getAttributeScale(key) instanceof ColorStopScale ?
                 Aggregation.MIN : getAggregation(key);
         return aggregate(parts, first, aggregation);
     }
@@ -1711,7 +1864,11 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (element.hasAttribute("colorByAttribute")) {
             this.colorByAttribute = element.getAttribute("colorByAttribute");
             if (element.hasAttribute("attributeColorTable")) {
-                getAttributeColorTable(colorByAttribute).restoreMapFromString(element.getAttribute("attributeColorTable"));
+                PaletteColorTable paletteColors = new PaletteColorTable(ColorUtilities.getPalette(DistinctColors.PALETTE));
+                paletteColors.restoreMapFromString(element.getAttribute("attributeColorTable"));
+                synchronized (attributeColorTables) {
+                    getTable(paletteColorTables, colorByAttribute).putAll(paletteColors.getColorMap());
+                }
             }
         }
 
@@ -1770,32 +1927,43 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (genotypeColorMode != ColorMode.GENOTYPE) {
             json.put("genotypeColorMode", genotypeColorMode.toString());
         }
-        if (siteColorMode != null) {
-            json.put("siteColorMode", siteColorMode.toString());
+        // Colors and scales are written for the current color-by option only, and only if chosen on this track --
+        // otherwise the preferences of whoever opens the session apply.  "colorBy", "colorTable", "altColor" and
+        // "refColor" are igv.js properties; "colorByScale" and "alleleFrequencyBars" are not.
+        String colorBy = getColorBy();
+        if (colorBy != null) {
+            json.put("colorBy", colorBy);
+            AbstractColorScale scale = getColorScale(colorBy);
+            if (scale != null) {
+                json.put("colorByScale", scale.asString());
+            }
         }
         if (alleleFrequencyBars != null) {
             json.put("alleleFrequencyBars", alleleFrequencyBars);
         }
-        if (colorByAttribute != null) {
-            json.put("colorByAttribute", colorByAttribute);
-
-            // Colors the user chose.  Shaped like the igv.js "colorTable" track property.
-            Map<String, Color> overrides = getAttributeColorOverrides(colorByAttribute);
-            if (!overrides.isEmpty()) {
+        if (refColor != null) {
+            json.put("refColor", toCssColor(refColor));
+        }
+        if (siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
+            // The whole table, colors assigned from the palette included -- they depend on the order values are
+            // encountered, so they are persisted to be reproducible
+            Map<String, Color> table = getAllAttributeColors(colorByAttribute);
+            if (!table.isEmpty()) {
                 org.json.JSONObject colorTable = new org.json.JSONObject();
-                for (Map.Entry<String, Color> entry : overrides.entrySet()) {
-                    colorTable.put(entry.getKey(), ColorUtilities.colorToString(entry.getValue()));
+                for (Map.Entry<String, Color> entry : table.entrySet()) {
+                    colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
                 }
                 json.put("colorTable", colorTable);
             }
-
-            // Colors IGV assigned from the palette.  Persisted so they are reproducible, they are otherwise
-            // assigned in the order values are encountered.
-            PaletteColorTable paletteColors = attributeColorTables.get(colorByAttribute);
-            if (paletteColors != null && !paletteColors.getColorMap().isEmpty()) {
-                json.put("attributeColorTable", paletteColors.getMapAsString());
-            }
         }
+    }
+
+    /**
+     * igv.js uses colors in "colorTable" and "refColor" as given, so they must be CSS colors -- not the "r,g,b"
+     * form written elsewhere, which igv.js converts only for "color" and "altColor".
+     */
+    private static String toCssColor(Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
 
@@ -1816,23 +1984,25 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             this.genotypeColorMode = ColorMode.valueOf(json.getString("genotypeColorMode"));
         }
 
-        // Restore the attribute and its color table before the color mode, setColorByAttribute would override it
-        if (json.has("colorByAttribute")) {
-            this.colorByAttribute = json.getString("colorByAttribute");
-            if (json.has("attributeColorTable")) {
-                getAttributeColorTable(colorByAttribute).restoreMapFromString(json.getString("attributeColorTable"));
-            }
-            if (json.has("colorTable")) {
-                org.json.JSONObject colorTable = json.getJSONObject("colorTable");
-                for (String value : colorTable.keySet()) {
-                    setAttributeColorOverride(colorByAttribute, value,
-                            ColorUtilities.stringToColor(colorTable.getString(value)));
-                }
+        if (json.has("colorBy")) {
+            setColorBy(json.getString("colorBy"));
+        }
+        if (json.has("colorByScale") && getColorBy() != null) {
+            try {
+                setColorScale(getColorBy(), (AbstractColorScale) ColorScaleFactory.getScaleFromString(json.getString("colorByScale")));
+            } catch (Exception e) {
+                log.error("Unrecognized colorByScale: " + json.getString("colorByScale"));
             }
         }
-
-        if (json.has("siteColorMode")) {
-            this.siteColorMode = ColorMode.valueOf(json.getString("siteColorMode"));
+        // igv.js applies a table without "colorBy" to any attribute -- here, the one the track is colored by
+        if (json.has("colorTable") && siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
+            org.json.JSONObject colorTable = json.getJSONObject("colorTable");
+            for (String value : colorTable.keySet()) {
+                setAttributeColor(colorByAttribute, value, ColorUtilities.stringToColor(colorTable.getString(value)));
+            }
+        }
+        if (json.has("refColor")) {
+            this.refColor = ColorUtilities.stringToColor(json.getString("refColor"));
         }
         if (json.has("alleleFrequencyBars")) {
             this.alleleFrequencyBars = json.getBoolean("alleleFrequencyBars");

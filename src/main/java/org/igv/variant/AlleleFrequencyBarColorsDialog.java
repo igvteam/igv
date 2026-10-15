@@ -15,8 +15,9 @@ import java.awt.event.WindowEvent;
 
 /**
  * Legend and colors for the allele frequency bar display.  The lower part of a variant's bar, in the variant color, is
- * the frequency of the alternate alleles; the rest is the reference color.  The colors are the AF_VAR.COLOR and
- * AF_REF.COLOR preferences (Preferences > Variants), so they apply to all variant tracks.
+ * the frequency of the alternate alleles; the rest is the reference color.  The colors default to the AF_VAR.COLOR
+ * and AF_REF.COLOR preferences (Preferences > Variants).  Changes apply to the track, and with "Update Preferences"
+ * checked are also saved as those preferences.
  */
 public class AlleleFrequencyBarColorsDialog extends JDialog {
 
@@ -28,14 +29,13 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
     private final VariantTrack track;
     private final IGVPreferences prefs = PreferencesManager.getPreferences();
 
-    // The preference values when the dialog opened, or null if the user had not set them -- restored on Cancel
-    private final String originalVariantColor;
-    private final String originalReferenceColor;
+    private final JCheckBox updatePreferencesBox = new JCheckBox("Update Preferences");
 
     private Color variantColor;
     private Color referenceColor;
     private boolean variantColorChanged;
     private boolean referenceColorChanged;
+    private boolean resetToPreferences;
 
     private final ColorSwatch variantSwatch;
     private final ColorSwatch referenceSwatch;
@@ -45,9 +45,8 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
         super(owner, "Allele Frequency Colors", true);
         this.track = track;
 
-        originalVariantColor = prefs.hasExplicitValue(Constants.AF_VAR_COLOR) ? prefs.get(Constants.AF_VAR_COLOR) : null;
-        originalReferenceColor = prefs.hasExplicitValue(Constants.AF_REF_COLOR) ? prefs.get(Constants.AF_REF_COLOR) : null;
-        loadColors();
+        variantColor = track.getAlleleFrequencyVariantColor();
+        referenceColor = track.getAlleleFrequencyReferenceColor();
 
         variantSwatch = new ColorSwatch(variantColor);
         variantSwatch.addColorChangeListener(c -> {
@@ -65,14 +64,6 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
         initComponents();
         pack();
         setLocationRelativeTo(owner);
-    }
-
-    /**
-     * The colors the renderer uses -- see VariantRenderer.updateColors.
-     */
-    private void loadColors() {
-        variantColor = prefs.getAsColor(Constants.AF_VAR_COLOR);
-        referenceColor = prefs.getAsColor(Constants.AF_REF_COLOR, Globals.DARK_MODE_BLUE);
     }
 
     private void initComponents() {
@@ -96,7 +87,7 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
                 "At a site with more than one alternate allele, the alleles are added.<br>" +
                 "A variant with no value, or a value of 0, is drawn in the track color, " +
                 "and a gVCF reference block in gray.<br>" +
-                "Filtered variants are drawn faded.  These colors apply to all variant tracks."), BorderLayout.NORTH);
+                "Filtered variants are drawn faded.  Changes apply to this track."), BorderLayout.NORTH);
 
         JPanel swatches = new JPanel();
         swatches.setLayout(new BoxLayout(swatches, BoxLayout.Y_AXIS));
@@ -108,10 +99,15 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
         center.add(swatches, BorderLayout.CENTER);
         content.add(center, BorderLayout.CENTER);
 
-        JButton resetButton = new JButton("Reset to Defaults");
-        resetButton.addActionListener(e -> resetToDefaults());
+        JButton resetButton = new JButton("Reset to Preferences");
+        resetButton.setToolTipText("Show the colors from preferences -- with \"OK\", the track follows them again");
+        resetButton.addActionListener(e -> resetToPreferences());
+        // There is always a preference -- the default colors if the user never set them -- so it is not replaced
+        // unless asked
+        updatePreferencesBox.setToolTipText("Also save these colors as the preference for all variant tracks");
         JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         leftButtons.add(resetButton);
+        leftButtons.add(updatePreferencesBox);
 
         JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> save());
@@ -137,43 +133,48 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
     }
 
     /**
-     * Remove the user's colors so the defaults show.  Cancel still restores the colors the dialog opened with.
+     * Show the preference colors.  With "OK", and no edit since, the track follows the preferences again.
      */
-    private void resetToDefaults() {
-        prefs.remove(Constants.AF_VAR_COLOR);
-        prefs.remove(Constants.AF_REF_COLOR);
-        loadColors();
+    private void resetToPreferences() {
+        variantColor = prefs.getAsColor(Constants.AF_VAR_COLOR);
+        referenceColor = prefs.getAsColor(Constants.AF_REF_COLOR, Globals.DARK_MODE_BLUE);
         variantColorChanged = false;
         referenceColorChanged = false;
+        resetToPreferences = true;
         variantSwatch.setSelectedColor(variantColor);
         referenceSwatch.setSelectedColor(referenceColor);
         sampleBars.repaint();
     }
 
     private void save() {
+
+        if (updatePreferencesBox.isSelected()) {
+            if (variantColorChanged) {
+                prefs.put(Constants.AF_VAR_COLOR, ColorUtilities.colorToString(variantColor));
+            }
+            if (referenceColorChanged) {
+                prefs.put(Constants.AF_REF_COLOR, ColorUtilities.colorToString(referenceColor));
+            }
+        }
+
+        // The track keeps a color it was given, edited here or before, unless reset to the preference
+        if (resetToPreferences) {
+            track.setAlleleFrequencyVariantColor(null);
+            track.setAlleleFrequencyReferenceColor(null);
+        }
         if (variantColorChanged) {
-            prefs.put(Constants.AF_VAR_COLOR, ColorUtilities.colorToString(variantColor));
+            track.setAlleleFrequencyVariantColor(variantColor);
         }
         if (referenceColorChanged) {
-            prefs.put(Constants.AF_REF_COLOR, ColorUtilities.colorToString(referenceColor));
+            track.setAlleleFrequencyReferenceColor(referenceColor);
         }
+
         repaintTracks();
         dispose();
     }
 
     private void cancel() {
-        restore(Constants.AF_VAR_COLOR, originalVariantColor);
-        restore(Constants.AF_REF_COLOR, originalReferenceColor);
-        repaintTracks();
         dispose();
-    }
-
-    private void restore(String key, String original) {
-        if (original == null) {
-            prefs.remove(key);
-        } else {
-            prefs.put(key, original);
-        }
     }
 
     private static void repaintTracks() {

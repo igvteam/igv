@@ -1,5 +1,6 @@
 package org.igv.variant;
 
+import org.igv.renderer.AbstractColorScale;
 import org.igv.renderer.ColorStopScale;
 import org.igv.ui.IGV;
 import org.igv.ui.color.ColorSwatch;
@@ -14,9 +15,16 @@ import java.util.List;
 
 /**
  * Edits the color stops used to color variants by allele frequency, and serves as their legend.  Frequencies are
- * shown as percentages.  Changes apply to all variant tracks and are saved as a preference.
+ * shown as percentages.  Changes apply to the track, for one color-by option -- an allele frequency mode, or an
+ * allele frequency INFO field -- and, with "Update Preferences" checked, are also saved as the preference that
+ * applies to all variant tracks.
  */
 public class AlleleFrequencyColorsDialog extends JDialog {
+
+    private final VariantTrack track;
+    private final String colorBy;
+    private final JCheckBox updatePreferencesBox = new JCheckBox("Update Preferences");
+    private boolean resetToPreferences;
 
     private final List<StopRow> rows = new ArrayList<>();
     private final JPanel stopsPanel = new JPanel();
@@ -27,11 +35,17 @@ public class AlleleFrequencyColorsDialog extends JDialog {
         Color color;
     }
 
-    public AlleleFrequencyColorsDialog(Frame owner) {
+    /**
+     * @param colorBy the color-by option the scale is for -- see {@link VariantTrack#getColorBy()}
+     */
+    public AlleleFrequencyColorsDialog(Frame owner, VariantTrack track, String colorBy) {
         super(owner, "Allele Frequency Colors", true);
+        this.track = track;
+        this.colorBy = colorBy;
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         initComponents();
-        load(AlleleFrequencyColors.getScale());
+        AbstractColorScale trackScale = track.getColorScale(colorBy);
+        load(trackScale instanceof ColorStopScale stops ? stops : AlleleFrequencyColors.getScale());
         pack();
         setLocationRelativeTo(owner);
     }
@@ -43,7 +57,8 @@ public class AlleleFrequencyColorsDialog extends JDialog {
         setContentPane(content);
 
         content.add(new JLabel("<html>Variants are colored by allele frequency, blended on a log scale between stops.<br>" +
-                "Variants with no frequency take the color of the lowest stop."), BorderLayout.NORTH);
+                "Variants with no frequency take the color of the lowest stop.  Changes apply to this track."),
+                BorderLayout.NORTH);
 
         stopsPanel.setLayout(new BoxLayout(stopsPanel, BoxLayout.Y_AXIS));
         JPanel center = new JPanel(new BorderLayout(0, 8));
@@ -53,11 +68,19 @@ public class AlleleFrequencyColorsDialog extends JDialog {
 
         JButton addButton = new JButton("Add Stop");
         addButton.addActionListener(e -> addStop());
-        JButton resetButton = new JButton("Reset to Defaults");
-        resetButton.addActionListener(e -> load(AlleleFrequencyColors.DEFAULT_SCALE));
+        JButton resetButton = new JButton("Reset to Preferences");
+        resetButton.setToolTipText("Show the colors from preferences -- with \"OK\", the track follows them again");
+        resetButton.addActionListener(e -> {
+            load(AlleleFrequencyColors.getScale());
+            resetToPreferences = true;
+        });
+        // There is always a preference -- the default scale if the user never set one -- so it is not replaced
+        // unless asked
+        updatePreferencesBox.setToolTipText("Also save these colors as the preference for all variant tracks");
         JPanel leftButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         leftButtons.add(addButton);
         leftButtons.add(resetButton);
+        leftButtons.add(updatePreferencesBox);
 
         JButton okButton = new JButton("OK");
         okButton.addActionListener(e -> save());
@@ -178,7 +201,14 @@ public class AlleleFrequencyColorsDialog extends JDialog {
                     "Allele Frequency Colors", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        AlleleFrequencyColors.setScale(scale);
+        if (updatePreferencesBox.isSelected()) {
+            AlleleFrequencyColors.setScale(scale);
+        }
+        // After "Reset to Preferences", and no edit since, the track follows the preference again rather than
+        // keeping a copy of it
+        boolean followPreference = resetToPreferences
+                && scale.asString().equals(AlleleFrequencyColors.getScale().asString());
+        track.setColorScale(colorBy, followPreference ? null : scale);
         if (IGV.hasInstance()) {
             IGV.getInstance().repaint();
         }

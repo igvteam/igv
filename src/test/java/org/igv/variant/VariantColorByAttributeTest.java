@@ -118,8 +118,7 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     public void testMultiValuedAttribute() {
         track.setColorByAttribute("CLNREVSTAT");
         colorAt(0);
-        assertTrue(track.getAttributeColorTable("CLNREVSTAT").getKeys()
-                .contains("criteria_provided,_single_submitter"));
+        assertTrue(track.getAllAttributeColors("CLNREVSTAT").containsKey("criteria_provided,_single_submitter"));
     }
 
     /**
@@ -133,15 +132,15 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
 
         JSONObject json = new JSONObject();
         track.marshalJSON(json);
-        assertEquals("CLNSIG", json.getString("colorByAttribute"));
-        assertEquals("ATTRIBUTE", json.getString("siteColorMode"));
+        assertEquals("CLNSIG", json.getString("colorBy"));
+        assertFalse(json.has("siteColorMode"));
 
         VariantTrack restored = new VariantTrack();
         restored.unmarshalJSON(json);
         assertEquals("CLNSIG", restored.getColorByAttribute());
         assertEquals(VariantTrack.ColorMode.ATTRIBUTE, restored.getSiteColorMode());
         assertEquals(drugResponse, restored.getAttributeColor((Variant) variants.get(5)));
-        assertFalse(json.getString("attributeColorTable").isEmpty());
+        assertFalse(json.getJSONObject("colorTable").isEmpty());
     }
 
     /**
@@ -226,14 +225,14 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
     @Test
     public void testOverrideKeepsSpelling() {
 
-        track.setAttributeColorOverride("CLNSIG", "Likely_pathogenic", new Color(1, 2, 3));
-        track.setAttributeColorOverride("CLNSIG", "LIKELY_PATHOGENIC", new Color(4, 5, 6));
+        track.setAttributeColor("CLNSIG", "Likely_pathogenic", new Color(1, 2, 3));
+        track.setAttributeColor("CLNSIG", "LIKELY_PATHOGENIC", new Color(4, 5, 6));
 
-        assertEquals(java.util.Set.of("Likely_pathogenic"), track.getAttributeColorOverrides("CLNSIG").keySet());
+        assertEquals(java.util.Set.of("Likely_pathogenic"), track.getAttributeColors("CLNSIG").keySet());
         assertEquals(new Color(4, 5, 6), track.getAttributeColor("CLNSIG", "likely_pathogenic"));
 
-        track.setAttributeColorOverride("CLNSIG", "likely_Pathogenic", null);
-        assertTrue(track.getAttributeColorOverrides("CLNSIG").isEmpty());
+        track.setAttributeColor("CLNSIG", "likely_Pathogenic", null);
+        assertTrue(track.getAttributeColors("CLNSIG").isEmpty());
     }
 
     private static double distance(Color c1, Color c2) {
@@ -253,7 +252,7 @@ public class VariantColorByAttributeTest extends AbstractHeadlessTest {
 
         assertEquals("CLNREVSTAT=. must read as missing", Color.gray, colorAt(1));
         assertEquals("A record with no CLNREVSTAT at all is missing too", Color.gray, colorAt(2));
-        assertFalse(track.getAttributeColorTable("CLNREVSTAT").getColorMap().containsKey("."));
+        assertFalse(track.getAllAttributeColors("CLNREVSTAT").containsKey("."));
     }
 
     /**

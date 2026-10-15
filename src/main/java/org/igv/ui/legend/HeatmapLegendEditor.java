@@ -52,6 +52,17 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     }
 
     /**
+     * Add a check box beside the buttons, for an option the caller reads after the dialog closes.
+     */
+    public JCheckBox addCheckBox(String label, boolean selected) {
+        JCheckBox checkBox = new JCheckBox(label, selected);
+        buttonPanel.add(checkBox, 0);
+        pack();
+        setLocationRelativeTo(getOwner());
+        return checkBox;
+    }
+
+    /**
      * Show the editor for a scale, modal over the window holding {@code owner}.
      *
      * @return the scale the user accepted, or null if they cancelled
