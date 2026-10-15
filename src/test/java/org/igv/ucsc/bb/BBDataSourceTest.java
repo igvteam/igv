@@ -52,7 +52,7 @@ public class BBDataSourceTest {
         int end = 72464687;
 
         // Expected values -- from manual inspection at igv.org/app
-        float [] expectedValues =  {1.0f, 1.96f, 3.0f, 3.0f, 4.16f, 6.0f};
+        float[] expectedValues = {1.0f, 1.96f, 3.0f, 3.0f, 4.16f, 6.0f};
 
         Genome genome = TestUtils.mockUCSCGenome();
         BBFile bbFile = new BBFile(url, genome);
@@ -61,7 +61,7 @@ public class BBDataSourceTest {
         DataTile data = bbDataSource.getRawData(chr, start, end);
         assertNotNull(data);
         assertTrue(data.getValues().length == expectedValues.length);
-        for(int i=0; i<expectedValues.length; i++) {
+        for (int i = 0; i < expectedValues.length; i++) {
             assertEquals(expectedValues[i], data.getValues()[i], 0.000000001f);
         }
 
@@ -90,7 +90,7 @@ public class BBDataSourceTest {
         assertEquals(6000, scores.get(0).getEnd());
         assertEquals(100.0f, scores.get(0).getScore(), 0);
     }
-}
+
 
     /*
      * Test a big-endian bigwig.  It holds 20 intervals chr1:i*100-(i*100+50) with value i+1.
