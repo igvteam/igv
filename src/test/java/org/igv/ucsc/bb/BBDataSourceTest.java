@@ -52,7 +52,7 @@ public class BBDataSourceTest {
         int end = 72464687;
 
         // Expected values -- from manual inspection at igv.org/app
-        float [] expectedValues =  {1.0f, 1.96f, 3.0f, 3.0f, 4.16f, 6.0f};
+        float[] expectedValues = {1.0f, 1.96f, 3.0f, 3.0f, 4.16f, 6.0f};
 
         Genome genome = TestUtils.mockUCSCGenome();
         BBFile bbFile = new BBFile(url, genome);
@@ -61,13 +61,38 @@ public class BBDataSourceTest {
         DataTile data = bbDataSource.getRawData(chr, start, end);
         assertNotNull(data);
         assertTrue(data.getValues().length == expectedValues.length);
-        for(int i=0; i<expectedValues.length; i++) {
+        for (int i = 0; i < expectedValues.length; i++) {
             assertEquals(expectedValues[i], data.getValues()[i], 0.000000001f);
         }
 
     }
 
     /**
+     * Test zoom data from a zoom block shared by 2 chromosomes.  bedGraphToBigWig packs zoom records into blocks across
+     * chromosome boundaries, here chr1 (id 0) and chr2 (id 1).  Each chromosome should get only its own record.
+     */
+    @Test
+    public void testZoomBlockSharedByChromosomes() throws IOException {
+
+        String path = TestUtils.DATA_DIR + "bb/sharedZoomBlock.bw";
+        Genome genome = TestUtils.mockUCSCGenome();
+        BBFile bbFile = new BBFile(path, genome);
+        BBDataSource bbDataSource = new BBDataSource(bbFile, genome);
+        List<LocusScore> scores = bbDataSource.getPrecomputedSummaryScores("chr1", 0, Integer.MAX_VALUE, 0);
+        assertEquals(1, scores.size());
+        assertEquals(0, scores.get(0).getStart());
+        assertEquals(1000, scores.get(0).getEnd());
+        assertEquals(1.0f, scores.get(0).getScore(), 0);
+
+        scores = bbDataSource.getPrecomputedSummaryScores("chr2", 0, Integer.MAX_VALUE, 0);
+        assertEquals(1, scores.size());
+        assertEquals(5000, scores.get(0).getStart());
+        assertEquals(6000, scores.get(0).getEnd());
+        assertEquals(100.0f, scores.get(0).getScore(), 0);
+    }
+
+
+    /*
      * Test a big-endian bigwig.  It holds 20 intervals chr1:i*100-(i*100+50) with value i+1.
      */
     @Test
@@ -77,7 +102,6 @@ public class BBDataSourceTest {
         Genome genome = TestUtils.mockUCSCGenome();
         BBFile bbFile = new BBFile(path, genome);
         BBDataSource bbDataSource = new BBDataSource(bbFile, genome);
-
         DataTile data = bbDataSource.getRawData("chr1", 0, 2000);
         assertEquals(20, data.getValues().length);
         for (int i = 0; i < 20; i++) {
