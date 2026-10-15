@@ -750,7 +750,7 @@ public class BBFile {
 
     UnsignedByteBuffer loadBinaryBuffer(String path, ByteOrder order, long start, int size) throws IOException {
         byte[] bytes = getBytes(start, size);
-        return UnsignedByteBufferImpl.wrap(bytes, byteOrder);
+        return UnsignedByteBufferImpl.wrap(bytes, order);
     }
 
     private byte[] getBytes(long start, int size) throws IOException {
