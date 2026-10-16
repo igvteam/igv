@@ -29,33 +29,37 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Edits a saved color scheme -- every attribute it covers, not just the one a track happens to be colored by.
- * Reached from the Variants tab of the preferences editor, so a scheme can be adjusted without loading a file
- * that uses it.
+ * Edits the saved colors for one INFO attribute.  Reached from the Variants tab of the preferences editor, so
+ * they can be adjusted without loading a file that uses the attribute.
  * <p>
- * Editing a scheme shipped with IGV saves a copy the user owns, which then shadows the original.
+ * Editing colors shipped with IGV saves a copy the user owns, which then replaces the original.
  */
 public class VariantColorSchemeEditor extends JDialog {
 
     private static Logger log = LogManager.getLogger(VariantColorSchemeEditor.class);
 
     private final VariantColorScheme scheme;
+    /**
+     * Taken from the scheme as opened: the working copy no longer knows its attribute once every row is removed.
+     */
+    private final String key;
     private final JPanel contentPanel = new JPanel();
     private boolean saved = false;
 
     public VariantColorSchemeEditor(Window owner, VariantColorScheme scheme) {
 
-        super(owner, "Edit " + scheme.getName(), ModalityType.APPLICATION_MODAL);
+        super(owner, "Edit " + scheme.getKey() + " colors", ModalityType.APPLICATION_MODAL);
         // Work on a copy -- the schemes handed out are the live ones, so editing in place would leave changes
         // behind when the user cancels
         this.scheme = scheme.copy();
+        this.key = scheme.getKey();
 
         JPanel content = new JPanel(new BorderLayout(0, 8));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel description = new JLabel(scheme.isBuiltIn()
-                ? "<html>This scheme ships with IGV.  Saving writes your own copy, which takes precedence over it."
-                : "<html>Colors for the values of VCF INFO attributes.");
+                ? "<html>These colors ship with IGV.  Saving writes your own copy, which replaces them."
+                : "<html>Colors for the values of the VCF INFO attribute " + scheme.getKey() + ".");
         content.add(description, BorderLayout.NORTH);
 
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -92,20 +96,10 @@ public class VariantColorSchemeEditor extends JDialog {
 
         contentPanel.removeAll();
 
-        for (String key : scheme.getKeys()) {
-
-            JLabel heading = new JLabel(key);
-            heading.setFont(heading.getFont().deriveFont(Font.BOLD));
-            heading.setBorder(BorderFactory.createEmptyBorder(8, 2, 2, 2));
-            heading.setAlignmentX(LEFT_ALIGNMENT);
-            contentPanel.add(heading);
-
-            AbstractColorScale scale = scheme.getScale(key);
-            if (scale instanceof ContinuousColorScale) {
-                contentPanel.add(createScalePanel(key, (ContinuousColorScale) scale));
-                continue;
-            }
-
+        AbstractColorScale scale = scheme.getScale(key);
+        if (scale instanceof ContinuousColorScale) {
+            contentPanel.add(createScalePanel(key, (ContinuousColorScale) scale));
+        } else {
             if (scheme.isCategorical(key)) {
                 contentPanel.add(note("Values are categories, not a range."));
             }
@@ -231,10 +225,6 @@ public class VariantColorSchemeEditor extends JDialog {
 
     private void save() {
         try {
-            if (scheme.isBuiltIn()) {
-                // Cannot write to a scheme on the classpath -- save the user their own copy
-                scheme.setName(scheme.getName() + " (edited)");
-            }
             VariantColorSchemes.save(scheme);
             saved = true;
             if (IGV.hasInstance()) {

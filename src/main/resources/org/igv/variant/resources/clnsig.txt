@@ -1,11 +1,12 @@
 #name=ClinVar significance
 #description=Clinical significance, benign (blue) through pathogenic (red)
 #
-# Colors for the values of one VCF INFO attribute.  Tab delimited: INFO key, value, color.
-# A value of "*" is the color for values not listed.  A value of the form "min:max" defines a
-# continuous scale over a numeric attribute, shading from the first color to the second.
+# Colors for the values of the VCF INFO attribute CLNSIG.  Tab delimited: INFO key, value, color.
+# A value of "*" is the color for values not listed.
 #
-# Copy this file, edit it, and import it from View > Preferences > Variants.
+# Copy this file, edit it, and import it from View > Preferences > Variants.  IGV reads an imported
+# file once and keeps its own copy, one file per INFO attribute, so later edits to the original
+# have no effect until it is imported again.
 #
 #colors
 CLNSIG	Pathogenic	202,0,32

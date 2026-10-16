@@ -80,7 +80,7 @@ public class VariantColorLegendDialog extends JDialog {
 
         // Checked when there is no preference for the attribute yet, so the first colors chosen become the default.
         // An existing preference is not replaced unless asked.
-        updatePreferencesBox.setSelected(getSchemeForColors() == null);
+        updatePreferencesBox.setSelected(VariantColorSchemes.getScheme(infoKey) == null);
         updatePreferencesBox.setToolTipText("Also save these colors so they apply to every VCF with this attribute");
 
         JButton okButton = new JButton("OK");
@@ -227,10 +227,9 @@ public class VariantColorLegendDialog extends JDialog {
         if (trackColors.containsKey(value)) {
             return "(this track)";
         }
-        for (VariantColorScheme scheme : VariantColorSchemes.getSchemes()) {
-            if (scheme.getColor(infoKey, value) != null) {
-                return "(" + scheme.getName() + ")";
-            }
+        VariantColorScheme scheme = VariantColorSchemes.getScheme(infoKey);
+        if (scheme != null && scheme.getColor(infoKey, value) != null) {
+            return "(" + scheme.getName() + ")";
         }
         return "(assigned)";
     }
@@ -290,22 +289,18 @@ public class VariantColorLegendDialog extends JDialog {
     }
 
     /**
-     * Save the edits into the scheme the colors came from, adding to or replacing its entries, so the change
-     * applies wherever that scheme did.  A scheme shipped with IGV cannot be written, so it is copied under a
-     * default name, which then shadows it.  Updating the existing scheme rather than writing a new one keeps what
-     * it holds beyond these edits -- colors for other values, a categorical declaration.
+     * Save the edits into the scheme for the attribute, adding to or replacing its entries, so the change applies
+     * to every track with the attribute.  A scheme shipped with IGV cannot be written, so a copy is saved, which
+     * then replaces it.  Updating the existing scheme rather than writing a new one keeps what it holds beyond
+     * these edits -- colors for other values, a categorical declaration.
      *
      * @return true if saved
      */
     private boolean saveToPreferences() {
 
         VariantColorScheme existing = pendingScale != null
-                ? VariantColorSchemes.getSchemeForScale(infoKey) : getSchemeForColors();
-        String defaultName = infoKey + (pendingScale != null ? " colorscale" : " colors");
-        VariantColorScheme updated = existing == null ? new VariantColorScheme(defaultName) : existing.copy();
-        if (updated.isBuiltIn()) {
-            updated.setName(defaultName);
-        }
+                ? VariantColorSchemes.getSchemeForScale(infoKey) : VariantColorSchemes.getScheme(infoKey);
+        VariantColorScheme updated = existing == null ? new VariantColorScheme(infoKey) : existing.copy();
 
         if (pendingScale != null) {
             updated.setScale(infoKey, pendingScale);
@@ -325,19 +320,6 @@ public class VariantColorLegendDialog extends JDialog {
             MessageUtils.showMessage("Error saving colors: " + e.getMessage());
             return false;
         }
-    }
-
-    /**
-     * The highest priority scheme assigning colors to values of this attribute, or null.
-     */
-    private VariantColorScheme getSchemeForColors() {
-        String key = infoKey.toUpperCase();
-        for (VariantColorScheme scheme : VariantColorSchemes.getSchemes()) {
-            if (scheme.covers(key)) {
-                return scheme;
-            }
-        }
-        return null;
     }
 
     private void repaintTrack() {

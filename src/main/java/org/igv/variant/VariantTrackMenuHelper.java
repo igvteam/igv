@@ -297,7 +297,7 @@ public class VariantTrackMenuHelper {
         track.setColorScale(infoKey, editor.getColorScheme());
         if (updatePreferences.isSelected()) {
             try {
-                VariantColorSchemes.saveScale(infoKey + " colorscale", infoKey, editor.getColorScheme());
+                VariantColorSchemes.saveScale(infoKey, editor.getColorScheme());
             } catch (Exception e) {
                 log.error("Error saving color scale for " + infoKey, e);
                 MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
@@ -356,7 +356,7 @@ public class VariantTrackMenuHelper {
 
         try {
             // The declaration persists the answer even when no values are loaded to color
-            VariantColorSchemes.saveScheme(infoKey + " colors", infoKey, colors, true);
+            VariantColorSchemes.saveScheme(infoKey, colors, true);
             return true;
         } catch (Exception e) {
             log.error("Error saving colors for " + infoKey, e);

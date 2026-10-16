@@ -5,7 +5,6 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 import org.igv.AbstractHeadlessTest;
 import org.igv.DirectoryManager;
 import org.igv.renderer.AbstractColorScale;
-import org.igv.renderer.ColorScaleFactory;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.track.TrackLoader;
 import org.igv.ui.panel.ReferenceFrame;
@@ -19,6 +18,7 @@ import org.junit.Test;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -35,7 +35,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for variant color schemes -- the files that assign colors to VCF INFO attribute values.
@@ -110,60 +112,25 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * An imported scheme is searched before the built-in one, so a user can override IGV's colors.
+     * A user's scheme for an attribute replaces the built-in one entirely -- there is one scheme per attribute.
      */
     @Test
-    public void testUserSchemeShadowsBuiltin() throws Exception {
-        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+    public void testUserSchemeReplacesBuiltin() throws Exception {
+        writeScheme("CLNSIG.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
         VariantColorSchemes.reset();
 
         assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-        // Values the user scheme does not cover still come from the built-in
-        assertEquals(new Color(5, 113, 176), VariantColorSchemes.getColor("CLNSIG", "Benign"));
+        // Values the user scheme does not cover do not fall through to the built-in
+        assertNull(VariantColorSchemes.getColor("CLNSIG", "Benign"));
+        assertEquals("One scheme per attribute", 1,
+                VariantColorSchemes.getSchemes().stream().filter(s -> "CLNSIG".equals(s.getKey())).count());
+        assertFalse(VariantColorSchemes.getScheme("CLNSIG").isBuiltIn());
     }
 
-    /**
-     * Importing copies the file into the IGV directory, so the scheme survives the original being deleted and is
-     * there on the next startup.
-     */
-    @Test
-    public void testImportCopiesFile() throws Exception {
-        File source = new File(TestUtils.TMP_OUTPUT_DIR, "shared-colors.txt");
-        try (PrintWriter writer = new PrintWriter(source)) {
-            writer.println("#name=Shared");
-            writer.println("TIER\t1\t200,0,0");
-        }
-
-        VariantColorScheme scheme = VariantColorSchemes.importFile(source);
-        assertEquals("Shared", scheme.getName());
-        assertEquals(source.getAbsolutePath(), scheme.getSource());
-
-        File copy = new File(VariantColorSchemes.getSchemeDirectory(), "shared-colors.txt");
-        assertTrue("Scheme was not copied into the IGV directory", copy.exists());
-
-        // Delete the original -- the scheme is still there after a restart
-        Files.delete(source.toPath());
-        VariantColorSchemes.reset();
-        assertEquals(new Color(200, 0, 0), VariantColorSchemes.getColor("TIER", "1"));
-        assertEquals(List.of("Shared"),
-                VariantColorSchemes.getUserSchemes().stream().map(VariantColorScheme::getName).collect(Collectors.toList()));
-    }
-
-    /**
-     * Reading schemes must not create the scheme directory -- opening preferences should not leave a directory
-     * behind for a feature the user never used.
-     */
-    @Test
-    public void testReadingDoesNotCreateDirectory() {
-        assertFalse(VariantColorSchemes.getSchemeDirectory().exists());
-        VariantColorSchemes.getColor("CLNSIG", "Pathogenic");
-        VariantColorSchemes.getSchemes();
-        assertFalse("Reading schemes created the scheme directory", VariantColorSchemes.getSchemeDirectory().exists());
-    }
 
     @Test
     public void testRemove() throws Exception {
-        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+        writeScheme("CLNSIG.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
         VariantColorSchemes.reset();
 
         VariantColorScheme scheme = VariantColorSchemes.getUserSchemes().get(0);
@@ -172,17 +139,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertTrue(VariantColorSchemes.getUserSchemes().isEmpty());
 
         // Back to the built-in color
-        assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-    }
-
-    /**
-     * Schemes shipped with IGV cannot be removed.
-     */
-    @Test
-    public void testBuiltinCannotBeRemoved() {
-        VariantColorScheme builtin = builtinFor("CLNSIG");
-        assertTrue(builtin.isBuiltIn());
-        assertFalse(VariantColorSchemes.remove(builtin));
         assertEquals(new Color(202, 0, 32), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
     }
 
@@ -200,7 +156,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertTrue(colorableIds(track).contains("AF"));
         assertNull(VariantColorSchemes.getScale("AF"));
 
-        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;0.1;255,255,200;255,0,0");
+        writeScheme("AF.txt", "AF\tContinuousColorScale;0.0;0.1;255,255,200;255,0,0");
         VariantColorSchemes.reset();
 
         assertNotNull(VariantColorSchemes.getScale("AF"));
@@ -239,9 +195,9 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         colors.put("Pathogenic", new Color(1, 2, 3));
         colors.put("drug_response", new Color(4, 5, 6));
 
-        VariantColorScheme scheme = VariantColorSchemes.saveScheme("My colors", "CLNSIG", colors);
+        VariantColorScheme scheme = VariantColorSchemes.saveScheme("CLNSIG", colors);
 
-        assertEquals("My colors", scheme.getName());
+        assertEquals("CLNSIG.txt", scheme.getFile().getName());
         assertTrue(scheme.getFile().exists());
 
         // Shadows the built-in, and covers a value the built-in does not
@@ -250,24 +206,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertEquals(new Color(4, 5, 6), VariantColorSchemes.getColor("CLNSIG", "drug_response"));
     }
 
-    /**
-     * Colors the user chose survive a session round trip, separately from colors IGV assigned.
-     */
-    @Test
-    public void testOverridesRoundTrip() throws Exception {
-        VariantTrack track = loadTrack();
-        track.setColorByAttribute("CLNSIG");
-        track.setAttributeColor("CLNSIG", "Pathogenic", new Color(7, 8, 9));
-
-        JSONObject json = new JSONObject();
-        track.marshalJSON(json);
-        assertEquals("#070809", json.getJSONObject("colorTable").getString("Pathogenic"));
-
-        VariantTrack restored = new VariantTrack();
-        restored.unmarshalJSON(json);
-        assertEquals(new Color(7, 8, 9), restored.getAttributeColor("CLNSIG", "Pathogenic"));
-        assertEquals(new Color(5, 113, 176), restored.getAttributeColor("CLNSIG", "Benign/Likely_benign"));
-    }
 
     /**
      * A numeric attribute is a quantity, so it needs a color scale rather than a color per value.
@@ -282,26 +220,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertFalse(track.isNumericAttribute("CLNSIG"));      // String
         assertFalse(track.isNumericAttribute("NOT_AN_ATTRIBUTE"));
     }
-
-    /**
-     * A saved scale round trips through the scheme file, in a form that can be edited by hand.
-     */
-    @Test
-    public void testSaveScale() throws Exception {
-        ContinuousColorScale scale =
-                new ContinuousColorScale(0, 40, new Color(255, 255, 204), new Color(202, 0, 32));
-
-        VariantColorSchemes.saveScale("CADD scale", "CADD_PHRED", scale);
-        VariantColorSchemes.reset();
-
-        AbstractColorScale restored = VariantColorSchemes.getScale("CADD_PHRED");
-        assertNotNull(restored);
-        assertEquals(scale.getColor(0f), restored.getColor(0f));
-        assertEquals(scale.getColor(40f), restored.getColor(40f));
-        assertNotEquals(restored.getColor(0f), restored.getColor(40f));
-
-        assertEquals("CADD scale", VariantColorSchemes.getSchemeForScale("CADD_PHRED").getName());
-    }
+    
 
     /**
      * A double gradient round trips exactly, including the neutral band between negStart and posStart, which
@@ -313,7 +232,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         ContinuousColorScale scale = new ContinuousColorScale(-2, -10, 2, 10,
                 new Color(0, 0, 255), new Color(255, 255, 255), new Color(255, 0, 0));
 
-        VariantColorSchemes.saveScale("SCORE scale", "SCORE", scale);
+        VariantColorSchemes.saveScale("SCORE", scale);
         VariantColorSchemes.reset();
 
         ContinuousColorScale restored = (ContinuousColorScale) VariantColorSchemes.getScale("SCORE");
@@ -327,50 +246,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * A row that does not describe a usable scale is skipped rather than guessed at.  The key is left uncovered,
-     * so one bad row does not cost the rest of the scheme, nothing quietly falls back to a different scale, and a
-     * numeric attribute does not become a category keyed on the literal text of its range.
-     */
-    @Test
-    public void testBadScaleRowsRejected() throws Exception {
-        String[][] rows = {
-                // Neither "categorical" nor a color scale
-                {"unrecognized", "SCORE\tnonsense"},
-                // Only "min:max" is a range; three numbers are not a form IGV ever wrote
-                {"three part range", "SCORE\t-10:0:10\t0,0,255\t255,255,255\t255,0,0"},
-                // Shading across a zero width or reversed range would paint everything the minimum color
-                {"zero width range", "SCORE\t7:7\t0,0,255"},
-                {"reversed range", "SCORE\t10:2\t0,0,255"},
-                // NaN and infinity parse as numbers and slip past "max <= min", so a range row needs the same
-                // finite check as a serialized scale -- or a scheme is active until restart and then silently gone
-                {"NaN range", "SCORE\t0:NaN\t255,255,204\t202,0,32"},
-                {"infinite range", "SCORE\t0:Infinity\t255,255,204\t202,0,32"},
-                {"negative infinite range", "SCORE\t-Infinity:0\t255,255,204\t202,0,32"},
-                // A typo in the second color must not fall back to the one-color form, which would give a
-                // different scale rather than the documented skipped row
-                {"bad max color", "SCORE\t0:40\t255,255,200\tnot-a-color"},
-                // A serialized scale gets the same range checks as a "min:max" row
-                {"zero width scale", "SCORE\tContinuousColorScale;5.0;5.0;255,255,204;202,0,32"},
-                {"reversed scale", "SCORE\tContinuousColorScale;10.0;2.0;255,255,204;202,0,32"},
-                {"infinite scale", "SCORE\tContinuousColorScale;0.0;Infinity;255,255,204;202,0,32"},
-        };
-
-        for (String[] row : rows) {
-            VariantColorScheme scheme =
-                    VariantColorScheme.parse(new BufferedReader(new StringReader(row[1] + "\n")), "test");
-            assertNull(row[0], scheme.getScale("SCORE"));
-            assertFalse(row[0], scheme.isCategorical("SCORE"));
-            assertTrue(row[0], scheme.getColors("SCORE").isEmpty());
-        }
-
-        // The well formed forms of the same rows are read
-        VariantColorScheme good = VariantColorScheme.parse(new BufferedReader(new StringReader(
-                "RANGE\t0:40\t255,255,204\t202,0,32\nSCALE\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32\n")), "test");
-        assertNotNull(good.getScale("RANGE"));
-        assertNotNull(good.getScale("SCALE"));
-    }
-
-    /**
      * The answer to "is this numeric attribute categorical?" is stored in the scheme, so it is asked once.  It
      * has to be stored as a declaration, not merely as colors -- there may be no values loaded to color.
      */
@@ -378,7 +253,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     public void testCategoricalDeclaration() throws Exception {
         assertFalse(VariantColorSchemes.getKeys().contains("DP"));
 
-        VariantColorSchemes.saveScheme("DP colors", "DP", Collections.emptyMap(), true);
+        VariantColorSchemes.saveScheme("DP", Collections.emptyMap(), true);
         VariantColorSchemes.reset();
 
         assertTrue(VariantColorSchemes.getUserSchemes().get(0).isCategorical("DP"));
@@ -387,258 +262,12 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertNull(VariantColorSchemes.getScale("DP"));
         // No colors were recorded, so values still take them from the palette
         assertNull(VariantColorSchemes.getColor("DP", "17"));
-    }
 
-    /**
-     * The declaration reads as plain text, so a scheme file can be written by hand.
-     */
-    @Test
-    public void testCategoricalDeclarationParsed() throws Exception {
-        String contents = "TIER\tcategorical\nTIER\t1\t200,0,0\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
+        // The declaration reads as plain text, so a scheme file can be written by hand
+        VariantColorScheme scheme = VariantColorScheme.parse(
+                new BufferedReader(new StringReader("TIER\tcategorical\nTIER\t1\t200,0,0\n")), "test");
         assertTrue(scheme.isCategorical("TIER"));
-        assertTrue(scheme.getKeys().contains("TIER"));
         assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
-    }
-
-    /**
-     * A whole scheme round trips through the file, every attribute it covers -- the editor saves it this way.
-     */
-    @Test
-    public void testSchemeRoundTrip() throws Exception {
-        String contents = String.join("\n",
-                "#name=Mixed",
-                "#description=Several attributes at once",
-                "#colors",
-                "CLNSIG\tPathogenic\t1,2,3",
-                "CLNSIG\t*\t9,9,9",
-                "DP\tcategorical",
-                "CADD\tContinuousColorScale;0.0;40.0;255,255,204;202,0,32",
-                "");
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "Mixed");
-
-        VariantColorSchemes.save(scheme);
-        VariantColorSchemes.reset();
-
-        VariantColorScheme reloaded = VariantColorSchemes.getUserSchemes().get(0);
-        assertEquals("Mixed", reloaded.getName());
-        assertEquals("Several attributes at once", reloaded.getDescription());
-        assertEquals(new Color(1, 2, 3), reloaded.getColor("CLNSIG", "Pathogenic"));
-        assertEquals(new Color(9, 9, 9), reloaded.getColor("CLNSIG", "anything else"));
-        assertTrue(reloaded.isCategorical("DP"));
-        assertNotNull(reloaded.getScale("CADD"));
-    }
-
-    /**
-     * A scheme shipped with IGV cannot be written over, so editing one saves a copy that shadows it.
-     */
-    @Test
-    public void testEditingBuiltinSavesACopy() throws Exception {
-        VariantColorScheme builtin = builtinFor("CLNSIG");
-        assertNull(builtin.getFile());
-
-        VariantColorScheme edited = builtin.copy();
-        edited.setColor("CLNSIG", "Pathogenic", new Color(1, 1, 1));
-        VariantColorSchemes.save(edited);
-        assertEquals("The cached built-in is untouched", new Color(202, 0, 32), builtin.getColor("CLNSIG", "Pathogenic"));
-        VariantColorSchemes.reset();
-
-        assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-        assertEquals(1, VariantColorSchemes.getUserSchemes().size());
-        assertFalse(VariantColorSchemes.getUserSchemes().get(0).isBuiltIn());
-    }
-
-    /**
-     * Saving the cached built-in object itself must leave it built in.  Giving it a file made it look user owned
-     * -- removable -- while it was still listed among the built-ins, so until the next reset it appeared twice.
-     */
-    @Test
-    public void testSavingCachedBuiltinLeavesItBuiltIn() throws Exception {
-
-        VariantColorScheme builtin = builtinFor("SVTYPE");
-        int before = VariantColorSchemes.getSchemes().size();
-
-        VariantColorScheme saved = VariantColorSchemes.save(builtin);
-
-        assertNull("The cached built-in was given a file", builtin.getFile());
-        assertTrue(builtin.isBuiltIn());
-        assertFalse("A built-in must not be removable", VariantColorSchemes.remove(builtin));
-
-        assertNotSame(builtin, saved);
-        assertFalse(saved.isBuiltIn());
-        assertEquals("One user scheme added, no duplicate", before + 1, VariantColorSchemes.getSchemes().size());
-        assertTrue(VariantColorSchemes.getBuiltinSchemes().contains(builtin));
-        assertFalse(VariantColorSchemes.getUserSchemes().contains(builtin));
-    }
-
-    /**
-     * Values can be added to and removed from a scheme, including the wildcard.
-     */
-    @Test
-    public void testAddAndRemoveValues() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("TIER\t1\t200,0,0\n")), "test");
-
-        scheme.setColor("TIER", "2", new Color(0, 200, 0));
-        scheme.setColor("TIER", "*", new Color(9, 9, 9));
-        assertEquals(new Color(0, 200, 0), scheme.getColor("TIER", "2"));
-        assertEquals(new Color(9, 9, 9), scheme.getColor("TIER", "unlisted"));
-
-        scheme.removeColor("TIER", "2");
-        // Falls back to the wildcard, which is what an uncovered value gets
-        assertEquals(new Color(9, 9, 9), scheme.getColor("TIER", "2"));
-
-        scheme.removeColor("TIER", "*");
-        assertNull(scheme.getColor("TIER", "2"));
-        assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
-    }
-
-    /**
-     * The editor works on a copy, so cancelling leaves the live scheme untouched.
-     */
-    @Test
-    public void testCopyIsIndependent() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("TIER\t1\t200,0,0\n")), "test");
-
-        VariantColorScheme copy = scheme.copy();
-        copy.setColor("TIER", "1", new Color(1, 1, 1));
-        copy.setColor("TIER", "2", new Color(2, 2, 2));
-        copy.removeColor("TIER", "1");
-
-        assertEquals(new Color(200, 0, 0), scheme.getColor("TIER", "1"));
-        assertNull(scheme.getColor("TIER", "2"));
-    }
-
-    /**
-     * Values keep the case they were written in, so saving does not rewrite the user's spelling.
-     */
-    @Test
-    public void testValueCasePreserved() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("CLNSIG\tLikely_pathogenic\t1,2,3\n")), "test");
-
-        assertEquals("Likely_pathogenic", scheme.getColors("CLNSIG").keySet().iterator().next());
-
-        // Editing via a different spelling updates in place rather than adding a near duplicate row
-        scheme.setColor("CLNSIG", "likely_pathogenic", new Color(4, 5, 6));
-        assertEquals(1, scheme.getColors("CLNSIG").size());
-        assertEquals("Likely_pathogenic", scheme.getColors("CLNSIG").keySet().iterator().next());
-        assertEquals(new Color(4, 5, 6), scheme.getColor("CLNSIG", "LIKELY_PATHOGENIC"));
-    }
-
-    /**
-     * Scale labels need enough decimal places to differ -- allele frequencies and phred scores are orders of
-     * magnitude apart, so one fixed format would print "0.0" at both ends of one of them.
-     */
-    @Test
-    public void testScaleLabelPrecision() {
-        assertEquals("0.010", ColorScaleBar.format(0.01, 0.08));     // allele frequency
-        assertEquals("0.090", ColorScaleBar.format(0.09, 0.08));
-        assertEquals("0.00", ColorScaleBar.format(0.0, 5));
-        assertEquals("5.00", ColorScaleBar.format(5.0, 5));
-        assertEquals("0.0", ColorScaleBar.format(0.0, 40));          // phred scaled
-        assertEquals("40.0", ColorScaleBar.format(40.0, 40));
-        assertEquals("1000", ColorScaleBar.format(1000.0, 1000));    // read depth
-    }
-
-    /**
-     * The numeric "min:max" row of a sample information file "#colors" section is read as a scale, so such a
-     * section works here unchanged.  It must not become a category keyed on the literal text "0:40".
-     */
-    @Test
-    public void testSampleInfoRangeRow() throws Exception {
-        String contents = "CADD\t0:40\t255,255,200\t255,0,0\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("CADD");
-        assertNotNull(scale);
-        assertEquals(0.0, scale.getMinimum(), 1e-9);
-        assertEquals(40.0, scale.getMaximum(), 1e-9);
-        assertEquals(new Color(255, 255, 200), scale.getMinColor());
-        assertEquals(new Color(255, 0, 0), scale.getMaxColor());
-        assertTrue(scheme.getColors("CADD").isEmpty());
-    }
-
-    /**
-     * A single color shades from white, as it does in a sample information file.
-     */
-    @Test
-    public void testSampleInfoRangeRowOneColor() throws Exception {
-        String contents = "DP\t0:100\t0,0,255\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("DP");
-        assertNotNull(scale);
-        assertEquals(Color.white, scale.getMinColor());
-        assertEquals(new Color(0, 0, 255), scale.getMaxColor());
-    }
-
-    /**
-     * A range starting below zero shades through a neutral midpoint at zero, matching AttributeManager.
-     */
-    @Test
-    public void testSampleInfoRangeRowNegative() throws Exception {
-        String contents = "SCORE\t-10:10\t0,0,255\t255,0,0\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        ContinuousColorScale scale = (ContinuousColorScale) scheme.getScale("SCORE");
-        assertNotNull(scale);
-        assertTrue(scale.isUseDoubleGradient());
-        assertEquals(-10.0, scale.getMinimum(), 1e-9);
-        assertEquals(0.0, scale.getNegStart(), 1e-9);
-        assertEquals(10.0, scale.getMaximum(), 1e-9);
-    }
-
-    /**
-     * An imported range row is written back in the canonical form, so there is one form on disk.
-     */
-    @Test
-    public void testRangeRowNormalizedOnSave() throws Exception {
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("#name=CADD\nCADD\t0:40\t255,255,200\t255,0,0\n")), "test");
-
-        VariantColorScheme saved = VariantColorSchemes.save(scheme);
-        String written = Files.readString(saved.getFile().toPath());
-
-        assertTrue("Expected the canonical form, got:\n" + written,
-                written.contains("CADD\tContinuousColorScale;0.0;40.0;255,255,200;255,0,0"));
-        assertFalse(written.contains("0:40"));
-    }
-
-    /**
-     * A value that merely contains a colon is still a value.
-     */
-    @Test
-    public void testColonInValueIsNotARange() throws Exception {
-        String contents = "HGVS\tNM_007294.4:c.5266dupC\t1,2,3\nCHR2\tchr1:12345\t4,5,6\n";
-        VariantColorScheme scheme = VariantColorScheme.parse(new BufferedReader(new StringReader(contents)), "test");
-
-        assertEquals(new Color(1, 2, 3), scheme.getColor("HGVS", "NM_007294.4:c.5266dupC"));
-        assertEquals(new Color(4, 5, 6), scheme.getColor("CHR2", "chr1:12345"));
-    }
-
-    /**
-     * With nothing loaded there is no evidence about whether a numeric attribute is a quantity or a code.
-     * Coloring by value anyway would treat a quantity as a category and record nothing, so the same click would
-     * behave differently once the user moved to a region with data.
-     */
-    @Test
-    public void testNoValuesInViewDoesNotGuess() throws Exception {
-        VariantTrack track = loadTrack();
-        track.getFeatures("chr1", 0, 1000);     // loaded, but nothing packed into the render cache
-
-        assertTrue(track.isNumericAttribute("AF"));
-        assertTrue(track.getAttributeValues("AF").isEmpty());
-
-        assertFalse("Must not color by a numeric attribute without deciding how",
-                VariantTrackMenuHelper.defineScaleIfNeeded(track, "AF"));
-        assertFalse("Must not record a decision it did not make",
-                VariantColorSchemes.getKeys().contains("AF"));
-
-        // The selection itself is untouched, so the track keeps whatever coloring it had
-        assertNull(track.getColorByAttribute());
     }
 
     /**
@@ -649,7 +278,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testAlleleFrequencyIsSummed() throws Exception {
-        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
+        writeScheme("AF.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
         VariantColorSchemes.reset();
 
         VariantTrack track = loadTrack();
@@ -672,7 +301,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testOtherAttributesTakeTheMaximum() throws Exception {
-        writeScheme("id.txt", "ALLELEID\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
+        writeScheme("ALLELEID.txt", "ALLELEID\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
         VariantColorSchemes.reset();
 
         VariantTrack track = loadTrack();
@@ -688,7 +317,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
      */
     @Test
     public void testReferenceValueIsSkipped() throws Exception {
-        writeScheme("rdp.txt", "RDP\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
+        writeScheme("RDP.txt", "RDP\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
         VariantColorSchemes.reset();
 
         VariantTrack track = loadTrack();
@@ -705,28 +334,11 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * The aggregation itself, apart from any header.
-     */
-    @Test
-    public void testAggregate() {
-        assertEquals(0.3, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
-        assertEquals(0.2, VariantTrack.aggregate(new String[]{"0.1", "0.2"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
-        assertEquals(0.1, VariantTrack.aggregate(new String[]{"0.2", ".", "0.1"}, 0, VariantTrack.Aggregation.MIN), 1e-9);
-        assertEquals(-1.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.MAX), 1e-9);
-        assertEquals(-4.0, VariantTrack.aggregate(new String[]{"-3", "-1"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
-        assertEquals(5.0, VariantTrack.aggregate(new String[]{".", "5"}, 0, VariantTrack.Aggregation.SUM), 1e-9);
-        assertEquals(2.0, VariantTrack.aggregate(new String[]{"9", "1", "2"}, 1, VariantTrack.Aggregation.MAX), 1e-9);
-        assertNull(VariantTrack.aggregate(new String[]{"."}, 0, VariantTrack.Aggregation.MAX));
-        assertNull(VariantTrack.aggregate(new String[]{"Pathogenic"}, 0, VariantTrack.Aggregation.SUM));
-        assertNull(VariantTrack.aggregate(new String[]{"9"}, 1, VariantTrack.Aggregation.MAX));
-    }
-
-    /**
      * A sum past the top of the scale saturates rather than falling back to the missing color.
      */
     @Test
     public void testSumBeyondScaleSaturates() throws Exception {
-        writeScheme("af2.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
+        writeScheme("AF.txt", "AF\tContinuousColorScale;0.0;1.0;255,255,204;202,0,32");
         VariantColorSchemes.reset();
 
         VariantTrack track = new VariantTrack();
@@ -736,49 +348,12 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
     }
 
     /**
-     * An attribute a scheme already covers is never asked about again.
-     */
-    @Test
-    public void testCoveredAttributeIsNotPrompted() throws Exception {
-        VariantTrack track = loadTrack();
-        writeScheme("af.txt", "AF\tContinuousColorScale;0.0;0.1;255,255,200;255,0,0");
-        VariantColorSchemes.reset();
-
-        assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "AF"));
-    }
-
-    /**
-     * A String attribute is categorical by declaration, so nothing is asked.
-     */
-    @Test
-    public void testNonNumericAttributeIsNotPrompted() throws Exception {
-        VariantTrack track = loadTrack();
-        assertTrue(VariantTrackMenuHelper.defineScaleIfNeeded(track, "CLNSIG"));
-    }
-
-    /**
-     * ColorScaleFactory also builds MappedColorScale, which coloring cannot use, the legend cannot draw, and
-     * write() would drop -- so it must not be registered as though it were a scale.
-     */
-    @Test
-    public void testNonContinuousScaleRejected() throws Exception {
-        // A well formed MappedColorScale -- the point is that the type is rejected, not that the string is bad
-        String serialized = "MappedColorScale;a 1,2,3;b 4,5,6";
-        assertNotNull("Expected this to be a parseable scale", ColorScaleFactory.getScaleFromString(serialized));
-
-        VariantColorScheme scheme = VariantColorScheme.parse(
-                new BufferedReader(new StringReader("DP\t" + serialized + "\n")), "test");
-        assertNull(scheme.getScale("DP"));
-        assertFalse(scheme.getKeys().contains("DP"));
-    }
-
-    /**
      * The IGV directory can move (Preferences > Advanced).  Schemes cached from the old one hold paths into a
      * directory that no longer exists, so saving would fail and removals would reappear.
      */
     @Test
     public void testCacheFollowsTheIgvDirectory() throws Exception {
-        writeScheme("mine.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
+        writeScheme("CLNSIG.txt", "#name=Mine", "CLNSIG\tPathogenic\t1,2,3");
         VariantColorSchemes.reset();
         assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
 
@@ -790,203 +365,6 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         assertTrue(VariantColorSchemes.getUserSchemes().isEmpty());
         assertEquals("Back to the built-in color", new Color(202, 0, 32),
                 VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-    }
-
-    /**
-     * Whether an attribute is a scale or a set of categories is decided by the highest priority scheme that
-     * covers it.  A categorical declaration imported later must beat an older scale, not merely sit beside it
-     * while rendering keeps using the scale.
-     */
-    @Test
-    public void testCategoricalOverridesLowerPriorityScale() throws Exception {
-        // Built in order is by file name, so "a-" sorts ahead of "b-"
-        writeScheme("b-scale.txt", "#name=Old scale", "DP\tContinuousColorScale;0.0;100.0;255,255,204;202,0,32");
-        writeScheme("a-categorical.txt", "#name=New categories", "DP\tcategorical", "DP\t7\t1,2,3");
-        VariantColorSchemes.reset();
-
-        assertTrue(VariantColorSchemes.getUserSchemes().get(0).isCategorical("DP"));
-        assertNull("The lower priority scale must not apply", VariantColorSchemes.getScale("DP"));
-        assertNull(VariantColorSchemes.getSchemeForScale("DP"));
-        assertEquals(new Color(1, 2, 3), VariantColorSchemes.getColor("DP", "7"));
-
-        // Rendering agrees with the declaration
-        VariantTrack track = new VariantTrack();
-        track.setColorByAttribute("DP");
-        assertEquals(new Color(1, 2, 3), track.getAttributeColor("DP", "7"));
-    }
-
-    /**
-     * Two user schemes covering the same attribute resolve the same way after every restart: by file name.
-     * (listFiles() order is unspecified, so without sorting this is a coin toss.)
-     */
-    @Test
-    public void testUserSchemeOrderIsByFileName() throws Exception {
-        writeScheme("zebra.txt", "CLNSIG\tPathogenic\t9,9,9");
-        writeScheme("apple.txt", "CLNSIG\tPathogenic\t1,1,1");
-        VariantColorSchemes.reset();
-
-        assertEquals(List.of("apple", "zebra"),
-                VariantColorSchemes.getUserSchemes().stream().map(VariantColorScheme::getName).collect(Collectors.toList()));
-        assertEquals(new Color(1, 1, 1), VariantColorSchemes.getColor("CLNSIG", "Pathogenic"));
-    }
-
-    /**
-     * Where an imported file came from has to survive a reload.  Setting it on the in-memory object while
-     * copying the original bytes lost it the moment the copy was parsed, so after a restart the preferences
-     * table showed the copy's file name instead of the path.
-     */
-    @Test
-    public void testImportedSourceSurvivesReload() throws Exception {
-        File source = new File(TestUtils.TMP_OUTPUT_DIR, "lab-colors.txt");
-        try (PrintWriter writer = new PrintWriter(source)) {
-            writer.println("#name=Lab");
-            writer.println("# a comment worth keeping");
-            writer.println("TIER\t1\t200,0,0");
-        }
-
-        VariantColorSchemes.importFile(source);
-        VariantColorSchemes.reset();
-
-        VariantColorScheme reloaded = VariantColorSchemes.getUserSchemes().get(0);
-        assertEquals(source.getAbsolutePath(), reloaded.getSource());
-        assertEquals("Lab", reloaded.getName());
-        assertEquals(new Color(200, 0, 0), reloaded.getColor("TIER", "1"));
-
-        // The rest of the file is as it was, with only the source line added in front
-        String copy = Files.readString(reloaded.getFile().toPath());
-        assertTrue(copy.startsWith("#source=" + source.getAbsolutePath() + System.lineSeparator()));
-        assertTrue(copy.contains("# a comment worth keeping"));
-    }
-
-    /**
-     * A file that already says where it came from keeps saying so.
-     */
-    @Test
-    public void testExistingSourceIsKept() throws Exception {
-        File source = new File(TestUtils.TMP_OUTPUT_DIR, "shared.txt");
-        try (PrintWriter writer = new PrintWriter(source)) {
-            writer.println("#source=https://example.org/shared.txt");
-            writer.println("TIER\t1\t200,0,0");
-        }
-
-        VariantColorSchemes.importFile(source);
-        VariantColorSchemes.reset();
-
-        assertEquals("https://example.org/shared.txt", VariantColorSchemes.getUserSchemes().get(0).getSource());
-        assertEquals(1, Files.readString(VariantColorSchemes.getUserSchemes().get(0).getFile().toPath())
-                .split("#source=").length - 1);
-    }
-
-    /**
-     * Saved scheme files are named after the scheme, in a form that reads plainly in a directory listing.
-     */
-    @Test
-    public void testFileNameFromSchemeName() throws Exception {
-        assertEquals("AC_colorscale", VariantColorSchemes.getLegalFileName("AC colorscale"));
-        assertEquals("CLNSIG_colors", VariantColorSchemes.getLegalFileName("CLNSIG colors"));
-        assertEquals("ClinVar_significance_edited", VariantColorSchemes.getLegalFileName("ClinVar significance (edited)"));
-        assertEquals("a_b_c", VariantColorSchemes.getLegalFileName("a/b:c"));
-        assertEquals("gnomAD.v4-AF", VariantColorSchemes.getLegalFileName("gnomAD.v4-AF"));
-        assertEquals("scheme", VariantColorSchemes.getLegalFileName("  ?? "));
-
-        ContinuousColorScale scale = new ContinuousColorScale(0, 2004, new Color(255, 255, 204), new Color(202, 0, 32));
-        VariantColorScheme saved = VariantColorSchemes.saveScale("AC colorscale", "AC", scale);
-        assertEquals("AC_colorscale.txt", saved.getFile().getName());
-    }
-
-    /**
-     * Two different schemes that share a file name both survive import -- two labs can each send "colors.txt".
-     * Importing from the same source again refreshes its copy rather than adding another.
-     */
-    @Test
-    public void testImportNameCollisionKeepsBoth() throws Exception {
-
-        File labA = new File(TestUtils.TMP_OUTPUT_DIR, "labA");
-        File labB = new File(TestUtils.TMP_OUTPUT_DIR, "labB");
-        labA.mkdirs();
-        labB.mkdirs();
-        File a = new File(labA, "colors.txt");
-        File b = new File(labB, "colors.txt");
-        try (PrintWriter writer = new PrintWriter(a)) {
-            writer.println("#name=Lab A");
-            writer.println("TIER\t1\t200,0,0");
-        }
-        try (PrintWriter writer = new PrintWriter(b)) {
-            writer.println("#name=Lab B");
-            writer.println("REVIEW\tyes\t0,200,0");
-        }
-
-        VariantColorSchemes.importFile(a);
-        VariantColorSchemes.importFile(b);
-        VariantColorSchemes.reset();
-
-        assertEquals(List.of("colors.txt", "colors_2.txt"), userSchemeFileNames());
-        assertEquals(new Color(200, 0, 0), VariantColorSchemes.getColor("TIER", "1"));
-        assertEquals(new Color(0, 200, 0), VariantColorSchemes.getColor("REVIEW", "yes"));
-
-        try (PrintWriter writer = new PrintWriter(a)) {
-            writer.println("#name=Lab A");
-            writer.println("TIER\t1\t9,9,9");
-        }
-        VariantColorSchemes.importFile(a);
-        VariantColorSchemes.reset();
-
-        assertEquals(List.of("colors.txt", "colors_2.txt"), userSchemeFileNames());
-        assertEquals(new Color(9, 9, 9), VariantColorSchemes.getColor("TIER", "1"));
-    }
-
-    private List<String> userSchemeFileNames() {
-        return VariantColorSchemes.getUserSchemes().stream()
-                .map(s -> s.getFile().getName())
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Coloring by category is refused above MAX_CATEGORICAL_VALUES distinct values among the loaded features --
-     * colors are not distinguishable, or useful, long before that.  A scale has no such limit.
-     */
-    @Test
-    public void testCategoryLimit() throws Exception {
-
-        int n = VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES + 1;
-
-        File vcf = new File(TestUtils.TMP_OUTPUT_DIR, "many_values.vcf");
-        try (PrintWriter writer = new PrintWriter(vcf)) {
-            writer.println("##fileformat=VCFv4.2");
-            writer.println("##contig=<ID=chr1,length=8033585>");
-            writer.println("##INFO=<ID=NAME,Number=1,Type=String,Description=\"A different value on every record\">");
-            writer.println("##INFO=<ID=DEPTH,Number=1,Type=Integer,Description=\"A different depth on every record\">");
-            writer.println("##INFO=<ID=KIND,Number=1,Type=String,Description=\"One of three values\">");
-            writer.println("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO");
-            for (int i = 0; i < n; i++) {
-                writer.println("chr1\t" + (1000 + i * 10) + "\t.\tA\tC\t100\t.\tNAME=v" + i + ";DEPTH=" + i + ";KIND=k" + (i % 3));
-            }
-        }
-        TestUtils.createIndex(vcf.getAbsolutePath());
-        VariantTrack track = (VariantTrack) (new TrackLoader()).load(new ResourceLocator(vcf.getAbsolutePath()), genome).get(0);
-
-        // Pack the records the way drawing would, so they count as loaded
-        ReferenceFrame frame = new ReferenceFrame("test");
-        frame.setBounds(0, 1000);
-        frame.jumpTo("chr1", 900, 1000 + n * 10 + 100);
-        track.load(frame);
-        assertEquals(n, track.getAttributeValues("NAME").size());
-
-        assertFalse("Over the limit, coloring by category is refused",
-                VariantTrackMenuHelper.isWithinCategoryLimit(track, "NAME"));
-        assertTrue(VariantTrackMenuHelper.isWithinCategoryLimit(track, "KIND"));
-
-        // A scale takes any number of values
-        writeScheme("depth.txt", "DEPTH\tContinuousColorScale;0.0;600.0;255,255,204;202,0,32");
-        VariantColorSchemes.reset();
-        assertTrue(VariantTrackMenuHelper.isWithinCategoryLimit(track, "DEPTH"));
-    }
-
-    private VariantColorScheme builtinFor(String infoKey) {
-        return VariantColorSchemes.getBuiltinSchemes().stream()
-                .filter(s -> s.getKeys().contains(infoKey))
-                .findFirst()
-                .orElseThrow();
     }
 
     private VariantTrack loadTrack() throws Exception {

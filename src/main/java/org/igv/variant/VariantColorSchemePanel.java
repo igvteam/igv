@@ -27,9 +27,9 @@ import java.util.List;
  * the preferences editor.
  * <p>
  * The set of INFO keys, and of values for each key, is unbounded, so there is nothing to enumerate as individual
- * color preferences.  Instead schemes are files, and this panel manages which ones IGV has.  Importing copies the
- * file into the IGV directory, which is then the only copy IGV reads -- editing or moving the original has no
- * further effect.
+ * color preferences.  Instead IGV keeps one file per attribute, and this panel lists the attributes it has colors
+ * for.  Importing reads a file once and writes IGV's own file for each attribute it covers, replacing the colors
+ * the store held for them -- editing or moving the original has no further effect.
  */
 public class VariantColorSchemePanel extends JPanel {
 
@@ -47,8 +47,9 @@ public class VariantColorSchemePanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder("Variant INFO colors"));
 
         JLabel description = new JLabel("<html>Colors for the values of VCF INFO attributes, used by the track menu's "
-                + "<i>Color By &gt; INFO Field</i> option.<br>Imported schemes are copied to "
-                + VariantColorSchemes.getSchemeDirectory().getAbsolutePath() + ".");
+                + "<i>Color By &gt; INFO Field</i> option.<br>IGV keeps one file per attribute in "
+                + VariantColorSchemes.getSchemeDirectory().getAbsolutePath()
+                + ".<br>Importing a file replaces the colors for every attribute it covers.");
         add(description, BorderLayout.NORTH);
 
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -77,7 +78,7 @@ public class VariantColorSchemePanel extends JPanel {
     }
 
     private void importFile() {
-        File file = FileDialogUtils.chooseFile("Select variant color scheme");
+        File file = FileDialogUtils.chooseFile("Select variant color file");
         if (file == null) {
             return;
         }
@@ -85,14 +86,14 @@ public class VariantColorSchemePanel extends JPanel {
             VariantColorSchemes.importFile(file);
             schemesChanged();
         } catch (Exception e) {
-            log.error("Error importing variant color scheme: " + file.getAbsolutePath(), e);
-            MessageUtils.showMessage("Error importing color scheme: " + e.getMessage());
+            log.error("Error importing variant colors: " + file.getAbsolutePath(), e);
+            MessageUtils.showMessage("Error importing colors: " + e.getMessage());
         }
     }
 
     private void importUrl() {
 
-        String input = MessageUtils.showInputDialog("Color scheme URL");
+        String input = MessageUtils.showInputDialog("Color file URL");
         if (input == null || input.trim().isEmpty()) {
             return;
         }
@@ -102,10 +103,10 @@ public class VariantColorSchemePanel extends JPanel {
         importUrlButton.setEnabled(false);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        new SwingWorker<VariantColorScheme, Void>() {
+        new SwingWorker<List<VariantColorScheme>, Void>() {
 
             @Override
-            protected VariantColorScheme doInBackground() throws Exception {
+            protected List<VariantColorScheme> doInBackground() throws Exception {
                 return VariantColorSchemes.importUrl(url);
             }
 
@@ -117,16 +118,16 @@ public class VariantColorSchemePanel extends JPanel {
                     get();
                     schemesChanged();
                 } catch (Exception e) {
-                    log.error("Error importing variant color scheme: " + url, e);
+                    log.error("Error importing variant colors: " + url, e);
                     Throwable cause = e.getCause() == null ? e : e.getCause();
-                    MessageUtils.showMessage("Error importing color scheme: " + cause.getMessage());
+                    MessageUtils.showMessage("Error importing colors: " + cause.getMessage());
                 }
             }
         }.execute();
     }
 
     /**
-     * Open the scheme for editing.  A scheme shipped with IGV is edited into a copy the user owns.
+     * Open the attribute's colors for editing.  Colors shipped with IGV are edited into a copy the user owns.
      */
     private void editSelected() {
         VariantColorScheme scheme = getSelectedScheme();
@@ -146,7 +147,7 @@ public class VariantColorSchemePanel extends JPanel {
         if (scheme == null || scheme.isBuiltIn()) {
             return;
         }
-        if (MessageUtils.confirm("Remove color scheme \"" + scheme.getName() + "\"?  Its file will be deleted.")) {
+        if (MessageUtils.confirm("Remove your colors for " + scheme.getKey() + "?  Their file will be deleted.")) {
             VariantColorSchemes.remove(scheme);
             schemesChanged();
         }
@@ -174,7 +175,7 @@ public class VariantColorSchemePanel extends JPanel {
 
     private static class SchemeTableModel extends AbstractTableModel {
 
-        private static final String[] COLUMNS = {"Name", "INFO attributes", "Source"};
+        private static final String[] COLUMNS = {"INFO attribute", "Name", "Colors"};
 
         private List<VariantColorScheme> schemes = VariantColorSchemes.getSchemes();
 
@@ -206,10 +207,9 @@ public class VariantColorSchemePanel extends JPanel {
         public Object getValueAt(int row, int column) {
             VariantColorScheme scheme = schemes.get(row);
             return switch (column) {
-                case 0 -> scheme.getName();
-                case 1 -> String.join(", ", scheme.getKeys());
-                case 2 -> scheme.isBuiltIn() ? "Built in" :
-                        (scheme.getSource() == null ? scheme.getFile().getName() : scheme.getSource());
+                case 0 -> scheme.getKey();
+                case 1 -> scheme.getName();
+                case 2 -> scheme.isBuiltIn() ? "Default" : "Custom";
                 default -> "";
             };
         }

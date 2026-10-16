@@ -21,9 +21,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A named set of colors for the values of one VCF INFO attribute, read from a tab delimited file.  Discrete
- * colors use the syntax of the "#colors" section of an IGV sample information file; color scales use the form
- * IGV serializes heat map scales in (see {@link org.igv.renderer.ColorScaleFactory}), so there is one
+ * Colors for the values of a VCF INFO attribute, read from a tab delimited file.  IGV keeps one attribute per
+ * file, named for the attribute (see {@link VariantColorSchemes}).  A file being imported may cover several
+ * attributes -- every row names its own -- and is split into one scheme per attribute with {@link #forKey}.
+ * <p>
+ * Discrete colors use the syntax of the "#colors" section of an IGV sample information file; color scales use
+ * the form IGV serializes heat map scales in (see {@link org.igv.renderer.ColorScaleFactory}), so there is one
  * representation of a scale rather than two.
  *
  * <pre>
@@ -31,15 +34,19 @@ import java.util.Set;
  * #description=Benign (blue) through pathogenic (red)
  * #colors
  * CLNSIG       Pathogenic  202,0,32
+ * CLNSIG       Benign      5,113,176
  * CLNSIG       *           150,150,150
- * CADD_PHRED   ContinuousColorScale;0.0;40.0;255,255,200;255,0,0
- * DP           categorical
  * </pre>
  *
  * A three field row is "INFO key", "value", "color"; a value of "*" sets the color for values the scheme does
  * not otherwise cover.  A two field row is either a serialized color scale or the word "categorical", which
- * records that a numeric attribute holds codes rather than quantities.
- * <p>
+ * records that a numeric attribute holds codes rather than quantities:
+ *
+ * <pre>
+ * CADD_PHRED   ContinuousColorScale;0.0;40.0;255,255,200;255,0,0
+ * DP           categorical
+ * </pre>
+ *
  * The numeric "min:max" rows of a sample information file are also read, so a "#colors" section can be used
  * here unchanged, but they are converted to a color scale and written back in the canonical form.
  */
@@ -49,7 +56,6 @@ public class VariantColorScheme {
 
     private static final String NAME_DIRECTIVE = "#name=";
     private static final String DESCRIPTION_DIRECTIVE = "#description=";
-    private static final String SOURCE_DIRECTIVE = "#source=";
     private static final String COLORS_SECTION = "#colors";
 
     /**
@@ -65,10 +71,10 @@ public class VariantColorScheme {
 
     private String name;
     private String description;
-    private String source;
 
     /**
-     * The file this scheme was read from, in the IGV scheme directory.  Null for schemes shipped with IGV.
+     * The file this scheme was read from, in the IGV scheme directory.  Null for schemes shipped with IGV, and
+     * for schemes not yet saved.
      */
     private File file;
 
@@ -107,7 +113,7 @@ public class VariantColorScheme {
      * bad line.
      *
      * @param reader      the scheme contents
-     * @param defaultName name to use if the file has no "#name=" directive
+     * @param defaultName name to use if the file has no "#name=" directive, may be null
      */
     public static VariantColorScheme parse(BufferedReader reader, String defaultName) throws IOException {
 
@@ -127,8 +133,6 @@ public class VariantColorScheme {
                     scheme.name = line.substring(NAME_DIRECTIVE.length()).trim();
                 } else if (lower.startsWith(DESCRIPTION_DIRECTIVE)) {
                     scheme.description = line.substring(DESCRIPTION_DIRECTIVE.length()).trim();
-                } else if (lower.startsWith(SOURCE_DIRECTIVE)) {
-                    scheme.source = line.substring(SOURCE_DIRECTIVE.length()).trim();
                 }
                 // Anything else, including the "#colors" section marker, is a comment
                 continue;
@@ -338,6 +342,42 @@ public class VariantColorScheme {
     }
 
     /**
+     * @return the INFO attribute this scheme is for, or null if it covers none.  A scheme in IGV's store covers
+     * exactly one; a scheme parsed from a file being imported may cover several, see {@link #forKey}.
+     */
+    public String getKey() {
+        Set<String> keys = getKeys();
+        return keys.isEmpty() ? null : keys.iterator().next();
+    }
+
+    /**
+     * Return a copy holding only what this scheme says about one attribute, so a file covering several can be
+     * split into the one attribute per file IGV stores.  The name and description are kept; a scheme with no
+     * name is named for the attribute.
+     */
+    public VariantColorScheme forKey(String infoKey) {
+
+        String key = infoKey.toUpperCase();
+        VariantColorScheme copy = new VariantColorScheme(name != null ? name : key);
+        copy.description = description;
+
+        if (colors.containsKey(key)) {
+            copy.colors.put(key, new LinkedHashMap<>(colors.get(key)));
+            copy.valueIndex.put(key, new LinkedHashMap<>(valueIndex.get(key)));
+        }
+        if (defaultColors.containsKey(key)) {
+            copy.defaultColors.put(key, defaultColors.get(key));
+        }
+        if (scales.containsKey(key)) {
+            copy.scales.put(key, scales.get(key));
+        }
+        if (categoricalKeys.contains(key)) {
+            copy.categoricalKeys.add(key);
+        }
+        return copy;
+    }
+
+    /**
      * @return true if this scheme covers the attribute at all -- getKeys().contains(key) without building a set,
      * as it is asked for every variant drawn.
      * @param upperCaseKey the INFO key, already upper case
@@ -415,7 +455,6 @@ public class VariantColorScheme {
 
         VariantColorScheme copy = new VariantColorScheme(name);
         copy.description = description;
-        copy.source = source;
         copy.file = file;
         copy.defaultColors.putAll(defaultColors);
         copy.scales.putAll(scales);
@@ -453,9 +492,6 @@ public class VariantColorScheme {
         if (description != null) {
             writer.println(DESCRIPTION_DIRECTIVE + description);
         }
-        if (source != null) {
-            writer.println(SOURCE_DIRECTIVE + source);
-        }
         writer.println(COLORS_SECTION);
 
         for (String key : getKeys()) {
@@ -476,24 +512,12 @@ public class VariantColorScheme {
         }
     }
 
-    void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }
 
     public String getDescription() {
         return description;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    void setSource(String source) {
-        this.source = source;
     }
 
     /**
