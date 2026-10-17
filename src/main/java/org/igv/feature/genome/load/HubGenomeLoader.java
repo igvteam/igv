@@ -31,10 +31,16 @@ public class HubGenomeLoader extends GenomeLoader {
 
     static Logger log = LogManager.getLogger(HubGenomeLoader.class);
 
+    /**
+     * Returns true if the string looks like a UCSC hub.txt URL.
+     */
     public static boolean isHubURL(String obj) {
         return obj != null && obj.toLowerCase().endsWith("hub.txt");       // <= very crude, perhaps read the first line
     }
 
+    /**
+     * Converts a GenBank/RefSeq assembly accession (GCA_/GCF_) to its UCSC hub.txt URL, or null if not an accession.
+     */
     public static String convertToHubURL(String accension) {
         //https://hgdownload.soe.ucsc.edu/hubs/GCF/016/808/095/GCF_016808095.1/
         //https://hgdownload.soe.ucsc.edu/hubs/GCA/028/534/965/GCA_028534965.1/
@@ -50,7 +56,7 @@ public class HubGenomeLoader extends GenomeLoader {
     }
 
     /**
-     * Load and parse a hub.txt file.  Creates and stores a genome json definition for future loads.
+     * Load and parse a hub.txt file.  As a side effect creates and stores a local genome json definition for future loads.
      *
      * @param hubURL
      * @return
@@ -103,6 +109,10 @@ public class HubGenomeLoader extends GenomeLoader {
      */
     public static void loadAssemblyHub(Hub hub) throws IOException {
 
+        if (!hub.isAssemblyHub()) {
+            throw new IOException("Not an assembly hub (no twoBitPath): " + hub.getUrl());
+        }
+
         List<GenomeConfig> configs = hub.getGenomeConfigs();
 
         Map<GenomeConfig, File> genomeFiles = new HashMap();
@@ -123,10 +133,15 @@ public class HubGenomeLoader extends GenomeLoader {
                 GenomeListItem item = new GenomeListItem(config.getName(), genomeFiles.get(config).getAbsolutePath(), config.id);
                 GenomeListManager.getInstance().addGenomeItem(item);
             }
+            MessageUtils.showMessage("Registered " + configs.size() + " genomes from hub.  Select one from the genome list to load it.");
         }
     }
 
 
+    /**
+     * Sets the genome's annotation tracks, either from a legacy preference entry for this hub or from
+     * user selections in the track selection dialog (interactive mode only).
+     */
     private static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
 
         // Potentially override default tracks from hub with user selections
@@ -176,11 +191,15 @@ public class HubGenomeLoader extends GenomeLoader {
 
     String hubURL;
 
+    /**
+     * Legacy loader instance for the given hub URL.
+     */
     public HubGenomeLoader(String hubURL) {
         this.hubURL = hubURL;
     }
 
     /**
+     * Legacy load: parses the hub, applies any track selections, saves a local genome json, and returns the Genome.
      *
      * @return
      * @throws IOException
