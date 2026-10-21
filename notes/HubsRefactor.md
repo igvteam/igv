@@ -150,9 +150,10 @@ Plan:
 3. **Recording the hub.**  Use `HubRegistry.addUserHub`, not the genome json.  The registry entry's `dbList` carries all
    of the hub's genome ids, so the hub appears in the "Track Hubs" menu for every genome it references, and it survives
    a genome refresh from the host.  `addUserHub` should skip a URL already present (it currently appends blindly).
-   The genome json `hubs` property is written only when IGV creates a json for a custom (twoBit) assembly from the hub,
-   as it does today; it is never modified for an existing genome.  Genomes loaded from a remote json URL or a fasta
-   need nothing further.
+   The genome json `hubs` property is written only when IGV creates a new json for a custom (twoBit) assembly from the
+   hub, as it does today: the hub URL is `hubs[0]`, making it the genome's annotation hub.  This is creating a json,
+   not modifying one; an existing genome's json is never modified.  Genomes loaded from a remote json URL or a fasta
+   need no special case: their URL is their id, and the registry entry applies to them like any other genome.
 
 4. **First-load annotation flag.**  Add a boolean to `GenomeConfig`, serialized in the json, meaning "prompt for default
    annotations on first load".  `GenomeManager.loadGenome` honors it after the loader returns: run
@@ -163,12 +164,13 @@ Plan:
    dispatching on genome count.
    - Single genome, equivalent to current: show the hub's track selection dialog via
      `SelectHubTracksAction.selectAndLoadTracks`, register with `HubRegistry.addUserHub`, update menus.
-   - Single genome, twoBit: existing assembly path (select annotations, save json with `hubs=[hubUrl]`, load).
+   - Single genome, twoBit: existing assembly path (select annotations, save a new json with the hub URL as
+     `hubs[0]`, load).
    - Single genome, id-only: look it up with `GenomeListManager.getGenomeTableRecord` then
      `HostedGenomes.getGenomeListItem`; load through step 2; register the hub.  Unknown id: message to the user.
    - Multiple genomes: build the candidate list, excluding genomes already in the pulldown and flagging unknown ids.
-     Show the new checkbox dialog.  For each accepted entry, create (twoBit) or fetch (id-only) the json, set the
-     first-load flag, add a `GenomeListItem`.  Register the hub once.  Then either open track selection for the
+     Show the new checkbox dialog.  For each accepted entry, create (twoBit, with the hub URL as `hubs[0]`) or fetch
+     (id-only) the json, set the first-load flag, add a `GenomeListItem`.  Register the hub once.  Then either open track selection for the
      current genome if it is equivalent to one of the hub's genomes, or offer the switch-genome prompt with the
      clear-tracks warning and a cancel.
 
