@@ -373,8 +373,8 @@ public class GenomeManager {
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
-        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
         try {
+            TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
             UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             if (dlg.isCanceled()) {
                 return null;
@@ -382,7 +382,8 @@ public class GenomeManager {
                 return dlg.getSelectedConfigs();
             }
         } catch (Exception e) {
-            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
+            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage(), e);
+            MessageUtils.showMessage("Error selecting annotation tracks from " + annotationHub + ": " + e.getMessage());
             return null;
         }
     }

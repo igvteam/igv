@@ -67,13 +67,13 @@ public class TrackDbHub {
     public List<TrackConfigContainer> getGroupedTrackConfigurations(String hubName) {
 
         if (groupTrackConfigs == null) {
-            // Build map of group objects
-            groupTrackConfigs = new ArrayList<>();
+            // Build into a local list, assigned only on success so a failure is not cached as an empty hub
+            List<TrackConfigContainer> containers = new ArrayList<>();
             Map<String, TrackConfigContainer> trackContainers = new HashMap<>();
 
             // Create a group for tracks without a group
             TrackConfigContainer nullContainer = new TrackConfigContainer(hubName, hubName, 0, true);
-            groupTrackConfigs.add(nullContainer);
+            containers.add(nullContainer);
 
             boolean hasGroups = this.groupStanzas != null;
             if (hasGroups) {
@@ -83,7 +83,7 @@ public class TrackDbHub {
                     int priority = groupStanza.hasProperty("priority") ? getPriority(groupStanza.getProperty("priority")) : Integer.MAX_VALUE - 1;
                     final TrackConfigContainer container = new TrackConfigContainer(name, groupStanza.getProperty("label"), priority, defaultOpen);
                     trackContainers.put(name, container);
-                    groupTrackConfigs.add(container);
+                    containers.add(container);
                 }
             }
 
@@ -108,7 +108,7 @@ public class TrackDbHub {
                     } else {
                         TrackConfigContainer container = new TrackConfigContainer(groupName, groupName, 1000, true);
                         trackContainers.put(groupName, container);
-                        groupTrackConfigs.add(container);
+                        containers.add(container);
                         parent = container;
                     }
                 }
@@ -128,7 +128,7 @@ public class TrackDbHub {
 
                     if (parent == null) {
                         // No parent or a superTrack => promote to top level
-                        groupTrackConfigs.add(container);
+                        containers.add(container);
                     } else {
                         parent.children.add(container);
                     }
@@ -148,10 +148,10 @@ public class TrackDbHub {
             }
 
             // Filter empty groups and sort
-            for (TrackConfigContainer c : groupTrackConfigs) {
+            for (TrackConfigContainer c : containers) {
                 c.trim();
             }
-            groupTrackConfigs = groupTrackConfigs.stream().filter(t -> !t.isEmpty()).collect(Collectors.toList());
+            groupTrackConfigs = containers.stream().filter(t -> !t.isEmpty()).collect(Collectors.toList());
 
 
             Collections.sort(groupTrackConfigs, Comparator.comparingInt(o -> o.priority));

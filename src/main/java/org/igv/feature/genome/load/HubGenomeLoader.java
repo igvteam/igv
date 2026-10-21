@@ -13,6 +13,7 @@ import org.igv.ucsc.hub.TrackConfigContainer;
 import org.igv.ui.IGV;
 import org.igv.ucsc.hub.TrackSelectionDialog;
 import org.igv.ui.genome.GenomeListManager;
+import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 
 import java.io.IOException;
@@ -77,19 +78,18 @@ public class HubGenomeLoader extends GenomeLoader {
         // If running in interactive mode opend dialog to set tracks.
         else if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting()) {
 
-            TrackSelectionDialog dlg =
-                    TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
-                            GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-
-            boolean dlgSuccess = true;
+            TrackSelectionDialog dlg;
             try {
+                dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
+                        GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
                 UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
             } catch (Exception e) {
-                dlgSuccess = false;
-                log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
+                log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage(), e);
+                MessageUtils.showMessage("Error selecting annotation tracks from " + hub.getUrl() + ": " + e.getMessage());
+                return;
             }
 
-            if (dlg.isCanceled() || !dlgSuccess) {
+            if (dlg.isCanceled()) {
                 return;
             }
 
