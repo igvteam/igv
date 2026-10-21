@@ -10,33 +10,22 @@ more trackDb.txt files that define the tracks for each genome listed.  If the hu
 genome the "useOneFile on" option can be set and contents of the genomes.txt and trackDb.txt files can be included
 in the hub.txt file.
 
-***Track data hub***
 
-A track hub defines tracks for a genome assembly that UCSC already hosts, such as hg38, mm39, or dm6.
+***Genome stanza fields required by IGV***
 
+All genome stanzas must include a `genome` field, which becomes the IGV genome `id`.  If the genome is a custom assembly
+it must also include a `twoBitPath` field, which becomes the `twoBitURL` in the genome json. The remaining fields are 
+optional, but the genome is degraded without them:
 
-- You supply the data files (bigBed, bigWig, BAM/CRAM, VCF, HiC, and so on) and the configuration files: `hub.txt`, `genomes.txt`, and one or more `trackDb.txt`.
-- In `genomes.txt`, each `genome` line names an existing UCSC database, for example `genome hg38`.
-- The reference sequence, base annotations, and tools such as BLAT all come from UCSC's own copy of that assembly.
+- `chromSizes` -- the 2bit reader does not expose a chromosome list, so without this the chromosome pulldown and 
+  whole genome view are disabled.  Files over 10 MB are ignored.  (Note the hub conversion sets 
+  `wholeGenomeView = false` regardless.)
+- `defaultPos` -- initial locus.  Without it IGV opens on the first known chromosome, if any.
+- `scientificName`, `organism`, `description` -- used in that order to build the display name as "name (id)".  With 
+  none of them the name is just the id.
+- `chromAliasBb` -- chromosome alias lookup.  Without it IGV falls back to its built-in alias defaults.
+- `twoBitBptURL` (or `twoBitBptUrl`) -- external 2bit index.  The 2bit's internal index is used otherwise.
+- `htmlPath` (-> `infoURL`), `blat`, `taxId` -- informational only.
 
-***Assembly hub***
-
-Assembly hubs are used for assemblies not hosted at UCSC.  They are described at https://genome.ucsc.edu/goldenpath/help/assemblyHubHelp.html
-An Assmebly hub is similar to a track hub, but it also provides the following information in the `genomes.txt` file
-or `genomes` stanza of the `hub.txt` file:
-
-    - `genome`
-    - `twoBitPath`
-    - `organism`
-    - `scientificName`
-    - `description`
-    - `defaultPos`
-    - `chromSizes`
-    - `chromAliasBb`
-    - `groups`
-
-**In short**
-
-A track hub layers your data on a genome UCSC already has. An assembly hub brings its own genome sequence, so you can browse an organism or assembly UCSC doesn't carry.
-
-Before building an assembly hub, check UCSC's GenArk collection, which already provides ready-made assembly hubs for thousands of NCBI assemblies. If your genome is there, you can attach a plain track hub to that GenArk assembly instead.
+Path-valued keys are resolved relative to the hub.txt or genomes.txt location by `HubParser`, so relative paths are 
+fine. 

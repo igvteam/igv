@@ -102,7 +102,8 @@ public class HubGenomeLoader extends GenomeLoader {
 
     /**
      * Shortcut method provided to support load-from-url.  The hub must be read and parsed to determine if it is an
-     * assembly hub.  This method avoids the need to load and parse again.
+     * assembly hub.  This method avoids the need to load and parse again.  This method is called from
+     * "File > Load from URL..." as well as "Genome > Load from URL..."
      *
      * @param hub
      * @throws IOException
