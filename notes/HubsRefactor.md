@@ -35,9 +35,9 @@ The genome might be referenced by ID / Accession or as a custom assembly with a 
 has code to handle these cases that we can use. All genome stanzas must contain a “genome” field, and will usually have
 a trackDb file reference.
 
-If the “genome” property matches the current IGV genome ID we present the track selection dialog from this hub. Also, in
-the background we update the genome json “hubs” property with the URL for this hub, if it is not already present, and
-add an entry to the “Track Hubs” menu for this hub. The menu entry should be in current code, the genome json update
+If the “genome” property matches the current IGV genome ID we present the track selection dialog from this hub. Also, we 
+update the local hub registry to associate the hub with this genome for future sessions
+add an entry to the “Track Hubs” menu for this hub. The menu entry should be in current code, the hub registry update
 possibly not.
 
 If the “genome” property does not match the current IGV genome we will switch to the hub genome. How this happens
@@ -62,7 +62,7 @@ entries for the local genome json files, as if they had been loaded from the “
 not, however, open the track selection dialog for choosing default annotations. Instead, the genome.json will be tagged
 so that default annotations are selected the first time it is loaded from the genome selection pulldown. As above in the
 single genome case, the hub url itself should be added to the local hub registry to associate this hub with the 
-referencedgenoms. The genome selection list should be rebuilt to include these new genomes.
+referenced genomws. The genome selection list should be rebuilt to include these new genomes.
 
 NOTE: For genome entries without a twoBitPath we need to verify that they are known to IGV. This is done as described
 above in the “Single genome” case. Any genome ids not known to IGV should be reported to the user, possibly in the same
