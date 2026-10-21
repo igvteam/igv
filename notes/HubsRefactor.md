@@ -73,14 +73,17 @@ current genome open the track selection dialog for that hub for the current geno
 user with the list of hubs from the genome and ask if they want to switch genomes to one in the list. We must also warn
 them that doing so will clear any currently loaded tracks. There should also be an option to cancel and do nothing.
 
-References:
+***References***
 
 https://genome.ucsc.edu/goldenpath/help/trackDb/trackDbHub.html
 https://genome.ucsc.edu/goldenpath/help/assemblyHubHelp.html
 
 
 
+***Test Hubs***
 
+https://public.gi.ucsc.edu/hausslerlab/t2t-h9-hub/hub.txt
+https://bds.mpi-cbg.de/hillerlab/CESAR/trackHub/hub.txt
 
 **Implementation Plan**
 
@@ -144,8 +147,7 @@ Plan:
 
 2. **Extract the host-load logic.**  Move the body of `GenomeSelectionDialog.loadButtonActionPerformed` into a static
    method, roughly `loadHostedGenome(GenomeListItem, downloadSequence, downloadAnnotations, selectAnnotations)`, that
-   produces the local genome json and optionally loads it.  The dialog calls it unchanged.  Hub flows call it with
-   downloads off, as `GenomeUtils.updateGenome` already does.
+   produces the local genome json and optionally loads it.  The dialog calls it unchanged.
 
 3. **Recording the hub.**  Use `HubRegistry.addUserHub`, not the genome json.  The registry entry's `dbList` carries all
    of the hub's genome ids, so the hub appears in the "Track Hubs" menu for every genome it references, and it survives
@@ -193,3 +195,27 @@ Those json files are not complete until the user has selected initial annotation
 load.  Annotation prompting must then work exactly as "Load Genome from Host": the prompt presents the genome's own
 annotation hub (`hubs[0]`).  For a custom (twoBit) assembly that is the hub itself; for an id-only genome it is the
 hosted definition's hub.  Tracks from the loaded hub are reached through the "Track Hubs" menu.
+
+
+***Implementation notes (Oct 21 2026)***
+
+Implemented as planned, with these specifics:
+
+- The first-load annotation flag (`selectAnnotationsOnLoad`) is honored in `JsonGenomeLoader.loadGenome`, before the
+  `Genome` is constructed, rather than in `GenomeManager.loadGenome` after it: the Genome derives its annotation
+  tracks from the config at construction, so the prompt must precede it.
+- `Hub.idMappings` was verified against GenArk by fetching each candidate hub.txt.  No GenArk hub exists for hg19,
+  hg18, mm9, dm3, danRer10, ce10, canFam5, panTro4/5, gorGor4, taeGut1, xenTro9, so they are not mapped.  hs1 maps
+  to GCA_009914755.4 (the GCF accession has no hub).  The pre-existing hg38 entry is kept.  tetNig2 and xenTro10 were
+  corrected; sacCer2 was dropped.
+- Single genome, id-only, already in the genome list: loaded with `GenomeManager.loadGenomeById`, as selecting it from
+  the pulldown would.  Only genomes not yet in the list go through `GenomeSelectionDialog.createLocalGenome`.
+- `IGVMenuBar.updateHubsMenu` omits a registry hub that is also one of the genome's own hubs, so an assembly created
+  from a hub lists that hub once.
+- `HubParser` keeps only the first whitespace-delimited word of most stanza values, so a multi-word `scientificName`,
+  `organism` or `description` is truncated in the generated genome name ("Python" for "Python bivittatus").  Pre-existing,
+  not changed.
+- After switching to a hosted (id-only) genome -- single genome hub, or the switch offered after a multi-genome hub --
+  the hub's own track selection dialog is shown, following the first-load default annotation prompt when there is
+  one, so the hub's tracks are not overlooked.  Not done for an assembly created from the hub, whose default
+  annotations are the hub's tracks.

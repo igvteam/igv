@@ -52,11 +52,17 @@ public class Genome {
     private static final Logger log = LogManager.getLogger(Genome.class);
     public static final Genome NULL_GENOME = new Genome("None", List.of(new Chromosome(0, "", 0)));
 
-    // Map some common IGV genome IDs to UCSC equivalents.  Primarily for BLAT usage
+    // Map some common IGV genome IDs to UCSC equivalents.  Used for BLAT and for matching track hubs, which name
+    // genomes by UCSC database name.
     private static final Map<String, String> ucsdIDMap = Map.of(
             "1kg_ref", "hg18",
             "1kg_v37", "hg19",
-            "b37", "hg19"
+            "b37", "hg19",
+            "GRCh37", "hg19",
+            "GRCh38", "hg38",
+            "GRCm38", "mm10",
+            "GRCm39", "mm39",
+            "T2T-CHM13v2.0", "hs1"
     );
 
     private final String id;
@@ -547,7 +553,7 @@ public class Genome {
     }
 
     public String getUCSCId() {
-        return ucscID == null ? id : ucscID;
+        return ucscID == null ? ucsdIDMap.getOrDefault(id, id) : ucscID;
     }
 
     public String getSpecies() {

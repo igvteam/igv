@@ -53,6 +53,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.igv.prefs.Constants.*;
 import static org.igv.ui.UIConstants.*;
@@ -700,8 +702,12 @@ public class IGVMenuBar extends JMenuBar {
 
         }
 
-        // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.
-        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
+        // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.  A hub that
+        // is also one of the genome's own hubs (e.g. the hub an assembly was created from) is listed once, above.
+        Set<String> genomeHubUrls = genome.getTrackHubs().stream().map(Hub::getUrl).collect(Collectors.toSet());
+        List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId()).stream()
+                .filter(hd -> !genomeHubUrls.contains(hd.getUrl()))
+                .collect(Collectors.toList());
         if (selectedHubs != null && selectedHubs.size() > 0) {
             hubsMenu.addSeparator();
             for (HubDescriptor hub : selectedHubs) {

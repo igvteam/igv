@@ -101,10 +101,11 @@ public class HubRegistry {
     }
 
     public static void addUserHub(Hub hub) {
-        if (selectedHubDescriptors == null) {
-            selectedHubDescriptors = new ArrayList<>();
+        List<HubDescriptor> selected = getSelectedHubs();
+        if (selected.stream().anyMatch(hd -> hd.getUrl().equals(hub.getUrl()))) {
+            return;
         }
-        selectedHubDescriptors.add(hub.getDescriptor());
+        selected.add(hub.getDescriptor());
         writeSelectedHubs();
 
         // Reset the maps so they will be rebuilt on next access

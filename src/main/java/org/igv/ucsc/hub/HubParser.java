@@ -33,10 +33,6 @@ public class HubParser {
     // Accessed from the hub loading threads started in loadHubs(), as well as the calling thread.
     private static final Map<String, Hub> hubCache = new ConcurrentHashMap<>();
 
-    public static Hub loadAssemblyHub(String url) throws IOException {
-        return loadHub(url);
-    }
-
     public static Hub loadHub(String url) throws IOException {
 
         // Check if the Hub is already cached

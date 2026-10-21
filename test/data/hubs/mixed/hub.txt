@@ -1,0 +1,5 @@
+hub mixedHub
+shortLabel Mixed hub
+longLabel Hub referencing a UCSC hosted genome and a custom assembly
+genomesFile genomes.txt
+email nobody@example.com

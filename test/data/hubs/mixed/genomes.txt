@@ -1,0 +1,11 @@
+genome hg38
+trackDb hg38/trackDb.txt
+
+genome myAsm1
+trackDb myAsm1/trackDb.txt
+twoBitPath myAsm1/myAsm1.2bit
+chromSizes myAsm1/myAsm1.chrom.sizes
+description Test assembly
+organism Testus organismus
+scientificName Testus organismus
+defaultPos chr1:1000-2000

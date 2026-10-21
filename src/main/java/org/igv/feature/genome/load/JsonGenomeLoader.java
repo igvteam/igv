@@ -1,8 +1,12 @@
 package org.igv.feature.genome.load;
 
+import org.igv.Globals;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.genome.GenomeDownloadUtils;
+import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.ui.IGV;
 import org.igv.util.FileUtils;
 import org.igv.util.ParsingUtils;
 
@@ -24,8 +28,30 @@ public class JsonGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
         GenomeConfig genomeConfig = loadGenomeConfig();
+        if (genomeConfig.selectAnnotationsOnLoad) {
+            selectAnnotations(genomeConfig);
+        }
         Genome genome = new Genome(genomeConfig);
         return genome;
+    }
+
+    /**
+     * Genomes registered from a multi-genome hub defer selection of default annotations to their first load.  Prompt
+     * the user as "Load Genome from Host" would, from the genome's own annotation hub, then save the completed
+     * definition so the prompt is not repeated.  Done before the Genome is constructed because the Genome derives
+     * its annotation tracks from the config.
+     */
+    private void selectAnnotations(GenomeConfig config) throws IOException {
+        config.selectAnnotationsOnLoad = false;
+        if (IGV.hasInstance() && !Globals.isBatch() && !Globals.isHeadless() && !Globals.isTesting() &&
+                config.getHubs() != null && !config.getHubs().isEmpty()) {
+            List<TrackConfig> selectedTracks =
+                    GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+            if (selectedTracks != null) {
+                config.setTracks(selectedTracks);
+            }
+        }
+        GenomeDownloadUtils.saveLocalGenome(config);
     }
 
     public GenomeConfig loadGenomeConfig() throws IOException {

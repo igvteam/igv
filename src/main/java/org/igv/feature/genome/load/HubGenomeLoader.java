@@ -3,7 +3,6 @@ package org.igv.feature.genome.load;
 import org.igv.Globals;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeDownloadUtils;
-import org.igv.ui.genome.GenomeListItem;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -13,19 +12,17 @@ import org.igv.ucsc.hub.HubParser;
 import org.igv.ucsc.hub.TrackConfigContainer;
 import org.igv.ui.IGV;
 import org.igv.ucsc.hub.TrackSelectionDialog;
-import org.igv.ui.WaitCursorManager;
 import org.igv.ui.genome.GenomeListManager;
-import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 
-import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Loads a "genome" from a UCSC track hub
+ * Loads a "genome" from a UCSC track hub.  Hub URLs entered by the user are handled by
+ * {@link org.igv.ucsc.hub.TrackHubLoader}; this class remains as the GenomeLoader for hub URL genome paths, as
+ * recorded in sessions and the genome list.
  */
 public class HubGenomeLoader extends GenomeLoader {
 
@@ -56,94 +53,10 @@ public class HubGenomeLoader extends GenomeLoader {
     }
 
     /**
-     * Load and parse a hub.txt file.  As a side effect creates and stores a local genome json definition for future loads.
-     *
-     * @param hubURL
-     * @return
-     * @throws IOException
-     */
-    public static void loadGenome(String hubURL) throws IOException {
-
-        final WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-
-        SwingWorker<File, Void> worker = new SwingWorker<>() {
-            @Override
-            protected File doInBackground() throws Exception {
-                File genomeFile = null;
-                try {
-                    Hub hub = HubParser.loadHub(hubURL);
-                    loadAssemblyHub(hub);
-                } catch (Exception e) {
-                    log.error("Error loading hub: " + e.getMessage());
-                    MessageUtils.showMessage("Error loading hub: " + e.getMessage());
-                }
-                return genomeFile;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    File genomeFile = get();
-                    if (genomeFile != null) {
-                        WaitCursorManager.removeWaitCursor(token);
-                        GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
-                    }
-                } catch (Exception e) {
-                    log.error("Error loading hub: " + e.getMessage());
-                    MessageUtils.showMessage("Error loading hub: " + e.getMessage());
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
-                }
-            }
-        };
-
-        worker.execute();
-    }
-
-    /**
-     * Shortcut method provided to support load-from-url.  The hub must be read and parsed to determine if it is an
-     * assembly hub.  This method avoids the need to load and parse again.  This method is called from
-     * "File > Load from URL..." as well as "Genome > Load from URL..."
-     *
-     * @param hub
-     * @throws IOException
-     */
-    public static void loadAssemblyHub(Hub hub) throws IOException {
-
-        if (!hub.isAssemblyHub()) {
-            throw new IOException("Not an assembly hub (no twoBitPath): " + hub.getUrl());
-        }
-
-        List<GenomeConfig> configs = hub.getGenomeConfigs();
-
-        Map<GenomeConfig, File> genomeFiles = new HashMap();
-        for (GenomeConfig config : configs) {
-            config.setHubs(Arrays.asList(hub.getUrl()));
-            if (configs.size() == 1) {
-                selectAnnotationTracks(hub, config);
-            }
-            File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-            if (configs.size() == 1) {
-                GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
-            }
-            genomeFiles.put(config, genomeFile);
-        }
-
-        if (configs.size() > 1) {
-            for (GenomeConfig config : configs) {
-                GenomeListItem item = new GenomeListItem(config.getName(), genomeFiles.get(config).getAbsolutePath(), config.id);
-                GenomeListManager.getInstance().addGenomeItem(item);
-            }
-            MessageUtils.showMessage("Registered " + configs.size() + " genomes from hub.  Select one from the genome list to load it.");
-        }
-    }
-
-
-    /**
      * Sets the genome's annotation tracks, either from a legacy preference entry for this hub or from
      * user selections in the track selection dialog (interactive mode only).
      */
-    private static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
+    public static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
 
         // Potentially override default tracks from hub with user selections
 
@@ -210,12 +123,12 @@ public class HubGenomeLoader extends GenomeLoader {
 
         Hub hub = HubParser.loadHub(hubURL);
 
-        GenomeConfig config = hub.getGenomeConfigs().get(0);
-        selectAnnotationTracks(hub, config);
-
-        if (config == null) {
-            return GenomeManager.getInstance().getCurrentGenome();
+        List<GenomeConfig> configs = hub.getGenomeConfigs();
+        if (configs.isEmpty()) {
+            throw new IOException("Hub does not define a genome sequence (no twoBitPath): " + hubURL);
         }
+        GenomeConfig config = configs.get(0);
+        selectAnnotationTracks(hub, config);
 
         // Search for list of tracks for this hub in the preferences.  This was used prior to version 2.19.2, current
         // versions of IGV store track information in a genome json file.
