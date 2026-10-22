@@ -65,7 +65,12 @@ public class TrackDbHubTest {
         List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
         assertEquals(1, containers.size());
 
-        TrackConfigContainer superTrack = containers.get(0);
+        // No groups.txt, so "group roadmap" produces an implicit top-level container
+        TrackConfigContainer group = containers.get(0);
+        assertEquals("roadmap", group.name);
+        assertEquals(1, group.children.size());
+
+        TrackConfigContainer superTrack = group.children.get(0);
         assertEquals("CompRoadmapbySample", superTrack.name);
         assertEquals(1, superTrack.children.size());
 

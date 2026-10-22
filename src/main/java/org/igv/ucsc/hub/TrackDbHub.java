@@ -101,7 +101,7 @@ public class TrackDbHub {
                     parent = trackContainers.get(s.getOwnProperty("parent"));
                 }
 
-                if (parent == null && hasGroups && s.hasProperty("group")) {
+                if (parent == null && s.hasProperty("group")) {
                     String groupName = s.getProperty("group");
                     if (trackContainers.containsKey(groupName)) {
                         parent = trackContainers.get(groupName);
