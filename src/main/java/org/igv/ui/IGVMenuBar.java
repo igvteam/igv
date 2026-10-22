@@ -84,7 +84,7 @@ public class IGVMenuBar extends JMenuBar {
     private JMenuItem recentFilesMenu;
     private JMenuItem editAnnotationsItem;
     private JMenu fileMenu;
-    private JMenu hubsMenu;
+    private JMenu tracksMenu;
 
     static IGVMenuBar createInstance(IGV igv) {
         if (instance != null) {
@@ -131,8 +131,8 @@ public class IGVMenuBar extends JMenuBar {
         fileMenu = new JMenu("File");
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
-        hubsMenu = new JMenu("Tracks");
-        menus.add(hubsMenu);
+        tracksMenu = new JMenu("Tracks");
+        menus.add(tracksMenu);
         menus.add(createSessionsMenu("Sessions"));
         menus.add(createViewMenu("View"));
         menus.add(createRegionsMenu("Regions"));
@@ -140,7 +140,7 @@ public class IGVMenuBar extends JMenuBar {
         extrasMenu = createExtrasMenu("Extras");
         menus.add(extrasMenu);
 
-        updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
+        updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
 
         // Create a placehold Google menu.  If not explicitly enabled it will remain invisible until triggered
         // by loading a protected Google resource
@@ -604,34 +604,34 @@ public class IGVMenuBar extends JMenuBar {
     }
 
     /**
-     * Update the Track Hubs menu.  The items presented depend on the current genome.
+     * Update the Tracks menu.  The items presented depend on the current genome.
      *
      * @param genome
      */
-    private void updateHubsMenu(Genome genome) {
+    private void updateTracksMenu(Genome genome) {
 
         if (genome == null) {
             return;
         }
 
-        hubsMenu.removeAll();
+        tracksMenu.removeAll();
 
         MenuAction menuAction = null;
 
         // Load menu items
         menuAction = new LoadFilesMenuAction("Load Tracks from File...", KeyEvent.VK_L, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKS_FROM_URL, KeyEvent.VK_U, igv);
         menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Genome defined hubs -- these are curated, typically a single hub for annotations.
         if (genome.getTrackHubs().size() > 0) {
-            hubsMenu.addSeparator();
+            tracksMenu.addSeparator();
             for (Hub trackHub : genome.getTrackHubs()) {
-                hubsMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
+                tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
             }
 
 
@@ -640,7 +640,7 @@ public class IGVMenuBar extends JMenuBar {
             for (String failedHubUrl : genome.getFailedTrackHubs()) {
                 JMenuItem failedItem = new JMenuItem(failedHubUrl + " (failed to load)");
                 failedItem.setEnabled(false);
-                hubsMenu.add(failedItem);
+                tracksMenu.add(failedItem);
             }
         }
 
@@ -654,8 +654,8 @@ public class IGVMenuBar extends JMenuBar {
             menuAction = new LoadFromServerAction("Load Tracks from Server...", KeyEvent.VK_S, igv);
             menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
             JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-            hubsMenu.add(loadTracksFromServerMenuItem);
-            hubsMenu.addSeparator();
+            tracksMenu.add(loadTracksFromServerMenuItem);
+            tracksMenu.addSeparator();
         }
 
 
@@ -668,34 +668,34 @@ public class IGVMenuBar extends JMenuBar {
             if (EncodeTrackChooserFactory.genomeSupported(ucscId)) {
                 JMenuItem chipItem = new JMenuItem();
                 chipItem.setAction(new BrowseEncodeAction("ENCODE ChIP Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_CHIP, igv));
-                hubsMenu.add(chipItem);
+                tracksMenu.add(chipItem);
 
                 JMenuItem otherSignalsItem = new JMenuItem();
                 otherSignalsItem.setAction(new BrowseEncodeAction("ENCODE Other Signals ...", 0, BrowseEncodeAction.Type.SIGNALS_OTHER, igv));
-                hubsMenu.add(otherSignalsItem);
+                tracksMenu.add(otherSignalsItem);
 
                 if (EncodeTrackChooserFactory.hicSupportedUCSC(ucscId)) {
                     JMenuItem hicSignalsItem = new JMenuItem();
                     hicSignalsItem.setAction(new BrowseEncodeAction("ENCODE Contact Maps ...", 0, BrowseEncodeAction.Type.HIC, igv));
-                    hubsMenu.add(hicSignalsItem);
+                    tracksMenu.add(hicSignalsItem);
                 }
 
                 JMenuItem otherItem = new JMenuItem();
                 otherItem.setAction(new BrowseEncodeAction("ENCODE Other ...", 0, BrowseEncodeAction.Type.OTHER, igv));
-                hubsMenu.add(otherItem);
+                tracksMenu.add(otherItem);
             }
 
             // UCSC hosted ENCODE menu (2012).
             if (EncodeTrackChooserFactory.genomeSupportedUCSC(ucscId)) {
                 JMenuItem encodeUCSCMenuItem = MenuAndToolbarUtils.createMenuItem(
                         new BrowseEncodeAction("ENCODE 2012 UCSC Repository ...", KeyEvent.VK_E, BrowseEncodeAction.Type.UCSC, igv));
-                hubsMenu.add(encodeUCSCMenuItem);
+                tracksMenu.add(encodeUCSCMenuItem);
             }
 
             if ("hg38".equals(ucscId)) {
                 JMenuItem fdnItem = new JMenuItem();
                 fdnItem.setAction(new BrowseEncodeAction("4DN ...", 0, BrowseEncodeAction.Type.FOUR_DN, igv));
-                hubsMenu.add(fdnItem);
+                tracksMenu.add(fdnItem);
             }
 
         }
@@ -710,7 +710,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Add separator if there are any hubs
         if(selectedHubs != null && selectedHubs.size() > 0) {
-            hubsMenu.addSeparator();
+            tracksMenu.addSeparator();
             // Pad the heading so its text lines up with the menu item text (item margin + icon column)
             JLabel hubsHeading = new JLabel("Hubs", JLabel.LEFT);
             hubsHeading.setFont(FontManager.getFont(Font.BOLD, 12));
@@ -718,17 +718,17 @@ public class IGVMenuBar extends JMenuBar {
             Dimension iconSize = UIManager.getDimension("MenuItem.minimumIconSize");
             int iconColumn = iconSize == null ? 0 : iconSize.width + new JMenuItem().getIconTextGap();
             hubsHeading.setBorder(BorderFactory.createEmptyBorder(itemInsets.top, itemInsets.left + iconColumn, itemInsets.bottom, itemInsets.right));
-            hubsMenu.add(hubsHeading);
+            tracksMenu.add(hubsHeading);
 
             for (HubDescriptor hub : selectedHubs) {
-                hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
+                tracksMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }
         }
 
         // Add manage item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
         List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
         if (!hubs.isEmpty()) {
-            hubsMenu.addSeparator();
+            tracksMenu.addSeparator();
             JMenuItem addHubItem = new JMenuItem("Manage Track Hubs ...");
             addHubItem.addActionListener(e -> {
                 final List<HubDescriptor> previous = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
@@ -737,7 +737,7 @@ public class IGVMenuBar extends JMenuBar {
                 if (!hubSelectionDialog.isCanceled()) {
                     List<HubDescriptor> selected = hubSelectionDialog.getSelectedHubs();
                     HubRegistry.setSelectedHubs(selected);
-                    updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
+                    updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
 
                     // Summarize what changed in the Tracks menu.  No message if nothing changed.
                     Set<String> previousUrls = previous.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
@@ -761,13 +761,13 @@ public class IGVMenuBar extends JMenuBar {
                     }
                 }
             });
-            hubsMenu.add(addHubItem);
+            tracksMenu.add(addHubItem);
         }
 
 
         // Load hub from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
-        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
     }
 
@@ -1145,7 +1145,7 @@ public class IGVMenuBar extends JMenuBar {
     public synchronized void updateMenus(Genome genome) {
         if (genome != null) {
             UIUtilities.invokeOnEventThread(() -> {
-                updateHubsMenu(genome);
+                updateTracksMenu(genome);
                 updateFileMenu(genome);
                 editAnnotationsItem.setEnabled(genome.getGenomeHub() != null);
             });

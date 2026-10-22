@@ -103,7 +103,7 @@ https://bds.mpi-cbg.de/hillerlab/CESAR/trackHub/hub.txt
   loaded by the time the genome selection dialog has been used; in any event the fetch is required.
 - `HubRegistry` persists user-selected and user-added hubs in `~/igv/hubs.txt`, tab-delimited:
   `hubUrl, shortLabel, longLabel, dbList, descriptionUrl`.  `dbList` is the comma-separated list of genome ids from
-  the hub's genome stanzas.  `IGVMenuBar.updateHubsMenu` shows a registry hub for the current genome when
+  the hub's genome stanzas.  `IGVMenuBar.updateTracksMenu` shows a registry hub for the current genome when
   `genome.getUCSCId()` matches an entry in `dbList` exactly.  Registry entries are independent of the genome json, so
   they survive a genome refresh from the host.
 - Nothing in `GenomeConfig` or `GenomeManager` supports "select default annotations on first load".
@@ -210,7 +210,7 @@ Implemented as planned, with these specifics:
   corrected; sacCer2 was dropped.
 - Single genome, id-only, already in the genome list: loaded with `GenomeManager.loadGenomeById`, as selecting it from
   the pulldown would.  Only genomes not yet in the list go through `GenomeSelectionDialog.createLocalGenome`.
-- `IGVMenuBar.updateHubsMenu` omits a registry hub that is also one of the genome's own hubs, so an assembly created
+- `IGVMenuBar.updateTracksMenu` omits a registry hub that is also one of the genome's own hubs, so an assembly created
   from a hub lists that hub once.
 - `HubParser` keeps only the first whitespace-delimited word of most stanza values, so a multi-word `scientificName`,
   `organism` or `description` is truncated in the generated genome name ("Python" for "Python bivittatus").  Pre-existing,
