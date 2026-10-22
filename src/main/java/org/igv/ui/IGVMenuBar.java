@@ -25,6 +25,7 @@ import org.igv.track.CombinedDataSourceDialog;
 import org.igv.track.Track;
 import org.igv.ucsc.hub.Hub;
 import org.igv.ucsc.hub.HubDescriptor;
+import org.igv.ucsc.hub.HubMenuItem;
 import org.igv.ucsc.hub.HubRegistry;
 import org.igv.ucsc.hub.HubSelectionDialog;
 import org.igv.ui.action.*;
@@ -1244,7 +1245,7 @@ public class IGVMenuBar extends JMenuBar {
         MenuAction menuAction;
         menuAction = new SelectHubTracksAction(/*"Hub: " + */trackHub.getShortLabel() + "... ", trackHub, id);
         menuAction.setToolTipText(trackHub.getLongLabel());
-        JMenuItem selectHubTracksItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        JMenuItem selectHubTracksItem = new HubMenuItem(menuAction, trackHub.getDescriptionUrl());
         selectHubTracksItem.setToolTipText(trackHub.getLongLabel());
         return selectHubTracksItem;
     }
