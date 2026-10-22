@@ -47,17 +47,12 @@ public class SelectHubTracksAction extends MenuAction {
                     if(hub.getSupportedTrackCount(genomeId) > 0) {
                         selectAndLoadTracks(hub, genomeId);
                     } else {
-                        boolean remove =  MessageUtils.confirm(hubDescriptor.getShortLabel() +
+                        MessageUtils.showMessage(hubDescriptor.getShortLabel() +
                                 " does not have any IGV supported tracks for " + genomeId);
-                        // TODO -- remove this hub from the registry, its not clear how to do this persistently
-//                        if (remove) {
-//                            HubRegistry.removeSelectedHub(hubDescriptor);
-//                            IGVMenuBar.getInstance().updateMenus();
-//                        }
                     }
 
                 } catch (Exception e) {
-                    log.error("Error loading track configurations", e);
+                    log.error("Error selecting or loading tracks for hub " + hubDescriptor.getShortLabel(), e);
                     MessageUtils.showMessage(e.getMessage());
                 } finally {
                     if (token != null) {
