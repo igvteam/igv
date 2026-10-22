@@ -100,7 +100,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
                     "Enter URL to a  hub.txt file", JOptionPane.PLAIN_MESSAGE);
             if (url != null && !url.trim().isBlank()) {
-                loadTrackHub(url.trim());
+                loadTrackHub(url.trim(), true);
             }
         }
     }
@@ -108,7 +108,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     private void loadUrls(List<String> inputs, List<String> indexes, boolean isHtsGet) {
 
         if (inputs.size() == 1 && HubGenomeLoader.isHubURL(inputs.getFirst())) {
-            loadTrackHub(inputs.getFirst());
+            loadTrackHub(inputs.getFirst(), true);
 
         } else if (inputs.size() == 1 && SessionReader.isSessionFile(inputs.getFirst())) {
             // Session URL
@@ -135,12 +135,14 @@ public class LoadFromURLMenuAction extends MenuAction {
      * "Load Tracks from URL..." when the URL is a hub.txt.
      *
      * @param url
+     * @param confirmGenomeSwitch true if the user should confirm before the hub switches the current genome, i.e.
+     *                            when loading from the Tracks menu.
      */
-    private static void loadTrackHub(final String url) {
+    private static void loadTrackHub(final String url, final boolean confirmGenomeSwitch) {
 
         LongRunningTask.submit(() -> {
             try {
-                TrackHubLoader.loadHub(url);
+                TrackHubLoader.loadHub(url, confirmGenomeSwitch);
             } catch (IOException ex) {
                 log.error("Error loading track hub", ex);
                 MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
@@ -153,7 +155,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             url = url.trim();
             try {
                 if (HubGenomeLoader.isHubURL(url)) {
-                    loadTrackHub(url);
+                    loadTrackHub(url, false);
                 } else {
                     GenomeManager.getInstance().loadGenome(url);
                 }

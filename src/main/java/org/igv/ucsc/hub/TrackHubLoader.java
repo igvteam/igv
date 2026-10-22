@@ -28,7 +28,8 @@ import java.util.*;
  * <p>
  * Single genome hub: if the hub references the current genome its track selection dialog is shown, otherwise IGV
  * switches to the hub's genome -- creating it from the hub if it has a twoBitPath, else loading it as if selected
- * from "Load Genome from Host" and then showing the hub's track selection dialog.
+ * from "Load Genome from Host" and then showing the hub's track selection dialog.  A genome switch is expected
+ * from the Genomes menu but not from the Tracks menu, so the latter confirms it with the user first.
  * <p>
  * Multiple genome hub: the user is offered the referenced genomes not already in the genome list, and those selected
  * are added, with default annotation selection deferred to their first load.  Then, if the current genome is one of
@@ -42,7 +43,13 @@ public class TrackHubLoader {
 
     private static Logger log = LogManager.getLogger(TrackHubLoader.class);
 
-    public static void loadHub(String url) throws IOException {
+    /**
+     * @param url                 hub.txt url
+     * @param confirmGenomeSwitch if true, and the hub references a single genome other than the current one, ask
+     *                            the user to confirm the genome switch before proceeding.  Loading from the Tracks
+     *                            menu passes true; a switch is the expectation from the Genomes menu.
+     */
+    public static void loadHub(String url, boolean confirmGenomeSwitch) throws IOException {
 
         Hub hub = HubParser.loadHub(url);
         List<String> genomeIds = hub.getGenomeIds();
@@ -50,13 +57,13 @@ public class TrackHubLoader {
             throw new IOException("Hub does not reference any genomes: " + url);
         }
         if (genomeIds.size() == 1) {
-            loadSingleGenomeHub(hub, genomeIds.get(0));
+            loadSingleGenomeHub(hub, genomeIds.get(0), confirmGenomeSwitch);
         } else {
             loadMultiGenomeHub(hub, genomeIds);
         }
     }
 
-    private static void loadSingleGenomeHub(Hub hub, String genomeId) throws IOException {
+    private static void loadSingleGenomeHub(Hub hub, String genomeId, boolean confirmGenomeSwitch) throws IOException {
 
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
 
@@ -64,8 +71,21 @@ public class TrackHubLoader {
             HubRegistry.addUserHub(hub);
             IGVMenuBar.getInstance().updateMenus(currentGenome);
             selectTracks(hub, currentGenome);
+            return;
+        }
 
-        } else if (hub.hasTwoBit(genomeId)) {
+        // The hub references a different genome.  Switching from the Tracks menu is unexpected, so confirm first.
+        if (confirmGenomeSwitch) {
+            String current = currentGenome == null ? "none" : currentGenome.getDisplayName();
+            boolean proceed = MessageUtils.confirm("This hub references the genome \"" + genomeId +
+                    "\", not the current genome (" + current + ").  Switching genomes will unload all tracks.  " +
+                    "Switch to " + genomeId + "?");
+            if (!proceed) {
+                return;
+            }
+        }
+
+        if (hub.hasTwoBit(genomeId)) {
             // The hub defines the assembly.  The hub becomes the genome's annotation hub (hubs[0]).
             GenomeConfig config = hub.getGenomeConfig(genomeId);
             config.setHubs(Arrays.asList(hub.getUrl()));

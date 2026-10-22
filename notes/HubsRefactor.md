@@ -76,6 +76,7 @@ them that doing so will clear any currently loaded tracks. There should also be 
 ***References***
 
 https://genome.ucsc.edu/goldenpath/help/trackDb/trackDbHub.html
+
 https://genome.ucsc.edu/goldenpath/help/assemblyHubHelp.html
 
 
@@ -83,7 +84,10 @@ https://genome.ucsc.edu/goldenpath/help/assemblyHubHelp.html
 ***Test Hubs***
 
 https://public.gi.ucsc.edu/hausslerlab/t2t-h9-hub/hub.txt
+
 https://bds.mpi-cbg.de/hillerlab/CESAR/trackHub/hub.txt
+
+https://hgdownload.soe.ucsc.edu/hubs/GCA/054/883/195/GCA_054883195.1/hub.txt
 
 **Implementation Plan**
 
