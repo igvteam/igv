@@ -131,7 +131,7 @@ public class IGVMenuBar extends JMenuBar {
         fileMenu = new JMenu("File");
         menus.add(fileMenu);
         menus.add(createGenomesMenu());
-        hubsMenu = new JMenu("Track Hubs");
+        hubsMenu = new JMenu("Tracks");
         menus.add(hubsMenu);
         menus.add(createSessionsMenu("Sessions"));
         menus.add(createViewMenu("View"));
@@ -224,45 +224,15 @@ public class IGVMenuBar extends JMenuBar {
 
         MenuAction menuAction;
 
-        // Load menu items
-        menuAction = new LoadFilesMenuAction("Load Tracks from File...", KeyEvent.VK_L, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKS_FROM_URL, KeyEvent.VK_U, igv);
-        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
-        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // TODO -- not sure what this does or where it belongs in the new menu structure
-//        recentFilesMenu = new RecentUrlsMenu();
-//        tracksMenu.add(recentFilesMenu);
-//        recentFilesMenu.setVisible(IGV.getInstance().getRecentUrls() != null && !IGV.getInstance().getRecentUrls().isEmpty());
-//        menu.add(new JSeparator());
-
-        // The legacy "load from server" menu.  Most IGV users will never see it, but some might have custom settings that use it
-        if (genome != null && LoadFromServerAction.getNodeURLs(genome.getId()) != null && !LoadFromServerAction.getNodeURLs(genome.getId()).isEmpty()) {
-            menuAction = new LoadFromServerAction("Load Tracks from Server...", KeyEvent.VK_S, igv);
-            menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
-            JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
-            fileMenu.add(loadTracksFromServerMenuItem);
-        }
-
-//        fileMenu.add(new JSeparator());
-//        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
-//        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
-//        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
 
         // Sample info Load menu items
-        fileMenu.addSeparator();
+
         menuAction = new LoadFilesMenuAction("Load Sample Info from File...", KeyEvent.VK_L, igv, LoadFilesMenuAction.Type.SAMPLE_INFO);
         fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SAMPLEINFO_FROM_URL, KeyEvent.VK_U, igv);
         fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // ***** Snapshots
         fileMenu.addSeparator();
+
 
         // Snapshot Application
         menuAction =
@@ -646,21 +616,49 @@ public class IGVMenuBar extends JMenuBar {
 
         hubsMenu.removeAll();
 
+        MenuAction menuAction = null;
+
+        // Load menu items
+        menuAction = new LoadFilesMenuAction("Load Tracks from File...", KeyEvent.VK_L, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_TRACKS_FROM_URL, KeyEvent.VK_U, igv);
+        menuAction.setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
+        hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Genome defined hubs -- these are curated, typically a single hub for annotations.
         if (genome.getTrackHubs().size() > 0) {
+            hubsMenu.addSeparator();
             for (Hub trackHub : genome.getTrackHubs()) {
                 hubsMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));
             }
+
+
+            // Genome defined hubs that could not be loaded.  Shown disabled, rather than omitted, so it is clear that a
+            // hub is missing.  The reason is in the log.
+            for (String failedHubUrl : genome.getFailedTrackHubs()) {
+                JMenuItem failedItem = new JMenuItem(failedHubUrl + " (failed to load)");
+                failedItem.setEnabled(false);
+                hubsMenu.add(failedItem);
+            }
         }
 
-        // Genome defined hubs that could not be loaded.  Shown disabled, rather than omitted, so it is clear that a
-        // hub is missing.  The reason is in the log.
-        for (String failedHubUrl : genome.getFailedTrackHubs()) {
-            JMenuItem failedItem = new JMenuItem(failedHubUrl + " (failed to load)");
-            failedItem.setEnabled(false);
-            hubsMenu.add(failedItem);
+//        fileMenu.add(new JSeparator());
+//        menuAction = new ReloadTracksMenuAction("Reload Tracks", -1, igv);
+//        menuAction.setToolTipText(RELOAD_SESSION_TOOLTIP);
+//        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        // The legacy "load from server" menu.  Most IGV users will never see it, but some might have custom settings that use it
+        if (genome != null && LoadFromServerAction.getNodeURLs(genome.getId()) != null && !LoadFromServerAction.getNodeURLs(genome.getId()).isEmpty()) {
+            menuAction = new LoadFromServerAction("Load Tracks from Server...", KeyEvent.VK_S, igv);
+            menuAction.setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
+            JMenuItem loadTracksFromServerMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+            hubsMenu.add(loadTracksFromServerMenuItem);
+            hubsMenu.addSeparator();
         }
+
+
 
         // ENCODE items.  These will be hidden / shown depending on genome chosen
         String ucscId = genome.getUCSCId();
@@ -702,34 +700,65 @@ public class IGVMenuBar extends JMenuBar {
 
         }
 
+        // Hubs
         // User selected UCSC public and user loaded hubs.  Selections are stored in "hubs.txt" file.  A hub that
         // is also one of the genome's own hubs (e.g. the hub an assembly was created from) is listed once, above.
         Set<String> genomeHubUrls = genome.getTrackHubs().stream().map(Hub::getUrl).collect(Collectors.toSet());
         List<HubDescriptor> selectedHubs = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId()).stream()
                 .filter(hd -> !genomeHubUrls.contains(hd.getUrl()))
                 .collect(Collectors.toList());
-        if (selectedHubs != null && selectedHubs.size() > 0) {
+
+        // Add separator if there are any hubs
+        if(selectedHubs != null && selectedHubs.size() > 0) {
             hubsMenu.addSeparator();
+            // Pad the heading so its text lines up with the menu item text (item margin + icon column)
+            JLabel hubsHeading = new JLabel("Hubs", JLabel.LEFT);
+            hubsHeading.setFont(FontManager.getFont(Font.BOLD, 12));
+            Insets itemInsets = new JMenuItem().getInsets();
+            Dimension iconSize = UIManager.getDimension("MenuItem.minimumIconSize");
+            int iconColumn = iconSize == null ? 0 : iconSize.width + new JMenuItem().getIconTextGap();
+            hubsHeading.setBorder(BorderFactory.createEmptyBorder(itemInsets.top, itemInsets.left + iconColumn, itemInsets.bottom, itemInsets.right));
+            hubsMenu.add(hubsHeading);
+
             for (HubDescriptor hub : selectedHubs) {
                 hubsMenu.add(createTrackHubItem(hub, genome.getUCSCId()));
             }
         }
 
-        if (hubsMenu.getItemCount() > 0) {
-            hubsMenu.addSeparator();
-        }
-
-        // Add select item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
+        // Add manage item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
         List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
         if (!hubs.isEmpty()) {
-            JMenuItem addHubItem = new JMenuItem("Select Track Hubs ...");
+            hubsMenu.addSeparator();
+            JMenuItem addHubItem = new JMenuItem("Manage Track Hubs ...");
             addHubItem.addActionListener(e -> {
+                final List<HubDescriptor> previous = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
                 final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
                 hubSelectionDialog.setVisible(true);
                 if (!hubSelectionDialog.isCanceled()) {
                     List<HubDescriptor> selected = hubSelectionDialog.getSelectedHubs();
                     HubRegistry.setSelectedHubs(selected);
                     updateHubsMenu(GenomeManager.getInstance().getCurrentGenome());
+
+                    // Summarize what changed in the Tracks menu.  No message if nothing changed.
+                    Set<String> previousUrls = previous.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
+                    Set<String> selectedUrls = selected.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
+                    List<String> added = selected.stream().filter(hd -> !previousUrls.contains(hd.getUrl())).map(HubDescriptor::getShortLabel).toList();
+                    List<String> removed = previous.stream().filter(hd -> !selectedUrls.contains(hd.getUrl())).map(HubDescriptor::getShortLabel).toList();
+                    if (!added.isEmpty() || !removed.isEmpty()) {
+                        StringBuilder message = new StringBuilder();
+                        if (!added.isEmpty()) {
+                            message.append("<b>Hubs added:</b><br>");
+                            added.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
+                            message.append("Tracks from these hubs can be loaded from the Tracks menu.<br>");
+                        }
+                        if (!removed.isEmpty()) {
+                            if (!added.isEmpty()) message.append("<br>");
+                            message.append("<b>Hubs removed:</b><br>");
+                            removed.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
+                        }
+                        JOptionPane.showMessageDialog(igv.getMainFrame(), "<html>" + message, "Manage Track Hubs",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
             });
             hubsMenu.add(addHubItem);
@@ -737,9 +766,8 @@ public class IGVMenuBar extends JMenuBar {
 
 
         // Load hub from URL
-        MenuAction menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
         hubsMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
 
     }
 

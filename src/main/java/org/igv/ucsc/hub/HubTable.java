@@ -43,17 +43,7 @@ class HubTable extends JTable {
         });
 
         // Set a cell editor for column 0 to make the checkbox interactive
-        getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
-            @Override
-            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                JCheckBox checkBox = (JCheckBox) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-                //checkBox.setSelected(value != null && (Boolean) value);
-                checkBox.addActionListener(e -> {
-                    setValueAt(checkBox.isSelected(), row, column);
-                });
-                return checkBox;
-            }
-        });
+        getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 
         getColumnModel().getColumn(1).setCellRenderer(getMultiLineCellRenderer(Integer.MAX_VALUE));
         getColumnModel().getColumn(2).setCellRenderer(getMultiLineCellRenderer(Integer.MAX_VALUE));
