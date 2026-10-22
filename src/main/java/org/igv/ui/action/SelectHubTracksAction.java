@@ -88,20 +88,24 @@ public class SelectHubTracksAction extends MenuAction {
 
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(id);
 
-            // The dialog action will modify the visible state for each track config
+            // The dialog action will modify the visible state for each track config.  Checked tracks not yet loaded
+            // are loaded, loaded tracks that were unchecked are unloaded.
             List<TrackConfig> tracksToLoad = new ArrayList<>();
-            List<TrackConfig> selected = new ArrayList<>();
+            Set<String> trackPathsToRemove = new HashSet<>();
             for (TrackConfigContainer g : groups) {
                 g.map(config -> {
                     if (config.visible) {
-                        selected.add(config);
                         if (!loadedTrackPaths.contains(config.url)) {
                             tracksToLoad.add(config);
                         }
+                    } else if (loadedTrackPaths.contains(config.url)) {
+                        trackPathsToRemove.add(config.url);
                     }
                     return null;
                 });
             }
+
+            IGV.getInstance().deleteTracksByPath(trackPathsToRemove);
 
             List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
             IGV.getInstance().loadTracks(locators);
