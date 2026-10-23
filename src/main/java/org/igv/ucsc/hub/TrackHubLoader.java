@@ -217,9 +217,15 @@ public class TrackHubLoader {
     private static GenomeListItem findInGenomeList(Map<String, GenomeListItem> genomeList, String genomeId) {
         GenomeListItem item = genomeList.get(genomeId);
         if (item == null) {
+            // The hub names a UCSC genome by database name or accession; a list entry may carry a GRC or 1kg name
+            // for the same genome (GRCh38 for hg38), so compare by canonical UCSC name.
             String ucscId = Hub.getUcscIdForAlias(genomeId);
-            if (ucscId != null) {
-                item = genomeList.get(ucscId);
+            String target = ucscId != null ? ucscId : genomeId;
+            item = genomeList.get(target);
+            if (item == null) {
+                item = genomeList.values().stream()
+                        .filter(i -> target.equals(Genome.toUCSCId(i.getId())))
+                        .findFirst().orElse(null);
             }
         }
         return item;

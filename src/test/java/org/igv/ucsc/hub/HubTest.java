@@ -64,6 +64,9 @@ public class HubTest {
         // An IGV genome is matched to the hub by its UCSC id, so GRC names and the 1kg genomes match an hg38 hub.
         Genome grch38 = new Genome("GRCh38", List.of(new Chromosome(0, "chr1", 1000)));
         assertEquals("hg38", grch38.getUCSCId());
+        GenomeConfig grch38Config = new GenomeConfig();
+        grch38Config.id = "GRCh38";
+        assertEquals("hg38", grch38Config.getUcscID());
         assertTrue(hub.referencesGenome(grch38.getUCSCId()));
         assertFalse(hub.referencesGenome("hg19"));
     }

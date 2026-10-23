@@ -1,6 +1,7 @@
 package org.igv.feature.genome.load;
 
 import org.igv.feature.Cytoband;
+import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.Sequence;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -225,7 +226,7 @@ public class GenomeConfig implements Cloneable {
     }
 
     public String getUcscID() {
-        return ucscID == null ? id : ucscID;
+        return ucscID == null ? Genome.toUCSCId(id) : ucscID;
     }
 
     public String[] getChromosomeOrder() {

@@ -107,7 +107,7 @@ public class Genome {
         featureDB = new FeatureDB();
 
         //Collections.synchronizedSortedSet(new TreeSet<>((o1, o2) -> o1.getOrder()  - o2.getOrder()));
-        ucscID = config.ucscID == null ? ucsdIDMap.getOrDefault(id, id) : config.ucscID;
+        ucscID = config.ucscID == null ? toUCSCId(id) : config.ucscID;
         blatDB = (config.blatDB != null) ? config.blatDB : ucscID;
         defaultPos = config.defaultPos;
 
@@ -553,7 +553,15 @@ public class Genome {
     }
 
     public String getUCSCId() {
-        return ucscID == null ? ucsdIDMap.getOrDefault(id, id) : ucscID;
+        return ucscID == null ? toUCSCId(id) : ucscID;
+    }
+
+    /**
+     * The UCSC database name for an IGV genome id: GRC and 1kg names map to their UCSC equivalents (GRCh38 -> hg38),
+     * anything else is returned as is.
+     */
+    public static String toUCSCId(String id) {
+        return ucsdIDMap.getOrDefault(id, id);
     }
 
     public String getSpecies() {
