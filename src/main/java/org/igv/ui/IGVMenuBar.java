@@ -134,7 +134,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createGenomesMenu());
         tracksMenu = new JMenu("Tracks");
         menus.add(tracksMenu);
-        menus.add(createSessionsMenu("Sessions"));
+        //menus.add(createSessionsMenu("Sessions"));
         menus.add(createViewMenu("View"));
         menus.add(createRegionsMenu("Regions"));
         menus.add(createToolsMenu("Tools"));
@@ -224,6 +224,60 @@ public class IGVMenuBar extends JMenuBar {
         fileMenu.removeAll();
 
         MenuAction menuAction;
+
+        // Session items
+
+        menuAction = new OpenSessionMenuAction("Load Session from File...", KeyEvent.VK_O, igv);
+        menuAction.setToolTipText(OPEN_SESSION_TOOLTIP);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_SESSION_FROM_URL, KeyEvent.VK_U, igv);
+        menuAction.setToolTipText(UIConstants.OPEN_SESSION_TOOLTIP);
+        fileMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, igv);
+        menuAction.setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
+        JMenuItem saveSessionItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        fileMenu.add(saveSessionItem);
+
+        fileMenu.add(new JSeparator());
+
+        menuAction = new NewSessionMenuAction("New Session", -1, igv);
+        menuAction.setToolTipText(NEW_SESSION_TOOLTIP);
+        JMenuItem newSessionMenuItem = MenuAndToolbarUtils.createMenuItem(menuAction);
+        fileMenu.add(newSessionMenuItem);
+
+
+        reloadSessionItem = new JMenuItem("Reload Session");
+        reloadSessionItem.setToolTipText(RELOAD_SESSION_TOOLTIP);
+        reloadSessionItem.setEnabled(false);
+        reloadSessionItem.addActionListener(e -> {
+            String path = igv.getSession().getPath();
+            if (path == null) {
+                igv.newSession();
+            } else {
+                LongRunningTask.submit(() -> igv.loadSession(path, null));
+            }
+        });
+        fileMenu.add(reloadSessionItem);
+
+        fileMenu.add(new JSeparator());
+
+        autosaveMenu = new AutosaveMenu();
+        fileMenu.add(autosaveMenu);
+
+        JSeparator recentSessionsSep = new JSeparator();
+        recentSessionsSep.setVisible(false);
+        fileMenu.add(recentSessionsSep);
+        fileMenu.add(new JSeparator());
+
+        //Add dynamic list of recent sessions
+        fileMenu.addMenuListener(new DynamicMenuItemsAdjustmentListener<>(
+                fileMenu,
+                recentSessionsSep,
+                IGV.getInstance().getRecentSessionList(),
+                session -> MenuAndToolbarUtils.createMenuItem(new OpenSessionMenuAction(session, IGV.getInstance())))
+        );
 
 
         // Sample info Load menu items
@@ -1120,7 +1174,7 @@ public class IGVMenuBar extends JMenuBar {
     }
 
     public void resetSessionActions() {
-        reloadSessionItem.setEnabled(igv.getSession().getPath() != null);
+//        reloadSessionItem.setEnabled(igv.getSession().getPath() != null);
 //        if (filterTracksAction != null) {
 //            filterTracksAction.resetTrackFilter();
 //        }
