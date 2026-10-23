@@ -113,12 +113,15 @@ public class HubRegistry {
     }
 
     /**
-     * Hubs keyed by the genome's UCSC id, plus any keyed by its GenArk accession (hubs may reference a UCSC genome
-     * by either name).
+     * Hubs keyed by the genome's id plus any keyed by its other name: the GenArk accession for a UCSC name, or the
+     * UCSC name for an accession (a genome created from GenArk keeps the accession as its id).
      */
     private static List<HubDescriptor> hubsForGenome(Map<String, List<HubDescriptor>> map, String ucscID) {
         List<HubDescriptor> hubs = new ArrayList<>(map.getOrDefault(ucscID, Collections.emptyList()));
         String alias = Hub.getGenomeAlias(ucscID);
+        if (alias == null) {
+            alias = Hub.getUcscIdForAlias(ucscID);
+        }
         if (alias != null) {
             for (HubDescriptor hub : map.getOrDefault(alias, Collections.emptyList())) {
                 if (!hubs.contains(hub)) {

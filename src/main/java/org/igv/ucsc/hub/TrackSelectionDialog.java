@@ -59,6 +59,7 @@ public class TrackSelectionDialog extends JDialog {
             hubSelectionDialogs.put(key, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
+        dialog.canceled = true;   // A reused dialog must not inherit a previous OK (closing with the window X is a cancel)
 
         dialog.setMessage(message);
 

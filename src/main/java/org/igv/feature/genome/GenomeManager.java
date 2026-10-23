@@ -108,16 +108,23 @@ public class GenomeManager {
     }
 
     public boolean loadGenomeById(String genomeId, boolean force) throws IOException {
-        return loadGenomeById(genomeId, force, true);
+        return loadGenomeById(genomeId, force, true, true);
     }
 
     /**
+     * Load a genome for a JSON session.  The first-load annotation prompt is never shown during session restore.
+     *
      * @param genomeId
      * @param force                 reload the genome even if it is the current genome
      * @param loadAnnotationTracks  if false the genome's default annotation tracks (its "tracks" property) are not
-     *                              loaded.  Used when loading a session, which lists all tracks explicitly.
+     *                              loaded.  Sessions normally list all tracks explicitly.
      */
     public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks) throws IOException {
+        return loadGenomeById(genomeId, force, loadAnnotationTracks, false);
+    }
+
+    private boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
+                                   boolean promptForAnnotations) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
         if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {
@@ -136,7 +143,7 @@ public class GenomeManager {
                 genomePath = item.getPath();
             }
         }
-        return loadGenome(genomePath, loadAnnotationTracks, loadAnnotationTracks) != null; // monitor[0]);
+        return loadGenome(genomePath, loadAnnotationTracks, promptForAnnotations) != null; // monitor[0]);
     }
 
     /**
@@ -388,9 +395,17 @@ public class GenomeManager {
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
+        // A trackDb that cannot be fetched is an unavailable hub, not an empty one; fail here rather than offer an
+        // empty chooser.
+        hub.ensureTrackDbLoaded(config.getUcscID());
+
         try {
-            TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
-            UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
+            final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
+                holder[0].setVisible(true);
+            });
+            TrackSelectionDialog dlg = holder[0];
             if (dlg.isCanceled()) {
                 return null;
             } else {

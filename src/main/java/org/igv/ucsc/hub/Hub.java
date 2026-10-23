@@ -138,10 +138,12 @@ public class Hub {
         if (genomeId == null) {
             return null;
         }
+        // Either name for a UCSC genome matches the other: hg38 finds a stanza named GCF_000001405.40 and vice versa
         String alias = idMappings.get(genomeId);
+        String ucscId = getUcscIdForAlias(genomeId);
         for (Stanza s : genomeStanzas) {
             String g = s.getProperty("genome");
-            if (genomeId.equals(g) || (alias != null && alias.equals(g))) {
+            if (genomeId.equals(g) || (alias != null && alias.equals(g)) || (ucscId != null && ucscId.equals(g))) {
                 return s;
             }
         }
@@ -186,29 +188,40 @@ public class Hub {
     }
 
     private TrackDbHub getTrackDbHub(String genomeId) {
-        TrackDbHub trackHub = trackHubMap.get(genomeId);
-        if (trackHub == null && idMappings.containsKey(genomeId)) {
-            trackHub = trackHubMap.get(idMappings.get(genomeId));
+        try {
+            return loadTrackDbHub(genomeId);
+        } catch (IOException e) {
+            log.error("Error loading trackDb file for genome " + genomeId, e);
+            return null;
         }
+    }
 
+    /**
+     * Fetch and parse the trackDb for a genome, if not already done.  Unlike the lookups used by the menus this
+     * propagates a fetch failure, so a caller can tell an unavailable hub from one with no tracks.
+     */
+    public void ensureTrackDbLoaded(String genomeId) throws IOException {
+        loadTrackDbHub(genomeId);
+    }
+
+    private TrackDbHub loadTrackDbHub(String genomeId) throws IOException {
+        Stanza s = getGenomeStanza(genomeId);
+        if (s == null) {
+            return null;
+        }
+        // Cached under the stanza's own name, so lookups by either the UCSC name or the accession share it
+        String key = s.getProperty("genome");
+        TrackDbHub trackHub = trackHubMap.get(key);
         if (trackHub == null) {
-            Stanza s = getGenomeStanza(genomeId);
-            if (s != null) {
-                try {
-                    String trackDbURL = s.getProperty("trackDb");
-                    if (trackDbURL == null) {
-                        log.error("No trackDb property found for genome " + genomeId);
-                        return null;
-                    }
-                    List<Stanza> trackStanzas = HubParser.loadStanzas(trackDbURL);
-                    trackHub = new TrackDbHub(trackStanzas, this.groupStanzas);
-                    // Keyed by the stanza's own name, so lookups by either the UCSC name or the accession share it
-                    trackHubMap.put(s.getProperty("genome"), trackHub);
-                } catch (IOException e) {
-                    log.error("Error loading trackDb file: " + s.getProperty("trackDb"), e);
-                }
-                //TODO -- groups
+            String trackDbURL = s.getProperty("trackDb");
+            if (trackDbURL == null) {
+                log.error("No trackDb property found for genome " + genomeId);
+                return null;
             }
+            List<Stanza> trackStanzas = HubParser.loadStanzas(trackDbURL);
+            trackHub = new TrackDbHub(trackStanzas, this.groupStanzas);
+            trackHubMap.put(key, trackHub);
+            //TODO -- groups
         }
         return trackHub;
     }

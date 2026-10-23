@@ -70,8 +70,8 @@ public class TrackHubLoader {
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
 
         if (currentGenome != null && hub.referencesGenome(currentGenome.getUCSCId())) {
-            // An assembly hub (twoBitPath) is the genome's own hub, recorded in the genome json, not a managed hub.
-            if (!hub.hasTwoBit(genomeId)) {
+            // The genome's own hub (the one it was created from) is recorded in its json, not as a managed hub.
+            if (!isGenomeHub(currentGenome, hub)) {
                 HubRegistry.addUserHub(hub);
             }
             IGVMenuBar.getInstance().updateMenus(currentGenome);
@@ -109,6 +109,8 @@ public class TrackHubLoader {
             }
             loadKnownGenome(item);
             HubRegistry.addUserHub(hub);
+            // The load rebuilt the menus before the hub was registered
+            IGVMenuBar.getInstance().updateMenus(GenomeManager.getInstance().getCurrentGenome());
             selectTracksForCurrentGenome(hub);
         }
     }
@@ -121,6 +123,7 @@ public class TrackHubLoader {
         // Referenced genomes not already in the genome list, and ids IGV does not know.
         List<HubGenomeSelectionDialog.Candidate> candidates = new ArrayList<>();
         List<String> unknownIds = new ArrayList<>();
+        Set<String> createdIds = new HashSet<>();
         for (String genomeId : genomeIds) {
             if (findInGenomeList(genomeList, genomeId) != null) {
                 continue;
@@ -154,16 +157,20 @@ public class TrackHubLoader {
             }
             for (HubGenomeSelectionDialog.Candidate candidate : dlg.getSelectedCandidates()) {
                 addGenome(hub, candidate);
+                if (candidate.config() != null) {
+                    createdIds.add(candidate.id());
+                }
             }
         }
 
-        // Genomes the hub defines (twoBitPath) record the hub in their genome json.  The hub is a managed hub only
-        // for genomes it references but does not define.
-        if (genomeIds.stream().anyMatch(id -> !hub.hasTwoBit(id))) {
+        // Assemblies created from the hub just now record it in their genome json.  The hub is a managed hub if it
+        // also references genomes that already existed, unless it is the current genome's own hub.
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        boolean referencesExisting = genomeIds.stream().anyMatch(id -> !createdIds.contains(id));
+        if (referencesExisting && !isGenomeHub(currentGenome, hub)) {
             HubRegistry.addUserHub(hub);
         }
 
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome != null && hub.referencesGenome(currentGenome.getUCSCId())) {
             IGVMenuBar.getInstance().updateMenus(currentGenome);
             selectTracks(hub, currentGenome);
@@ -208,6 +215,14 @@ public class TrackHubLoader {
 
         String path = localFile != null ? localFile.getAbsolutePath() : candidate.item().getPath();
         GenomeListManager.getInstance().addGenomeItem(new GenomeListItem(candidate.name(), path, candidate.id()));
+    }
+
+    /**
+     * True if the hub is one of the genome's own hubs (from its genome json), e.g. the hub the assembly was created
+     * from.  Such a hub is listed with the genome's hubs and is not also a managed hub.
+     */
+    private static boolean isGenomeHub(Genome genome, Hub hub) {
+        return genome != null && genome.getTrackHubs().stream().anyMatch(h -> h.getUrl().equals(hub.getUrl()));
     }
 
     /**

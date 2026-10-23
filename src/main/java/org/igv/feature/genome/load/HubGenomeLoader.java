@@ -80,9 +80,13 @@ public class HubGenomeLoader extends GenomeLoader {
 
             TrackSelectionDialog dlg;
             try {
-                dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
-                        GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-                UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
+                final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
+                UIUtilities.invokeAndWaitOnEventThread(() -> {
+                    holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
+                            GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+                    holder[0].setVisible(true);
+                });
+                dlg = holder[0];
             } catch (Exception e) {
                 log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage(), e);
                 MessageUtils.showMessage("Error selecting annotation tracks from " + hub.getUrl() + ": " + e.getMessage());
