@@ -318,3 +318,32 @@ The current-genome path already canonicalized through `Genome.getUCSCId` (covere
 
 Hubs themselves are still expected to name genomes by UCSC database name or accession, never GRC names; nothing on the
 hub side maps those.
+
+***Second Copilot review (Oct 23 2026)***
+
+Eleven items; two were already fixed (dialog cache per genome, XML session prompt) and only their threads were open.
+Fixed in one commit:
+
+- The hosted-genome branch registers the hub after the load, but the load had already rebuilt the Tracks menu, so the
+  hub was missing until the next rebuild.  Menus are refreshed after registration.
+- `TrackSelectionDialog` starts canceled and OK clears it; a reused dialog kept the previous OK, so closing with the
+  window X after an earlier OK unloaded unchecked tracks.  Reuse resets it to canceled.
+- The JSON session path tied the annotation prompt to the session's own load-default-tracks option (a regression from
+  the first round).  The session overload of `GenomeManager.loadGenomeById` never prompts; the pulldown path still does.
+- `GenomeManager.selectAnnotationTracks` and `HubGenomeLoader.selectAnnotationTracks` built the track dialog off the
+  event thread with only `setVisible` marshaled.  Both now build and show it on the event thread.
+- A genome created from GenArk keeps the accession as its UCSC id, and `Hub.getGenomeStanza` / `HubRegistry` only
+  mapped UCSC name -> accession, so an hg38 hub did not match it and the user got a needless switch prompt.  Both now
+  fall back to the reverse mapping.  The trackDb cache is keyed by the stanza's name on every path.
+- `Hub.getTrackDbHub` swallowed a trackDb fetch failure, so with hub.txt cached but trackDb unreachable the annotation
+  chooser opened empty and OK saved no tracks and cleared the flag.  New `Hub.ensureTrackDbLoaded` propagates the
+  IOException; the annotation prompt calls it first, so `JsonGenomeLoader` reports an unavailable hub.  The menu
+  lookups still swallow it as before.
+- "Is this the genome's own hub" was decided by `hasTwoBit`, so a hub defining an assembly with the current genome's id
+  (but not the hub the genome was created from) was neither registered nor in the json and vanished after the
+  immediate chooser.  Jim's call: test by hub URL against `genome.getTrackHubs()`.  Single-genome: register unless the
+  hub is one of the current genome's own hubs.  Multi-genome: register when the hub references any genome that already
+  existed (not created by this load), unless it is the current genome's own hub; an all-assembly hub whose genomes
+  were all just created stays out.  Consequence: reloading such a hub once its genomes exist registers it and it
+  appears in Manage Track Hubs; the Tracks menu still lists it once (registry hubs that are also the genome's own are
+  dropped there).
