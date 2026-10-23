@@ -16,6 +16,7 @@ import org.igv.exceptions.DataLoadException;
 import org.igv.feature.genome.load.ChromAliasParser;
 import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.feature.genome.load.GenomeLoader;
+import org.igv.feature.genome.load.JsonGenomeLoader;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
@@ -167,7 +168,11 @@ public class GenomeManager {
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
 
-            Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
+            GenomeLoader loader = GenomeLoader.getLoader(genomePath);
+            if (!loadAnnotationTracks && loader instanceof JsonGenomeLoader) {
+                ((JsonGenomeLoader) loader).promptForAnnotations = false;
+            }
+            Genome newGenome = loader.loadGenome();
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             final File genomeCacheDirectory = DirectoryManager.getGenomeCacheDirectory();
