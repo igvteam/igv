@@ -252,11 +252,32 @@ Changes after review and manual testing, all on branch `trackhubs` (PR #1887):
   cleared only once the prompt has been shown.  If it cannot be shown (batch, headless, tests, no IGV instance) the flag
   and json are left alone for a later interactive load.  If the annotation hub is unreachable the genome still loads,
   the user is told with the error, and the flag is cleared so they are not asked on every load; annotations can be
-  added later from the Genomes menu.  No prompt during session restore: `GenomeManager.loadGenome` passes its
-  `loadAnnotationTracks` flag to the loader (`promptForAnnotations`).
+  added later from the Genomes menu.  No prompt during session restore, JSON or XML: `GenomeManager` passes a
+  `promptForAnnotations` flag to the loader, false from `loadGenomeById(.., loadAnnotationTracks=false)` (JSON
+  sessions) and from `loadSessionGenome` (XML sessions, which still load default annotations).
 - **Multi-genome dialog flow.**  Cancel in "Add Genomes from Hub" aborts the load entirely.  The dialog is constructed
   and shown on the event thread, and the switch-genome prompt is marshaled there too.
 - **Track selection dialog.**  All checkboxes are enabled; unchecking a loaded track unloads it on OK, as the ENCODE
   chooser does.  The diff is a single pass over the hub's configs with hash lookups against loaded track paths.
 - **Formats.**  `bigPsl` added to `TrackDbHub.supportedTypes` (the generic BigBed codec handles bed12+13).  The T2T-H9
   hub's hg19 trackDb, reached through an `include`, was being rejected for this reason, not the include.
+
+
+***Copilot review fixes (Oct 23 2026)***
+
+Six findings from the Copilot review of PR #1887, all confirmed and fixed in one commit:
+
+- XML session restore went through the one-argument `GenomeManager.loadGenome`, so the first-load annotation prompt
+  still fired.  Added `loadSessionGenome` (annotations loaded, no prompt) for `XMLSessionReader`.
+- The single-genome path's `findKnownGenome` matched the genome list by raw id, so a hub naming hg38 by accession
+  loaded a duplicate GenArk genome.  It now uses the alias-aware `findInGenomeList` first.
+- `SelectHubTracksAction.selectAndLoadTracks` built and showed the track selection dialog on the calling thread, which
+  is a background thread from both the hub loader and the menu action's SwingWorker.  Dialog creation and display are
+  now marshaled to the event thread.
+- Failed genome hubs were listed inside the block guarded by a non-empty loaded-hub list, so a genome whose only hub
+  failed showed nothing.  The block now opens when either list is non-empty.
+- Two trackDb entries can share a URL; unchecking one removed the track even if the other stayed checked.  Checked
+  URLs are now subtracted from the removal set.
+- `TrackSelectionDialog` cached dialogs by hub only.  A mixed hub opened for one genome and then another reused the
+  first genome's dialog while the action read the second genome's configs.  The cache is now keyed by hub url and
+  genome id.
