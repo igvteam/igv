@@ -89,6 +89,19 @@ public class TrackDbHubTest {
     }
 
     @Test
+    public void testUnsupportedTrackCount() throws IOException {
+
+        // groups_trackDb.txt's only data tracks are two halSnake tracks, a type IGV does not support, so both are
+        // counted and nothing is left to show
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups_trackDb.txt");
+        List<Stanza> groupStanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, groupStanzas);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(2, trackDbHub.getUnsupportedTrackCount());
+        assertTrue(containers.isEmpty());
+    }
+
+    @Test
     public void testGroupedContainers() throws IOException {
 
         List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/gtexCoverage.txt");

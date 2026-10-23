@@ -187,6 +187,15 @@ public class Hub {
         return trackHub.getGroupedTrackConfigurations(hubLabel);
     }
 
+    /**
+     * The number of data tracks for the genome that IGV does not support and so omits from the track selection
+     * dialog.  Counted when the track configurations are grouped, so call after getGroupedTrackConfigurations.
+     */
+    public int getUnsupportedTrackCount(String genomeId) {
+        TrackDbHub trackHub = getTrackDbHub(genomeId);
+        return trackHub == null ? 0 : trackHub.getUnsupportedTrackCount();
+    }
+
     private TrackDbHub getTrackDbHub(String genomeId) {
         try {
             return loadTrackDbHub(genomeId);
