@@ -202,7 +202,8 @@ public class Hub {
                     }
                     List<Stanza> trackStanzas = HubParser.loadStanzas(trackDbURL);
                     trackHub = new TrackDbHub(trackStanzas, this.groupStanzas);
-                    trackHubMap.put(genomeId, trackHub);
+                    // Keyed by the stanza's own name, so lookups by either the UCSC name or the accession share it
+                    trackHubMap.put(s.getProperty("genome"), trackHub);
                 } catch (IOException e) {
                     log.error("Error loading trackDb file: " + s.getProperty("trackDb"), e);
                 }

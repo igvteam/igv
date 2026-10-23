@@ -336,6 +336,7 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
             Hub hub = HubParser.loadHub(genomePath);
             config = hub.getGenomeConfig(rec.getId());
             if (config != null) {
+                config = config.copy();   // the hub's config is cached for the session; do not edit it in place
                 config.setHubs(Arrays.asList(genomePath));
             }
         }

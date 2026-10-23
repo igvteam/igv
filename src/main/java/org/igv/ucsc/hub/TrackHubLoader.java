@@ -91,8 +91,9 @@ public class TrackHubLoader {
         }
 
         if (hub.hasTwoBit(genomeId)) {
-            // The hub defines the assembly.  The hub becomes the genome's annotation hub (hubs[0]).
-            GenomeConfig config = hub.getGenomeConfig(genomeId);
+            // The hub defines the assembly.  The hub becomes the genome's annotation hub (hubs[0]).  The config is
+            // copied: the hub's own is cached for the session and must not carry this load's edits.
+            GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
             config.setHubs(Arrays.asList(hub.getUrl()));
             HubGenomeLoader.selectAnnotationTracks(hub, config);
             File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
@@ -106,8 +107,8 @@ public class TrackHubLoader {
                 MessageUtils.showMessage("The genome referenced by this hub (" + genomeId + ") is not known to IGV.");
                 return;
             }
-            HubRegistry.addUserHub(hub);
             loadKnownGenome(item);
+            HubRegistry.addUserHub(hub);
             selectTracksForCurrentGenome(hub);
         }
     }
@@ -125,19 +126,23 @@ public class TrackHubLoader {
                 continue;
             }
             if (hub.hasTwoBit(genomeId)) {
-                GenomeConfig config = hub.getGenomeConfig(genomeId);
+                GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
                 candidates.add(new HubGenomeSelectionDialog.Candidate(genomeId, config.getName(), config, null));
             } else {
-                GenomeListItem item = HostedGenomes.getGenomeListItem(genomeId);
+                GenomeListItem item = findHostedGenome(genomeId);
                 if (item == null) {
                     unknownIds.add(genomeId);
                 } else {
-                    candidates.add(new HubGenomeSelectionDialog.Candidate(genomeId, item.getDisplayableName(), null, item));
+                    candidates.add(new HubGenomeSelectionDialog.Candidate(item.getId(), item.getDisplayableName(), null, item));
                 }
             }
         }
 
-        if (!candidates.isEmpty() || !unknownIds.isEmpty()) {
+        if (candidates.isEmpty() && !unknownIds.isEmpty()) {
+            // Nothing to offer; just report the ids IGV does not know and carry on with the genomes it does.
+            MessageUtils.showMessage("Genomes referenced by this hub that are not known to IGV and cannot be added: " +
+                    String.join(", ", unknownIds));
+        } else if (!candidates.isEmpty()) {
             final HubGenomeSelectionDialog[] holder = new HubGenomeSelectionDialog[1];
             UIUtilities.invokeAndWaitOnEventThread(() -> {
                 holder[0] = new HubGenomeSelectionDialog(IGV.getInstance().getMainFrame(), hub, candidates, unknownIds);
@@ -226,6 +231,16 @@ public class TrackHubLoader {
      */
     private static GenomeListItem findKnownGenome(String genomeId) throws IOException {
         GenomeListItem item = findInGenomeList(GenomeListManager.getInstance().getGenomeItemMap(), genomeId);
+        return item != null ? item : findHostedGenome(genomeId);
+    }
+
+    /**
+     * The hosted genome record for a hub genome id.  IGV's own hosted list is keyed by UCSC name, so an accession is
+     * tried under that name first; otherwise it would resolve to the GenArk record for the same assembly.
+     */
+    private static GenomeListItem findHostedGenome(String genomeId) {
+        String ucscId = Hub.getUcscIdForAlias(genomeId);
+        GenomeListItem item = ucscId == null ? null : HostedGenomes.getGenomeListItem(ucscId);
         return item != null ? item : HostedGenomes.getGenomeListItem(genomeId);
     }
 

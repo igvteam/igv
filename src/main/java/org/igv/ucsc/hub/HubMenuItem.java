@@ -62,6 +62,17 @@ public class HubMenuItem extends JMenuItem {
         }
     }
 
+    /**
+     * A null tooltip unregisters the item from the ToolTipManager, which would also silence the icon's url tooltip.
+     */
+    @Override
+    public void setToolTipText(String text) {
+        super.setToolTipText(text);
+        if (text == null && infoUrl != null) {
+            ToolTipManager.sharedInstance().registerComponent(this);
+        }
+    }
+
     @Override
     public String getToolTipText(MouseEvent e) {
         return overIcon(e) ? infoUrl : super.getToolTipText(e);
