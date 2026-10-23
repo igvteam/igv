@@ -224,8 +224,8 @@ public class TrackHubLoader {
      * Return the genome list record for a genome id known to IGV -- already in the genome list, or hosted (including
      * GenArk) -- or null if the id is unknown.
      */
-    private static GenomeListItem findKnownGenome(String genomeId) {
-        GenomeListItem item = GenomeListManager.getInstance().getGenomeTableRecord(genomeId);
+    private static GenomeListItem findKnownGenome(String genomeId) throws IOException {
+        GenomeListItem item = findInGenomeList(GenomeListManager.getInstance().getGenomeItemMap(), genomeId);
         return item != null ? item : HostedGenomes.getGenomeListItem(genomeId);
     }
 

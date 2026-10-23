@@ -31,7 +31,8 @@ public class TrackSelectionDialog extends JDialog {
 
     private static Logger log = LogManager.getLogger(TrackSelectionDialog.class);
 
-    private static Map<Hub, TrackSelectionDialog> hubSelectionDialogs = new HashMap<>();
+    // Keyed by hub url and genome id -- a hub's track groups differ per genome
+    private static Map<String, TrackSelectionDialog> hubSelectionDialogs = new HashMap<>();
 
     private Hub hub;
     private boolean autoselectDefaults;
@@ -47,14 +48,15 @@ public class TrackSelectionDialog extends JDialog {
             String message) {
 
         TrackSelectionDialog dialog;
-        if (hubSelectionDialogs.containsKey(hub) && !autoselectDefaults) {
-            dialog = hubSelectionDialogs.get(hub);
+        String key = hub.getUrl() + "#" + genomeId;
+        if (hubSelectionDialogs.containsKey(key) && !autoselectDefaults) {
+            dialog = hubSelectionDialogs.get(key);
             dialog.autoselectDefaults = autoselectDefaults;
         } else {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(genomeId);
             dialog = new TrackSelectionDialog(hub, groups, autoselectDefaults, owner);
-            hubSelectionDialogs.put(hub, dialog);
+            hubSelectionDialogs.put(key, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
 

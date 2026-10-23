@@ -136,7 +136,7 @@ public class GenomeManager {
                 genomePath = item.getPath();
             }
         }
-        return loadGenome(genomePath, loadAnnotationTracks) != null; // monitor[0]);
+        return loadGenome(genomePath, loadAnnotationTracks, loadAnnotationTracks) != null; // monitor[0]);
     }
 
     /**
@@ -150,13 +150,23 @@ public class GenomeManager {
      * @throws IOException
      */
     public Genome loadGenome(String genomePath) throws IOException {
-        return loadGenome(genomePath, true);
+        return loadGenome(genomePath, true, true);
     }
 
     /**
+     * Load a genome for an XML session.  Default annotation tracks are loaded, as legacy sessions rely on them, but
+     * the first-load annotation prompt is never shown during session restore.
+     */
+    public Genome loadSessionGenome(String genomePath) throws IOException {
+        return loadGenome(genomePath, true, false);
+    }
+
+    /**
+     * @param promptForAnnotations if false, a genome json flagged to select its default annotations on first load
+     *                             does not prompt; the flag is left set for a later load.
      * @see #loadGenomeById(String, boolean, boolean)
      */
-    private Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
+    private Genome loadGenome(String genomePath, boolean loadAnnotationTracks, boolean promptForAnnotations) throws IOException {
 
         WaitCursorManager.CursorToken cursorToken = null;
         boolean loaded = false;
@@ -169,7 +179,7 @@ public class GenomeManager {
             }
 
             GenomeLoader loader = GenomeLoader.getLoader(genomePath);
-            if (!loadAnnotationTracks && loader instanceof JsonGenomeLoader) {
+            if (!promptForAnnotations && loader instanceof JsonGenomeLoader) {
                 ((JsonGenomeLoader) loader).promptForAnnotations = false;
             }
             Genome newGenome = loader.loadGenome();

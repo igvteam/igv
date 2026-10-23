@@ -629,7 +629,7 @@ public class IGVMenuBar extends JMenuBar {
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Genome defined hubs -- these are curated, typically a single hub for annotations.
-        if (genome.getTrackHubs().size() > 0) {
+        if (genome.getTrackHubs().size() > 0 || !genome.getFailedTrackHubs().isEmpty()) {
             tracksMenu.addSeparator();
             for (Hub trackHub : genome.getTrackHubs()) {
                 tracksMenu.add(createTrackHubItem(trackHub.getDescriptor(), genome.getUCSCId()));

@@ -8,6 +8,7 @@ import org.igv.ui.IGV;
 import org.igv.ui.IGVMenuBar;
 import org.igv.ui.WaitCursorManager;
 import org.igv.ui.util.MessageUtils;
+import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -79,10 +80,13 @@ public class SelectHubTracksAction extends MenuAction {
                 .map(t -> t.getResourceLocator().getPath())
                 .collect(Collectors.toSet());
 
-        TrackSelectionDialog dlg =
-                TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
-
-        dlg.setVisible(true);
+        // Called from background threads; the dialog is built and shown on the event thread.
+        final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
+            holder[0].setVisible(true);
+        });
+        TrackSelectionDialog dlg = holder[0];
 
         if (!dlg.isCanceled()) {
 
@@ -91,10 +95,12 @@ public class SelectHubTracksAction extends MenuAction {
             // The dialog action will modify the visible state for each track config.  Checked tracks not yet loaded
             // are loaded, loaded tracks that were unchecked are unloaded.
             List<TrackConfig> tracksToLoad = new ArrayList<>();
+            Set<String> selectedPaths = new HashSet<>();
             Set<String> trackPathsToRemove = new HashSet<>();
             for (TrackConfigContainer g : groups) {
                 g.map(config -> {
                     if (config.visible) {
+                        selectedPaths.add(config.url);
                         if (!loadedTrackPaths.contains(config.url)) {
                             tracksToLoad.add(config);
                         }
@@ -104,6 +110,8 @@ public class SelectHubTracksAction extends MenuAction {
                     return null;
                 });
             }
+            // Entries can share a URL; keep it if any entry using it is still checked
+            trackPathsToRemove.removeAll(selectedPaths);
 
             IGV.getInstance().deleteTracksByPath(trackPathsToRemove);
 
