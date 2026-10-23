@@ -65,7 +65,12 @@ public class TrackDbHubTest {
         List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
         assertEquals(1, containers.size());
 
-        TrackConfigContainer superTrack = containers.get(0);
+        // No groups.txt, so "group roadmap" produces an implicit top-level container
+        TrackConfigContainer group = containers.get(0);
+        assertEquals("roadmap", group.name);
+        assertEquals(1, group.children.size());
+
+        TrackConfigContainer superTrack = group.children.get(0);
         assertEquals("CompRoadmapbySample", superTrack.name);
         assertEquals(1, superTrack.children.size());
 
@@ -81,6 +86,19 @@ public class TrackDbHubTest {
         TrackConfig track = view.tracks.get(0);
         Map<String, String> meta = track.attributes;
         assertEquals(4, meta.size());
+    }
+
+    @Test
+    public void testUnsupportedTrackCount() throws IOException {
+
+        // groups_trackDb.txt's only data tracks are two halSnake tracks, a type IGV does not support, so both are
+        // counted and nothing is left to show
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups_trackDb.txt");
+        List<Stanza> groupStanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, groupStanzas);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(2, trackDbHub.getUnsupportedTrackCount());
+        assertTrue(containers.isEmpty());
     }
 
     @Test

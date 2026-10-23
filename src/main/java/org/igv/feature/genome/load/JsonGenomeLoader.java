@@ -1,8 +1,13 @@
 package org.igv.feature.genome.load;
 
+import org.igv.Globals;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.genome.GenomeDownloadUtils;
+import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.ui.IGV;
+import org.igv.ui.util.MessageUtils;
 import org.igv.util.FileUtils;
 import org.igv.util.ParsingUtils;
 
@@ -17,6 +22,9 @@ public class JsonGenomeLoader extends GenomeLoader {
 
     private String genomePath;
 
+    // False when loading a session, which lists its tracks explicitly, so no default annotation prompt is wanted
+    public boolean promptForAnnotations = true;
+
     public JsonGenomeLoader(String genomePath) {
         this.genomePath = genomePath;
     }
@@ -24,8 +32,42 @@ public class JsonGenomeLoader extends GenomeLoader {
     @Override
     public Genome loadGenome() throws IOException {
         GenomeConfig genomeConfig = loadGenomeConfig();
+        if (genomeConfig.selectAnnotationsOnLoad && promptForAnnotations) {
+            selectAnnotations(genomeConfig);
+        }
         Genome genome = new Genome(genomeConfig);
         return genome;
+    }
+
+    /**
+     * Genomes registered from a multi-genome hub defer selection of default annotations to their first load.  Prompt
+     * the user as "Load Genome from Host" would, from the genome's own annotation hub, then save the completed
+     * definition so the prompt is not repeated.  Done before the Genome is constructed because the Genome derives
+     * its annotation tracks from the config.
+     * <p>
+     * The flag is cleared only once the prompt has been shown, or the hub is unavailable -- the genome then loads
+     * without annotations and the user is told, rather than being asked again on every load.  If the prompt cannot
+     * be shown (batch, headless, no IGV instance) the flag is left set for a later interactive load.
+     */
+    private void selectAnnotations(GenomeConfig config) throws IOException {
+        if (!IGV.hasInstance() || Globals.isBatch() || Globals.isHeadless() || Globals.isTesting() ||
+                config.getHubs() == null || config.getHubs().isEmpty()) {
+            return;
+        }
+        List<TrackConfig> selectedTracks;
+        try {
+            selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+        } catch (IOException e) {
+            log.error("Error loading annotation hub " + config.getHubs().get(0), e);
+            MessageUtils.showMessage("The annotation hub for " + config.getName() + " is not currently available: " +
+                    e.getMessage() + "  Annotation tracks can be added later from the Genomes menu.");
+            selectedTracks = null;
+        }
+        config.selectAnnotationsOnLoad = false;
+        if (selectedTracks != null) {
+            config.setTracks(selectedTracks);
+        }
+        GenomeDownloadUtils.saveLocalGenome(config);
     }
 
     public GenomeConfig loadGenomeConfig() throws IOException {

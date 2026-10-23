@@ -15,7 +15,7 @@ public class TrackDbHub {
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
             "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf", "vcfphasedtrio",
             "bigdbsnp", "rmask", "genepred", "wig", "bedgraph", "interact", "broadpeak", "narrowpeak", "gappedpeak",
-            "gistic", "seg", "mut"));
+            "gistic", "seg", "mut", "bigpsl"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly"));
 
@@ -29,6 +29,7 @@ public class TrackDbHub {
             "vcftabix", "vcf",
             "vcfphasedtrio", "vcf",
             "bigdbsnp", "bigbed",
+            "bigpsl", "bigbed",
             "genepred", "refgene"
     );
 
@@ -36,6 +37,7 @@ public class TrackDbHub {
     List<Stanza> trackStanzas;
     List<Stanza> groupStanzas;
     List<TrackConfigContainer> groupTrackConfigs;
+    int unsupportedTrackCount;   // data tracks dropped because IGV does not support their type
 
     public TrackDbHub(List<Stanza> trackStanzas, List<Stanza> groupStanzas) {
         this.groupStanzas = groupStanzas;
@@ -67,13 +69,14 @@ public class TrackDbHub {
     public List<TrackConfigContainer> getGroupedTrackConfigurations(String hubName) {
 
         if (groupTrackConfigs == null) {
-            // Build map of group objects
-            groupTrackConfigs = new ArrayList<>();
+            // Build into a local list, assigned only on success so a failure is not cached as an empty hub
+            List<TrackConfigContainer> containers = new ArrayList<>();
             Map<String, TrackConfigContainer> trackContainers = new HashMap<>();
 
             // Create a group for tracks without a group
             TrackConfigContainer nullContainer = new TrackConfigContainer(hubName, hubName, 0, true);
-            groupTrackConfigs.add(nullContainer);
+            containers.add(nullContainer);
+            int unsupported = 0;
 
             boolean hasGroups = this.groupStanzas != null;
             if (hasGroups) {
@@ -83,7 +86,7 @@ public class TrackDbHub {
                     int priority = groupStanza.hasProperty("priority") ? getPriority(groupStanza.getProperty("priority")) : Integer.MAX_VALUE - 1;
                     final TrackConfigContainer container = new TrackConfigContainer(name, groupStanza.getProperty("label"), priority, defaultOpen);
                     trackContainers.put(name, container);
-                    groupTrackConfigs.add(container);
+                    containers.add(container);
                 }
             }
 
@@ -101,14 +104,14 @@ public class TrackDbHub {
                     parent = trackContainers.get(s.getOwnProperty("parent"));
                 }
 
-                if (parent == null && hasGroups && s.hasProperty("group")) {
+                if (parent == null && s.hasProperty("group")) {
                     String groupName = s.getProperty("group");
                     if (trackContainers.containsKey(groupName)) {
                         parent = trackContainers.get(groupName);
                     } else {
                         TrackConfigContainer container = new TrackConfigContainer(groupName, groupName, 1000, true);
                         trackContainers.put(groupName, container);
-                        groupTrackConfigs.add(container);
+                        containers.add(container);
                         parent = container;
                     }
                 }
@@ -128,7 +131,7 @@ public class TrackDbHub {
 
                     if (parent == null) {
                         // No parent or a superTrack => promote to top level
-                        groupTrackConfigs.add(container);
+                        containers.add(container);
                     } else {
                         parent.children.add(container);
                     }
@@ -144,19 +147,30 @@ public class TrackDbHub {
                     } else {
                         nullContainer.tracks.add(trackConfig);
                     }
+                } else if (!filterTracks.contains(s.name) && s.hasProperty("bigDataUrl")) {
+                    unsupported++;
                 }
             }
+            unsupportedTrackCount = unsupported;
 
             // Filter empty groups and sort
-            for (TrackConfigContainer c : groupTrackConfigs) {
+            for (TrackConfigContainer c : containers) {
                 c.trim();
             }
-            groupTrackConfigs = groupTrackConfigs.stream().filter(t -> !t.isEmpty()).collect(Collectors.toList());
+            groupTrackConfigs = containers.stream().filter(t -> !t.isEmpty()).collect(Collectors.toList());
 
 
             Collections.sort(groupTrackConfigs, Comparator.comparingInt(o -> o.priority));
         }
         return groupTrackConfigs;
+    }
+
+    /**
+     * The number of data tracks omitted from the groups because IGV does not support their type.  Valid after
+     * getGroupedTrackConfigurations.
+     */
+    public int getUnsupportedTrackCount() {
+        return unsupportedTrackCount;
     }
 
     private TrackConfig getTrackConfig(Stanza t) {

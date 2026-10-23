@@ -1,17 +1,13 @@
 package org.igv.ui.action;
 
-import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.session.SessionReader;
 import org.igv.track.AttributeManager;
-import org.igv.ucsc.hub.Hub;
-import org.igv.ucsc.hub.HubParser;
-import org.igv.ucsc.hub.HubRegistry;
+import org.igv.ucsc.hub.TrackHubLoader;
 import org.igv.ui.IGV;
-import org.igv.ui.IGVMenuBar;
 import org.igv.ui.util.LoadFromURLDialog;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.LongRunningTask;
@@ -104,7 +100,7 @@ public class LoadFromURLMenuAction extends MenuAction {
             String url = JOptionPane.showInputDialog(IGV.getInstance().getMainFrame(), ta,
                     "Enter URL to a  hub.txt file", JOptionPane.PLAIN_MESSAGE);
             if (url != null && !url.trim().isBlank()) {
-                loadTrackHub(url.trim());
+                loadTrackHub(url.trim(), true);
             }
         }
     }
@@ -112,7 +108,7 @@ public class LoadFromURLMenuAction extends MenuAction {
     private void loadUrls(List<String> inputs, List<String> indexes, boolean isHtsGet) {
 
         if (inputs.size() == 1 && HubGenomeLoader.isHubURL(inputs.getFirst())) {
-            loadTrackHub(inputs.getFirst());
+            loadTrackHub(inputs.getFirst(), true);
 
         } else if (inputs.size() == 1 && SessionReader.isSessionFile(inputs.getFirst())) {
             // Session URL
@@ -135,31 +131,21 @@ public class LoadFromURLMenuAction extends MenuAction {
     }
 
     /**
-     * Load a track hub from a URL.  This method is called from the menu action and also from the
-     * HubGenomeLoader when loading a genome.
+     * Load a track hub from a URL.  Called for "Add Track Hub from URL...", for "Load Genome from URL..." and
+     * "Load Tracks from URL..." when the URL is a hub.txt.
      *
      * @param url
+     * @param confirmGenomeSwitch true if the user should confirm before the hub switches the current genome, i.e.
+     *                            when loading from the Tracks menu.
      */
-    private static void loadTrackHub(final String url) {
+    private static void loadTrackHub(final String url, final boolean confirmGenomeSwitch) {
 
         LongRunningTask.submit(() -> {
             try {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
-                String id = genome != null ? genome.getUCSCId() : null;
-
-                Hub hub = HubParser.loadHub(url);
-                if (hub.isAssemblyHub() && (genome == null || !hub.getGenomeConfigs().get(0).getUcscID().equals(id))) {
-                    HubGenomeLoader.loadAssemblyHub(hub);
-                } else if (genome != null) {
-                    //SelectHubTracksAction.selectAndLoadTracks(hub, id);
-                    HubRegistry.addUserHub(hub);
-                    IGVMenuBar.getInstance().updateMenus(genome);
-                }
-
+                TrackHubLoader.loadHub(url, confirmGenomeSwitch);
             } catch (IOException ex) {
-                log.error("Error loading tack hub", ex);
+                log.error("Error loading track hub", ex);
                 MessageUtils.showMessage("Error loading track hub: " + ex.getMessage());
-
             }
         });
     }
@@ -168,8 +154,8 @@ public class LoadFromURLMenuAction extends MenuAction {
         if (url != null && !url.isBlank()) {
             url = url.trim();
             try {
-                if (isHubURL(url)) {
-                    HubGenomeLoader.loadGenome(url);
+                if (HubGenomeLoader.isHubURL(url)) {
+                    loadTrackHub(url, false);
                 } else {
                     GenomeManager.getInstance().loadGenome(url);
                 }
@@ -194,16 +180,6 @@ public class LoadFromURLMenuAction extends MenuAction {
             locators.add(rl);
         }
         return locators;
-    }
-
-    /**
-     * Somewhat crude test for a hub url
-     *
-     * @param input
-     * @return
-     */
-    private static boolean isHubURL(String input) {
-        return input.endsWith("/hub.txt");
     }
 
 }

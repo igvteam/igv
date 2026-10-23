@@ -16,6 +16,7 @@ import org.igv.exceptions.DataLoadException;
 import org.igv.feature.genome.load.ChromAliasParser;
 import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.feature.genome.load.GenomeLoader;
+import org.igv.feature.genome.load.JsonGenomeLoader;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.circview.CircularViewUtilities;
 import org.igv.logging.LogManager;
@@ -107,16 +108,23 @@ public class GenomeManager {
     }
 
     public boolean loadGenomeById(String genomeId, boolean force) throws IOException {
-        return loadGenomeById(genomeId, force, true);
+        return loadGenomeById(genomeId, force, true, true);
     }
 
     /**
+     * Load a genome for a JSON session.  The first-load annotation prompt is never shown during session restore.
+     *
      * @param genomeId
      * @param force                 reload the genome even if it is the current genome
      * @param loadAnnotationTracks  if false the genome's default annotation tracks (its "tracks" property) are not
-     *                              loaded.  Used when loading a session, which lists all tracks explicitly.
+     *                              loaded.  Sessions normally list all tracks explicitly.
      */
     public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks) throws IOException {
+        return loadGenomeById(genomeId, force, loadAnnotationTracks, false);
+    }
+
+    private boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
+                                   boolean promptForAnnotations) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
         if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {
@@ -135,7 +143,7 @@ public class GenomeManager {
                 genomePath = item.getPath();
             }
         }
-        return loadGenome(genomePath, loadAnnotationTracks) != null; // monitor[0]);
+        return loadGenome(genomePath, loadAnnotationTracks, promptForAnnotations) != null; // monitor[0]);
     }
 
     /**
@@ -149,13 +157,23 @@ public class GenomeManager {
      * @throws IOException
      */
     public Genome loadGenome(String genomePath) throws IOException {
-        return loadGenome(genomePath, true);
+        return loadGenome(genomePath, true, true);
     }
 
     /**
+     * Load a genome for an XML session.  Default annotation tracks are loaded, as legacy sessions rely on them, but
+     * the first-load annotation prompt is never shown during session restore.
+     */
+    public Genome loadSessionGenome(String genomePath) throws IOException {
+        return loadGenome(genomePath, true, false);
+    }
+
+    /**
+     * @param promptForAnnotations if false, a genome json flagged to select its default annotations on first load
+     *                             does not prompt; the flag is left set for a later load.
      * @see #loadGenomeById(String, boolean, boolean)
      */
-    private Genome loadGenome(String genomePath, boolean loadAnnotationTracks) throws IOException {
+    private Genome loadGenome(String genomePath, boolean loadAnnotationTracks, boolean promptForAnnotations) throws IOException {
 
         WaitCursorManager.CursorToken cursorToken = null;
         boolean loaded = false;
@@ -167,7 +185,11 @@ public class GenomeManager {
                 cursorToken = WaitCursorManager.showWaitCursor();
             }
 
-            Genome newGenome = GenomeLoader.getLoader(genomePath).loadGenome();
+            GenomeLoader loader = GenomeLoader.getLoader(genomePath);
+            if (!promptForAnnotations && loader instanceof JsonGenomeLoader) {
+                ((JsonGenomeLoader) loader).promptForAnnotations = false;
+            }
+            Genome newGenome = loader.loadGenome();
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             final File genomeCacheDirectory = DirectoryManager.getGenomeCacheDirectory();
@@ -373,16 +395,25 @@ public class GenomeManager {
                 config.getTrackConfigs().stream()
                         .map(trackConfig -> trackConfig.url)
                         .collect(Collectors.toSet());
-        TrackSelectionDialog dlg = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
+        // A trackDb that cannot be fetched is an unavailable hub, not an empty one; fail here rather than offer an
+        // empty chooser.
+        hub.ensureTrackDbLoaded(config.getUcscID());
+
         try {
-            UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
+            final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
+                holder[0].setVisible(true);
+            });
+            TrackSelectionDialog dlg = holder[0];
             if (dlg.isCanceled()) {
                 return null;
             } else {
                 return dlg.getSelectedConfigs();
             }
         } catch (Exception e) {
-            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage());
+            log.error("Error opening or using TrackHubSelectionDialog: " + e.getMessage(), e);
+            MessageUtils.showMessage("Error selecting annotation tracks from " + annotationHub + ": " + e.getMessage());
             return null;
         }
     }

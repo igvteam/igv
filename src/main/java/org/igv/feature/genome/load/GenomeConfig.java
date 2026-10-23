@@ -1,6 +1,7 @@
 package org.igv.feature.genome.load;
 
 import org.igv.feature.Cytoband;
+import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.Sequence;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -56,6 +57,10 @@ public class GenomeConfig implements Cloneable {
     public String[] chromosomeOrder;
 
     public boolean wholeGenomeView = true;
+
+    // Set on genome json files IGV creates from a multi-genome hub.  Selection of default annotations is deferred
+    // to the first time the genome is loaded, after which the flag is cleared.
+    public boolean selectAnnotationsOnLoad = false;
     private String name;
     private List<TrackConfig> tracks;
     private List<String> hubs;
@@ -115,6 +120,7 @@ public class GenomeConfig implements Cloneable {
         }
 
         config.wholeGenomeView = jsonObj.optBoolean("wholeGenomeView", true);
+        config.selectAnnotationsOnLoad = jsonObj.optBoolean("selectAnnotationsOnLoad", false);
 
         config.hubs = new ArrayList<>();
         if (jsonObj.has("hubs")) {
@@ -166,6 +172,7 @@ public class GenomeConfig implements Cloneable {
         if (maneTrixURL != null) jsonObj.put("maneTrixURL", maneTrixURL);
         if (rsdbURL != null) jsonObj.put("rsdbURL", rsdbURL);
         jsonObj.put("wholeGenomeView", wholeGenomeView);
+        if (selectAnnotationsOnLoad) jsonObj.put("selectAnnotationsOnLoad", true);
 
         if (hubs != null && !hubs.isEmpty()) jsonObj.put("hubs", hubs);
 
@@ -219,7 +226,7 @@ public class GenomeConfig implements Cloneable {
     }
 
     public String getUcscID() {
-        return ucscID == null ? id : ucscID;
+        return ucscID == null ? Genome.toUCSCId(id) : ucscID;
     }
 
     public String[] getChromosomeOrder() {

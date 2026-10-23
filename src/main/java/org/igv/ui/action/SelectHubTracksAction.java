@@ -8,6 +8,7 @@ import org.igv.ui.IGV;
 import org.igv.ui.IGVMenuBar;
 import org.igv.ui.WaitCursorManager;
 import org.igv.ui.util.MessageUtils;
+import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -47,17 +48,12 @@ public class SelectHubTracksAction extends MenuAction {
                     if(hub.getSupportedTrackCount(genomeId) > 0) {
                         selectAndLoadTracks(hub, genomeId);
                     } else {
-                        boolean remove =  MessageUtils.confirm(hubDescriptor.getShortLabel() +
+                        MessageUtils.showMessage(hubDescriptor.getShortLabel() +
                                 " does not have any IGV supported tracks for " + genomeId);
-                        // TODO -- remove this hub from the registry, its not clear how to do this persistently
-//                        if (remove) {
-//                            HubRegistry.removeSelectedHub(hubDescriptor);
-//                            IGVMenuBar.getInstance().updateMenus();
-//                        }
                     }
 
                 } catch (Exception e) {
-                    log.error("Error loading track configurations", e);
+                    log.error("Error selecting or loading tracks for hub " + hubDescriptor.getShortLabel(), e);
                     MessageUtils.showMessage(e.getMessage());
                 } finally {
                     if (token != null) {
@@ -84,29 +80,40 @@ public class SelectHubTracksAction extends MenuAction {
                 .map(t -> t.getResourceLocator().getPath())
                 .collect(Collectors.toSet());
 
-        TrackSelectionDialog dlg =
-                TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
-
-        dlg.setVisible(true);
+        // Called from background threads; the dialog is built and shown on the event thread.
+        final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
+            holder[0].setVisible(true);
+        });
+        TrackSelectionDialog dlg = holder[0];
 
         if (!dlg.isCanceled()) {
 
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(id);
 
-            // The dialog action will modify the visible state for each track config
+            // The dialog action will modify the visible state for each track config.  Checked tracks not yet loaded
+            // are loaded, loaded tracks that were unchecked are unloaded.
             List<TrackConfig> tracksToLoad = new ArrayList<>();
-            List<TrackConfig> selected = new ArrayList<>();
+            Set<String> selectedPaths = new HashSet<>();
+            Set<String> trackPathsToRemove = new HashSet<>();
             for (TrackConfigContainer g : groups) {
                 g.map(config -> {
                     if (config.visible) {
-                        selected.add(config);
+                        selectedPaths.add(config.url);
                         if (!loadedTrackPaths.contains(config.url)) {
                             tracksToLoad.add(config);
                         }
+                    } else if (loadedTrackPaths.contains(config.url)) {
+                        trackPathsToRemove.add(config.url);
                     }
                     return null;
                 });
             }
+            // Entries can share a URL; keep it if any entry using it is still checked
+            trackPathsToRemove.removeAll(selectedPaths);
+
+            IGV.getInstance().deleteTracksByPath(trackPathsToRemove);
 
             List<ResourceLocator> locators = tracksToLoad.stream().map(t -> ResourceLocator.fromTrackConfig(t)).toList();
             IGV.getInstance().loadTracks(locators);

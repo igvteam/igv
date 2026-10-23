@@ -34,15 +34,18 @@ public class HubSelectionDialog extends JDialog {
             setLocationRelativeTo(owner);
         }
 
-        // Filter track hubs to those supporting the superset of IGV loaded + UCSC DB genomes
+        // All hubs, for all genomes, with hubs for the current genome listed first.  The full list is shown so
+        // selections for other genomes are preserved when the selection is saved.
         String genomeID = GenomeManager.getInstance().getCurrentGenome().getUCSCId();
 
-        List<HubDescriptor> allHubDescriptors = HubRegistry.getAllHubsForGenome(genomeID);
+        Set<String> currentGenomeUrls = HubRegistry.getAllHubsForGenome(genomeID).stream()
+                .map(HubDescriptor::getUrl)
+                .collect(Collectors.toSet());
 
-        final List<HubDescriptor> allSelectedHubs = HubRegistry.getSelectedHubsForGenome(genomeID);
+        final List<HubDescriptor> allSelectedHubs = HubRegistry.getSelectedHubs();
 
-        this.hubDescriptors = allHubDescriptors.stream()
-                .filter(hd -> hd.getDbList() != null && hd.getDbList().contains(genomeID))
+        this.hubDescriptors = HubRegistry.getAllHubs().stream()
+                .sorted(Comparator.comparing(hd -> currentGenomeUrls.contains(hd.getUrl()) ? 0 : 1))
                 .collect(Collectors.toList());
 
         if (this.hubDescriptors.isEmpty()) {
@@ -70,15 +73,16 @@ public class HubSelectionDialog extends JDialog {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-        JLabel titleLabel = new JLabel("Track hubs for genome: " + GenomeManager.getInstance().getCurrentGenome().getDisplayName());
+        JLabel titleLabel = new JLabel("Track hubs");
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createVerticalStrut(20));
 
         JLabel headerMessage = new JLabel();
         headerMessage.setText("<html>Hubs from the <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>" +
-                "UCSC Track Hub Registry</a>, and user entered urls. Check to add to the 'Track Hubs'" +
-                " menu, uncheck to remove.</html>");
+                "UCSC Track Hub Registry</a> and user entered urls. Check to add to the 'Tracks'" +
+                " menu, uncheck to remove.<br>Hubs for the current genome (" +
+                GenomeManager.getInstance().getCurrentGenome().getDisplayName() + ") are listed first.</html>");
         headerMessage.setCursor(new Cursor(Cursor.HAND_CURSOR));
         headerMessage.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

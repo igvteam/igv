@@ -1,0 +1,72 @@
+**Track Hubs in IGV**
+
+A track hub is a collection of tracks hosted on a web server and described by a `hub.txt` file, in the format defined
+by UCSC (https://genome.ucsc.edu/goldenpath/help/hgTrackHubHelp.html).  IGV can load tracks from a hub, and can also
+load a genome a hub defines.  The URL to the `hub.txt` file is the hub URL you give IGV.
+
+**Hubs and genomes**
+
+A hub lists the genomes it provides tracks for.  Each genome is one of:
+
+- A genome already known to IGV, named by its UCSC id (for example `hg38`) or its GenBank/RefSeq accession (for
+  example `GCF_000001405.40`).  
+- A custom assembly the hub defines itself, with its own sequence (a `twoBitPath`).  Loading one of these creates a
+  new genome in IGV, and the hub becomes that genome's annotation hub, supplying its default annotation tracks.
+
+A single hub can list one genome or several, and can mix the two kinds.
+
+**Loading a hub**
+
+Enter the hub URL from either:
+
+- **Tracks > Add Track Hub from URL...**
+- **Genomes > Load Genome from URL...**
+
+
+What happens next depends on the hub.
+
+*Hub for a single genome*
+
+- If the hub's genome is the current genome, the hub's track selection dialog opens.  Check the tracks to load and
+  press OK.
+- Otherwise IGV switches to the hub's genome, creating it if the hub defines it with a twoBitPath, or loading it from
+  the hosted genome list if known to IGV.  Switching genomes unloads all current tracks, so if the hub is loaded
+  from the Tracks menu IGV asks for confirmation first.  From the Genomes menu the switch is expected and happens
+  without a prompt.
+
+*Hub for several genomes*
+
+- IGV lists the hub's genomes that are not yet in your genome list and offers to add them.  All are checked by
+  default; uncheck any you do not want.  Genome ids IGV does not recognize are noted in the dialog.  Cancel adds
+  nothing and stops the load.
+- Added genomes appear in the genome pulldown.  The first time you load one, IGV prompts for its default annotation
+  tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a session, and if the
+  hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks can be chosen later
+  from the Genomes menu.
+- If the current genome is one of the hub's genomes, the hub's track selection dialog opens.  Otherwise IGV offers
+  to switch to one of the hub's genomes, or you can cancel and stay where you are.
+
+**The Tracks menu**
+
+Once a hub is known to IGV it appears in the **Tracks** menu, under the **Hubs** heading, whenever the hub defines
+tracks for the current genome.  Selecting it opens the hub's track selection dialog.  The info icon beside a hub opens the
+hub's description page in your browser, when the hub provides one.
+
+In the track selection dialog, tracks are grouped as the hub organizes them.  Checking a track loads it when you press
+OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
+
+**Manage Track Hubs**
+
+**Tracks > Manage Track Hubs...** lists the hubs IGV knows about: the UCSC public hub registry plus any hubs you have
+added by URL.  Hubs for the current genome are listed first, and the filter box narrows the list by name, description
+or genome.  Checked hubs are shown in the Tracks menu for each genome they list; uncheck a hub to remove it.  Your
+selection is saved across sessions in `hubs.txt` in the IGV directory.
+
+A hub that defines a custom assembly is attached to that genome rather than managed here, so it is not listed.
+
+**Supported track types**
+
+IGV loads these trackDb types from a hub: bigBed, bigWig, bigGenePred, bigPsl, bigDbSnp, bed, bedGraph, wig,
+narrowPeak, broadPeak, gappedPeak, genePred, refGene, gff, gff3, gtf, vcf, vcfTabix, vcfPhasedTrio, bam, tdf, seg,
+mut, gistic, interact, rmask and ucscSnp.  Tracks of other types are omitted from the selection dialog.  A hub with no
+supported tracks for the current genome reports that rather than opening the dialog.

@@ -215,7 +215,7 @@ public class XMLSessionReader implements SessionReader {
             try {
                 GenomeListItem item = GenomeManager.getInstance().getGenomeTableRecord(genomeId);
                 genomePath = (item != null) ? item.getPath() : getAbsolutePath(genomeId, sessionPath);
-                GenomeManager.getInstance().loadGenome(genomePath);
+                GenomeManager.getInstance().loadSessionGenome(genomePath);
             } catch (IOException e) {
                 MessageUtils.showErrorMessage("Error loading genome: " + genomeId, e);
                 log.error("Error loading genome: " + genomeId, e);
