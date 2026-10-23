@@ -121,7 +121,7 @@ public class TrackHubLoader {
         List<HubGenomeSelectionDialog.Candidate> candidates = new ArrayList<>();
         List<String> unknownIds = new ArrayList<>();
         for (String genomeId : genomeIds) {
-            if (genomeList.containsKey(genomeId)) {
+            if (findInGenomeList(genomeList, genomeId) != null) {
                 continue;
             }
             if (hub.hasTwoBit(genomeId)) {
@@ -138,13 +138,17 @@ public class TrackHubLoader {
         }
 
         if (!candidates.isEmpty() || !unknownIds.isEmpty()) {
-            HubGenomeSelectionDialog dlg =
-                    new HubGenomeSelectionDialog(IGV.getInstance().getMainFrame(), hub, candidates, unknownIds);
-            UIUtilities.invokeAndWaitOnEventThread(() -> dlg.setVisible(true));
-            if (!dlg.isCanceled()) {
-                for (HubGenomeSelectionDialog.Candidate candidate : dlg.getSelectedCandidates()) {
-                    addGenome(hub, candidate);
-                }
+            final HubGenomeSelectionDialog[] holder = new HubGenomeSelectionDialog[1];
+            UIUtilities.invokeAndWaitOnEventThread(() -> {
+                holder[0] = new HubGenomeSelectionDialog(IGV.getInstance().getMainFrame(), hub, candidates, unknownIds);
+                holder[0].setVisible(true);
+            });
+            HubGenomeSelectionDialog dlg = holder[0];
+            if (dlg.isCanceled()) {
+                return;
+            }
+            for (HubGenomeSelectionDialog.Candidate candidate : dlg.getSelectedCandidates()) {
+                addGenome(hub, candidate);
             }
         }
 
@@ -162,7 +166,7 @@ public class TrackHubLoader {
             // Offer to switch to one of the hub's genomes now in the genome list.
             Map<String, GenomeListItem> updatedList = genomeListManager.getGenomeItemMap();
             List<GenomeListItem> hubGenomes = genomeIds.stream()
-                    .map(updatedList::get)
+                    .map(id -> findInGenomeList(updatedList, id))
                     .filter(Objects::nonNull)
                     .toList();
             if (!hubGenomes.isEmpty()) {
@@ -199,6 +203,21 @@ public class TrackHubLoader {
 
         String path = localFile != null ? localFile.getAbsolutePath() : candidate.item().getPath();
         GenomeListManager.getInstance().addGenomeItem(new GenomeListItem(candidate.name(), path, candidate.id()));
+    }
+
+    /**
+     * The genome list record for a hub genome id, which may name a UCSC hosted genome by its GenArk accession
+     * (e.g. GCF_000001405.40 for hg38), or null if the genome is not in the list.
+     */
+    private static GenomeListItem findInGenomeList(Map<String, GenomeListItem> genomeList, String genomeId) {
+        GenomeListItem item = genomeList.get(genomeId);
+        if (item == null) {
+            String ucscId = Hub.getUcscIdForAlias(genomeId);
+            if (ucscId != null) {
+                item = genomeList.get(ucscId);
+            }
+        }
+        return item;
     }
 
     /**

@@ -2,6 +2,7 @@ package org.igv.ucsc.hub;
 
 import org.igv.feature.genome.load.GenomeConfig;
 import org.igv.ui.genome.GenomeListItem;
+import org.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -136,7 +137,9 @@ public class HubGenomeSelectionDialog extends JDialog {
         String message = "The current genome is not referenced by this hub.  Switch to one of the hub's genomes?\n" +
                 "Switching genomes will clear the currently loaded tracks.";
         Object[] options = hubGenomes.toArray();
-        return (GenomeListItem) JOptionPane.showInputDialog(owner, message, "Switch Genome",
-                JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        final Object[] choice = new Object[1];
+        UIUtilities.invokeAndWaitOnEventThread(() -> choice[0] = JOptionPane.showInputDialog(owner, message,
+                "Switch Genome", JOptionPane.QUESTION_MESSAGE, null, options, options[0]));
+        return (GenomeListItem) choice[0];
     }
 }

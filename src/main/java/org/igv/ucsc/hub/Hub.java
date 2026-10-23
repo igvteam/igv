@@ -122,6 +122,18 @@ public class Hub {
         return idMappings.get(ucscId);
     }
 
+    /**
+     * The UCSC database name for a GenArk accession, or null if IGV has no hosted genome by that accession.
+     */
+    static String getUcscIdForAlias(String accession) {
+        for (Map.Entry<String, String> entry : idMappings.entrySet()) {
+            if (entry.getValue().equals(accession)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
     private Stanza getGenomeStanza(String genomeId) {
         if (genomeId == null) {
             return null;
