@@ -115,6 +115,13 @@ public class Hub {
         return getGenomeStanza(ucscId) != null;
     }
 
+    /**
+     * The GenArk accession a hub may use in place of the UCSC database name, or null if there is none.
+     */
+    static String getGenomeAlias(String ucscId) {
+        return idMappings.get(ucscId);
+    }
+
     private Stanza getGenomeStanza(String genomeId) {
         if (genomeId == null) {
             return null;

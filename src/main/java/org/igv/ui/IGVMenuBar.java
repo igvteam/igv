@@ -726,13 +726,13 @@ public class IGVMenuBar extends JMenuBar {
             }
         }
 
-        // Add manage item if hubs are available for this genome.  Hubs can be from the UCSC registry or user added (by URL)
-        List<HubDescriptor> hubs = HubRegistry.getAllHubsForGenome(genome.getUCSCId());
+        // Add manage item if any hubs are available.  Hubs can be from the UCSC registry or user added (by URL)
+        List<HubDescriptor> hubs = HubRegistry.getAllHubs();
         if (!hubs.isEmpty()) {
             tracksMenu.addSeparator();
             JMenuItem addHubItem = new JMenuItem("Manage Track Hubs ...");
             addHubItem.addActionListener(e -> {
-                final List<HubDescriptor> previous = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId());
+                final List<HubDescriptor> previous = new ArrayList<>(HubRegistry.getSelectedHubs());
                 final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
                 hubSelectionDialog.setVisible(true);
                 if (!hubSelectionDialog.isCanceled()) {
@@ -740,7 +740,7 @@ public class IGVMenuBar extends JMenuBar {
                     HubRegistry.setSelectedHubs(selected);
                     updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
 
-                    // Summarize what changed in the Tracks menu.  No message if nothing changed.
+                    // Summarize what changed.  No message if nothing changed.
                     Set<String> previousUrls = previous.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
                     Set<String> selectedUrls = selected.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
                     List<String> added = selected.stream().filter(hd -> !previousUrls.contains(hd.getUrl())).map(HubDescriptor::getShortLabel).toList();
@@ -750,7 +750,11 @@ public class IGVMenuBar extends JMenuBar {
                         if (!added.isEmpty()) {
                             message.append("<b>Hubs added:</b><br>");
                             added.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
-                            message.append("Tracks from these hubs can be loaded from the Tracks menu.<br>");
+                            boolean addedForCurrentGenome = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId()).stream()
+                                    .anyMatch(hd -> !previousUrls.contains(hd.getUrl()));
+                            if (addedForCurrentGenome) {
+                                message.append("Tracks from hubs for the current genome can be loaded from the Tracks menu.<br>");
+                            }
                         }
                         if (!removed.isEmpty()) {
                             if (!added.isEmpty()) message.append("<br>");

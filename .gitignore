@@ -2,7 +2,7 @@
 /.gradle/
 /build/
 /.idea/
-.DS-Store
+.DS_Store
 #JENV local config file
 .java-version
 /test/batch/snapshots/

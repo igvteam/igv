@@ -36,8 +36,10 @@ import java.util.*;
  * the hub's genomes its track selection dialog is shown, otherwise the user is offered a switch to one of them,
  * followed by the hub's track selection dialog if the chosen genome is a hosted one.
  * <p>
- * In every case the hub is recorded in the HubRegistry, so it appears in the "Track Hubs" menu for each genome it
- * references.  Long running; must not be called on the event thread.
+ * The hub is recorded in the HubRegistry (the user managed hubs) for the genomes it references but does not define,
+ * so it appears in the Tracks menu for each of them.  A genome the hub defines with a twoBitPath records the hub in
+ * its own genome json instead, so an assembly hub is never a managed hub.  Long running; must not be called on the
+ * event thread.
  */
 public class TrackHubLoader {
 
@@ -68,7 +70,10 @@ public class TrackHubLoader {
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
 
         if (currentGenome != null && hub.referencesGenome(currentGenome.getUCSCId())) {
-            HubRegistry.addUserHub(hub);
+            // An assembly hub (twoBitPath) is the genome's own hub, recorded in the genome json, not a managed hub.
+            if (!hub.hasTwoBit(genomeId)) {
+                HubRegistry.addUserHub(hub);
+            }
             IGVMenuBar.getInstance().updateMenus(currentGenome);
             selectTracks(hub, currentGenome);
             return;
@@ -143,7 +148,11 @@ public class TrackHubLoader {
             }
         }
 
-        HubRegistry.addUserHub(hub);
+        // Genomes the hub defines (twoBitPath) record the hub in their genome json.  The hub is a managed hub only
+        // for genomes it references but does not define.
+        if (genomeIds.stream().anyMatch(id -> !hub.hasTwoBit(id))) {
+            HubRegistry.addUserHub(hub);
+        }
 
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome != null && hub.referencesGenome(currentGenome.getUCSCId())) {
