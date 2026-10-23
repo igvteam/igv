@@ -223,3 +223,40 @@ Implemented as planned, with these specifics:
   the hub's own track selection dialog is shown, following the first-load default annotation prompt when there is
   one, so the hub's tracks are not overlooked.  Not done for an assembly created from the hub, whose default
   annotations are the hub's tracks.
+
+
+***Follow-up changes (Oct 22 2026)***
+
+Changes after review and manual testing, all on branch `trackhubs` (PR #1887):
+
+- **Tracks menu.**  The "Hubs" menu was renamed `tracksMenu`; hubs are only part of it.  Registry hubs for the current
+  genome are listed under a bold "Hubs" heading, each with an info link-out drawn from the hub's `descriptionUrl`
+  (`HubMenuItem`, same icon as the hub selection dialog).  A separator always precedes "Manage Track Hubs ...", which
+  is shown whenever any hub is known.  On OK a dialog summarizes the hubs added and removed; nothing is shown if the
+  selection is unchanged.
+- **Manage Track Hubs lists every hub**, for all genomes, sorted so hubs for the current genome come first.  Filtering
+  to the current genome and then saving the result replaced the whole of `hubs.txt`, dropping hubs selected for other
+  genomes.  Only registry hubs (UCSC public list + user added) are managed; a genome's own hubs from its genome json
+  are not.
+- **Assembly hubs are never registry hubs.**  A genome created from a hub's `twoBitPath` records the hub in its own
+  json (`hubs[0]`), so `TrackHubLoader` does not also add it to `HubRegistry`; otherwise it is counted twice.  A
+  multi-genome hub is registered only if it references at least one genome it does not define, so a mixed hub such as
+  the T2T-H9 hub still reaches the Tracks menu for hg19.  This amends step 3 and step 5 above.
+- **Accession aliasing in the registry and the multi-genome loader.**  `HubRegistry` lookups for a genome also match
+  its GenArk accession (`Hub.getGenomeAlias`), so a hub whose genomes.txt names GCF_000001405.40 is listed under hg38.
+  `TrackHubLoader.loadMultiGenomeHub` matches hub genome ids against the genome list the same way, via the reverse
+  lookup `Hub.getUcscIdForAlias`, so an existing hg38 is not offered again as a GenArk genome.
+- **Genome switch confirmation.**  A single-genome hub referencing another genome switches silently from the Genomes
+  menu but asks first from the Tracks menu (`loadHub(url, confirmGenomeSwitch)`), since the switch unloads all tracks.
+- **First-load annotation prompt rules** (`JsonGenomeLoader.selectAnnotations`).  The `selectAnnotationsOnLoad` flag is
+  cleared only once the prompt has been shown.  If it cannot be shown (batch, headless, tests, no IGV instance) the flag
+  and json are left alone for a later interactive load.  If the annotation hub is unreachable the genome still loads,
+  the user is told with the error, and the flag is cleared so they are not asked on every load; annotations can be
+  added later from the Genomes menu.  No prompt during session restore: `GenomeManager.loadGenome` passes its
+  `loadAnnotationTracks` flag to the loader (`promptForAnnotations`).
+- **Multi-genome dialog flow.**  Cancel in "Add Genomes from Hub" aborts the load entirely.  The dialog is constructed
+  and shown on the event thread, and the switch-genome prompt is marshaled there too.
+- **Track selection dialog.**  All checkboxes are enabled; unchecking a loaded track unloads it on OK, as the ENCODE
+  chooser does.  The diff is a single pass over the hub's configs with hash lookups against loaded track paths.
+- **Formats.**  `bigPsl` added to `TrackDbHub.supportedTypes` (the generic BigBed codec handles bed12+13).  The T2T-H9
+  hub's hg19 trackDb, reached through an `include`, was being rejected for this reason, not the include.
