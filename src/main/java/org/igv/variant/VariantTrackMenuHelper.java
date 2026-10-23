@@ -19,6 +19,7 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
@@ -67,17 +68,14 @@ public class VariantTrackMenuHelper {
         items.addAll(TrackMenuUtils.getDisplayModeMenuItems(Collections.singletonList(variantTrack)));
 
         items.add(new JPopupMenu.Separator());
-        items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT));
+        items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color variant sites by", JLabel.LEFT));
         items.add(getColorBandByAllelFrequency(variantTrack));
         items.add(getColorBandByAlleleFraction(variantTrack));
         JMenu infoFieldMenu = getColorByInfoFieldMenu(variantTrack);
         if (infoFieldMenu != null) {
             items.add(infoFieldMenu);
         }
-        items.add(getAlleleFrequencyColorsItem(variantTrack));
-        if (infoFieldMenu != null) {
-            items.add(getEditInfoColorsItem(variantTrack));
-        }
+        items.add(getEditColorItem(variantTrack));
 
         // Methylation color options
         if (variantTrack.isEnableMethylationRateSupport()) {
@@ -155,22 +153,29 @@ public class VariantTrackMenuHelper {
     }
 
     /**
-     * The colors, and legend, for the allele frequency display the track shows -- a color scale or bars.
+     * Opens the color dialog for what the track's variant sites are colored by: the INFO field, or the allele
+     * frequency or fraction display -- a color scale or bars.
      */
-    private static JMenuItem getAlleleFrequencyColorsItem(VariantTrack track) {
-        JMenuItem editItem = new JMenuItem("Allele Frequency Colors...");
-        editItem.addActionListener(evt -> {
+    private static JMenuItem getEditColorItem(VariantTrack track) {
+
+        final VariantTrack.ColorMode mode = track.getSiteColorMode();
+        final String infoKey = track.getColorByAttribute();
+        final boolean info = mode == VariantTrack.ColorMode.ATTRIBUTE && infoKey != null;
+
+        JMenuItem item = new JMenuItem(info ? "INFO Field " + infoKey + " Colors..." : "Allele Frequency/Fraction Colors...");
+        item.addActionListener(evt -> {
             Frame frame = IGV.getInstance().getMainFrame();
-            if (track.isAlleleFrequencyBars()) {
+            if (info) {
+                new VariantColorLegendDialog(frame, track, infoKey).setVisible(true);
+            } else if (track.isAlleleFrequencyBars()) {
                 new AlleleFrequencyBarColorsDialog(frame, track).setVisible(true);
             } else {
-                // The scale for the mode shown, or for allele frequency if the track is colored by something else
-                String colorBy = track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION ?
+                String colorBy = mode == VariantTrack.ColorMode.ALLELE_FRACTION ?
                         VariantTrack.COLOR_BY_ALLELE_FRACTION : VariantTrack.COLOR_BY_ALLELE_FREQUENCY;
                 new AlleleFrequencyColorsDialog(frame, track, colorBy).setVisible(true);
             }
         });
-        return editItem;
+        return item;
     }
 
     /**
@@ -239,14 +244,12 @@ public class VariantTrackMenuHelper {
 
     /**
      * A numeric attribute is a quantity, not a category -- coloring it by value would give a color per variant.
-     * The first time one is selected, have the user define a color scale, prefilled from the loaded values.  The
-     * scale applies to the track, and with "Update Preferences" is also saved as a scheme so it applies to every
-     * VCF with this attribute and can be shared.  Attributes the track or a scheme already covers, and attributes
-     * that are not numeric, need nothing.
+     * The first time one is selected, give the track a default color scale over the loaded values, without asking.
+     * Attributes the track or a scheme already covers, and attributes that are not numeric, need nothing.
      *
      * @return true if the track can be colored by this attribute
      */
-    // Package private for testing -- the paths that do not open the dialog are worth covering
+    // Package private for testing
     static boolean defineScaleIfNeeded(VariantTrack track, String infoKey) {
 
         // Any scheme covering the attribute settles it -- with a scale, a categorical declaration, or discrete
@@ -261,48 +264,20 @@ public class VariantTrackMenuHelper {
 
         double[] range = track.getAttributeRange(infoKey);
 
-        if (range == null && track.getAttributeValues(infoKey).isEmpty()) {
-            // Nothing loaded to judge by.  Coloring by value anyway would quietly treat a quantity as a category
-            // and record nothing, so the same click would behave differently after navigating.  Leave the
-            // selection alone and say why.
-            MessageUtils.showMessage("No loaded features have a value for " + infoKey + ".  Move to a region where "
+        if (range == null) {
+            // No numeric values loaded -- none, or none that can be read as numbers, such as multi-valued records.
+            // A scale over a made-up range would color everything alike, and coloring by value anyway would quietly
+            // treat a quantity as a category, so the same click would behave differently after navigating.  Leave
+            // the selection alone and say why.
+            MessageUtils.showMessage("No loaded features have a numeric value for " + infoKey + ".  Move to a region where "
                     + infoKey + " has values and choose it again, or import a color scheme for " + infoKey + ".");
             return false;
         }
 
-        // Values are loaded.  Prefill the range from them when they are numeric; when they are not -- every
-        // record multi-valued, say -- still ask, rather than deciding the attribute is categorical unasked.
-        ContinuousColorScale scale = range == null
-                ? new ContinuousColorScale(0, 1, DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR)
-                : new ContinuousColorScale(range[0], rangeEnd(range), DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
+        ContinuousColorScale scale =
+                new ContinuousColorScale(range[0], rangeEnd(range), DEFAULT_SCALE_MIN_COLOR, DEFAULT_SCALE_MAX_COLOR);
 
-        // IGV cannot tell a quantity from a code, so the dialog offers both: define a scale, or say the values
-        // are categories after all and colour them individually.
-        HeatmapLegendEditor editor = new HeatmapLegendEditor(
-                IGV.getInstance().getMainFrame(), true, scale, "Values Are Categories");
-        editor.setTitle("Color scale for " + infoKey);
-        // Checked: there is no preference for the attribute yet -- that is why the dialog is shown
-        JCheckBox updatePreferences = editor.addCheckBox("Update Preferences", true);
-        editor.setVisible(true);
-
-        if (editor.isDiscreteSelected()) {
-            // Without a scheme the track's colors record the choice -- see the check above
-            return updatePreferences.isSelected() ? saveDiscreteScheme(track, infoKey)
-                    : isWithinCategoryLimit(track, infoKey);
-        }
-        if (editor.isCanceled()) {
-            return false;
-        }
-
-        track.setColorScale(infoKey, editor.getColorScheme());
-        if (updatePreferences.isSelected()) {
-            try {
-                VariantColorSchemes.saveScale(infoKey, editor.getColorScheme());
-            } catch (Exception e) {
-                log.error("Error saving color scale for " + infoKey, e);
-                MessageUtils.showMessage("Error saving color scale: " + e.getMessage());
-            }
-        }
+        track.setColorScale(infoKey, scale);
         return true;
     }
 
@@ -363,24 +338,6 @@ public class VariantTrackMenuHelper {
             MessageUtils.showMessage("Error saving colors: " + e.getMessage());
             return false;
         }
-    }
-
-    /**
-     * Opens the color legend for the attribute the track is colored by.  Only enabled in that mode -- there is
-     * nothing to show a legend for otherwise.
-     */
-    private static JMenuItem getEditInfoColorsItem(VariantTrack track) {
-
-        final String infoKey = track.getColorByAttribute();
-        final boolean active = track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && infoKey != null;
-
-        JMenuItem item = new JMenuItem(active ? "Edit " + infoKey + " Colors..." : "Edit INFO Colors...");
-        item.setEnabled(active);
-        if (active) {
-            item.addActionListener(evt ->
-                    new VariantColorLegendDialog(IGV.getInstance().getMainFrame(), track, infoKey).setVisible(true));
-        }
-        return item;
     }
 
     private static JMenuItem getShowGenotypes(VariantTrack track) {
@@ -496,25 +453,58 @@ public class VariantTrackMenuHelper {
 
 
     /**
-     * A check mark, for a menu that stands for a selected item.
+     * A check mark, for a menu that stands for a selected item.  It is the look-and-feel's own check box menu item
+     * mark, so it matches the ones on the other color-by items in any theme.
      */
     private static class CheckIcon implements Icon {
 
+        private final Icon checkIcon = UIManager.getIcon("CheckBoxMenuItem.checkIcon");
+        private final JCheckBoxMenuItem selectedItem = new JCheckBoxMenuItem("", true);
+        // False if the look-and-feel has no mark, or one that paints nothing for a detached item, as Nimbus's
+        private final boolean useCheckIcon = checkIcon != null && paintsSomething(checkIcon);
+
+        private boolean paintsSomething(Icon icon) {
+            if (icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+                return false;
+            }
+            BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = image.createGraphics();
+            try {
+                icon.paintIcon(selectedItem, g, 0, 0);
+            } finally {
+                g.dispose();
+            }
+            for (int x = 0; x < image.getWidth(); x++) {
+                for (int y = 0; y < image.getHeight(); y++) {
+                    if ((image.getRGB(x, y) >>> 24) != 0) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(c.getForeground());
-            g2.setStroke(new BasicStroke(1.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g2.drawPolyline(new int[]{x + 2, x + 5, x + 10}, new int[]{y + 6, y + 9, y + 2}, 3);
-            g2.dispose();
+            if (!useCheckIcon) {
+                // No usable check box menu item mark -- draw one
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(c.getForeground());
+                g2.setStroke(new BasicStroke(1.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.drawPolyline(new int[]{x + 2, x + 5, x + 10}, new int[]{y + 6, y + 9, y + 2}, 3);
+                g2.dispose();
+                return;
+            }
+            selectedItem.setForeground(c.getForeground());
+            checkIcon.paintIcon(selectedItem, g, x, y);
         }
 
         public int getIconWidth() {
-            return 12;
+            return useCheckIcon ? checkIcon.getIconWidth() : 12;
         }
 
         public int getIconHeight() {
-            return 12;
+            return useCheckIcon ? checkIcon.getIconHeight() : 12;
         }
     }
 }

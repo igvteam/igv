@@ -169,7 +169,12 @@ public class VariantRenderer {
 
             if (percent <= 0) {
                 percent = 0;
-                refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;
+                // No value or 0 is the reference color, as for any bar; a reference block keeps the non-ref color
+                if (variant.isNonRef()) {
+                    refColor = useAlpha ? colorAlleleRefAlpha : colorAlleleRef;
+                } else {
+                    refColor = useAlpha ? colorAlleleBandRefAlpha : colorAlleleBandRef;
+                }
             } else {
                 refColor = useAlpha ? colorAlleleBandRefAlpha : colorAlleleBandRef;                      // Blue
             }

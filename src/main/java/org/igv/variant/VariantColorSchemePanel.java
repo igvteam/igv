@@ -44,10 +44,8 @@ public class VariantColorSchemePanel extends JPanel {
     public VariantColorSchemePanel() {
 
         setLayout(new BorderLayout(0, 5));
-        setBorder(BorderFactory.createTitledBorder("Variant INFO colors"));
 
-        JLabel description = new JLabel("<html>Colors for the values of VCF INFO attributes, used by the track menu's "
-                + "<i>Color By &gt; INFO Field</i> option.<br>IGV keeps one file per attribute in "
+        JLabel description = new JLabel("<html>IGV keeps one file per VCF INFO attribute in "
                 + VariantColorSchemes.getSchemeDirectory().getAbsolutePath()
                 + ".<br>Importing a file replaces the colors for every attribute it covers.");
         add(description, BorderLayout.NORTH);

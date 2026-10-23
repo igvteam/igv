@@ -17,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.BorderLayout;
@@ -25,6 +26,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -49,6 +53,7 @@ public class VariantColorLegendDialog extends JDialog {
     private final JPanel valuePanel = new JPanel();
     private final JLabel description = new JLabel();
     private final JButton editScaleButton = new JButton("Edit Scale...");
+    private final JButton categoriesButton = new JButton("Values Are Categories...");
     private final JCheckBox updatePreferencesBox = new JCheckBox("Update Preferences");
 
     // Edits not yet saved -- applied on "OK", discarded on "Cancel"
@@ -60,7 +65,7 @@ public class VariantColorLegendDialog extends JDialog {
 
     public VariantColorLegendDialog(Frame owner, VariantTrack track, String infoKey) {
 
-        super(owner, "Colors for " + infoKey, true);
+        super(owner, "INFO Field " + infoKey + " Colors", true);
         this.track = track;
         this.infoKey = infoKey;
 
@@ -77,6 +82,8 @@ public class VariantColorLegendDialog extends JDialog {
 
         editScaleButton.setToolTipText("Change the range and colors of the scale");
         editScaleButton.addActionListener(e -> editScale());
+        categoriesButton.setToolTipText("Color each value of this numeric attribute separately, instead of by a scale");
+        categoriesButton.addActionListener(e -> useCategories());
 
         // Checked when there is no preference for the attribute yet, so the first colors chosen become the default.
         // An existing preference is not replaced unless asked.
@@ -97,6 +104,7 @@ public class VariantColorLegendDialog extends JDialog {
         leftButtons.add(updatePreferencesBox);
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         rightButtons.add(editScaleButton);
+        rightButtons.add(categoriesButton);
         rightButtons.add(okButton);
         rightButtons.add(cancelButton);
         JPanel buttonPanel = new JPanel(new BorderLayout());
@@ -124,6 +132,8 @@ public class VariantColorLegendDialog extends JDialog {
                 + (scale == null ? "Click a color to change it." : "Colored by a scale."));
 
         editScaleButton.setVisible(scale instanceof ContinuousColorScale || scale instanceof ColorStopScale);
+        // A numeric attribute colored by a scale can instead be said to hold categories
+        categoriesButton.setVisible(scale instanceof ContinuousColorScale && track.isNumericAttribute(infoKey));
         // Allele frequency colors are edited, and saved, in their own dialog
         updatePreferencesBox.setVisible(!(scale instanceof ColorStopScale));
 
@@ -263,6 +273,53 @@ public class VariantColorLegendDialog extends JDialog {
             pendingScale = edited;
             populate();
         }
+    }
+
+    /**
+     * Say that a numeric attribute holds categories: drop its scale and give each loaded value its own color.  Applied
+     * at once, not on "OK".  A scheme with a scale for the attribute would still win, so it is replaced, as it is when
+     * "Update Preferences" is checked.
+     */
+    private void useCategories() {
+
+        List<String> values = new ArrayList<>(track.getAttributeValues(infoKey));
+        if (values.size() > VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES) {
+            MessageUtils.showMessage("Color by is not available for attributes with more than "
+                    + VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES + " distinct values.  " + infoKey + " has "
+                    + values.size() + " among the loaded features.");
+            return;
+        }
+        if (JOptionPane.showConfirmDialog(this, "Color each value of " + infoKey + " separately, instead of by a scale?",
+                "Values Are Categories", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        List<Color> used = new ArrayList<>();
+        Map<String, Color> colors = new LinkedHashMap<>();
+        for (String value : values) {
+            Color color = DistinctColors.next(used);
+            used.add(color);
+            colors.put(value, color);
+        }
+
+        if (updatePreferencesBox.isSelected() || VariantColorSchemes.getSchemeForScale(infoKey) != null) {
+            try {
+                // The declaration persists the answer even when no values are loaded to color
+                VariantColorSchemes.saveScheme(infoKey, colors, true);
+            } catch (Exception e) {
+                log.error("Error saving colors for " + infoKey, e);
+                MessageUtils.showMessage("Error saving colors: " + e.getMessage());
+                return;
+            }
+        }
+
+        track.setColorScale(infoKey, null);
+        colors.forEach((value, color) -> track.setAttributeColor(infoKey, value, color));
+        pendingScale = null;
+        pendingColors.clear();
+        populate();
+        pack();
+        repaintTrack();
     }
 
     /**

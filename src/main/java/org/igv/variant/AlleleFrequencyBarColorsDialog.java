@@ -42,7 +42,7 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
     private final SampleBars sampleBars = new SampleBars();
 
     public AlleleFrequencyBarColorsDialog(Frame owner, VariantTrack track) {
-        super(owner, "Allele Frequency Colors", true);
+        super(owner, "Allele Frequency/Fraction Colors", true);
         this.track = track;
 
         variantColor = track.getAlleleFrequencyVariantColor();
@@ -80,14 +80,13 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setContentPane(content);
 
-        String value = track.getSiteColorMode() == VariantTrack.ColorMode.ALLELE_FRACTION ?
-                "the allele fraction: AC divided by AN" :
-                "the allele frequency: AF, or GMAF if a variant has no AF";
-        content.add(new JLabel("<html>The lower part of each bar, in the variant color, is " + value + ".<br>" +
-                "At a site with more than one alternate allele, the alleles are added.<br>" +
-                "A variant with no value, or a value of 0, is drawn in the track color, " +
-                "and a gVCF reference block in gray.<br>" +
-                "Filtered variants are drawn faded.  Changes apply to this track."), BorderLayout.NORTH);
+        content.add(new JLabel("<html>The lower part of each bar is colored in the variant color and its height is in " +
+                "proportion to the allele frequency or fraction.<br>" +
+                "Allele frequency = AF; or GMAF if a variant has no AF.<br>" +
+                "Allele fraction = AC divided by AN.<br>" +
+                "A variant with no value is drawn in the reference color.<br>" +
+                "A gVCF reference block is drawn in gray.<br>" +
+                "Filtered variants are drawn faded."), BorderLayout.NORTH);
 
         JPanel swatches = new JPanel();
         swatches.setLayout(new BoxLayout(swatches, BoxLayout.Y_AXIS));
@@ -184,7 +183,7 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
     }
 
     /**
-     * Example bars: two frequencies, a variant with no value (or 0), and a reference block.
+     * Example bars: two frequencies and a reference block.
      */
     private class SampleBars extends JComponent {
 
@@ -193,7 +192,7 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
         private static final int SPACING = 100;
 
         SampleBars() {
-            setPreferredSize(new Dimension(4 * SPACING, BAR_HEIGHT + 24));
+            setPreferredSize(new Dimension(3 * SPACING, BAR_HEIGHT + 24));
         }
 
         @Override
@@ -205,8 +204,7 @@ public class AlleleFrequencyBarColorsDialog extends JDialog {
 
             drawBar(g2, fm, 0, 0.3, "30%", null);
             drawBar(g2, fm, 1, 0.8, "80%", null);
-            drawBar(g2, fm, 2, 0, "No value or 0%", track.getColor());
-            drawBar(g2, fm, 3, 0, "Reference block", REFERENCE_BLOCK_COLOR);
+            drawBar(g2, fm, 2, 0, "Reference block", REFERENCE_BLOCK_COLOR);
             g2.dispose();
         }
 

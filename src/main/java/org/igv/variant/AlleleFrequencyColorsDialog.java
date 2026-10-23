@@ -39,7 +39,7 @@ public class AlleleFrequencyColorsDialog extends JDialog {
      * @param colorBy the color-by option the scale is for -- see {@link VariantTrack#getColorBy()}
      */
     public AlleleFrequencyColorsDialog(Frame owner, VariantTrack track, String colorBy) {
-        super(owner, "Allele Frequency Colors", true);
+        super(owner, "Allele Frequency/Fraction Colors", true);
         this.track = track;
         this.colorBy = colorBy;
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -56,8 +56,8 @@ public class AlleleFrequencyColorsDialog extends JDialog {
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setContentPane(content);
 
-        content.add(new JLabel("<html>Variants are colored by allele frequency, blended on a log scale between stops.<br>" +
-                "Variants with no frequency take the color of the lowest stop.  Changes apply to this track."),
+        content.add(new JLabel("<html>Variants are colored by allele frequency or fraction, blended on a log scale between stops.<br>" +
+                "Variants with no value take the color of the lowest stop."),
                 BorderLayout.NORTH);
 
         stopsPanel.setLayout(new BoxLayout(stopsPanel, BoxLayout.Y_AXIS));

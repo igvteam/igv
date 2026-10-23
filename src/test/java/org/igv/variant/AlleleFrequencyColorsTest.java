@@ -217,6 +217,24 @@ public class AlleleFrequencyColorsTest extends AbstractHeadlessTest {
         assertEquals(new Color(200, 200, 215), new Color(image.getRGB(10, 10)));
     }
 
+    /**
+     * In bars mode a variant with no value is drawn in the reference color, not the track color; a reference block
+     * stays gray.
+     */
+    @Test
+    public void testBarsNoValueIsReferenceColor() {
+        VariantTrack track = load(SITES);
+        track.setSiteColorMode(VariantTrack.ColorMode.ALLELE_FREQUENCY);
+        track.setAlleleFrequencyBars(true);
+        List<Variant> variants = variants(track);
+
+        BufferedImage image = renderSiteBand(track, variants.get(4));
+        assertEquals(track.getAlleleFrequencyReferenceColor(), new Color(image.getRGB(10, 10)));
+
+        image = renderSiteBand(track, variants.get(5));
+        assertEquals(new Color(200, 200, 215), new Color(image.getRGB(10, 10)));
+    }
+
     @Test
     public void testSessionRoundTrip() {
         VariantTrack track = load(SITES);

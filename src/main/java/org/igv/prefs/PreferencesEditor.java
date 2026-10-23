@@ -324,9 +324,10 @@ public class PreferencesEditor {
             if (tabLabel.equalsIgnoreCase("Variants")) {
                 // Color schemes for INFO attributes are managed as files, not as individual color preferences --
                 // the set of attributes, and of values for each, is unbounded.  This is a special case.
+                // It goes in the last group, "Variant site colors", below the separator.
                 JPanel schemePanel = new VariantColorSchemePanel();
-                contentGrid.addLayoutComponent(schemePanel, new GridBagConstraints(0, contentRow++, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 10, 10), 5, 5));
-                content.add(schemePanel);
+                grid.addLayoutComponent(schemePanel, new GridBagConstraints(0, row, 4, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 5, 5));
+                group.add(schemePanel);
             }
 
             if (tabLabel.equalsIgnoreCase("Advanced")) {
