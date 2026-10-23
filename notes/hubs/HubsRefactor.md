@@ -281,3 +281,40 @@ Six findings from the Copilot review of PR #1887, all confirmed and fixed in one
 - `TrackSelectionDialog` cached dialogs by hub only.  A mixed hub opened for one genome and then another reused the
   first genome's dialog while the action read the second genome's configs.  The cache is now keyed by hub url and
   genome id.
+
+***Hub package review fixes (Oct 23 2026)***
+
+A second, medium-effort `/code-review` scoped to `org.igv.ucsc.hub` after the Copilot round.  One finding was rejected:
+cancelling the default-annotation dialog does not cancel a genome switch; the genome is saved with no tracks and
+loaded, since a genome without annotations is unusual but allowed.  The rest, fixed in one commit:
+
+- `Hub.getGenomeConfig` returns the config cached inside the (session-cached) Hub, and three sites edited it in place
+  (`hubs`, `tracks`, `selectAnnotationsOnLoad`), so one flow's edits leaked into the next -- e.g. a GenArk genome added
+  from a multi-genome hub left the flag set, and loading that GenArk hub later prompted twice.  All three sites
+  (`TrackHubLoader` x2, `GenomeSelectionDialog.createLocalGenome`) now take `copy()` first.
+- `HostedGenomes.getGenomeListItem` keys IGV's own hosted list by UCSC name, so a hub naming hg38 by accession fell
+  through to the GenArk record.  `TrackHubLoader.findHostedGenome` tries the UCSC name (`Hub.getUcscIdForAlias`) first.
+  Hosted candidates now carry the resolved id so the genome list entry matches the json.
+- `HubMenuItem`: `setToolTipText(null)` (a hub with no longLabel) unregistered the item from the ToolTipManager and
+  silenced the info icon's url tooltip.  The item re-registers itself when it has an info url.
+- "Add Genomes from Hub" opened with an empty list when every referenced genome was already in the list and only
+  unknown ids remained, and Cancel then aborted the load.  The unknown ids are now reported in a message and the load
+  continues.
+- `Hub.getTrackDbHub` cached the parsed trackDb under the caller's id, so lookups by UCSC name and by accession each
+  fetched and parsed it.  It is cached under the stanza's own `genome` value, which both lookups reach.
+- The hosted-genome branch of `loadSingleGenomeHub` registered the hub before loading the genome; a failed load left it
+  in `hubs.txt`.  Registration now follows the load.
+
+***GRC alias gaps (Oct 23 2026)***
+
+The GRC <-> UCSC aliases (GRCh38 -> hg38 etc.) are the ones that matter in practice; accession aliases are rarely hit.
+The current-genome path already canonicalized through `Genome.getUCSCId` (covered by `HubTest`).  Two edges did not:
+
+- `GenomeConfig.getUcscID` returned the raw id, so a json genome with id GRCh38 and a `hubs` entry could not find its
+  hg38 trackDb in the annotation prompt.  The map is now behind a static `Genome.toUCSCId`, used by both classes.
+- `TrackHubLoader.findInGenomeList` matched list entries by raw id (plus accession), so a list entry named GRCh38 or
+  b37 was not recognized as a hub's hg38 / hg19 and the hosted genome was offered again.  It now compares canonical
+  UCSC names across the list.
+
+Hubs themselves are still expected to name genomes by UCSC database name or accession, never GRC names; nothing on the
+hub side maps those.
