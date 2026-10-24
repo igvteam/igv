@@ -123,7 +123,6 @@ public class TrackHubLoader {
         // Referenced genomes not already in the genome list, and ids IGV does not know.
         List<HubGenomeSelectionDialog.Candidate> candidates = new ArrayList<>();
         List<String> unknownIds = new ArrayList<>();
-        Set<String> createdIds = new HashSet<>();
         for (String genomeId : genomeIds) {
             if (findInGenomeList(genomeList, genomeId) != null) {
                 continue;
@@ -157,17 +156,14 @@ public class TrackHubLoader {
             }
             for (HubGenomeSelectionDialog.Candidate candidate : dlg.getSelectedCandidates()) {
                 addGenome(hub, candidate);
-                if (candidate.config() != null) {
-                    createdIds.add(candidate.id());
-                }
             }
         }
 
-        // Assemblies created from the hub just now record it in their genome json.  The hub is a managed hub if it
-        // also references genomes that already existed, unless it is the current genome's own hub.
+        // Assemblies defined by the hub record it in their genome json.  The hub is a managed hub only if it also
+        // references genomes it does not define, and is not the current genome's own hub.
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
-        boolean referencesExisting = genomeIds.stream().anyMatch(id -> !createdIds.contains(id));
-        if (referencesExisting && !isGenomeHub(currentGenome, hub)) {
+        boolean referencesHosted = genomeIds.stream().anyMatch(id -> !hub.hasTwoBit(id));
+        if (referencesHosted && !isGenomeHub(currentGenome, hub)) {
             HubRegistry.addUserHub(hub);
         }
 
