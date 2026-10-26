@@ -153,7 +153,7 @@ public class IndexCreatorDialog extends org.igv.ui.IGVDialog {
             FeatureCodec codec = CodecFactory.getCodec(file.getAbsolutePath(), GenomeManager.getInstance().getCurrentGenome());
             if (codec != null) {
                 try {
-                    Index index = IndexFactory.createLinearIndex(file, codec, binSize);
+                    Index index = IndexFactory.createLinearIndex(file.toPath(), codec, binSize);
                     if (index != null) {
                         IgvTools.writeTribbleIndex(index, idxFile.getAbsolutePath());
                     }

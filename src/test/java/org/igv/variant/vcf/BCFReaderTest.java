@@ -95,7 +95,7 @@ public class BCFReaderTest extends AbstractHeadlessTest {
 
     private static String writeBCF(File dir, String name, byte[] bytes, boolean compressed) throws IOException {
         File file = new File(dir, name);
-        try (OutputStream out = compressed ? new BlockCompressedOutputStream(file) : new FileOutputStream(file)) {
+        try (OutputStream out = compressed ? new BlockCompressedOutputStream(file.toPath()) : new FileOutputStream(file)) {
             out.write(bytes);
         }
         return file.getAbsolutePath();
