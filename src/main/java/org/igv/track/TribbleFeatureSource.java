@@ -1,6 +1,7 @@
 package org.igv.track;
 
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.FileExtensions;
 import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
 import org.igv.Globals;
@@ -70,6 +71,13 @@ abstract public class TribbleFeatureSource implements FeatureSource {
                     if (FileUtils.resourceExists(maybeIdxPath)) {
                         indexExists = true;
                         idxPath = maybeIdxPath;
+                    } else if (maybeIdxPath.equals(ResourceLocator.appendToPath(locator, FileExtensions.TABIX_INDEX))) {
+                        // A bgzipped file may be indexed with CSI rather than TBI
+                        String csiPath = ResourceLocator.appendToPath(locator, FileExtensions.CSI);
+                        if (FileUtils.resourceExists(csiPath)) {
+                            indexExists = true;
+                            idxPath = csiPath;
+                        }
                     }
                 }
             }

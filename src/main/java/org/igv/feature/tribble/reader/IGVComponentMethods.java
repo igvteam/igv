@@ -31,6 +31,9 @@ public class IGVComponentMethods extends AbstractFeatureReader.ComponentMethods 
         else {
             if (indexPath == null & !isRemote) {
                 indexPath = ParsingUtils.appendToPath(resourcePath, FileExtensions.TABIX_INDEX);
+                if (!ParsingUtils.resourceExists(indexPath)) {
+                    indexPath = ParsingUtils.appendToPath(resourcePath, FileExtensions.CSI);
+                }
             }
             return indexPath != null && IOUtil.hasBlockCompressedExtension(resourcePath) && ParsingUtils.resourceExists(indexPath);
         }
