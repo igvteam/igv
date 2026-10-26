@@ -37,9 +37,13 @@ public class BCF2WrapperCodec implements FeatureCodec<VCFVariant, PositionalBuff
         if (vc == null) {
             return null;
         }
+        return toVariant(vc);
+
+    }
+
+    VCFVariant toVariant(VariantContext vc) {
         String chr = genome == null ? vc.getChr() : genome.getCanonicalChrName(vc.getChr());
         return new VCFVariant(vc, chr);
-
     }
 
     @Override

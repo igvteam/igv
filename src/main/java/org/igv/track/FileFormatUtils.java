@@ -36,34 +36,6 @@ public class FileFormatUtils {
         }
     }
 
-    /**
-     * The start of a BCF file: whether the file is compressed, and its BCF version.
-     */
-    public record BCFHeader(boolean compressed, int majorVersion, int minorVersion) {
-    }
-
-    /**
-     * Read the magic number and version at the start of a BCF file, decompressing it if necessary.
-     *
-     * @return the header, or null if the file does not start with the BCF magic number
-     */
-    public static BCFHeader readBCFHeader(String path) throws IOException {
-        byte[] bytes = new byte[5];
-        boolean compressed;
-        try (SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
-            compressed = isGzip(seekableStream);
-            seekableStream.seek(0);
-            InputStream inputStream = compressed ? new GZIPInputStream(seekableStream) : seekableStream;
-            if (inputStream.readNBytes(bytes, 0, bytes.length) < bytes.length) {
-                return null;
-            }
-        }
-        if (bytes[0] != 'B' || bytes[1] != 'C' || bytes[2] != 'F') {
-            return null;
-        }
-        return new BCFHeader(compressed, bytes[3], bytes[4]);
-    }
-
     public static String determineFormat(String path) throws IOException {
 
         byte[] bytes = new byte[1000];
