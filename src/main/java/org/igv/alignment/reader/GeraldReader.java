@@ -6,7 +6,7 @@ import org.igv.logging.*;
 import org.igv.exceptions.DataLoadException;
 import org.igv.alignment.Alignment;
 import org.igv.alignment.EmptyAlignmentIterator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -125,11 +125,11 @@ public class GeraldReader implements AlignmentReader {
         int end;
         boolean contained;
         Alignment nextRecord;
-        AsciiLineReader reader;
+        Utf8LineReader reader;
 
         public GeraldIterator() {
             this.chr = null;
-            reader = new AsciiLineReader(is);
+            reader = new Utf8LineReader(is);
             readNextRecord();
         }
 
@@ -187,7 +187,7 @@ public class GeraldReader implements AlignmentReader {
             this.end = end;
             this.contained = contained;
             seekToStart();
-            reader = new AsciiLineReader(is);
+            reader = new Utf8LineReader(is);
             advanceToFirstRecord();
         }
 

@@ -16,7 +16,7 @@ import org.igv.feature.genome.GenomeManager;
 import org.igv.track.GisticTrack;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class GisticFileParser {
     public static GisticTrack loadData(ResourceLocator locator) {
 
         // TODO -- handle remote resource
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
 
         String nextLine = null;
         int rowCounter = 0;

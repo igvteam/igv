@@ -2,7 +2,7 @@ package org.igv.util;
 
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -64,9 +64,9 @@ public class ParsingUtils {
 
     }
 
-    public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
+    public static Utf8LineReader openAsciiReader(ResourceLocator locator) throws IOException {
         InputStream stream = openInputStreamGZ(locator);
-        return new AsciiLineReader(stream);
+        return new Utf8LineReader(stream);
 
     }
 
@@ -270,7 +270,7 @@ public class ParsingUtils {
 
     public static int estimateLineCount(String path) {
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         try {
             final int defaultLength = 100000;
             long fileLength = getContentLength(path);

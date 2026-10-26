@@ -14,7 +14,7 @@ import org.igv.tools.IgvTools;
 import org.igv.track.Track;
 import org.igv.ui.IGV;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.junit.Assert;
 import org.junit.Ignore;
 
@@ -222,7 +222,7 @@ public class TestUtils {
      */
     public static int getBytesAtEnd(String filePath) throws IOException {
         InputStream is = new FileInputStream(filePath);
-        AsciiLineReader reader = new AsciiLineReader(is);
+        Utf8LineReader reader = new Utf8LineReader(is);
         String line = reader.readLine();
         int bytesThisLine = (int) reader.getPosition();
 

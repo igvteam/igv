@@ -9,7 +9,7 @@ import org.igv.track.FeatureCollectionSource;
 import org.igv.track.FeatureTrack;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class DRangerParser {
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         List<FeatureTrack> tracks = new ArrayList();
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         List<htsjdk.tribble.Feature> features = new ArrayList(5000);
 
         int parseColumn = -1;

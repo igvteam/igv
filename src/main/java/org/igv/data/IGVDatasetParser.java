@@ -15,7 +15,7 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.collections.FloatArrayList;
 import org.igv.util.collections.IntArrayList;
 import org.igv.util.stream.IGVSeekableStreamFactory;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -114,7 +114,7 @@ public class IGVDatasetParser {
         float dataMax = 0;
 
         InputStream is = null;
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         String nextLine = null;
         ChromosomeSummary chrSummary = null;
         List<ChromosomeSummary> chrSummaries = new ArrayList();
@@ -132,7 +132,7 @@ public class IGVDatasetParser {
 
             // BufferedReader reader = ParsingUtils.openBufferedReader(dataResourceLocator);
             is = ParsingUtils.openInputStreamGZ(dataResourceLocator);
-            reader = new AsciiLineReader(is);
+            reader = new Utf8LineReader(is);
 
             // Infer datatype from extension.  This can be overriden in the
             // comment section
@@ -348,7 +348,7 @@ public class IGVDatasetParser {
 
             is = IGVSeekableStreamFactory.getInstance().getStreamFor(dataResourceLocator.getPath());
             is.seek(chrSummary.getStartPosition());
-            AsciiLineReader reader = new AsciiLineReader(is);
+            Utf8LineReader reader = new Utf8LineReader(is);
 
 
             // Create containers to hold data

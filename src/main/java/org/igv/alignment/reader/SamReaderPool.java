@@ -83,8 +83,7 @@ public class SamReaderPool {
         boolean isLocal = locator.isLocal();
         final SamReaderFactory factory = SamReaderFactory.makeDefault().
                 referenceSource(new IGVReferenceSource()).
-                validationStringency(ValidationStringency.SILENT).
-                enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
+                validationStringency(ValidationStringency.SILENT);
         SamInputResource resource;
 
         if (isLocal) {
