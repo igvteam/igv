@@ -1,6 +1,6 @@
 package org.igv.feature.mut;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.exceptions.DataLoadException;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
@@ -84,7 +84,7 @@ public class MutationFeatureSource implements SegmentedDataSource {
      * Load mutations and group by sampleId as they are read.
      */
     private void loadMutations() {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         samples = new ArrayList<>();
         Set<String> sampleSet = new HashSet<>();
         featureCollectionSourceMap = new LinkedHashMap<>();

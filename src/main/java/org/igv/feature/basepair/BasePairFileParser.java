@@ -8,7 +8,7 @@ import org.igv.ui.color.ColorUtilities;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.StringUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.awt.*;
 import java.util.*;
@@ -21,7 +21,7 @@ public class BasePairFileParser {
                                 Genome genome,
                                 BasePairData basePairData,
                                 BasePairTrack.RenderOptions renderOptions) {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
 
         String nextLine = null;
         int rowCounter = 0;

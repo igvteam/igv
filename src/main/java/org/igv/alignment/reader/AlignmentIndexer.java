@@ -3,7 +3,7 @@ package org.igv.alignment.reader;
 import org.igv.Globals;
 import org.igv.ui.util.IndexCreatorDialog;
 import org.igv.ui.util.UIUtilities;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import javax.swing.*;
 import java.io.*;
@@ -62,7 +62,7 @@ public abstract class AlignmentIndexer {
 
         FileInputStream is = new FileInputStream(samFile);
         InputStream bis = new BufferedInputStream(is);
-        AsciiLineReader reader = new AsciiLineReader(bis);
+        Utf8LineReader reader = new Utf8LineReader(bis);
 
         long fileLength = samFile.length();
         long progressIncrement = fileLength / 100;

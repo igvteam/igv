@@ -7,8 +7,8 @@ import org.igv.variant.vcf.VCFVariant;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.FeatureCodec;
 import htsjdk.tribble.FeatureCodecHeader;
-import htsjdk.tribble.readers.AsciiLineReader;
-import htsjdk.tribble.readers.AsciiLineReaderIterator;
+import htsjdk.tribble.readers.Utf8LineReader;
+import htsjdk.tribble.readers.Utf8LineReaderIterator;
 import htsjdk.tribble.readers.PositionalBufferedStream;
 import htsjdk.variant.variantcontext.VariantContext;
 
@@ -37,9 +37,13 @@ public class BCF2WrapperCodec implements FeatureCodec<VCFVariant, PositionalBuff
         if (vc == null) {
             return null;
         }
+        return toVariant(vc);
+
+    }
+
+    VCFVariant toVariant(VariantContext vc) {
         String chr = genome == null ? vc.getChr() : genome.getCanonicalChrName(vc.getChr());
         return new VCFVariant(vc, chr);
-
     }
 
     @Override
@@ -70,7 +74,7 @@ public class BCF2WrapperCodec implements FeatureCodec<VCFVariant, PositionalBuff
         } else {
             pbs = new PositionalBufferedStream(bufferedInputStream);
         }
-        return new AsciiLineReaderIterator(new AsciiLineReader(pbs));
+        return new Utf8LineReaderIterator(new Utf8LineReader(pbs));
     }
 
     @Override

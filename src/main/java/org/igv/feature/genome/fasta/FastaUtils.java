@@ -5,7 +5,7 @@ import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.ParsingUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.util.HashSet;
@@ -34,12 +34,12 @@ public class FastaUtils {
      */
     public static void createIndexFile(String inputPath, String outputPath) throws DataLoadException, IOException {
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         BufferedWriter writer = null;
 
         try {
             log.info("Creating index file at " + outputPath);
-            reader = new AsciiLineReader(ParsingUtils.openInputStream(inputPath));
+            reader = new Utf8LineReader(ParsingUtils.openInputStream(inputPath));
             writer = new BufferedWriter(new FileWriter(outputPath));
             String line = null;
             String curContig = null;

@@ -1,6 +1,6 @@
 package org.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class InteractionSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException {
 
         String nextLine = reader.readLine();
         writer.println(nextLine);

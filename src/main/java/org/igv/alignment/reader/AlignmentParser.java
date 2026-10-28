@@ -2,7 +2,7 @@
 package org.igv.alignment.reader;
 
 import org.igv.alignment.Alignment;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.IOException;
 
@@ -11,6 +11,6 @@ import java.io.IOException;
  */
 public interface AlignmentParser {
 
-    Alignment readNextRecord(AsciiLineReader reader) throws IOException;
+    Alignment readNextRecord(Utf8LineReader reader) throws IOException;
 
 }

@@ -158,7 +158,7 @@ public class PairedUtils {
             final SamReaderFactory factory = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
 
             File f = new File("/Users/jrobinso/Downloads/human_g1k_v37_decoy.fasta");
-            ReferenceSource rs = new ReferenceSource(f);
+            ReferenceSource rs = new ReferenceSource(f.toPath());
             factory.referenceSource(rs);
 
             SeekableStream ss = new IGVSeekableBufferedStream(IGVSeekableStreamFactory.getInstance().getStreamFor(alignmentFile), 128000);
@@ -172,10 +172,10 @@ public class PairedUtils {
 
             String pre = (new File(alignmentFile)).getName().replace(".bam", "");
 
-            ffWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_ff.bam"));
-            rfWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_rf.bam"));
-            frWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_fr.bam"));
-            interWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_inter.bam"));
+            ffWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_ff.bam").toPath());
+            rfWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_rf.bam").toPath());
+            frWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_fr.bam").toPath());
+            interWriter = wfactory.makeSAMOrBAMWriter(header, preSorted, new File(outputDir, pre + "_inter.bam").toPath());
 
 
             SAMRecordIterator iter = reader.iterator();

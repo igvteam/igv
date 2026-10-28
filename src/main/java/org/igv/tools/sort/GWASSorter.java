@@ -3,7 +3,7 @@ package org.igv.tools.sort;
 import org.igv.Globals;
 import org.igv.logging.*;
 import org.igv.gwas.GWASParser;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class GWASSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException {
 
         String nextLine;
         while((nextLine = reader.readLine()) != null) {
