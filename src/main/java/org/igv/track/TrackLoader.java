@@ -90,7 +90,7 @@ public class TrackLoader {
     private static Logger log = LogManager.getLogger(TrackLoader.class);
 
     // Initial height for psl, bigPsl, and bigChain tracks, which are displayed expanded
-    private static final int ALIGNMENT_FEATURE_HEIGHT = 300;
+    private static final int ALIGNMENT_FEATURE_HEIGHT = 200;
 
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 
