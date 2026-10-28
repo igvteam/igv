@@ -20,7 +20,7 @@ public class HubParser {
 
     private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
-            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "groups",
+            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "linkDataUrl", "groups",
             "chromSizes"));
 
     /**

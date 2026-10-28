@@ -2,7 +2,7 @@ package org.igv.tools;
 
 import org.igv.Globals;
 import org.igv.util.ParsingUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.util.HashMap;
@@ -43,11 +43,11 @@ public class RepeatMaskSplitter {
 
         Map<String, LinkedHashMap<String, String>> fileMappings = new HashMap();
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         HashMap<String, PrintWriter> writers = new HashMap();
         PrintWriter allWriter = null;
         try {
-            reader = new AsciiLineReader(new FileInputStream(inputFile));
+            reader = new Utf8LineReader(new FileInputStream(inputFile));
             // Skip header
             reader.readLine();
             String nextLine;

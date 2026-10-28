@@ -5,7 +5,7 @@ import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.index.Interval;
 import org.igv.util.index.IntervalTree;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.util.*;
@@ -171,7 +171,7 @@ public class MAFIndex {
     public static MAFIndex createIndex(String alignmentFile) throws IOException {
 
         MAFIndex index = new MAFIndex();
-        AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(alignmentFile));
+        Utf8LineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(alignmentFile));
 
 
         try {

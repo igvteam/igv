@@ -4,6 +4,7 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMReadGroupRecord;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.IOUtil;
 import org.igv.logging.*;
 import org.igv.exceptions.DataLoadException;
 import org.igv.util.FileUtils;
@@ -45,6 +46,9 @@ public class AlignmentReaderFactory {
             reader = getMergedReader(locator.getPath(), true);
         } else if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
             reader = new CGIAlignmentReader(samFile);
+        } else if (format.equals("sam") && locator.isLocal() && IOUtil.hasBlockCompressedExtension(samFile)) {
+            // htsjdk reads a local bgzipped SAM as it does a BAM, through a samtools or tabix index
+            reader = new BAMReader(locator, requireIndex);
         } else if (format.equals("sam")) {
             reader = new SAMReader(samFile, requireIndex);
 

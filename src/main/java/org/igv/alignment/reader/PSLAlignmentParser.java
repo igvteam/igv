@@ -6,7 +6,7 @@ import org.igv.alignment.Alignment;
 import org.igv.alignment.FeatureWrappedAlignment;
 import org.igv.feature.tribble.PSLCodec;
 import htsjdk.tribble.Feature;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public class PSLAlignmentParser implements AlignmentParser {
         codec = new PSLCodec(); //genome);
     }
 
-    public Alignment readNextRecord(AsciiLineReader reader) throws IOException {
+    public Alignment readNextRecord(Utf8LineReader reader) throws IOException {
 
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {

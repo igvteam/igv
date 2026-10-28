@@ -92,7 +92,7 @@ public class ExtractPairs {
         SamInputResource resource;
 
         if (isLocal) {
-            resource = SamInputResource.of(new File(path));
+            resource = SamInputResource.of(new File(path).toPath());
         } else {
             URL url = new URL(path);
             resource = SamInputResource.of(new BufferedInputStream(HttpUtils.getInstance().openConnectionStream(url)));

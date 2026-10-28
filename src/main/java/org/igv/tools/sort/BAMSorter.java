@@ -27,18 +27,18 @@ public class BAMSorter implements Sorter {
     public void run() throws IOException {
 
         SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
-        final SamReader reader = SamReaderFactory.makeDefault().open(inputFile);
+        final SamReader reader = SamReaderFactory.makeDefault().open(inputFile.toPath());
 
 
         reader.getFileHeader().setSortOrder(SAMFileHeader.SortOrder.coordinate);
         SAMFileWriterFactory samFileWriterFactory = new SAMFileWriterFactory();
         if (this.tmpDir != null) {
-            samFileWriterFactory.setTempDirectory(this.tmpDir);
+            samFileWriterFactory.setTempDirectory(this.tmpDir.toPath());
         }
         if (this.maxRecords > 0) {
             samFileWriterFactory.setMaxRecordsInRam(this.maxRecords);
         }
-        final SAMFileWriter writer = samFileWriterFactory.makeSAMOrBAMWriter(reader.getFileHeader(), false, outputFile);
+        final SAMFileWriter writer = samFileWriterFactory.makeSAMOrBAMWriter(reader.getFileHeader(), false, outputFile.toPath());
 
         int count = 0;
         for (final SAMRecord rec : reader) {

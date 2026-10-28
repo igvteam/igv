@@ -1,6 +1,8 @@
 package org.igv.track;
 
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.FileExtensions;
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.tribble.*;
 import htsjdk.tribble.index.Index;
 import org.igv.Globals;
@@ -21,6 +23,7 @@ import org.igv.variant.vcf.MateVariant;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -70,6 +73,14 @@ abstract public class TribbleFeatureSource implements FeatureSource {
                     if (FileUtils.resourceExists(maybeIdxPath)) {
                         indexExists = true;
                         idxPath = maybeIdxPath;
+                    } else if (maybeIdxPath.equals(ResourceLocator.appendToPath(locator, FileExtensions.TABIX_INDEX)) ||
+                            codec instanceof BCF2WrapperCodec) {
+                        // A bgzipped file or a BCF may be indexed with CSI
+                        String csiPath = ResourceLocator.appendToPath(locator, FileExtensions.CSI);
+                        if (FileUtils.resourceExists(csiPath)) {
+                            indexExists = true;
+                            idxPath = csiPath;
+                        }
                     }
                 }
             }
@@ -81,7 +92,10 @@ abstract public class TribbleFeatureSource implements FeatureSource {
                 long size = FileUtils.getLength(locator.getPath());
                 indexRequired = size > 10 * oneGB;
                 if (!Globals.isHeadless() && locator.isLocal() && !locator.getPath().endsWith(".gz") && !indexExists) {
-                    if (size > hundredMB) {
+                    // htsjdk can't build a Tribble index over BGZF BCF, which needs CSI
+                    boolean bgzfBcf = codec instanceof BCF2WrapperCodec &&
+                            IOUtil.isBlockCompressed(Path.of(locator.getPath()), false);
+                    if (size > hundredMB && !bgzfBcf) {
                         createIndex(locator, indexRequired);   // Note, might return null.
                     }
                 }
@@ -95,7 +109,9 @@ abstract public class TribbleFeatureSource implements FeatureSource {
         if (idxPath != null && idxPath.length() > 0 && FileUtils.isRemote(idxPath)) {
             idxPath = HttpUtils.createURL(idxPath).toExternalForm();
         }
-        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
+        AbstractFeatureReader basicReader = codec instanceof BCF2WrapperCodec bcfCodec
+                ? VCFVariantReader.open(path, idxPath, bcfCodec, indexRequired || indexExists)
+                : AbstractFeatureReader.getFeatureReader(path, idxPath, codec, indexRequired || indexExists);
 
 
         if (indexExists) { //basicReader.hasIndex()) {
@@ -110,7 +126,9 @@ abstract public class TribbleFeatureSource implements FeatureSource {
         FeatureCodec codec = CodecFactory.getCodec(locator, genome);
 
         String path = locator.getPath();
-        return AbstractFeatureReader.getFeatureReader(path, null, codec, false);
+        return codec instanceof BCF2WrapperCodec bcfCodec
+                ? VCFVariantReader.open(path, null, bcfCodec, false)
+                : AbstractFeatureReader.getFeatureReader(path, null, codec, false);
     }
 
     /**

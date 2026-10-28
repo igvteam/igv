@@ -1,7 +1,7 @@
 package org.igv.tools.sort;
 
 import org.igv.logging.*;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 
@@ -16,7 +16,7 @@ public class CNSorter extends AsciiSorter {
         super(inputFile, outputFile);
     }
 
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException {
         String nextLine = reader.readLine();
         while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
             writer.println(nextLine);

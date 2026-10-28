@@ -165,6 +165,8 @@ public class BBFile {
                         featureType = FeatureType.RMSK;
                     } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
                         featureType = FeatureType.INTERACT;
+                    } else if (astable != null && "bigChain".equals(astable.name)) {
+                        featureType = FeatureType.CHAIN;
                     }
                 }
                 if (featureType == null) {

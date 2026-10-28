@@ -1,6 +1,5 @@
 package org.igv.track;
 
-import htsjdk.samtools.util.IOUtil;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
@@ -51,6 +50,7 @@ import org.igv.seg.SegTrack;
 import org.igv.seg.SegmentedDataSet;
 import org.igv.tdf.TDFDataSource;
 import org.igv.tdf.TDFReader;
+import org.igv.ucsc.bb.BBChainFeatureSource;
 import org.igv.ucsc.bb.BBDataSource;
 import org.igv.ucsc.bb.BBFeatureSource;
 import org.igv.ucsc.bb.BBFile;
@@ -341,44 +341,8 @@ public class TrackLoader {
     }
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
-        if ("bcf".equals(locator.getFormat())) {
-            checkBCFSupported(locator);   // Before opening the file, which may offer to create an index
-        }
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
         loadVCFWithSource(locator, src, newTracks);
-    }
-
-    /**
-     * htsjdk, and so IGV, reads only BCF version 2.1, and decompresses a file only if its name ends in a compressed
-     * extension (.gz, .bgz, ...).  Files written by bcftools are version 2.2 and usually compressed, and htsjdk rejects
-     * them with a header parsing error that reads like a damaged file, so explain instead.
-     */
-    private static void checkBCFSupported(ResourceLocator locator) throws IOException {
-
-        FileFormatUtils.BCFHeader header = FileFormatUtils.readBCFHeader(locator.getPath());
-        if (header == null) {
-            return;     // Not recognizably BCF -- leave any error to htsjdk
-        }
-
-        String urlPath = locator.getURLPath();      // Without any query string
-        String name = urlPath.substring(urlPath.lastIndexOf('/') + 1);
-        boolean version21 = header.majorVersion() == 2 && header.minorVersion() == 1;
-        if (version21 && (!header.compressed() || IOUtil.hasBlockCompressedExtension(name))) {
-            return;
-        }
-
-        String vcfName = name.replaceFirst("\\.bcf(\\.gz|\\.bgz)?$", "") + ".vcf.gz";
-        String conversion = "bcftools view -Oz -o " + vcfName + " " + name + "<br>" +
-                "bcftools index -t " + vcfName;
-        if (version21) {
-            throw new DataLoadException("This is a compressed BCF file, but its name does not end in .gz or .bgz, " +
-                    "which IGV needs to read it.  Rename it, for example to " + name + ".gz, or convert it to an " +
-                    "indexed VCF:<br>" + conversion);
-        }
-        throw new DataLoadException("This is a " + (header.compressed() ? "compressed " : "") + "BCF version " +
-                header.majorVersion() + "." + header.minorVersion() + " file.  IGV can read only BCF version 2.1; " +
-                "BCF files written by bcftools are version 2.2.<br>" +
-                "To view it, convert it to an indexed VCF, for example:<br>" + conversion);
     }
 
     private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) throws IOException {
@@ -858,13 +822,15 @@ public class TrackLoader {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
-            BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
             switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator, new WrappedInteractionSource(featureSource));
+                    track = new InteractionTrack(locator, new WrappedInteractionSource(new BBFeatureSource(reader, genome)));
+                    break;
+                case CHAIN:
+                    track = new FeatureTrack(locator, new BBChainFeatureSource(reader, openLinkFile(locator, genome), genome));
                     break;
                 default:
-                    track = new FeatureTrack(locator, featureSource);
+                    track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
             }
 
 
@@ -876,6 +842,28 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
+    }
+
+    /**
+     * Open the "bigLink" file accompanying a bigChain file.  The link file is specified by the "linkDataUrl" trackDb
+     * property, or by UCSC convention is the chain file path with ".link.bb" replacing ".bb".  Returns null if the
+     * link file cannot be opened, in which case chains are displayed without aligned blocks.
+     */
+    private BBFile openLinkFile(ResourceLocator locator, Genome genome) {
+        String linkURL = locator.getLinkURL();
+        String base = locator.getURLPath();
+        if (linkURL == null && base.endsWith(".bb")) {
+            String query = locator.getURLQueryString();
+            linkURL = base.substring(0, base.length() - 3) + ".link.bb" + (query.isEmpty() ? "" : "?" + query);
+        }
+        if (linkURL != null) {
+            try {
+                return new BBFile(linkURL, genome);
+            } catch (Exception e) {
+                log.warn("Could not open bigLink file " + linkURL + ": " + e.getMessage());
+            }
+        }
+        return null;
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

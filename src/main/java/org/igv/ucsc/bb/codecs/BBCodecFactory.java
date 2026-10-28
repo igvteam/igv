@@ -11,6 +11,12 @@ public class BBCodecFactory {
 
         if (astable != null && "bigRmskBed".equals(astable.name)) {
             return new BBRmskCodec(standardFieldCount, astable);
+        } else if (astable != null && "bigPsl".equals(astable.name)) {
+            return new BBPslCodec(standardFieldCount, astable);
+        } else if (astable != null && "bigChain".equals(astable.name)) {
+            return new BBChainCodec(standardFieldCount, astable);
+        } else if (astable != null && "bigLink".equals(astable.name)) {
+            return new BBLinkCodec();
         } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
             return new BBInteractCodec(standardFieldCount, astable);
         } else {

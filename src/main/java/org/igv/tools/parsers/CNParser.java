@@ -6,7 +6,7 @@ import org.igv.feature.genome.Genome;
 import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.IOException;
 import java.util.Set;
@@ -105,7 +105,7 @@ public class CNParser extends AbstractParser {
      */
     public void parse() throws IOException {
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         try {
 
             lastPosition = 0;
