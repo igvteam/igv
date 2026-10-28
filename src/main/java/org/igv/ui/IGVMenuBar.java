@@ -801,19 +801,19 @@ public class IGVMenuBar extends JMenuBar {
                     List<String> removed = previous.stream().filter(hd -> !selectedUrls.contains(hd.getUrl())).map(HubDescriptor::getShortLabel).toList();
                     if (!added.isEmpty() || !removed.isEmpty()) {
                         StringBuilder message = new StringBuilder();
+                        if (!removed.isEmpty()) {
+                            if (!added.isEmpty()) message.append("<br>");
+                            message.append("<b>Hubs removed:</b><br>");
+                            removed.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
+                        }
                         if (!added.isEmpty()) {
                             message.append("<b>Hubs added:</b><br>");
                             added.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
                             boolean addedForCurrentGenome = HubRegistry.getSelectedHubsForGenome(genome.getUCSCId()).stream()
                                     .anyMatch(hd -> !previousUrls.contains(hd.getUrl()));
                             if (addedForCurrentGenome) {
-                                message.append("Tracks from hubs for the current genome can be loaded from the Tracks menu.<br>");
+                                message.append("<br><em>Tracks from the added hubs can now be loaded from the Tracks menu.</em><br>");
                             }
-                        }
-                        if (!removed.isEmpty()) {
-                            if (!added.isEmpty()) message.append("<br>");
-                            message.append("<b>Hubs removed:</b><br>");
-                            removed.forEach(label -> message.append("&nbsp;&nbsp;&nbsp;").append(label).append("<br>"));
                         }
                         JOptionPane.showMessageDialog(igv.getMainFrame(), "<html>" + message, "Manage Track Hubs",
                                 JOptionPane.INFORMATION_MESSAGE);
