@@ -1361,6 +1361,10 @@ public abstract class AbstractTrack implements Track {
                         jsonObject.put("indexPath", indexPath);
                     }
                 }
+                String linkURL = locator.getLinkURL();
+                if (linkURL != null) {
+                    jsonObject.put("linkURL", linkURL);
+                }
             }
             String format = locator.getFormat();
             if (format != null) {

@@ -2,6 +2,7 @@ package org.igv.ucsc.bb;
 
 import htsjdk.tribble.Feature;
 import org.igv.feature.IGVFeature;
+import org.igv.feature.PSLRecord;
 import org.igv.feature.genome.Genome;
 import org.igv.util.TestUtils;
 import org.junit.Ignore;
@@ -221,6 +222,30 @@ public class BBFeatureSourceTest {
         while (iter.hasNext()) {
             Feature f = iter.next();
             assertEquals(chr, f.getChr());
+            count++;
+        }
+        assertTrue(count > 0);
+    }
+
+    @Test
+    public void testBigPsl() throws IOException {
+
+        String path = "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/186/305/GCF_000186305.1/bbi/GCF_000186305.1_Python_molurus_bivittatus-5.0.2.bigPsl.bb";
+
+        BBFile bbReader = new BBFile(path, null);
+        BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
+
+        String chr = "NW_006532014.1";
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, 0, Integer.MAX_VALUE);
+
+        int count = 0;
+        while (iter.hasNext()) {
+            IGVFeature f = iter.next();
+            assertTrue(f instanceof PSLRecord);
+            PSLRecord record = (PSLRecord) f;
+            assertEquals(chr, record.getChr());
+            assertTrue(record.getqSize() > 0);
+            assertTrue(record.getMatch() <= record.getqSize());
             count++;
         }
         assertTrue(count > 0);
