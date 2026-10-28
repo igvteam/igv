@@ -80,6 +80,14 @@ to chains by name; IGV does the same.
 - Test: `BBChainFeatureSourceTest` on the UCSC example files `test/data/bb/bigChain.bb` + `bigChain.link.bb`
   (4 chains, 11 links on chr22_KI270731v1_random).
 
+## Initial display
+
+Alignment tracks are read row by row, so psl, pslx, bigPsl and bigChain tracks load in EXPANDED mode with an
+initial height of 300 (`TrackLoader.ALIGNMENT_FEATURE_HEIGHT`) rather than the collapsed default for feature tracks.
+`FeatureType.PSL` is set by `BBFile.getFeatureType` for autoSql table `bigPsl` so `loadBBFile` can recognize it; the
+tribble path keys on the locator format. The override runs at load time, so session attributes (applied afterwards)
+still win, but a hub's `visibility` setting is overridden.
+
 ## Verification
 
 ```bash
