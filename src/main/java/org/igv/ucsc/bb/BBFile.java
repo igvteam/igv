@@ -167,6 +167,8 @@ public class BBFile {
                         featureType = FeatureType.INTERACT;
                     } else if (astable != null && "bigChain".equals(astable.name)) {
                         featureType = FeatureType.CHAIN;
+                    } else if (astable != null && "bigPsl".equals(astable.name)) {
+                        featureType = FeatureType.PSL;
                     }
                 }
                 if (featureType == null) {

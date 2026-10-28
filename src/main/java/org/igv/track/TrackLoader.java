@@ -89,6 +89,9 @@ public class TrackLoader {
 
     private static Logger log = LogManager.getLogger(TrackLoader.class);
 
+    // Initial height for psl, bigPsl, and bigChain tracks, which are displayed expanded
+    private static final int ALIGNMENT_FEATURE_HEIGHT = 300;
+
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 
     /**
@@ -542,6 +545,10 @@ public class TrackLoader {
                     locator.getPath().contains(".regionpeak")) {
                 t.setUseScore(true);
             }
+            if ("psl".equals(format) || "pslx".equals(format)) {
+                t.setDisplayMode(Track.DisplayMode.EXPANDED);
+                t.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+            }
             newTracks.add(t);
         }
     }
@@ -859,7 +866,8 @@ public class TrackLoader {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
-            switch (reader.getFeatureType()) {
+            FeatureType featureType = reader.getFeatureType();
+            switch (featureType) {
                 case INTERACT:
                     track = new InteractionTrack(locator, new WrappedInteractionSource(new BBFeatureSource(reader, genome)));
                     break;
@@ -868,6 +876,10 @@ public class TrackLoader {
                     break;
                 default:
                     track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
+            }
+            if (featureType == FeatureType.CHAIN || featureType == FeatureType.PSL) {
+                track.setDisplayMode(Track.DisplayMode.EXPANDED);
+                track.setHeight(ALIGNMENT_FEATURE_HEIGHT);
             }
 
 
