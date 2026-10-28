@@ -34,7 +34,6 @@ public class Globals {
     public static final int DESIGN_DPI = 96;
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
     final static public String HISTORY_DELIMITER = ";";
-    public static final String DEFAULT_GENOME = "hg38";
 
     public static final String CHR_ALL = "All";
 

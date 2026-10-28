@@ -668,7 +668,7 @@ public class IGVPreferences {
 
     public String getDefaultGenome() {
 
-        String genome = get(DEFAULT_GENOME, Globals.DEFAULT_GENOME);
+        String genome = get(DEFAULT_GENOME);
         return genome;
     }
 
