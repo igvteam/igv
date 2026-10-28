@@ -50,16 +50,20 @@ public class BBChainFeatureSourceTest {
         assertEquals(28198, chain.getExons().get(0).getStart());
         assertEquals(28199, chain.getExons().get(0).getEnd());
 
-        // Only links overlapping the query interval are attached
+        // Only links overlapping the query interval are attached (2 here), with 1 bp placeholders at the interval
+        // edges where the chain extends beyond them without a block
         iter = source.getFeatures(chr, 40000, 41000);
         chain = (PSLRecord) iter.next();
         assertEquals("569", chain.getIdentifier());
-        for (Exon exon : chain.getExons()) {
-            assertTrue(exon.getEnd() > 40000 && exon.getStart() < 41000);
-        }
+        List<Exon> exons = chain.getExons();
+        assertEquals(4, exons.size());
+        assertEquals(40000, exons.get(0).getStart());
+        assertEquals(40651, exons.get(1).getStart());
+        assertEquals(40699, exons.get(2).getStart());
+        assertEquals(41000, exons.get(3).getEnd());
         assertFalse(iter.hasNext());
 
-        // A chain overlapping an interval that contains none of its links gets 1 bp placeholders at the interval edges
+        // A chain overlapping an interval that contains none of its links gets only the two placeholders
         iter = source.getFeatures(chr, 30000, 31000);
         chain = (PSLRecord) iter.next();
         assertEquals("569", chain.getIdentifier());

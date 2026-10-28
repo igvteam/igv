@@ -14,8 +14,9 @@ import java.util.concurrent.CompletionException;
  * Feature source for UCSC "bigChain" tracks.  Chains are read from the bigChain file, and their aligned blocks from
  * the companion "bigLink" file, where each record is one ungapped block named by its chain id.  Only the links
  * overlapping the queried interval are attached, as in the UCSC browser, so blocks of a chain extending beyond the
- * interval are not loaded.  A chain with no links in the interval (the interval lies in a gap) is given 1 bp
- * placeholder blocks at the interval edges, as UCSC does, so the gap is drawn as a line rather than a solid block.
+ * interval are not loaded.  Where the interval cuts a chain inside a gap, a 1 bp placeholder block is added at that
+ * interval edge, as UCSC does, so the gap is drawn as a line (the renderer only connects consecutive blocks, and
+ * draws a chain with no blocks at all as a solid block).
  * The chain and link queries are independent and are issued concurrently, as both are typically remote.
  */
 public class BBChainFeatureSource extends BBFeatureSource {
@@ -68,13 +69,17 @@ public class BBChainFeatureSource extends BBFeatureSource {
                 }
             }
             for (PSLRecord chain : chainMap.values()) {
-                if (!chain.hasExons()) {
-                    int s = Math.max(chain.getStart(), start);
-                    int e = Math.min(chain.getEnd(), end);
+                int s = Math.max(chain.getStart(), start);
+                int e = Math.min(chain.getEnd(), end);
+                List<Exon> exons = chain.getExons();
+                if (exons == null || exons.isEmpty()) {
                     chain.addExon(new Exon(chr, s, s + 1, chain.getStrand()));
-                    if (e - 1 > s) {
-                        chain.addExon(new Exon(chr, e - 1, e, chain.getStrand()));
-                    }
+                    exons = chain.getExons();
+                } else if (exons.get(0).getStart() > s) {
+                    exons.add(0, new Exon(chr, s, s + 1, chain.getStrand()));   // Links are in position order
+                }
+                if (exons.get(exons.size() - 1).getEnd() < e) {
+                    chain.addExon(new Exon(chr, e - 1, e, chain.getStrand()));
                 }
             }
         }

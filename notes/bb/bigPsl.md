@@ -62,8 +62,8 @@ to chains by name; IGV does the same.
   of network latency per load on remote hubs.
 - `BBLinkCodec` decodes a bigLink record (table `bigLink`) to a minimal feature with only the name, skipping the
   generic BED parsing and the attribute map the chain source never reads. Blocks of a chain outside the queried interval are not loaded (same as UCSC). A chain
-  with no links in the interval gets 1 bp placeholder blocks at the interval edges so the gap draws as a line, as
-  UCSC does. Without a link file, chains render as a single span. The popup shows query coordinates of `-` strand
+  cut by the interval inside a gap gets a 1 bp placeholder block at that interval edge so the gap draws as a line,
+  as UCSC does (the renderer only connects consecutive blocks). Without a link file, chains render as a single span. The popup shows query coordinates of `-` strand
   chains converted to the forward strand, as UCSC does.
 - `FeatureType.CHAIN`, set by `BBFile.getFeatureType` for autoSql table `bigChain`; `TrackLoader.loadBBFile` builds
   a `FeatureTrack` over a `BBChainFeatureSource` for it. `openLinkFile` uses `locator.getLinkURL()` or the `.link.bb`
