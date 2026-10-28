@@ -85,8 +85,9 @@ to chains by name; IGV does the same.
 Alignment tracks are read row by row, so psl, pslx, bigPsl and bigChain tracks load in EXPANDED mode with an
 initial height of 300 (`TrackLoader.ALIGNMENT_FEATURE_HEIGHT`) rather than the collapsed default for feature tracks.
 `FeatureType.PSL` is set by `BBFile.getFeatureType` for autoSql table `bigPsl` so `loadBBFile` can recognize it; the
-tribble path keys on the locator format. The override runs at load time, so session attributes (applied afterwards)
-still win, but a hub's `visibility` setting is overridden.
+tribble path keys on the locator format. The loader skips both settings when the locator's track properties declare a
+display mode (a hub `visibility` setting), which is applied after loading along with any declared height; session
+attributes are likewise applied afterwards and win.
 
 ## Verification
 

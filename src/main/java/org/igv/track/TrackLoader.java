@@ -546,8 +546,7 @@ public class TrackLoader {
                 t.setUseScore(true);
             }
             if ("psl".equals(format) || "pslx".equals(format)) {
-                t.setDisplayMode(Track.DisplayMode.EXPANDED);
-                t.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+                initAlignmentFeatureTrack(t, locator);
             }
             newTracks.add(t);
         }
@@ -878,8 +877,7 @@ public class TrackLoader {
                     track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
             }
             if (featureType == FeatureType.CHAIN || featureType == FeatureType.PSL) {
-                track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                track.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+                initAlignmentFeatureTrack(track, locator);
             }
 
 
@@ -891,6 +889,18 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
+    }
+
+    /**
+     * Alignment tracks (psl, bigPsl, bigChain) are displayed expanded with an initial height, unless the locator
+     * (e.g. a track hub "visibility" setting) declares a display mode, which is applied after loading.
+     */
+    private static void initAlignmentFeatureTrack(Track track, ResourceLocator locator) {
+        TrackProperties tp = locator.getTrackProperties();
+        if (tp == null || tp.getDisplayMode() == null) {
+            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+            track.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+        }
     }
 
     /**
