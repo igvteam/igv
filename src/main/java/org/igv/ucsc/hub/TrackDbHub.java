@@ -15,7 +15,7 @@ public class TrackDbHub {
     static Set supportedTypes = new HashSet(Arrays.asList("bigbed", "bigwig", "biggenepred", "vcftabix", "refgene",
             "bam", "sampleinfo", "vcf.list", "ucscsnp", "bed", "tdf", "gff", "gff3", "gtf", "vcf", "vcfphasedtrio",
             "bigdbsnp", "rmask", "genepred", "wig", "bedgraph", "interact", "broadpeak", "narrowpeak", "gappedpeak",
-            "gistic", "seg", "mut", "bigpsl", "hic"));
+            "gistic", "seg", "mut", "bigpsl", "bigchain", "hic"));
 
     static Set filterTracks = new HashSet(Arrays.asList("cytoBandIdeo", "assembly"));
 
@@ -30,6 +30,7 @@ public class TrackDbHub {
             "vcfphasedtrio", "vcf",
             "bigdbsnp", "bigbed",
             "bigpsl", "bigbed",
+            "bigchain", "bigbed",
             "genepred", "refgene"
     );
 
@@ -253,6 +254,7 @@ public class TrackDbHub {
         config.infoURL = t.getProperty("url");
         config.searchIndex = t.getProperty("searchIndex");
         config.trixURL = t.getProperty("searchTrix");
+        config.linkURL = t.getProperty("linkDataUrl");
         config.group = t.getProperty("group");
         if(t.hasProperty("metadata")) {
             config.attributes = parseMetadata(t.getProperty("metadata"));

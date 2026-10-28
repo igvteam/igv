@@ -14,6 +14,7 @@ public class TrackConfig implements Cloneable {
     public String url;
     public String indexURL;
     public String trixURL;
+    public String linkURL;
     public String format;
     public String displayMode;
     public String description;
@@ -60,6 +61,7 @@ public class TrackConfig implements Cloneable {
         config.url = jsonObject.optString("url", null);
         config.indexURL = jsonObject.optString("indexURL", null);
         config.trixURL = jsonObject.optString("trixURL", null);
+        config.linkURL = jsonObject.optString("linkURL", null);
         config.format = jsonObject.optString("format", null);
         config.displayMode = jsonObject.optString("displayMode", null);
         config.description = jsonObject.optString("description", null);
@@ -119,6 +121,7 @@ public class TrackConfig implements Cloneable {
         if (url != null) jsonObject.put("url", url);
         if (indexURL != null) jsonObject.put("indexURL", indexURL);
         if (trixURL != null) jsonObject.put("trixURL", trixURL);
+        if (linkURL != null) jsonObject.put("linkURL", linkURL);
         if (format != null) jsonObject.put("format", format);
         if (displayMode != null) jsonObject.put("displayMode", displayMode);
         if (description != null) jsonObject.put("description", description);

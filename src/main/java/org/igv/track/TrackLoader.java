@@ -51,6 +51,7 @@ import org.igv.seg.SegTrack;
 import org.igv.seg.SegmentedDataSet;
 import org.igv.tdf.TDFDataSource;
 import org.igv.tdf.TDFReader;
+import org.igv.ucsc.bb.BBChainFeatureSource;
 import org.igv.ucsc.bb.BBDataSource;
 import org.igv.ucsc.bb.BBFeatureSource;
 import org.igv.ucsc.bb.BBFile;
@@ -858,13 +859,15 @@ public class TrackLoader {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
-            BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
             switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator, new WrappedInteractionSource(featureSource));
+                    track = new InteractionTrack(locator, new WrappedInteractionSource(new BBFeatureSource(reader, genome)));
+                    break;
+                case CHAIN:
+                    track = new FeatureTrack(locator, new BBChainFeatureSource(reader, openLinkFile(locator, genome), genome));
                     break;
                 default:
-                    track = new FeatureTrack(locator, featureSource);
+                    track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
             }
 
 
@@ -876,6 +879,28 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
+    }
+
+    /**
+     * Open the "bigLink" file accompanying a bigChain file.  The link file is specified by the "linkDataUrl" trackDb
+     * property, or by UCSC convention is the chain file path with ".link.bb" replacing ".bb".  Returns null if the
+     * link file cannot be opened, in which case chains are displayed without aligned blocks.
+     */
+    private BBFile openLinkFile(ResourceLocator locator, Genome genome) {
+        String linkURL = locator.getLinkURL();
+        String base = locator.getURLPath();
+        if (linkURL == null && base.endsWith(".bb")) {
+            String query = locator.getURLQueryString();
+            linkURL = base.substring(0, base.length() - 3) + ".link.bb" + (query.isEmpty() ? "" : "?" + query);
+        }
+        if (linkURL != null) {
+            try {
+                return new BBFile(linkURL, genome);
+            } catch (Exception e) {
+                log.warn("Could not open bigLink file " + linkURL + ": " + e.getMessage());
+            }
+        }
+        return null;
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

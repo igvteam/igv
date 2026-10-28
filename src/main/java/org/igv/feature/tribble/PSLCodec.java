@@ -168,6 +168,7 @@ public class PSLCodec extends UCSCCodec<IGVFeature> {
         f.setTGapCount(tGapCount);
         f.setTGapBases(tGapBases);
         f.setQSize(qSize);
+        f.setTSize(tSize);
         f.setqStart(qStart);
         f.setqEnd(qEnd);
         f.setBlockQueryStarts(tokens[19]);
