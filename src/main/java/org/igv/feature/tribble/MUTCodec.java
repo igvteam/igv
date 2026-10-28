@@ -1,7 +1,7 @@
 package org.igv.feature.tribble;
 
 import htsjdk.tribble.AsciiFeatureCodec;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.tribble.readers.LineIteratorImpl;
 import org.igv.logging.*;
@@ -59,7 +59,7 @@ public class MUTCodec extends AsciiFeatureCodec<Mutation> {
         InputStream is = null;
         try {
             is = ParsingUtils.openInputStream(path);
-            LineIterator reader = new LineIteratorImpl(new AsciiLineReader(is));
+            LineIterator reader = new LineIteratorImpl(new Utf8LineReader(is));
             readActualHeader(reader);
         } catch (IOException e) {
             log.error(e.getMessage(), e);

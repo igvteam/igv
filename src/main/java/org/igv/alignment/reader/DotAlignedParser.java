@@ -3,7 +3,7 @@ package org.igv.alignment.reader;
 import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.alignment.DotAlignedAlignment;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public class DotAlignedParser implements AlignmentParser {
         }
     }
 
-    public DotAlignedAlignment readNextRecord(AsciiLineReader reader) {
+    public DotAlignedAlignment readNextRecord(Utf8LineReader reader) {
         String nextLine;
         try {
             while ((nextLine = reader.readLine()) != null) {

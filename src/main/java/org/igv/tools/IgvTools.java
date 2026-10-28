@@ -959,8 +959,8 @@ public class IgvTools {
         SamReaderFactory.setDefaultValidationStringency(ValidationStringency.SILENT);
         final SamReader samReader = SamReaderFactory.makeDefault().
                 enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS).
-                open(inputFile);
-        BAMIndexer indexer = new BAMIndexer(bamIndexFile, samReader.getFileHeader());
+                open(inputFile.toPath());
+        BAMIndexer indexer = new BAMIndexer(bamIndexFile.toPath(), samReader.getFileHeader());
 
         long totalRecords = 0;
 
@@ -1011,9 +1011,9 @@ public class IgvTools {
         File inputFile = new File(ifile);
         AbstractIndex idx = null;
         if (indexType == LINEAR_INDEX) {
-            idx = IndexFactory.createLinearIndex(inputFile, codec, binSize);
+            idx = IndexFactory.createLinearIndex(inputFile.toPath(), codec, binSize);
         } else {
-            idx = IndexFactory.createIntervalIndex(inputFile, codec, binSize);
+            idx = IndexFactory.createIntervalIndex(inputFile.toPath(), codec, binSize);
         }
         if (idx != null) {
 
