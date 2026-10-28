@@ -88,6 +88,9 @@ public class TrackLoader {
 
     private static Logger log = LogManager.getLogger(TrackLoader.class);
 
+    // Initial height for psl, bigPsl, and bigChain tracks, which are displayed expanded
+    private static final int ALIGNMENT_FEATURE_HEIGHT = 200;
+
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 
     /**
@@ -505,6 +508,9 @@ public class TrackLoader {
                     locator.getPath().contains(".regionpeak")) {
                 t.setUseScore(true);
             }
+            if ("psl".equals(format) || "pslx".equals(format)) {
+                initAlignmentFeatureTrack(t, locator);
+            }
             newTracks.add(t);
         }
     }
@@ -822,6 +828,9 @@ public class TrackLoader {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
+
+            FeatureType featureType = reader.getFeatureType();
+
             switch (reader.getFeatureType()) {
                 case INTERACT:
                     track = new InteractionTrack(locator, new WrappedInteractionSource(new BBFeatureSource(reader, genome)));
@@ -832,7 +841,10 @@ public class TrackLoader {
                 default:
                     track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
             }
+            if (featureType == FeatureType.CHAIN || featureType == FeatureType.PSL) {
+                initAlignmentFeatureTrack(track, locator);
 
+            }
 
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
@@ -842,6 +854,18 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
+    }
+
+    /**
+     * Alignment tracks (psl, bigPsl, bigChain) are displayed expanded with an initial height, unless the locator
+     * (e.g. a track hub "visibility" setting) declares a display mode, which is applied after loading.
+     */
+    private static void initAlignmentFeatureTrack(Track track, ResourceLocator locator) {
+        TrackProperties tp = locator.getTrackProperties();
+        if (tp == null || tp.getDisplayMode() == null) {
+            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+            track.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+        }
     }
 
     /**
