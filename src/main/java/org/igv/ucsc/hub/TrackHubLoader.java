@@ -102,8 +102,8 @@ public class TrackHubLoader {
             GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
 
         } else {
-            // A UCSC hosted genome referenced by id.  Loading it may prompt for its default annotations (first load
-            // only); the hub's own tracks are then offered so they are not overlooked.
+            // A UCSC hosted genome referenced by id.  The genome's own first-load annotation prompt is skipped; the
+            // hub's tracks are offered instead, so the user sees one chooser rather than two.
             GenomeListItem item = findKnownGenome(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("The genome referenced by this hub (" + genomeId + ") is not known to IGV.");
@@ -200,10 +200,14 @@ public class TrackHubLoader {
                 GenomeListItem choice =
                         HubGenomeSelectionDialog.selectGenomeToSwitchTo(IGV.getInstance().getMainFrame(), hubGenomes);
                 if (choice != null) {
-                    GenomeManager.getInstance().loadGenomeById(choice.getId());
-                    // For a hosted genome offer the hub's tracks after the switch.  An assembly created from the
-                    // hub has the hub as its annotation hub, so its default annotations are the hub's tracks.
-                    if (!hub.hasTwoBit(choice.getId())) {
+                    if (hub.hasTwoBit(choice.getId())) {
+                        // An assembly created from the hub has the hub as its annotation hub, so its first-load
+                        // annotation prompt is the hub's track selection.
+                        GenomeManager.getInstance().loadGenomeById(choice.getId());
+                    } else {
+                        // A hosted genome: skip its own annotation prompt and offer the hub's tracks instead, so
+                        // the user sees one chooser rather than two.
+                        GenomeManager.getInstance().loadGenomeById(choice.getId(), false, true, false);
                         selectTracksForCurrentGenome(hub);
                     }
                 }
@@ -282,14 +286,16 @@ public class TrackHubLoader {
 
     /**
      * Load a known genome as if it had been selected from the genome list, or from "Load Genome from Host" if it
-     * is not in the list yet.
+     * is not in the list yet, without the default annotation prompt.  A genome not loaded before keeps its
+     * first-load flag, so the prompt is shown the first time it is selected from the genome pulldown.
      */
     private static void loadKnownGenome(GenomeListItem item) throws IOException {
         if (GenomeListManager.getInstance().getGenomeTableRecord(item.getId()) != null) {
-            GenomeManager.getInstance().loadGenomeById(item.getId());
+            GenomeManager.getInstance().loadGenomeById(item.getId(), false, true, false);
         } else {
-            File localFile = GenomeSelectionDialog.createLocalGenome(item, false, false, true);
-            GenomeManager.getInstance().loadGenome(localFile != null ? localFile.getAbsolutePath() : item.getPath());
+            File localFile = GenomeSelectionDialog.createLocalGenome(item, false, false, false);
+            String path = localFile != null ? localFile.getAbsolutePath() : item.getPath();
+            GenomeManager.getInstance().loadGenomeById(path, false, true, false);
         }
     }
 

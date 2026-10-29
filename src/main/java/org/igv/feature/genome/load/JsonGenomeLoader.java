@@ -22,7 +22,8 @@ public class JsonGenomeLoader extends GenomeLoader {
 
     private String genomePath;
 
-    // False when loading a session, which lists its tracks explicitly, so no default annotation prompt is wanted
+    // False when loading a session, which lists its tracks explicitly, or switching genomes from a track hub load,
+    // whose own track selection dialog follows; in both cases no default annotation prompt is wanted
     public boolean promptForAnnotations = true;
 
     public JsonGenomeLoader(String genomePath) {

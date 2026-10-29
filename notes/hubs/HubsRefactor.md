@@ -380,6 +380,16 @@ loaded, and is greyed out in Select Public Hub.  An assembly hub is instead adde
 list with the first-load annotation flag, as the multi-genome path does (Copilot review of #1892: registering it
 greyed it out in the chooser with no genome to load, a dead end).
 
+Follow-up (Oct 29 2026): switching to a hosted genome from a hub load no longer shows the genome's first-load
+default annotation prompt.  Jim's call: a hosted genome loaded for the first time this way showed two choosers in a
+row, the default annotations and then the hub's tracks, which was confusing.  The hub load passes
+`promptForAnnotations=false` through `GenomeManager.loadGenomeById` (now public in its four-argument form) and
+`createLocalGenome(..., selectAnnotations=false)`, so the genome loads with whatever `tracks` its json carries (IGV's
+hosted json has defaults; a GenArk genome has none) and `selectAnnotationsOnLoad` stays set for the first load from
+the pulldown.  Covers the single-genome hosted path and the switch offered after a multi-genome hub.  Not changed
+for an assembly the hub defines, whose only chooser is the hub's own tracks: it has no annotations until the user
+picks them, so skipping it would load an empty genome.
+
 Bug (Oct 29 2026): the Weng lab ENCODE hub (https://storage.googleapis.com/gcp.wenglab.org/hubs/dna20/hub.txt) opened
 an empty track selection dialog for hg38 with no "filtered out" message.  Every one of its 21,699 data tracks carries
 a `view` line (even ones directly under a composite, e.g. `view bigWig`), and `TrackDbHub` took any stanza with

@@ -32,19 +32,23 @@ What happens next depends on the hub.
 - Otherwise IGV switches to the hub's genome, creating it if the hub defines it with a twoBitPath, or loading it from
   the hosted genome list if known to IGV.  Switching genomes unloads all current tracks, so if the hub is loaded
   from the Tracks menu IGV asks for confirmation first.  From the Genomes menu the switch is expected and happens
-  without a prompt.
+  without a prompt.  After switching to a hosted genome the hub's track selection dialog opens; the genome's own
+  default annotation prompt is not shown here, even for a genome loaded for the first time, so there is one chooser
+  rather than two.
 
 *Hub for several genomes*
 
 - IGV lists the hub's genomes that are not yet in your genome list and offers to add them.  All are checked by
   default; uncheck any you do not want.  Genome ids IGV does not recognize are noted in the dialog.  Cancel adds
   nothing and stops the load.
-- Added genomes appear in the genome pulldown.  The first time you load one, IGV prompts for its default annotation
-  tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a session, and if the
-  hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks can be chosen later
-  from the Genomes menu.
+- Added genomes appear in the genome pulldown.  The first time you load one from the pulldown, IGV prompts for its
+  default annotation tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a
+  session, and if the hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks
+  can be chosen later from the Genomes menu.
 - If the current genome is one of the hub's genomes, the hub's track selection dialog opens.  Otherwise IGV offers
-  to switch to one of the hub's genomes, or you can cancel and stay where you are.
+  to switch to one of the hub's genomes, or you can cancel and stay where you are.  Switching to a hosted genome
+  skips its default annotation prompt and opens the hub's track selection dialog instead; the prompt waits for the
+  first load from the pulldown.
 
 **The Tracks menu**
 

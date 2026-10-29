@@ -123,8 +123,14 @@ public class GenomeManager {
         return loadGenomeById(genomeId, force, loadAnnotationTracks, false);
     }
 
-    private boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
-                                   boolean promptForAnnotations) throws IOException {
+    /**
+     * @param promptForAnnotations if false, a genome json flagged to select its default annotations on first load
+     *                             does not prompt; the flag is left set for a later load.  False for session restore
+     *                             and when switching genomes from a track hub load, where the hub's own track
+     *                             selection dialog follows and a second chooser would be confusing.
+     */
+    public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
+                                  boolean promptForAnnotations) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
         if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {
