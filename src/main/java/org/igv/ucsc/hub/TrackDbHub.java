@@ -93,9 +93,12 @@ public class TrackDbHub {
 
             for (Stanza s : trackStanzas) {
 
-                boolean isContainer = (s.hasOwnProperty("superTrack") && !s.hasOwnProperty("bigDataUrl")) ||
-                        s.hasOwnProperty("compositeTrack") || s.hasOwnProperty("view") ||
-                        (s.hasOwnProperty("container") && s.getOwnProperty("container").equals("multiWig"));
+                // A stanza with its own data url is a data track whatever else it declares.  Some hubs (e.g. the
+                // Weng lab ENCODE hubs) put a "view" line on every data track, not just on view containers.
+                boolean isContainer = !s.hasOwnProperty("bigDataUrl") &&
+                        (s.hasOwnProperty("superTrack") || s.hasOwnProperty("compositeTrack") ||
+                                s.hasOwnProperty("view") ||
+                                (s.hasOwnProperty("container") && s.getOwnProperty("container").equals("multiWig")));
 
                 // Find parent, if any.  "group" containers can be implicit, all other types should be explicitly
                 // defined before their children

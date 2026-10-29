@@ -379,3 +379,11 @@ genome.  A hub that does not define its genome is registered; it appears in the 
 loaded, and is greyed out in Select Public Hub.  An assembly hub is instead added by putting its genome in the genome
 list with the first-load annotation flag, as the multi-genome path does (Copilot review of #1892: registering it
 greyed it out in the chooser with no genome to load, a dead end).
+
+Bug (Oct 29 2026): the Weng lab ENCODE hub (https://storage.googleapis.com/gcp.wenglab.org/hubs/dna20/hub.txt) opened
+an empty track selection dialog for hg38 with no "filtered out" message.  Every one of its 21,699 data tracks carries
+a `view` line (even ones directly under a composite, e.g. `view bigWig`), and `TrackDbHub` took any stanza with
+`view` as a view container, so each data track became an empty container and was trimmed; the supported-track count,
+which ignores containers, still said 21,699, so the dialog opened, and nothing was counted as unsupported.  Not new
+to the refactor.  Fix: a stanza with its own `bigDataUrl` is a data track whatever else it declares (the superTrack
+test already said so; now the whole container predicate does).  Fixture `test/data/hubs/view_on_datatrack_trackDb.txt`.
