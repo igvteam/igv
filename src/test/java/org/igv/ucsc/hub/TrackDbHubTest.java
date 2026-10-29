@@ -101,6 +101,31 @@ public class TrackDbHubTest {
         assertTrue(containers.isEmpty());
     }
 
+    /**
+     * A data track that also declares "view" (the Weng lab ENCODE hubs do this on every data track) is a track, not
+     * a view container.  Treating it as a container left the whole hub empty.
+     */
+    @Test
+    public void testViewOnDataTrack() throws IOException {
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/view_on_datatrack_trackDb.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, null);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(0, trackDbHub.getUnsupportedTrackCount());
+        assertEquals(1, containers.size());
+
+        TrackConfigContainer composite = containers.get(0).children.get(0);
+        assertEquals("largeIntestine", composite.name);
+        // The bigWig with "view bigWig" sits directly in the composite
+        assertEquals(1, composite.tracks.size());
+        assertEquals("ENCFF514ZYW", composite.tracks.get(0).id);
+        // The bigBed sits in its real view container
+        assertEquals(1, composite.children.size());
+        assertEquals("ENCSR091QXPview", composite.children.get(0).name);
+        assertEquals(1, composite.children.get(0).tracks.size());
+        assertEquals("ENCFF948PMS", composite.children.get(0).tracks.get(0).id);
+    }
+
     @Test
     public void testGroupedContainers() throws IOException {
 

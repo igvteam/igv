@@ -5,7 +5,6 @@ import org.igv.feature.genome.GenomeDownloadUtils;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.HostedGenomes;
 import org.igv.feature.genome.load.GenomeConfig;
-import org.igv.feature.genome.load.HubGenomeLoader;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.ui.IGV;
@@ -92,29 +91,30 @@ public class TrackHubLoader {
             }
         }
 
+        // Either way the genome's own default annotation prompt is skipped and the hub's track selection dialog is
+        // opened instead, so the user sees one chooser rather than two.
         if (hub.hasTwoBit(genomeId)) {
-            // The hub defines the assembly.  The hub becomes the genome's annotation hub (hubs[0]).  The config is
-            // copied: the hub's own is cached for the session and must not carry this load's edits.
-            GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
-            config.setHubs(Arrays.asList(hub.getUrl()));
-            HubGenomeLoader.selectAnnotationTracks(hub, config);
-            File genomeFile = GenomeDownloadUtils.saveLocalGenome(config);
-            GenomeManager.getInstance().loadGenome(genomeFile.getAbsolutePath());
-
+            // The hub defines the assembly.  Put it in the genome list, as a declined switch does, and load it.
+            GenomeListItem item = addAssemblyGenome(hub, genomeId);
+            GenomeManager.getInstance().loadGenomeById(item.getId(), false, true);
         } else {
-            // A UCSC hosted genome referenced by id.  Loading it may prompt for its default annotations (first load
-            // only); the hub's own tracks are then offered so they are not overlooked.
+            // A UCSC hosted genome referenced by id.
             GenomeListItem item = findKnownGenome(genomeId);
             if (item == null) {
                 MessageUtils.showMessage("The genome referenced by this hub (" + genomeId + ") is not known to IGV.");
                 return;
             }
             loadKnownGenome(item);
-            HubRegistry.addUserHub(hub);
-            // The load rebuilt the menus before the hub was registered
-            IGVMenuBar.getInstance().updateMenus(GenomeManager.getInstance().getCurrentGenome());
-            selectTracksForCurrentGenome(hub);
         }
+        // Register the hub unless it is the loaded genome's own hub.  An assembly hub normally is, but if its
+        // genome id matched an entry already in the list that entry was loaded instead, and the hub would
+        // otherwise be lost.  The load rebuilt the menus before the hub was registered.
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (!isGenomeHub(genome, hub)) {
+            HubRegistry.addUserHub(hub);
+            IGVMenuBar.getInstance().updateMenus(genome);
+        }
+        selectTracksForCurrentGenome(hub);
     }
 
     /**
@@ -125,13 +125,23 @@ public class TrackHubLoader {
      */
     private static void addHubWithoutSwitching(Hub hub, String genomeId) throws IOException {
         if (hub.hasTwoBit(genomeId)) {
-            if (findInGenomeList(GenomeListManager.getInstance().getGenomeItemMap(), genomeId) == null) {
-                GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
-                addGenome(hub, new HubGenomeSelectionDialog.Candidate(genomeId, config.getName(), config, null));
-            }
+            addAssemblyGenome(hub, genomeId);
         } else {
             HubRegistry.addUserHub(hub);
         }
+    }
+
+    /**
+     * Put an assembly the hub defines in the genome list, if it is not there yet, and return its list item.  The
+     * config is copied: the hub's own is cached for the session and must not carry this load's edits.
+     */
+    private static GenomeListItem addAssemblyGenome(Hub hub, String genomeId) throws IOException {
+        GenomeListItem item = findInGenomeList(GenomeListManager.getInstance().getGenomeItemMap(), genomeId);
+        if (item == null) {
+            GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
+            item = addGenome(hub, new HubGenomeSelectionDialog.Candidate(genomeId, config.getName(), config, null));
+        }
+        return item;
     }
 
     private static void loadMultiGenomeHub(Hub hub, List<String> genomeIds) throws IOException {
@@ -200,12 +210,9 @@ public class TrackHubLoader {
                 GenomeListItem choice =
                         HubGenomeSelectionDialog.selectGenomeToSwitchTo(IGV.getInstance().getMainFrame(), hubGenomes);
                 if (choice != null) {
-                    GenomeManager.getInstance().loadGenomeById(choice.getId());
-                    // For a hosted genome offer the hub's tracks after the switch.  An assembly created from the
-                    // hub has the hub as its annotation hub, so its default annotations are the hub's tracks.
-                    if (!hub.hasTwoBit(choice.getId())) {
-                        selectTracksForCurrentGenome(hub);
-                    }
+                    // No annotation prompt: the hub's track dialog is the one chooser
+                    GenomeManager.getInstance().loadGenomeById(choice.getId(), false, true);
+                    selectTracksForCurrentGenome(hub);
                 }
             }
         }
@@ -215,7 +222,7 @@ public class TrackHubLoader {
      * Create the local genome json for a genome selected from a multi-genome hub and add it to the genome list.
      * Default annotations are selected the first time the genome is loaded, so the json is not complete until then.
      */
-    private static void addGenome(Hub hub, HubGenomeSelectionDialog.Candidate candidate) throws IOException {
+    private static GenomeListItem addGenome(Hub hub, HubGenomeSelectionDialog.Candidate candidate) throws IOException {
 
         File localFile;
         if (candidate.config() != null) {
@@ -229,7 +236,9 @@ public class TrackHubLoader {
         }
 
         String path = localFile != null ? localFile.getAbsolutePath() : candidate.item().getPath();
-        GenomeListManager.getInstance().addGenomeItem(new GenomeListItem(candidate.name(), path, candidate.id()));
+        GenomeListItem item = new GenomeListItem(candidate.name(), path, candidate.id());
+        GenomeListManager.getInstance().addGenomeItem(item);
+        return item;
     }
 
     /**
@@ -282,15 +291,21 @@ public class TrackHubLoader {
 
     /**
      * Load a known genome as if it had been selected from the genome list, or from "Load Genome from Host" if it
-     * is not in the list yet.
+     * is not in the list yet, without the default annotation prompt.
      */
     private static void loadKnownGenome(GenomeListItem item) throws IOException {
-        if (GenomeListManager.getInstance().getGenomeTableRecord(item.getId()) != null) {
-            GenomeManager.getInstance().loadGenomeById(item.getId());
-        } else {
-            File localFile = GenomeSelectionDialog.createLocalGenome(item, false, false, true);
-            GenomeManager.getInstance().loadGenome(localFile != null ? localFile.getAbsolutePath() : item.getPath());
+        String genome = item.getId();
+        if (GenomeListManager.getInstance().getGenomeTableRecord(genome) == null) {
+            File localFile = GenomeSelectionDialog.createLocalGenome(item, false, false, false);
+            if (localFile == null) {
+                // No json to flag (a GenBank record), so nothing to prompt for.  Loaded by path directly: a URL
+                // through loadGenomeById would be probed first and a failure misreported as an unknown id.
+                GenomeManager.getInstance().loadGenome(item.getPath());
+                return;
+            }
+            genome = localFile.getAbsolutePath();
         }
+        GenomeManager.getInstance().loadGenomeById(genome, false, true);
     }
 
     private static void selectTracksForCurrentGenome(Hub hub) {

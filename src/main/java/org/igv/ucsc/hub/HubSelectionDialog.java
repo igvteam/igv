@@ -2,6 +2,8 @@ package org.igv.ucsc.hub;
 
 import org.igv.Globals;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -32,7 +34,7 @@ public class HubSelectionDialog extends JDialog {
 
     public HubSelectionDialog(Frame owner) {
 
-        super(owner, "Select Public Hub", true);
+        super(owner, "Select Public Track Hub", true);
 
         setSize(owner.getWidth() - 20, 600);
         if (owner != null) {
@@ -149,9 +151,13 @@ public class HubSelectionDialog extends JDialog {
                     }
                 });
 
-        currentGenomeCheckBox = new JCheckBox("Current genome only", true);
+        currentGenomeCheckBox = new JCheckBox("Current genome only",
+                PreferencesManager.getPreferences().getAsBoolean(Constants.HUB_SELECT_CURRENT_GENOME_ONLY));
         currentGenomeCheckBox.setToolTipText("Show only hubs with tracks for the current genome");
-        currentGenomeCheckBox.addActionListener(e -> updateFilter());
+        currentGenomeCheckBox.addActionListener(e -> {
+            PreferencesManager.getPreferences().put(Constants.HUB_SELECT_CURRENT_GENOME_ONLY, currentGenomeCheckBox.isSelected());
+            updateFilter();
+        });
         filterPanel.add(Box.createHorizontalStrut(10));
         filterPanel.add(currentGenomeCheckBox);
 

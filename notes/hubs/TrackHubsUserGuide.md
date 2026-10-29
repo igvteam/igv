@@ -32,19 +32,23 @@ What happens next depends on the hub.
 - Otherwise IGV switches to the hub's genome, creating it if the hub defines it with a twoBitPath, or loading it from
   the hosted genome list if known to IGV.  Switching genomes unloads all current tracks, so if the hub is loaded
   from the Tracks menu IGV asks for confirmation first.  From the Genomes menu the switch is expected and happens
-  without a prompt.
+  without a prompt.  After the switch the hub's track selection dialog opens; the genome's own default annotation
+  prompt is not shown here, even for a genome loaded for the first time, so there is one chooser rather than two.
+  That prompt waits for the first time the genome is picked from the genome pulldown.
 
 *Hub for several genomes*
 
 - IGV lists the hub's genomes that are not yet in your genome list and offers to add them.  All are checked by
   default; uncheck any you do not want.  Genome ids IGV does not recognize are noted in the dialog.  Cancel adds
   nothing and stops the load.
-- Added genomes appear in the genome pulldown.  The first time you load one, IGV prompts for its default annotation
-  tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a session, and if the
-  hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks can be chosen later
-  from the Genomes menu.
+- Added genomes appear in the genome pulldown.  The first time you load one from the pulldown, IGV prompts for its
+  default annotation tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a
+  session, and if the hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks
+  can be chosen later from the Genomes menu.
 - If the current genome is one of the hub's genomes, the hub's track selection dialog opens.  Otherwise IGV offers
-  to switch to one of the hub's genomes, or you can cancel and stay where you are.
+  to switch to one of the hub's genomes, or you can cancel and stay where you are.  Switching skips the genome's
+  default annotation prompt and opens the hub's track selection dialog instead; the prompt waits for the first load
+  from the pulldown.
 
 **The Tracks menu**
 
@@ -55,11 +59,11 @@ hub's description page in your browser, when the hub provides one.
 In the track selection dialog, tracks are grouped as the hub organizes them.  Checking a track loads it when you press
 OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
 
-**Select Public Hub**
+**Select Public Track Hub**
 
-**Tracks > Select Public Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
+**Tracks > Select Public Track Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
 and the list is filtered to the current genome by default; uncheck **Current genome only** to see hubs for other
-assemblies.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
+assemblies.  That setting is remembered the next time the dialog opens.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
 Pick one hub and press OK: it is loaded exactly as if its URL had been entered in **Add Track Hub from URL...** (the
 hub is added to the Tracks menu and its track selection dialog opens, or IGV offers to switch to the hub's genome).
 If you decline the switch you stay on the current genome, but the hub is still added: a hub that defines its own
@@ -75,10 +79,3 @@ it lists.  Your hubs are saved across sessions in `hubs.txt` in the IGV director
 A hub that defines a custom assembly is part of that genome rather than managed here, so it is not listed in
 Remove Hubs; it is removed with the genome (**Genomes > Remove Genomes...**).  Both menu items are always present;
 if there is nothing to list, IGV says so.
-
-**Supported track types**
-
-IGV loads these trackDb types from a hub: bigBed, bigWig, bigGenePred, bigPsl, bigDbSnp, bed, bedGraph, wig,
-narrowPeak, broadPeak, gappedPeak, genePred, refGene, gff, gff3, gtf, vcf, vcfTabix, vcfPhasedTrio, bam, tdf, seg,
-mut, gistic, interact, rmask and ucscSnp.  Tracks of other types are omitted from the selection dialog.  A hub with no
-supported tracks for the current genome reports that rather than opening the dialog.

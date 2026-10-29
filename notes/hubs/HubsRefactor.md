@@ -353,7 +353,7 @@ Fixed in one commit:
 The multi-select "Manage Track Hubs ..." dialog (check to add, uncheck to remove, over every hub for every genome)
 proved confusing and unworkable.  Replaced by two explicit Tracks menu items:
 
-- **Select Public Hub ...** -- `HubSelectionDialog` repurposed as a single-select chooser over the UCSC public list
+- **Select Public Track Hub ...** -- `HubSelectionDialog` repurposed as a single-select chooser over the UCSC public list
   only (`HubRegistry.getUcscPublicHubDescriptors`).  `HubTable` gained a single-select mode: the checkbox column is
   hidden and rows whose url is in a disabled set (hubs already in the registry) are greyed out and unselectable;
   the descriptors' "selected" flag stays the checkbox state and is not reused.  A "Current genome
@@ -370,12 +370,37 @@ The added/removed summary message is gone; each action gives direct feedback.
 Follow-up: both items are always shown.  "Remove Hubs" was first shown only when the registry was non-empty, and an
 assembly hub selected from the public list goes to the genome's json, not the registry, so after adding the sunflower
 sea star hub the item was simply absent.  Jim's call: disappearing menu items are confusing; an empty list is reported
-with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Hub" when
+with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Track Hub" when
 the UCSC list could not be loaded.
 
 Follow-up: declining the genome-switch prompt (single-genome hub for another genome, from the Tracks menu or Select
-Public Hub) used to discard the hub.  Jim's call: the hub is still added and the user simply stays on the current
+Public Track Hub) used to discard the hub.  Jim's call: the hub is still added and the user simply stays on the current
 genome.  A hub that does not define its genome is registered; it appears in the Tracks menu once its genome is
-loaded, and is greyed out in Select Public Hub.  An assembly hub is instead added by putting its genome in the genome
+loaded, and is greyed out in Select Public Track Hub.  An assembly hub is instead added by putting its genome in the genome
 list with the first-load annotation flag, as the multi-genome path does (Copilot review of #1892: registering it
 greyed it out in the chooser with no genome to load, a dead end).
+
+Follow-up (Oct 29 2026): switching to a hosted genome from a hub load no longer shows the genome's first-load
+default annotation prompt.  Jim's call: a hosted genome loaded for the first time this way showed two choosers in a
+row, the default annotations and then the hub's tracks, which was confusing.  The hub load passes
+`promptForAnnotations=false` through the three-argument `GenomeManager.loadGenomeById` that session restore already
+used, and `createLocalGenome(..., selectAnnotations=false)`, so the genome loads with whatever `tracks` its json carries (IGV's
+hosted json has defaults; a GenArk genome has none) and `selectAnnotationsOnLoad` stays set for the first load from
+the pulldown.  Covers the single-genome hosted path and the switch offered after a multi-genome hub.
+
+Same day, extended to assemblies the hub defines (Jim's call): the single-genome assembly path no longer runs
+`HubGenomeLoader.selectAnnotationTracks`; it saves the json with `selectAnnotationsOnLoad` set, as the multi-genome
+`addGenome` already did, loads without the prompt, and opens the hub's track selection dialog like the hosted path.
+The multi-genome switch lost its twoBit branch, which had suppressed the track dialog for assemblies -- backwards,
+since the annotation prompt was the dialog being avoided.  The hub's track dialog is now the one chooser for every
+hub load.  After `/simplify`: the single-genome assembly path shares `addAssemblyGenome` with the declined-switch
+path (genome list entry with the first-load flag, created only if the genome is not in the list yet, so a repeat
+load of the hub no longer rewrites a json whose annotations were already chosen) and loads by id.
+
+Bug (Oct 29 2026): the Weng lab ENCODE hub (https://storage.googleapis.com/gcp.wenglab.org/hubs/dna20/hub.txt) opened
+an empty track selection dialog for hg38 with no "filtered out" message.  Every one of its 21,699 data tracks carries
+a `view` line (even ones directly under a composite, e.g. `view bigWig`), and `TrackDbHub` took any stanza with
+`view` as a view container, so each data track became an empty container and was trimmed; the supported-track count,
+which ignores containers, still said 21,699, so the dialog opened, and nothing was counted as unsupported.  Not new
+to the refactor.  Fix: a stanza with its own `bigDataUrl` is a data track whatever else it declares (the superTrack
+test already said so; now the whole container predicate does).  Fixture `test/data/hubs/view_on_datatrack_trackDb.txt`.

@@ -134,7 +134,8 @@ public class HubGenomeSelectionDialog extends JDialog {
      * tracks.  Returns the chosen genome, or null if the user cancels.
      */
     public static GenomeListItem selectGenomeToSwitchTo(Frame owner, List<GenomeListItem> hubGenomes) {
-        String message = "The current genome is not referenced by this hub.  Switch to one of the hub's genomes?\n" +
+        String message = "The current genome is not referenced by this hub.  Select one of the genomes below to " +
+                "switch genomes, or click cancel to remain on the current genome.\n" +
                 "Switching genomes will clear the currently loaded tracks.";
         Object[] options = hubGenomes.toArray();
         final Object[] choice = new Object[1];

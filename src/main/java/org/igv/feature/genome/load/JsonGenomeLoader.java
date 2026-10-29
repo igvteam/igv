@@ -22,7 +22,7 @@ public class JsonGenomeLoader extends GenomeLoader {
 
     private String genomePath;
 
-    // False when loading a session, which lists its tracks explicitly, so no default annotation prompt is wanted
+    // False to suppress the first-load default annotation prompt; the flag is then left set for a later load
     public boolean promptForAnnotations = true;
 
     public JsonGenomeLoader(String genomePath) {

@@ -112,9 +112,11 @@ public class GenomeManager {
     }
 
     /**
-     * Load a genome for a JSON session.  The first-load annotation prompt is never shown during session restore.
+     * Load a genome without the first-load default annotation prompt: a genome json flagged to select its default
+     * annotations on first load does not prompt, and the flag is left set for a later load.  For callers that
+     * choose tracks themselves, such as session restore or a genome switch from a track hub load.
      *
-     * @param genomeId
+     * @param genomeId              ID for an IGV hosted genome, or file path or url
      * @param force                 reload the genome even if it is the current genome
      * @param loadAnnotationTracks  if false the genome's default annotation tracks (its "tracks" property) are not
      *                              loaded.  Sessions normally list all tracks explicitly.

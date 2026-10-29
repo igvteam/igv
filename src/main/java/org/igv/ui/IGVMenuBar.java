@@ -781,13 +781,13 @@ public class IGVMenuBar extends JMenuBar {
             }
         }
 
-        // Hub management.  "Select Public Hub" chooses from the UCSC registry, "Add Track Hub from URL" adds any hub;
+        // Hub management.  "Select Public Track Hub" chooses from the UCSC registry, "Add Track Hub from URL" adds any hub;
         // both load the hub the same way.  "Remove Hubs" drops hubs from either source.
         tracksMenu.addSeparator();
 
         // Both items are always present; an item that comes and goes is confusing.  An empty list is reported
         // when the item is used.
-        JMenuItem selectHubItem = new JMenuItem("Select Public Hub ...");
+        JMenuItem selectHubItem = new JMenuItem("Select Public Track Hub ...");
         selectHubItem.addActionListener(e -> {
             // The public list is fetched on first use, off the event thread
             LongRunningTask.submit(() -> {
