@@ -20,9 +20,21 @@ class HubTable extends JTable {
     public static Color ALT_BACKGROUND = new Color(245, 245, 245);
     private final Map<Integer, Integer> rowHeights = new HashMap<>();
 
+    /**
+     * In single-select mode the checkbox column is hidden and a single row is chosen by row selection.  Rows whose
+     * descriptor is flagged "selected" are shown disabled (greyed out) and cannot be selected.  In the default
+     * (checkbox) mode the "selected" flag is the checkbox state.
+     */
+    private final boolean singleSelect;
+
     public HubTable(HubTableModel model) {
+        this(model, false);
+    }
+
+    public HubTable(HubTableModel model, boolean singleSelect) {
 
         super(model);
+        this.singleSelect = singleSelect;
 
         getTableHeader().setReorderingAllowed(false);
 
@@ -70,12 +82,12 @@ class HubTable extends JTable {
             }
         });
 
-        // Add a MouseMotionListener to handle mouse movement over column 3
+        // Add a MouseMotionListener to handle mouse movement over the info column (model column 4)
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 int column = columnAtPoint(e.getPoint());
-                if (column == 4) {
+                if (column >= 0 && convertColumnIndexToModel(column) == 4) {
                     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 } else {
                     setCursor(Cursor.getDefaultCursor());
@@ -83,14 +95,14 @@ class HubTable extends JTable {
             }
         });
 
-        // Add a MouseListener to handle clicks on column 3
+        // Add a MouseListener to handle clicks on the info column (model column 4)
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = rowAtPoint(e.getPoint());
                 int column = columnAtPoint(e.getPoint());
-                if (column == 4) {
-                    Object value = getValueAt(row, column);
+                if (row >= 0 && column >= 0 && convertColumnIndexToModel(column) == 4) {
+                    Object value = getModel().getValueAt(convertRowIndexToModel(row), 4);
                     if (value != null) {
                         try {
                             Desktop.getDesktop().browse(new URI(value.toString()));
@@ -116,6 +128,14 @@ class HubTable extends JTable {
                     ((DefaultTableCellRenderer) renderer).setForeground(getForeground());
                 }
             }
+        }
+
+        if (singleSelect) {
+            // Hide the checkbox column.  Model column indices are unchanged.
+            removeColumn(getColumnModel().getColumn(0));
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            setRowSelectionAllowed(true);
+            setColumnSelectionAllowed(false);
         }
     }
 
@@ -151,37 +171,61 @@ class HubTable extends JTable {
         };
     }
 
+    /**
+     * A row is disabled, in single-select mode, when its descriptor is flagged selected (already added).
+     */
+    private boolean isDisabledRow(int viewRow) {
+        return singleSelect && ((HubTableModel) getModel()).getRecords().get(convertRowIndexToModel(viewRow)).isSelected();
+    }
+
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        if (isDisabledRow(rowIndex)) {
+            return;
+        }
+        super.changeSelection(rowIndex, columnIndex, toggle, extend);
+    }
+
     @Override
     public Class<?> getColumnClass(int column) {
-        return column == 0 ? Boolean.class : (column == 4 ? JLabel.class : String.class);
+        int modelColumn = convertColumnIndexToModel(column);
+        return modelColumn == 0 ? Boolean.class : (modelColumn == 4 ? JLabel.class : String.class);
     }
 
     @Override
     public boolean isCellSelected(int row, int column) {
-        return false;
+        return singleSelect ? super.isCellSelected(row, column) : false;
     }
 
     @Override
     public boolean isColumnSelected(int column) {
-        return false;
+        return singleSelect ? super.isColumnSelected(column) : false;
     }
 
     @Override
     public boolean isRowSelected(int row) {
-        return false;
+        return singleSelect ? super.isRowSelected(row) : false;
     }
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
-        component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Globals.isDarkMode() ? Color.black : Color.WHITE);
+        if (isRowSelected(row)) {
+            component.setBackground(getSelectionBackground());
+            component.setForeground(getSelectionForeground());
+        } else {
+            component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Globals.isDarkMode() ? Color.black : Color.WHITE);
+            if (isDisabledRow(row)) {
+                component.setForeground(UIManager.getColor("Label.disabledForeground"));
+            }
+        }
         return component;
     }
 
     //
     @Override
     public boolean isCellEditable(int row, int column) {
-        return column == 0;
+        return !singleSelect && column == 0;
     }
 
 

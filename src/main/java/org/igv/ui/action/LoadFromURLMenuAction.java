@@ -138,7 +138,7 @@ public class LoadFromURLMenuAction extends MenuAction {
      * @param confirmGenomeSwitch true if the user should confirm before the hub switches the current genome, i.e.
      *                            when loading from the Tracks menu.
      */
-    private static void loadTrackHub(final String url, final boolean confirmGenomeSwitch) {
+    public static void loadTrackHub(final String url, final boolean confirmGenomeSwitch) {
 
         LongRunningTask.submit(() -> {
             try {

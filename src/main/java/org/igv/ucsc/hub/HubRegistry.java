@@ -42,7 +42,7 @@ public class HubRegistry {
         return selectedHubDescriptors;
     }
 
-    private static List<HubDescriptor> getUcscPublicHubDescriptors() {
+    public static List<HubDescriptor> getUcscPublicHubDescriptors() {
         if (ucscPublicHubDescriptors == null) {
             ucscPublicHubDescriptors = loadUCSCDescriptors();
         }
