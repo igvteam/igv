@@ -371,3 +371,7 @@ assembly hub selected from the public list goes to the genome's json, not the re
 sea star hub the item was simply absent.  Jim's call: disappearing menu items are confusing; an empty list is reported
 with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Hub" when
 the UCSC list could not be loaded.
+
+Follow-up: declining the genome-switch prompt (single-genome hub for another genome, from the Tracks menu or Select
+Public Hub) used to discard the hub.  Jim's call: the hub is registered anyway and the user simply stays on the
+current genome; it appears in the Tracks menu once its genome is loaded, and is greyed out in Select Public Hub.

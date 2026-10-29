@@ -86,6 +86,9 @@ public class TrackHubLoader {
                     "\", not the current genome (" + current + ").  Switching genomes will unload all tracks.  " +
                     "Switch to " + genomeId + "?");
             if (!proceed) {
+                // Declining only keeps the current genome; the hub is still added, for when its genome is loaded.
+                HubRegistry.addUserHub(hub);
+                IGVMenuBar.getInstance().updateMenus(currentGenome);
                 return;
             }
         }
