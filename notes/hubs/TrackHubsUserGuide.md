@@ -62,6 +62,9 @@ and the list is filtered to the current genome by default; uncheck **Current gen
 assemblies.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
 Pick one hub and press OK: it is loaded exactly as if its URL had been entered in **Add Track Hub from URL...** (the
 hub is added to the Tracks menu and its track selection dialog opens, or IGV offers to switch to the hub's genome).
+If you decline the switch you stay on the current genome, but the hub is still added: a hub that defines its own
+assembly puts that genome in the genome pulldown, ready to load later; any other hub appears in the Tracks menu once
+its genome is loaded.
 
 **Remove Hubs**
 

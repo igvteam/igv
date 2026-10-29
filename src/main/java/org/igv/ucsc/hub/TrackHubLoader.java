@@ -86,8 +86,7 @@ public class TrackHubLoader {
                     "\", not the current genome (" + current + ").  Switching genomes will unload all tracks.  " +
                     "Switch to " + genomeId + "?");
             if (!proceed) {
-                // Declining only keeps the current genome; the hub is still added, for when its genome is loaded.
-                HubRegistry.addUserHub(hub);
+                addHubWithoutSwitching(hub, genomeId);
                 IGVMenuBar.getInstance().updateMenus(currentGenome);
                 return;
             }
@@ -115,6 +114,23 @@ public class TrackHubLoader {
             // The load rebuilt the menus before the hub was registered
             IGVMenuBar.getInstance().updateMenus(GenomeManager.getInstance().getCurrentGenome());
             selectTracksForCurrentGenome(hub);
+        }
+    }
+
+    /**
+     * Declining the genome switch keeps the current genome, but the hub is still added.  An assembly hub is its
+     * genome's own hub, so it is added by putting that genome in the genome list, as the multi-genome path does
+     * (annotations are selected on first load); registering it instead would grey it out in the public hub chooser
+     * with no genome to load.  Any other hub is registered, and appears in the Tracks menu when its genome is loaded.
+     */
+    private static void addHubWithoutSwitching(Hub hub, String genomeId) throws IOException {
+        if (hub.hasTwoBit(genomeId)) {
+            if (findInGenomeList(GenomeListManager.getInstance().getGenomeItemMap(), genomeId) == null) {
+                GenomeConfig config = hub.getGenomeConfig(genomeId).copy();
+                addGenome(hub, new HubGenomeSelectionDialog.Candidate(genomeId, config.getName(), config, null));
+            }
+        } else {
+            HubRegistry.addUserHub(hub);
         }
     }
 

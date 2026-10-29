@@ -374,5 +374,8 @@ with a message instead (and the message points assembly hubs at Remove Genomes).
 the UCSC list could not be loaded.
 
 Follow-up: declining the genome-switch prompt (single-genome hub for another genome, from the Tracks menu or Select
-Public Hub) used to discard the hub.  Jim's call: the hub is registered anyway and the user simply stays on the
-current genome; it appears in the Tracks menu once its genome is loaded, and is greyed out in Select Public Hub.
+Public Hub) used to discard the hub.  Jim's call: the hub is still added and the user simply stays on the current
+genome.  A hub that does not define its genome is registered; it appears in the Tracks menu once its genome is
+loaded, and is greyed out in Select Public Hub.  An assembly hub is instead added by putting its genome in the genome
+list with the first-load annotation flag, as the multi-genome path does (Copilot review of #1892: registering it
+greyed it out in the chooser with no genome to load, a dead end).
