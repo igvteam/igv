@@ -32,9 +32,9 @@ What happens next depends on the hub.
 - Otherwise IGV switches to the hub's genome, creating it if the hub defines it with a twoBitPath, or loading it from
   the hosted genome list if known to IGV.  Switching genomes unloads all current tracks, so if the hub is loaded
   from the Tracks menu IGV asks for confirmation first.  From the Genomes menu the switch is expected and happens
-  without a prompt.  After switching to a hosted genome the hub's track selection dialog opens; the genome's own
-  default annotation prompt is not shown here, even for a genome loaded for the first time, so there is one chooser
-  rather than two.
+  without a prompt.  After the switch the hub's track selection dialog opens; the genome's own default annotation
+  prompt is not shown here, even for a genome loaded for the first time, so there is one chooser rather than two.
+  That prompt waits for the first time the genome is picked from the genome pulldown.
 
 *Hub for several genomes*
 
@@ -46,9 +46,9 @@ What happens next depends on the hub.
   session, and if the hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks
   can be chosen later from the Genomes menu.
 - If the current genome is one of the hub's genomes, the hub's track selection dialog opens.  Otherwise IGV offers
-  to switch to one of the hub's genomes, or you can cancel and stay where you are.  Switching to a hosted genome
-  skips its default annotation prompt and opens the hub's track selection dialog instead; the prompt waits for the
-  first load from the pulldown.
+  to switch to one of the hub's genomes, or you can cancel and stay where you are.  Switching skips the genome's
+  default annotation prompt and opens the hub's track selection dialog instead; the prompt waits for the first load
+  from the pulldown.
 
 **The Tracks menu**
 

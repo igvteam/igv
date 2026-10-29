@@ -112,9 +112,11 @@ public class GenomeManager {
     }
 
     /**
-     * Load a genome for a JSON session.  The first-load annotation prompt is never shown during session restore.
+     * Load a genome without the first-load default annotation prompt: a genome json flagged to select its default
+     * annotations on first load does not prompt, and the flag is left set for a later load.  For callers that
+     * choose tracks themselves, such as session restore or a genome switch from a track hub load.
      *
-     * @param genomeId
+     * @param genomeId              ID for an IGV hosted genome, or file path or url
      * @param force                 reload the genome even if it is the current genome
      * @param loadAnnotationTracks  if false the genome's default annotation tracks (its "tracks" property) are not
      *                              loaded.  Sessions normally list all tracks explicitly.
@@ -123,14 +125,8 @@ public class GenomeManager {
         return loadGenomeById(genomeId, force, loadAnnotationTracks, false);
     }
 
-    /**
-     * @param promptForAnnotations if false, a genome json flagged to select its default annotations on first load
-     *                             does not prompt; the flag is left set for a later load.  False for session restore
-     *                             and when switching genomes from a track hub load, where the hub's own track
-     *                             selection dialog follows and a second chooser would be confusing.
-     */
-    public boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
-                                  boolean promptForAnnotations) throws IOException {
+    private boolean loadGenomeById(String genomeId, boolean force, boolean loadAnnotationTracks,
+                                   boolean promptForAnnotations) throws IOException {
 
         final Genome currentGenome = getCurrentGenome();
         if (force == false && currentGenome != null && genomeId.equals(currentGenome.getId())) {

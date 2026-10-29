@@ -57,7 +57,7 @@ public class HubGenomeLoader extends GenomeLoader {
      * Sets the genome's annotation tracks, either from a legacy preference entry for this hub or from
      * user selections in the track selection dialog (interactive mode only).
      */
-    public static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
+    private static void selectAnnotationTracks(Hub hub, GenomeConfig config) throws IOException {
 
         // Potentially override default tracks from hub with user selections
 
