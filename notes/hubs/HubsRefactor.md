@@ -365,3 +365,9 @@ proved confusing and unworkable.  Replaced by two explicit Tracks menu items:
   `setSelectedHubs`.  Shown only when the registry is non-empty.
 
 The added/removed summary message is gone; each action gives direct feedback.
+
+Follow-up: both items are always shown.  "Remove Hubs" was first shown only when the registry was non-empty, and an
+assembly hub selected from the public list goes to the genome's json, not the registry, so after adding the sunflower
+sea star hub the item was simply absent.  Jim's call: disappearing menu items are confusing; an empty list is reported
+with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Hub" when
+the UCSC list could not be loaded.

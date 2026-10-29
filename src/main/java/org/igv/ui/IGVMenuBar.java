@@ -785,39 +785,47 @@ public class IGVMenuBar extends JMenuBar {
         // both load the hub the same way.  "Remove Hubs" drops hubs from either source.
         tracksMenu.addSeparator();
 
-        if (!HubRegistry.getUcscPublicHubDescriptors().isEmpty()) {
-            JMenuItem selectHubItem = new JMenuItem("Select Public Hub ...");
-            selectHubItem.addActionListener(e -> {
-                final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
-                hubSelectionDialog.setVisible(true);
-                HubDescriptor selected = hubSelectionDialog.getSelectedHub();
-                if (selected != null) {
-                    LoadFromURLMenuAction.loadTrackHub(selected.getUrl(), true);
-                }
-            });
-            tracksMenu.add(selectHubItem);
-        }
+        // Both items are always present; an item that comes and goes is confusing.  An empty list is reported
+        // when the item is used.
+        JMenuItem selectHubItem = new JMenuItem("Select Public Hub ...");
+        selectHubItem.addActionListener(e -> {
+            if (HubRegistry.getUcscPublicHubDescriptors().isEmpty()) {
+                MessageUtils.showMessage("The UCSC public hub list could not be loaded.");
+                return;
+            }
+            final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
+            hubSelectionDialog.setVisible(true);
+            HubDescriptor selected = hubSelectionDialog.getSelectedHub();
+            if (selected != null) {
+                LoadFromURLMenuAction.loadTrackHub(selected.getUrl(), true);
+            }
+        });
+        tracksMenu.add(selectHubItem);
 
         // Load hub from URL
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_HUB_FROM_URL, KeyEvent.VK_H, igv);
         tracksMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if (!HubRegistry.getSelectedHubs().isEmpty()) {
-            JMenuItem removeHubsItem = new JMenuItem("Remove Hubs ...");
-            removeHubsItem.addActionListener(e -> {
-                final RemoveHubsDialog removeHubsDialog = new RemoveHubsDialog(igv.getMainFrame());
-                removeHubsDialog.setVisible(true);
-                List<HubDescriptor> removed = removeHubsDialog.getHubsToRemove();
-                if (!removed.isEmpty()) {
-                    Set<String> removedUrls = removed.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
-                    HubRegistry.setSelectedHubs(HubRegistry.getSelectedHubs().stream()
-                            .filter(hd -> !removedUrls.contains(hd.getUrl()))
-                            .collect(Collectors.toList()));
-                    updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
-                }
-            });
-            tracksMenu.add(removeHubsItem);
-        }
+        JMenuItem removeHubsItem = new JMenuItem("Remove Hubs ...");
+        removeHubsItem.addActionListener(e -> {
+            if (HubRegistry.getSelectedHubs().isEmpty()) {
+                MessageUtils.showMessage("<html>No hubs to remove.<br><br>Hubs selected from the public list or added " +
+                        "by URL are removed here.  A hub that defines a genome's assembly is part of that genome " +
+                        "and is removed with it (Genomes > Remove Genomes...).");
+                return;
+            }
+            final RemoveHubsDialog removeHubsDialog = new RemoveHubsDialog(igv.getMainFrame());
+            removeHubsDialog.setVisible(true);
+            List<HubDescriptor> removed = removeHubsDialog.getHubsToRemove();
+            if (!removed.isEmpty()) {
+                Set<String> removedUrls = removed.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
+                HubRegistry.setSelectedHubs(HubRegistry.getSelectedHubs().stream()
+                        .filter(hd -> !removedUrls.contains(hd.getUrl()))
+                        .collect(Collectors.toList()));
+                updateTracksMenu(GenomeManager.getInstance().getCurrentGenome());
+            }
+        });
+        tracksMenu.add(removeHubsItem);
 
     }
 
