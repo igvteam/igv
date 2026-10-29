@@ -63,7 +63,7 @@ OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel
 
 **Tracks > Select Public Track Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
 and the list is filtered to the current genome by default; uncheck **Current genome only** to see hubs for other
-assemblies.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
+assemblies.  That setting is remembered the next time the dialog opens.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
 Pick one hub and press OK: it is loaded exactly as if its URL had been entered in **Add Track Hub from URL...** (the
 hub is added to the Tracks menu and its track selection dialog opens, or IGV offers to switch to the hub's genome).
 If you decline the switch you stay on the current genome, but the hub is still added: a hub that defines its own
@@ -80,9 +80,4 @@ A hub that defines a custom assembly is part of that genome rather than managed 
 Remove Hubs; it is removed with the genome (**Genomes > Remove Genomes...**).  Both menu items are always present;
 if there is nothing to list, IGV says so.
 
-**Supported track types**
 
-IGV loads these trackDb types from a hub: bigBed, bigWig, bigGenePred, bigPsl, bigDbSnp, bed, bedGraph, wig,
-narrowPeak, broadPeak, gappedPeak, genePred, refGene, gff, gff3, gtf, vcf, vcfTabix, vcfPhasedTrio, bam, tdf, seg,
-mut, gistic, interact, rmask and ucscSnp.  Tracks of other types are omitted from the selection dialog.  A hub with no
-supported tracks for the current genome reports that rather than opening the dialog.
