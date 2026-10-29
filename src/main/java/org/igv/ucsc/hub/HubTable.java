@@ -140,10 +140,19 @@ class HubTable extends JTable {
         if (singleSelect) {
             // Hide the checkbox column.  Model column indices are unchanged.
             removeColumn(getColumnModel().getColumn(0));
+            // Disabled rows are refused at the selection model, which every path (mouse, keys, select-all,
+            // programmatic) goes through.  In single selection mode all intervals route through setSelectionInterval.
+            setSelectionModel(new DefaultListSelectionModel() {
+                @Override
+                public void setSelectionInterval(int index0, int index1) {
+                    if (index1 >= 0 && index1 < HubTable.this.getRowCount() && isDisabledRow(index1)) {
+                        return;
+                    }
+                    super.setSelectionInterval(index0, index1);
+                }
+            });
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            setRowSelectionAllowed(true);
-            setColumnSelectionAllowed(false);
-            // Arrow keys skip disabled rows (the default actions stop at them, since changeSelection refuses them)
+            // Arrow keys skip disabled rows (the default actions stop at them)
             getActionMap().put("selectNextRow", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -214,32 +223,18 @@ class HubTable extends JTable {
     }
 
     @Override
-    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        if (isDisabledRow(rowIndex)) {
-            return;
-        }
-        super.changeSelection(rowIndex, columnIndex, toggle, extend);
-    }
-
-    @Override
-    public Class<?> getColumnClass(int column) {
-        int modelColumn = convertColumnIndexToModel(column);
-        return modelColumn == 0 ? Boolean.class : (modelColumn == 4 ? JLabel.class : String.class);
-    }
-
-    @Override
     public boolean isCellSelected(int row, int column) {
-        return singleSelect ? super.isCellSelected(row, column) : false;
+        return singleSelect && super.isCellSelected(row, column);
     }
 
     @Override
     public boolean isColumnSelected(int column) {
-        return singleSelect ? super.isColumnSelected(column) : false;
+        return singleSelect && super.isColumnSelected(column);
     }
 
     @Override
     public boolean isRowSelected(int row) {
-        return singleSelect ? super.isRowSelected(row) : false;
+        return singleSelect && super.isRowSelected(row);
     }
 
     @Override

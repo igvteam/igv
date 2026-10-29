@@ -29,7 +29,6 @@ public class HubSelectionDialog extends JDialog {
     private JTextField filterTextField;
     private JCheckBox currentGenomeCheckBox;
     private Set<String> currentGenomeUrls;
-    private Set<String> registeredUrls;
 
     public HubSelectionDialog(Frame owner) {
 
@@ -48,7 +47,7 @@ public class HubSelectionDialog extends JDialog {
                 .map(HubDescriptor::getUrl)
                 .collect(Collectors.toSet());
 
-        registeredUrls = HubRegistry.getSelectedHubs().stream()
+        Set<String> registeredUrls = HubRegistry.getSelectedHubs().stream()
                 .map(HubDescriptor::getUrl)
                 .collect(Collectors.toSet());
 
@@ -56,12 +55,7 @@ public class HubSelectionDialog extends JDialog {
                 .sorted(Comparator.comparing(hd -> currentGenomeUrls.contains(hd.getUrl()) ? 0 : 1))
                 .collect(Collectors.toList());
 
-        if (this.hubDescriptors.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hubs available");
-            return;
-        }
-
-        initComponents();
+        initComponents(registeredUrls);
     }
 
 
@@ -69,20 +63,15 @@ public class HubSelectionDialog extends JDialog {
      * @return the chosen hub, or null if the dialog was canceled or no hub was selected.
      */
     public HubDescriptor getSelectedHub() {
-        if (canceled || table == null) {
+        if (canceled) {
             return null;
         }
         int row = table.getSelectedRow();
-        if (row < 0) {
-            return null;
-        }
-        // A disabled (already added) hub can still be reached by select-all; it is never the answer
-        HubDescriptor hub = this.hubDescriptors.get(table.convertRowIndexToModel(row));
-        return registeredUrls.contains(hub.getUrl()) ? null : hub;
+        return row < 0 ? null : this.hubDescriptors.get(table.convertRowIndexToModel(row));
     }
 
 
-    private void initComponents() {
+    private void initComponents(Set<String> registeredUrls) {
 
         JPanel outerPanel = new JPanel();
         outerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -221,7 +210,8 @@ public class HubSelectionDialog extends JDialog {
             return;
         }
         if (currentGenomeCheckBox.isSelected()) {
-            rf = RowFilter.andFilter(Arrays.asList(rf, new GenomeFilter()));
+            // The genome filter is the cheap one and rejects most rows, so it goes first
+            rf = RowFilter.andFilter(Arrays.asList(new GenomeFilter(), rf));
         }
         ((DefaultRowSorter) table.getRowSorter()).setRowFilter(rf);
     }
@@ -267,7 +257,7 @@ public class HubSelectionDialog extends JDialog {
                     .allMatch(entry -> {
                         Matcher matcher = entry;
 
-                        // Model column 0 is the hidden checkbox column, not hub text
+                        // Model column 0 is the checkbox, not hub text
                         return IntStream.range(1, value.getValueCount())
                                 .anyMatch(index -> {
                                     matcher.reset(value.getModel().getColumnName(index).toLowerCase());
