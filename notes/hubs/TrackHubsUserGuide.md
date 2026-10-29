@@ -59,9 +59,9 @@ hub's description page in your browser, when the hub provides one.
 In the track selection dialog, tracks are grouped as the hub organizes them.  Checking a track loads it when you press
 OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
 
-**Select Public Hub**
+**Select Public Track Hub**
 
-**Tracks > Select Public Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
+**Tracks > Select Public Track Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
 and the list is filtered to the current genome by default; uncheck **Current genome only** to see hubs for other
 assemblies.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
 Pick one hub and press OK: it is loaded exactly as if its URL had been entered in **Add Track Hub from URL...** (the

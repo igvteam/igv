@@ -32,7 +32,7 @@ public class HubSelectionDialog extends JDialog {
 
     public HubSelectionDialog(Frame owner) {
 
-        super(owner, "Select Public Hub", true);
+        super(owner, "Select Public Track Hub", true);
 
         setSize(owner.getWidth() - 20, 600);
         if (owner != null) {

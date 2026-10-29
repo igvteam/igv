@@ -353,7 +353,7 @@ Fixed in one commit:
 The multi-select "Manage Track Hubs ..." dialog (check to add, uncheck to remove, over every hub for every genome)
 proved confusing and unworkable.  Replaced by two explicit Tracks menu items:
 
-- **Select Public Hub ...** -- `HubSelectionDialog` repurposed as a single-select chooser over the UCSC public list
+- **Select Public Track Hub ...** -- `HubSelectionDialog` repurposed as a single-select chooser over the UCSC public list
   only (`HubRegistry.getUcscPublicHubDescriptors`).  `HubTable` gained a single-select mode: the checkbox column is
   hidden and rows whose url is in a disabled set (hubs already in the registry) are greyed out and unselectable;
   the descriptors' "selected" flag stays the checkbox state and is not reused.  A "Current genome
@@ -370,13 +370,13 @@ The added/removed summary message is gone; each action gives direct feedback.
 Follow-up: both items are always shown.  "Remove Hubs" was first shown only when the registry was non-empty, and an
 assembly hub selected from the public list goes to the genome's json, not the registry, so after adding the sunflower
 sea star hub the item was simply absent.  Jim's call: disappearing menu items are confusing; an empty list is reported
-with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Hub" when
+with a message instead (and the message points assembly hubs at Remove Genomes).  Same for "Select Public Track Hub" when
 the UCSC list could not be loaded.
 
 Follow-up: declining the genome-switch prompt (single-genome hub for another genome, from the Tracks menu or Select
 Public Hub) used to discard the hub.  Jim's call: the hub is still added and the user simply stays on the current
 genome.  A hub that does not define its genome is registered; it appears in the Tracks menu once its genome is
-loaded, and is greyed out in Select Public Hub.  An assembly hub is instead added by putting its genome in the genome
+loaded, and is greyed out in Select Public Track Hub.  An assembly hub is instead added by putting its genome in the genome
 list with the first-load annotation flag, as the multi-genome path does (Copilot review of #1892: registering it
 greyed it out in the chooser with no genome to load, a dead end).
 
