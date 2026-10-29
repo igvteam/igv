@@ -8,21 +8,40 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class HubTable extends JTable {
 
     public static Color ALT_BACKGROUND = new Color(245, 245, 245);
     private final Map<Integer, Integer> rowHeights = new HashMap<>();
 
+    /**
+     * In single-select mode the checkbox column is hidden and a single row is chosen by row selection.  Rows whose
+     * hub url is in {@code disabledUrls} are shown disabled (greyed out) and cannot be selected.  In the default
+     * (checkbox) mode the descriptor's "selected" flag is the checkbox state.
+     */
+    private final boolean singleSelect;
+    private final Set<String> disabledUrls;
+
     public HubTable(HubTableModel model) {
+        this(model, null);
+    }
+
+    /**
+     * @param disabledUrls if non-null the table is single-select, and rows with these urls are disabled
+     */
+    public HubTable(HubTableModel model, Set<String> disabledUrls) {
 
         super(model);
+        this.singleSelect = disabledUrls != null;
+        this.disabledUrls = disabledUrls;
 
         getTableHeader().setReorderingAllowed(false);
 
@@ -70,12 +89,12 @@ class HubTable extends JTable {
             }
         });
 
-        // Add a MouseMotionListener to handle mouse movement over column 3
+        // Add a MouseMotionListener to handle mouse movement over the info column (model column 4)
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 int column = columnAtPoint(e.getPoint());
-                if (column == 4) {
+                if (column >= 0 && convertColumnIndexToModel(column) == 4) {
                     setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 } else {
                     setCursor(Cursor.getDefaultCursor());
@@ -83,14 +102,14 @@ class HubTable extends JTable {
             }
         });
 
-        // Add a MouseListener to handle clicks on column 3
+        // Add a MouseListener to handle clicks on the info column (model column 4)
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = rowAtPoint(e.getPoint());
                 int column = columnAtPoint(e.getPoint());
-                if (column == 4) {
-                    Object value = getValueAt(row, column);
+                if (row >= 0 && column >= 0 && convertColumnIndexToModel(column) == 4) {
+                    Object value = getModel().getValueAt(convertRowIndexToModel(row), 4);
                     if (value != null) {
                         try {
                             Desktop.getDesktop().browse(new URI(value.toString()));
@@ -116,6 +135,50 @@ class HubTable extends JTable {
                     ((DefaultTableCellRenderer) renderer).setForeground(getForeground());
                 }
             }
+        }
+
+        if (singleSelect) {
+            // Hide the checkbox column.  Model column indices are unchanged.
+            removeColumn(getColumnModel().getColumn(0));
+            // Disabled rows are refused at the selection model, which every path (mouse, keys, select-all,
+            // programmatic) goes through.  In single selection mode all intervals route through setSelectionInterval.
+            setSelectionModel(new DefaultListSelectionModel() {
+                @Override
+                public void setSelectionInterval(int index0, int index1) {
+                    if (index1 >= 0 && index1 < HubTable.this.getRowCount() && isDisabledRow(index1)) {
+                        return;
+                    }
+                    super.setSelectionInterval(index0, index1);
+                }
+            });
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            // Arrow keys skip disabled rows (the default actions stop at them)
+            getActionMap().put("selectNextRow", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    moveSelection(1);
+                }
+            });
+            getActionMap().put("selectPreviousRow", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    moveSelection(-1);
+                }
+            });
+        }
+    }
+
+    /**
+     * Move the selection by one row in the given direction, skipping disabled rows.
+     */
+    private void moveSelection(int step) {
+        int row = getSelectedRow() + step;
+        while (row >= 0 && row < getRowCount() && isDisabledRow(row)) {
+            row += step;
+        }
+        if (row >= 0 && row < getRowCount()) {
+            setRowSelectionInterval(row, row);
+            scrollRectToVisible(getCellRect(row, 0, true));
         }
     }
 
@@ -151,37 +214,48 @@ class HubTable extends JTable {
         };
     }
 
-    @Override
-    public Class<?> getColumnClass(int column) {
-        return column == 0 ? Boolean.class : (column == 4 ? JLabel.class : String.class);
+    /**
+     * A row is disabled, in single-select mode, when its hub url is in the disabled set.
+     */
+    private boolean isDisabledRow(int viewRow) {
+        return singleSelect &&
+                disabledUrls.contains(((HubTableModel) getModel()).getRecords().get(convertRowIndexToModel(viewRow)).getUrl());
     }
 
     @Override
     public boolean isCellSelected(int row, int column) {
-        return false;
+        return singleSelect && super.isCellSelected(row, column);
     }
 
     @Override
     public boolean isColumnSelected(int column) {
-        return false;
+        return singleSelect && super.isColumnSelected(column);
     }
 
     @Override
     public boolean isRowSelected(int row) {
-        return false;
+        return singleSelect && super.isRowSelected(row);
     }
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component component = super.prepareRenderer(renderer, row, column);
-        component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Globals.isDarkMode() ? Color.black : Color.WHITE);
+        if (isRowSelected(row)) {
+            component.setBackground(getSelectionBackground());
+            component.setForeground(getSelectionForeground());
+        } else {
+            component.setBackground(row % 2 == 0 ? ALT_BACKGROUND : Globals.isDarkMode() ? Color.black : Color.WHITE);
+            if (isDisabledRow(row)) {
+                component.setForeground(UIManager.getColor("Label.disabledForeground"));
+            }
+        }
         return component;
     }
 
     //
     @Override
     public boolean isCellEditable(int row, int column) {
-        return column == 0;
+        return !singleSelect && column == 0;
     }
 
 

@@ -2,7 +2,6 @@ package org.igv.ucsc.hub;
 
 import org.igv.Globals;
 import org.igv.feature.genome.GenomeManager;
-import org.igv.ui.genome.GenomeTableModel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,53 +15,63 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Single-select chooser over the UCSC public hub list.  Hubs already added, from this list or by URL, are shown
+ * disabled.  The chosen hub is loaded by the caller exactly as a hub entered by URL.
+ */
 public class HubSelectionDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
 
     List<HubDescriptor> hubDescriptors;
-    private boolean canceled;
-    private JTable table;
+    private boolean canceled = true;
+    private HubTable table;
     private JTextField filterTextField;
+    private JCheckBox currentGenomeCheckBox;
+    private Set<String> currentGenomeUrls;
 
     public HubSelectionDialog(Frame owner) {
 
-        super(owner, "Select Track Hubs", true);
+        super(owner, "Select Public Hub", true);
 
         setSize(owner.getWidth() - 20, 600);
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
 
-        // All hubs, for all genomes, with hubs for the current genome listed first.  The full list is shown so
-        // selections for other genomes are preserved when the selection is saved.
+        // UCSC public hubs for all genomes, with hubs for the current genome listed first.  Hubs already added
+        // (from this list or by URL) are shown disabled.
         String genomeID = GenomeManager.getInstance().getCurrentGenome().getUCSCId();
 
-        Set<String> currentGenomeUrls = HubRegistry.getAllHubsForGenome(genomeID).stream()
+        currentGenomeUrls = HubRegistry.getAllHubsForGenome(genomeID).stream()
                 .map(HubDescriptor::getUrl)
                 .collect(Collectors.toSet());
 
-        final List<HubDescriptor> allSelectedHubs = HubRegistry.getSelectedHubs();
+        Set<String> registeredUrls = HubRegistry.getSelectedHubs().stream()
+                .map(HubDescriptor::getUrl)
+                .collect(Collectors.toSet());
 
-        this.hubDescriptors = HubRegistry.getAllHubs().stream()
+        this.hubDescriptors = HubRegistry.getUcscPublicHubDescriptors().stream()
                 .sorted(Comparator.comparing(hd -> currentGenomeUrls.contains(hd.getUrl()) ? 0 : 1))
                 .collect(Collectors.toList());
 
-        if (this.hubDescriptors.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hubs available");
-            return;
+        initComponents(registeredUrls);
+    }
+
+
+    /**
+     * @return the chosen hub, or null if the dialog was canceled or no hub was selected.
+     */
+    public HubDescriptor getSelectedHub() {
+        if (canceled) {
+            return null;
         }
-
-        initComponents(allSelectedHubs);
+        int row = table.getSelectedRow();
+        return row < 0 ? null : this.hubDescriptors.get(table.convertRowIndexToModel(row));
     }
 
 
-    public List<HubDescriptor> getSelectedHubs() {
-        return this.hubDescriptors.stream().filter(HubDescriptor::isSelected).collect(Collectors.toList());
-    }
-
-
-    private void initComponents(Collection<HubDescriptor> loadedHubs) {
+    private void initComponents(Set<String> registeredUrls) {
 
         JPanel outerPanel = new JPanel();
         outerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -73,16 +82,16 @@ public class HubSelectionDialog extends JDialog {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-        JLabel titleLabel = new JLabel("Track hubs");
+        JLabel titleLabel = new JLabel("UCSC public hubs");
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createVerticalStrut(20));
 
         JLabel headerMessage = new JLabel();
-        headerMessage.setText("<html>Hubs from the <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>" +
-                "UCSC Track Hub Registry</a> and user entered urls. Check to add to the 'Tracks'" +
-                " menu, uncheck to remove.<br>Hubs for the current genome (" +
-                GenomeManager.getInstance().getCurrentGenome().getDisplayName() + ") are listed first.</html>");
+        headerMessage.setText("<html>Select a hub from the <a href='https://genome.ucsc.edu/cgi-bin/hgHubConnect'>" +
+                "UCSC Track Hub Registry</a> to add to the 'Tracks' menu.  Hubs already added are greyed out.<br>" +
+                "Hubs for the current genome (" + GenomeManager.getInstance().getCurrentGenome().getDisplayName() +
+                ") are listed first; uncheck 'Current genome only' to see hubs for other genomes.</html>");
         headerMessage.setCursor(new Cursor(Cursor.HAND_CURSOR));
         headerMessage.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -140,21 +149,24 @@ public class HubSelectionDialog extends JDialog {
                     }
                 });
 
+        currentGenomeCheckBox = new JCheckBox("Current genome only", true);
+        currentGenomeCheckBox.setToolTipText("Show only hubs with tracks for the current genome");
+        currentGenomeCheckBox.addActionListener(e -> updateFilter());
+        filterPanel.add(Box.createHorizontalStrut(10));
+        filterPanel.add(currentGenomeCheckBox);
+
         contentPanel.add(filterPanel);
 
 
         // Table
-        Set<String> loadedURLs = loadedHubs.stream().map(HubDescriptor::getUrl).collect(Collectors.toSet());
-        for (int i = 0; i < this.hubDescriptors.size(); i++) {
-            HubDescriptor hub = this.hubDescriptors.get(i);
-            hub.setSelected(loadedURLs.contains(hub.getUrl()));
-        }
         HubTableModel model = new HubTableModel(this.hubDescriptors);
-        table = new HubTable(model);
+        table = new HubTable(model, registeredUrls);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         contentPanel.add(scrollPane);
+
+        updateFilter();
 
 
         // Button panel
@@ -185,28 +197,36 @@ public class HubSelectionDialog extends JDialog {
         outerPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    public boolean isCanceled() {
-        return canceled;
-    }
-
     /**
-     * Update the row filter regular expression from the expression in
-     * the text box.
+     * Update the row filter from the expression in the text box and the "current genome only" checkbox.
      */
     private void updateFilter() {
 
-
-        RowFilter<GenomeTableModel, Object> rf = null;
+        RowFilter<HubTableModel, Integer> rf = null;
         //If current expression doesn't parse, don't update.
         try {
             rf = new RegexFilter(filterTextField.getText());
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
+        if (currentGenomeCheckBox.isSelected()) {
+            // The genome filter is the cheap one and rejects most rows, so it goes first
+            rf = RowFilter.andFilter(Arrays.asList(new GenomeFilter(), rf));
+        }
         ((DefaultRowSorter) table.getRowSorter()).setRowFilter(rf);
     }
 
-    private class RegexFilter extends RowFilter {
+    /**
+     * Include only hubs listing the current genome.
+     */
+    private class GenomeFilter extends RowFilter<HubTableModel, Integer> {
+        @Override
+        public boolean include(Entry<? extends HubTableModel, ? extends Integer> entry) {
+            return currentGenomeUrls.contains(entry.getModel().getRecords().get(entry.getIdentifier()).getUrl());
+        }
+    }
+
+    private class RegexFilter extends RowFilter<HubTableModel, Integer> {
 
         List<Matcher> matchers;
 
@@ -232,14 +252,15 @@ public class HubSelectionDialog extends JDialog {
          * @return
          */
         @Override
-        public boolean include(Entry value) {
+        public boolean include(Entry<? extends HubTableModel, ? extends Integer> value) {
             return matchers.stream()
                     .allMatch(entry -> {
                         Matcher matcher = entry;
 
-                        return IntStream.range(0, table.getColumnCount())
+                        // Model column 0 is the checkbox, not hub text
+                        return IntStream.range(1, value.getValueCount())
                                 .anyMatch(index -> {
-                                    matcher.reset(table.getColumnName(index).toLowerCase());
+                                    matcher.reset(value.getModel().getColumnName(index).toLowerCase());
                                     if (matcher.find()) {
                                         return true;
                                     }
@@ -251,4 +272,3 @@ public class HubSelectionDialog extends JDialog {
 
     }
 }
-

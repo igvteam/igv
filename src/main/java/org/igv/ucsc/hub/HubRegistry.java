@@ -42,9 +42,13 @@ public class HubRegistry {
         return selectedHubDescriptors;
     }
 
-    private static List<HubDescriptor> getUcscPublicHubDescriptors() {
-        if (ucscPublicHubDescriptors == null) {
+    public static List<HubDescriptor> getUcscPublicHubDescriptors() {
+        // An empty list means the fetch failed; it is not cached, so a later call can retry.  The derived lists are
+        // reset so they are rebuilt from the new result.
+        if (ucscPublicHubDescriptors == null || ucscPublicHubDescriptors.isEmpty()) {
             ucscPublicHubDescriptors = loadUCSCDescriptors();
+            allHubDescriptors = null;
+            allHubsMap = null;
         }
         return ucscPublicHubDescriptors;
     }

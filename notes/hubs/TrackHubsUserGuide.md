@@ -55,14 +55,26 @@ hub's description page in your browser, when the hub provides one.
 In the track selection dialog, tracks are grouped as the hub organizes them.  Checking a track loads it when you press
 OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
 
-**Manage Track Hubs**
+**Select Public Hub**
 
-**Tracks > Manage Track Hubs...** lists the hubs IGV knows about: the UCSC public hub registry plus any hubs you have
-added by URL.  Hubs for the current genome are listed first, and the filter box narrows the list by name, description
-or genome.  Checked hubs are shown in the Tracks menu for each genome they list; uncheck a hub to remove it.  Your
-selection is saved across sessions in `hubs.txt` in the IGV directory.
+**Tracks > Select Public Hub...** lists the UCSC public hub registry.  Hubs for the current genome are listed first,
+and the list is filtered to the current genome by default; uncheck **Current genome only** to see hubs for other
+assemblies.  The filter box narrows the list by name, description or genome.  Hubs already added are greyed out.
+Pick one hub and press OK: it is loaded exactly as if its URL had been entered in **Add Track Hub from URL...** (the
+hub is added to the Tracks menu and its track selection dialog opens, or IGV offers to switch to the hub's genome).
+If you decline the switch you stay on the current genome, but the hub is still added: a hub that defines its own
+assembly puts that genome in the genome pulldown, ready to load later; any other hub appears in the Tracks menu once
+its genome is loaded.
 
-A hub that defines a custom assembly is attached to that genome rather than managed here, so it is not listed.
+**Remove Hubs**
+
+**Tracks > Remove Hubs...** lists the hubs you have added, whether selected from the public registry or added by URL,
+current genome first.  Check the hubs to drop and press Remove; each is removed from the Tracks menu for every genome
+it lists.  Your hubs are saved across sessions in `hubs.txt` in the IGV directory.
+
+A hub that defines a custom assembly is part of that genome rather than managed here, so it is not listed in
+Remove Hubs; it is removed with the genome (**Genomes > Remove Genomes...**).  Both menu items are always present;
+if there is nothing to list, IGV says so.
 
 **Supported track types**
 
