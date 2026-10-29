@@ -105,9 +105,14 @@ public class TrackHubLoader {
                 return;
             }
             loadKnownGenome(item);
+        }
+        // Register the hub unless it is the loaded genome's own hub.  An assembly hub normally is, but if its
+        // genome id matched an entry already in the list that entry was loaded instead, and the hub would
+        // otherwise be lost.  The load rebuilt the menus before the hub was registered.
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (!isGenomeHub(genome, hub)) {
             HubRegistry.addUserHub(hub);
-            // The load rebuilt the menus before the hub was registered
-            IGVMenuBar.getInstance().updateMenus(GenomeManager.getInstance().getCurrentGenome());
+            IGVMenuBar.getInstance().updateMenus(genome);
         }
         selectTracksForCurrentGenome(hub);
     }
@@ -292,7 +297,13 @@ public class TrackHubLoader {
         String genome = item.getId();
         if (GenomeListManager.getInstance().getGenomeTableRecord(genome) == null) {
             File localFile = GenomeSelectionDialog.createLocalGenome(item, false, false, false);
-            genome = localFile != null ? localFile.getAbsolutePath() : item.getPath();
+            if (localFile == null) {
+                // No json to flag (a GenBank record), so nothing to prompt for.  Loaded by path directly: a URL
+                // through loadGenomeById would be probed first and a failure misreported as an unknown id.
+                GenomeManager.getInstance().loadGenome(item.getPath());
+                return;
+            }
+            genome = localFile.getAbsolutePath();
         }
         GenomeManager.getInstance().loadGenomeById(genome, false, true);
     }
