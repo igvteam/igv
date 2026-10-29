@@ -79,5 +79,3 @@ it lists.  Your hubs are saved across sessions in `hubs.txt` in the IGV director
 A hub that defines a custom assembly is part of that genome rather than managed here, so it is not listed in
 Remove Hubs; it is removed with the genome (**Genomes > Remove Genomes...**).  Both menu items are always present;
 if there is nothing to list, IGV says so.
-
-
