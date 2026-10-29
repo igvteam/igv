@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -136,6 +137,33 @@ class HubTable extends JTable {
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             setRowSelectionAllowed(true);
             setColumnSelectionAllowed(false);
+            // Arrow keys skip disabled rows (the default actions stop at them, since changeSelection refuses them)
+            getActionMap().put("selectNextRow", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    moveSelection(1);
+                }
+            });
+            getActionMap().put("selectPreviousRow", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    moveSelection(-1);
+                }
+            });
+        }
+    }
+
+    /**
+     * Move the selection by one row in the given direction, skipping disabled rows.
+     */
+    private void moveSelection(int step) {
+        int row = getSelectedRow() + step;
+        while (row >= 0 && row < getRowCount() && isDisabledRow(row)) {
+            row += step;
+        }
+        if (row >= 0 && row < getRowCount()) {
+            setRowSelectionInterval(row, row);
+            scrollRectToVisible(getCellRect(row, 0, true));
         }
     }
 

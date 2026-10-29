@@ -76,7 +76,12 @@ public class HubSelectionDialog extends JDialog {
             return null;
         }
         int row = table.getSelectedRow();
-        return row < 0 ? null : this.hubDescriptors.get(table.convertRowIndexToModel(row));
+        if (row < 0) {
+            return null;
+        }
+        // A disabled (already added) hub can still be reached by select-all; it is never the answer
+        HubDescriptor hub = this.hubDescriptors.get(table.convertRowIndexToModel(row));
+        return hub.isSelected() ? null : hub;
     }
 
 
@@ -265,7 +270,8 @@ public class HubSelectionDialog extends JDialog {
                     .allMatch(entry -> {
                         Matcher matcher = entry;
 
-                        return IntStream.range(0, value.getValueCount())
+                        // Model column 0 is the checkbox state, not hub text
+                        return IntStream.range(1, value.getValueCount())
                                 .anyMatch(index -> {
                                     matcher.reset(value.getModel().getColumnName(index).toLowerCase());
                                     if (matcher.find()) {

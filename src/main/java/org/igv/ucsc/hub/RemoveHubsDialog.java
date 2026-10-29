@@ -24,8 +24,8 @@ public class RemoveHubsDialog extends JDialog {
 
         super(owner, "Remove Hubs", true);
 
-        setSize(owner.getWidth() - 20, 600);
         if (owner != null) {
+            setSize(owner.getWidth() - 20, 600);
             setLocationRelativeTo(owner);
         }
 

@@ -789,16 +789,22 @@ public class IGVMenuBar extends JMenuBar {
         // when the item is used.
         JMenuItem selectHubItem = new JMenuItem("Select Public Hub ...");
         selectHubItem.addActionListener(e -> {
-            if (HubRegistry.getUcscPublicHubDescriptors().isEmpty()) {
-                MessageUtils.showMessage("The UCSC public hub list could not be loaded.");
-                return;
-            }
-            final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
-            hubSelectionDialog.setVisible(true);
-            HubDescriptor selected = hubSelectionDialog.getSelectedHub();
-            if (selected != null) {
-                LoadFromURLMenuAction.loadTrackHub(selected.getUrl(), true);
-            }
+            // The public list is fetched on first use, off the event thread
+            LongRunningTask.submit(() -> {
+                final List<HubDescriptor> publicHubs = HubRegistry.getUcscPublicHubDescriptors();
+                UIUtilities.invokeOnEventThread(() -> {
+                    if (publicHubs.isEmpty()) {
+                        MessageUtils.showMessage("The UCSC public hub list could not be loaded.");
+                        return;
+                    }
+                    final HubSelectionDialog hubSelectionDialog = new HubSelectionDialog(igv.getMainFrame());
+                    hubSelectionDialog.setVisible(true);
+                    HubDescriptor selected = hubSelectionDialog.getSelectedHub();
+                    if (selected != null) {
+                        LoadFromURLMenuAction.loadTrackHub(selected.getUrl(), true);
+                    }
+                });
+            });
         });
         tracksMenu.add(selectHubItem);
 
