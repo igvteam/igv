@@ -4,6 +4,8 @@ package org.igv.track;
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.NamedFeature;
 import org.igv.Globals;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.renderer.DataRange;
 import org.igv.renderer.Renderer;
@@ -208,7 +210,7 @@ public interface Track {
      * @return the minimum height in pixels
      */
     default int getMinimumHeight() {
-        return 20;
+        return PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
     }
 
     /**
@@ -261,7 +263,7 @@ public interface Track {
      * Row height applied when a track with rows is set to the EXPANDED display mode.
      */
     default int getDefaultExpandedRowHeight() {
-        return AbstractTrack.DEFAULT_HEIGHT;
+        return PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
     }
 
     /**

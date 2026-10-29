@@ -37,10 +37,6 @@ public abstract class DataRenderer implements Renderer<LocusScore> {
     protected static Color axisLineColor = new Color(255, 180, 180);
 
 
-    public int getMinimumHeight() {
-        return 20;
-    }
-
     /**
      * Render the track in the given rectangle.
      *

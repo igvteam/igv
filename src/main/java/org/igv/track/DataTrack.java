@@ -64,11 +64,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
     }
 
     @Override
-    public int getMinimumHeight() {
-        return renderer.getMinimumHeight();
-    }
-
-    @Override
     public TrackType getType() {
         return TrackType.wig;
     }

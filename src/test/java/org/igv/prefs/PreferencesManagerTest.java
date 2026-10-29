@@ -40,7 +40,7 @@ public class PreferencesManagerTest {
         assertNotNull(preferences);
         assertEquals(300, preferences.getAsInt(Constants.SAM_MAX_VISIBLE_RANGE));
 
-        assertEquals(15, preferences.getAsInt(TRACK_HEIGHT_KEY));   // Test picking up default property from parent
+        assertEquals(20, preferences.getAsInt(TRACK_HEIGHT_KEY));   // Test picking up default property from parent
     }
 
 
@@ -53,7 +53,7 @@ public class PreferencesManagerTest {
         assertEquals(true, preferences.getAsBoolean(Constants.SAM_FLAG_LARGE_INDELS));
         assertEquals(1000, preferences.getAsInt(Constants.SAM_MAX_VISIBLE_RANGE));
 
-        assertEquals(15, preferences.getAsInt(TRACK_HEIGHT_KEY));   // Test picking up property from parent
+        assertEquals(20, preferences.getAsInt(TRACK_HEIGHT_KEY));   // Test picking up property from parent
     }
 
 }

@@ -47,7 +47,6 @@ public abstract class AbstractTrack implements Track {
     private static Logger log = LogManager.getLogger(AbstractTrack.class);
 
     public static final DisplayMode DEFAULT_DISPLAY_MODE = DisplayMode.COLLAPSED;
-    public static final int DEFAULT_HEIGHT = 20;
     public static final int VISIBILITY_WINDOW = -1;
     public static final boolean DEFAULT_SHOW_FEATURE_NAMES = true;
     protected final boolean darkMode;
@@ -75,8 +74,8 @@ public abstract class AbstractTrack implements Track {
     // Row heights applied when a track with rows is set to the SQUISHED or EXPANDED display mode.  Track types with
     // rows set these in their constructors.  The current row height can still be overridden explicitly by the user.
     protected int defaultSquishedRowHeight = 1;
-    protected int defaultExpandedRowHeight = DEFAULT_HEIGHT;
-    protected int minimumHeight = 20;
+    protected int defaultExpandedRowHeight = PreferencesManager.getPreferences().getAsInt(TRACK_HEIGHT_KEY);
+    protected int minimumHeight;   // 0 => use the minimum track height preference
     private DataType dataType = DataType.OTHER;
     private boolean selected = false;
     private boolean visible = true;
@@ -1404,7 +1403,7 @@ public abstract class AbstractTrack implements Track {
             //colorScale="ContinuousColorScale;-0.1;-1.5;0.1;1.5;0,153,204;255,255,255;255,0,0"
             jsonObject.put("colorScale", colorScale.asString());
         }
-        if (height != DEFAULT_HEIGHT && height > 0) {
+        if (height > 0) {
             jsonObject.put("height", this.height);
         }
         if (rowHeight > 0) {
