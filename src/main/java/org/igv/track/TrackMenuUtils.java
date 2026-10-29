@@ -1311,7 +1311,7 @@ public class TrackMenuUtils {
             return medianTrackHeight;
         }
 
-        return PreferencesManager.getPreferences().getAsInt(Constants.INITIAL_TRACK_HEIGHT);
+        return PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
 
     }
 
