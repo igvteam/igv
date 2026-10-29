@@ -15,6 +15,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class HubTable extends JTable {
 
@@ -23,19 +24,24 @@ class HubTable extends JTable {
 
     /**
      * In single-select mode the checkbox column is hidden and a single row is chosen by row selection.  Rows whose
-     * descriptor is flagged "selected" are shown disabled (greyed out) and cannot be selected.  In the default
-     * (checkbox) mode the "selected" flag is the checkbox state.
+     * hub url is in {@code disabledUrls} are shown disabled (greyed out) and cannot be selected.  In the default
+     * (checkbox) mode the descriptor's "selected" flag is the checkbox state.
      */
     private final boolean singleSelect;
+    private final Set<String> disabledUrls;
 
     public HubTable(HubTableModel model) {
-        this(model, false);
+        this(model, null);
     }
 
-    public HubTable(HubTableModel model, boolean singleSelect) {
+    /**
+     * @param disabledUrls if non-null the table is single-select, and rows with these urls are disabled
+     */
+    public HubTable(HubTableModel model, Set<String> disabledUrls) {
 
         super(model);
-        this.singleSelect = singleSelect;
+        this.singleSelect = disabledUrls != null;
+        this.disabledUrls = disabledUrls;
 
         getTableHeader().setReorderingAllowed(false);
 
@@ -200,10 +206,11 @@ class HubTable extends JTable {
     }
 
     /**
-     * A row is disabled, in single-select mode, when its descriptor is flagged selected (already added).
+     * A row is disabled, in single-select mode, when its hub url is in the disabled set.
      */
     private boolean isDisabledRow(int viewRow) {
-        return singleSelect && ((HubTableModel) getModel()).getRecords().get(convertRowIndexToModel(viewRow)).isSelected();
+        return singleSelect &&
+                disabledUrls.contains(((HubTableModel) getModel()).getRecords().get(convertRowIndexToModel(viewRow)).getUrl());
     }
 
     @Override

@@ -355,7 +355,8 @@ proved confusing and unworkable.  Replaced by two explicit Tracks menu items:
 
 - **Select Public Hub ...** -- `HubSelectionDialog` repurposed as a single-select chooser over the UCSC public list
   only (`HubRegistry.getUcscPublicHubDescriptors`).  `HubTable` gained a single-select mode: the checkbox column is
-  hidden and rows flagged "selected" (hubs already in the registry) are greyed out and unselectable.  A "Current genome
+  hidden and rows whose url is in a disabled set (hubs already in the registry) are greyed out and unselectable;
+  the descriptors' "selected" flag stays the checkbox state and is not reused.  A "Current genome
   only" checkbox, on by default, filters the list; off, a hub for another assembly can be chosen.  Jim's call: the
   chosen hub is loaded exactly as "Add Track Hub from URL" loads it (`LoadFromURLMenuAction.loadTrackHub` ->
   `TrackHubLoader.loadHub`), so registration, menu refresh, the track selection dialog and the genome-switch

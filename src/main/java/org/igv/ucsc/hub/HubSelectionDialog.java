@@ -29,6 +29,7 @@ public class HubSelectionDialog extends JDialog {
     private JTextField filterTextField;
     private JCheckBox currentGenomeCheckBox;
     private Set<String> currentGenomeUrls;
+    private Set<String> registeredUrls;
 
     public HubSelectionDialog(Frame owner) {
 
@@ -40,24 +41,20 @@ public class HubSelectionDialog extends JDialog {
         }
 
         // UCSC public hubs for all genomes, with hubs for the current genome listed first.  Hubs already added
-        // (from this list or by URL) are flagged "selected", which the table shows disabled.
+        // (from this list or by URL) are shown disabled.
         String genomeID = GenomeManager.getInstance().getCurrentGenome().getUCSCId();
 
         currentGenomeUrls = HubRegistry.getAllHubsForGenome(genomeID).stream()
                 .map(HubDescriptor::getUrl)
                 .collect(Collectors.toSet());
 
-        Set<String> registeredUrls = HubRegistry.getSelectedHubs().stream()
+        registeredUrls = HubRegistry.getSelectedHubs().stream()
                 .map(HubDescriptor::getUrl)
                 .collect(Collectors.toSet());
 
         this.hubDescriptors = HubRegistry.getUcscPublicHubDescriptors().stream()
                 .sorted(Comparator.comparing(hd -> currentGenomeUrls.contains(hd.getUrl()) ? 0 : 1))
                 .collect(Collectors.toList());
-
-        for (HubDescriptor hub : this.hubDescriptors) {
-            hub.setSelected(registeredUrls.contains(hub.getUrl()));
-        }
 
         if (this.hubDescriptors.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No hubs available");
@@ -81,7 +78,7 @@ public class HubSelectionDialog extends JDialog {
         }
         // A disabled (already added) hub can still be reached by select-all; it is never the answer
         HubDescriptor hub = this.hubDescriptors.get(table.convertRowIndexToModel(row));
-        return hub.isSelected() ? null : hub;
+        return registeredUrls.contains(hub.getUrl()) ? null : hub;
     }
 
 
@@ -174,7 +171,7 @@ public class HubSelectionDialog extends JDialog {
 
         // Table
         HubTableModel model = new HubTableModel(this.hubDescriptors);
-        table = new HubTable(model, true);
+        table = new HubTable(model, registeredUrls);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -270,7 +267,7 @@ public class HubSelectionDialog extends JDialog {
                     .allMatch(entry -> {
                         Matcher matcher = entry;
 
-                        // Model column 0 is the checkbox state, not hub text
+                        // Model column 0 is the hidden checkbox column, not hub text
                         return IntStream.range(1, value.getValueCount())
                                 .anyMatch(index -> {
                                     matcher.reset(value.getModel().getColumnName(index).toLowerCase());
