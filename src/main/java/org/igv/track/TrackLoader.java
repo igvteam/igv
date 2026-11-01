@@ -75,7 +75,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.igv.prefs.Constants.SAM_SHOW_ALIGNMENT_TRACK;
 import static org.igv.prefs.Constants.SHOW_SIZE_WARNING;
@@ -591,7 +593,7 @@ public class TrackLoader {
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
             String path = locator.getPath();
-            if (ds.getSampleNames().length > 1) {
+            if (ds.getSampleNames().length > 1 && isMultiSampleType(ds.getType())) {
                 SegTrack track = new SegTrack(locator, TrackType.gct, path, locator.getTrackName(),
                         new DatasetMultiSampleSource(ds, genome), genome);
                 track.setRenderer(new HeatmapRenderer());
@@ -637,6 +639,19 @@ public class TrackLoader {
         return dataType == DataType.GENE_EXPRESSION ? TrackType.gct : TrackType.igv;
     }
 
+    /**
+     * Data types whose multi-column files (.igv, .cn, .gct, .tdf) load as one multi-sample track, consistent with
+     * segmented copy number and mutation files.  Other types load one track per column.  These are legacy formats;
+     * the list is fixed.
+     */
+    private static final Set<DataType> MULTI_SAMPLE_TYPES = EnumSet.of(DataType.COPY_NUMBER,
+            DataType.ALLELE_SPECIFIC_COPY_NUMBER, DataType.GENE_EXPRESSION, DataType.DNA_METHYLATION,
+            DataType.LOH, DataType.RNAI, DataType.CHIP_CHIP);
+
+    private static boolean isMultiSampleType(DataType dataType) {
+        return MULTI_SAMPLE_TYPES.contains(dataType);
+    }
+
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
@@ -653,13 +668,10 @@ public class TrackLoader {
         String path = locator.getPath();
         DataType type = ds.getType();
 
-        if (ds.getSampleNames().length > 1) {
+        if (ds.getSampleNames().length > 1 && isMultiSampleType(type)) {
             // One track, one row per sample
             SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, dsName, new DatasetMultiSampleSource(ds, genome), genome);
             track.setProperties(trackProperties);
-            if (type == DataType.ALLELE_FREQUENCY) {
-                track.setRenderer(new PointsRenderer());
-            }
             newTracks.add(track);
             return;
         }
@@ -824,8 +836,8 @@ public class TrackLoader {
         String path = locator.getPath();
         boolean multiTrack = reader.getSampleNames().length > 1;
 
-        if (multiTrack && type != DataType.COVERAGE) {
-            // One track, one row per sample.  Coverage TDFs (e.g. per-base or per-strand counts) keep a track per column.
+        if (multiTrack && isMultiSampleType(type)) {
+            // One track, one row per sample
             String trackName = name == null ? locator.getTrackName() : name;
             SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, trackName, new TDFMultiSampleSource(reader, genome), genome);
             if (props != null) {

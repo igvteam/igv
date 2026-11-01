@@ -7,6 +7,7 @@ import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.seg.SegTrack;
 import org.igv.tools.IgvTools;
+import org.igv.tools.IgvTools;
 import org.igv.tools.converters.GCTtoIGVConverter;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
@@ -240,26 +241,34 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Multi-column numeric files load as one SegTrack of type "igv" with a row per sample; single-column files and
-     * coverage TDFs keep a track per column.
+     * Multi-column files of the multi-sample data types (copy number, expression, ...) load as one SegTrack with a
+     * row per sample; other data types, single-column files and coverage TDFs keep a track per column.
      */
     @Test
     public void testMultiSampleTracks() throws Exception {
 
-        List<Track> tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt", 1, false);
+        // Untyped (DataType.OTHER, bar chart) => one track per column
+        List<Track> tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt", 9, false);
+        assertTrue(tracks.get(0) instanceof DataSourceTrack);
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt.tdf", 9, false);
+        assertTrue(tracks.get(0) instanceof DataSourceTrack);
+
+        // Copy number => one track, both as .cn and converted to .tdf
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/MIP_44.cn", 1, false);
         SegTrack track = (SegTrack) tracks.get(0);
         assertEquals(TrackType.igv, track.getType());
-        assertEquals(Arrays.asList("decodeAvg", "decodeFemale", "decodeMale", "marshfieldAvg", "marshfieldFemale",
-                "marshfieldMale", "genethonAvg", "genethonFemale", "genethonMale"), track.getSampleNames());
+        assertEquals(44, track.getSampleNames().size());
+        assertEquals("yw280-4_44", track.getSampleNames().get(0));
 
-        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt.tdf", 1, false);
+        new File(TestUtils.TMP_OUTPUT_DIR).mkdirs();
+        String tdfFile = TestUtils.TMP_OUTPUT_DIR + "MIP_44.cn.tdf";
+        new IgvTools().toTDF("cn", TestUtils.DATA_DIR + "igv/MIP_44.cn", tdfFile, null, TestUtils.defaultGenome, 1,
+                Arrays.asList(WindowFunction.mean), null, IgvTools.MAX_RECORDS_IN_RAM);
+        tracks = tstLoadFi(tdfFile, 1, false);
         track = (SegTrack) tracks.get(0);
         assertEquals(TrackType.igv, track.getType());
-        assertEquals(9, track.getSampleNames().size());
+        assertEquals(44, track.getSampleNames().size());
         assertTrue(track.getAvailableWindowFunctions().contains(WindowFunction.mean));
-
-        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/MIP_44.cn", 1, false);
-        assertEquals(44, ((SegTrack) tracks.get(0)).getSampleNames().size());
 
         tracks = tstLoadFi(TestUtils.DATA_DIR + "cn/multi_snp.cn", 1, false);
         assertTrue(tracks.get(0) instanceof DataSourceTrack);
@@ -276,7 +285,6 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
         assertEquals(TrackType.gct, tracks.get(0).getType());
         assertEquals(7, ((SegTrack) tracks.get(0)).getSampleNames().size());
 
-        new File(TestUtils.TMP_OUTPUT_DIR).mkdirs();
         File igvFile = new File(TestUtils.TMP_OUTPUT_DIR, "affy_human_mod.igv");
         GCTtoIGVConverter.convert(new ResourceLocator(TestUtils.DATA_DIR + "gct/affy_human_mod.gct"), igvFile, null, 50000, null, genome);
         tracks = tstLoadFi(igvFile.getAbsolutePath(), 1, false);
