@@ -72,7 +72,7 @@ public class IGVDataset implements Dataset {
         this.dataHeadings = dataHeadings;
     }
 
-    public String[] getTrackNames() {
+    public String[] getSampleNames() {
         return dataHeadings;
     }
 

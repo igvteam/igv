@@ -148,7 +148,7 @@ public class TDFDataSource implements CoverageDataSource {
             // WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             List<TDFTile> tiles = null;
-            if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid()) {
+            if (querySeq.equals(Globals.CHR_ALL) && !isChrOrderValid(reader, genome)) {
                 TDFTile wgTile = reader.getWholeGenomeTile(genome, windowFunction);
                 tiles = Arrays.asList(wgTile);
             } else {
@@ -454,7 +454,7 @@ public class TDFDataSource implements CoverageDataSource {
      *
      * @return Whether we believe the data stored for whole genome view is valid or not
      */
-    boolean isChrOrderValid() {
+    static boolean isChrOrderValid(TDFReader reader, Genome genome) {
 
         if (reader.getVersion() >= 4) {
 
@@ -491,7 +491,7 @@ public class TDFDataSource implements CoverageDataSource {
      * @param fileChromos
      * @param genomeChromos
      * @return
-     * @see #isChrOrderValid()
+     * @see #isChrOrderValid(TDFReader, Genome)
      */
     static boolean checkChromoNameOrder(List<String> fileChromos, List<String> genomeChromos) {
 

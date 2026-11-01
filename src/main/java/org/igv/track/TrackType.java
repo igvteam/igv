@@ -26,5 +26,7 @@ public enum TrackType {
     motif,
     gistic,
     maf,
-    coverage
+    coverage,
+    igv,
+    gct
 }

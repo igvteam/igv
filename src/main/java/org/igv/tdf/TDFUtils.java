@@ -130,7 +130,7 @@ public class TDFUtils {
     }
 
     private static void dumpTileData(TDFReader reader, String chrName, TDFTile tile, PrintStream ps) {
-        int nTracks = reader.getTrackNames().length;
+        int nTracks = reader.getSampleNames().length;
         int nBins = tile.getSize();
         if (nBins > 0) {
             for (int b = 0; b < nBins; b++) {
@@ -158,7 +158,7 @@ public class TDFUtils {
             if (tile == null) {
                 System.out.println("Null tile: " + dsName + " [" + tileNumber + "]");
             } else {
-                int nTracks = reader.getTrackNames().length;
+                int nTracks = reader.getSampleNames().length;
                 int nBins = tile.getSize();
                 if (nBins > 0) {
                     for (int b = 0; b < nBins; b++) {
@@ -206,7 +206,7 @@ public class TDFUtils {
         }
 
         System.out.println("Tracks");
-        String[] trackNames = reader.getTrackNames();
+        String[] trackNames = reader.getSampleNames();
         for (String trackName : trackNames) {
             System.out.println(trackName);
         }

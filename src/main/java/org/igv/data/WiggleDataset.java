@@ -160,7 +160,7 @@ public class WiggleDataset implements Dataset {
     }
 
 
-    public String[] getTrackNames() {
+    public String[] getSampleNames() {
         return new String[]{getName()};
     }
 

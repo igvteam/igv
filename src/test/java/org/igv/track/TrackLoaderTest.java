@@ -5,7 +5,9 @@ import org.igv.AbstractHeadlessTest;
 import org.igv.feature.IGVFeature;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
+import org.igv.seg.SegTrack;
 import org.igv.tools.IgvTools;
+import org.igv.tools.converters.GCTtoIGVConverter;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.igv.variant.VariantTrack;
@@ -235,6 +237,51 @@ public class TrackLoaderTest extends AbstractHeadlessTest {
     @Test
     public void testFilesHeadlessNoIndex() throws Exception {
         tstFilesHeadless(filenamesNoIndex, false);
+    }
+
+    /**
+     * Multi-column numeric files load as one SegTrack of type "igv" with a row per sample; single-column files and
+     * coverage TDFs keep a track per column.
+     */
+    @Test
+    public void testMultiSampleTracks() throws Exception {
+
+        List<Track> tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt", 1, false);
+        SegTrack track = (SegTrack) tracks.get(0);
+        assertEquals(TrackType.igv, track.getType());
+        assertEquals(Arrays.asList("decodeAvg", "decodeFemale", "decodeMale", "marshfieldAvg", "marshfieldFemale",
+                "marshfieldMale", "genethonAvg", "genethonFemale", "genethonMale"), track.getSampleNames());
+
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/recombRate.igv.txt.tdf", 1, false);
+        track = (SegTrack) tracks.get(0);
+        assertEquals(TrackType.igv, track.getType());
+        assertEquals(9, track.getSampleNames().size());
+        assertTrue(track.getAvailableWindowFunctions().contains(WindowFunction.mean));
+
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "igv/MIP_44.cn", 1, false);
+        assertEquals(44, ((SegTrack) tracks.get(0)).getSampleNames().size());
+
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "cn/multi_snp.cn", 1, false);
+        assertTrue(tracks.get(0) instanceof DataSourceTrack);
+
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "tdf/NA12878.SLX.egfr.sam.tdf", 1, false);
+        assertTrue(tracks.get(0) instanceof DataSourceTrack);
+
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "seg/canFam2_hg18.seg", null, false);
+        assertEquals(TrackType.seg, tracks.get(tracks.size() - 1).getType());
+
+        // Expression matrices get their own type, also when converted to the generic .igv format (the "#type"
+        // comment carries the data type through)
+        tracks = tstLoadFi(TestUtils.DATA_DIR + "gct/affy_human_mod.gct", 1, false);
+        assertEquals(TrackType.gct, tracks.get(0).getType());
+        assertEquals(7, ((SegTrack) tracks.get(0)).getSampleNames().size());
+
+        new File(TestUtils.TMP_OUTPUT_DIR).mkdirs();
+        File igvFile = new File(TestUtils.TMP_OUTPUT_DIR, "affy_human_mod.igv");
+        GCTtoIGVConverter.convert(new ResourceLocator(TestUtils.DATA_DIR + "gct/affy_human_mod.gct"), igvFile, null, 50000, null, genome);
+        tracks = tstLoadFi(igvFile.getAbsolutePath(), 1, false);
+        assertEquals(TrackType.gct, tracks.get(0).getType());
+        assertEquals(7, ((SegTrack) tracks.get(0)).getSampleNames().size());
     }
 
     @Test

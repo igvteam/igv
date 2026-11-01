@@ -1,7 +1,10 @@
 package org.igv.seg;
 
+import org.igv.feature.FeatureUtils;
+import org.igv.feature.Locus;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
+import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.mut.MutationRenderer;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -14,6 +17,7 @@ import org.igv.session.RendererFactory;
 import org.igv.track.*;
 import org.igv.ui.FontManager;
 import org.igv.ui.UIConstants;
+import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
@@ -23,12 +27,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
-public class SegTrack extends AbstractTrack {
+/**
+ * A track with one row per sample.  The type names the content: segmented copy number (seg), mutations (mut),
+ * gene expression (gct), or a generic numeric locus-by-sample matrix (igv: .igv, multi-track .tdf, legacy .cn).
+ */
+public class SegTrack extends AbstractTrack implements ScalableTrack {
 
     private static final Logger log = LogManager.getLogger(SegTrack.class);
 
@@ -39,6 +45,7 @@ public class SegTrack extends AbstractTrack {
     Renderer renderer;
     TrackType type;
     private transient Rectangle lastClipBounds;
+    private final LoadedIntervalCache<Map<String, List<LocusScore>>> loadedIntervalCache = new LoadedIntervalCache<>();
 
     public SegTrack(ResourceLocator locator,
                     TrackType type,
@@ -53,9 +60,13 @@ public class SegTrack extends AbstractTrack {
         this.rowHeight = EXPANDED_SAMPLE_HEIGHT;
         this.dataset = dataset;
         this.type = type;
-        renderer = type == TrackType.seg ? new HeatmapRenderer() : new MutationRenderer();
         setDataRange(new DataRange(0, 1, 2));
         setDataType(dataset.getType());
+        renderer = switch (type) {
+            case mut -> new MutationRenderer();
+            case igv, gct -> getDefaultRenderer();
+            default -> new HeatmapRenderer();
+        };
         initScale(dataset);
 
         if (type == TrackType.mut) {
@@ -113,9 +124,90 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public boolean isReadyToPaint(ReferenceFrame frame) {
+        return loadedIntervalCache.contains(frame);
+    }
+
+    /**
+     * Load the scores of every sample for the frame in one call, expanding the interval as DataTrack does.
+     */
+    @Override
+    public synchronized void load(ReferenceFrame referenceFrame) {
+
+        if (isReadyToPaint(referenceFrame)) return; // already loaded
+
+        Locus expanded = LoadedIntervalCache.expandedInterval(referenceFrame);
+        int zoom = referenceFrame.getZoom();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        String queryChr = genome == null ? expanded.chr : genome.getCanonicalChrName(expanded.chr);
+        Map<String, List<LocusScore>> features = dataset.getFeatures(queryChr, expanded.start, expanded.end, zoom);
+        loadedIntervalCache.put(referenceFrame.getName(), new LoadedDataInterval<>(expanded.chr, expanded.start, expanded.end, zoom, features));
+    }
+
+    /**
+     * The feature under the position, allowing a tolerance (in bp) on either side so narrow features are not missed.
+     * Of the candidates within tolerance, the one nearest the position wins; a feature containing the position has
+     * distance 0.  The list must be sorted by start.
+     */
+    private static LocusScore getFeatureAt(double position, int tolerance, List<LocusScore> scores) {
+        if (scores == null || scores.isEmpty()) {
+            return null;
+        }
+        LocusScore closest = null;
+        double minDist = Double.POSITIVE_INFINITY;
+        for (int i = Math.max(0, FeatureUtils.getIndexBefore(position - tolerance, scores)); i < scores.size(); i++) {
+            LocusScore score = scores.get(i);
+            if (score.getStart() > position + tolerance) {
+                break;
+            }
+            if (score.getEnd() + tolerance >= position) {
+                double dist = Math.max(0, Math.max(score.getStart() - position, position - score.getEnd()));
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = score;
+                }
+            }
+        }
+        return closest;
+    }
+
+    /**
+     * The loaded scores for the frame, keyed by sample, or null if nothing is loaded for its chromosome.
+     */
+    private Map<String, List<LocusScore>> getLoadedFeatures(ReferenceFrame frame) {
+        LoadedDataInterval<Map<String, List<LocusScore>>> interval = loadedIntervalCache.get(frame.getName());
+        return (interval == null || !frame.getChrName().equals(interval.range.chr)) ? null : interval.getFeatures();
+    }
+
+    @Override
+    public Range getInViewRange(ReferenceFrame frame) {
+        Map<String, List<LocusScore>> loaded = getLoadedFeatures(frame);
+        if (loaded == null) {
+            return null;
+        }
+        int start = (int) frame.getOrigin();
+        int end = (int) frame.getEnd() + 1;
+        float min = Float.MAX_VALUE;
+        float max = -Float.MAX_VALUE;
+        for (List<LocusScore> scores : loaded.values()) {
+            if (scores == null) continue;
+            for (int i = Math.max(0, FeatureUtils.getIndexBefore(start, scores)); i < scores.size(); i++) {
+                LocusScore score = scores.get(i);
+                if (score.getStart() > end) break;
+                if (score.getEnd() >= start && !Float.isNaN(score.getScore())) {
+                    min = Math.min(score.getScore(), min);
+                    max = Math.max(score.getScore(), max);
+                }
+            }
+        }
+        return min <= max ? new Range(min, max) : null;
+    }
+
+    @Override
     public void render(RenderContext context) {
 
         Rectangle clipBounds = new Rectangle(context.getClipBounds());
+        Map<String, List<LocusScore>> loaded = getLoadedFeatures(context.getReferenceFrame());
 
         final boolean hasGroups = getSampleGroups().size() > 0;
         if (hasGroups && lastClipBounds != null) {
@@ -141,7 +233,7 @@ public class SegTrack extends AbstractTrack {
                 }
                 if (y + getSampleHeight() > clipBounds.y) {
                     Rectangle r = new Rectangle(trackRect.x, y, trackRect.width, getSampleHeight());
-                    var features = dataset.getFeatures(sample, context.getChr());
+                    var features = loaded == null ? null : loaded.get(sample);
                     this.renderer.render(features, context, r, this);
                 }
                 y += getSampleHeight();
@@ -197,6 +289,11 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public void setRenderer(Renderer renderer) {
+        this.renderer = renderer;
+    }
+
+    @Override
     public void setRendererClass(Class rc) {
         try {
             if (Renderer.class.isAssignableFrom(rc)) {
@@ -208,12 +305,56 @@ public class SegTrack extends AbstractTrack {
     }
 
     @Override
+    public void setWindowFunction(WindowFunction windowFunction) {
+        dataset.setWindowFunction(windowFunction);
+        loadedIntervalCache.clear();
+    }
+
+    @Override
+    public WindowFunction getWindowFunction() {
+        return dataset.getWindowFunction();
+    }
+
+    @Override
+    public Collection<WindowFunction> getAvailableWindowFunctions() {
+        return dataset.getAvailableWindowFunctions();
+    }
+
+    /**
+     * The log / non-log (centered on 2) coloring rule is specific to segmented copy number; other types keep the
+     * default.
+     */
+    @Override
+    public boolean isLogNormalized() {
+        return type != TrackType.seg || dataset.isLogNormalized();
+    }
+
+    /**
+     * Numeric matrix content, as opposed to segments or mutations.
+     */
+    @Override
+    public boolean isNumeric() {
+        return type == TrackType.igv || type == TrackType.gct;
+    }
+
+    @Override
+    public void unload() {
+        super.unload();
+        loadedIntervalCache.unsubscribe();
+        dataset.dispose();
+    }
+
+    @Override
     public List<Component> getPopupMenuItems(final TrackClickEvent te) {
 
         List<Component> items = new ArrayList<>();
 
         items.addAll(TrackMenuUtils.getSquishExpandItems(Collections.singletonList(this)));
         items.add(TrackMenuUtils.getRowHeightItem(Collections.singletonList(this)));
+        if (isNumeric()) {
+            items.add(new JPopupMenu.Separator());
+            items.addAll(TrackMenuUtils.getDataMenuItems(Collections.singletonList(this)));
+        }
 
         List<String> keys = AttributeManager.getInstance().getAttributeNames();
 
@@ -250,7 +391,8 @@ public class SegTrack extends AbstractTrack {
                 var sampleIndex = (trackY - y) / getSampleHeight();
                 var sampleName = group.samples().get(sampleIndex);
                 var buf = new StringBuilder();
-                var score = dataset.getFeatureAt(sampleName, chr, position, frame);
+                var loaded = getLoadedFeatures(frame);
+                var score = loaded == null ? null : getFeatureAt(position, (int) (3 * frame.getScale()), loaded.get(sampleName));
                 // If there is no value here, return null to signal no popup
                 if (score == null) {
                     return null;
@@ -297,10 +439,15 @@ public class SegTrack extends AbstractTrack {
             return;
         }
 
-        // Compute a value for each sample.  No entry means no scores in the region.
+        // Compute a value for each sample.  No entry means no scores in the region.  Scores are fetched once for
+        // all samples, at the zoom of the current view.
         var sampleScores = new HashMap<String, Float>();
+        var allScores = dataset.getFeatures(chr, start, end, FrameManager.getDefaultFrame().getZoom());
         for (String s : sampleNames) {
-            var scores = dataset.getFeatures(s, chr);
+            var scores = allScores.get(s);
+            if (scores == null) {
+                continue;
+            }
             var regionScore = 0f;
             var intervalSum = 0;
             var hasNan = false;

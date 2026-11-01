@@ -49,6 +49,7 @@ import org.igv.seg.FreqData;
 import org.igv.seg.SegTrack;
 import org.igv.seg.SegmentedDataSet;
 import org.igv.tdf.TDFDataSource;
+import org.igv.tdf.TDFMultiSampleSource;
 import org.igv.tdf.TDFReader;
 import org.igv.ucsc.bb.BBChainFeatureSource;
 import org.igv.ucsc.bb.BBDataSource;
@@ -590,13 +591,21 @@ public class TrackLoader {
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
             String path = locator.getPath();
-            for (String trackName : ds.getTrackNames()) {
-                DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
-                String trackId = path + "_" + trackName;
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            if (ds.getSampleNames().length > 1) {
+                SegTrack track = new SegTrack(locator, TrackType.gct, path, locator.getTrackName(),
+                        new DatasetMultiSampleSource(ds, genome), genome);
                 track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
+            } else {
+                for (String trackName : ds.getSampleNames()) {
+                    DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
+                    String trackId = path + "_" + trackName;
+                    DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                    track.setRenderer(new HeatmapRenderer());
+                    track.setProperties(trackProperties);
+                    newTracks.add(track);
+                }
             }
         }
 
@@ -620,6 +629,14 @@ public class TrackLoader {
         newTracks.add(track);
     }
 
+    /**
+     * The .igv format (and a .tdf made from it) can hold any data type; the "#type" comment is carried through
+     * gct -> igv -> tdf conversion.  Expression matrices get the gct track type, everything else the generic igv type.
+     */
+    private static TrackType multiSampleTrackType(DataType dataType) {
+        return dataType == DataType.GENE_EXPRESSION ? TrackType.gct : TrackType.igv;
+    }
+
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
@@ -635,7 +652,19 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         DataType type = ds.getType();
-        for (String trackName : ds.getTrackNames()) {
+
+        if (ds.getSampleNames().length > 1) {
+            // One track, one row per sample
+            SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, dsName, new DatasetMultiSampleSource(ds, genome), genome);
+            track.setProperties(trackProperties);
+            if (type == DataType.ALLELE_FREQUENCY) {
+                track.setRenderer(new PointsRenderer());
+            }
+            newTracks.add(track);
+            return;
+        }
+
+        for (String trackName : ds.getSampleNames()) {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
@@ -746,9 +775,9 @@ public class TrackLoader {
         }
 
         String path = locator.getPath();
-        boolean multiTrack = ds.getTrackNames().length > 1;
+        boolean multiTrack = ds.getSampleNames().length > 1;
 
-        for (String heading : ds.getTrackNames()) {
+        for (String heading : ds.getSampleNames()) {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
@@ -793,9 +822,20 @@ public class TrackLoader {
 
         int trackNumber = 0;
         String path = locator.getPath();
-        boolean multiTrack = reader.getTrackNames().length > 1;
+        boolean multiTrack = reader.getSampleNames().length > 1;
 
-        for (String heading : reader.getTrackNames()) {
+        if (multiTrack && type != DataType.COVERAGE) {
+            // One track, one row per sample.  Coverage TDFs (e.g. per-base or per-strand counts) keep a track per column.
+            String trackName = name == null ? locator.getTrackName() : name;
+            SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, trackName, new TDFMultiSampleSource(reader, genome), genome);
+            if (props != null) {
+                track.setProperties(props);
+            }
+            newTracks.add(track);
+            return;
+        }
+
+        for (String heading : reader.getSampleNames()) {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
