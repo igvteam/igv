@@ -73,10 +73,11 @@ public class TDFMultiSampleSource extends MultiSampleDataSource {
             for (Map.Entry<String, List<LocusScore>> entry : tile.entrySet()) {
                 List<LocusScore> list = scores.get(entry.getKey());
                 for (LocusScore s : entry.getValue()) {
+                    if (s.getStart() > endLocation) {
+                        break;
+                    }
                     if (s.getEnd() >= startLocation) {
                         list.add(s);
-                    } else if (s.getStart() > endLocation) {
-                        break;
                     }
                 }
             }
@@ -173,7 +174,7 @@ public class TDFMultiSampleSource extends MultiSampleDataSource {
                 }
                 for (int i = 0; i < rawTile.getSize(); i++) {
                     int s = genome.getGenomeCoordinate(chr, rawTile.getStartPosition(i));
-                    int e = genome.getGenomeCoordinate(chr, Math.max(s, rawTile.getEndPosition(i) - 1));
+                    int e = genome.getGenomeCoordinate(chr, Math.max(rawTile.getStartPosition(i), rawTile.getEndPosition(i) - 1));
                     for (int n = 0; n < lists.length; n++) {
                         lists[n].add(new BasicScore(s, e, rawTile.getValue(n, i)));
                     }
@@ -196,6 +197,11 @@ public class TDFMultiSampleSource extends MultiSampleDataSource {
     @Override
     public double getDataMax() {
         return reader.getUpperLimit();
+    }
+
+    @Override
+    public boolean isLogNormalized() {
+        return getDataMin() < 0;
     }
 
     @Override

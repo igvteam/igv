@@ -231,7 +231,7 @@ public class TDFDataSource implements CoverageDataSource {
 
                             for (int i = 0; i < rawTile.getSize(); i++) {
                                 int s = genome.getGenomeCoordinate(chr, rawTile.getStartPosition(i));
-                                int e = genome.getGenomeCoordinate(chr, Math.max(s, rawTile.getEndPosition(i) - 1));
+                                int e = genome.getGenomeCoordinate(chr, Math.max(rawTile.getStartPosition(i), rawTile.getEndPosition(i) - 1));
                                 float v = rawTile.getValue(trackNumber, i);
                                 if (!Float.isNaN(v)) {
                                     v *= normalizationFactor;
@@ -402,10 +402,11 @@ public class TDFDataSource implements CoverageDataSource {
                 List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
                 if (cachedScores != null) {
                     for (LocusScore s : cachedScores) {
+                        if (s.getStart() > endLocation) {
+                            break;
+                        }
                         if (s.getEnd() >= startLocation) {
                             scores.add(s);
-                        } else if (s.getStart() > endLocation) {
-                            break;
                         }
                     }
                 }

@@ -320,13 +320,9 @@ public class SegTrack extends AbstractTrack implements ScalableTrack {
         return dataset.getAvailableWindowFunctions();
     }
 
-    /**
-     * The log / non-log (centered on 2) coloring rule is specific to segmented copy number; other types keep the
-     * default.
-     */
     @Override
     public boolean isLogNormalized() {
-        return type != TrackType.seg || dataset.isLogNormalized();
+        return dataset.isLogNormalized();
     }
 
     /**

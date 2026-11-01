@@ -163,6 +163,11 @@ public class DatasetMultiSampleSource extends MultiSampleDataSource {
     }
 
     @Override
+    public boolean isLogNormalized() {
+        return dataset.isLogNormalized();
+    }
+
+    @Override
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return AbstractDataSource.ORDERED_WINDOW_FUNCTIONS;
     }
