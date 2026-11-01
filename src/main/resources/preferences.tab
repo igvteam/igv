@@ -31,7 +31,7 @@ USER_THEME	Select Theme (Requires Restart)	select SYSTEM|FLATLIGHT|FLATDARK|FLAT
 
 #Tracks
 IGV.chart.track.height	Default numeric track height (pixels)	integer	40
-IGV.track.height	Default feature track height (pixels)	integer	15
+IGV.track.height	Minimum track height (pixels)	integer	20
 IGV.interact.track.height	Default interaction track height (pixels)	integer	250
 TRACK.BORDER_WIDTH	Border width (pixels)	integer	2	Height of the border drawn between tracks.  Minimum 1.
 TRACK.BORDER_COLOR	Border color	color	240,240,240
@@ -371,7 +371,7 @@ SHOW_GENOME_SERVER_WARNING	TRUE
 
 OVERLAY_ATTRIBUTE_KEY	LINKING_ID
 DEFAULT_GENOME_KEY	hg38
-IGV.track.height	15
+IGV.track.height	20
 FLANKING_REGION	2000
 SHOW_SEQUENCE_TRANSLATION	FALSE
 SEQUENCE_TRANSLATION_STRAND	POSITIVE

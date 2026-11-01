@@ -1,0 +1,13 @@
+track smallBigWig
+bigDataUrl http://example.com/small.bw
+shortLabel Small bigWig
+longLabel bigWig declaring a height below the minimum track height
+type bigWig
+maxHeightPixels 64:12:8
+
+track largeBigWig
+bigDataUrl http://example.com/large.bw
+shortLabel Large bigWig
+longLabel bigWig declaring a height above the minimum track height
+type bigWig
+maxHeightPixels 128:50:30

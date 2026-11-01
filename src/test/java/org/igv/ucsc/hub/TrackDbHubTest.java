@@ -1,6 +1,8 @@
 package org.igv.ucsc.hub;
 
 import org.igv.feature.genome.load.TrackConfig;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -43,6 +45,31 @@ public class TrackDbHubTest {
         assertEquals("Caucasian", metadataMap.get("Ethnicity"));
 
         assertNotNull(metadataMap);
+    }
+
+    /**
+     * Hub heights below the minimum track height preference are raised to it; larger heights are left alone.
+     */
+    @Test
+    public void testMinimumHeight() throws IOException {
+
+        TestUtils.resetPrefsFile();
+        int minimumHeight = PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
+        assertTrue(minimumHeight > 12);
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/min_height_trackDb.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, null);
+        List<TrackConfig> tracks = trackDbHub.getGroupedTrackConfigurations("test").get(0).tracks;
+        assertEquals(2, tracks.size());
+
+        TrackConfig small = tracks.get(0);
+        assertEquals(64, (int) small.maxHeight);
+        assertEquals(minimumHeight, (int) small.height);
+        assertEquals(minimumHeight, (int) small.minHeight);
+
+        TrackConfig large = tracks.get(1);
+        assertEquals(50, (int) large.height);
+        assertEquals(30, (int) large.minHeight);
     }
 
     /**

@@ -3,6 +3,8 @@ package org.igv.ucsc.hub;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.util.StringUtils;
 
 import java.util.*;
@@ -240,6 +242,10 @@ public class TrackDbHub {
             config.maxHeight = Integer.parseInt(tokens[0]);
             if (tokens.length > 1) config.height = Integer.parseInt(tokens[1]);
             if (tokens.length > 2) config.minHeight = Integer.parseInt(tokens[2]);
+            // Hub heights respect the minimum track height preference
+            int minimumHeight = PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
+            if (config.height != null) config.height = Math.max(config.height, minimumHeight);
+            if (config.minHeight != null) config.minHeight = Math.max(config.minHeight, minimumHeight);
         }
 
         config.color = parseColor(t.getProperty("color"));
