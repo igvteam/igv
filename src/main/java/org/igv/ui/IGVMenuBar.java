@@ -4,7 +4,6 @@ import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.aws.S3LoadDialog;
 import org.igv.batch.CommandExecutor;
-import org.igv.charts.ScatterPlotUtils;
 import org.igv.circview.CircularViewUtilities;
 import org.igv.circview.ui.CircularView;
 import org.igv.encode.EncodeTrackChooserFactory;
@@ -30,9 +29,7 @@ import org.igv.ucsc.hub.HubRegistry;
 import org.igv.ucsc.hub.HubSelectionDialog;
 import org.igv.ui.action.*;
 import org.igv.ui.commandbar.RemoveGenomesDialog;
-import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.MainPanel;
-import org.igv.ui.panel.ReferenceFrame;
 import org.igv.ui.panel.ReorderPanelsDialog;
 import org.igv.ui.util.*;
 import org.igv.util.AmazonUtils;
@@ -971,19 +968,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new ExportTrackNamesMenuAction("Export track names...", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
-        menuAction = new MenuAction("Scatter Plot ...") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
-                String chr = defaultFrame.getChrName();
-                int start = (int) defaultFrame.getOrigin();
-                int end = (int) defaultFrame.getEnd();
-                int zoom = defaultFrame.getZoom();
-                ScatterPlotUtils.openPlot(chr, start, end, zoom);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction extrasMenuAction = new MenuAction(name);
         JMenu menu = MenuAndToolbarUtils.createMenu(menuItems, extrasMenuAction);
