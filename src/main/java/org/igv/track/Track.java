@@ -210,7 +210,7 @@ public interface Track {
      * @return the minimum height in pixels
      */
     default int getMinimumHeight() {
-        return PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
+        return Math.max(1, PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY));
     }
 
     /**
