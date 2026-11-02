@@ -5,11 +5,14 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import org.junit.Test;
 
+import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import java.util.zip.GZIPOutputStream;
+
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -60,8 +63,8 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
         IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome);
         IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome);
 
-        //parser.scan necessary to set values needed in getHeadings
-        List<ChromosomeSummary> summaries = parser.scan(ds);
+        //parser.parse necessary to set values needed in getHeadings
+        parser.parse(ds);
         String[] headings = parser.getHeadings(tokens, 1);
 
         assertEquals(firstHeading, headings[0]);
@@ -70,16 +73,14 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
     }
 
     /**
-     * Test of scan method. Test that we find
-     * all chromosomes we expect
+     * Test that we find all chromosomes we expect
      */
     @Test
-    public void testScanDataset() {
+    public void testChromosomes() {
         IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome);
-        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome);
-        List<ChromosomeSummary> summaries = parser.scan(ds);
+        String[] chromosomes = ds.getChromosomes();
 
-        assertEquals(24, summaries.size());
+        assertEquals(24, chromosomes.length);
         Set<String> chromos = new TreeSet<String>();
         ArrayList<String> chromos_L = new ArrayList<String>(24);
         for (int ii = 1; ii <= 22; ii++) {
@@ -89,10 +90,29 @@ public class IGVDatasetTest extends AbstractHeadlessTest {
         chromos_L.add("chrY");
         chromos.addAll(chromos_L);
 
-        for (ChromosomeSummary cSum : summaries) {
-            assertTrue(chromos.contains(cSum.getName()));
+        for (String chr : chromosomes) {
+            assertTrue(chromos.contains(chr));
         }
 
+    }
+
+    /**
+     * A gzipped file must yield the same per-chromosome data as the plain file.
+     */
+    @Test
+    public void testGzipped() throws Exception {
+        File gzFile = new File(TestUtils.TMP_OUTPUT_DIR, "MIP_44.cn.gz");
+        try (InputStream in = new FileInputStream(cnFile);
+             OutputStream out = new GZIPOutputStream(new FileOutputStream(gzFile))) {
+            in.transferTo(out);
+        }
+
+        IGVDataset plain = new IGVDataset(new ResourceLocator(cnFile), genome);
+        IGVDataset gz = new IGVDataset(new ResourceLocator(gzFile.getPath()), genome);
+
+        assertArrayEquals(plain.getChromosomes(), gz.getChromosomes());
+        assertArrayEquals(plain.getStartLocations("chr3"), gz.getStartLocations("chr3"));
+        assertArrayEquals(plain.getData("yw280-4_44", "chr3"), gz.getData("yw280-4_44", "chr3"), 0f);
     }
 
 

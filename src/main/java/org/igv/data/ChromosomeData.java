@@ -27,6 +27,10 @@ public class ChromosomeData {
         data = new HashMap();
     }
 
+    String getChr() {
+        return chr;
+    }
+
     void setStartLocations(int[] locations) {
         this.startLocations = locations;
     }

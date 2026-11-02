@@ -12,7 +12,6 @@ import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
 import org.igv.track.DataType;
 import org.igv.track.TrackProperties;
-import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 
 import java.util.*;
@@ -221,20 +220,5 @@ public class SegmentedDataSet implements SegmentedDataSource {
         }
         return trackProperties;
     }
-
-    public LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame) {
-
-        List<LocusScore> scores = getFeatures(sample, chr);
-
-        if (scores == null) {
-            return null;
-        } else {
-            // give a 2 pixel window, otherwise very narrow features will be missed.
-            double bpPerPixel = frame.getScale();
-            int buffer = (int) (2 * bpPerPixel);    /* * */
-            return FeatureUtils.getFeatureAt(position, buffer, scores);
-        }
-    }
-
 
 }

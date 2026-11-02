@@ -45,7 +45,7 @@ public class FeatureDatasetTest extends AbstractHeadlessTest {
     public void getDataHeadings() {
 
         int expectedSize = 7;
-        String[] headings = dataset.getTrackNames();
+        String[] headings = dataset.getSampleNames();
         assertEquals(expectedSize, headings.length);
     }
 

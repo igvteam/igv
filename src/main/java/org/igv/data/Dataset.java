@@ -25,7 +25,7 @@ public interface Dataset {
 
     public String[] getChromosomes();
 
-    public String[] getTrackNames();
+    public String[] getSampleNames();
 
     public int[] getStartLocations(String chr);
 

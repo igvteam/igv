@@ -78,7 +78,7 @@ public class TDFReadWriteTest {
         writer.closeFile();
 
         TDFReader reader = TDFReader.getReader(testFile.getAbsolutePath());
-        String[] tn = reader.getTrackNames();
+        String[] tn = reader.getSampleNames();
         assertEquals(trackNames.length, tn.length);
         for (int i = 0; i < tn.length; i++) {
             assertEquals(trackNames[i], tn[i]);

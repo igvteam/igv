@@ -9,12 +9,9 @@
 package org.igv.track;
 
 import org.igv.Globals;
-import org.igv.event.IGVEvent;
-import org.igv.event.IGVEventBus;
-import org.igv.event.IGVEventObserver;
-import org.igv.feature.Chromosome;
 import org.igv.feature.FeatureUtils;
 import org.igv.feature.LocusScore;
+import org.igv.feature.Locus;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.LogManager;
@@ -26,7 +23,6 @@ import org.igv.renderer.GraphicUtils;
 import org.igv.renderer.Renderer;
 import org.igv.renderer.XYPlotRenderer;
 import org.igv.session.RendererFactory;
-import org.igv.ui.panel.FrameManager;
 import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ResourceLocator;
 import org.json.JSONObject;
@@ -42,22 +38,18 @@ import java.util.List;
  * @author jrobinso
  */
 
-public abstract class DataTrack extends AbstractTrack implements ScalableTrack, IGVEventObserver {
+public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
 
     public static final Color ZOOM_IN_TEXT_COLOR = Globals.isDarkMode() ? Color.lightGray.brighter() : Color.gray;
     private static Logger log = LogManager.getLogger(DataTrack.class);
 
     private DataRenderer renderer;
 
-    private Map<String, LoadedDataInterval<List<LocusScore>>> loadedIntervalCache = new HashMap(200);
+    private LoadedIntervalCache<List<LocusScore>> loadedIntervalCache = new LoadedIntervalCache<>();
 
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
-        loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
-
         setHeight(PreferencesManager.getPreferences().getAsInt(Constants.CHART_TRACK_HEIGHT_KEY));
-
-        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
     public DataTrack() {
@@ -78,23 +70,6 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
         return height;
     }
 
-    public void receiveEvent(IGVEvent event) {
-
-        if (event instanceof FrameManager.ChangeEvent) {
-            // Purge any cached data not associated with current frames
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
-            Map<String, LoadedDataInterval<List<LocusScore>>> newCache = Collections.synchronizedMap(new HashMap<>());
-            for (ReferenceFrame f : frames) {
-                newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
-            }
-            loadedIntervalCache = newCache;
-
-
-        } else {
-            log.warn("Unknown event type: " + event.getClass());
-        }
-    }
-
     @Override
     public boolean isNumeric() {
         return true;
@@ -102,13 +77,7 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     @Override
     public boolean isReadyToPaint(ReferenceFrame frame) {
-        String chr = frame.getChrName();
-        int start = (int) frame.getOrigin();
-        int end = (int) frame.getEnd();
-        int zoom = frame.getZoom();
-        LoadedDataInterval interval = loadedIntervalCache.get(frame.getName());
-        return (interval != null && interval.contains(chr, start, end, zoom));
-
+        return loadedIntervalCache.contains(frame);
     }
 
 
@@ -116,32 +85,11 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
         if (isReadyToPaint(referenceFrame)) return; // already loaded
 
-        String chr = referenceFrame.getChrName();
-        int start = (int) referenceFrame.getOrigin();
-        int end = (int) referenceFrame.getEnd() + 1;
-        int zoom = referenceFrame.getZoom();
-        int maxEnd = end;
+        Locus expanded = LoadedIntervalCache.expandedInterval(referenceFrame);
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-        String queryChr = chr;
-        if (genome != null) {
-            queryChr = genome.getCanonicalChrName(chr);
-            Chromosome c = genome.getChromosome(chr);
-            if (c != null) maxEnd = Math.max(c.getLength(), end);
-        }
-
-        // Expand interval +/- 50%, unless in a multi-locus mode with "lots" of frames
-        boolean multiLocus = (FrameManager.getFrames().size() > 4);
-        int delta = multiLocus ? 1 : (end - start) / 2;
-        int expandedStart = Math.max(0, start - delta);
-        int expandedEnd = Math.min(maxEnd, end + delta);
-        if (expandedEnd < 0) {
-            // overflow
-            expandedEnd = Integer.MAX_VALUE;
-        }
-        LoadedDataInterval<List<LocusScore>> interval = getSummaryScores(queryChr, expandedStart, expandedEnd, zoom);
+        String queryChr = genome == null ? expanded.chr : genome.getCanonicalChrName(expanded.chr);
+        LoadedDataInterval<List<LocusScore>> interval = getSummaryScores(queryChr, expanded.start, expanded.end, referenceFrame.getZoom());
         loadedIntervalCache.put(referenceFrame.getName(), interval);
-
     }
 
 
@@ -217,6 +165,12 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack, 
 
     public void clearCaches() {
         loadedIntervalCache.clear();
+    }
+
+    @Override
+    public void unload() {
+        super.unload();
+        loadedIntervalCache.unsubscribe();
     }
 
     public void setRendererClass(Class rc) {

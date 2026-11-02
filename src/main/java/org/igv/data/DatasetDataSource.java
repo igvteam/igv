@@ -45,7 +45,7 @@ public class DatasetDataSource extends AbstractDataSource {
                     if (!chr.getName().equals(Globals.CHR_ALL) && (startLocations != null) && (startLocations.length > 0)) {
                         Map<String, float[]> dMap = new HashMap<String, float[]>();
                         dMap.put(trackId, dataset.getData(trackId, chr.getName()));
-                        genomeSummaryData.addData(chr.getName(), startLocations, dMap);
+                        genomeSummaryData.addData(chr.getName(), startLocations, dataset.getEndLocations(chr.getName()), dMap);
                     }
                 }
             }
@@ -59,7 +59,7 @@ public class DatasetDataSource extends AbstractDataSource {
 
         if (chr.equals(Globals.CHR_ALL) && genomeSummaryData != null && windowFunction != WindowFunction.none) {
             int[] startLocs = genomeSummaryData.getLocations();
-            int[] endLocs = null;
+            int[] endLocs = genomeSummaryData.getEndLocations();
             float[] data = genomeSummaryData.getData(trackId);
             return new DataTile(startLocs, endLocs, data, null);
         }

@@ -3,7 +3,6 @@ package org.igv.data;
 import org.igv.feature.genome.Genome;
 import org.igv.track.TrackProperties;
 import org.igv.track.DataType;
-import org.igv.util.ObjectCache;
 import org.igv.util.ResourceLocator;
 
 import java.util.LinkedHashMap;
@@ -21,10 +20,8 @@ public class IGVDataset implements Dataset {
 
     private boolean logNormalized;
     private String[] dataHeadings;
-    private Map<String, ChromosomeSummary> chromosomeSummaries = new LinkedHashMap();
+    private Map<String, ChromosomeData> chromosomeData = new LinkedHashMap();
     private GenomeSummaryData genomeSummary;
-    private IGVDatasetParser parser;
-    private ObjectCache<String, ChromosomeData> chromsomeDataCache = new ObjectCache(30);
     private float dataMin;
     private float dataMax;
     TrackProperties trackProperties = new TrackProperties();
@@ -32,15 +29,15 @@ public class IGVDataset implements Dataset {
 
     public IGVDataset(ResourceLocator locator, Genome genome) {
 
-        parser = new IGVDatasetParser(locator, genome);
+        IGVDatasetParser parser = new IGVDatasetParser(locator, genome);
 
-        List<ChromosomeSummary> summaries = parser.scan(this);
+        List<ChromosomeData> chromosomes = parser.parse(this);
 
-        if (summaries == null || summaries.size() == 0)
+        if (chromosomes == null || chromosomes.size() == 0)
             throw new RuntimeException("Could not find any chromosomes in the dataset on the genome(" + genome.getId() + ")");
 
-        for (ChromosomeSummary summary : summaries) {
-            chromosomeSummaries.put(summary.getName(), summary);
+        for (ChromosomeData cd : chromosomes) {
+            chromosomeData.put(cd.getChr(), cd);
         }
     }
 
@@ -65,62 +62,35 @@ public class IGVDataset implements Dataset {
     }
 
     public String[] getChromosomes() {
-        return chromosomeSummaries.keySet().toArray(new String[]{});
+        return chromosomeData.keySet().toArray(new String[]{});
     }
 
     public void setDataHeadings(String[] dataHeadings) {
         this.dataHeadings = dataHeadings;
     }
 
-    public String[] getTrackNames() {
+    public String[] getSampleNames() {
         return dataHeadings;
     }
 
     public int[] getStartLocations(String chr) {
-        ChromosomeData cd = getChromosomeData(chr);
+        ChromosomeData cd = chromosomeData.get(chr);
         return cd == null ? null : cd.getStartLocations();
     }
 
     public int[] getEndLocations(String chr) {
-        ChromosomeData cd = getChromosomeData(chr);
+        ChromosomeData cd = chromosomeData.get(chr);
         return cd == null ? null : cd.getEndLocations();
     }
 
     public String[] getFeatureNames(String chr) {
-        ChromosomeData cd = getChromosomeData(chr);
+        ChromosomeData cd = chromosomeData.get(chr);
         return cd == null ? null : cd.getProbes();
     }
 
     public float[] getData(String heading, String chr) {
-        ChromosomeData cd = getChromosomeData(chr);
+        ChromosomeData cd = chromosomeData.get(chr);
         return cd == null ? null : cd.getData(heading);
-    }
-
-    /**
-     * Get the data for all samples (tracks) for the given chromosome.
-     * <p/>
-     * This method is synchronized to insure that the data for a chromosome
-     * is only loaded once.
-     *
-     * @param chr
-     * @return
-     */
-    private synchronized ChromosomeData getChromosomeData(String chr) {
-        ChromosomeData cd = chromsomeDataCache.get(chr);
-        if (cd == null) {
-            ChromosomeSummary sum = chromosomeSummaries.get(chr);
-            if (sum == null) {
-                //todo -- throw exception
-                return null;
-            }
-            //synchronized (sum) {
-
-            cd = parser.loadChromosomeData(sum, dataHeadings);
-            chromsomeDataCache.put(chr, cd);
-            //}
-
-        }
-        return cd;
     }
 
     public GenomeSummaryData getGenomeSummary() {
