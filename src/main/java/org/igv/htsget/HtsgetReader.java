@@ -7,8 +7,6 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,12 +94,10 @@ class HtsgetReader {
             throw new IllegalArgumentException("Malformed data URL in htsget ticket");
         }
         String meta = dataURL.substring(5, comma);
-        String payload = dataURL.substring(comma + 1);
-        if (meta.endsWith(";base64")) {
-            return Base64.getDecoder().decode(payload);
-        } else {
-            return URLDecoder.decode(payload, StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8);
+        if (!meta.endsWith(";base64")) {
+            throw new IllegalArgumentException("Unsupported data URL encoding in htsget ticket: " + meta);
         }
+        return Base64.getDecoder().decode(dataURL.substring(comma + 1));
     }
 }
 

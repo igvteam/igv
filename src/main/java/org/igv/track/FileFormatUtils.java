@@ -60,7 +60,7 @@ public class FileFormatUtils {
             }
         }
 
-        if(HtsgetUtils.isHtsget(bytes)) {
+        if (HtsgetUtils.isHtsget(bytes)) {
             return "htsget";
         } else {
             return determineFormat(bytes);

@@ -130,6 +130,9 @@ public class TrackLoader {
                     if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
+                        if ("htsget".equals(format)) {
+                            locator.setHtsget(true);
+                        }
                     }
                 } catch (IOException ex) {
                     log.error("Error determining file format ", ex);
@@ -232,8 +235,9 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome); // Must be tried before ".maf" test below
             } else if (format.equals("maf")) {
                 loadMultipleAlignmentTrack(locator, newTracks, genome);
-            } else if(!locator.isHtsget()){
+            } else {
 
+                // Try overriding format
                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
                 if (determinedFormat != null) {
                     if ("htsget".equals(determinedFormat)) {
