@@ -7,6 +7,9 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,20 +60,20 @@ class HtsgetReader {
 
             JSONObject next = urls.getJSONObject(i);
             String urlString = next.getString("url");
+            byte[] b;
             if (urlString.startsWith("data:")) {
-                throw new RuntimeException("Data URLs are not currently supported");
-            }
-
-            URL url = new URL(urlString);
-            Map<String, String> headers = new HashMap<>();
-            if (next.has("headers")) {
-                JSONObject headerObj = next.getJSONObject("headers");
-                for (String key : headerObj.keySet()) {
-                    headers.put(key, headerObj.getString(key));
+                b = decodeDataURL(urlString);
+            } else {
+                URL url = new URL(urlString);
+                Map<String, String> headers = new HashMap<>();
+                if (next.has("headers")) {
+                    JSONObject headerObj = next.getJSONObject("headers");
+                    for (String key : headerObj.keySet()) {
+                        headers.put(key, headerObj.getString(key));
+                    }
                 }
+                b = HttpUtils.getInstance().getContentsAsBytes(url, headers);
             }
-
-            byte[] b = HttpUtils.getInstance().getContentsAsBytes(url, headers);
             if (bytes == null) {
                 bytes = b;
             } else {
@@ -81,6 +84,24 @@ class HtsgetReader {
             }
         }
         return bytes;
+    }
+
+    /**
+     * Decode an RFC 2397 data URL, e.g. "data:application/vnd.ga4gh.bam;base64,...".  The htsget spec requires the
+     * payload to be base64 encoded, and the media type is ignored.
+     */
+    static byte[] decodeDataURL(String dataURL) {
+        int comma = dataURL.indexOf(',');
+        if (comma < 0) {
+            throw new IllegalArgumentException("Malformed data URL in htsget ticket");
+        }
+        String meta = dataURL.substring(5, comma);
+        String payload = dataURL.substring(comma + 1);
+        if (meta.endsWith(";base64")) {
+            return Base64.getDecoder().decode(payload);
+        } else {
+            return URLDecoder.decode(payload, StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8);
+        }
     }
 }
 

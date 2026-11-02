@@ -70,9 +70,9 @@ public class HtsgetVariantSource implements FeatureSource {
 
         String queryChr = chrAliasMap.containsKey(chr) ? chrAliasMap.get(chr) : chr;
 
-        // The umccr htsget server returns bgzipped data for VCF format.  Arguably a server bug, but we
-        // can handle it here.
-        byte[] bytes = htsgetReader.readData(queryChr, start + 1, end);
+        // htsget start and end are 0-based half-open, the same convention as IGV.  The server translates to VCF's
+        // 1-based POS.   Servers may return bgzipped data for VCF format, we can handle it here.
+        byte[] bytes = htsgetReader.readData(queryChr, start, end);
         if (bytes != null && bytes.length >= 2 && bytes[0] == (byte) 0x1F && bytes[1] == (byte) 0x8B) {
             BlockCompressedInputStream bis = new BlockCompressedInputStream(new ByteArrayInputStream(bytes));
             bytes = bis.readAllBytes();
