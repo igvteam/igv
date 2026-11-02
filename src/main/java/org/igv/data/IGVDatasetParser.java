@@ -1,7 +1,6 @@
 package org.igv.data;
 
 
-import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.exceptions.ParserException;
@@ -14,7 +13,6 @@ import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 import org.igv.util.collections.FloatArrayList;
 import org.igv.util.collections.IntArrayList;
-import org.igv.util.stream.IGVSeekableStreamFactory;
 import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.FileNotFoundException;
@@ -100,12 +98,12 @@ public class IGVDatasetParser {
     }
 
     /**
-     * Scan the datafile for chromosome breaks.
+     * Parse the datafile, loading the data for all chromosomes.
      *
      * @param dataset
-     * @return
+     * @return the data for each chromosome, in file order
      */
-    public List<ChromosomeSummary> scan(IGVDataset dataset) {
+    public List<ChromosomeData> parse(IGVDataset dataset) {
 
         int estLineCount = ParsingUtils.estimateLineCount(dataResourceLocator.getPath());
         Map<String, Integer> longestFeatureMap = new HashMap();
@@ -116,11 +114,10 @@ public class IGVDatasetParser {
         InputStream is = null;
         Utf8LineReader reader = null;
         String nextLine = null;
-        ChromosomeSummary chrSummary = null;
-        List<ChromosomeSummary> chrSummaries = new ArrayList();
+        String currentChr = null;
+        List<ChromosomeData> chrDataList = new ArrayList();
         String[] headings = null;
-        WholeGenomeData wgData = null;
-        int nRows = 0;
+        ChromosomeBuffer buffer = null;
 
         int headerRows = 0;
         int count = 0;
@@ -178,13 +175,8 @@ public class IGVDatasetParser {
             // Assume it is not until proven otherwise
             logNormalized = false;
 
-            wgData = new WholeGenomeData(headings);
-
-            int chrRowCount = 0;
-
             // Update
             int updateCount = 5000;
-            long lastPosition = 0;
             while ((nextLine = reader.readLine()) != null) {
 
                 if (igv != null && ++count % updateCount == 0) {
@@ -196,23 +188,23 @@ public class IGVDatasetParser {
                 int nTokens = tokens.length;
                 if (nTokens > 0) {
                     String thisChr = genome.getCanonicalChrName(tokens[chrColumn]);
-                    if (chrSummary == null || !thisChr.equals(chrSummary.getName())) {
-                        // Update whole genome and previous chromosome summary, unless this is
-                        // the first chromosome
-                        if (chrSummary != null) {
-                            updateWholeGenome(chrSummary.getName(), dataset, headings, wgData);
-                            chrSummary.setNDataPoints(nRows);
+                    if (!thisChr.equals(currentChr)) {
+                        // Finish the previous chromosome, unless this is the first one
+                        if (currentChr != null) {
+                            addChromosome(currentChr, buffer, dataset, chrDataList);
+                        }
+                        for (ChromosomeData cd : chrDataList) {
+                            if (cd.getChr().equals(thisChr)) {
+                                throw new ParserException("Rows for " + thisChr + " are not contiguous.  Data in .igv and .cn files " +
+                                        "must be grouped by chromosome, and within each chromosome sorted by start position.  " +
+                                        "Use igvtools (File > Run igvtools..) to sort the file.", count + headerRows);
+                            }
                         }
 
-                        // Shart the next chromosome
-                        chrSummary = new ChromosomeSummary(thisChr, lastPosition);
-                        chrSummaries.add(chrSummary);
-                        nRows = 0;
-                        wgData = new WholeGenomeData(headings);
-                        chrRowCount = 0;
-
+                        // Start the next chromosome
+                        currentChr = thisChr;
+                        buffer = new ChromosomeBuffer(headings);
                     }
-                    lastPosition = reader.getPosition();
 
                     int location = -1;
                     try {
@@ -228,7 +220,9 @@ public class IGVDatasetParser {
                     int length = 1;
                     if (hasEndLocations) {
                         try {
-                            length = ParsingUtils.parseInt(tokens[endColumn].trim()) - location + 1;
+                            int end = ParsingUtils.parseInt(tokens[endColumn].trim());
+                            length = end - location + 1;
+                            buffer.ends.add(end);
 
                         } catch (NumberFormatException numberFormatException) {
                             log.error("Column " + tokens[endColumn] + " is not a number");
@@ -240,12 +234,13 @@ public class IGVDatasetParser {
 
                     updateLongestFeature(longestFeatureMap, thisChr, length);
 
-                    if (wgData.locations.size() > 0 && wgData.locations.get(wgData.locations.size() - 1) > location) {
+                    if (buffer.starts.size() > 0 && buffer.starts.get(buffer.starts.size() - 1) > location) {
                         throw new ParserException("File is not sorted, .igv and .cn files must be sorted by start position." +
                                 " Use igvtools (File > Run igvtools..) to sort the file.", count + headerRows);
                     }
 
-                    wgData.locations.add(location);
+                    buffer.starts.add(location);
+                    buffer.probes.add(probeColumn >= 0 ? tokens[probeColumn] : null);
 
                     for (int idx = 0; idx < headings.length; idx++) {
                         int i = firstDataColumn + idx * skipColumns;
@@ -260,13 +255,9 @@ public class IGVDatasetParser {
                             logNormalized = true;
                         }
                         String heading = headings[idx];
-                        wgData.data.get(heading).add(copyNo);
+                        buffer.data.get(heading).add(copyNo);
                     }
-
-                    nRows++;
-
                 }
-                chrRowCount++;
             }
 
             dataset.setLongestFeatureMap(longestFeatureMap);
@@ -294,17 +285,16 @@ public class IGVDatasetParser {
             }
         }
 
-        // Update last chromosome
-        if (chrSummary != null) {
-            updateWholeGenome(chrSummary.getName(), dataset, headings, wgData);
-            chrSummary.setNDataPoints(nRows);
+        // Add the last chromosome
+        if (currentChr != null) {
+            addChromosome(currentChr, buffer, dataset, chrDataList);
         }
 
         dataset.setLogNormalized(logNormalized);
         dataset.setDataMin(dataMin);
         dataset.setDataMax(dataMax);
 
-        return chrSummaries;
+        return chrDataList;
     }
 
     private void updateLongestFeature(Map<String, Integer> longestFeatureMap, String thisChr, int length) {
@@ -326,124 +316,6 @@ public class IGVDatasetParser {
             // This is an expected condition.
         }
         return copyNo;
-
-    }
-
-    /**
-     * Load data for a single chromosome.
-     *
-     * @param chrSummary
-     * @param dataHeaders
-     * @return
-     */
-    public ChromosomeData loadChromosomeData(ChromosomeSummary chrSummary, String[] dataHeaders) {
-
-        // InputStream is = null;
-        SeekableStream is = null;
-        try {
-            int skipColumns = hasCalls ? 2 : 1;
-
-            // Get an estimate of the number of snps (rows).  THIS IS ONLY AN ESTIMATE
-            int nRowsEst = chrSummary.getNDataPts();
-
-            is = IGVSeekableStreamFactory.getInstance().getStreamFor(dataResourceLocator.getPath());
-            is.seek(chrSummary.getStartPosition());
-            Utf8LineReader reader = new Utf8LineReader(is);
-
-
-            // Create containers to hold data
-            IntArrayList startLocations = new IntArrayList(nRowsEst);
-            IntArrayList endLocations = (hasEndLocations ? new IntArrayList(nRowsEst) : null);
-            List<String> probes = new ArrayList(nRowsEst);
-
-            Map<String, FloatArrayList> dataMap = new HashMap();
-            for (String h : dataHeaders) {
-                dataMap.put(h, new FloatArrayList(nRowsEst));
-            }
-
-            // Begin loop through rows
-            String chromosome = chrSummary.getName();
-            boolean chromosomeStarted = false;
-            String nextLine = reader.readLine();
-            int skippedLineCount = 0;
-            while ((nextLine != null) && (nextLine.trim().length() > 0)) {
-
-                if (!nextLine.startsWith("#")) {
-                    try {
-                        String[] tokens = Globals.tabPattern.split(nextLine, -1);
-
-                        String thisChromosome = genome.getCanonicalChrName(tokens[chrColumn].trim());
-                        if (thisChromosome.equals(chromosome)) {
-                            chromosomeStarted = true;
-
-                            // chromosomeData.setMarkerId(nRows, tokens[0]);
-
-                            // The probe.  A new string is created to prevent holding on to the entire row through a substring reference
-                            String probe = new String(tokens[probeColumn]);
-                            probes.add(probe);
-
-                            int start = ParsingUtils.parseInt(tokens[startColumn].trim()) - startBase;
-                            if (hasEndLocations) {
-                                endLocations.add(ParsingUtils.parseInt(tokens[endColumn].trim()));
-                            }
-
-                            startLocations.add(start);
-
-                            if (tokens.length <= firstDataColumn + (dataHeaders.length - 1) * skipColumns) {
-                                String msg = "Line has too few data columns: " + nextLine;
-                                log.error(msg);
-                                throw new RuntimeException(msg);
-                            }
-
-                            for (int idx = 0; idx < dataHeaders.length; idx++) {
-                                int i = firstDataColumn + idx * skipColumns;
-                                float copyNo = i <= lastDataColumn ? readFloat(tokens[i]) : Float.NaN;
-                                String heading = dataHeaders[idx];
-                                dataMap.get(heading).add(copyNo);
-                            }
-
-
-                        } else if (chromosomeStarted) {
-                            break;
-                        }
-
-                    } catch (NumberFormatException numberFormatException) {
-                        if (skippedLineCount < 5) {
-                            skippedLineCount++;
-                            if (skippedLineCount == 5) {
-                                log.warn("Skipping line: " + nextLine + (skippedLineCount < 5 ? "" : " Further skipped lines will not be logged"));
-                            }
-                        }
-                    }
-                }
-
-                nextLine = reader.readLine();
-            }
-
-            // Loop complete
-            ChromosomeData cd = new ChromosomeData(chrSummary.getName());
-            cd.setProbes(probes.toArray(new String[]{}));
-            cd.setStartLocations(startLocations.toArray());
-            if (hasEndLocations) {
-                cd.setEndLocations(endLocations.toArray());
-            }
-
-            for (String h : dataHeaders) {
-                cd.setData(h, dataMap.get(h).toArray());
-            }
-
-            return cd;
-
-        } catch (IOException ex) {
-            log.error("Error parsing igv file " + this.dataResourceLocator.getPath(), ex);
-            throw new RuntimeException("Error parsing igv file", ex);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                log.error("Error closing igv file " + this.dataResourceLocator.getPath(), e);
-            }
-        }
 
     }
 
@@ -605,41 +477,49 @@ public class IGVDatasetParser {
     }
 
 
-    private void updateWholeGenome(String currentChromosome, IGVDataset dataset, String[] headings,
-                                   IGVDatasetParser.WholeGenomeData wgData) {
+    /**
+     * Add the buffered rows of a chromosome to the list, and to the whole genome summary if the genome has one.
+     */
+    private void addChromosome(String chr, ChromosomeBuffer buffer, IGVDataset dataset, List<ChromosomeData> chrDataList) {
 
-
-        if (!genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
-            return;
+        ChromosomeData cd = new ChromosomeData(chr);
+        cd.setProbes(buffer.probes.toArray(new String[]{}));
+        cd.setStartLocations(buffer.starts.toArray());
+        if (buffer.ends != null) {
+            cd.setEndLocations(buffer.ends.toArray());
         }
+        Map<String, float[]> data = new HashMap(buffer.data.size());
+        for (String h : buffer.headings) {
+            float[] values = buffer.data.get(h).toArray();
+            cd.setData(h, values);
+            data.put(h, values);
+        }
+        chrDataList.add(cd);
 
-        // Update whole genome data
-        int[] locations = wgData.locations.toArray();
-        if (locations.length > 0) {
-            Map<String, float[]> tmp = new HashMap(wgData.data.size());
-            for (String s : wgData.headings) {
-                tmp.put(s, wgData.data.get(s).toArray());
-            }
-
-
+        if (genome.getHomeChromosome().equals(Globals.CHR_ALL) && cd.getStartLocations().length > 0) {
             GenomeSummaryData genomeSummary = dataset.getGenomeSummary();
             if (genomeSummary == null) {
-                genomeSummary = new GenomeSummaryData(genome, headings);
+                genomeSummary = new GenomeSummaryData(genome, buffer.headings);
                 dataset.setGenomeSummary(genomeSummary);
             }
-            genomeSummary.addData(currentChromosome, locations, tmp);
-
+            genomeSummary.addData(chr, cd.getStartLocations(), cd.getEndLocations(), data);
         }
     }
 
-    class WholeGenomeData {
+    /**
+     * The rows of one chromosome while it is being read.
+     */
+    class ChromosomeBuffer {
 
         String[] headings;
-        IntArrayList locations = new IntArrayList(50000);
+        IntArrayList starts = new IntArrayList(50000);
+        IntArrayList ends;
+        List<String> probes = new ArrayList(50000);
         Map<String, FloatArrayList> data = new HashMap();
 
-        WholeGenomeData(String[] headings) {
+        ChromosomeBuffer(String[] headings) {
             this.headings = headings;
+            this.ends = hasEndLocations ? new IntArrayList(50000) : null;
             for (String h : headings) {
                 data.put(h, new FloatArrayList(50000));
             }

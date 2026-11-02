@@ -35,7 +35,7 @@ public class DatasetMultiSampleSource extends MultiSampleDataSource {
                         for (String sample : sampleNames) {
                             dMap.put(sample, dataset.getData(sample, chr.getName()));
                         }
-                        genomeSummaryData.addData(chr.getName(), startLocations, dMap);
+                        genomeSummaryData.addData(chr.getName(), startLocations, dataset.getEndLocations(chr.getName()), dMap);
                     }
                 }
             }
@@ -80,12 +80,7 @@ public class DatasetMultiSampleSource extends MultiSampleDataSource {
 
         if (chr.equals(Globals.CHR_ALL)) {
             if (genomeSummaryData != null && windowFunction != WindowFunction.none) {
-                int[] locations = genomeSummaryData.getLocations();   // Must precede getData, which does not build the arrays
-                float[][] values = new float[sampleNames.size()][];
-                for (int n = 0; n < values.length; n++) {
-                    values[n] = genomeSummaryData.getData(sampleNames.get(n));
-                }
-                return summarize(locations, null, null, values, start, end);
+                return summaryScores();
             }
             return computeWholeGenomeRaw(start, end);
         }
@@ -95,6 +90,26 @@ public class DatasetMultiSampleSource extends MultiSampleDataSource {
             return emptyScores();
         }
         return summarize(starts, dataset.getEndLocations(chr), dataset.getFeatureNames(chr), sampleValues(chr), start, end);
+    }
+
+    /**
+     * Whole genome scores from the genome summary, one per summary point.  The summary is already a mean over the
+     * rows of each point at its own resolution, so it is not binned again.
+     */
+    private Map<String, List<LocusScore>> summaryScores() {
+        Map<String, List<LocusScore>> result = emptyScores();
+        int[] starts = genomeSummaryData.getLocations();   // Must precede getData, which does not build the arrays
+        int[] ends = genomeSummaryData.getEndLocations();
+        for (String sample : sampleNames) {
+            float[] values = genomeSummaryData.getData(sample);
+            List<LocusScore> list = result.get(sample);
+            for (int i = 0; i < starts.length; i++) {
+                if (!Float.isNaN(values[i])) {
+                    list.add(new BasicScore(starts[i], ends[i], values[i]));
+                }
+            }
+        }
+        return result;
     }
 
     /**

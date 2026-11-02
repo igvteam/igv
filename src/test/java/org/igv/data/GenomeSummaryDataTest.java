@@ -111,7 +111,7 @@ public class GenomeSummaryDataTest extends AbstractHeadlessTest {
 
     @Test
     public void testCombinePointsMultiChromo_02() throws Exception{
-        tstAccumulate(null, 7, -1);
+        tstAccumulate(null, 8, -1);
     }
 
 

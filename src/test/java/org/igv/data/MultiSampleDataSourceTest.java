@@ -48,13 +48,21 @@ public class MultiSampleDataSourceTest extends AbstractHeadlessTest {
             }
         }
 
-        // Whole genome, from the shared genome summary
+        // Whole genome: one score per genome summary point, at the summary's own resolution
         source.setWindowFunction(WindowFunction.mean);
         Map<String, List<LocusScore>> wg = source.getFeatures(Globals.CHR_ALL, 0, Integer.MAX_VALUE, 0);
-        DatasetDataSource single = new DatasetDataSource(samples[3], ds, genome);
-        List<LocusScore> expected = single.getSummaryScoresForRange(Globals.CHR_ALL, 0, Integer.MAX_VALUE, 0);
-        assertFalse(expected.isEmpty());
-        assertScoresEqual("whole genome", expected, wg.get(samples[3]));
+        GenomeSummaryData summary = ds.getGenomeSummary();
+        int[] starts = summary.getLocations();
+        int[] ends = summary.getEndLocations();
+        float[] values = summary.getData(samples[3]);
+        List<LocusScore> actual = wg.get(samples[3]);
+        assertEquals(starts.length, actual.size());
+        for (int i = 0; i < starts.length; i++) {
+            assertEquals(starts[i], actual.get(i).getStart());
+            assertEquals(ends[i], actual.get(i).getEnd());
+            assertEquals(values[i], actual.get(i).getScore(), 0f);
+            assertTrue(ends[i] > starts[i]);
+        }
     }
 
     @Test
