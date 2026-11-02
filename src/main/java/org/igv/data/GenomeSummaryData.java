@@ -199,7 +199,7 @@ public class GenomeSummaryData {
         dataPoints.clear();
     }
 
-    public int[] getLocations() {
+    public synchronized int[] getLocations() {
         if (locations == null) {
             createDataArrays();
         }
@@ -207,7 +207,7 @@ public class GenomeSummaryData {
         return locations;
     }
 
-    public int[] getEndLocations() {
+    public synchronized int[] getEndLocations() {
         if (endLocations == null) {
             createDataArrays();
         }
@@ -216,8 +216,8 @@ public class GenomeSummaryData {
     }
 
 
-    public float[] getData(String sample) {
-        if (!data.containsKey(sample)) {
+    public synchronized float[] getData(String sample) {
+        if (data == null) {
             createDataArrays();
         }
         return data.get(sample);
