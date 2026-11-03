@@ -130,6 +130,9 @@ public class TrackLoader {
                     if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
+                        if ("htsget".equals(format)) {
+                            locator.setHtsget(true);
+                        }
                     }
                 } catch (IOException ex) {
                     log.error("Error determining file format ", ex);
@@ -236,11 +239,15 @@ public class TrackLoader {
 
                 // Try overriding format
                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
-                if (determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
-                    locator.setFormat(determinedFormat);
-                    return load(locator, genome);
+                if (determinedFormat != null) {
+                    if ("htsget".equals(determinedFormat)) {
+                        locator.setHtsget(true);
+                        return load(locator, genome);
+                    } else if (!determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
+                        locator.setFormat(determinedFormat);
+                        return load(locator, genome);
+                    }
                 }
-
 
                 // If the file is too large, give up
                 final int tenMB = 10000000;

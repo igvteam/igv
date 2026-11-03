@@ -2,6 +2,7 @@ package org.igv.track;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
+import org.igv.htsget.HtsgetUtils;
 import org.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.igv.util.ParsingUtils;
@@ -59,7 +60,11 @@ public class FileFormatUtils {
             }
         }
 
-        return determineFormat(bytes);
+        if (HtsgetUtils.isHtsget(bytes)) {
+            return "htsget";
+        } else {
+            return determineFormat(bytes);
+        }
     }
 
     public static String determineFormat(byte[] bytes) {

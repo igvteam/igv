@@ -34,4 +34,16 @@ public class HtsgetReaderTest {
 
     }
 
+    /**
+     * BGZF EOF block as a base64 data URL, as returned by some servers for the final block.
+     */
+    @Test
+    public void testDecodeDataURL() {
+        String dataURL = "data:application/vnd.ga4gh.bam;base64,H4sIBAAAAAAA/wYAQkMCABsAAwAAAAAAAAAAAA==";
+        byte[] bytes = HtsgetReader.decodeDataURL(dataURL);
+        assertEquals(28, bytes.length);
+        assertEquals((byte) 0x1f, bytes[0]);
+        assertEquals((byte) 0x8b, bytes[1]);
+    }
+
 }
