@@ -1,5 +1,6 @@
 package org.igv.oauth;
 
+import htsjdk.samtools.util.IOUtil;
 import org.igv.logging.*;
 import org.igv.DirectoryManager;
 import org.igv.prefs.Constants;
@@ -144,7 +145,7 @@ public class OAuthUtils {
             is = openInputStream(urlOrPath);
             byte[] bytes = is.readAllBytes();
             if ((bytes[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (bytes[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8))) {
-                bytes = new GZIPInputStream(new ByteArrayInputStream(bytes)).readAllBytes();
+                bytes = IOUtil.openGzipOrBgzfStream(new ByteArrayInputStream(bytes)).readAllBytes();
             }
 
             return new String(bytes, "UTF-8");

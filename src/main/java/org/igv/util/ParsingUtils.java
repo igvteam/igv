@@ -1,5 +1,6 @@
 package org.igv.util;
 
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.ftp.FTPClient;
 import htsjdk.samtools.util.ftp.FTPReply;
 import htsjdk.tribble.readers.Utf8LineReader;
@@ -29,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author jrobinso
@@ -75,7 +75,7 @@ public class ParsingUtils {
     }
 
     /**
-     * Open an InputStream on the resource.  Wrap it in a GZIPInputStream if necessary.
+     * Open an InputStream on the resource.  Wrap it in a gzip stream if necessary.
      *
      * @param locator
      * @return
@@ -100,7 +100,7 @@ public class ParsingUtils {
         if (HttpUtils.isRemoteURL(locator.getPath())) {
             URL url = HttpUtils.createURL(locator.getPath());
             inputStream = HttpUtils.getInstance().openConnectionStream(url);
-            bis = new GZIPSafeBufferedStream(inputStream);
+            bis = new BufferedInputStream(inputStream);
         } else {
             String path = locator.getPath();
             if (path.startsWith("file://")) {
@@ -114,7 +114,7 @@ public class ParsingUtils {
         // Check if the stream is gzipped
         if (isGzip(bis)) {
             bis.reset();
-            return new GZIPInputStream(bis);
+            return IOUtil.openGzipOrBgzfStream(bis);
         } else {
             bis.reset();
             return bis;

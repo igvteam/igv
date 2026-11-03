@@ -1,5 +1,6 @@
 package org.igv.feature.genome.load;
 
+import htsjdk.samtools.util.IOUtil;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.util.HttpUtils;
@@ -8,7 +9,6 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -164,7 +164,7 @@ public class GenomeDescriptor {
 
         boolean isGZipped = fileName.toLowerCase().endsWith((".gz"));
         InputStream is = genomeZipFile.getInputStream(zipEntries.get(fileName));
-        return isGZipped ? new GZIPInputStream(is) : is;
+        return isGZipped ? IOUtil.openGzipOrBgzfStream(is) : is;
     }
 
     public InputStream getGeneStream()
@@ -173,7 +173,7 @@ public class GenomeDescriptor {
             return null;
         }
         InputStream is = genomeZipFile.getInputStream(zipEntries.get(geneFileName));
-        return (geneFileName.endsWith(".gz") ? new GZIPInputStream(is) : is);
+        return (geneFileName.endsWith(".gz") ? IOUtil.openGzipOrBgzfStream(is) : is);
     }
 
     public InputStream getChrAliasStream() throws IOException {

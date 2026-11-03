@@ -1,6 +1,7 @@
 package org.igv.data.expression;
 
 
+import htsjdk.samtools.util.IOUtil;
 import org.igv.logging.*;
 import org.igv.Globals;
 import org.igv.exceptions.LoadResourceFromServerException;
@@ -14,7 +15,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author: Marc-Danie Nazaire
@@ -92,7 +92,7 @@ public class ProbeToLocusMap {
                 is = new FileInputStream(urlString);
             }
             if (urlString.endsWith("gz")) {
-                is = new GZIPInputStream(is);
+                is = IOUtil.openGzipOrBgzfStream(is);
             }
             bufReader = new BufferedReader(new InputStreamReader(is));
             loadMapping(bufReader, map);
