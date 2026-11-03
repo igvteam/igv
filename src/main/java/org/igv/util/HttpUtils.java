@@ -1,6 +1,7 @@
 package org.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
+import htsjdk.samtools.util.IOUtil;
 import org.igv.Globals;
 import org.igv.exceptions.HttpResponseException;
 import org.igv.logging.LogManager;
@@ -246,9 +247,11 @@ public class HttpUtils {
 
     public byte[] getContentsAsBytes(URL url, Map<String, String> headers) throws IOException {
         InputStream is = null;
-        HttpURLConnection conn = openConnection(url, headers);
+        Map<String, String> reqProperties = headers == null ? new HashMap<>() : new HashMap<>(headers);
+        reqProperties.put("Accept-Encoding", "gzip");
+        HttpURLConnection conn = openConnection(url, reqProperties);
         try {
-            is = conn.getInputStream();
+            is = decodedInputStream(conn);
             return is.readAllBytes();
         } catch (IOException e) {
             readErrorStream(conn);  // Consume content
@@ -263,9 +266,10 @@ public class HttpUtils {
         InputStream is = null;
         Map<String, String> reqProperties = new HashMap();
         reqProperties.put("Accept", "application/json,text/plain");
+        reqProperties.put("Accept-Encoding", "gzip");
         HttpURLConnection conn = openConnection(url, reqProperties);
         try {
-            is = conn.getInputStream();
+            is = decodedInputStream(conn);
             return ParsingUtils.readContentsFromStream(is);
 
         } catch (IOException e) {
@@ -274,6 +278,19 @@ public class HttpUtils {
         } finally {
             if (is != null) is.close();
         }
+    }
+
+    /**
+     * Return the response body, decompressed if the server applied gzip content encoding.  Only used for
+     * whole-body requests, not range requests.
+     */
+    private InputStream decodedInputStream(HttpURLConnection conn) throws IOException {
+        InputStream is = conn.getInputStream();
+        String encoding = conn.getHeaderField("Content-Encoding");
+        if (encoding != null && (encoding.equalsIgnoreCase("gzip") || encoding.equalsIgnoreCase("x-gzip"))) {
+            is = IOUtil.openGzipOrBgzfStream(is);
+        }
+        return is;
     }
 
     public String doPost(URL url, Map<String, String> params) throws IOException {

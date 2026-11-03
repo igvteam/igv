@@ -2,6 +2,7 @@ package org.igv.track;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
+import htsjdk.samtools.util.IOUtil;
 import org.igv.htsget.HtsgetUtils;
 import org.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.igv.ucsc.twobit.UnsignedByteBufferImpl;
@@ -12,7 +13,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 
 public class FileFormatUtils {
 
@@ -44,7 +44,7 @@ public class FileFormatUtils {
         SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
         if (isGzip(seekableStream)) {
             seekableStream.seek(0);
-            GZIPInputStream inputStream = new GZIPInputStream(seekableStream);
+            InputStream inputStream = IOUtil.openGzipOrBgzfStream(seekableStream);
             inputStream.read(bytes);
         } else {
             seekableStream.seek(0);
