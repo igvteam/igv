@@ -189,11 +189,10 @@ public class VariantTrackMenuHelper {
             return null;
         }
 
-        JMenu menu = new JMenu("INFO Field");
-        if (track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && track.getColorByAttribute() != null) {
-            // A JMenu has no checkbox -- show one, so the selection is visible without opening the submenu
-            menu.setIcon(new CheckIcon());
-        }
+        // A JMenu has no check box -- show one when a field is selected, so the selection is visible without
+        // opening the submenu
+        boolean selected = track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && track.getColorByAttribute() != null;
+        JMenu menu = selected ? new CheckedMenu("INFO Field") : new JMenu("INFO Field");
 
         List<JMenuItem> fieldItems = new ArrayList<>(infoFields.size());
         for (VCFInfoHeaderLine infoField : infoFields) {
@@ -453,58 +452,53 @@ public class VariantTrackMenuHelper {
 
 
     /**
-     * A check mark, for a menu that stands for a selected item.  It is the look-and-feel's own check box menu item
-     * mark, so it matches the ones on the other color-by items in any theme.
+     * A menu that stands for a selected item, drawn with the check mark of a selected check box menu item so the
+     * selection shows without opening it.  A JMenu has no check box, and an icon would go in the icon column, not
+     * the check column, under some look-and-feels (Aqua, Metal, Windows).  So the mark is taken from the
+     * look-and-feel itself: a selected and an unselected check box item of this menu's size and text are painted,
+     * and the pixels that differ -- the mark, where and how that look-and-feel draws it, in any theme, highlighted
+     * or not -- are drawn over the menu.
      */
-    private static class CheckIcon implements Icon {
+    private static class CheckedMenu extends JMenu {
 
-        private final Icon checkIcon = UIManager.getIcon("CheckBoxMenuItem.checkIcon");
-        private final JCheckBoxMenuItem selectedItem = new JCheckBoxMenuItem("", true);
-        // False if the look-and-feel has no mark, or one that paints nothing for a detached item, as Nimbus's
-        private final boolean useCheckIcon = checkIcon != null && paintsSomething(checkIcon);
+        CheckedMenu(String text) {
+            super(text);
+        }
 
-        private boolean paintsSomething(Icon icon) {
-            if (icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
-                return false;
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            int w = getWidth();
+            int h = getHeight();
+            if (w <= 0 || h <= 0) {
+                return;
             }
-            BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = image.createGraphics();
-            try {
-                icon.paintIcon(selectedItem, g, 0, 0);
-            } finally {
-                g.dispose();
-            }
-            for (int x = 0; x < image.getWidth(); x++) {
-                for (int y = 0; y < image.getHeight(); y++) {
-                    if ((image.getRGB(x, y) >>> 24) != 0) {
-                        return true;
+            BufferedImage selected = paintCheckItem(w, h, true);
+            BufferedImage unselected = paintCheckItem(w, h, false);
+            BufferedImage mark = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    int rgb = selected.getRGB(x, y);
+                    if (rgb != unselected.getRGB(x, y)) {
+                        mark.setRGB(x, y, rgb);
                     }
                 }
             }
-            return false;
+            g.drawImage(mark, 0, 0, null);
         }
 
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            if (!useCheckIcon) {
-                // No usable check box menu item mark -- draw one
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(c.getForeground());
-                g2.setStroke(new BasicStroke(1.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.drawPolyline(new int[]{x + 2, x + 5, x + 10}, new int[]{y + 6, y + 9, y + 2}, 3);
-                g2.dispose();
-                return;
-            }
-            selectedItem.setForeground(c.getForeground());
-            checkIcon.paintIcon(selectedItem, g, x, y);
-        }
-
-        public int getIconWidth() {
-            return useCheckIcon ? checkIcon.getIconWidth() : 12;
-        }
-
-        public int getIconHeight() {
-            return useCheckIcon ? checkIcon.getIconHeight() : 12;
+        private BufferedImage paintCheckItem(int w, int h, boolean selected) {
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(getText(), selected);
+            item.setFont(getFont());
+            item.setEnabled(isEnabled());
+            // Highlighted when this menu is -- under the mouse, or open
+            item.getModel().setArmed(getModel().isArmed() || isSelected());
+            item.setSize(w, h);
+            BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = image.createGraphics();
+            item.paint(g);
+            g.dispose();
+            return image;
         }
     }
 }
