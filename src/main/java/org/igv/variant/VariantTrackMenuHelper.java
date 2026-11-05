@@ -12,7 +12,6 @@ import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
 import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
-import org.igv.ui.legend.HeatmapLegendEditor;
 import org.igv.ui.util.MessageUtils;
 
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
@@ -309,34 +308,6 @@ public class VariantTrackMenuHelper {
      */
     private static double rangeEnd(double[] range) {
         return range[1] > range[0] ? range[1] : range[0] + 1;
-    }
-
-    /**
-     * Record that a numeric attribute holds categories, by saving a scheme with a color per loaded value.  The
-     * scheme is what stops the scale dialog reappearing, and the colors are then editable from the legend and
-     * shareable like any other.  Values seen later still get colors from the palette.
-     */
-    private static boolean saveDiscreteScheme(VariantTrack track, String infoKey) {
-
-        // Checked before writing anything, so an attribute over the limit does not leave a scheme behind
-        if (!isWithinCategoryLimit(track, infoKey)) {
-            return false;
-        }
-
-        Map<String, Color> colors = new LinkedHashMap<>();
-        for (String value : track.getAttributeValues(infoKey)) {
-            colors.put(value, track.getAttributeColor(infoKey, value));
-        }
-
-        try {
-            // The declaration persists the answer even when no values are loaded to color
-            VariantColorSchemes.saveScheme(infoKey, colors, true);
-            return true;
-        } catch (Exception e) {
-            log.error("Error saving colors for " + infoKey, e);
-            MessageUtils.showMessage("Error saving colors: " + e.getMessage());
-            return false;
-        }
     }
 
     private static JMenuItem getShowGenotypes(VariantTrack track) {
