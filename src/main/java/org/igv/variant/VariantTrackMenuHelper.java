@@ -188,10 +188,10 @@ public class VariantTrackMenuHelper {
             return null;
         }
 
-        // A JMenu has no check box -- show one when a field is selected, so the selection is visible without
-        // opening the submenu
+        // A JMenu has no check box -- show one (checked when a field is selected, empty if the look-and-feel draws
+        // one for unselected items), so the selection is visible without opening the submenu
         boolean selected = track.getSiteColorMode() == VariantTrack.ColorMode.ATTRIBUTE && track.getColorByAttribute() != null;
-        JMenu menu = selected ? new CheckedMenu("INFO Field") : new JMenu("INFO Field");
+        JMenu menu = new CheckedMenu("INFO Field", selected);
 
         List<JMenuItem> fieldItems = new ArrayList<>(infoFields.size());
         for (VCFInfoHeaderLine infoField : infoFields) {
@@ -423,17 +423,21 @@ public class VariantTrackMenuHelper {
 
 
     /**
-     * A menu that stands for a selected item, drawn with the check mark of a selected check box menu item so the
-     * selection shows without opening it.  A JMenu has no check box, and an icon would go in the icon column, not
-     * the check column, under some look-and-feels (Aqua, Metal, Windows).  So the mark is taken from the
-     * look-and-feel itself: a selected and an unselected check box item of this menu's size and text are painted,
-     * and the pixels that differ -- the mark, where and how that look-and-feel draws it, in any theme, highlighted
-     * or not -- are drawn over the menu.
+     * A menu drawn with the check box of a check box menu item -- checked or not, as the look-and-feel draws it --
+     * so a selection shows without opening the menu.  A JMenu has no check box, and an icon would go in the icon
+     * column, not the check column, under some look-and-feels (Aqua, Metal, Windows).  So the mark is taken from
+     * the look-and-feel itself: a selected and an unselected check box item of this menu's size and text are
+     * painted, and the pixels that differ are drawn over the menu.  The text is needed: some look-and-feels (Aqua)
+     * position the mark by it.  Some look-and-feels (Metal) also draw a box that is the same selected or not; it
+     * is found by comparing an unselected check box item with a plain item, both without text.
      */
     private static class CheckedMenu extends JMenu {
 
-        CheckedMenu(String text) {
+        private final boolean checked;
+
+        CheckedMenu(String text, boolean checked) {
             super(text);
+            this.checked = checked;
         }
 
         @Override
@@ -444,22 +448,24 @@ public class VariantTrackMenuHelper {
             if (w <= 0 || h <= 0) {
                 return;
             }
-            BufferedImage selected = paintCheckItem(w, h, true);
-            BufferedImage unselected = paintCheckItem(w, h, false);
+            BufferedImage selected = paintItem(new JCheckBoxMenuItem(getText(), true), w, h);
+            BufferedImage unselected = paintItem(new JCheckBoxMenuItem(getText(), false), w, h);
+            BufferedImage emptyCheck = paintItem(new JCheckBoxMenuItem("", false), w, h);
+            BufferedImage emptyPlain = paintItem(new JMenuItem(""), w, h);
             BufferedImage mark = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    int rgb = selected.getRGB(x, y);
-                    if (rgb != unselected.getRGB(x, y)) {
-                        mark.setRGB(x, y, rgb);
+                    if (checked && selected.getRGB(x, y) != unselected.getRGB(x, y)) {
+                        mark.setRGB(x, y, selected.getRGB(x, y));
+                    } else if (emptyCheck.getRGB(x, y) != emptyPlain.getRGB(x, y)) {
+                        mark.setRGB(x, y, emptyCheck.getRGB(x, y));
                     }
                 }
             }
             g.drawImage(mark, 0, 0, null);
         }
 
-        private BufferedImage paintCheckItem(int w, int h, boolean selected) {
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(getText(), selected);
+        private BufferedImage paintItem(JMenuItem item, int w, int h) {
             item.setFont(getFont());
             item.setEnabled(isEnabled());
             // Highlighted when this menu is -- under the mouse, or open
