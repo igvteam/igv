@@ -93,6 +93,7 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
         String contents = String.join("\n",
                 "CLNSIG\tPathogenic\tnot-a-color",
                 "CLNSIG\ttoo-few-fields",
+                "../OTHER\tBenign\t0,0,255",
                 "CLNSIG\tBenign\t0,0,255",
                 "");
 
@@ -100,6 +101,8 @@ public class VariantColorSchemeTest extends AbstractHeadlessTest {
 
         assertNull(scheme.getColor("CLNSIG", "Pathogenic"));
         assertEquals(new Color(0, 0, 255), scheme.getColor("CLNSIG", "Benign"));
+        // The key names a file in the store, so only a VCF INFO ID will do
+        assertEquals(java.util.Set.of("CLNSIG"), scheme.getKeys());
     }
 
     @Test

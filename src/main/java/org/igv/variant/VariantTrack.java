@@ -1022,22 +1022,25 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
     /**
      * @return a copy of the colors the track shows for an INFO attribute from its own tables -- assigned from the
-     * palette, overlaid by those chosen -- as written to sessions.  Palette colors a scheme has since replaced are
-     * left out: the scheme is a preference, and a preference is not written.  Never null.
+     * palette, overlaid by those chosen -- as written to sessions.  Palette colors a scheme has since replaced, or
+     * a chosen "*" entry hides, are left out: the scheme is a preference, and a preference is not written, and the
+     * hidden colors would come back as chosen ones that beat "*".  Never null.
      */
     public Map<String, Color> getAllAttributeColors(String key) {
         boolean schemeScale = VariantColorSchemes.getScale(key) != null;
         synchronized (attributeColorTables) {
             Map<String, Color> copy = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, Color> chosen = getAttributeColors(key);
             Map<String, Color> palette = paletteColorTables.get(key);
-            if (palette != null && !schemeScale) {
+            // A "*" entry colors every value not chosen, so no palette color is shown either
+            if (palette != null && !schemeScale && !chosen.containsKey(WILDCARD_VALUE)) {
                 palette.forEach((value, color) -> {
                     if (VariantColorSchemes.getColor(key, value) == null) {
                         copy.put(value, color);
                     }
                 });
             }
-            copy.putAll(getAttributeColors(key));
+            copy.putAll(chosen);
             return copy;
         }
     }

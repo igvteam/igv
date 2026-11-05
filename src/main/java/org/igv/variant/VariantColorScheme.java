@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Colors for the values of a VCF INFO attribute, read from a tab delimited file.  IGV keeps one attribute per
@@ -57,6 +58,11 @@ public class VariantColorScheme {
     private static final String NAME_DIRECTIVE = "#name=";
     private static final String DESCRIPTION_DIRECTIVE = "#description=";
     private static final String COLORS_SECTION = "#colors";
+
+    /**
+     * A legal VCF INFO ID.  The key names the scheme's file in the store, so nothing else may pass as one.
+     */
+    private static final Pattern INFO_ID = Pattern.compile("[A-Za-z_][0-9A-Za-z_.]*|1000G");
 
     /**
      * The value that sets the color for anything the scheme does not explicitly cover.
@@ -139,6 +145,11 @@ public class VariantColorScheme {
             }
 
             String[] tokens = line.split("\t");
+
+            if (!INFO_ID.matcher(tokens[0].trim()).matches()) {
+                log.warn("Skipping color scheme line, not a VCF INFO ID: " + line);
+                continue;
+            }
 
             if (tokens.length == 2) {
                 scheme.addTwoFieldRow(tokens[0].trim(), tokens[1].trim());
