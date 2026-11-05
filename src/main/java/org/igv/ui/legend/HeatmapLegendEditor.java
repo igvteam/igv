@@ -16,39 +16,15 @@ import org.jdesktop.layout.LayoutStyle;
  */
 public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
     private boolean canceled = true;
-    private boolean discreteSelected = false;
     private ContinuousColorScale colorScheme;
 
     public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme) {
-        this(parent, modal, colorScheme, null);
-    }
-
-    /**
-     * @param discreteLabel label for a button offering an alternative to a scale, for callers where the data
-     *                      might be categorical rather than continuous.  Null for no such button.
-     */
-    public HeatmapLegendEditor(java.awt.Frame parent, boolean modal, ColorScale colorScheme, String discreteLabel) {
         super(parent, modal);
         this.colorScheme = (ContinuousColorScale) colorScheme;
         initComponents();
-        if (discreteLabel != null) {
-            addDiscreteButton(discreteLabel);
-        }
         initValues();
         this.setLocationRelativeTo(parent);
         this.getRootPane().setDefaultButton(okButton);
-    }
-
-    private void addDiscreteButton(String label) {
-        JButton discreteButton = new JButton(label);
-        discreteButton.addActionListener(e -> {
-            discreteSelected = true;
-            canceled = false;
-            setVisible(false);
-        });
-        buttonPanel.add(discreteButton, 0);
-        pack();
-        setLocationRelativeTo(getOwner());
     }
 
     /**
@@ -61,13 +37,6 @@ public class HeatmapLegendEditor extends org.igv.ui.IGVDialog  {
         editor.setTitle(title);
         editor.setVisible(true);
         return editor.isCanceled() ? null : editor.getColorScheme();
-    }
-
-    /**
-     * @return true if the user chose the discrete alternative rather than defining a scale.
-     */
-    public boolean isDiscreteSelected() {
-        return discreteSelected;
     }
 
     private void initValues() {
