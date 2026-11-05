@@ -176,11 +176,7 @@ public class JSONSessionReader implements SessionReader {
                             if (urlToFutureIndex.containsKey(url)) {
                                 futureIndex = urlToFutureIndex.get(url);
                             } else {
-                                ResourceLocator locator = new ResourceLocator(url);
-                                String format = childTrackJson.optString("format", null);
-                                if (format != null) {
-                                    locator.setFormat(format);
-                                }
+                                ResourceLocator locator = createLocator(url, childTrackJson);
                                 futureIndex = allTrackFutures.size();
                                 urlToFutureIndex.put(url, futureIndex);
                                 allTrackFutures.add(CompletableFuture.supplyAsync(() -> igv.load(locator))
@@ -233,11 +229,7 @@ public class JSONSessionReader implements SessionReader {
                         futureIndex = urlToFutureIndex.get(path);
                     } else {
                         // Create new future for this URL
-                        ResourceLocator locator = new ResourceLocator(path);
-                        String format = trackJson.optString("format", null);
-                        if (format != null) {
-                            locator.setFormat(format);
-                        }
+                        ResourceLocator locator = createLocator(path, trackJson);
                         futureIndex = allTrackFutures.size();
                         urlToFutureIndex.put(path, futureIndex);
                         allTrackFutures.add(CompletableFuture.supplyAsync(() -> igv.load(locator))
@@ -541,6 +533,26 @@ public class JSONSessionReader implements SessionReader {
     private static String getId(Track track) {
         ResourceLocator locator = track.getResourceLocator();
         return locator != null && locator.getPath() != null ? locator.getPath() : track.getId();
+    }
+
+    /**
+     * Create a locator for a track JSON object, with the optional format, index, and link (bigChain) properties.
+     */
+    private ResourceLocator createLocator(String path, JSONObject trackJson) {
+        ResourceLocator locator = new ResourceLocator(path);
+        String format = trackJson.optString("format", null);
+        if (format != null) {
+            locator.setFormat(format);
+        }
+        String indexPath = trackJson.optString("indexURL", trackJson.optString("indexPath", null));
+        if (indexPath != null) {
+            locator.setIndexPath(resolvePath(indexPath));
+        }
+        String linkURL = trackJson.optString("linkURL", null);
+        if (linkURL != null) {
+            locator.setLinkURL(resolvePath(linkURL));
+        }
+        return locator;
     }
 
     /**

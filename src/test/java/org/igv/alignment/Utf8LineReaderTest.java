@@ -1,7 +1,7 @@
 package org.igv.alignment;
 
 import org.igv.util.TestUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -18,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author jrobinso
  */
-public class AsciiLineReaderTest {
+public class Utf8LineReaderTest {
 
-    public AsciiLineReaderTest() {
+    public Utf8LineReaderTest() {
     }
 
     @BeforeClass
@@ -36,7 +36,7 @@ public class AsciiLineReaderTest {
         File testFile = new File(TestUtils.DATA_DIR + "igv/recombRate.ens.igv.txt");
 
 
-        AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
+        Utf8LineReader reader = new Utf8LineReader(new FileInputStream(testFile));
         BufferedReader br = new BufferedReader(new FileReader(testFile));
 
         String arLine = null;
@@ -49,7 +49,7 @@ public class AsciiLineReaderTest {
         assertTrue(count > 0);
     }
 
-    //AsciiLineReader used to be faster than BufferedReader, no longer.
+    //Utf8LineReader used to be faster than BufferedReader, no longer.
     //Still may be faster over HTTP
     //TODO Check over HTTP
     @Ignore
@@ -58,7 +58,7 @@ public class AsciiLineReaderTest {
         File testFile = new File(TestUtils.DATA_DIR + "cn/HindForGISTIC.hg16.cn");
 
 
-        AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
+        Utf8LineReader reader = new Utf8LineReader(new FileInputStream(testFile));
 
         long asciiCount = 0;
         long t02 = System.currentTimeMillis();
@@ -76,7 +76,7 @@ public class AsciiLineReaderTest {
         long bufferedReaderTime = System.currentTimeMillis() - t0;
 
 
-        // It will be considered a bug if AsciiLineReader is slower than BufferedReader
+        // It will be considered a bug if Utf8LineReader is slower than BufferedReader
         assertTrue(bufferedReaderTime > asciiReaderTime);
         assertEquals(asciiCount, brCount);
 

@@ -615,6 +615,14 @@ public class ResourceLocator {
         return trackConfig.trixURL;
     }
 
+    public String getLinkURL() {
+        return trackConfig.linkURL;
+    }
+
+    public void setLinkURL(String linkURL) {
+        trackConfig.linkURL = linkURL;
+    }
+
     public Map<String, String> getMetadata() {
         return metadata;
     }

@@ -140,7 +140,7 @@ public class CollapsiblePanel extends JPanel {
                     isLoaded ||
                             ((loadedTrackPaths == null || loadedTrackPaths.isEmpty()) && autoselectDefaults &&
                                     (autoselectTracks.contains(box.trackConfig.id) || selectionBoxes.size() == 1)));
-            box.setEnabled(this.autoselectDefaults || !isLoaded);
+            box.setEnabled(true);   // Loaded tracks can be unchecked to unload them
         }
         updateLabel();
     }

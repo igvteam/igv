@@ -1,15 +1,15 @@
 package org.igv.tools;
 
+import htsjdk.samtools.util.IOUtil;
 import org.igv.logging.*;
 import org.igv.util.HttpUtils;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author jrobinso
@@ -159,7 +159,7 @@ public class TestFileGenerator {
 
     static List<String> getExpressionProbes() {
         String urlString = "http://www.broadinstitute.org/igv/resources/probes/affy/affy_human_mappings.txt.gz";
-        AsciiLineReader bufReader = null;
+        Utf8LineReader bufReader = null;
         List<String> probes = new ArrayList(60000);
         try {
             InputStream is = null;
@@ -171,9 +171,9 @@ public class TestFileGenerator {
                 is = new FileInputStream(urlString);
             }
             if (urlString.endsWith("gz")) {
-                is = new GZIPInputStream(is);
+                is = IOUtil.openGzipOrBgzfStream(is);
             }
-            bufReader = new AsciiLineReader(is);
+            bufReader = new Utf8LineReader(is);
 
             String nextLine = "";
             while ((nextLine = bufReader.readLine()) != null) {

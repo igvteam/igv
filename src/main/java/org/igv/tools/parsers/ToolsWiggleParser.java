@@ -10,7 +10,7 @@ import org.igv.track.TrackProperties;
 import org.igv.track.DataType;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -83,7 +83,7 @@ public class ToolsWiggleParser extends WiggleParser{
      * @return
      */
     public static boolean isWiggle(ResourceLocator file) {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         try {
             reader = ParsingUtils.openAsciiReader(file);
             String nextLine = null;
@@ -108,7 +108,7 @@ public class ToolsWiggleParser extends WiggleParser{
     }
 
     private void parseHeader() {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
 
         // The DataConsumer interface takes an array of data per position, however wig
         // files contain a single data point.  Create an "array" once that can

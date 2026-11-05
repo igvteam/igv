@@ -5,7 +5,7 @@
  */
 package org.igv.track;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
 import org.igv.logging.LogManager;
@@ -257,7 +257,7 @@ public class AttributeManager implements AttributeSupplier {
      * Load attributes from an ascii file in "Sample Info" format.
      */
     public void loadSampleInfo(ResourceLocator locator) {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         try {
             reader = ParsingUtils.openAsciiReader(locator);
 
@@ -305,7 +305,7 @@ public class AttributeManager implements AttributeSupplier {
      * #samplemapping (track id -> sample mapping table)
      * #colors (color table)
      */
-    private void loadSampleTable(AsciiLineReader reader, String path) throws IOException {
+    private void loadSampleTable(Utf8LineReader reader, String path) throws IOException {
 
         String[] colHeadings = null;
 

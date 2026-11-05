@@ -1,6 +1,6 @@
 package org.igv.alignment;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.Globals;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.ClinVar;
@@ -279,7 +279,7 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
 
         knownSnps = new HashMap<>();
-        try (AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(snpFile))) {
+        try (Utf8LineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(snpFile))) {
             String nextLine = "";
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = nextLine.split("\t");

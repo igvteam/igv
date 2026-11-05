@@ -2,6 +2,8 @@ package org.igv.track;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
+import htsjdk.samtools.util.IOUtil;
+import org.igv.htsget.HtsgetUtils;
 import org.igv.ucsc.twobit.UnsignedByteBuffer;
 import org.igv.ucsc.twobit.UnsignedByteBufferImpl;
 import org.igv.util.ParsingUtils;
@@ -11,7 +13,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 
 public class FileFormatUtils {
 
@@ -36,34 +37,6 @@ public class FileFormatUtils {
         }
     }
 
-    /**
-     * The start of a BCF file: whether the file is compressed, and its BCF version.
-     */
-    public record BCFHeader(boolean compressed, int majorVersion, int minorVersion) {
-    }
-
-    /**
-     * Read the magic number and version at the start of a BCF file, decompressing it if necessary.
-     *
-     * @return the header, or null if the file does not start with the BCF magic number
-     */
-    public static BCFHeader readBCFHeader(String path) throws IOException {
-        byte[] bytes = new byte[5];
-        boolean compressed;
-        try (SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
-            compressed = isGzip(seekableStream);
-            seekableStream.seek(0);
-            InputStream inputStream = compressed ? new GZIPInputStream(seekableStream) : seekableStream;
-            if (inputStream.readNBytes(bytes, 0, bytes.length) < bytes.length) {
-                return null;
-            }
-        }
-        if (bytes[0] != 'B' || bytes[1] != 'C' || bytes[2] != 'F') {
-            return null;
-        }
-        return new BCFHeader(compressed, bytes[3], bytes[4]);
-    }
-
     public static String determineFormat(String path) throws IOException {
 
         byte[] bytes = new byte[1000];
@@ -71,7 +44,7 @@ public class FileFormatUtils {
         SeekableStream seekableStream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
         if (isGzip(seekableStream)) {
             seekableStream.seek(0);
-            GZIPInputStream inputStream = new GZIPInputStream(seekableStream);
+            InputStream inputStream = IOUtil.openGzipOrBgzfStream(seekableStream);
             inputStream.read(bytes);
         } else {
             seekableStream.seek(0);
@@ -87,7 +60,11 @@ public class FileFormatUtils {
             }
         }
 
-        return determineFormat(bytes);
+        if (HtsgetUtils.isHtsget(bytes)) {
+            return "htsget";
+        } else {
+            return determineFormat(bytes);
+        }
     }
 
     public static String determineFormat(byte[] bytes) {

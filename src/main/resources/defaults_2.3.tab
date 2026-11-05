@@ -61,7 +61,7 @@ IGV.chart.track.height	40
 IGV.genome.sequence.dir	http://igv.broadinstitute.org/genomes/genomes.tab
 IGV.join.adjacent.segments	false
 IGV.single.track.pane	false
-IGV.track.height	15
+IGV.track.height	20
 IGV.track.show.attribute.views	true
 IGV.track.show.missing.data	false
 IONTORRENT.FLOWDIST_BINSIZE	15

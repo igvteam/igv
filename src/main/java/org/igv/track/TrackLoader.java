@@ -1,6 +1,5 @@
 package org.igv.track;
 
-import htsjdk.samtools.util.IOUtil;
 import htsjdk.tribble.AsciiFeatureCodec;
 import htsjdk.tribble.Feature;
 import htsjdk.variant.vcf.VCFHeader;
@@ -50,7 +49,9 @@ import org.igv.seg.FreqData;
 import org.igv.seg.SegTrack;
 import org.igv.seg.SegmentedDataSet;
 import org.igv.tdf.TDFDataSource;
+import org.igv.tdf.TDFMultiSampleSource;
 import org.igv.tdf.TDFReader;
+import org.igv.ucsc.bb.BBChainFeatureSource;
 import org.igv.ucsc.bb.BBDataSource;
 import org.igv.ucsc.bb.BBFeatureSource;
 import org.igv.ucsc.bb.BBFile;
@@ -74,7 +75,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.igv.prefs.Constants.SAM_SHOW_ALIGNMENT_TRACK;
 import static org.igv.prefs.Constants.SHOW_SIZE_WARNING;
@@ -87,6 +90,9 @@ import static org.igv.track.AttributeManager.GROUP_AUTOSCALE;
 public class TrackLoader {
 
     private static Logger log = LogManager.getLogger(TrackLoader.class);
+
+    // Initial height for psl, bigPsl, and bigChain tracks, which are displayed expanded
+    private static final int ALIGNMENT_FEATURE_HEIGHT = 200;
 
     private static Collection<? extends Class> NOLogExceptions = Arrays.asList(TribbleIndexNotFoundException.class);
 
@@ -124,6 +130,9 @@ public class TrackLoader {
                     if (tmp != null && !tmp.equals("sampleinfo")) {
                         format = tmp;
                         locator.setFormat(format);
+                        if ("htsget".equals(format)) {
+                            locator.setHtsget(true);
+                        }
                     }
                 } catch (IOException ex) {
                     log.error("Error determining file format ", ex);
@@ -230,11 +239,15 @@ public class TrackLoader {
 
                 // Try overriding format
                 String determinedFormat = FileFormatUtils.determineFormat(locator.getPath());
-                if (determinedFormat != null && !determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
-                    locator.setFormat(determinedFormat);
-                    return load(locator, genome);
+                if (determinedFormat != null) {
+                    if ("htsget".equals(determinedFormat)) {
+                        locator.setHtsget(true);
+                        return load(locator, genome);
+                    } else if (!determinedFormat.equals("sampleinfo") && !determinedFormat.equals(format)) {
+                        locator.setFormat(determinedFormat);
+                        return load(locator, genome);
+                    }
                 }
-
 
                 // If the file is too large, give up
                 final int tenMB = 10000000;
@@ -341,44 +354,8 @@ public class TrackLoader {
     }
 
     private void loadVCF(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException, TribbleIndexNotFoundException {
-        if ("bcf".equals(locator.getFormat())) {
-            checkBCFSupported(locator);   // Before opening the file, which may offer to create an index
-        }
         TribbleFeatureSource src = TribbleFeatureSource.getFeatureSource(locator, genome);
         loadVCFWithSource(locator, src, newTracks);
-    }
-
-    /**
-     * htsjdk, and so IGV, reads only BCF version 2.1, and decompresses a file only if its name ends in a compressed
-     * extension (.gz, .bgz, ...).  Files written by bcftools are version 2.2 and usually compressed, and htsjdk rejects
-     * them with a header parsing error that reads like a damaged file, so explain instead.
-     */
-    private static void checkBCFSupported(ResourceLocator locator) throws IOException {
-
-        FileFormatUtils.BCFHeader header = FileFormatUtils.readBCFHeader(locator.getPath());
-        if (header == null) {
-            return;     // Not recognizably BCF -- leave any error to htsjdk
-        }
-
-        String urlPath = locator.getURLPath();      // Without any query string
-        String name = urlPath.substring(urlPath.lastIndexOf('/') + 1);
-        boolean version21 = header.majorVersion() == 2 && header.minorVersion() == 1;
-        if (version21 && (!header.compressed() || IOUtil.hasBlockCompressedExtension(name))) {
-            return;
-        }
-
-        String vcfName = name.replaceFirst("\\.bcf(\\.gz|\\.bgz)?$", "") + ".vcf.gz";
-        String conversion = "bcftools view -Oz -o " + vcfName + " " + name + "<br>" +
-                "bcftools index -t " + vcfName;
-        if (version21) {
-            throw new DataLoadException("This is a compressed BCF file, but its name does not end in .gz or .bgz, " +
-                    "which IGV needs to read it.  Rename it, for example to " + name + ".gz, or convert it to an " +
-                    "indexed VCF:<br>" + conversion);
-        }
-        throw new DataLoadException("This is a " + (header.compressed() ? "compressed " : "") + "BCF version " +
-                header.majorVersion() + "." + header.minorVersion() + " file.  IGV can read only BCF version 2.1; " +
-                "BCF files written by bcftools are version 2.2.<br>" +
-                "To view it, convert it to an indexed VCF, for example:<br>" + conversion);
     }
 
     private void loadVCFWithSource(ResourceLocator locator, FeatureSource src, List<Track> newTracks) throws IOException {
@@ -541,6 +518,9 @@ public class TrackLoader {
                     locator.getPath().contains(".regionpeak")) {
                 t.setUseScore(true);
             }
+            if ("psl".equals(format) || "pslx".equals(format)) {
+                initAlignmentFeatureTrack(t, locator);
+            }
             newTracks.add(t);
         }
     }
@@ -620,13 +600,21 @@ public class TrackLoader {
             // Counter for generating ID
             TrackProperties trackProperties = ds.getTrackProperties();
             String path = locator.getPath();
-            for (String trackName : ds.getTrackNames()) {
-                DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
-                String trackId = path + "_" + trackName;
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            if (ds.getSampleNames().length > 1 && isMultiSampleType(ds.getType())) {
+                SegTrack track = new SegTrack(locator, TrackType.gct, path, locator.getTrackName(),
+                        new DatasetMultiSampleSource(ds, genome), genome);
                 track.setRenderer(new HeatmapRenderer());
                 track.setProperties(trackProperties);
                 newTracks.add(track);
+            } else {
+                for (String trackName : ds.getSampleNames()) {
+                    DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
+                    String trackId = path + "_" + trackName;
+                    DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+                    track.setRenderer(new HeatmapRenderer());
+                    track.setProperties(trackProperties);
+                    newTracks.add(track);
+                }
             }
         }
 
@@ -650,6 +638,27 @@ public class TrackLoader {
         newTracks.add(track);
     }
 
+    /**
+     * The .igv format (and a .tdf made from it) can hold any data type; the "#type" comment is carried through
+     * gct -> igv -> tdf conversion.  Expression matrices get the gct track type, everything else the generic igv type.
+     */
+    private static TrackType multiSampleTrackType(DataType dataType) {
+        return dataType == DataType.GENE_EXPRESSION ? TrackType.gct : TrackType.igv;
+    }
+
+    /**
+     * Data types whose multi-column files (.igv, .cn, .gct, .tdf) load as one multi-sample track, consistent with
+     * segmented copy number and mutation files.  Other types load one track per column.  These are legacy formats;
+     * the list is fixed.
+     */
+    private static final Set<DataType> MULTI_SAMPLE_TYPES = EnumSet.of(DataType.COPY_NUMBER,
+            DataType.ALLELE_SPECIFIC_COPY_NUMBER, DataType.GENE_EXPRESSION, DataType.DNA_METHYLATION,
+            DataType.LOH, DataType.RNAI, DataType.CHIP_CHIP);
+
+    private static boolean isMultiSampleType(DataType dataType) {
+        return MULTI_SAMPLE_TYPES.contains(dataType);
+    }
+
     private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
@@ -665,7 +674,16 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         DataType type = ds.getType();
-        for (String trackName : ds.getTrackNames()) {
+
+        if (ds.getSampleNames().length > 1 && isMultiSampleType(type)) {
+            // One track, one row per sample
+            SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, dsName, new DatasetMultiSampleSource(ds, genome), genome);
+            track.setProperties(trackProperties);
+            newTracks.add(track);
+            return;
+        }
+
+        for (String trackName : ds.getSampleNames()) {
 
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
@@ -776,9 +794,9 @@ public class TrackLoader {
         }
 
         String path = locator.getPath();
-        boolean multiTrack = ds.getTrackNames().length > 1;
+        boolean multiTrack = ds.getSampleNames().length > 1;
 
-        for (String heading : ds.getTrackNames()) {
+        for (String heading : ds.getSampleNames()) {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
@@ -823,9 +841,20 @@ public class TrackLoader {
 
         int trackNumber = 0;
         String path = locator.getPath();
-        boolean multiTrack = reader.getTrackNames().length > 1;
+        boolean multiTrack = reader.getSampleNames().length > 1;
 
-        for (String heading : reader.getTrackNames()) {
+        if (multiTrack && isMultiSampleType(type)) {
+            // One track, one row per sample
+            String trackName = name == null ? locator.getTrackName() : name;
+            SegTrack track = new SegTrack(locator, multiSampleTrackType(type), path, trackName, new TDFMultiSampleSource(reader, genome), genome);
+            if (props != null) {
+                track.setProperties(props);
+            }
+            newTracks.add(track);
+            return;
+        }
+
+        for (String heading : reader.getSampleNames()) {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
@@ -858,15 +887,23 @@ public class TrackLoader {
             BBDataSource bigwigSource = new BBDataSource(reader, genome);
             track = new DataSourceTrack(locator, trackId, trackName, bigwigSource);
         } else if (reader.isBigBedFile()) {
-            BBFeatureSource featureSource = new BBFeatureSource(reader, genome);
+
+            FeatureType featureType = reader.getFeatureType();
+
             switch (reader.getFeatureType()) {
                 case INTERACT:
-                    track = new InteractionTrack(locator, new WrappedInteractionSource(featureSource));
+                    track = new InteractionTrack(locator, new WrappedInteractionSource(new BBFeatureSource(reader, genome)));
+                    break;
+                case CHAIN:
+                    track = new FeatureTrack(locator, new BBChainFeatureSource(reader, openLinkFile(locator, genome), genome));
                     break;
                 default:
-                    track = new FeatureTrack(locator, featureSource);
+                    track = new FeatureTrack(locator, new BBFeatureSource(reader, genome));
             }
+            if (featureType == FeatureType.CHAIN || featureType == FeatureType.PSL) {
+                initAlignmentFeatureTrack(track, locator);
 
+            }
 
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
@@ -876,6 +913,40 @@ public class TrackLoader {
             newTracks.add(track);
         }
 
+    }
+
+    /**
+     * Alignment tracks (psl, bigPsl, bigChain) are displayed expanded with an initial height, unless the locator
+     * (e.g. a track hub "visibility" setting) declares a display mode, which is applied after loading.
+     */
+    private static void initAlignmentFeatureTrack(Track track, ResourceLocator locator) {
+        TrackProperties tp = locator.getTrackProperties();
+        if (tp == null || tp.getDisplayMode() == null) {
+            track.setDisplayMode(Track.DisplayMode.EXPANDED);
+            track.setHeight(ALIGNMENT_FEATURE_HEIGHT);
+        }
+    }
+
+    /**
+     * Open the "bigLink" file accompanying a bigChain file.  The link file is specified by the "linkDataUrl" trackDb
+     * property, or by UCSC convention is the chain file path with ".link.bb" replacing ".bb".  Returns null if the
+     * link file cannot be opened, in which case chains are displayed without aligned blocks.
+     */
+    private BBFile openLinkFile(ResourceLocator locator, Genome genome) {
+        String linkURL = locator.getLinkURL();
+        String base = locator.getURLPath();
+        if (linkURL == null && base.endsWith(".bb")) {
+            String query = locator.getURLQueryString();
+            linkURL = base.substring(0, base.length() - 3) + ".link.bb" + (query.isEmpty() ? "" : "?" + query);
+        }
+        if (linkURL != null) {
+            try {
+                return new BBFile(linkURL, genome);
+            } catch (Exception e) {
+                log.warn("Could not open bigLink file " + linkURL + ": " + e.getMessage());
+            }
+        }
+        return null;
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

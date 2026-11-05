@@ -55,6 +55,10 @@ public class PSLRecord extends BasicFeature {
     private int qStart;
     private int qEnd;
 
+    public void setTSize(int tSize) {
+        this.tSize = tSize;
+    }
+
     public void setMatch(int match) {
         this.match = match;
     }

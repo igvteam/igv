@@ -165,6 +165,10 @@ public class BBFile {
                         featureType = FeatureType.RMSK;
                     } else if (astable != null && astable.name.toLowerCase().contains("interact")) {
                         featureType = FeatureType.INTERACT;
+                    } else if (astable != null && "bigChain".equals(astable.name)) {
+                        featureType = FeatureType.CHAIN;
+                    } else if (astable != null && "bigPsl".equals(astable.name)) {
+                        featureType = FeatureType.PSL;
                     }
                 }
                 if (featureType == null) {
@@ -588,7 +592,7 @@ public class BBFile {
             float sumData = bb.getFloat();
             float sumSquares = bb.getFloat();
 
-            if (chrIdx > 0) {
+            if (chrIdx >= 0) {
                 if (chromId < chrIdx || (chromId == chrIdx && chromEnd < start)) continue;
                 else if (chromId > chrIdx || (chromId == chrIdx && chromStart >= end)) break;
             }

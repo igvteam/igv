@@ -1,0 +1,44 @@
+# Excerpt of https://storage.googleapis.com/gcp.wenglab.org/hubs/dna20/hg38/trackDb.txt.  Every data track carries a
+# "view" line, including one directly under the composite with no view container at all.
+
+track byOntology
+superTrack on
+shortLabel Experiments by Ontology
+longLabel Experiments by Ontology
+
+	track largeIntestine
+	compositeTrack on
+	parent byOntology
+	shortLabel  large intestine
+	type bigWig
+	visibility show
+	longLabel colon, epithelium, intestine, large intestine
+
+		track ENCSR091QXPview
+		parent largeIntestine on
+		view ENCSR091QXP
+		visibility dense
+		shortLabel H3K36me3/HCT116 peaks
+		longLabel ChIP-seq of H3K36me3 in HCT116 (ENCSR091QXP) peaks (replicated peaks)
+		type bigBed
+
+			track ENCFF948PMS
+			parent ENCSR091QXPview on
+			shortLabel H3K36me3/HCT116 peaks
+			longLabel ChIP-seq of H3K36me3 in HCT116 (ENCSR091QXP) peaks (replicated peaks)
+			view ENCSR091QXP
+			type bigBed
+			color 0,128,0
+			bigDataUrl https://www.encodeproject.org/files/ENCFF948PMS/@@download/ENCFF948PMS.bigBed?proxy=true
+			visibility dense
+
+		track ENCFF514ZYW
+		parent largeIntestine on
+		shortLabel H3K36me3/HCT116 signal
+		longLabel ChIP-seq of H3K36me3 in HCT116 (ENCSR091QXP/ENCFF514ZYW) signal (fold change over control)
+		view bigWig
+		type bigWig
+		color 0,128,0
+		bigDataUrl https://www.encodeproject.org/files/ENCFF514ZYW/@@download/ENCFF514ZYW.bigWig?proxy=true
+		visibility full
+

@@ -20,11 +20,6 @@ public class HeatmapRenderer extends DataRenderer {
 
     private static Logger log = LogManager.getLogger(HeatmapRenderer.class);
 
-    @Override
-    public int getMinimumHeight() {
-        return 1;
-    }
-
     /**
      * Render the data track as a heat map.
      * <p/>

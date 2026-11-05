@@ -2,7 +2,7 @@ package org.igv.feature;
 
 
 import org.igv.logging.*;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;

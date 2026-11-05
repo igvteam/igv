@@ -4,7 +4,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import org.igv.util.collections.SortingCollection;
 import org.igv.logging.*;
 import org.igv.feature.genome.ChromosomeNameComparator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.*;
 import java.util.Comparator;
@@ -68,7 +68,7 @@ public abstract class AsciiSorter implements Sorter {
             SortingCollection cltn = SortingCollection.newInstance(SortableRecord.class, codec, comparator, maxRecords, tmpDir);
 
             Parser parser = getParser();
-            AsciiLineReader reader = new AsciiLineReader(fis);
+            Utf8LineReader reader = new Utf8LineReader(fis);
 
             String firstDataRow = writeHeader(reader, writer);
             if (firstDataRow != null) {
@@ -126,7 +126,7 @@ public abstract class AsciiSorter implements Sorter {
      * @return
      * @throws IOException
      */
-    abstract String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException;
+    abstract String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException;
 
     public void setTmpDir(File tmpDir) {
         this.tmpDir = tmpDir;

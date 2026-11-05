@@ -269,46 +269,20 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
                 // Genark genome, whose list has no "url" column.
                 final String genomePath = rec.getPath();
 
+                final boolean downloadSequence = downloadSequenceRB.isSelected();
+                final boolean downloadAnnotations = downloadAnnotationsRB.isSelected();
+
                 Runnable showDialog = () -> {
                     try {
 
-                        GenomeConfig config = null;
-                        if (genomePath.endsWith(".json")) {
-                            config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
-                        } else if (HubGenomeLoader.isHubURL(genomePath)) {
-                            Hub hub = HubParser.loadHub(genomePath);
-                            config = hub.getGenomeConfigs().get(0);
-                            config.setHubs(Arrays.asList(genomePath));
-                        }
+                        File localFile = createLocalGenome(rec, downloadSequence, downloadAnnotations, true);
 
-                        if (config == null) {
-
+                        if (localFile != null) {
+                            GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
+                        } else {
                             // A format that carries its own sequence and annotations, such as genbank (.gbk).  There
                             // is no separate definition to rename, choose annotations from, or download.
                             GenomeManager.getInstance().loadGenome(genomePath);
-
-                        } else {
-
-                            config.setName(rec.getAttributeValue("common name"));
-
-                            // If config has a hub,  allow changing default annotation.
-                            if (config.getHubs() != null && config.getHubs().size() > 0) {
-
-                                List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
-                                if (selectedTracks != null && selectedTracks.size() > 0) {
-                                    config.setTracks(selectedTracks);
-                                }
-                            }
-
-                            File localFile = GenomeDownloadUtils.downloadGenome(config,
-                                    downloadSequenceRB.isSelected(),
-                                    downloadAnnotationsRB.isSelected());
-
-                            if (localFile != null) {
-                                GenomeManager.getInstance().loadGenome(localFile.getAbsolutePath());
-                            } else {
-                                GenomeManager.getInstance().loadGenome(genomePath);
-                            }
                         }
 
                         // Legacy cleanup
@@ -333,6 +307,59 @@ public class GenomeSelectionDialog extends org.igv.ui.IGVDialog {
         }
 
         setVisible(false);
+    }
+
+    /**
+     * Create the local genome json for a hosted genome, as selected from this dialog.  The definition is fetched from
+     * the json or hub URL of the record, named from the record, and saved to the genome cache directory, with
+     * sequence and annotations downloaded if requested.  Also used when a track hub references a hosted genome, so
+     * that loading a genome through a hub behaves exactly as loading it from here.
+     *
+     * @param rec                 the hosted genome record
+     * @param downloadSequence    download the sequence to the genome directory
+     * @param downloadAnnotations download annotation files to the genome directory
+     * @param selectAnnotations   prompt now for default annotation tracks from the genome's hub, if it has one.  If
+     *                            false the prompt is deferred to the first time the genome is loaded.
+     * @return the local genome json, or null if the record's format has no separate definition (e.g. genbank), in
+     * which case the record's path should be loaded directly.
+     * @throws IOException
+     */
+    public static File createLocalGenome(GenomeListItem rec, boolean downloadSequence, boolean downloadAnnotations,
+                                         boolean selectAnnotations) throws IOException {
+
+        final String genomePath = rec.getPath();
+
+        GenomeConfig config = null;
+        if (genomePath.endsWith(".json")) {
+            config = (new JsonGenomeLoader(genomePath)).loadGenomeConfig();
+        } else if (HubGenomeLoader.isHubURL(genomePath)) {
+            Hub hub = HubParser.loadHub(genomePath);
+            config = hub.getGenomeConfig(rec.getId());
+            if (config != null) {
+                config = config.copy();   // the hub's config is cached for the session; do not edit it in place
+                config.setHubs(Arrays.asList(genomePath));
+            }
+        }
+
+        if (config == null) {
+            return null;
+        }
+
+        config.setName(rec.getAttributeValue("common name"));
+
+        // If config has a hub,  allow changing default annotation.
+        if (config.getHubs() != null && config.getHubs().size() > 0) {
+            if (selectAnnotations) {
+                List<TrackConfig> selectedTracks = GenomeManager.selectAnnotationTracks(config, GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
+                if (selectedTracks != null && selectedTracks.size() > 0) {
+                    config.setTracks(selectedTracks);
+                }
+            } else {
+                config.selectAnnotationsOnLoad = true;
+            }
+        }
+
+        return GenomeDownloadUtils.downloadGenome(config, downloadSequence, downloadAnnotations);
     }
 
     private static void removeDotGenomeFile(String id) {

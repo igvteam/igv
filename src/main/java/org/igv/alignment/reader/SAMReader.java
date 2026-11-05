@@ -42,8 +42,7 @@ public class SAMReader implements AlignmentReader<SAMAlignment> {
         }
         factory = SamReaderFactory.makeDefault().
                 validationStringency(ValidationStringency.SILENT).
-                referenceSource(new IGVReferenceSource()).
-                enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
+                referenceSource(new IGVReferenceSource());
         loadHeader();
     }
 

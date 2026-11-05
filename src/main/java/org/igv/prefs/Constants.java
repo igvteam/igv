@@ -80,7 +80,6 @@ final public class Constants {
     public static final String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
 
     public static final String FEATURE_NAME_PROPERTY = "FEATURE_NAME_PROPERTY";
-    public static final String INITIAL_TRACK_HEIGHT = "15";
     public static final String COLOR_SCALE_KEY = "COLOR_SCALE_";
     /** Suffix marking the dark-theme variant of a color scale preference, e.g. COLOR_SCALE_COPY_NUMBER_DARK */
     public static final String DARK_SCALE_SUFFIX = "_DARK";
@@ -97,6 +96,7 @@ final public class Constants {
     public static final String GENE_LIST_BED_FORMAT = "GENE_LIST_BED_FORMAT";
     public static final String SESSION_RELATIVE_PATH = "SESSION.RELATIVE_PATH";
     public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
+    public static final String HUB_SELECT_CURRENT_GENOME_ONLY = "HUB_SELECT_CURRENT_GENOME_ONLY";
 
     // Interaction track
     public static final String ARC_TYPE = "ARC_TYPE";

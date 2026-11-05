@@ -1,5 +1,6 @@
 package org.igv.ucsc.hub;
 
+import javax.swing.JLabel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -37,6 +38,11 @@ public class HubTableModel extends AbstractTableModel {
     @Override
     public int getColumnCount() {
         return columnHeadings.length;
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return columnIndex == 0 ? Boolean.class : (columnIndex == 4 ? JLabel.class : String.class);
     }
 
     @Override

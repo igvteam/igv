@@ -12,7 +12,7 @@ import org.igv.util.ResourceLocator;
 import org.igv.util.collections.DownsampledDoubleArrayList;
 import org.igv.util.collections.FloatArrayList;
 import org.igv.util.collections.IntArrayList;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -125,7 +125,7 @@ public class WiggleParser {
         initializeDataHolders();
         unsortedChromosomes = new HashSet();
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         String nextLine = null;
         int lineNumber = 0;
         float[] dataArray = null;

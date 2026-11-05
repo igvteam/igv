@@ -1,6 +1,6 @@
 package org.igv.alignment.reader;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.logging.*;
 import org.igv.prefs.Constants;
 import org.igv.prefs.IGVPreferences;
@@ -56,7 +56,7 @@ public class ReadGroupFilter {
 
             if (filter == null) {
                 Set<String> readGroups = new HashSet();
-                AsciiLineReader reader = null;
+                Utf8LineReader reader = null;
                 try {
                     reader = ParsingUtils.openAsciiReader(new ResourceLocator(filterURL));
                     String nextLine;

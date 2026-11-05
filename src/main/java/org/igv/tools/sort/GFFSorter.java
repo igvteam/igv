@@ -1,6 +1,6 @@
 package org.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class GFFSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) {
         String nextLine = null;
 
         try {

@@ -39,7 +39,7 @@ public class VCFWriterTest extends AbstractHeadlessTest {
                 .setReferenceDictionary(seqDict)
                 .setOptions(options);
 
-        VariantContextWriter writer = builder.setOutputFile(outFile).build();
+        VariantContextWriter writer = builder.setOutputPath(outFile.toPath()).build();
         return writer;
     }
 

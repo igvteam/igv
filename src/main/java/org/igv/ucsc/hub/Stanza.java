@@ -41,7 +41,7 @@ class Stanza {
     }
 
     boolean hasOwnProperty(String key) {
-        return getProperty(key) != null;
+        return this.properties.get(key) != null;
     }
 
     String getProperty(String key) {

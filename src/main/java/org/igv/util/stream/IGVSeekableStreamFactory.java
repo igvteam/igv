@@ -46,7 +46,7 @@ public class IGVSeekableStreamFactory implements ISeekableStreamFactory {
                 final URL url = HttpUtils.createURL(path);
                 is = new IGVSeekableFTPStream(url);
             } else {
-                is = new SeekableFileStream(new File(path));
+                is = new SeekableFileStream(new File(path).toPath());
             }
             return is;
         }

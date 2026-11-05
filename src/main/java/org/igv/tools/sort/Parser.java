@@ -1,7 +1,7 @@
 package org.igv.tools.sort;
 
 import org.igv.Globals;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ public class Parser {
     }
 
 
-    public SortableRecord readNextRecord(AsciiLineReader reader) {
+    public SortableRecord readNextRecord(Utf8LineReader reader) {
         String nextLine = null;
         try {
             nextLine = reader.readLine();

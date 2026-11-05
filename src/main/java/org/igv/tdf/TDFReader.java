@@ -344,7 +344,7 @@ public class TDFReader {
     /**
      * @return the trackNames
      */
-    public String[] getTrackNames() {
+    public String[] getSampleNames() {
         return trackNames;
     }
 
@@ -477,7 +477,7 @@ public class TDFReader {
         if (wgTile == null) {
 
             int binCount = 700;
-            int nTracks = this.getTrackNames().length; // TODO -- is there a more direct way to know this?
+            int nTracks = this.getSampleNames().length; // TODO -- is there a more direct way to know this?
             double binSize = (genome.getWGLength() / 1000) / binCount;
             Accumulator[][] accumulators = new Accumulator[nTracks][binCount];
 

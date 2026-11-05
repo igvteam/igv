@@ -260,7 +260,7 @@ public class SortingCollection<T> implements Iterable<T> {
         this.iterationStarted = true;
         this.cleanedUp = true;
 
-        IOUtil.deleteFiles(this.files);
+        IOUtil.deletePaths(IOUtil.filesToPaths(this.files));
     }
 
     /**

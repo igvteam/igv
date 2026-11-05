@@ -78,7 +78,7 @@ public class ExpressionDataset implements Dataset {
         }
     }
 
-    public String[] getTrackNames() {
+    public String[] getSampleNames() {
         return columnHeadings;
     }
 

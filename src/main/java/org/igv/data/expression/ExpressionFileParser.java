@@ -22,7 +22,7 @@ import org.igv.ui.IGV;
 import org.igv.ui.util.MagetabSignalDialog;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -103,7 +103,7 @@ public class ExpressionFileParser {
      */
 
     public static boolean parsableMAGE_TAB(ResourceLocator file) throws IOException {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         try {
             reader = ParsingUtils.openAsciiReader(file);
             String nextLine = null;

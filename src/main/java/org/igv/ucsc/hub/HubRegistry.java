@@ -21,6 +21,7 @@ public class HubRegistry {
 
     private static List<HubDescriptor> selectedHubDescriptors = null;
     private static List<HubDescriptor> ucscPublicHubDescriptors = null;
+    private static List<HubDescriptor> allHubDescriptors = null;
 
     private static Map<String, List<HubDescriptor>> allHubsMap = null;
     private static Map<String, List<HubDescriptor>> selectedHubsMap = null;
@@ -30,22 +31,48 @@ public class HubRegistry {
     }
 
     /**
-     * Get all user selected hubs.
+     * Get all user selected hubs, for all genomes.
      *
      * @return List of HubDescriptor objects
      */
-    private static List<HubDescriptor> getSelectedHubs() {
+    public static List<HubDescriptor> getSelectedHubs() {
         if (selectedHubDescriptors == null) {
             selectedHubDescriptors = readSelectedHubs();
         }
         return selectedHubDescriptors;
     }
 
-    private static List<HubDescriptor> getUcscPublicHubDescriptors() {
-        if (ucscPublicHubDescriptors == null) {
+    public static List<HubDescriptor> getUcscPublicHubDescriptors() {
+        // An empty list means the fetch failed; it is not cached, so a later call can retry.  The derived lists are
+        // reset so they are rebuilt from the new result.
+        if (ucscPublicHubDescriptors == null || ucscPublicHubDescriptors.isEmpty()) {
             ucscPublicHubDescriptors = loadUCSCDescriptors();
+            allHubDescriptors = null;
+            allHubsMap = null;
         }
         return ucscPublicHubDescriptors;
+    }
+
+    /**
+     * Get all hubs (UCSC public + user selected), for all genomes.  User selected hubs not in the UCSC list are
+     * listed first.
+     *
+     * @return List of HubDescriptor objects
+     */
+    public static List<HubDescriptor> getAllHubs() {
+        if (allHubDescriptors == null) {
+            allHubDescriptors = new ArrayList<>(getUcscPublicHubDescriptors());
+
+            // Add user-selected hubs not already in the list
+            Set<String> existingUrls = allHubDescriptors.stream()
+                    .map(HubDescriptor::getUrl)
+                    .collect(Collectors.toSet());
+            List<HubDescriptor> hubsToAdd = getSelectedHubs().stream()
+                    .filter(hub -> !existingUrls.contains(hub.getUrl()))
+                    .collect(Collectors.toList());
+            allHubDescriptors.addAll(0, hubsToAdd);
+        }
+        return allHubDescriptors;
     }
 
     /**
@@ -56,19 +83,8 @@ public class HubRegistry {
      */
     public static List<HubDescriptor> getAllHubsForGenome(String ucscID) {
         if (allHubsMap == null) {
-            List<HubDescriptor> allHubDescriptors = new ArrayList<>(getUcscPublicHubDescriptors());
-
-            // Add user-selected hubs not already in the list
-            Set<String> existingUrls = allHubDescriptors.stream()
-                    .map(HubDescriptor::getUrl)
-                    .collect(Collectors.toSet());
-            List<HubDescriptor> hubsToAdd = getSelectedHubs().stream()
-                    .filter(hub -> !existingUrls.contains(hub.getUrl()))
-                    .collect(Collectors.toList());
-            allHubDescriptors.addAll(0, hubsToAdd);
-
             // Build the map of hubs by genome
-            allHubsMap = allHubDescriptors.stream()
+            allHubsMap = getAllHubs().stream()
                     .flatMap(hub -> Arrays.stream(hub.getDbList().split(","))
                             .map(db -> Map.entry(db.trim(), hub)))
                     .collect(Collectors.groupingBy(
@@ -77,7 +93,7 @@ public class HubRegistry {
                     ));
         }
 
-        return allHubsMap.getOrDefault(ucscID, Collections.emptyList());
+        return hubsForGenome(allHubsMap, ucscID);
     }
 
 
@@ -97,19 +113,41 @@ public class HubRegistry {
                             Collectors.mapping(Map.Entry::getValue, Collectors.toList())
                     ));
         }
-        return selectedHubsMap.getOrDefault(ucscID, Collections.emptyList());
+        return hubsForGenome(selectedHubsMap, ucscID);
+    }
+
+    /**
+     * Hubs keyed by the genome's id plus any keyed by its other name: the GenArk accession for a UCSC name, or the
+     * UCSC name for an accession (a genome created from GenArk keeps the accession as its id).
+     */
+    private static List<HubDescriptor> hubsForGenome(Map<String, List<HubDescriptor>> map, String ucscID) {
+        List<HubDescriptor> hubs = new ArrayList<>(map.getOrDefault(ucscID, Collections.emptyList()));
+        String alias = Hub.getGenomeAlias(ucscID);
+        if (alias == null) {
+            alias = Hub.getUcscIdForAlias(ucscID);
+        }
+        if (alias != null) {
+            for (HubDescriptor hub : map.getOrDefault(alias, Collections.emptyList())) {
+                if (!hubs.contains(hub)) {
+                    hubs.add(hub);
+                }
+            }
+        }
+        return hubs;
     }
 
     public static void addUserHub(Hub hub) {
-        if (selectedHubDescriptors == null) {
-            selectedHubDescriptors = new ArrayList<>();
+        List<HubDescriptor> selected = getSelectedHubs();
+        if (selected.stream().anyMatch(hd -> hd.getUrl().equals(hub.getUrl()))) {
+            return;
         }
-        selectedHubDescriptors.add(hub.getDescriptor());
+        selected.add(hub.getDescriptor());
         writeSelectedHubs();
 
         // Reset the maps so they will be rebuilt on next access
         selectedHubsMap = null;
         allHubsMap = null;
+        allHubDescriptors = null;
     }
 
 
@@ -125,6 +163,7 @@ public class HubRegistry {
         // Reset the maps so they will be rebuilt on next access
         selectedHubsMap = null;
         allHubsMap = null;
+        allHubDescriptors = null;
     }
 
     private static void writeSelectedHubs() {

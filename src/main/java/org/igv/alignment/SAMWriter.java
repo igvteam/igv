@@ -35,7 +35,7 @@ public class SAMWriter {
     public int writeToFile(File outFile, Iterator<SAMAlignment> alignments, boolean createIndex) {
         SAMFileWriterFactory factory = new SAMFileWriterFactory();
         factory.setCreateIndex(createIndex);
-        SAMFileWriter writer = factory.makeSAMOrBAMWriter(header, true, outFile);
+        SAMFileWriter writer = factory.makeSAMOrBAMWriter(header, true, outFile.toPath());
         return writeAlignments(writer, alignments);
     }
 

@@ -2,7 +2,6 @@ package org.igv.util.stream;
 
 import htsjdk.tribble.util.URLHelper;
 import org.igv.logging.*;
-import org.igv.util.GZIPSafeBufferedStream;
 import org.igv.util.HttpUtils;
 
 import java.io.IOException;
@@ -39,13 +38,8 @@ public class IGVUrlHelper implements URLHelper {
         }
     }
 
-    /**
-     * The stream is wrapped to work around the GZIPInputStream available() bug when htsjdk decodes gzipped files.
-     * See https://github.com/igvteam/igv/issues/1693
-     */
     public InputStream openInputStream() throws IOException {
-        InputStream stream = HttpUtils.getInstance().openConnectionStream(url);
-        return stream == null ? null : new GZIPSafeBufferedStream(stream);
+        return HttpUtils.getInstance().openConnectionStream(url);
     }
 
     public InputStream openInputStreamForRange(long start, long end) throws IOException {

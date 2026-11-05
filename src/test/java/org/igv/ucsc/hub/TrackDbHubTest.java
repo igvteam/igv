@@ -1,6 +1,8 @@
 package org.igv.ucsc.hub;
 
 import org.igv.feature.genome.load.TrackConfig;
+import org.igv.prefs.Constants;
+import org.igv.prefs.PreferencesManager;
 import org.igv.util.TestUtils;
 import org.junit.Test;
 
@@ -46,6 +48,31 @@ public class TrackDbHubTest {
     }
 
     /**
+     * Hub heights below the minimum track height preference are raised to it; larger heights are left alone.
+     */
+    @Test
+    public void testMinimumHeight() throws IOException {
+
+        TestUtils.resetPrefsFile();
+        int minimumHeight = PreferencesManager.getPreferences().getAsInt(Constants.TRACK_HEIGHT_KEY);
+        assertTrue(minimumHeight > 12);
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/min_height_trackDb.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, null);
+        List<TrackConfig> tracks = trackDbHub.getGroupedTrackConfigurations("test").get(0).tracks;
+        assertEquals(2, tracks.size());
+
+        TrackConfig small = tracks.get(0);
+        assertEquals(64, (int) small.maxHeight);
+        assertEquals(minimumHeight, (int) small.height);
+        assertEquals(minimumHeight, (int) small.minHeight);
+
+        TrackConfig large = tracks.get(1);
+        assertEquals(50, (int) large.height);
+        assertEquals(30, (int) large.minHeight);
+    }
+
+    /**
      * group roadmap
      * .. track CompRoadmapbySample
      * .... track CompRoadmap_HUES64
@@ -65,7 +92,12 @@ public class TrackDbHubTest {
         List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
         assertEquals(1, containers.size());
 
-        TrackConfigContainer superTrack = containers.get(0);
+        // No groups.txt, so "group roadmap" produces an implicit top-level container
+        TrackConfigContainer group = containers.get(0);
+        assertEquals("roadmap", group.name);
+        assertEquals(1, group.children.size());
+
+        TrackConfigContainer superTrack = group.children.get(0);
         assertEquals("CompRoadmapbySample", superTrack.name);
         assertEquals(1, superTrack.children.size());
 
@@ -81,6 +113,44 @@ public class TrackDbHubTest {
         TrackConfig track = view.tracks.get(0);
         Map<String, String> meta = track.attributes;
         assertEquals(4, meta.size());
+    }
+
+    @Test
+    public void testUnsupportedTrackCount() throws IOException {
+
+        // groups_trackDb.txt's only data tracks are two halSnake tracks, a type IGV does not support, so both are
+        // counted and nothing is left to show
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups_trackDb.txt");
+        List<Stanza> groupStanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/groups.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, groupStanzas);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(2, trackDbHub.getUnsupportedTrackCount());
+        assertTrue(containers.isEmpty());
+    }
+
+    /**
+     * A data track that also declares "view" (the Weng lab ENCODE hubs do this on every data track) is a track, not
+     * a view container.  Treating it as a container left the whole hub empty.
+     */
+    @Test
+    public void testViewOnDataTrack() throws IOException {
+
+        List<Stanza> stanzas = HubParser.loadStanzas(TestUtils.DATA_DIR + "hubs/view_on_datatrack_trackDb.txt");
+        TrackDbHub trackDbHub = new TrackDbHub(stanzas, null);
+        List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
+        assertEquals(0, trackDbHub.getUnsupportedTrackCount());
+        assertEquals(1, containers.size());
+
+        TrackConfigContainer composite = containers.get(0).children.get(0);
+        assertEquals("largeIntestine", composite.name);
+        // The bigWig with "view bigWig" sits directly in the composite
+        assertEquals(1, composite.tracks.size());
+        assertEquals("ENCFF514ZYW", composite.tracks.get(0).id);
+        // The bigBed sits in its real view container
+        assertEquals(1, composite.children.size());
+        assertEquals("ENCSR091QXPview", composite.children.get(0).name);
+        assertEquals(1, composite.children.get(0).tracks.size());
+        assertEquals("ENCFF948PMS", composite.children.get(0).tracks.get(0).id);
     }
 
     @Test

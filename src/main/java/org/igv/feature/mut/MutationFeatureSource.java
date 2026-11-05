@@ -1,6 +1,6 @@
 package org.igv.feature.mut;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.exceptions.DataLoadException;
 import org.igv.feature.LocusScore;
 import org.igv.feature.genome.Genome;
@@ -10,7 +10,6 @@ import org.igv.logging.Logger;
 import org.igv.seg.SegmentedDataSource;
 import org.igv.track.DataType;
 import org.igv.track.FeatureCollectionSource;
-import org.igv.ui.panel.ReferenceFrame;
 import org.igv.util.ParsingUtils;
 import org.igv.util.ResourceLocator;
 
@@ -59,32 +58,11 @@ public class MutationFeatureSource implements SegmentedDataSource {
         return result;
     }
 
-    @Override
-    public LocusScore getFeatureAt(String sample, String chr, double position, ReferenceFrame frame) {
-        FeatureCollectionSource<Mutation> source = featureCollectionSourceMap.get(sample);
-        if (source == null) return null;
-        // Add a 3 pixel tolerance
-        double locScale = frame.getScale();
-        int tolerance = (int) (3 * locScale);
-        Iterator<Mutation> it = source.getFeatures(chr, (int) (position - tolerance), (int) (position + tolerance));
-        Mutation closest = null;
-        double minDist = Double.POSITIVE_INFINITY;
-        while (it.hasNext()) {
-            Mutation mut = it.next();
-            double dist = Math.abs(mut.getStart() - position);
-            if (dist < minDist) {
-                minDist = dist;
-                closest = mut;
-            }
-        }
-        return closest;
-    }
-
     /**
      * Load mutations and group by sampleId as they are read.
      */
     private void loadMutations() {
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         samples = new ArrayList<>();
         Set<String> sampleSet = new HashSet<>();
         featureCollectionSourceMap = new LinkedHashMap<>();

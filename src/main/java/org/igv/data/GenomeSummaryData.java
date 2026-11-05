@@ -24,7 +24,7 @@ public class GenomeSummaryData {
     /**
      * Number of virtual pixels
      */
-    int nPixels = 1000;
+    int nPixels = 2000;
 
     Genome genome;
 
@@ -41,9 +41,19 @@ public class GenomeSummaryData {
     Map<String, IntArrayList> locationMap;
 
     /**
+     * Chromosome name -> list of end locations
+     */
+    Map<String, IntArrayList> endLocationMap;
+
+    /**
      * start locations of currently relevant ordered list of chromosomes, spanning whole genomes
      */
     int[] locations;
+
+    /**
+     * end locations, aligned with locations
+     */
+    int[] endLocations;
 
 
     /**
@@ -68,9 +78,11 @@ public class GenomeSummaryData {
 
         List<String> chrNames = genome.getLongChromosomeNames();
         locationMap = new HashMap<String, IntArrayList>();
+        endLocationMap = new HashMap<String, IntArrayList>();
         dataMap = new HashMap<String, Map<String, FloatArrayList>>();
         for (String chr : chrNames) {
             locationMap.put(chr, new IntArrayList(nPixels / 10));
+            endLocationMap.put(chr, new IntArrayList(nPixels / 10));
             dataMap.put(chr, new HashMap<String, FloatArrayList>());
             for (String s : samples) {
                 dataMap.get(chr).put(s, new FloatArrayList(nPixels / 10));
@@ -98,6 +110,19 @@ public class GenomeSummaryData {
      * @param sampleData  Map of sample name -> array of values.
      */
     public void addData(String chr, int[] locs, Map<String, float[]> sampleData) {
+        addData(chr, locs, null, sampleData);
+    }
+
+    /**
+     * Add data to be condensed for the whole genome view
+     *
+     * @param chr
+     * @param locs Genomic positions
+     * @param ends Genomic end positions, or null for point data.  Rows are weighted by their length when summarized.
+     *             A summary point of point data extends to the next summary point.
+     * @param sampleData  Map of sample name -> array of values.
+     */
+    public void addData(String chr, int[] locs, int[] ends, Map<String, float[]> sampleData) {
 
         IntArrayList locations = locationMap.get(chr);
         if (locations == null) {
@@ -107,9 +132,12 @@ public class GenomeSummaryData {
             }
             return;
         }
+        IntArrayList endLocations = endLocationMap.get(chr);
 
         int lastPixel = -1;
         int lastGenomeLocation = -1;
+        int groupStart = -1;
+        int groupEnd = -1;
         Map<String, Accumulator> dataPoints = new HashMap<String, Accumulator>();
 
         for (int i = 0; i < locs.length; i++) {
@@ -117,8 +145,19 @@ public class GenomeSummaryData {
             int genomeLocation = genome.getGenomeCoordinate(chr, locs[i]);
             int pixel = (int) (genomeLocation / scale);
             if (lastPixel >= 0 && pixel != lastPixel) {
-                locations.add(lastGenomeLocation);
+                locations.add(groupStart);
+                endLocations.add(ends == null ? genomeLocation : Math.max(groupStart + 1, groupEnd));
                 finishLastLocation(chr, dataPoints);
+                groupStart = -1;
+            }
+            if (groupStart < 0) {
+                groupStart = genomeLocation;
+                groupEnd = -1;
+            }
+            int weight = 1;
+            if (ends != null) {
+                groupEnd = Math.max(groupEnd, genome.getGenomeCoordinate(chr, ends[i]));
+                weight = ends[i] - locs[i];
             }
 
             for (String s : samples) {
@@ -129,7 +168,7 @@ public class GenomeSummaryData {
                     dataPoints.put(s, dp);
                 }
                 try {
-                    dp.add(1, data[i], null);
+                    dp.add(weight, data[i], null);
                 } catch (Exception e) {
                     log.error("Error adding to GenomeSummaryData", e);
                 }
@@ -139,7 +178,8 @@ public class GenomeSummaryData {
             lastGenomeLocation = genomeLocation;
         }
 
-        locations.add(lastGenomeLocation);
+        locations.add(groupStart);
+        endLocations.add(ends == null ? lastGenomeLocation + 1 : Math.max(groupStart + 1, groupEnd));
         finishLastLocation(chr, dataPoints);
     }
 
@@ -159,7 +199,7 @@ public class GenomeSummaryData {
         dataPoints.clear();
     }
 
-    public int[] getLocations() {
+    public synchronized int[] getLocations() {
         if (locations == null) {
             createDataArrays();
         }
@@ -167,9 +207,17 @@ public class GenomeSummaryData {
         return locations;
     }
 
+    public synchronized int[] getEndLocations() {
+        if (endLocations == null) {
+            createDataArrays();
+        }
 
-    public float[] getData(String sample) {
-        if (!data.containsKey(sample)) {
+        return endLocations;
+    }
+
+
+    public synchronized float[] getData(String sample) {
+        if (data == null) {
             createDataArrays();
         }
         return data.get(sample);
@@ -183,11 +231,14 @@ public class GenomeSummaryData {
      */
     private synchronized void createDataArrays() {
         locations = new int[nDataPts];
+        endLocations = new int[nDataPts];
         int offset = 0;
         List<String> chrNames = genome.getLongChromosomeNames();
         for (String chr : chrNames) {
             int[] chrLocs = locationMap.get(chr).toArray();
             System.arraycopy(chrLocs, 0, locations, offset, chrLocs.length);
+            int[] chrEnds = endLocationMap.get(chr).toArray();
+            System.arraycopy(chrEnds, 0, endLocations, offset, chrEnds.length);
             offset += chrLocs.length;
         }
 
@@ -204,6 +255,7 @@ public class GenomeSummaryData {
         }
 
         locationMap.clear();
+        endLocationMap.clear();
         dataMap.clear();
     }
 

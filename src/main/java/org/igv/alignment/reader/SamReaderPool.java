@@ -83,12 +83,11 @@ public class SamReaderPool {
         boolean isLocal = locator.isLocal();
         final SamReaderFactory factory = SamReaderFactory.makeDefault().
                 referenceSource(new IGVReferenceSource()).
-                validationStringency(ValidationStringency.SILENT).
-                enable(SamReaderFactory.Option.DONT_MEMORY_MAP_INDEX);
+                validationStringency(ValidationStringency.SILENT);
         SamInputResource resource;
 
         if (isLocal) {
-            resource = SamInputResource.of(new File(locator.getPath()));
+            resource = SamInputResource.of(new File(locator.getPath()).toPath());
         } else if (locator.isHtsget()) {
             requireIndex = false;
             URI uri = null;
@@ -123,7 +122,7 @@ public class SamReaderPool {
             }
             if (isLocal) {
                 File indexFile = new File(indexPath);
-                resource = resource.index(indexFile);
+                resource = resource.index(indexFile.toPath());
             } else {
                 // Don't use seekable stream for remoted indeces, can result in hundreds of http requests.
                 if(indexBytes == null) {

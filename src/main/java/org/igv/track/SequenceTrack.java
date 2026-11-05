@@ -1,11 +1,8 @@
 package org.igv.track;
 
 
-import org.igv.event.IGVEvent;
 import org.igv.logging.*;
 import org.igv.Globals;
-import org.igv.event.IGVEventBus;
-import org.igv.event.IGVEventObserver;
 import org.igv.feature.aa.AminoAcidManager;
 import org.igv.feature.aa.AminoAcidSequence;
 import org.igv.feature.Chromosome;
@@ -39,7 +36,7 @@ import static org.igv.prefs.Constants.*;
 /**
  * @author jrobinso
  */
-public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
+public class SequenceTrack extends AbstractTrack {
 
     private static Logger log = LogManager.getLogger(SequenceTrack.class);
 
@@ -47,7 +44,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
 
     private static String NAME = "Sequence";
 
-    private Map<String, LoadedDataInterval<SeqCache>> loadedIntervalCache = new HashMap(200);
+    private final LoadedIntervalCache<SeqCache> loadedIntervalCache = new LoadedIntervalCache<>();
 
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
@@ -61,9 +58,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
     public SequenceTrack(String name) {
         super(null, name, name);
         showTranslation = PreferencesManager.getPreferences().getAsBoolean(SHOW_SEQUENCE_TRANSLATION);
-        loadedIntervalCache = Collections.synchronizedMap(new HashMap<>());
         setOrder(-JS_MAX_SAFE_INTEGER);  // Pin sequence to top of track list
-        IGVEventBus.getInstance().subscribe(FrameManager.ChangeEvent.class, this);
     }
 
     @Override
@@ -114,20 +109,10 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         return new String(complement);
     }
 
-    public void receiveEvent(IGVEvent event) {
-
-        if (event instanceof FrameManager.ChangeEvent) {
-            // Remove cache for discarded frames.  This seems a rather round-about way to do it.
-            Collection<ReferenceFrame> frames = ((FrameManager.ChangeEvent) event).frames();
-            Map<String, LoadedDataInterval<SeqCache>> newCache = Collections.synchronizedMap(new HashMap<>());
-            for (ReferenceFrame f : frames) {
-                newCache.put(f.getName(), loadedIntervalCache.get(f.getName()));
-            }
-            loadedIntervalCache = newCache;
-
-        } else {
-            log.warn("Unknown event type: " + event.getClass());
-        }
+    @Override
+    public void unload() {
+        super.unload();
+        loadedIntervalCache.unsubscribe();
     }
 
     private void refreshAminoAcids(CodonTable codonTable) {
@@ -188,9 +173,7 @@ public class SequenceTrack extends AbstractTrack implements IGVEventObserver {
         if (!visible) {
             return true; // Nothing to paint
         } else {
-            LoadedDataInterval<SeqCache> interval = loadedIntervalCache.get(frame.getName());
-            boolean ready = interval != null && interval.contains(frame);
-            return ready;
+            return loadedIntervalCache.contains(frame);
         }
     }
 

@@ -144,13 +144,11 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         JPanel dialogPane = new JPanel();
-        JTextArea label1 = new JTextArea();
         JPanel contentPanel = new JPanel();
         JScrollPane scrollPane1 = new JScrollPane();
         genomeList = new JList<>();
         label2 = new JLabel();
         JPanel panel1 = new JPanel();
-        JPanel addRemBar = new JPanel();
         JSeparator separator1 = new JSeparator();
         JPanel buttonBar = new JPanel();
         JButton okButton = new JButton();
@@ -166,16 +164,9 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
         //======== dialogPane ========
         {
             dialogPane.setBorder(new EmptyBorder(12, 12, 12, 12));
-            dialogPane.setPreferredSize(new Dimension(270, 400));
+            dialogPane.setPreferredSize(new Dimension(270, 320));
             dialogPane.setLayout(new BorderLayout());
-
-            //---- label1 ----
-            label1.setRows(2);
-            label1.setEditable(false);
-            label1.setBackground(UIManager.getColor("Button.background"));
-            label1.setWrapStyleWord(true);
-            label1.setLineWrap(true);
-            dialogPane.add(label1, BorderLayout.NORTH);
+            dialogPane.setFocusable(true);
 
             //======== contentPanel ========
             {
@@ -208,17 +199,6 @@ public class RemoveGenomesDialog extends org.igv.ui.IGVDialog  {
             //======== panel1 ========
             {
                 panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
-
-                //======== addRemBar ========
-                {
-                    addRemBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                    addRemBar.setPreferredSize(new Dimension(196, 51));
-                    addRemBar.setMinimumSize(new Dimension(201, 51));
-                    addRemBar.setLayout(new FlowLayout(FlowLayout.TRAILING, 1, 5));
-
-                }
-                panel1.add(addRemBar);
-                panel1.add(separator1);
 
                 //======== buttonBar ========
                 {

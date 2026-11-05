@@ -20,7 +20,7 @@ public class HubParser {
 
     private static Set<String> urlProperties = new HashSet<>(Arrays.asList("descriptionUrl", "desriptionUrl",
             "twoBitPath", "blat", "chromAliasBb", "twoBitBptURL", "twoBitBptUrl", "htmlPath", "bigDataUrl",
-            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "groups",
+            "genomesFile", "trackDb", "groups", "include", "html", "searchTrix", "linkDataUrl", "groups",
             "chromSizes"));
 
     /**
@@ -32,10 +32,6 @@ public class HubParser {
 
     // Accessed from the hub loading threads started in loadHubs(), as well as the calling thread.
     private static final Map<String, Hub> hubCache = new ConcurrentHashMap<>();
-
-    public static Hub loadAssemblyHub(String url) throws IOException {
-        return loadHub(url);
-    }
 
     public static Hub loadHub(String url) throws IOException {
 

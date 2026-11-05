@@ -3,7 +3,6 @@ package org.igv.ui;
 import htsjdk.tribble.Feature;
 import org.igv.feature.genome.GenomeManager;
 import org.igv.logging.*;
-import org.igv.charts.ScatterPlotUtils;
 import org.igv.feature.Range;
 import org.igv.feature.RegionOfInterest;
 import org.igv.prefs.Constants;
@@ -193,24 +192,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         };
         inputMap.put(sortByLastKey, "sortByLast");
         actionMap.put("sortByLast", sorAlignmentTracksAction);
-
-        // Open scatter plot
-        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
-        final Action scatterplotAction = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (ScatterPlotUtils.hasPlottableTracks()) {
-                    ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
-                    String chr = defaultFrame.getChrName();
-                    int start = (int) defaultFrame.getOrigin();
-                    int end = (int) defaultFrame.getEnd();
-                    int zoom = defaultFrame.getZoom();
-                    ScatterPlotUtils.openPlot(chr, start, end, zoom);
-                }
-            }
-        };
-        inputMap.put(scatterplotKey, "scatterPlot");
-        actionMap.put("scatterPlot", scatterplotAction);
 
         // Back button
         final KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);

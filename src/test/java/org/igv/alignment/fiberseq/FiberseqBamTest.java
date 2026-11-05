@@ -49,7 +49,7 @@ public class FiberseqBamTest {
     private static Map<String, MolecularAnnotations> load(String file) throws IOException {
         Map<String, MolecularAnnotations> annotations = new LinkedHashMap<>();
         try (SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT)
-                .open(new File(DIR + file))) {
+                .open(new File(DIR + file).toPath())) {
             for (SAMRecord record : reader) {
                 if (!record.getReadUnmappedFlag() && MolecularAnnotations.hasTags(record::getAttribute)) {
                     annotations.put(record.getReadName(), new SAMAlignment(record).getMolecularAnnotations());
@@ -170,7 +170,7 @@ public class FiberseqBamTest {
     private static List<Alignment> loadAlignments() throws IOException {
         List<Alignment> alignments = new ArrayList<>();
         try (SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT)
-                .open(new File(DIR + "NAPA.bam"))) {
+                .open(new File(DIR + "NAPA.bam").toPath())) {
             for (SAMRecord record : reader) {
                 if (!record.getReadUnmappedFlag()) {
                     alignments.add(new SAMAlignment(record));

@@ -1,6 +1,5 @@
 package org.igv.ui.panel;
 
-import org.igv.charts.ScatterPlotUtils;
 import org.igv.feature.RegionOfInterest;
 import org.igv.track.RegionScoreType;
 import org.igv.track.DataType;
@@ -115,22 +114,6 @@ public class RegionMenu extends JPopupMenu {
             }
         });
         add(item);
-
-        if (ScatterPlotUtils.hasPlottableTracks()) {
-            addSeparator();
-            item = new JMenuItem("Scatter Plot ...");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-
-                    String chr = roi.getChr();
-                    int start = roi.getStart();
-                    int end = roi.getEnd();
-                    int zoom = frame.getZoom();
-                    ScatterPlotUtils.openPlot(chr, start, end, zoom);
-                }
-            });
-            add(item);
-        }
 
     }
 

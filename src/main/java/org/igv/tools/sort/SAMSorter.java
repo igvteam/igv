@@ -1,6 +1,6 @@
 package org.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.Globals;
 
 import java.io.File;
@@ -23,7 +23,7 @@ public class SAMSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException {
         String nextLine = reader.readLine();
         while (nextLine != null && nextLine.startsWith("@")) {
             writer.println(nextLine);

@@ -1,7 +1,7 @@
 package org.igv.tools.sort;
 
 import org.igv.logging.*;
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class VCFSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) {
         try {
             String nextLine = reader.readLine();
             // TODO -- check "browser" line syntax,  is it a multi-line directive?

@@ -5,7 +5,6 @@ import org.igv.track.TribbleFeatureSource;
 import org.igv.util.ResourceLocator;
 import org.igv.util.TestUtils;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -78,11 +77,8 @@ public class VCFVariantTest extends AbstractHeadlessTest {
      * @return
      * @throws Exception
      */
-   @Ignore
    @Test
     public void tstFakeV4() throws Exception{
-
-        System.setProperty("samjdk.optimistic_vcf_4_4", "true");  // Doesn't seem to work from command line (gradlew test)
 
         String filePath = TestUtils.DATA_DIR + "vcf/fake_v4.vcf";
         TestUtils.createIndex(filePath);

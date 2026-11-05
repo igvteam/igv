@@ -1,7 +1,7 @@
 package org.igv.seg;
 
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 import org.igv.Globals;
 import org.igv.exceptions.DataLoadException;
 import org.igv.exceptions.ParserException;
@@ -52,7 +52,7 @@ public class SegmentFileParser {
             dataset.setDataType(DataType.CNV);
         }
 
-        AsciiLineReader reader = null;
+        Utf8LineReader reader = null;
         String nextLine = null;
         int lineNumber = 0;
         try {

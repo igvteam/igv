@@ -1,6 +1,6 @@
 package org.igv.tools.sort;
 
-import htsjdk.tribble.readers.AsciiLineReader;
+import htsjdk.tribble.readers.Utf8LineReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class EQTLSorter extends AsciiSorter {
     }
 
     @Override
-    String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException {
+    String writeHeader(Utf8LineReader reader, PrintWriter writer) throws IOException {
 
         // EQTL files have a single header line
         String headerLine = reader.readLine();

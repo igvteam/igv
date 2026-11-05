@@ -51,7 +51,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
      */
     @Test
     public void testSeekReadStandard() throws Exception {
-        tstSeekRead(expectedBytes, new SeekableFileStream(testFile), 50);
+        tstSeekRead(expectedBytes, new SeekableFileStream(testFile.toPath()), 50);
     }
 
     /**
@@ -99,7 +99,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
 
 
     private IGVSeekableBufferedStream getTestStream(int streamBufferSize) throws FileNotFoundException{
-       return new IGVSeekableBufferedStream(new SeekableFileStream(testFile), streamBufferSize);
+       return new IGVSeekableBufferedStream(new SeekableFileStream(testFile.toPath()), streamBufferSize);
     }
     /**
      * Test reading byte arrays
@@ -225,7 +225,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
         int length = 50000;
 
         byte[] buffer1 = new byte[length];
-        SeekableStream unBufferedStream = new SeekableFileStream(BAM_FILE);
+        SeekableStream unBufferedStream = new SeekableFileStream(BAM_FILE.toPath());
         unBufferedStream.seek(startPosition);
         int bytesRead = unBufferedStream.read(buffer1, 0, length);
         assertEquals(length, bytesRead);
@@ -271,8 +271,8 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
         final int[] BUFFER_SIZES = new int[]{8, 96, 1024, 8*1024, 16*1024, 96*1024, 48*1024};
 
         for (final int bufferSize : BUFFER_SIZES) {
-            final IGVSeekableBufferedStream in1 = new IGVSeekableBufferedStream(new SeekableFileStream(BAM_FILE), bufferSize);
-            final IGVSeekableBufferedStream in2 = new IGVSeekableBufferedStream(new SeekableFileStream(BAM_FILE), bufferSize);
+            final IGVSeekableBufferedStream in1 = new IGVSeekableBufferedStream(new SeekableFileStream(BAM_FILE.toPath()), bufferSize);
+            final IGVSeekableBufferedStream in2 = new IGVSeekableBufferedStream(new SeekableFileStream(BAM_FILE.toPath()), bufferSize);
 
             final int SIZE = 10000;
             final byte[] bytes1 = new byte[SIZE];
@@ -360,7 +360,7 @@ public class IGVSeekableBufferedStreamTest extends AbstractHeadlessTest{
     private static class UnknownLengthSeekableStream extends SeekableFileStream{
 
         UnknownLengthSeekableStream(File file) throws FileNotFoundException{
-            super(file);
+            super(file.toPath());
         }
 
         @Override
