@@ -852,10 +852,25 @@ public class IGV implements IGVEventObserver {
             sessionReader = new XMLSessionReader(this);
         }
 
-        sessionReader.loadSession(inputStream, session, sessionPath);
+        restoringSession = true;
+        try {
+            sessionReader.loadSession(inputStream, session, sessionPath);
+        } finally {
+            restoringSession = false;
+        }
 
         revalidateTrackPanels();
         return true;
+    }
+
+    private volatile boolean restoringSession = false;
+
+    /**
+     * True while a session is being loaded; loaders that would ask the user which tracks to load
+     * leave that to the session.
+     */
+    public boolean isRestoringSession() {
+        return restoringSession;
     }
 
 
