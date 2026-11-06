@@ -197,6 +197,30 @@ public interface Track {
     void setHeight(int height);
 
     /**
+     * Set a height chosen by the user through the "Set Track Height..." menu items or the batch setTrackHeight
+     * command.  A track with an explicit height keeps it when its display mode changes.  Dragging the divider
+     * does not count as setting an explicit height.
+     */
+    void setExplicitHeight(int height);
+
+    /**
+     * Maximum height a track with rows grows to when expanded, if its height was not set explicitly.  0 (the
+     * default) means expanding does not grow the track.
+     */
+    default int getMaxExpandedHeight() {
+        return 0;
+    }
+
+    /**
+     * Fit the height of a displayed track with rows to its content after a display mode change, unless the user
+     * has set the height explicitly.  Expanding grows the track to the content height, up to
+     * {@link #getMaxExpandedHeight()} or the height a previous squish or collapse shrank from, and never shrinks
+     * it.  Squishing or collapsing shrinks the track to the content height, and never grows it.  Called after
+     * {@link #setDisplayMode(DisplayMode)}, which must repack the content first.
+     */
+    void adjustHeightForDisplayMode();
+
+    /**
      * Return the visible (viewport) height of the tracks.  For some tracks this can differ from the content height,
      * in which case scrollbars will be shown.
      *

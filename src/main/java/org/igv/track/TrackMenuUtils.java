@@ -981,6 +981,7 @@ public class TrackMenuUtils {
             mm.addActionListener(evt -> {
                 for (Track t : tracks) {
                     t.setDisplayMode(entry.getValue());
+                    t.adjustHeightForDisplayMode();
                 }
                 IGV.getInstance().repaint(tracks);
             });
@@ -1331,7 +1332,7 @@ public class TrackMenuUtils {
 
             value = Math.max(0, value);
             for (Track track : selectedTracks) {
-                track.setHeight(value);
+                track.setExplicitHeight(value);
             }
         });
         return item;

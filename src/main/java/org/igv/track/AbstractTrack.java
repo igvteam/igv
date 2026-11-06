@@ -100,6 +100,13 @@ public abstract class AbstractTrack implements Track {
      */
     protected int height;
 
+    // True if the user set the height through a menu or batch command.  See Track.setExplicitHeight.
+    private boolean explicitHeight = false;
+
+    // Height before a squish or collapse shrank the track, restored by the next expand.  0 if none.  Kept across
+    // consecutive shrinks, cleared by any other height change.
+    private int heightBeforeShrink = 0;
+
 
     protected DataRange dataRange;
     private boolean showFeatureNames = DEFAULT_SHOW_FEATURE_NAMES;
@@ -427,8 +434,41 @@ public abstract class AbstractTrack implements Track {
 
     public void setHeight(int height) {
         this.height = height;
+        this.heightBeforeShrink = 0;
         if (viewport != null) {
             viewport.validateTrackHeight();
+        }
+    }
+
+    @Override
+    public void setExplicitHeight(int height) {
+        this.explicitHeight = height > 0;   // 0 means auto-size, as everywhere else
+        setHeight(height);
+    }
+
+    @Override
+    public void adjustHeightForDisplayMode() {
+        if (!hasRows() || explicitHeight || viewport == null || height == 0) {
+            return;   // Not displayed, still auto-sized, or the user has chosen the height
+        }
+        // The field is set directly rather than through setHeight(), which validates the whole window.  Callers
+        // repaint afterwards, and the content height has changed, so the panel layout check revalidates once.
+        int contentHeight = getContentHeight();
+        if (displayMode == DisplayMode.EXPANDED) {
+            // Grow to the type's maximum or back to the pre-shrink height, whichever is larger
+            int newHeight = Math.min(Math.max(getMaxExpandedHeight(), heightBeforeShrink), contentHeight);
+            if (newHeight > height) {
+                this.height = newHeight;
+            }
+            heightBeforeShrink = 0;
+        } else if (displayMode == DisplayMode.SQUISHED || displayMode == DisplayMode.COLLAPSED) {
+            int newHeight = Math.max(getMinimumHeight(), contentHeight);
+            if (newHeight < height) {
+                if (heightBeforeShrink == 0) {
+                    heightBeforeShrink = height;
+                }
+                this.height = newHeight;
+            }
         }
     }
 
@@ -843,6 +883,7 @@ public abstract class AbstractTrack implements Track {
             // The track is displayed and auto-sized to its content.  Pin the current visible height so that changing
             // the mode, and hence the content height, does not change the height of the track itself.  Tracks that
             // have not yet been displayed (viewport == null, e.g. during session loading) remain auto-sized.
+            // User actions then call adjustHeightForDisplayMode() to fit the pinned height to the new content.
             this.height = getHeight();
         }
         this.displayMode = mode;
