@@ -498,6 +498,7 @@ public class CommandExecutor {
     private void setTrackDisplayMode(Track.DisplayMode mode, String trackName) {
         for (Track t : tracksMatchingName(trackName)) {
             t.setDisplayMode(mode);
+            t.adjustHeightForDisplayMode();
         }
     }
 
@@ -533,7 +534,7 @@ public class CommandExecutor {
         List<Track> tracks = tracksMatchingName(trackName);
         if (tracks.size() > 0) {
             for (Track track : tracks) {
-                track.setHeight(height);
+                track.setExplicitHeight(height);
                 igv.repaint(track);
             }
             return "OK";

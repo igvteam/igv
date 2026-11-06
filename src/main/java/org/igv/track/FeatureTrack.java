@@ -62,6 +62,9 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
     private transient int maxFeatureRow = 1;
 
+    // A height fit requested while no features were loaded; applied after the next load
+    private transient boolean fitHeightPending = false;
+
     boolean fatalLoadError = false;
     /**
      * Map of reference frame -> packed features
@@ -215,6 +218,26 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     @Override
     public boolean hasRows() {
         return true;
+    }
+
+    /**
+     * With no features loaded (e.g. zoomed out beyond the visibility window) the content height is unknown, so the
+     * fit is deferred until the next load.
+     */
+    @Override
+    public void adjustHeightForDisplayMode() {
+        fitHeightPending = packedFeaturesMap.isEmpty();
+        if (!fitHeightPending) {
+            super.adjustHeightForDisplayMode();
+        }
+    }
+
+    /**
+     * Annotation tracks grow on "Expand" to fit up to 5 rows.
+     */
+    @Override
+    public int getMaxExpandedHeight() {
+        return getType() == TrackType.annotation ? margin + 5 * getRowHeight() : 0;
     }
 
     private void initRowHeights() {
@@ -635,6 +658,10 @@ public class FeatureTrack extends AbstractTrack implements IGVEventObserver {
     public void load(ReferenceFrame frame) {
         loadFeatures(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), frame);
         updateMaxFeatureRow();
+        if (fitHeightPending) {
+            fitHeightPending = false;
+            super.adjustHeightForDisplayMode();
+        }
     }
 
     /**

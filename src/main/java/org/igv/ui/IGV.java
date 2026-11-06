@@ -681,7 +681,7 @@ public class IGV implements IGVEventObserver {
 
     public void setAllTrackHeights(int newHeight) {
         for (Track track : getAllTracks()) {
-            track.setHeight(newHeight);
+            track.setExplicitHeight(newHeight);
         }
     }
 
@@ -704,6 +704,7 @@ public class IGV implements IGVEventObserver {
         for (Track t : tracks) {
             if (t.hasRows()) {
                 t.setDisplayMode(mode);
+                t.adjustHeightForDisplayMode();
             }
         }
         repaint(tracks);
