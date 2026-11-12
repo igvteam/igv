@@ -204,6 +204,31 @@ public class BBFeatureSourceTest {
         assertTrue(count > 0);
     }
 
+    /**
+     * File written by an early version of bedToBigBed, definedFieldCount == 0 in the header.  See
+     * https://github.com/igvteam/igv/issues/1903
+     */
+    @Test
+    public void testNoDefinedFieldCount() throws IOException {
+
+        String path = "https://ftp.ebi.ac.uk/pub/databases/ensembl/encode/integration_data_jan2011/byDataType/openchrom/jan2011/fdrPeaks/wgEncodeDukeDnase8988T.fdr01peaks.hg19.bb";
+
+        BBFile bbReader = new BBFile(path, null);
+        BBFeatureSource bbSource = new BBFeatureSource(bbReader, null);
+
+        String chr = "chr21";
+        Iterator<IGVFeature> iter = bbSource.getFeatures(chr, 0, Integer.MAX_VALUE);
+
+        int count = 0;
+        while (iter.hasNext()) {
+            IGVFeature f = iter.next();
+            assertEquals(chr, f.getChr());
+            assertNotNull(f.getAttribute("signalValue"));
+            count++;
+        }
+        assertTrue(count > 0);
+    }
+
     @Test
     public void testBigNarrowpeak() throws IOException {
 

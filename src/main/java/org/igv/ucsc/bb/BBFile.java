@@ -300,6 +300,10 @@ public class BBFile {
             header.dataCount = buffer.getUInt();
             this.featureDensity = ((double) header.dataCount) / this.chromTree.estimateGenomeSize();
 
+            if (header.definedFieldCount == 0) {
+                // Not recorded by early versions of bedToBigBed
+                header.definedFieldCount = BBUtils.inferDefinedFieldCount(autosql, header.fieldCount);
+            }
             bedCodec = BBCodecFactory.getCodec(autosql, header.definedFieldCount);
         }
 

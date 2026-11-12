@@ -39,6 +39,36 @@ public class BBUtils {
         return new ASTable(table, fields);
     }
 
+    private static final String[][] BED_FIELD_NAMES = {{"chrom"}, {"chromStart"}, {"chromEnd"}, {"name"}, {"score"},
+            {"strand"}, {"thickStart"}, {"thickEnd"}, {"reserved", "itemRgb", "color"}, {"blockCount"},
+            {"blockSizes"}, {"chromStarts", "blockStarts"}};
+
+    /**
+     * Infer the number of standard BED fields for files that do not record it (definedFieldCount == 0 in the header,
+     * as written by early versions of bedToBigBed).  With autosql, count the leading fields with standard BED names.
+     * Without autosql all fields are assumed to be standard.
+     */
+    public static int inferDefinedFieldCount(String autosql, int fieldCount) {
+        if (autosql == null || autosql.length() == 0) {
+            return Math.max(3, Math.min(fieldCount, BED_FIELD_NAMES.length));
+        }
+        List<ASField> fields = parseAutosql(autosql).fields;
+        int n = 3;
+        while (n < fields.size() && n < BED_FIELD_NAMES.length && n < fieldCount) {
+            String name = fields.get(n).name;
+            boolean match = false;
+            for (String bedName : BED_FIELD_NAMES[n]) {
+                if (bedName.equalsIgnoreCase(name)) {
+                    match = true;
+                    break;
+                }
+            }
+            if (!match) break;
+            n++;
+        }
+        return n;
+    }
+
     public static class ASTable {
         public String name;
         public List<ASField> fields;
