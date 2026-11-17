@@ -82,4 +82,43 @@ public class ExonTest extends AbstractHeadlessTest {
 
     }
 
+    /**
+     * A leading codon split by the exon edge, with no neighboring exon to complete it, is skipped.  The rest of
+     * the exon is translated in frame, the same as an exon that starts just past the split codon.
+     */
+    @Test
+    public void testSplitCodonNoPrevExonPos() throws Exception {
+        Exon cdsExon = ((BasicFeature) genome.getFeatureDB().getFeature("EGFR")).getExons().get(1);
+        String chr = cdsExon.getChr();
+        int start = cdsExon.getStart();
+        int end = start + 30;
+
+        Exon exon = new Exon(chr, start, end, Strand.POSITIVE);
+        exon.setReadingFrame(2);    // 2 bases of the first codon are in the (missing) previous exon, 1 in this one
+        Exon expected = new Exon(chr, start + 1, end, Strand.POSITIVE);
+        expected.setReadingFrame(0);
+
+        assertSameAminoAcids(expected.getAminoAcidSequence(genome, null, null), exon.getAminoAcidSequence(genome, null, null));
+    }
+
+    @Test
+    public void testSplitCodonNoNextExonNeg() throws Exception {
+        Exon cdsExon = ((BasicFeature) genome.getFeatureDB().getFeature("KRAS")).getExons().get(1);
+        String chr = cdsExon.getChr();
+        int start = cdsExon.getStart();
+        int end = start + 30;
+
+        Exon exon = new Exon(chr, start, end, Strand.NEGATIVE);
+        exon.setReadingFrame(1);    // 1 base of the first codon is in the (missing) next exon, 2 in this one
+        Exon expected = new Exon(chr, start, end - 2, Strand.NEGATIVE);
+        expected.setReadingFrame(0);
+
+        assertSameAminoAcids(expected.getAminoAcidSequence(genome, null, null), exon.getAminoAcidSequence(genome, null, null));
+    }
+
+    private void assertSameAminoAcids(AminoAcidSequence expected, AminoAcidSequence actual) {
+        assertEquals(expected.getStart(), actual.getStart());
+        assertEquals(expected.getSequenceString(), actual.getSequenceString());
+    }
+
 }
