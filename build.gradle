@@ -465,9 +465,7 @@ tasks.register('fullJar', Jar) {
     dependsOn jar
     // Based on https://discuss.gradle.org/t/removing-dependencies-from-a-jar-file-during-jar-task/5521/3
     from {
-        ((configurations.compile - configurations.default) + "${buildDir}/libs/igv.jar").collect {
-            zipTree(it)
-        }
+        zipTree("${buildDir}/libs/igv.jar")
     } {
         exclude "META-INF/**"
     }
