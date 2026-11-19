@@ -1,0 +1,2 @@
+# Workaround for CVE-2026-114938 (Java4Shell).  See README.md in this directory.
+-XX:-UseBASE64Intrinsics
