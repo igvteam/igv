@@ -1,0 +1,116 @@
+# Builds the Windows installer with a bundled Java runtime, installs it silently, then starts IGV through the
+# installed launcher and takes a snapshot.  This checks that the installed distribution starts on Windows; it is
+# not a functional test of IGV.
+
+name: Windows smoke test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  # The Java runtime to bundle.  Keep in step with the runtime used for release builds.
+  JRE_VERSION: 21.0.13.1+2
+  JRE_URL: https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13.1%2B2/OpenJDK21U-jre_x64_windows_hotspot_21.0.13.1_2.zip
+  JRE_SHA256: e15ee1e54a5a3b38027a09cedfa87bc3348d7dd3ce50866dd3d9671d7fffc6c1
+
+jobs:
+  windows-smoke-test:
+
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # This JDK runs the Gradle build.  It is not the runtime that gets bundled.
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+
+    - name: Download the Java runtime to bundle
+      run: |
+        curl.exe -sSL -o jre.zip $env:JRE_URL
+        $hash = (Get-FileHash jre.zip -Algorithm SHA256).Hash
+        if ($hash -ne $env:JRE_SHA256) { throw "Checksum mismatch for bundled Java runtime: $hash" }
+        Expand-Archive jre.zip -DestinationPath "$env:RUNNER_TEMP\jre"
+        $jre = (Get-ChildItem "$env:RUNNER_TEMP\jre" -Directory | Select-Object -First 1).FullName
+        "JRE_DIR=$jre" >> $env:GITHUB_ENV
+
+    - name: Locate NSIS
+      run: |
+        $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+        if (-not (Test-Path $makensis)) { choco install nsis -y --no-progress }
+        if (-not (Test-Path $makensis)) { throw "makensis.exe not found" }
+        "MAKENSIS=$makensis" >> $env:GITHUB_ENV
+
+    - name: Build the installer
+      run: ./gradlew createWinWithJavaExeDist "-PjdkBundleWindows=$env:JRE_DIR" "-PmakensisCommand=$env:MAKENSIS"
+
+    - name: Install
+      run: |
+        $installer = Get-ChildItem build\IGV-WinExe-WithJava-dist\*-installer.exe
+        $p = Start-Process $installer.FullName -ArgumentList '/S' -Wait -PassThru
+        if ($p.ExitCode -ne 0) { throw "Installer exited with code $($p.ExitCode)" }
+        $dir = "$env:ProgramFiles\IGV_user"
+        if (-not (Test-Path "$dir\igv-launcher.bat")) { throw "IGV was not installed in $dir" }
+        "IGV_DIR=$dir" >> $env:GITHUB_ENV
+
+    - name: Check the bundled Java runtime
+      run: |
+        $release = Get-Content "$env:IGV_DIR\jdk-21\release" -Raw
+        $release
+        if ($release -notmatch [regex]::Escape("JAVA_RUNTIME_VERSION=`"$env:JRE_VERSION")) {
+          throw "Bundled Java runtime is not $env:JRE_VERSION"
+        }
+
+    - name: Start IGV and take a snapshot
+      timeout-minutes: 6
+      run: |
+        $out = "$env:GITHUB_WORKSPACE\smoke-output"
+        New-Item -ItemType Directory -Force $out | Out-Null
+        $fwd = { param($p) $p -replace '\\', '/' }
+        "NC_000913_bb`t1000`t2000`tfeature1`n" | Set-Content -NoNewline "$out\smoke.bed"
+        @(
+          "genome $(& $fwd "$env:GITHUB_WORKSPACE\test\data\fasta\ecoli_out.padded.fasta")",
+          "load $(& $fwd "$out\smoke.bed")",
+          "goto NC_000913_bb:1-5000",
+          "snapshotDirectory $(& $fwd $out)",
+          "snapshot smoke.png",
+          "exit"
+        ) | Set-Content "$out\smoke.batch"
+        Get-Content "$out\smoke.batch"
+
+        & "$env:IGV_DIR\igv-launcher.bat" -b "$out\smoke.batch" --igvDirectory "$out\igv" | Tee-Object "$out\launcher.txt"
+        # The launcher normally waits for IGV; this covers the case where it returns early.
+        Wait-Process -Name javaw -Timeout 240 -ErrorAction SilentlyContinue
+
+    - name: Check the result
+      run: |
+        $out = "$env:GITHUB_WORKSPACE\smoke-output"
+        Get-ChildItem "$out\igv" -Filter *.log -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_.FullName }
+        if (-not (Select-String -Path "$out\launcher.txt" -SimpleMatch "Using bundled JDK." -Quiet)) {
+          throw "The launcher did not use the bundled Java runtime"
+        }
+        $snapshot = Get-Item "$out\smoke.png" -ErrorAction SilentlyContinue
+        if (-not $snapshot) { throw "IGV did not produce a snapshot" }
+        if ($snapshot.Length -lt 2000) { throw "Snapshot is suspiciously small: $($snapshot.Length) bytes" }
+        "Snapshot: $($snapshot.Length) bytes"
+
+    - name: Upload snapshot and logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-smoke-test
+        path: smoke-output
+        if-no-files-found: ignore
