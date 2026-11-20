@@ -93,6 +93,9 @@ public class FileFormatUtils {
         if ((magicString.startsWith("TDF") || magicString.startsWith("IBF"))) {
             return "tdf";
         }
+        if (magicString.equals("FIGW")) {
+            return "fw";
+        }
 
         // Knowable text formats
         try {
