@@ -26,11 +26,11 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     # This JDK runs the Gradle build.  It is not the runtime that gets bundled.
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -109,7 +109,7 @@ jobs:
 
     - name: Upload snapshot and logs
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: windows-smoke-test
         path: smoke-output
