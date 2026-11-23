@@ -31,9 +31,9 @@ import java.util.*;
  * from the Genomes menu but not from the Tracks menu, so the latter confirms it with the user first.
  * <p>
  * Multiple genome hub: the user is offered the referenced genomes not already in the genome list, and those selected
- * are added, with default annotation selection deferred to their first load.  Then, if the current genome is one of
- * the hub's genomes its track selection dialog is shown, otherwise the user is offered a switch to one of them,
- * followed by the hub's track selection dialog if the chosen genome is a hosted one.
+ * are added, with default annotation selection deferred to their first load.  Then the user is offered the hub's
+ * genomes that are in the genome list, with the current genome preselected if it is one of them, and the hub's track
+ * selection dialog is shown for the chosen genome, after switching to it if it is not the current one.
  * <p>
  * The hub is recorded in the HubRegistry (the user managed hubs) for the genomes it references but does not define,
  * so it appears in the Tracks menu for each of them.  A genome the hub defines with a twoBitPath records the hub in
@@ -196,25 +196,42 @@ public class TrackHubLoader {
             HubRegistry.addUserHub(hub);
         }
 
+        // Offer the hub's genomes now in the genome list.  The current genome, if the hub references it, is listed
+        // first and preselected.  It is offered along with any list entry the hub names directly: an hg38 hub can
+        // be used with hg38_1kg, but they are different genomes and both are choices.
+        Map<String, GenomeListItem> updatedList = genomeListManager.getGenomeItemMap();
+        List<GenomeListItem> hubGenomes = new ArrayList<>();
+        GenomeListItem currentItem = null;
         if (currentGenome != null && hub.referencesGenome(currentGenome.getUCSCId())) {
             IGVMenuBar.getInstance().updateMenus(currentGenome);
-            selectTracks(hub, currentGenome);
-        } else {
-            // Offer to switch to one of the hub's genomes now in the genome list.
-            Map<String, GenomeListItem> updatedList = genomeListManager.getGenomeItemMap();
-            List<GenomeListItem> hubGenomes = genomeIds.stream()
-                    .map(id -> findInGenomeList(updatedList, id))
-                    .filter(Objects::nonNull)
-                    .toList();
-            if (!hubGenomes.isEmpty()) {
-                GenomeListItem choice =
-                        HubGenomeSelectionDialog.selectGenomeToSwitchTo(IGV.getInstance().getMainFrame(), hubGenomes);
-                if (choice != null) {
-                    // No annotation prompt: the hub's track dialog is the one chooser
-                    GenomeManager.getInstance().loadGenomeById(choice.getId(), false, true);
-                    selectTracksForCurrentGenome(hub);
-                }
+            currentItem = updatedList.get(currentGenome.getId());
+            if (currentItem == null) {
+                // The current genome is not in the genome list, e.g. it was loaded from a file
+                currentItem = new GenomeListItem(currentGenome.getDisplayName(), null, currentGenome.getId());
             }
+            hubGenomes.add(currentItem);
+        }
+        for (String id : genomeIds) {
+            GenomeListItem item = findInGenomeList(updatedList, id);
+            if (item != null && !hubGenomes.contains(item)) {
+                hubGenomes.add(item);
+            }
+        }
+
+        GenomeListItem choice = currentItem;
+        if (hubGenomes.size() > 1 || currentItem == null && !hubGenomes.isEmpty()) {
+            choice = HubGenomeSelectionDialog.selectGenomeToSwitchTo(
+                    IGV.getInstance().getMainFrame(), hubGenomes, currentItem);
+        }
+        if (choice == null || choice == currentItem) {
+            // Canceling keeps the current genome, and its tracks are still offered if the hub references it
+            if (currentItem != null) {
+                selectTracks(hub, currentGenome);
+            }
+        } else {
+            // No annotation prompt: the hub's track dialog is the one chooser
+            GenomeManager.getInstance().loadGenomeById(choice.getId(), false, true);
+            selectTracksForCurrentGenome(hub);
         }
     }
 

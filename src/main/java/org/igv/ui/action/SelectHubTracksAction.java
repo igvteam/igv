@@ -1,5 +1,7 @@
 package org.igv.ui.action;
 
+import org.igv.feature.genome.Genome;
+import org.igv.feature.genome.GenomeManager;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -7,6 +9,7 @@ import org.igv.ucsc.hub.*;
 import org.igv.ui.IGV;
 import org.igv.ui.IGVMenuBar;
 import org.igv.ui.WaitCursorManager;
+import org.igv.ui.genome.GenomeListManager;
 import org.igv.ui.util.MessageUtils;
 import org.igv.ui.util.UIUtilities;
 import org.igv.util.ResourceLocator;
@@ -81,9 +84,13 @@ public class SelectHubTracksAction extends MenuAction {
                 .collect(Collectors.toSet());
 
         // Called from background threads; the dialog is built and shown on the event thread.
+        // The tracks are always selected for the current genome
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        String genomeName = genome == null ? null :
+                GenomeListManager.getInstance().getDisplayName(genome.getId(), genome.getDisplayName());
         final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
         UIUtilities.invokeAndWaitOnEventThread(() -> {
-            holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, loadedTrackPaths, false, null);
+            holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, id, genomeName, loadedTrackPaths, false, null);
             holder[0].setVisible(true);
         });
         TrackSelectionDialog dlg = holder[0];

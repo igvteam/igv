@@ -144,6 +144,15 @@ public class GenomeListManager {
     }
 
     /**
+     * The name to display for a genome: its name in the genome pulldown if it is listed there, so the genome goes by
+     * one name everywhere, otherwise the name supplied.
+     */
+    public String getDisplayName(String genomeId, String defaultName) {
+        GenomeListItem item = genomeItemMap.get(genomeId);
+        return item != null ? item.getDisplayableName() : defaultName;
+    }
+
+    /**
      * Rebuild the genome drop down info.
      */
     private void rebuildGenomeItemMaps() throws IOException {

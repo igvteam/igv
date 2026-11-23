@@ -82,7 +82,8 @@ public class HubGenomeLoader extends GenomeLoader {
             try {
                 final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
                 UIUtilities.invokeAndWaitOnEventThread(() -> {
-                    holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), null, true,
+                    holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(),
+                            GenomeListManager.getInstance().getDisplayName(config.id, config.getName()), null, true,
                             GenomeManager.SELECT_ANNOTATIONS_MESSAGE);
                     holder[0].setVisible(true);
                 });

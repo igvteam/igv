@@ -39,10 +39,12 @@ public class TrackSelectionDialog extends JDialog {
     private ArrayList<CollapsiblePanel> categoryPanels;
     private boolean canceled = true;
     JTextPane messagePane;
+    private JLabel genomeLabel;
 
     public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
             String genomeId,
+            String genomeName,
             Set<String> loadedTrackPaths,
             boolean autoselectDefaults,
             String message) {
@@ -62,6 +64,8 @@ public class TrackSelectionDialog extends JDialog {
         dialog.resetSelectionBoxes(loadedTrackPaths);
         dialog.canceled = true;   // A reused dialog must not inherit a previous OK (closing with the window X is a cancel)
 
+        // The same hub tracks can serve genomes of different names (hg38, hg38_1kg), so set on each use
+        dialog.genomeLabel.setText("Genome: " + genomeName);
         dialog.setMessage(message);
 
         return dialog;
@@ -143,6 +147,15 @@ public class TrackSelectionDialog extends JDialog {
         messagePane.setEditable(false);
         messagePane.setVisible(false);
         // The messagePane is now added dynamically in setMessage()
+
+        // Identify the genome the tracks are for -- a hub's tracks differ per genome
+        JPanel genomePanel = new JPanel();
+        ((FlowLayout) genomePanel.getLayout()).setAlignment(FlowLayout.LEFT);
+        genomePanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 0, 0));
+        genomeLabel = new JLabel();
+        genomeLabel.setFont(genomeLabel.getFont().deriveFont(Font.BOLD));
+        genomePanel.add(genomeLabel);
+        topPanel.add(genomePanel);
 
         topPanel.add(getLabeledHyperlink("Hub URL: ", hub.getUrl()));
         String descriptionURL = hub.getDescriptionURL();
