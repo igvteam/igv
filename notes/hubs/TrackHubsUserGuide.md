@@ -45,10 +45,13 @@ What happens next depends on the hub.
   default annotation tracks, as it does for genomes loaded from the host.  That prompt is skipped when restoring a
   session, and if the hub is unreachable the genome loads without annotations and IGV says so.  Annotation tracks
   can be chosen later from the Genomes menu.
-- If the current genome is one of the hub's genomes, the hub's track selection dialog opens.  Otherwise IGV offers
-  to switch to one of the hub's genomes, or you can cancel and stay where you are.  Switching skips the genome's
-  default annotation prompt and opens the hub's track selection dialog instead; the prompt waits for the first load
-  from the pulldown.
+- IGV then lists the hub's genomes that are in your genome list and asks which one to load tracks for.  If the
+  current genome is one of them it is listed first, marked "(current)" and preselected; choosing it, or cancelling,
+  keeps the current genome and opens the hub's track selection dialog for it.  Choosing another genome switches to
+  it, which unloads all current tracks, and then opens the hub's track selection dialog.  If the current genome is
+  not one of the hub's genomes, cancelling leaves everything as it was.  Switching skips the genome's default
+  annotation prompt; the prompt waits for the first load from the pulldown.  If the current genome is the only
+  choice the question is skipped.
 
 **The Tracks menu**
 
@@ -56,8 +59,24 @@ Once a hub is known to IGV it appears in the **Tracks** menu, under the **Hubs**
 tracks for the current genome.  Selecting it opens the hub's track selection dialog.  The info icon beside a hub opens the
 hub's description page in your browser, when the hub provides one.
 
-In the track selection dialog, tracks are grouped as the hub organizes them.  Checking a track loads it when you press
-OK.  Tracks already loaded are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
+**The track selection dialog**
+
+The dialog names the genome its tracks are for at the top; a hub can offer different tracks for each of its genomes.
+If the hub has tracks of types IGV does not support they are left out, and a note gives their number and types.
+
+Tracks are grouped as the hub organizes them.  Checking a track loads it when you press OK.  Tracks already loaded
+are shown checked; unchecking one unloads it.  Cancel leaves everything as it was.
+
+- **Select All** and **Select None** in a group's header check or uncheck that group's tracks.  Select All is
+  limited to 100 tracks; for a larger group IGV says so and selects nothing.  Use Search to pick a subset.
+- **Reset Selections** restores the selections the dialog opened with, normally the tracks currently loaded.
+- **Search** opens a table of all the hub's tracks, with the current selections checked.  Type in the filter box to
+  narrow the list, and check the tracks you want.  **Select All** and **Select None** there apply to the rows
+  currently listed, with the same limit of 100 for Select All.  On OK the selections are carried back to the track
+  selection dialog, and the groups that have selected tracks are opened.  Nothing is loaded until you press OK in
+  the track selection dialog.
+
+The ENCODE and 4DN track choosers have the same Select All and Select None buttons.
 
 **Select Public Track Hub**
 
