@@ -20,6 +20,7 @@ import org.igv.util.stream.IGVSeekableStreamFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -126,7 +127,10 @@ public class SamReaderPool {
             } else {
                 // Don't use seekable stream for remoted indeces, can result in hundreds of http requests.
                 if(indexBytes == null) {
-                    indexBytes = HttpUtils.getInstance().getContentsAsBytes(HttpUtils.createURL(indexPath), null);
+                    // Read the raw bytes, ignoring any Content-Encoding header.  Some servers mislabel gzipped index files (.crai, .csi).
+                    try (InputStream is = HttpUtils.getInstance().openConnectionStream(HttpUtils.createURL(indexPath))) {
+                        indexBytes = is.readAllBytes();
+                    }
                 }
                 ByteArraySeekableStream stream = new ByteArraySeekableStream(indexBytes);
                 resource = resource.index(stream);
