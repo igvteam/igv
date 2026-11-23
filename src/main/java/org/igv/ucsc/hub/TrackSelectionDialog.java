@@ -417,11 +417,9 @@ public class TrackSelectionDialog extends JDialog {
                     if (selectionBox.isEnabled()) {
 
                         TrackConfig trackConfig = selectionBox.getTrackConfig();
+                        // A new map for the search table; the track config itself is not modified
                         final Map<String, String> trackConfigAttributes = trackConfig.attributes;
-                        Map<String, String> attributes = trackConfigAttributes;
-                        if (attributes == null) {
-                            attributes = new LinkedHashMap<>();
-                        }
+                        Map<String, String> attributes = new LinkedHashMap<>();
                         attributes.put("Group", panel.containerLabel());
                         attributes.put("Name", trackConfig.name);
                         attributes.put("Description", trackConfig.description);
@@ -433,7 +431,7 @@ public class TrackSelectionDialog extends JDialog {
                         }
 
                         final FileRecord record = new FileRecord(trackConfig.url, attributes);
-                        record.setSelected(trackConfig.visible);
+                        record.setSelected(selectionBox.isSelected());
                         records.add(record);
                         recordSelectionBoxMap.put(record, selectionBox);
                     }

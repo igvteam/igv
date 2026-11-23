@@ -100,6 +100,8 @@ public class BrowseEncodeAction extends MenuAction {
                         return;
                     }
 
+                    // The chooser is reused; tracks may have been loaded or removed since it was last shown
+                    chooser.selectLoadedTracks();
                     chooser.setVisible(true);
                     if (chooser.isCanceled()) return;
 
