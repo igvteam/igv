@@ -40,6 +40,7 @@ public class TrackSelectionDialog extends JDialog {
     private boolean canceled = true;
     JTextPane messagePane;
     private JLabel genomeLabel;
+    private Set<String> loadedTrackPaths;   // as of the dialog's opening, for "Reset Selections"
 
     public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
@@ -62,6 +63,7 @@ public class TrackSelectionDialog extends JDialog {
             dialog = new TrackSelectionDialog(hub, groups, unsupportedTrackCount, unsupportedTrackTypes, autoselectDefaults, owner);
             hubSelectionDialogs.put(key, dialog);
         }
+        dialog.loadedTrackPaths = loadedTrackPaths;
         dialog.resetSelectionBoxes(loadedTrackPaths);
         dialog.canceled = true;   // A reused dialog must not inherit a previous OK (closing with the window X is a cancel)
 
@@ -201,11 +203,17 @@ public class TrackSelectionDialog extends JDialog {
         // Search button.
         JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
             categoryPanels.stream().forEach(p -> p.updateLabel());
+            showSelections();
             return null;
         });
         JPanel searchButtonPanel = new JPanel();
         searchButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         searchButtonPanel.add(searchButton);
+
+        JButton resetButton = new JButton("Reset Selections");
+        resetButton.setToolTipText("Restore the selections the dialog opened with");
+        resetButton.addActionListener(e -> resetSelectionBoxes(loadedTrackPaths));
+        searchButtonPanel.add(resetButton);
         topButtonPanel.add(searchButtonPanel, BorderLayout.WEST);
 
         topPanel.add(topButtonPanel);
@@ -253,6 +261,18 @@ public class TrackSelectionDialog extends JDialog {
         getRootPane().setDefaultButton(okButton);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Make the selections visible after a search by opening the groups that have selected tracks.
+     */
+    private void showSelections() {
+        for (CollapsiblePanel panel : categoryPanels) {
+            if (panel.hasSelections()) {
+                panel.expand();
+            }
+        }
+        this.revalidate();
     }
 
     private JPanel getLabeledHyperlink(String label, String url) {

@@ -1,6 +1,7 @@
 package org.igv.ucsc.hub;
 
 import org.igv.Globals;
+import org.igv.encode.TrackChooser;
 import org.igv.feature.genome.load.TrackConfig;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
@@ -28,6 +29,7 @@ public class CollapsiblePanel extends JPanel {
     private JButton collapseButton;
     private JComponent content;
     private JPanel header;
+    private JPanel headerButtons;
     private ImageIcon openIcon;
     private ImageIcon closeIcon;
 
@@ -108,6 +110,19 @@ public class CollapsiblePanel extends JPanel {
         }
         header.add(jlabel, BorderLayout.CENTER);
 
+        // Select all / none for this group
+        headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        headerButtons.setOpaque(false);
+        JButton selectAllButton = new JButton("Select All");
+        selectAllButton.setToolTipText("Select the tracks of this group, up to " + TrackChooser.SELECT_ALL_LIMIT);
+        selectAllButton.addActionListener(e -> selectAll());
+        headerButtons.add(selectAllButton);
+        JButton selectNoneButton = new JButton("Select None");
+        selectNoneButton.setToolTipText("Unselect the tracks of this group");
+        selectNoneButton.addActionListener(e -> clearSelections());
+        headerButtons.add(selectNoneButton);
+        header.add(headerButtons, BorderLayout.EAST);
+
         this.add(header, BorderLayout.NORTH);
 
         if (addSearchButton) {
@@ -148,12 +163,40 @@ public class CollapsiblePanel extends JPanel {
     public void updateLabel() {
         int count = 0;
         for (SelectionBox selectionBox : selectionBoxes) {
-            if (selectionBox.isEnabled() && selectionBox.isSelected()) {
+            if (isSelected(selectionBox)) {
                 count++;
             }
         }
         String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, " + count + " selected)";
         jlabel.setText(label);
+    }
+
+    /**
+     * Select all tracks of the group, unless there are more than the "Select All" limit.
+     */
+    private void selectAll() {
+        if (selectionBoxes.size() > TrackChooser.SELECT_ALL_LIMIT) {
+            JOptionPane.showMessageDialog(this, "Select All is limited to " + TrackChooser.SELECT_ALL_LIMIT +
+                    " tracks; this group has " + selectionBoxes.size() + ".  Use Search to select a subset.");
+            return;
+        }
+        for (CollapsiblePanel.SelectionBox box : selectionBoxes) {
+            if (box.isEnabled()) {
+                box.setSelected(true);
+            }
+        }
+        updateLabel();
+    }
+
+    public boolean hasSelections() {
+        return selectionBoxes.stream().anyMatch(CollapsiblePanel::isSelected);
+    }
+
+    /**
+     * The one definition of a selected track: its box is enabled and checked.
+     */
+    private static boolean isSelected(SelectionBox box) {
+        return box.isEnabled() && box.isSelected();
     }
 
     public void clearSelections() {
@@ -162,19 +205,18 @@ public class CollapsiblePanel extends JPanel {
                 box.setSelected(false);
             }
         }
-        String label = configContainer.label + "   (" + selectionBoxes.size() + " tracks, 0 selected)";
-        jlabel.setText(label);
+        updateLabel();
     }
 
     public List<TrackConfig> getSelectedTracks() {
         return selectionBoxes.stream()
-                .filter(b -> b.isEnabled() && b.isSelected())
+                .filter(CollapsiblePanel::isSelected)
                 .map(CollapsiblePanel.SelectionBox::getTrackConfig).toList();
     }
 
 
     public void addSearchButton(JComponent searchButton) {
-        header.add(searchButton, BorderLayout.EAST);
+        headerButtons.add(searchButton);
         revalidate();
     }
 

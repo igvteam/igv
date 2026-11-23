@@ -37,6 +37,11 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
 
     private static NumberFormatter numberFormatter = new NumberFormatter();
 
+    /**
+     * The most tracks a "Select All" will select at once.
+     */
+    public static final int SELECT_ALL_LIMIT = 100;
+
     JTable table;
     JTextField filterTextField;
     JLabel rowCountLabel;
@@ -76,6 +81,22 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
         }
     }
 
+
+    /**
+     * Select or unselect the rows passing the current filter.  Selecting is refused above SELECT_ALL_LIMIT rows.
+     */
+    private void setListedRowsSelected(boolean selected) {
+        int rowCount = table.getRowCount();
+        if (selected && rowCount > SELECT_ALL_LIMIT) {
+            JOptionPane.showMessageDialog(this, "Select All is limited to " + SELECT_ALL_LIMIT + " tracks; " +
+                    rowCount + " are listed.  Narrow the filter and try again.");
+            return;
+        }
+        for (int i = 0; i < rowCount; i++) {
+            model.getRecords().get(table.convertRowIndexToModel(i)).setSelected(selected);
+        }
+        model.fireTableDataChanged();
+    }
 
     private void loadButtonActionPerformed(ActionEvent e) {
         canceled = false;
@@ -322,6 +343,16 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
                     }
                 });
         filterPanel.add(filterTextField, JideBoxLayout.VARY);
+
+        //---- Select all / none, for the rows passing the filter ----
+        JButton selectAllButton = new JButton("Select All");
+        selectAllButton.setToolTipText("Select the listed tracks, up to " + SELECT_ALL_LIMIT);
+        selectAllButton.addActionListener(e -> setListedRowsSelected(true));
+        filterPanel.add(selectAllButton, JideBoxLayout.FIX);
+        JButton selectNoneButton = new JButton("Select None");
+        selectNoneButton.setToolTipText("Unselect the listed tracks");
+        selectNoneButton.addActionListener(e -> setListedRowsSelected(false));
+        filterPanel.add(selectNoneButton, JideBoxLayout.FIX);
 
 
         rowCountLabel.setHorizontalAlignment(JLabel.RIGHT);
