@@ -196,6 +196,14 @@ public class Hub {
         return trackHub == null ? 0 : trackHub.getUnsupportedTrackCount();
     }
 
+    /**
+     * The types of the unsupported tracks counted by getUnsupportedTrackCount.
+     */
+    public Set<String> getUnsupportedTrackTypes(String genomeId) {
+        TrackDbHub trackHub = getTrackDbHub(genomeId);
+        return trackHub == null ? Collections.emptySet() : trackHub.getUnsupportedTrackTypes();
+    }
+
     private TrackDbHub getTrackDbHub(String genomeId) {
         try {
             return loadTrackDbHub(genomeId);

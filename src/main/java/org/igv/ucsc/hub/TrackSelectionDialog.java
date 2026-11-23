@@ -58,7 +58,8 @@ public class TrackSelectionDialog extends JDialog {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(genomeId);
             int unsupportedTrackCount = hub.getUnsupportedTrackCount(genomeId);
-            dialog = new TrackSelectionDialog(hub, groups, unsupportedTrackCount, autoselectDefaults, owner);
+            Set<String> unsupportedTrackTypes = hub.getUnsupportedTrackTypes(genomeId);
+            dialog = new TrackSelectionDialog(hub, groups, unsupportedTrackCount, unsupportedTrackTypes, autoselectDefaults, owner);
             hubSelectionDialogs.put(key, dialog);
         }
         dialog.resetSelectionBoxes(loadedTrackPaths);
@@ -74,13 +75,14 @@ public class TrackSelectionDialog extends JDialog {
     private TrackSelectionDialog(Hub hub,
                                  List<TrackConfigContainer> trackConfigContainers,
                                  int unsupportedTrackCount,
+                                 Set<String> unsupportedTrackTypes,
                                  boolean autoselectDefaults,
                                  Frame owner) {
         super(owner);
         setModal(true);
         this.autoselectDefaults = autoselectDefaults;
         this.hub = hub;
-        init(trackConfigContainers, unsupportedTrackCount);
+        init(trackConfigContainers, unsupportedTrackCount, unsupportedTrackTypes);
         setLocationRelativeTo(owner);
     }
 
@@ -125,7 +127,7 @@ public class TrackSelectionDialog extends JDialog {
         }
     }
 
-    void init(List<TrackConfigContainer> trackConfigContainers, int unsupportedTrackCount) {
+    void init(List<TrackConfigContainer> trackConfigContainers, int unsupportedTrackCount, Set<String> unsupportedTrackTypes) {
 
         setTitle(this.hub.getLongLabel());
 
@@ -167,9 +169,11 @@ public class TrackSelectionDialog extends JDialog {
             JPanel notePanel = new JPanel();
             ((FlowLayout) notePanel.getLayout()).setAlignment(FlowLayout.LEFT);
             notePanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 0, 0));
-            notePanel.add(new JLabel(unsupportedTrackCount == 1 ?
+            String types = unsupportedTrackTypes.isEmpty() ? "" :
+                    "  Unsupported types: " + String.join(", ", unsupportedTrackTypes);
+            notePanel.add(new JLabel((unsupportedTrackCount == 1 ?
                     "1 track unsupported by IGV has been filtered." :
-                    unsupportedTrackCount + " tracks unsupported by IGV have been filtered."));
+                    unsupportedTrackCount + " tracks unsupported by IGV have been filtered.") + types));
             topPanel.add(notePanel);
         }
 
@@ -486,7 +490,7 @@ public class TrackSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hs1");
 
-        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, 0, true, null);
+        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, 0, Collections.emptySet(), true, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 

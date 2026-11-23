@@ -41,6 +41,7 @@ public class TrackDbHub {
     List<Stanza> groupStanzas;
     List<TrackConfigContainer> groupTrackConfigs;
     int unsupportedTrackCount;   // data tracks dropped because IGV does not support their type
+    Set<String> unsupportedTrackTypes = Collections.emptySet();   // the types of those tracks
 
     public TrackDbHub(List<Stanza> trackStanzas, List<Stanza> groupStanzas) {
         this.groupStanzas = groupStanzas;
@@ -80,6 +81,7 @@ public class TrackDbHub {
             TrackConfigContainer nullContainer = new TrackConfigContainer(hubName, hubName, 0, true);
             containers.add(nullContainer);
             int unsupported = 0;
+            Set<String> unsupportedTypes = new TreeSet<>();
 
             boolean hasGroups = this.groupStanzas != null;
             if (hasGroups) {
@@ -155,9 +157,13 @@ public class TrackDbHub {
                     }
                 } else if (!filterTracks.contains(s.name) && s.hasProperty("bigDataUrl")) {
                     unsupported++;
+                    if (s.format() != null) {
+                        unsupportedTypes.add(s.format());
+                    }
                 }
             }
             unsupportedTrackCount = unsupported;
+            unsupportedTrackTypes = unsupportedTypes;
 
             // Filter empty groups and sort
             for (TrackConfigContainer c : containers) {
@@ -177,6 +183,14 @@ public class TrackDbHub {
      */
     public int getUnsupportedTrackCount() {
         return unsupportedTrackCount;
+    }
+
+    /**
+     * The types of the data tracks omitted from the groups because IGV does not support them, in alphabetical
+     * order.  Valid after getGroupedTrackConfigurations.
+     */
+    public Set<String> getUnsupportedTrackTypes() {
+        return unsupportedTrackTypes;
     }
 
     private TrackConfig getTrackConfig(Stanza t) {
