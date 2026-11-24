@@ -182,7 +182,8 @@ public class GenomeManager {
         try {
             log.info("Loading genome: " + genomePath);
             if (IGV.hasInstance()) {
-                IGVMenuBar.getInstance().setAllMenusEnabled(false);
+                // Menus and the genome pulldown are disabled so a second load cannot be started during this one
+                UIUtilities.invokeAndWaitOnEventThread(() -> setGenomeControlsEnabled(false));
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
                 IGV.getInstance().setLoadingMessage("Loading genome...");
@@ -215,7 +216,7 @@ public class GenomeManager {
 
 
             if (IGV.hasInstance()) {
-                IGV.getInstance().resetSession(null);
+                UIUtilities.invokeAndWaitOnEventThread(() -> IGV.getInstance().resetSession(null));
             }
 
             // Add an entry to the pulldown
@@ -233,10 +234,14 @@ public class GenomeManager {
             if (IGV.hasInstance()) {
                 // On success menus are re-enabled by the GenomeChangeEvent.  On failure no event fires, so
                 // restore them here, leaving the previous genome in place.
-                if (!loaded) {
-                    IGVMenuBar.getInstance().setAllMenusEnabled(true);
-                    IGVMenuBar.getInstance().resetSessionActions();
-                }
+                final boolean genomeLoaded = loaded;
+                UIUtilities.invokeAndWaitOnEventThread(() -> {
+                    if (!genomeLoaded) {
+                        IGVMenuBar.getInstance().setAllMenusEnabled(true);
+                        IGVMenuBar.getInstance().resetSessionActions();
+                    }
+                    IGV.getInstance().getContentPane().getCommandBar().setGenomeComboBoxEnabled(true);
+                });
                 IGV.getInstance().setStatusBarMessage("");
                 IGV.getInstance().setLoadingMessage(null);
                 WaitCursorManager.removeWaitCursor(cursorToken);
@@ -272,8 +277,14 @@ public class GenomeManager {
 
             CircularViewUtilities.changeGenome(newGenome);
 
-            IGVEventBus.getInstance().post(new GenomeChangeEvent(newGenome));
+            // Observers update menus and toolbar controls
+            UIUtilities.invokeAndWaitOnEventThread(() -> IGVEventBus.getInstance().post(new GenomeChangeEvent(newGenome)));
         }
+    }
+
+    private static void setGenomeControlsEnabled(boolean enabled) {
+        IGVMenuBar.getInstance().setAllMenusEnabled(enabled);
+        IGV.getInstance().getContentPane().getCommandBar().setGenomeComboBoxEnabled(enabled);
     }
 
     /**
