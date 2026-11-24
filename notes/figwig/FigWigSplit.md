@@ -6,8 +6,8 @@ separate repository that builds a jar IGV depends on?
 
 Status, 2026-11-24: done. The reader is its own project, https://github.com/igvteam/figwig-java (package
 `org.figwig`, MIT), and release v0.1.1 has `figwig-java-0.1.1.jar` attached. The IGV branch
-`figwig-external-jar` (local) depends on that jar and no longer holds the reader. Nothing has been
-proposed on the PR yet.
+`figwig-external-jar` depends on that jar and no longer holds the reader; it is PR
+[#1909](https://github.com/igvteam/igv/pull/1909).
 
 ## The library and how IGV gets it
 
@@ -16,7 +16,7 @@ proposed on the PR yet.
   reader, `FigWigByteSource`, `FigWigReader` (a command-line reader after the Python API), their
   tests and test data, `docs/API.md` (the contract for what IGV uses) and a README.
 - **Build:** a minimal Gradle build whose only dependency is `org.json`. `./gradlew build` makes the
-  jar; `./gradlew installDist` adds a `figwig` launcher.
+  jar; `./gradlew installDist` adds a `figwig-java` launcher.
 - **Releasing:** publishing a GitHub release tagged `v1.2.3` runs a workflow that tests, builds
   `figwig-java-1.2.3.jar` and attaches it. The version comes from the tag; no file is edited.
 - **IGV's build:** an `ivy` repository in `build.gradle` that maps `igvteam:figwig-java:0.1.1` to the
@@ -25,11 +25,42 @@ proposed on the PR yet.
 - **Not chosen:** GitHub Packages (needs a token even to download public packages), JitPack (a
   third-party service in IGV's build), Maven Central (not ours to do for the lab; the swap later is
   one repository block and one dependency line).
-- **Result:** on `figwig-external-jar` the full suite passes with 689 tests (the 15 reader tests now
+- **Result:** on `figwig-external-jar` the full suite passes with 688 tests (the reader's tests now
   run in the library's own repository), and `createDist` puts the jar in `lib/`.
 - **Tests and data left in IGV:** 12 tests of the classes that remain (`FigWigDataSource`,
   `FigWigTrackChooser`, `IGVFigWigByteSource`) and the four `.fw` files they read (61 KB). Everything
   else, including the expected tables and nine `.fw` files, lives only in the library's repository.
+
+## The track chooser
+
+A figwig file of more than 50 tracks opens a dialog to choose which to load. In the original PR the
+loader (`TrackLoader.loadFigWigFile`) opened it, and because session restores use the same loader the
+PR added `IGV.isRestoringSession()`, a flag on the application singleton, to keep a restore from
+prompting. On `figwig-external-jar` the dialog is in the UI layer and the flag is gone.
+
+- **Where it runs:** `IGV.loadTracks`, the entry point of every user-driven load (File menu, URL, drag
+  and drop, Recent, Load from Server, ENCODE, hubs, S3, batch `load`). Session readers call
+  `IGV.load` directly and never reach it.
+- **How the choice travels:** `FigWigTrackChooser.choose(locator)` puts the chosen names on the
+  `ResourceLocator` (new `trackNames` property; null means all), and the loader reads them. The
+  loader opens no dialog.
+- **What went away:** `IGV.isRestoringSession()`, the chooser's headless and session checks, and its
+  public `override` test hook. `IGV.java` differs from `main` only by the chooser call.
+- **Cost:** an interactive load of a large file opens it twice, once to list tracks and once to load.
+  Only the header and tables are read each time.
+- **Limits:** the chooser goes by the locator's format, so a figwig file without a `.fw` extension
+  loads every track without asking. Batch mode never asks.
+- **Sessions:** unchanged. A JSON restore loads every track of the file and unloads those the session
+  does not name (`JSONSessionReader`). XML sessions are deprecated and will not reference figwig.
+
+Considered and not done: passing a session's saved track names to the loader. It avoids building
+every track on restore, but needs a pre-pass in `JSONSessionReader` and matching by id as well as
+name, since users can rename tracks. Judged more disruptive than moving the dialog, for a format that
+is still experimental.
+
+Also decided: the copy of `AbstractDataSource`'s summarisation in `FigWigDataSource` stays. figwig
+does not store explicit zeros, so a figwig made from a bigWig cannot be expected to display
+identically, which was the reason to unify them.
 
 The sections below describe the in-tree simulation on `figwig-split-simulation` that preceded this,
 where the reader was a top-level `figwig` package inside IGV.
