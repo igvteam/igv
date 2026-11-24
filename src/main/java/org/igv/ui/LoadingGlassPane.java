@@ -11,7 +11,7 @@ import java.awt.*;
  */
 public class LoadingGlassPane extends JComponent {
 
-    private static final int SHOW_DELAY_MS = 500;
+    private static final int SHOW_DELAY_MS = 1000;
 
     private String message;
     private boolean showing;   // true once the delay has passed
