@@ -27,9 +27,10 @@ import org.igv.feature.mut.MutationFeatureSource;
 import org.igv.feature.sprite.ClusterParser;
 import org.igv.feature.sprite.ClusterTrack;
 import org.igv.feature.tribble.*;
+import figwig.FigWigFile;
 import org.igv.figwig.FigWigDataSource;
-import org.igv.figwig.FigWigFile;
 import org.igv.figwig.FigWigTrackChooser;
+import org.igv.figwig.IGVFigWigSource;
 import org.igv.gwas.GWASData;
 import org.igv.gwas.GWASParser;
 import org.igv.gwas.GWASTrack;
@@ -882,18 +883,18 @@ public class TrackLoader {
 
     public void loadFigWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        FigWigFile reader = FigWigFile.open(locator.getPath());
+        FigWigFile reader = IGVFigWigSource.open(locator.getPath());
         String path = locator.getPath();
         Set<String> chosen = FigWigTrackChooser.choose(reader, locator.getTrackName());
         for (int t = 0; t < reader.nTracks(); t++) {
-            String name = reader.trackNames[t];
+            String name = reader.trackName(t);
             if (chosen != null && !chosen.contains(name)) {
                 continue;
             }
             DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
                     new FigWigDataSource(reader, t, genome));
             track.setName(name);
-            for (Map.Entry<String, String> entry : reader.trackAttributes.get(t).entrySet()) {
+            for (Map.Entry<String, String> entry : reader.trackAttributes(t).entrySet()) {
                 track.setAttributeValue(entry.getKey(), entry.getValue());
             }
             newTracks.add(track);

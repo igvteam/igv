@@ -1,4 +1,4 @@
-package org.igv.figwig;
+package figwig;
 
 import org.json.JSONObject;
 

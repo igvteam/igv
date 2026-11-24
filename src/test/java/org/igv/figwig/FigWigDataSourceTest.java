@@ -1,5 +1,6 @@
 package org.igv.figwig;
 
+import figwig.FigWigFile;
 import org.igv.AbstractHeadlessTest;
 import org.igv.data.AbstractDataSource;
 import org.igv.data.CompositeScore;
@@ -13,6 +14,7 @@ import org.igv.track.Track;
 import org.igv.track.TrackLoader;
 import org.igv.track.WindowFunction;
 import org.igv.util.ResourceLocator;
+import org.igv.util.TestUtils;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -27,7 +29,17 @@ import static org.junit.Assert.*;
  */
 public class FigWigDataSourceTest extends AbstractHeadlessTest {
 
-    static final String FILE = FigWigFileTest.DIR + "positions_zlib.fw";
+    static final String DIR = TestUtils.DATA_DIR + "figwig/";
+    static final String FILE = DIR + "positions_zlib.fw";
+
+    static int trackId(FigWigFile fw, String name) {
+        for (int t = 0; t < fw.nTracks(); t++) {
+            if (fw.trackName(t).equals(name)) {
+                return t;
+            }
+        }
+        return -1;
+    }
 
     static FigWigDataSource source(Track track) throws Exception {
         Field f = DataSourceTrack.class.getDeclaredField("dataSource");
@@ -192,7 +204,7 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
             List<org.igv.encode.FileRecord> records = FigWigTrackChooser.records(fw);
             assertEquals(fw.nTracks(), records.size());
             for (int t = 0; t < fw.nTracks(); t++) {
-                assertEquals(fw.trackNames[t], records.get(t).getAttributeValue("name"));
+                assertEquals(fw.trackName(t), records.get(t).getAttributeValue("name"));
             }
             assertTrue("small files load without asking: " + fw.nTracks(),
                     fw.nTracks() > FigWigTrackChooser.CHOOSER_MIN_TRACKS);
@@ -210,7 +222,7 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
     @Test
     public void testGroupsWithoutASummaryUseRawData() throws Exception {
         for (String file : new String[]{"mixed.fw", "mixed_stored.fw", "mixed_merged.fw"}) {
-            List<Track> tracks = new TrackLoader().load(new ResourceLocator(FigWigFileTest.DIR + file), genome);
+            List<Track> tracks = new TrackLoader().load(new ResourceLocator(DIR + file), genome);
             try {
                 int with = 0, without = 0;
                 for (Track t : tracks) {
@@ -219,7 +231,7 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
                     }
                     FigWigDataSource source = source(t);
                     FigWigFile fw = source.getFile();
-                    boolean has = fw.hasSummary(Arrays.asList(fw.trackNames).indexOf(t.getName()));
+                    boolean has = fw.hasSummary(trackId(fw, t.getName()));
                     assertEquals(file + " " + t.getName(), !t.getName().startsWith("cell") && !t.getName().startsWith("site")
                             && !t.getName().equals("bare"), has);
                     source.setWindowFunction(WindowFunction.mean);
@@ -266,11 +278,11 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
             for (int k = 0; k < fw.levels(); k++) {
                 if (fw.levelBases(k) <= genome.getWGLength() / 1000.0) level = k;
             }
-            int t = Arrays.asList(fw.trackNames).indexOf("random");
-            FigWigFile.Runs chr1 = fw.levelMeans(t, level, fw.chromId("chr1"), 0, (int) fw.chromLengths[fw.chromId("chr1")]);
+            int t = trackId(fw, "random");
+            FigWigFile.Runs chr1 = fw.levelMeans(t, level, fw.chromId("chr1"), 0, (int) fw.chromLength(fw.chromId("chr1")));
             assertEquals(genome.getGenomeCoordinate("chr1", chr1.starts[0]), scores.get(0).getStart());
             assertEquals((float) chr1.values[0], scores.get(0).getScore(), 0f);
-            int chr3End = genome.getGenomeCoordinate("chr3", (int) fw.chromLengths[fw.chromId("chr3")]);
+            int chr3End = genome.getGenomeCoordinate("chr3", (int) fw.chromLength(fw.chromId("chr3")));
             for (LocusScore score : scores) {
                 assertTrue(score.getStart() <= chr3End + 1);
             }

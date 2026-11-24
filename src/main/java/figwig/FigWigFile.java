@@ -1,7 +1,5 @@
-package org.igv.figwig;
+package figwig;
 
-import htsjdk.samtools.seekablestream.SeekableStream;
-import org.igv.util.stream.IGVSeekableStreamFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,8 +15,8 @@ import java.util.concurrent.atomic.*;
 import java.util.function.IntToLongFunction;
 import java.util.zip.CRC32;
 
-import static org.igv.figwig.FigWigChunks.*;
-import static org.igv.figwig.FigWigPool.*;
+import static figwig.FigWigChunks.*;
+import static figwig.FigWigPool.*;
 
 /**
  * A reader of figwig files, version 1, as specified in docs/format.rst of the figwig repository
@@ -31,15 +29,14 @@ import static org.igv.figwig.FigWigPool.*;
  * group's tracks), caches them under one budget shared by every open file, and decodes the track's
  * values into runs ({@link FigWigChunks}).  Long reads are split over the decoding threads
  * ({@link FigWigPool}); reads of 16 or more tracks of a group over one range are decoded in one pass.
- * Local files are read with positional reads; http(s), s3 and gs paths with one range request per read,
- * the requests of a read sent at once.
+ * Local files are read with positional reads; any other path through the {@link FigWigSource} the
+ * application supplies, the requests of a read sent at once when it is remote.
  */
 public class FigWigFile {
 
     public static final int MAGIC = 0x57474946;  // "FIGW"
 
     private static final long CACHE_BYTES = Long.getLong("figwig.cacheMB", 256) << 20;
-    private static final boolean POSITIONAL = !Boolean.getBoolean("figwig.noPositional");
     private static final long MAX_SPAN = 8 << 20;
     // Reads split into parts of at least this many chunks.
     private static final int PART_CHUNKS = Integer.getInteger("figwig.partChunks", 8);
@@ -50,26 +47,26 @@ public class FigWigFile {
     // Over HTTP the parts of a load are requests sent at once; Java keeps 5 idle connections per host.
     private static final int HTTP_PARTS = Integer.getInteger("figwig.httpParts", 4);
 
-    public final String path;
-    private final SeekableStream stream;
+    final String path;
+    private final FigWigSource source;   // null for a local file, read through channel
 
-    public final int tile;
-    public final int codec;
-    public final boolean trackOrder;
-    public final String genome;
+    final int tile;
+    final int codec;
+    final boolean trackOrder;
+    final String genome;
 
-    public final String[] chromNames;
-    public final long[] chromLengths;
+    final String[] chromNames;
+    final long[] chromLengths;
     private final long[] chromTileStart;
     private final Map<String, Integer> chromIds = new HashMap<>();
 
-    public final String[] trackNames;
-    public final String[] trackDtypes;
-    public final int[] trackGroup;
-    public final int[] trackSlot;
-    public final List<LinkedHashMap<String, String>> trackAttributes = new ArrayList<>();
-    public final double[] statSum, statMin, statMax;
-    public final long[] statNonzero;
+    final String[] trackNames;
+    final String[] trackDtypes;
+    final int[] trackGroup;
+    final int[] trackSlot;
+    final List<LinkedHashMap<String, String>> trackAttributes = new ArrayList<>();
+    final double[] statSum, statMin, statMax;
+    final long[] statNonzero;
 
     private final int nGroups;
     private final int[] groupSize;
@@ -86,13 +83,13 @@ public class FigWigFile {
     private volatile int[] zoomFactors;       // level 0 is the summary, factor 1; from the first group with one
     private volatile long[][] chromBinStart;  // per level, per chromosome
 
-    public final long openNanos;
-    public final long openBytesRead;
-    public final int openReads;
+    final long openNanos;
+    final long openBytesRead;
+    final int openReads;
 
 
     /**
-     * Loaded chunks and blocks by key.  IGV loads the tracks of a view on several threads at once, and
+     * Loaded chunks and blocks by key.  A viewer loads the tracks of a view on several threads at once, and
      * the tracks of a group share their chunks: the first thread to want a chunk loads it, the others
      * wait for it.  Bounded by bytes, evicted first in, first out.
      */
@@ -121,7 +118,7 @@ public class FigWigFile {
     private final AtomicLong chunkBytesRead = new AtomicLong();
     private final AtomicLong chunkReads = new AtomicLong();
     private final FileChannel channel;
-    private final boolean HTTP;   // http(s), s3 and gs paths: IGV reads them over HTTP range requests
+    private final boolean HTTP;   // a remote source (http(s), s3 and gs paths): each read is a range request
     private final int spanChunks;
 
     private static class Group {
@@ -171,18 +168,23 @@ public class FigWigFile {
         }
     }
 
+    /** Open a local file. */
     public static FigWigFile open(String path) throws IOException {
-        return new FigWigFile(path);
+        return new FigWigFile(path, null);
     }
 
-    private FigWigFile(String path) throws IOException {
+    /** Open a file whose bytes {@code source} reads; {@code path} names it in messages. */
+    public static FigWigFile open(String path, FigWigSource source) throws IOException {
+        return new FigWigFile(path, source);
+    }
+
+    private FigWigFile(String path, FigWigSource source) throws IOException {
         long t0 = System.nanoTime();
         this.path = path;
-        this.stream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
-        java.io.File local = new java.io.File(path);
-        this.channel = POSITIONAL && local.isFile() ?
-                FileChannel.open(local.toPath(), java.nio.file.StandardOpenOption.READ) : null;
-        this.HTTP = channel == null && org.igv.util.FileUtils.isRemote(path) && !path.startsWith("ftp:");
+        this.source = source;
+        this.channel = source == null ?
+                FileChannel.open(new java.io.File(path).toPath(), java.nio.file.StandardOpenOption.READ) : null;
+        this.HTTP = source != null && source.isRemote();
         this.spanChunks = HTTP ? HTTP_SPAN_CHUNKS : SPAN_CHUNKS;
 
         byte[] headerBytes = readAt(0, 128);
@@ -195,7 +197,8 @@ public class FigWigFile {
         if (crc32(zeroed, 0, 128) != (h.getInt(104) & 0xffffffffL)) {
             throw new IOException("figwig: the header's CRC-32 does not match");
         }
-        long fileSize = stream.length() > 0 ? stream.length() : h.getLong(88);
+        long sourceSize = channel != null ? channel.size() : source.length();
+        long fileSize = sourceSize > 0 ? sourceSize : h.getLong(88);
 
         int version = h.getShort(4) & 0xffff, flags = h.getShort(6) & 0xffff;
         long tl = h.getInt(8) & 0xffffffffL;
@@ -733,12 +736,54 @@ public class FigWigFile {
         }
     }
 
+    public String path() {
+        return path;
+    }
+
     public Integer chromId(String name) {
         return chromIds.get(name);
     }
 
+    public int nChroms() {
+        return chromNames.length;
+    }
+
+    public String chromName(int chrom) {
+        return chromNames[chrom];
+    }
+
+    public long chromLength(int chrom) {
+        return chromLengths[chrom];
+    }
+
     public int nTracks() {
         return trackNames.length;
+    }
+
+    public String trackName(int track) {
+        return trackNames[track];
+    }
+
+    /** The track's attributes from the file's metadata, in the file's order. */
+    public Map<String, String> trackAttributes(int track) {
+        return Collections.unmodifiableMap(trackAttributes.get(track));
+    }
+
+    /** The least and greatest of the track's values, from the file's statistics. */
+    public double trackMin(int track) {
+        return statMin[track];
+    }
+
+    public double trackMax(int track) {
+        return statMax[track];
+    }
+
+    /**
+     * Bases per bin of the finest summary, {@code levelBases(0)}, known without reading a level.  A view
+     * with finer bins than this is drawn from the values themselves.
+     */
+    public int summaryBases() {
+        return tile;
     }
 
     /**
@@ -767,13 +812,21 @@ public class FigWigFile {
         return runs;
     }
 
+    // Loading every chunk of a range in one pass before it is read in parts: "http" (the default) for
+    // remote files only, where it overlaps round trips; "always"; or "never".
+    private static final String PREFETCH = System.getProperty("figwig.prefetch", "http");
+
     /**
-     * Load, without decoding, the chunks or blocks a read of [start, end) of a track will need, so
-     * that reads of parts of the range that follow find them cached.  Over HTTP, also start loading
+     * A hint that [start, end) of a track is about to be read in parts.  Where it helps (remote files,
+     * unless figwig.prefetch says otherwise) load, without decoding, the chunks or blocks those reads
+     * will need, so that they find them cached.  Over HTTP, also start loading
      * the same range for the file's other groups that have been read before, on background threads,
      * so that the groups' round trips overlap instead of following one another.
      */
     public void prefetch(int track, int chrom, int start, int end) throws IOException {
+        if (HTTP ? "never".equals(PREFETCH) : !"always".equals(PREFETCH)) {
+            return;
+        }
         end = (int) Math.min(end, chromLengths[chrom]);
         start = Math.max(0, start);
         if (end <= start) {
@@ -1587,8 +1640,8 @@ public class FigWigFile {
         release();
     }
 
-    /** Read over HTTP range requests (http, https, s3, gs paths). */
-    public boolean isHttp() {
+    /** Read through a remote source, over range requests (http, https, s3, gs paths). */
+    boolean isHttp() {
         return HTTP;
     }
 
@@ -1598,7 +1651,7 @@ public class FigWigFile {
 
     /**
      * A local file is read with positional reads, which share no file position and take no lock;
-     * anything else (HTTP, S3) through IGV's SeekableStream under one lock.
+     * anything else through the application's source.
      */
     byte[] readAt(long offset, int n) throws IOException {
         byte[] out = new byte[n];
@@ -1612,31 +1665,12 @@ public class FigWigFile {
                 }
                 at += r;
             }
-        } else if (HTTP) {
-            // One range request per read on a stream of its own, so IGV's loader threads read concurrently.
-            try (SeekableStream s = IGVSeekableStreamFactory.getInstance().getStreamFor(path)) {
-                fill(s, offset, out);
-            }
         } else {
-            synchronized (stream) {
-                fill(stream, offset, out);
-            }
+            source.read(offset, out);
         }
         chunkReads.incrementAndGet();
         chunkBytesRead.addAndGet(n);
         return out;
-    }
-
-    private void fill(SeekableStream s, long offset, byte[] out) throws IOException {
-        s.seek(offset);
-        int done = 0;
-        while (done < out.length) {
-            int r = s.read(out, done, out.length - done);
-            if (r < 0) {
-                throw new IOException("figwig: " + path + " ended at " + (offset + done) + ", expected " + (offset + out.length));
-            }
-            done += r;
-        }
     }
 
     public void close() throws IOException {
@@ -1645,7 +1679,9 @@ public class FigWigFile {
         if (summaryIndex != null) {
             summaryIndex.clear();
         }
-        stream.close();
+        if (source != null) {
+            source.close();
+        }
         if (channel != null) {
             channel.close();
         }

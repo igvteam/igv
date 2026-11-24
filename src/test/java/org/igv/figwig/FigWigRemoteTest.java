@@ -1,5 +1,6 @@
 package org.igv.figwig;
 
+import figwig.FigWigFile;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.igv.AbstractHeadlessTest;
@@ -45,7 +46,7 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
     static void serve(HttpExchange x) throws IOException {
         requests.incrementAndGet();
         String[] parts = x.getRequestURI().getPath().split("/", 3);
-        File f = parts.length == 3 ? new File(FigWigFileTest.DIR + parts[2]) : null;
+        File f = parts.length == 3 ? new File(FigWigDataSourceTest.DIR + parts[2]) : null;
         if (f == null || !f.isFile()) {
             x.sendResponseHeaders(404, -1);
             x.close();
@@ -90,23 +91,25 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
     }
 
     static void assertSameAsLocal(String url, String file) throws Exception {
-        FigWigFile local = FigWigFile.open(FigWigFileTest.DIR + file);
-        FigWigFile remote = FigWigFile.open(url);
+        FigWigFile local = FigWigFile.open(FigWigDataSourceTest.DIR + file);
+        IGVFigWigSource source = new IGVFigWigSource(url);
+        FigWigFile remote = FigWigFile.open(url, source);
         try {
-            assertTrue(remote.isHttp());
-            assertArrayEquals(local.trackNames, remote.trackNames);
+            assertTrue(source.isRemote());
+            assertEquals(local.nTracks(), remote.nTracks());
             for (int t = 0; t < local.nTracks(); t++) {
-                for (int c = 0; c < local.chromNames.length; c++) {
-                    int len = (int) local.chromLengths[c];
-                    assertArrayEquals(url + " track " + t + " " + local.chromNames[c],
+                assertEquals(local.trackName(t), remote.trackName(t));
+                for (int c = 0; c < local.nChroms(); c++) {
+                    int len = (int) local.chromLength(c);
+                    assertArrayEquals(url + " track " + t + " " + local.chromName(c),
                             local.readDense(t, c, 0, len), remote.readDense(t, c, 0, len), 0.0);
                     remote.prefetch(t, c, len / 3, len);
                     assertArrayEquals(local.readDense(t, c, len / 3, len), remote.readDense(t, c, len / 3, len), 0.0);
                 }
                 assertEquals(local.hasSummary(t), remote.hasSummary(t));
                 for (int k = 0; k < local.levels(); k++) {
-                    FigWigFile.Runs a = local.levelMeans(t, k, 0, 0, (int) local.chromLengths[0]);
-                    FigWigFile.Runs b = remote.levelMeans(t, k, 0, 0, (int) local.chromLengths[0]);
+                    FigWigFile.Runs a = local.levelMeans(t, k, 0, 0, (int) local.chromLength(0));
+                    FigWigFile.Runs b = remote.levelMeans(t, k, 0, 0, (int) local.chromLength(0));
                     assertEquals(a == null, b == null);
                     if (a != null) {
                         assertEquals(a.n, b.n);
@@ -124,7 +127,7 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
 
     @Test(timeout = 300000)
     public void testRangeRequestsReadWhatTheLocalFileHolds() throws Exception {
-        for (String file : FigWigFileTest.FILES) {
+        for (String file : new File(FigWigDataSourceTest.DIR).list((dir, name) -> name.endsWith(".fw"))) {
             assertSameAsLocal(base + "/ok/" + file, file);
         }
     }
@@ -140,7 +143,7 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
     @Test(timeout = 60000)
     public void testAMissingFileFailsToOpen() {
         try {
-            FigWigFile.open(base + "/ok/missing.fw").close();
+            IGVFigWigSource.open(base + "/ok/missing.fw").close();
             fail("opened a missing file");
         } catch (IOException | RuntimeException expected) {
             // the error names the URL or the HTTP status; nothing hangs

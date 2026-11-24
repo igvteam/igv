@@ -1,5 +1,6 @@
 package org.igv.figwig;
 
+import figwig.FigWigFile;
 import org.igv.Globals;
 import org.igv.data.AbstractDataSource;
 import org.igv.data.BasicScore;
@@ -15,6 +16,7 @@ import org.igv.ui.panel.FrameManager;
 import org.igv.util.collections.LRUCache;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -40,8 +42,8 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         this.file = file;
         this.track = track;
         file.retain(track);
-        for (int c = 0; c < file.chromNames.length; c++) {
-            String name = file.chromNames[c];
+        for (int c = 0; c < file.nChroms(); c++) {
+            String name = file.chromName(c);
             chromIds.put(name, c);
             if (genome != null) {
                 chromIds.putIfAbsent(genome.getCanonicalChrName(name), c);
@@ -54,11 +56,11 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
     }
 
     public double getDataMax() {
-        return file.statMax[track];
+        return file.trackMax(track);
     }
 
     public double getDataMin() {
-        return Math.min(0, file.statMin[track]);
+        return Math.min(0, file.trackMin(track));
     }
 
     public DataType getDataType() {
@@ -101,8 +103,8 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         if (c == null) {
             return Collections.emptyList();
         }
-        double scale = file.chromLengths[c] / (Math.pow(2, zoom) * 700);
-        if (file.tile > scale || !file.hasSummary(track)) {
+        double scale = file.chromLength(c) / (Math.pow(2, zoom) * 700);
+        if (file.summaryBases() > scale || !file.hasSummary(track)) {
             // The finest level (tile sums) is coarser than a bin, or the group keeps none: raw data.
             return null;
         }
@@ -155,7 +157,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                 if (c == null) {
                     continue;
                 }
-                FigWigFile.Runs runs = file.levelMeans(track, level, c, 0, (int) file.chromLengths[c]);
+                FigWigFile.Runs runs = file.levelMeans(track, level, c, 0, (int) file.chromLength(c));
                 if (runs == null) {
                     break;  // the group keeps no summary: nothing drawn, as reading the genome raw is too slow
                 }
@@ -176,7 +178,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
      */
     public int levelFor(String chr, int zoom) {
         Integer c = chromIds.get(chr);
-        double scale = file.chromLengths[c] / (Math.pow(2, zoom) * 700);
+        double scale = file.chromLength(c) / (Math.pow(2, zoom) * 700);
         int level = -1;
         for (int k = 0; k < file.levels(); k++) {
             if (file.levelBases(k) <= scale) {
@@ -193,10 +195,6 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
     // arithmetic, score classes and representative values included; other window functions use them.
 
     private final LRUCache<String, List<LocusScore>> tileCache = new LRUCache<>(10);
-
-    // Loading every tile of a request in one pass first: "http" (the default) for remote files only,
-    // where it overlaps round trips; "always"; or "never".
-    private static final String PREFETCH = System.getProperty("figwig.prefetch", "http");
 
     @Override
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
@@ -217,6 +215,15 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         return scores;
     }
 
+    // Threads that summarize the tiles of one request, the requesting thread included.
+    private static final int SUMMARY_THREADS = Math.max(1, Math.min(16, Runtime.getRuntime().availableProcessors()));
+    private static final ExecutorService SUMMARY_POOL = SUMMARY_THREADS <= 1 ? null :
+            Executors.newFixedThreadPool(SUMMARY_THREADS - 1, r -> {
+                Thread t = new Thread(r, "figwig-summary");
+                t.setDaemon(true);
+                return t;
+            });
+
     /** Requests for raw summaries running now, over every figwig track. */
     private static final AtomicInteger ACTIVE_SUMMARIES = new AtomicInteger();
 
@@ -236,9 +243,10 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         double tileWidth = ((double) chrLength) / virtualTileCount;
         int startTile = (int) (adjustedStart / tileWidth);
         int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;
-        // Over HTTP, load the chunks of every tile not cached in one pass, so that their reads overlap.
+        // Tell the reader the range of the tiles not cached: over HTTP it loads their chunks in one pass,
+        // so that their reads overlap.
         Integer c = chromIds.get(chr);
-        if (c != null && (file.isHttp() ? !"never".equals(PREFETCH) : "always".equals(PREFETCH))) {
+        if (c != null) {
             int missFirst = -1, missLast = -1;
             for (int t = startTile; t <= endTile; t++) {
                 if (tileCache.get(chr + "_" + z + "_" + t + getWindowFunction()) == null) {
@@ -256,9 +264,9 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         }
         // Large tiles not cached are summarized in parallel, each on its own as IGV does; small ones on
         // this thread, as handing them to the pool costs more than they do.
-        if (FigWigPool.DECODE_THREADS > 1 && endTile > startTile && tileWidth >= 8.0 * file.tile) {
+        if (SUMMARY_THREADS > 1 && endTile > startTile && tileWidth >= 8.0 * file.summaryBases()) {
             // Summaries large enough to run in parallel are counted, so that those running at once share the threads.
-            if (ACTIVE_SUMMARIES.incrementAndGet() * 2 <= FigWigPool.DECODE_THREADS) {
+            if (ACTIVE_SUMMARIES.incrementAndGet() * 2 <= SUMMARY_THREADS) {
                 try {
                     return summaryTilesParallel(chr, chrLength, z, tileWidth, startTile, endTile);
                 } finally {
@@ -288,29 +296,42 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                                                         int startTile, int endTile) {
         int count = endTile - startTile + 1;
         List<LocusScore>[] got = new List[count];
-        List<Callable<List<LocusScore>>> tasks = new ArrayList<>();
+        List<FutureTask<List<LocusScore>>> tasks = new ArrayList<>();
         List<Integer> missing = new ArrayList<>();
         for (int t = startTile; t <= endTile; t++) {
             got[t - startTile] = tileCache.get(chr + "_" + z + "_" + t + getWindowFunction());
             if (got[t - startTile] == null) {
                 final int tileStart = (int) (t * tileWidth);
                 final int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
-                tasks.add(() -> summarize(chr, tileStart, tileEnd, 700));
+                tasks.add(new FutureTask<>(() -> summarize(chr, tileStart, tileEnd, 700)));
                 missing.add(t);
             }
         }
         if (!tasks.isEmpty()) {
-            List<List<LocusScore>> done;
-            try {
-                done = FigWigPool.parallel(tasks);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+            // The pool or this thread runs each task, whichever takes it first: this thread never waits on
+            // a task still queued.
+            for (int i = 1; i < tasks.size(); i++) {
+                SUMMARY_POOL.execute(tasks.get(i));
+            }
+            for (FutureTask<List<LocusScore>> task : tasks) {
+                task.run();
             }
             for (int i = 0; i < missing.size(); i++) {
                 int t = missing.get(i);
-                got[t - startTile] = done.get(i);
+                List<LocusScore> done;
+                try {
+                    done = tasks.get(i).get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new UncheckedIOException(new InterruptedIOException("figwig: interrupted"));
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof RuntimeException) throw (RuntimeException) e.getCause();
+                    if (e.getCause() instanceof Error) throw (Error) e.getCause();
+                    throw new RuntimeException(e.getCause());
+                }
+                got[t - startTile] = done;
                 synchronized (tileCache) {
-                    tileCache.put(chr + "_" + z + "_" + t + getWindowFunction(), done.get(i));
+                    tileCache.put(chr + "_" + z + "_" + t + getWindowFunction(), done);
                 }
             }
         }
@@ -436,7 +457,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
             try {
                 file.release(track);
             } catch (IOException e) {
-                log.error("Error closing " + file.path, e);
+                log.error("Error closing " + file.path(), e);
             }
         }
     }

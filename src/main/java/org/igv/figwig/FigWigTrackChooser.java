@@ -1,5 +1,6 @@
 package org.igv.figwig;
 
+import figwig.FigWigFile;
 import org.igv.Globals;
 import org.igv.encode.FileRecord;
 import org.igv.encode.TrackChooser;
@@ -60,8 +61,8 @@ public class FigWigTrackChooser {
     static List<String> headings(FigWigFile file) {
         LinkedHashSet<String> names = new LinkedHashSet<>();
         names.add("name");
-        for (Map<String, String> attributes : file.trackAttributes) {
-            names.addAll(attributes.keySet());
+        for (int t = 0; t < file.nTracks(); t++) {
+            names.addAll(file.trackAttributes(t).keySet());
         }
         List<String> headings = new ArrayList<>(names);
         return headings.size() > 15 ? headings.subList(0, 15) : headings;
@@ -71,9 +72,9 @@ public class FigWigTrackChooser {
         List<FileRecord> records = new ArrayList<>(file.nTracks());
         for (int t = 0; t < file.nTracks(); t++) {
             Map<String, String> attributes = new LinkedHashMap<>();
-            attributes.put("name", file.trackNames[t]);
-            attributes.putAll(file.trackAttributes.get(t));
-            records.add(new FileRecord(file.trackNames[t], attributes));
+            attributes.put("name", file.trackName(t));
+            attributes.putAll(file.trackAttributes(t));
+            records.add(new FileRecord(file.trackName(t), attributes));
         }
         return records;
     }
