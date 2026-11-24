@@ -885,22 +885,35 @@ public class TrackLoader {
 
         FigWigFile reader = IGVFigWigByteSource.open(locator.getPath());
         String path = locator.getPath();
-        Set<String> chosen = FigWigTrackChooser.choose(reader, locator.getTrackName());
-        for (int t = 0; t < reader.nTracks(); t++) {
-            String name = reader.trackName(t);
-            if (chosen != null && !chosen.contains(name)) {
-                continue;
+        List<Track> loaded = new ArrayList<>();
+        try {
+            Set<String> chosen = FigWigTrackChooser.choose(reader, locator.getTrackName());
+            for (int t = 0; t < reader.nTracks(); t++) {
+                String name = reader.trackName(t);
+                if (chosen != null && !chosen.contains(name)) {
+                    continue;
+                }
+                DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
+                        new FigWigDataSource(reader, t, genome));
+                track.setName(name);
+                for (Map.Entry<String, String> entry : reader.trackAttributes(t).entrySet()) {
+                    track.setAttributeValue(entry.getKey(), entry.getValue());
+                }
+                loaded.add(track);
             }
-            DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
-                    new FigWigDataSource(reader, t, genome));
-            track.setName(name);
-            for (Map.Entry<String, String> entry : reader.trackAttributes(t).entrySet()) {
-                track.setAttributeValue(entry.getKey(), entry.getValue());
+        } catch (RuntimeException e) {
+            // The tracks made so far are never shown, so nothing else would release the file.
+            for (Track track : loaded) {
+                track.unload();
             }
-            newTracks.add(track);
+            if (!reader.isClosed()) {
+                reader.close();
+            }
+            throw e;
         }
-        if (chosen != null && chosen.isEmpty()) {
-            reader.close();
+        newTracks.addAll(loaded);
+        if (loaded.isEmpty()) {
+            reader.close();   // nothing was chosen, so no track will release the file
         }
     }
 

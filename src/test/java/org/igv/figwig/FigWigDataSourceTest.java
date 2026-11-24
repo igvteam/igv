@@ -187,8 +187,24 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
             for (Track t : tracks) t.unload();
             assertTrue("removing the chosen tracks closes the file", fw.isClosed());
 
-            FigWigTrackChooser.override = f -> new HashSet<>();   // cancelled
+            FigWigFile[] opened = new FigWigFile[1];
+            FigWigTrackChooser.override = f -> {   // cancelled
+                opened[0] = f;
+                return new HashSet<>();
+            };
             assertEquals(0, new TrackLoader().load(new ResourceLocator(FILE), genome).size());
+            assertTrue("a file with nothing chosen is closed", opened[0].isClosed());
+
+            FigWigTrackChooser.override = f -> {
+                opened[0] = f;
+                throw new IllegalStateException("the load fails");
+            };
+            try {
+                new TrackLoader().load(new ResourceLocator(FILE), genome);
+                fail("the load did not fail");
+            } catch (RuntimeException expected) {
+                assertTrue("a file whose load fails is closed", opened[0].isClosed());
+            }
         } finally {
             FigWigTrackChooser.override = null;
         }
