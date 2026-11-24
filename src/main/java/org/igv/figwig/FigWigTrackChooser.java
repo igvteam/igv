@@ -64,6 +64,7 @@ public class FigWigTrackChooser {
                     chosen.add(r.getAttributeValue("name"));
                 }
             }
+            chooser.dispose();
         });
         locator.setTrackNames(chosen);
         return !chosen.isEmpty();

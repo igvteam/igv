@@ -117,6 +117,10 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         if (level < 0) {
             return null;
         }
+        start = Math.max(0, start);   // levelMeans, unlike read, takes no start below 0 and no empty range
+        if (end <= start) {
+            return Collections.emptyList();
+        }
         FigWigFile.Runs runs = file.levelMeans(track, level, c, start, end);
         List<LocusScore> scores = new ArrayList<>(runs.n);
         for (int i = 0; i < runs.n; i++) {
@@ -171,21 +175,6 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
             wholeGenome.put(windowFunction, scores);
             return scores;
         }
-    }
-
-    /**
-     * The level a zoom would use, or -1 for raw data; for tests and timing.
-     */
-    public int levelFor(String chr, int zoom) {
-        Integer c = chromIds.get(chr);
-        double scale = file.chromLength(c) / (Math.pow(2, zoom) * 700);
-        int level = -1;
-        for (int k = 0; k < file.levels(); k++) {
-            if (file.levelBases(k) <= scale) {
-                level = k;
-            }
-        }
-        return level;
     }
 
     // ------------------------------------------------------------------------------------------
