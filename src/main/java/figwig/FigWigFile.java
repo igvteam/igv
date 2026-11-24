@@ -760,22 +760,22 @@ public class FigWigFile {
         return trackNames.length;
     }
 
-    public String trackName(int track) {
-        return trackNames[track];
+    public String trackName(int trackIndex) {
+        return trackNames[trackIndex];
     }
 
     /** The track's attributes from the file's metadata; read-only, in no particular order. */
-    public Map<String, String> trackAttributes(int track) {
-        return Collections.unmodifiableMap(trackAttributes.get(track));
+    public Map<String, String> trackAttributes(int trackIndex) {
+        return Collections.unmodifiableMap(trackAttributes.get(trackIndex));
     }
 
     /** The least and greatest of the track's values, from the file's statistics. */
-    public double trackMin(int track) {
-        return statMin[track];
+    public double trackMin(int trackIndex) {
+        return statMin[trackIndex];
     }
 
-    public double trackMax(int track) {
-        return statMax[track];
+    public double trackMax(int trackIndex) {
+        return statMax[trackIndex];
     }
 
     /**
@@ -789,7 +789,7 @@ public class FigWigFile {
     /**
      * The nonzero values of a track over [start, end) of a chromosome, as runs.
      */
-    public Runs read(int track, int chrom, int start, int end) throws IOException {
+    public Runs read(int trackIndex, int chrom, int start, int end) throws IOException {
         Runs runs = new Runs();
         end = (int) Math.min(end, chromLengths[chrom]);
         start = Math.max(0, start);
@@ -798,13 +798,13 @@ public class FigWigFile {
         }
         try {
             if (trackOrder) {
-                readBlocks(track, chrom, start, end, runs);
+                readBlocks(trackIndex, chrom, start, end, runs);
             } else {
-                Runs batched = batched(track, chrom, start, end);
+                Runs batched = batched(trackIndex, chrom, start, end);
                 if (batched != null) {
                     return batched;
                 }
-                readTiles(track, chrom, start, end, runs);
+                readTiles(trackIndex, chrom, start, end, runs);
             }
         } catch (IndexOutOfBoundsException | NegativeArraySizeException | IllegalArgumentException e) {
             throw new IOException("figwig: " + path + " is corrupt: " + e, e);
@@ -823,7 +823,7 @@ public class FigWigFile {
      * the same range for the file's other groups that have been read before, on background threads,
      * so that the groups' round trips overlap instead of following one another.
      */
-    public void prefetch(int track, int chrom, int start, int end) throws IOException {
+    public void prefetch(int trackIndex, int chrom, int start, int end) throws IOException {
         if (HTTP ? "never".equals(PREFETCH) : !"always".equals(PREFETCH)) {
             return;
         }
@@ -832,7 +832,7 @@ public class FigWigFile {
         if (end <= start) {
             return;
         }
-        int g = trackGroup[track];
+        int g = trackGroup[trackIndex];
         if (HTTP) {
             activeGroups.add(g);
             for (int x = 0; x < nGroups; x++) {
@@ -856,7 +856,7 @@ public class FigWigFile {
             }
         }
         try {
-            loadRange(g, track, chrom, start, end);
+            loadRange(g, trackIndex, chrom, start, end);
         } catch (IndexOutOfBoundsException | NegativeArraySizeException | IllegalArgumentException e) {
             throw new IOException("figwig: " + path + " is corrupt: " + e, e);
         }
@@ -920,9 +920,9 @@ public class FigWigFile {
     /**
      * Every base of [start, end), 0 where the track has no value.
      */
-    public double[] readDense(int track, int chrom, int start, int end) throws IOException {
+    public double[] readDense(int trackIndex, int chrom, int start, int end) throws IOException {
         double[] out = new double[end - start];
-        Runs runs = read(track, chrom, start, end);
+        Runs runs = read(trackIndex, chrom, start, end);
         for (int i = 0; i < runs.n; i++) {
             Arrays.fill(out, runs.starts[i] - start, runs.ends[i] - start, runs.values[i]);
         }
@@ -1517,9 +1517,9 @@ public class FigWigFile {
     }
 
     /** Whether the track's group keeps a summary (a writer leaves it out of groups of many tracks). */
-    public boolean hasSummary(int track) {
+    public boolean hasSummary(int trackIndex) {
         try {
-            return group(trackGroup[track]).summaryBytes > 0;
+            return group(trackGroup[trackIndex]).summaryBytes > 0;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -1530,12 +1530,12 @@ public class FigWigFile {
      * within the chromosome (bases without a value count as 0); null when the track's group keeps no
      * summary.
      */
-    public Runs levelMeans(int track, int level, int chrom, int start, int end) {
+    public Runs levelMeans(int trackIndex, int level, int chrom, int start, int end) {
         Group group;
         Level data;
         try {
             zoomGrid();
-            group = group(trackGroup[track]);
+            group = group(trackGroup[trackIndex]);
             if (group.summaryBytes <= 0) {
                 return null;
             }
@@ -1553,7 +1553,7 @@ public class FigWigFile {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        int slot = trackSlot[track];
+        int slot = trackSlot[trackIndex];
         long binBases = levelBases(level);
         long first = chromBinStart[level][chrom] + start / binBases;
         long last = chromBinStart[level][chrom] + (Math.min(end, chromLengths[chrom]) - 1) / binBases;
@@ -1603,13 +1603,13 @@ public class FigWigFile {
     }
 
     /**
-     * Track {@code track} now reads this file.  Its group's index record is read and parsed at once in
+     * Track {@code trackIndex} now reads this file.  Its group's index record is read and parsed at once in
      * the background, so that the first view does not wait for it and groups are parsed in parallel.
      */
-    public void retain(int track) {
+    public void retain(int trackIndex) {
         retain();
-        trackUsers.incrementAndGet(track);
-        int g = trackGroup[track];
+        trackUsers.incrementAndGet(trackIndex);
+        int g = trackGroup[trackIndex];
         ExecutorService pool = HTTP ? PREFETCHER : BACKGROUND_PARSE ? DECODER : null;
         if (groupUsers.getAndIncrement(g) == 0 && pool != null && groups.get(g) == null) {
             pool.submit(() -> {
@@ -1634,9 +1634,9 @@ public class FigWigFile {
         }
     }
 
-    public void release(int track) throws IOException {
-        groupUsers.decrementAndGet(trackGroup[track]);
-        trackUsers.decrementAndGet(track);
+    public void release(int trackIndex) throws IOException {
+        groupUsers.decrementAndGet(trackGroup[trackIndex]);
+        trackUsers.decrementAndGet(trackIndex);
         release();
     }
 
