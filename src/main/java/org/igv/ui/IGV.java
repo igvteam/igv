@@ -21,6 +21,7 @@ import org.igv.feature.RegionOfInterest;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.figwig.FigWigTrackChooser;
 import org.igv.lists.GeneList;
 import org.igv.logging.Level;
 import org.igv.logging.LogManager;
@@ -370,6 +371,9 @@ public class IGV implements IGVEventObserver {
                         }
 
                         try {
+                            if (!FigWigTrackChooser.choose(locator)) {
+                                continue;
+                            }
                             List<Track> tracks = load(locator);
                             addTracks(tracks);
                             loadedTracks.addAll(tracks);
