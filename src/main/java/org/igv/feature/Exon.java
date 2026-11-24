@@ -12,6 +12,7 @@ import org.igv.track.WindowFunction;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -191,7 +192,7 @@ public class Exon extends AbstractFeature implements IExon {
                 byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
                 if (seqBytes != null) {
                     if (strand == Strand.POSITIVE) {
-                        if (readingFrame > 0 && prevExon != null) {
+                        if (readingFrame > 0 && prevExon != null && !prevExon.isNonCoding()) {
                             int diff = readingFrame;
                             byte[] d = genome.getSequence(chr, prevExon.getCdEnd() - diff, prevExon.getCdEnd());
                             byte[] tmp = new byte[d.length + seqBytes.length];
@@ -199,6 +200,11 @@ public class Exon extends AbstractFeature implements IExon {
                             System.arraycopy(seqBytes, 0, tmp, diff, seqBytes.length);
                             seqBytes = tmp;
                             readStart -= readingFrame;
+                        } else if (readingFrame > 0) {
+                            // No previous coding exon to complete the first codon, skip its bases to stay in frame
+                            int skip = 3 - readingFrame;
+                            seqBytes = Arrays.copyOfRange(seqBytes, skip, seqBytes.length);
+                            readStart += skip;
                         }
 
                         // Grab nucleotides from next exon if needed for last codon
@@ -216,7 +222,7 @@ public class Exon extends AbstractFeature implements IExon {
 
                     } else {
 
-                        if (readingFrame > 0 && nextExon != null) {
+                        if (readingFrame > 0 && nextExon != null && !nextExon.isNonCoding()) {
                             int diff = readingFrame;
                             byte[] d = genome.getSequence(chr, nextExon.getCdStart(), nextExon.getCdStart() + diff);
                             byte[] tmp = new byte[d.length + seqBytes.length];
@@ -224,6 +230,11 @@ public class Exon extends AbstractFeature implements IExon {
                             System.arraycopy(d, 0, tmp, seqBytes.length, diff);
                             seqBytes = tmp;
                             readEnd += readingFrame;
+                        } else if (readingFrame > 0) {
+                            // No next coding exon to complete the first codon, skip its bases to stay in frame
+                            int skip = 3 - readingFrame;
+                            seqBytes = Arrays.copyOfRange(seqBytes, 0, seqBytes.length - skip);
+                            readEnd -= skip;
                         }
 
                         // Grab nucleotides from next exon if needed for last codon
