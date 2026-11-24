@@ -13,11 +13,15 @@ which the application may implement to supply a file's bytes.
 These hold for every method unless it says otherwise.
 
 - **Coordinates** are 0-based and half-open: `[start, end)` covers bases `start` to `end - 1`.
-- **Tracks** are numbered `0` to `nTracks() - 1`, and **chromosomes** `0` to `nChroms() - 1`, both in
-  the file's order. The numbers are fixed for the life of the `FigWigFile`.
+- **Track** here always means a track of the figwig file: one signal over the genome, stored in the
+  file under a name. It is not an application's track object (IGV's `Track`); how those relate to the
+  file's tracks is the application's business.
+- **`trackIndex`** identifies a track of the file: `0` to `nTracks() - 1`, in the file's order.
+  **`chrom`** identifies a chromosome the same way: `0` to `nChroms() - 1`. Both are fixed for the
+  life of the `FigWigFile`.
 - **Values** are `double`. A base holds one value per track. A value of zero means the track has
   nothing at that base, and zero is never reported; `NaN` is a value and is reported.
-- **Arguments out of range.** A track, chromosome or level index outside its range has undefined
+- **Arguments out of range.** A `trackIndex`, `chrom` or `level` outside its range has undefined
   behaviour (in practice an unchecked exception). Coordinate arguments are handled as each method states.
 - **Threads.** Every method of `FigWigFile` may be called from any number of threads at once, on the
   same file and for the same track.
@@ -82,15 +86,15 @@ public boolean isClosed()
 ### Tracks in use
 
 ```java
-public void retain(int track)
-public void release(int track) throws IOException
+public void retain(int trackIndex)
+public void release(int trackIndex) throws IOException
 ```
 
 One figwig file holds many tracks, and an application opens it once and shares the `FigWigFile`
 among the objects that draw from it, typically one per track shown. These two methods let each of
-those objects say which track of the file it draws, and for how long. Here `track` is a track number
-of the file (`0` to `nTracks() - 1`), and a track is *in use* from a `retain(track)` until the matching
-`release(track)`. The file counts uses: a track retained twice is in use until it is released twice.
+those objects say which track of the file it draws, and for how long. A track of the file is
+*in use* from a `retain(trackIndex)` until the matching `release(trackIndex)`. The file counts uses: a
+track retained twice is in use until it is released twice.
 
 They serve two purposes.
 
@@ -98,16 +102,16 @@ They serve two purposes.
    its uses and closes itself when the last one ends.
 2. **Sharing work.** Tracks of a file are stored together, so what is read from the file for one track
    often serves others. Knowing which tracks are in use lets the reader prepare for the calls that will
-   come (`read`, `levelMeans` and `prefetch` with that track number) and combine work across them.
+   come (`read`, `levelMeans` and `prefetch` with that `trackIndex`) and combine work across them.
 
-- **`retain(track)`** marks one more use of the track. It returns at once and does not fail. It may
+- **`retain(trackIndex)`** marks one more use of the track. It returns at once and does not fail. It may
   start reading the file in the background; an error there is not reported until a later call needs
   the same bytes.
-- **`release(track)`** ends one use of the track. If no use of any track of the file remains, it
+- **`release(trackIndex)`** ends one use of the track. If no use of any track of the file remains, it
   closes the file exactly as `close()` does, and fails as `close()` may; otherwise it does nothing
   else and does not fail.
-- Every `retain(track)` must be followed, in time, by exactly one `release(track)` with the same track
-  number. A `release` without a `retain` before it has undefined behaviour.
+- Every `retain(trackIndex)` must be followed, in time, by exactly one `release(trackIndex)` with
+  the same `trackIndex`. A `release` without a `retain` before it has undefined behaviour.
 - A file on which `retain` has never been called is closed only by `close()`.
 - Using a track without retaining it is allowed and returns the same values. Whether a track is in
   use never changes a result, only how much work the reader does and when.
@@ -120,10 +124,10 @@ public int nChroms()
 public String chromName(int chrom)
 public long chromLength(int chrom)
 public int nTracks()
-public String trackName(int track)
-public java.util.Map<String, String> trackAttributes(int track)
-public double trackMin(int track)
-public double trackMax(int track)
+public String trackName(int trackIndex)
+public java.util.Map<String, String> trackAttributes(int trackIndex)
+public double trackMin(int trackIndex)
+public double trackMax(int trackIndex)
 ```
 
 None of these read the file or fail; the values were read by `open`.
@@ -132,18 +136,18 @@ None of these read the file or fail; the values were read by `open`.
 - **`chromName(chrom)`**: the chromosome's name exactly as the file spells it. The reader applies no
   aliases; matching names to a genome is the caller's work.
 - **`chromLength(chrom)`**: the chromosome's length in bases.
-- **`trackName(track)`**: the track's `name` from the file's metadata. The reader does not require
+- **`trackName(trackIndex)`**: the track's `name` from the file's metadata. The reader does not require
   names to be unique.
-- **`trackAttributes(track)`**: every other key of the track's metadata record except `dtype` and
+- **`trackAttributes(trackIndex)`**: every other key of the track's metadata record except `dtype` and
   `group`, each value converted to a string. Never null; empty if there are none. The map is
   read-only, and its iteration order is unspecified.
-- **`trackMin(track)`**, **`trackMax(track)`**: the least and greatest value of the track as the file's
+- **`trackMin(trackIndex)`**, **`trackMax(trackIndex)`**: the least and greatest value of the track as the file's
   statistics table records them. The reader does not compute or check them.
 
 ### Values
 
 ```java
-public Runs read(int track, int chrom, int start, int end) throws IOException
+public Runs read(int trackIndex, int chrom, int start, int end) throws IOException
 
 public static class Runs {
     public int n;
@@ -175,8 +179,8 @@ public static class Runs {
 public int summaryBases()
 public int levels()
 public long levelBases(int level)
-public boolean hasSummary(int track)
-public Runs levelMeans(int track, int level, int chrom, int start, int end)
+public boolean hasSummary(int trackIndex)
+public Runs levelMeans(int trackIndex, int level, int chrom, int start, int end)
 ```
 
 A file may hold its tracks' values summed over bins of fixed size, at several sizes ("levels"). Bins
@@ -190,12 +194,12 @@ off at the chromosome's length.
   reader does not check that sizes increase with the level number, so a caller choosing a level must
   compare sizes, not numbers. May read the file the first time it is called.
 - **`summaryBases()`**: equal to `levelBases(0)`, but never reads the file or fails.
-- **`hasSummary(track)`**: whether the file holds summaries for this track. A file may hold them for
+- **`hasSummary(trackIndex)`**: whether the file holds summaries for this track. A file may hold them for
   some tracks and not others. May read the file the first time it is called for a track.
-- **`levelMeans(track, level, chrom, start, end)`**: the track's mean per bin of the level, for the
+- **`levelMeans(trackIndex, level, chrom, start, end)`**: the track's mean per bin of the level, for the
   bins that overlap `[start, end)`.
   - Requires `0 <= start < end`. `end` past the chromosome's length is taken as the length.
-  - Returns `null` if `hasSummary(track)` is `false`.
+  - Returns `null` if `hasSummary(trackIndex)` is `false`.
   - Otherwise returns `Runs` with the properties given under *Values*, except these:
     - Runs are not cut to `[start, end)`. Each covers whole bins, so the first may begin before
       `start` and the last end after `end`. No run passes the chromosome's length.
@@ -209,7 +213,7 @@ off at the chromosome's length.
 ### Hint
 
 ```java
-public void prefetch(int track, int chrom, int start, int end) throws IOException
+public void prefetch(int trackIndex, int chrom, int start, int end) throws IOException
 ```
 
 **`prefetch`** tells the reader that the caller is about to `read` the track over `[start, end)` in
@@ -225,6 +229,6 @@ several calls covering parts of it. It changes no result. The reader decides whe
 - **Caching.** What the reader keeps in memory, and for how long, may change. No method here clears it.
 - **Other public members.** `FigWigFile` has further public members that IGV's tests use
   (`chromId(String)`, `readDense(...)`) or that report on the reader (`chunkBytesRead()`,
-  `chunkReads()`, `clearCache()`, `retain()` and `release()` without a track, `MAGIC`). IGV's own code must not
+  `chunkReads()`, `clearCache()`, `retain()` and `release()` without a `trackIndex`, `MAGIC`). IGV's own code must not
   depend on them.
 - **Everything else in the package** (`FigWigChunks`, `FigWigPool`, `FigWigSummaryIndex`) is internal.
