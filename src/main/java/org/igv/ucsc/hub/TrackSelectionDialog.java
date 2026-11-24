@@ -39,10 +39,13 @@ public class TrackSelectionDialog extends JDialog {
     private ArrayList<CollapsiblePanel> categoryPanels;
     private boolean canceled = true;
     JTextPane messagePane;
+    private JLabel genomeLabel;
+    private Set<String> loadedTrackPaths;   // as of the dialog's opening, for "Reset Selections"
 
     public static TrackSelectionDialog getTrackHubSelectionDialog(
             Hub hub,
             String genomeId,
+            String genomeName,
             Set<String> loadedTrackPaths,
             boolean autoselectDefaults,
             String message) {
@@ -56,12 +59,16 @@ public class TrackSelectionDialog extends JDialog {
             Frame owner = IGV.getInstance().getMainFrame();
             List<TrackConfigContainer> groups = hub.getGroupedTrackConfigurations(genomeId);
             int unsupportedTrackCount = hub.getUnsupportedTrackCount(genomeId);
-            dialog = new TrackSelectionDialog(hub, groups, unsupportedTrackCount, autoselectDefaults, owner);
+            Set<String> unsupportedTrackTypes = hub.getUnsupportedTrackTypes(genomeId);
+            dialog = new TrackSelectionDialog(hub, groups, unsupportedTrackCount, unsupportedTrackTypes, autoselectDefaults, owner);
             hubSelectionDialogs.put(key, dialog);
         }
+        dialog.loadedTrackPaths = loadedTrackPaths;
         dialog.resetSelectionBoxes(loadedTrackPaths);
         dialog.canceled = true;   // A reused dialog must not inherit a previous OK (closing with the window X is a cancel)
 
+        // The same hub tracks can serve genomes of different names (hg38, hg38_1kg), so set on each use
+        dialog.genomeLabel.setText("Genome: " + genomeName);
         dialog.setMessage(message);
 
         return dialog;
@@ -70,13 +77,14 @@ public class TrackSelectionDialog extends JDialog {
     private TrackSelectionDialog(Hub hub,
                                  List<TrackConfigContainer> trackConfigContainers,
                                  int unsupportedTrackCount,
+                                 Set<String> unsupportedTrackTypes,
                                  boolean autoselectDefaults,
                                  Frame owner) {
         super(owner);
         setModal(true);
         this.autoselectDefaults = autoselectDefaults;
         this.hub = hub;
-        init(trackConfigContainers, unsupportedTrackCount);
+        init(trackConfigContainers, unsupportedTrackCount, unsupportedTrackTypes);
         setLocationRelativeTo(owner);
     }
 
@@ -121,7 +129,7 @@ public class TrackSelectionDialog extends JDialog {
         }
     }
 
-    void init(List<TrackConfigContainer> trackConfigContainers, int unsupportedTrackCount) {
+    void init(List<TrackConfigContainer> trackConfigContainers, int unsupportedTrackCount, Set<String> unsupportedTrackTypes) {
 
         setTitle(this.hub.getLongLabel());
 
@@ -144,6 +152,15 @@ public class TrackSelectionDialog extends JDialog {
         messagePane.setVisible(false);
         // The messagePane is now added dynamically in setMessage()
 
+        // Identify the genome the tracks are for -- a hub's tracks differ per genome
+        JPanel genomePanel = new JPanel();
+        ((FlowLayout) genomePanel.getLayout()).setAlignment(FlowLayout.LEFT);
+        genomePanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 0, 0));
+        genomeLabel = new JLabel();
+        genomeLabel.setFont(genomeLabel.getFont().deriveFont(Font.BOLD));
+        genomePanel.add(genomeLabel);
+        topPanel.add(genomePanel);
+
         topPanel.add(getLabeledHyperlink("Hub URL: ", hub.getUrl()));
         String descriptionURL = hub.getDescriptionURL();
 
@@ -154,9 +171,11 @@ public class TrackSelectionDialog extends JDialog {
             JPanel notePanel = new JPanel();
             ((FlowLayout) notePanel.getLayout()).setAlignment(FlowLayout.LEFT);
             notePanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 0, 0));
-            notePanel.add(new JLabel(unsupportedTrackCount == 1 ?
+            String types = unsupportedTrackTypes.isEmpty() ? "" :
+                    "  Unsupported types: " + String.join(", ", unsupportedTrackTypes);
+            notePanel.add(new JLabel((unsupportedTrackCount == 1 ?
                     "1 track unsupported by IGV has been filtered." :
-                    unsupportedTrackCount + " tracks unsupported by IGV have been filtered."));
+                    unsupportedTrackCount + " tracks unsupported by IGV have been filtered.") + types));
             topPanel.add(notePanel);
         }
 
@@ -184,11 +203,17 @@ public class TrackSelectionDialog extends JDialog {
         // Search button.
         JButton searchButton = createSearchButton("Search " + hub.getShortLabel(), categoryPanels, (selectedCount) -> {
             categoryPanels.stream().forEach(p -> p.updateLabel());
+            showSelections();
             return null;
         });
         JPanel searchButtonPanel = new JPanel();
         searchButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         searchButtonPanel.add(searchButton);
+
+        JButton resetButton = new JButton("Reset Selections");
+        resetButton.setToolTipText("Restore the selections the dialog opened with");
+        resetButton.addActionListener(e -> resetSelectionBoxes(loadedTrackPaths));
+        searchButtonPanel.add(resetButton);
         topButtonPanel.add(searchButtonPanel, BorderLayout.WEST);
 
         topPanel.add(topButtonPanel);
@@ -236,6 +261,18 @@ public class TrackSelectionDialog extends JDialog {
         getRootPane().setDefaultButton(okButton);
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Make the selections visible after a search by opening the groups that have selected tracks.
+     */
+    private void showSelections() {
+        for (CollapsiblePanel panel : categoryPanels) {
+            if (panel.hasSelections()) {
+                panel.expand();
+            }
+        }
+        this.revalidate();
     }
 
     private JPanel getLabeledHyperlink(String label, String url) {
@@ -400,23 +437,21 @@ public class TrackSelectionDialog extends JDialog {
                     if (selectionBox.isEnabled()) {
 
                         TrackConfig trackConfig = selectionBox.getTrackConfig();
+                        // A new map for the search table; the track config itself is not modified
                         final Map<String, String> trackConfigAttributes = trackConfig.attributes;
-                        Map<String, String> attributes = trackConfigAttributes;
-                        if (attributes == null) {
-                            attributes = new LinkedHashMap<>();
+                        Map<String, String> attributes = new LinkedHashMap<>();
+                        if (trackConfigAttributes != null) {
+                            attributes.putAll(trackConfigAttributes);
+                            attributeNames.addAll(trackConfigAttributes.keySet());
                         }
+                        // Set last so these take precedence over hub metadata of the same name
                         attributes.put("Group", panel.containerLabel());
                         attributes.put("Name", trackConfig.name);
                         attributes.put("Description", trackConfig.description);
                         //attributes.put("Format", trackConfig.format);
 
-                        if (trackConfigAttributes != null) {
-                            attributes.putAll(trackConfigAttributes);
-                            attributeNames.addAll(trackConfigAttributes.keySet());
-                        }
-
                         final FileRecord record = new FileRecord(trackConfig.url, attributes);
-                        record.setSelected(trackConfig.visible);
+                        record.setSelected(selectionBox.isSelected());
                         records.add(record);
                         recordSelectionBoxMap.put(record, selectionBox);
                     }
@@ -473,7 +508,7 @@ public class TrackSelectionDialog extends JDialog {
 
         List<TrackConfigContainer> groupedTrackConfigurations = hub.getGroupedTrackConfigurations("hs1");
 
-        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, 0, true, null);
+        final TrackSelectionDialog dlf = new TrackSelectionDialog(hub, groupedTrackConfigurations, 0, Collections.emptySet(), true, null);
         dlf.setSize(new Dimension(800, 600));
         dlf.setVisible(true);
 

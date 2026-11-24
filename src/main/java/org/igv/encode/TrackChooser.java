@@ -8,7 +8,6 @@ import com.jidesoft.swing.JideBoxLayout;
 import org.igv.Globals;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
-import org.igv.ui.IGV;
 import org.igv.util.Pair;
 
 import javax.swing.*;
@@ -25,7 +24,6 @@ import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,6 +36,11 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
     private static Logger log = LogManager.getLogger(TrackChooser.class);
 
     private static NumberFormatter numberFormatter = new NumberFormatter();
+
+    /**
+     * The most tracks a "Select All" will select at once.
+     */
+    public static final int SELECT_ALL_LIMIT = 100;
 
     JTable table;
     JTextField filterTextField;
@@ -54,14 +57,6 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
         initComponents(owner, model);
     }
 
-
-    @Override
-    public void setVisible(boolean b) {
-        if (b) {
-            this.model.updateSelections();
-        }
-        super.setVisible(b);
-    }
 
     /**
      * Update the row filter regular expression from the expression in
@@ -87,6 +82,22 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
     }
 
 
+    /**
+     * Select or unselect the rows passing the current filter.  Selecting is refused above SELECT_ALL_LIMIT rows.
+     */
+    private void setListedRowsSelected(boolean selected) {
+        int rowCount = table.getRowCount();
+        if (selected && rowCount > SELECT_ALL_LIMIT) {
+            JOptionPane.showMessageDialog(this, "Select All is limited to " + SELECT_ALL_LIMIT + " tracks; " +
+                    rowCount + " are listed.  Narrow the filter and try again.");
+            return;
+        }
+        for (int i = 0; i < rowCount; i++) {
+            model.getRecords().get(table.convertRowIndexToModel(i)).setSelected(selected);
+        }
+        model.fireTableDataChanged();
+    }
+
     private void loadButtonActionPerformed(ActionEvent e) {
         canceled = false;
         setVisible(false);
@@ -111,17 +122,11 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
         return model.getRecords();
     }
 
-    public void updateRecordSelectionState() {
-
-        Set<String> loadedPaths = IGV.getInstance().getDataResourceLocators().stream()
-                .map(rl -> rl.getPath())
-                .collect(Collectors.toSet());
-
-        for (FileRecord fileRecord : model.getRecords()) {
-            if (loadedPaths.contains(fileRecord.getPath())) {
-                fileRecord.setSelected(true);
-            }
-        }
+    /**
+     * Reset the selections to the currently loaded tracks.
+     */
+    public void selectLoadedTracks() {
+        model.updateSelections();
     }
 
     private class RegexFilter extends RowFilter {
@@ -338,6 +343,16 @@ public class TrackChooser extends org.igv.ui.IGVDialog {
                     }
                 });
         filterPanel.add(filterTextField, JideBoxLayout.VARY);
+
+        //---- Select all / none, for the rows passing the filter ----
+        JButton selectAllButton = new JButton("Select All");
+        selectAllButton.setToolTipText("Select the listed tracks, up to " + SELECT_ALL_LIMIT);
+        selectAllButton.addActionListener(e -> setListedRowsSelected(true));
+        filterPanel.add(selectAllButton, JideBoxLayout.FIX);
+        JButton selectNoneButton = new JButton("Select None");
+        selectNoneButton.setToolTipText("Unselect the listed tracks");
+        selectNoneButton.addActionListener(e -> setListedRowsSelected(false));
+        filterPanel.add(selectNoneButton, JideBoxLayout.FIX);
 
 
         rowCountLabel.setHorizontalAlignment(JLabel.RIGHT);

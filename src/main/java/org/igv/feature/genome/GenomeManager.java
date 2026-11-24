@@ -404,7 +404,8 @@ public class GenomeManager {
         try {
             final TrackSelectionDialog[] holder = new TrackSelectionDialog[1];
             UIUtilities.invokeAndWaitOnEventThread(() -> {
-                holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(), currentSelections, true, message);
+                holder[0] = TrackSelectionDialog.getTrackHubSelectionDialog(hub, config.getUcscID(),
+                        GenomeListManager.getInstance().getDisplayName(config.id, config.getName()), currentSelections, true, message);
                 holder[0].setVisible(true);
             });
             TrackSelectionDialog dlg = holder[0];

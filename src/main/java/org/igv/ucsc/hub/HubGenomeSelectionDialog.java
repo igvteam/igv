@@ -130,17 +130,34 @@ public class HubGenomeSelectionDialog extends JDialog {
     }
 
     /**
-     * Offer a switch to one of the genomes referenced by a hub, with a warning that switching clears the loaded
-     * tracks.  Returns the chosen genome, or null if the user cancels.
+     * Offer the genomes referenced by a hub, with a warning that switching genomes clears the loaded tracks.  The
+     * current genome, if it is one of them, is labeled as such and preselected.  Returns the chosen genome, or null
+     * if the user cancels.
+     *
+     * @param current the entry of hubGenomes for the current genome, or null if the hub does not reference it
      */
-    public static GenomeListItem selectGenomeToSwitchTo(Frame owner, List<GenomeListItem> hubGenomes) {
-        String message = "The current genome is not referenced by this hub.  Select one of the genomes below to " +
-                "switch genomes, or click cancel to remain on the current genome.\n" +
-                "Switching genomes will clear the currently loaded tracks.";
-        Object[] options = hubGenomes.toArray();
+    public static GenomeListItem selectGenomeToSwitchTo(Frame owner, List<GenomeListItem> hubGenomes, GenomeListItem current) {
+        String message = current == null ?
+                "The current genome is not referenced by this hub.  Select one of the genomes below to " +
+                        "switch genomes, or click cancel to remain on the current genome.\n" +
+                        "Switching genomes will clear the currently loaded tracks." :
+                "This hub references multiple genomes.  Select the genome to load tracks for, or click cancel to " +
+                        "remain on the current genome.\n" +
+                        "Selecting a genome other than the current one will switch genomes and clear the " +
+                        "currently loaded tracks.";
+        // Options carry their genome, so genomes with the same name remain distinct choices
+        record Option(GenomeListItem item, String label) {
+            public String toString() {
+                return label;
+            }
+        }
+        Object[] options = hubGenomes.stream()
+                .map(item -> new Option(item, item == current ? item.getDisplayableName() + " (current)" : item.getDisplayableName()))
+                .toArray();
+        Object initial = current == null ? options[0] : options[hubGenomes.indexOf(current)];
         final Object[] choice = new Object[1];
         UIUtilities.invokeAndWaitOnEventThread(() -> choice[0] = JOptionPane.showInputDialog(owner, message,
-                "Switch Genome", JOptionPane.QUESTION_MESSAGE, null, options, options[0]));
-        return (GenomeListItem) choice[0];
+                current == null ? "Switch Genome" : "Select Genome", JOptionPane.QUESTION_MESSAGE, null, options, initial));
+        return choice[0] == null ? null : ((Option) choice[0]).item();
     }
 }

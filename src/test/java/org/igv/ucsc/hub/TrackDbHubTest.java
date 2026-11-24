@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -125,6 +126,7 @@ public class TrackDbHubTest {
         TrackDbHub trackDbHub = new TrackDbHub(stanzas, groupStanzas);
         List<TrackConfigContainer> containers = trackDbHub.getGroupedTrackConfigurations("test");
         assertEquals(2, trackDbHub.getUnsupportedTrackCount());
+        assertEquals(Set.of("halSnake"), trackDbHub.getUnsupportedTrackTypes());
         assertTrue(containers.isEmpty());
     }
 
