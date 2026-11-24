@@ -185,6 +185,7 @@ public class GenomeManager {
                 IGVMenuBar.getInstance().setAllMenusEnabled(false);
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
+                IGV.getInstance().setLoadingMessage("Loading genome...");
             }
 
             GenomeLoader loader = GenomeLoader.getLoader(genomePath);
@@ -192,6 +193,11 @@ public class GenomeManager {
                 ((JsonGenomeLoader) loader).promptForAnnotations = false;
             }
             Genome newGenome = loader.loadGenome();
+            if (IGV.hasInstance()) {
+                // The genome is now known by name; its tracks are still to load
+                IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome " + newGenome.getDisplayName() + "</font></html>");
+                IGV.getInstance().setLoadingMessage("Loading genome " + newGenome.getDisplayName() + "...");
+            }
 
             // Load user-defined chr aliases, if any.  This is done last so they have priority
             final File genomeCacheDirectory = DirectoryManager.getGenomeCacheDirectory();
@@ -232,6 +238,7 @@ public class GenomeManager {
                     IGVMenuBar.getInstance().resetSessionActions();
                 }
                 IGV.getInstance().setStatusBarMessage("");
+                IGV.getInstance().setLoadingMessage(null);
                 WaitCursorManager.removeWaitCursor(cursorToken);
             }
         }

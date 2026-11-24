@@ -33,7 +33,14 @@ public class JsonGenomeLoader extends GenomeLoader {
     public Genome loadGenome() throws IOException {
         GenomeConfig genomeConfig = loadGenomeConfig();
         if (genomeConfig.selectAnnotationsOnLoad && promptForAnnotations) {
+            // No loading notice while waiting on the user; it starts over once the prompt is dismissed
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setLoadingMessage(null);
+            }
             selectAnnotations(genomeConfig);
+            if (IGV.hasInstance()) {
+                IGV.getInstance().setLoadingMessage("Loading genome " + genomeConfig.getName() + "...");
+            }
         }
         Genome genome = new Genome(genomeConfig);
         return genome;

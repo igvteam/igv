@@ -18,6 +18,6 @@ public class NewSessionMenuAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        igv.newSession();
+        igv.newSessionInBackground();
     }
 }
