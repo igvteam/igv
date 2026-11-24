@@ -7,6 +7,7 @@ import org.igv.encode.TrackChooser;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -44,6 +45,9 @@ public class FigWigTrackChooser {
         UIUtilities.invokeAndWaitOnEventThread(() -> {
             Frame owner = IGV.getInstance().getMainFrame();
             TrackChooser chooser = new TrackChooser(owner, headings, records, title);
+            JLabel header = new JLabel("Select Tracks to Display");
+            header.setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 12));
+            chooser.getContentPane().add(header, BorderLayout.NORTH);
             Rectangle bounds = owner.getBounds();
             chooser.setSize(new Dimension(Math.min(bounds.width, 1200), Math.min(bounds.height, 800)));
             chooser.setLocationRelativeTo(owner);
