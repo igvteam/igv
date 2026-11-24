@@ -170,20 +170,41 @@ public class FigWigFile {
 
     /** Open a local file. */
     public static FigWigFile open(String path) throws IOException {
-        return new FigWigFile(path, null);
+        return open(path, null, FileChannel.open(new java.io.File(path).toPath(), java.nio.file.StandardOpenOption.READ));
     }
 
-    /** Open a file whose bytes {@code source} reads; {@code path} names it in messages. */
+    /**
+     * Open a file whose bytes {@code source} reads; {@code path} names it in messages.  The file owns
+     * the source from this call on, and closes it if it cannot be opened.
+     */
     public static FigWigFile open(String path, FigWigSource source) throws IOException {
-        return new FigWigFile(path, source);
+        return open(path, source, null);
     }
 
-    private FigWigFile(String path, FigWigSource source) throws IOException {
+    /** A file that cannot be opened leaves nothing open behind it. */
+    private static FigWigFile open(String path, FigWigSource source, FileChannel channel) throws IOException {
+        try {
+            return new FigWigFile(path, source, channel);
+        } catch (IOException | RuntimeException e) {
+            try {
+                if (source != null) {
+                    source.close();
+                }
+                if (channel != null) {
+                    channel.close();
+                }
+            } catch (IOException | RuntimeException onClose) {
+                e.addSuppressed(onClose);
+            }
+            throw e;
+        }
+    }
+
+    private FigWigFile(String path, FigWigSource source, FileChannel channel) throws IOException {
         long t0 = System.nanoTime();
         this.path = path;
         this.source = source;
-        this.channel = source == null ?
-                FileChannel.open(new java.io.File(path).toPath(), java.nio.file.StandardOpenOption.READ) : null;
+        this.channel = channel;
         this.HTTP = source != null && source.isRemote();
         this.spanChunks = HTTP ? HTTP_SPAN_CHUNKS : SPAN_CHUNKS;
 
@@ -1293,6 +1314,9 @@ public class FigWigFile {
             old.file.cache.remove(old.key);
             total = CACHED_BYTES.addAndGet(-old.bytes);
         }
+        if (closed) {
+            clearCache();   // a load that finishes after close leaves nothing of the file in the shared cache
+        }
     }
 
     private Loaded loadChunk(Group group, int i, byte[] bytes) throws IOException {
@@ -1654,6 +1678,9 @@ public class FigWigFile {
      * anything else through the application's source.
      */
     byte[] readAt(long offset, int n) throws IOException {
+        if (closed) {
+            throw new IOException("figwig: " + path + " is closed");
+        }
         byte[] out = new byte[n];
         if (channel != null) {
             ByteBuffer b = ByteBuffer.wrap(out);

@@ -53,7 +53,7 @@ that needs the application's authentication, signing or redirects.
 | `read(offset, out)` | Fill all of `out` with the bytes at `offset` to `offset + out.length - 1`. If the file ends first, throw `IOException`; never return with `out` partly filled. Must be safe to call from several threads at once. |
 | `length()` | The file's length in bytes, or `0` if it is not known. Called once, while the file is opened. |
 | `isRemote()` | `true` if each `read` is a round trip to a server. Must return the same value every time. When `true`, the reader asks for longer stretches per read and issues the reads of one request concurrently. |
-| `close()` | Release the source. The reader calls it once, from `FigWigFile.close()`. |
+| `close()` | Release the source. The reader calls it when the `FigWigFile` is closed, or from `open` if the file cannot be opened. It may be called more than once; calls after the first must do nothing. The application must not close a source it has passed to `open`. |
 
 The reader may ask for up to 2<sup>31</sup> - 1 bytes in one `read`. A `read` that throws fails the call
 on `FigWigFile` that needed it; a later call may ask for the same bytes again.
@@ -74,13 +74,16 @@ public boolean isClosed()
 - **`open(path, source)`** opens a file whose bytes come from `source`. `path` is used only as the
   file's name in messages and as the value of `path()`; the reader does not open it.
 - Both read and check the file's header and tables before returning, and fail as under *Errors* if the
-  file is not a figwig file of version 1. If `open(path, source)` fails, `source` has not been closed
-  and still belongs to the caller.
+  file is not a figwig file of version 1. The file owns `source` from the call on: if
+  `open(path, source)` fails, it has closed `source` before failing, and no file is left open.
 - **`path()`** returns the `path` given to `open`.
 - **`close()`** closes the file and its `FigWigSource`, whatever is in use (see below). It may be
   called while other threads are calling the file. A call on the file that is running when it is
   closed, or made after, either returns what it would have returned or fails as under *Errors*; it
   never returns wrong values.
+- Once the file is closed, a call that needs bytes from the file fails with `IOException` (or
+  `UncheckedIOException`) instead of reading them. A `read` on the source that was under way at the
+  moment of closing may still complete; its bytes are discarded.
 - **`isClosed()`** is `true` once the file has been closed, by `close()` or by the last `release`.
 
 ### Tracks in use

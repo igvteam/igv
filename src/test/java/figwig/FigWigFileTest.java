@@ -462,4 +462,67 @@ public class FigWigFileTest {
             pool.shutdown();
         }
     }
+
+    /** A file's bytes in memory, counting what the reader asks of it. */
+    static class MemorySource implements FigWigSource {
+        final byte[] bytes;
+        int closes = 0;
+        volatile int readsAfterClose = 0;
+
+        MemorySource(byte[] bytes) {
+            this.bytes = bytes;
+        }
+
+        public synchronized void read(long offset, byte[] out) throws IOException {
+            if (closes > 0) {
+                readsAfterClose++;
+            }
+            if (offset + out.length > bytes.length) {
+                throw new IOException("ended");
+            }
+            System.arraycopy(bytes, (int) offset, out, 0, out.length);
+        }
+
+        public long length() {
+            return bytes.length;
+        }
+
+        public boolean isRemote() {
+            return true;
+        }
+
+        public synchronized void close() {
+            closes++;
+        }
+    }
+
+    /** A file that cannot be opened closes its source; a closed file asks its source for nothing more. */
+    @Test
+    public void testTheSourceIsClosedOnceAndNotReadAfter() throws Exception {
+        byte[] bytes = Files.readAllBytes(new File(DIR + "cells.fw").toPath());
+        MemorySource truncated = new MemorySource(Arrays.copyOf(bytes, bytes.length / 2));
+        try {
+            FigWigFile.open("truncated", truncated);
+            fail("opened a truncated file");
+        } catch (IOException | IllegalStateException expected) {
+            assertEquals(1, truncated.closes);
+        }
+
+        MemorySource source = new MemorySource(bytes);
+        FigWigFile fw = FigWigFile.open("memory", source);
+        for (int t = 0; t < fw.nTracks(); t++) {
+            fw.retain(t);   // starts loads in the background, which the close below may overtake
+        }
+        fw.prefetch(0, 0, 0, (int) fw.chromLengths[0]);
+        fw.close();
+        assertEquals(1, source.closes);
+        try {
+            fw.readDense(fw.nTracks() - 1, fw.chromNames.length - 1, 0, (int) fw.chromLengths[fw.chromNames.length - 1]);
+            fail("a closed file was read");
+        } catch (IOException expected) {
+            // closed
+        }
+        Thread.sleep(200);
+        assertEquals(0, source.readsAfterClose);
+    }
 }
