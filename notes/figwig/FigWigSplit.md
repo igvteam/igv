@@ -26,8 +26,9 @@ proposed on the PR yet.
   one repository block and one dependency line).
 - **Result:** on `figwig-external-jar` the full suite passes with 689 tests (the 15 reader tests now
   run in the library's own repository), and `createDist` puts `figwig-0.1.0.jar` in `lib/`.
-- **Test data:** the `.fw` files stay in IGV's `test/data/figwig` for its 13 tests; the expected
-  tables moved with the library.
+- **Tests and data left in IGV:** 12 tests of the classes that remain (`FigWigDataSource`,
+  `FigWigTrackChooser`, `IGVFigWigByteSource`) and the four `.fw` files they read (61 KB). Everything
+  else, including the expected tables and nine `.fw` files, lives only in the library's repository.
 
 The sections below describe the in-tree simulation on `figwig-split-simulation` that preceded this,
 where the reader was a top-level `figwig` package inside IGV.

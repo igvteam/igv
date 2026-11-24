@@ -221,7 +221,7 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
      */
     @Test
     public void testGroupsWithoutASummaryUseRawData() throws Exception {
-        for (String file : new String[]{"mixed.fw", "mixed_stored.fw", "mixed_merged.fw"}) {
+        for (String file : new String[]{"mixed.fw"}) {
             List<Track> tracks = new TrackLoader().load(new ResourceLocator(DIR + file), genome);
             try {
                 int with = 0, without = 0;

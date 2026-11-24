@@ -19,8 +19,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.Assert.*;
 
 /**
- * figwig files over HTTP range requests, from a server in this JVM: every value and summary equal to
- * the local file's, through redirects and responses shorter than asked; a missing file fails to open.
+ * A figwig file through IGV's streams (IGVFigWigByteSource), over HTTP range requests from a server in
+ * this JVM: every value and summary equal to the local file's, through redirects and responses shorter
+ * than asked; a missing file fails to open.  The reader's own tests are in the figwig repository.
  */
 public class FigWigRemoteTest extends AbstractHeadlessTest {
 
@@ -126,18 +127,11 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
     }
 
     @Test(timeout = 300000)
-    public void testRangeRequestsReadWhatTheLocalFileHolds() throws Exception {
-        for (String file : new File(FigWigDataSourceTest.DIR).list((dir, name) -> name.endsWith(".fw"))) {
-            assertSameAsLocal(base + "/ok/" + file, file);
-        }
-    }
-
-    @Test(timeout = 300000)
-    public void testRedirectsAndShortResponses() throws Exception {
-        for (String file : new String[]{"positions_zlib.fw", "tracks_stored.fw", "cells.fw", "mixed.fw"}) {
-            assertSameAsLocal(base + "/redirect/" + file, file);
-            assertSameAsLocal(base + "/half/" + file, file);
-        }
+    public void testRangeRequestsRedirectsAndShortResponses() throws Exception {
+        String file = "positions_zlib.fw";
+        assertSameAsLocal(base + "/ok/" + file, file);
+        assertSameAsLocal(base + "/redirect/" + file, file);
+        assertSameAsLocal(base + "/half/" + file, file);
     }
 
     @Test(timeout = 60000)
