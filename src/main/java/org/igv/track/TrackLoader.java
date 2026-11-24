@@ -887,11 +887,14 @@ public class TrackLoader {
         List<Track> loaded = new ArrayList<>();
         try {
             Set<String> chosen = locator.getTrackNames();
-            Map<String, Integer> chromIds = FigWigDataSource.chromIds(reader, genome);
+            Map<String, Integer> chromIds = null;   // shared by the file's tracks, made for the first one
             for (int t = 0; t < reader.nTracks(); t++) {
                 String name = reader.trackName(t);
                 if (chosen != null && !chosen.contains(name)) {
                     continue;
+                }
+                if (chromIds == null) {
+                    chromIds = FigWigDataSource.chromIds(reader, genome);
                 }
                 DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
                         new FigWigDataSource(reader, t, genome, chromIds));

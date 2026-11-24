@@ -55,7 +55,7 @@ public class IGVFigWigByteSource implements FigWigByteSource {
         try {
             s.readFully(out);
         } catch (EOFException e) {
-            throw new IOException("figwig: " + path + " ended before " + (offset + out.length));
+            throw new IOException("figwig: " + path + " ended at " + s.position() + ", expected " + (offset + out.length), e);
         }
     }
 

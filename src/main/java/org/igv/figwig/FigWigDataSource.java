@@ -37,10 +37,6 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
     private final int track;
     private final Map<String, Integer> chromIds;
 
-    public FigWigDataSource(FigWigFile file, int track, Genome genome) {
-        this(file, track, genome, chromIds(file, genome));
-    }
-
     /** With the map of {@link #chromIds}, which the tracks of a file share. */
     public FigWigDataSource(FigWigFile file, int track, Genome genome, Map<String, Integer> chromIds) {
         super(genome);
@@ -60,7 +56,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                 chromIds.putIfAbsent(genome.getCanonicalChrName(name), c);
             }
         }
-        return chromIds;
+        return Collections.unmodifiableMap(chromIds);
     }
 
     public FigWigFile getFile() {
