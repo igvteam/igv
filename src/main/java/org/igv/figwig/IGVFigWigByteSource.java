@@ -1,7 +1,7 @@
 package org.igv.figwig;
 
 import figwig.FigWigFile;
-import figwig.FigWigSource;
+import figwig.FigWigByteSource;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.util.FileUtils;
 import org.igv.util.stream.IGVSeekableStreamFactory;
@@ -13,7 +13,7 @@ import java.io.IOException;
  * A figwig file read through IGV's streams, which carry IGV's authentication, signing and redirects:
  * http(s), s3 and gs paths, and any other path that is not a local file.
  */
-public class IGVFigWigSource implements FigWigSource {
+public class IGVFigWigByteSource implements FigWigByteSource {
 
     private static final boolean POSITIONAL = !Boolean.getBoolean("figwig.noPositional");
 
@@ -26,10 +26,10 @@ public class IGVFigWigSource implements FigWigSource {
         if (POSITIONAL && new File(path).isFile()) {
             return FigWigFile.open(path);
         }
-        return FigWigFile.open(path, new IGVFigWigSource(path));
+        return FigWigFile.open(path, new IGVFigWigByteSource(path));
     }
 
-    public IGVFigWigSource(String path) throws IOException {
+    public IGVFigWigByteSource(String path) throws IOException {
         this.path = path;
         this.stream = IGVSeekableStreamFactory.getInstance().getStreamFor(path);
         this.remote = FileUtils.isRemote(path) && !path.startsWith("ftp:");

@@ -92,7 +92,7 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
 
     static void assertSameAsLocal(String url, String file) throws Exception {
         FigWigFile local = FigWigFile.open(FigWigDataSourceTest.DIR + file);
-        IGVFigWigSource source = new IGVFigWigSource(url);
+        IGVFigWigByteSource source = new IGVFigWigByteSource(url);
         FigWigFile remote = FigWigFile.open(url, source);
         try {
             assertTrue(source.isRemote());
@@ -143,7 +143,7 @@ public class FigWigRemoteTest extends AbstractHeadlessTest {
     @Test(timeout = 60000)
     public void testAMissingFileFailsToOpen() {
         try {
-            IGVFigWigSource.open(base + "/ok/missing.fw").close();
+            IGVFigWigByteSource.open(base + "/ok/missing.fw").close();
             fail("opened a missing file");
         } catch (IOException | RuntimeException expected) {
             // the error names the URL or the HTTP status; nothing hangs

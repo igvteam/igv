@@ -30,7 +30,7 @@ import org.igv.feature.tribble.*;
 import figwig.FigWigFile;
 import org.igv.figwig.FigWigDataSource;
 import org.igv.figwig.FigWigTrackChooser;
-import org.igv.figwig.IGVFigWigSource;
+import org.igv.figwig.IGVFigWigByteSource;
 import org.igv.gwas.GWASData;
 import org.igv.gwas.GWASParser;
 import org.igv.gwas.GWASTrack;
@@ -883,7 +883,7 @@ public class TrackLoader {
 
     public void loadFigWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        FigWigFile reader = IGVFigWigSource.open(locator.getPath());
+        FigWigFile reader = IGVFigWigByteSource.open(locator.getPath());
         String path = locator.getPath();
         Set<String> chosen = FigWigTrackChooser.choose(reader, locator.getTrackName());
         for (int t = 0; t < reader.nTracks(); t++) {

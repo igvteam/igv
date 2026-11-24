@@ -6,9 +6,9 @@ import java.io.IOException;
 /**
  * The bytes of a figwig file the reader does not open itself: anything but a local file (http(s), s3
  * and gs paths, or a local file read some other way).  The application supplies it to
- * {@link FigWigFile#open(String, FigWigSource)}, and with it its own authentication, signing and redirects.
+ * {@link FigWigFile#open(String, FigWigByteSource)}, and with it its own authentication, signing and redirects.
  */
-public interface FigWigSource extends Closeable {
+public interface FigWigByteSource extends Closeable {
 
     /**
      * Fill {@code out} with the bytes from {@code offset}, failing when the file ends first.  The reader

@@ -25,10 +25,10 @@ and performance has not been re-measured.
 | Piece | Lines | Side | Why |
 |---|---|---|---|
 | `FigWigFile`, `FigWigChunks`, `FigWigPool`, `FigWigSummaryIndex` | 2,624 | Library | The format: depend only on the JDK and `org.json` |
-| `FigWigSource` (new) | 27 | Library | The interface the application implements to supply bytes |
+| `FigWigByteSource` (new) | 27 | Library | The interface the application implements to supply bytes |
 | `FigWigDataSource` | 464 | IGV | Extends `AbstractDataSource`; uses `Genome`, `LocusScore`, `Globals`, `FrameManager`, `LRUCache` |
 | `FigWigTrackChooser` | 81 | IGV | Swing UI on `IGV`, `TrackChooser`, `FileRecord` |
-| `IGVFigWigSource` (new) | 78 | IGV | Adapts IGV's streams to `FigWigSource` |
+| `IGVFigWigByteSource` (new) | 78 | IGV | Adapts IGV's streams to `FigWigByteSource` |
 | `FigWigFileTest` | 465, 11 tests | Library | Reader against the figwig package's expected values; no IGV imports |
 | `FigWigDataSourceTest`, `FigWigEdgeCaseTest`, `FigWigRemoteTest` | 555, 13 tests | IGV | Go through `TrackLoader`, a genome, or IGV's HTTP stack |
 
@@ -42,7 +42,7 @@ The reader reached into IGV in two places: `IGVSeekableStreamFactory.getInstance
 (two call sites) and `FileUtils.isRemote`. Both are replaced by one interface in the library:
 
 ```java
-public interface FigWigSource extends Closeable {
+public interface FigWigByteSource extends Closeable {
     void read(long offset, byte[] out) throws IOException;  // called from several threads at once
     long length() throws IOException;                       // 0 when not known
     boolean isRemote();                                     // each read is a round trip
@@ -51,7 +51,7 @@ public interface FigWigSource extends Closeable {
 
 - `FigWigFile.open(path)` opens a local file itself, with positional `FileChannel` reads as before.
 - `FigWigFile.open(path, source)` reads everything through the application's source.
-- `IGVFigWigSource.open(path)` is what `TrackLoader` calls: a local file goes to the reader directly,
+- `IGVFigWigByteSource.open(path)` is what `TrackLoader` calls: a local file goes to the reader directly,
   anything else through IGV's streams. That keeps OAuth, S3/GS signing and redirects on the IGV side.
 - For remote paths the adapter opens one stream per read, so loader threads still read concurrently;
   other non-local paths share one stream under a lock. Both behaviours are unchanged from the PR.

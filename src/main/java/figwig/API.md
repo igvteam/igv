@@ -5,7 +5,7 @@ and an application that draws from it. It lists what IGV requires. An implementa
 may offer more, but must provide everything here with the behaviour stated, and IGV must use nothing
 else.
 
-The contract is two types: `figwig.FigWigFile`, which the package provides, and `figwig.FigWigSource`,
+The contract is two types: `figwig.FigWigFile`, which the package provides, and `figwig.FigWigByteSource`,
 which the application may implement to supply a file's bytes.
 
 ## Conventions
@@ -35,10 +35,10 @@ These hold for every method unless it says otherwise.
   No method throws any other exception because of the file's contents, and none hangs on a corrupt
   or truncated file.
 
-## `FigWigSource`
+## `FigWigByteSource`
 
 ```java
-public interface FigWigSource extends java.io.Closeable {
+public interface FigWigByteSource extends java.io.Closeable {
     void read(long offset, byte[] out) throws IOException;
     long length() throws IOException;
     boolean isRemote();
@@ -64,7 +64,7 @@ on `FigWigFile` that needed it; a later call may ask for the same bytes again.
 
 ```java
 public static FigWigFile open(String path) throws IOException
-public static FigWigFile open(String path, FigWigSource source) throws IOException
+public static FigWigFile open(String path, FigWigByteSource source) throws IOException
 public String path()
 public void close() throws IOException
 public boolean isClosed()
@@ -77,7 +77,7 @@ public boolean isClosed()
   file is not a figwig file of version 1. The file owns `source` from the call on: if
   `open(path, source)` fails, it has closed `source` before failing, and no file is left open.
 - **`path()`** returns the `path` given to `open`.
-- **`close()`** closes the file and its `FigWigSource`, whatever is in use (see below). It may be
+- **`close()`** closes the file and its `FigWigByteSource`, whatever is in use (see below). It may be
   called while other threads are calling the file. A call on the file that is running when it is
   closed, or made after, either returns what it would have returned or fails as under *Errors*; it
   never returns wrong values.

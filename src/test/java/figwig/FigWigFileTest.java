@@ -464,7 +464,7 @@ public class FigWigFileTest {
     }
 
     /** A file's bytes in memory, counting what the reader asks of it. */
-    static class MemorySource implements FigWigSource {
+    static class MemorySource implements FigWigByteSource {
         final byte[] bytes;
         int closes = 0;
         volatile int readsAfterClose = 0;

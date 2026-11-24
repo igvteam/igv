@@ -29,7 +29,7 @@ import static figwig.FigWigPool.*;
  * group's tracks), caches them under one budget shared by every open file, and decodes the track's
  * values into runs ({@link FigWigChunks}).  Long reads are split over the decoding threads
  * ({@link FigWigPool}); reads of 16 or more tracks of a group over one range are decoded in one pass.
- * Local files are read with positional reads; any other path through the {@link FigWigSource} the
+ * Local files are read with positional reads; any other path through the {@link FigWigByteSource} the
  * application supplies, the requests of a read sent at once when it is remote.
  */
 public class FigWigFile {
@@ -48,7 +48,7 @@ public class FigWigFile {
     private static final int HTTP_PARTS = Integer.getInteger("figwig.httpParts", 4);
 
     final String path;
-    private final FigWigSource source;   // null for a local file, read through channel
+    private final FigWigByteSource source;   // null for a local file, read through channel
 
     final int tile;
     final int codec;
@@ -177,12 +177,12 @@ public class FigWigFile {
      * Open a file whose bytes {@code source} reads; {@code path} names it in messages.  The file owns
      * the source from this call on, and closes it if it cannot be opened.
      */
-    public static FigWigFile open(String path, FigWigSource source) throws IOException {
+    public static FigWigFile open(String path, FigWigByteSource source) throws IOException {
         return open(path, source, null);
     }
 
     /** A file that cannot be opened leaves nothing open behind it. */
-    private static FigWigFile open(String path, FigWigSource source, FileChannel channel) throws IOException {
+    private static FigWigFile open(String path, FigWigByteSource source, FileChannel channel) throws IOException {
         try {
             return new FigWigFile(path, source, channel);
         } catch (IOException | RuntimeException e) {
@@ -200,7 +200,7 @@ public class FigWigFile {
         }
     }
 
-    private FigWigFile(String path, FigWigSource source, FileChannel channel) throws IOException {
+    private FigWigFile(String path, FigWigByteSource source, FileChannel channel) throws IOException {
         long t0 = System.nanoTime();
         this.path = path;
         this.source = source;
