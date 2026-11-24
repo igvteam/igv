@@ -186,7 +186,8 @@ public class GenomeManager {
                 UIUtilities.invokeAndWaitOnEventThread(() -> setGenomeControlsEnabled(false));
                 IGV.getInstance().setStatusBarMessage("<html><font color=blue>Loading genome</font></html>");
                 cursorToken = WaitCursorManager.showWaitCursor();
-                IGV.getInstance().setLoadingMessage("Loading genome...");
+                // Starts the delay; no notice is shown until the genome is known by name
+                IGV.getInstance().setLoadingMessage("");
             }
 
             GenomeLoader loader = GenomeLoader.getLoader(genomePath);

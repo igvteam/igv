@@ -26,7 +26,8 @@ public class LoadingGlassPane extends JComponent {
     }
 
     /**
-     * @param message the message to show, or null to remove it
+     * @param message the message to show, or null to remove it.  An empty message starts the delay without
+     *                showing anything, for a task whose message is not yet known.
      */
     public void setMessage(String message) {
         this.message = message;
@@ -41,7 +42,7 @@ public class LoadingGlassPane extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
-        if (message == null || !showing) {
+        if (message == null || message.isEmpty() || !showing) {
             return;
         }
         Graphics2D g2 = (Graphics2D) g.create();

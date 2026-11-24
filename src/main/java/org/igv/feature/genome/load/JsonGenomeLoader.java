@@ -38,9 +38,10 @@ public class JsonGenomeLoader extends GenomeLoader {
                 IGV.getInstance().setLoadingMessage(null);
             }
             selectAnnotations(genomeConfig);
-            if (IGV.hasInstance()) {
-                IGV.getInstance().setLoadingMessage("Loading genome " + genomeConfig.getName() + "...");
-            }
+        }
+        if (IGV.hasInstance()) {
+            // The name is known as soon as the definition is read, before the genome's sequence and hubs load
+            IGV.getInstance().setLoadingMessage("Loading genome " + genomeConfig.getName() + "...");
         }
         Genome genome = new Genome(genomeConfig);
         return genome;
