@@ -144,6 +144,10 @@ public class IGVCommandBar extends javax.swing.JPanel implements IGVEventObserve
     }
 
 
+    public void setGenomeComboBoxEnabled(boolean enabled) {
+        genomeComboBox.setEnabled(enabled);
+    }
+
     public void refreshGenomeListComboBox() {
         UIUtilities.invokeAndWaitOnEventThread(() -> genomeComboBox.refreshGenomeListComboBox());
     }

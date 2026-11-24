@@ -8,6 +8,7 @@ import org.igv.session.SessionReader;
 import org.igv.track.AttributeManager;
 import org.igv.ucsc.hub.TrackHubLoader;
 import org.igv.ui.IGV;
+import org.igv.ui.IGVMenuBar;
 import org.igv.ui.util.LoadFromURLDialog;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.LongRunningTask;
@@ -153,14 +154,20 @@ public class LoadFromURLMenuAction extends MenuAction {
     private static void loadGenomeFromUrl(String url) {
         if (url != null && !url.isBlank()) {
             url = url.trim();
-            try {
-                if (HubGenomeLoader.isHubURL(url)) {
-                    loadTrackHub(url, false);
-                } else {
-                    GenomeManager.getInstance().loadGenome(url);
-                }
-            } catch (Exception e) {
-                MessageUtils.showMessage("Error loading genome: " + e.getMessage());
+            if (HubGenomeLoader.isHubURL(url)) {
+                loadTrackHub(url, false);
+            } else {
+                // Off the event thread, as a hub is
+                final String genomeUrl = url;
+                // Disabled at once, so nothing else can be started; the genome load enables them again
+                IGVMenuBar.getInstance().setAllMenusEnabled(false);
+                LongRunningTask.submit(() -> {
+                    try {
+                        GenomeManager.getInstance().loadGenome(genomeUrl);
+                    } catch (Exception e) {
+                        MessageUtils.showMessage("Error loading genome: " + e.getMessage());
+                    }
+                });
             }
         }
     }

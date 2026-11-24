@@ -133,7 +133,14 @@ public class HubGenomeLoader extends GenomeLoader {
             throw new IOException("Hub does not define a genome sequence (no twoBitPath): " + hubURL);
         }
         GenomeConfig config = configs.get(0);
+        // No loading notice while waiting on the user; it starts over once the prompt is dismissed
+        if (IGV.hasInstance()) {
+            IGV.getInstance().setLoadingMessage(null);
+        }
         selectAnnotationTracks(hub, config);
+        if (IGV.hasInstance()) {
+            IGV.getInstance().setLoadingMessage("Loading genome " + config.getName() + "...");
+        }
 
         // Search for list of tracks for this hub in the preferences.  This was used prior to version 2.19.2, current
         // versions of IGV store track information in a genome json file.

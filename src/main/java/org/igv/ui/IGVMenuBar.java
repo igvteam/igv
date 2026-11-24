@@ -252,7 +252,7 @@ public class IGVMenuBar extends JMenuBar {
         reloadSessionItem.addActionListener(e -> {
             String path = igv.getSession().getPath();
             if (path == null) {
-                igv.newSession();
+                igv.newSessionInBackground();
             } else {
                 LongRunningTask.submit(() -> igv.loadSession(path, null));
             }
@@ -362,7 +362,7 @@ public class IGVMenuBar extends JMenuBar {
         reloadSessionItem.addActionListener(e -> {
             String path = igv.getSession().getPath();
             if (path == null) {
-                igv.newSession();
+                igv.newSessionInBackground();
             } else {
                 LongRunningTask.submit(() -> igv.loadSession(path, null));
             }
@@ -409,9 +409,17 @@ public class IGVMenuBar extends JMenuBar {
                 // Display the dialog
                 File file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
 
-                // If a file selection was made
+                // If a file selection was made, load it off the event thread
                 if (file != null) {
-                    GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
+                    // Disabled at once, so nothing else can be started; the genome load enables them again
+                    setAllMenusEnabled(false);
+                    LongRunningTask.submit(() -> {
+                        try {
+                            GenomeManager.getInstance().loadGenome(file.getAbsolutePath());
+                        } catch (Exception ex) {
+                            MessageUtils.showErrorMessage(ex.getMessage(), ex);
+                        }
+                    });
                 }
             } catch (Exception ex) {
                 MessageUtils.showErrorMessage(ex.getMessage(), ex);

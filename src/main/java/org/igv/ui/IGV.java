@@ -86,7 +86,7 @@ public class IGV implements IGVEventObserver {
     private IGVMenuBar menuBar;
 
     // Glass panes
-    Component glassPane;
+    LoadingGlassPane glassPane;
 
     // Cursors
     public static Cursor fistCursor;
@@ -207,7 +207,8 @@ public class IGV implements IGVEventObserver {
 
         rootPane.setContentPane(contentPane);
         rootPane.setJMenuBar(menuBar);
-        glassPane = rootPane.getGlassPane();
+        glassPane = new LoadingGlassPane();
+        rootPane.setGlassPane(glassPane);
         glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         // consumeEvents(glassPane);
 
@@ -746,20 +747,47 @@ public class IGV implements IGVEventObserver {
      * Creates a new IGV session
      */
     public void newSession() {
-        resetSession(null);
+        // The Swing work is done on the event thread.  The genome reload between is long running and is not.
+        UIUtilities.invokeAndWaitOnEventThread(() -> resetSession(null));
         Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         String id = currentGenome.getId();
         try {
-            GenomeManager.getInstance().loadGenomeById(id, true);
+            if (!GenomeManager.getInstance().loadGenomeById(id, true)) {
+                // The genome could not be located and nothing was loaded, so no load will re-enable the menus
+                UIUtilities.invokeOnEventThread(() -> menuBar.setAllMenusEnabled(true));
+            }
         } catch (IOException e) {
             log.info("Failed to load genome with id " + id);
             GenomeManager.getInstance().setCurrentGenome(currentGenome);
             GenomeManager.getInstance().restoreGenomeTracks(currentGenome);
         }
 
-        menuBar.resetSessionActions();
-        goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
-        revalidateTrackPanels();
+        UIUtilities.invokeAndWaitOnEventThread(() -> {
+            menuBar.resetSessionActions();
+            goToLocus(GenomeManager.getInstance().getCurrentGenome().getHomeChromosome());
+            revalidateTrackPanels();
+        });
+    }
+
+    /**
+     * Start a new session from a menu.  A new session reloads the genome, which is long running, so it is run off
+     * the event thread.  The menus are disabled first, here on the event thread, so that a second action cannot be
+     * started while the session is being reset.  The genome reload enables them again.
+     */
+    public void newSessionInBackground() {
+        menuBar.setAllMenusEnabled(false);
+        LongRunningTask.submit(() -> {
+            boolean completed = false;
+            try {
+                newSession();
+                completed = true;
+            } finally {
+                if (!completed) {
+                    // An unexpected failure; the genome reload did not get to enable the menus
+                    UIUtilities.invokeOnEventThread(() -> menuBar.setAllMenusEnabled(true));
+                }
+            }
+        });
     }
 
 
@@ -1232,6 +1260,16 @@ public class IGV implements IGVEventObserver {
             resetStatusMessage();
         }
         contentPane.getStatusBar().setMessage(message);
+    }
+
+    /**
+     * Show a message in the center of the main window while a long running task that disables the menus is in
+     * progress.  It appears after a short delay, and is visible while the wait cursor is shown.
+     *
+     * @param message the message, or null to remove it
+     */
+    public void setLoadingMessage(String message) {
+        UIUtilities.invokeOnEventThread(() -> glassPane.setMessage(message));
     }
 
     public void setStatusBarMessag2(String message) {
