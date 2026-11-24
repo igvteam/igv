@@ -1,11 +1,8 @@
 # Workaround for CVE-2026-114938 (Java4Shell)
 
-[CVE-2026-114938](https://www.cve.org/CVERecord?id=CVE-2026-114938) is a vulnerability in Java 17 and later, 
-including the Java runtime bundled with current and recent IGV releases.  It will be fixed in an upcoming IGV 
-release.  Until you can upgrade, the workaround below turns off the affected Java feature.  It does not change 
-how IGV works.
+[CVE-2026-114938](https://www.cve.org/CVERecord?id=CVE-2026-114938) is a vulnerability in Java 17 and later.  As of release 2.19.9, IGV bundles a version of Java that addresses the issue. Until you can upgrade or if you need to use an older version of IGV, the workaround below turns off the affected Java feature.  It does not change how IGV works.
 
-The vulnerability only affects computers with certain Intel and AMD processors.  Macs with Apple Silicon 
+NOTE: The vulnerability only affects computers with certain Intel and AMD processors.  Macs with Apple Silicon 
 (M1 and later) are not affected and do not need the workaround.
 
 ## If you already have a java_arguments file
