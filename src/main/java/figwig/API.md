@@ -62,8 +62,6 @@ on `FigWigFile` that needed it; a later call may ask for the same bytes again.
 public static FigWigFile open(String path) throws IOException
 public static FigWigFile open(String path, FigWigSource source) throws IOException
 public String path()
-public void retain(int track)
-public void release(int track) throws IOException
 public void close() throws IOException
 public boolean isClosed()
 ```
@@ -75,17 +73,45 @@ public boolean isClosed()
   file is not a figwig file of version 1. If `open(path, source)` fails, `source` has not been closed
   and still belongs to the caller.
 - **`path()`** returns the `path` given to `open`.
-- **`retain(track)`** declares that the caller will read `track`, and **`release(track)`** that it has
-  finished. Each `retain(track)` must be matched by exactly one `release(track)`. The `release` that
-  brings the number of retained tracks of the file to zero closes the file, as `close()` does.
-  `retain` returns at once and never fails; it may start reading the file in the background.
-- A caller that reads without retaining gets the same values. Retaining is what lets the reader
-  share work between the tracks in use, and is the only way a file is closed without `close()`.
-- **`close()`** closes the file whatever has been retained, and closes its `FigWigSource`. It may be
-  called while other threads are reading. A call on the file that is running when it is closed, or
-  made after, either returns what it would have returned or fails as under *Errors*; it never
-  returns wrong values.
-- **`isClosed()`** is `true` once `close()` has been called, directly or by the last `release`.
+- **`close()`** closes the file and its `FigWigSource`, whatever is in use (see below). It may be
+  called while other threads are calling the file. A call on the file that is running when it is
+  closed, or made after, either returns what it would have returned or fails as under *Errors*; it
+  never returns wrong values.
+- **`isClosed()`** is `true` once the file has been closed, by `close()` or by the last `release`.
+
+### Tracks in use
+
+```java
+public void retain(int track)
+public void release(int track) throws IOException
+```
+
+One figwig file holds many tracks, and an application opens it once and shares the `FigWigFile`
+among the objects that draw from it, typically one per track shown. These two methods let each of
+those objects say which track of the file it draws, and for how long. Here `track` is a track number
+of the file (`0` to `nTracks() - 1`), and a track is *in use* from a `retain(track)` until the matching
+`release(track)`. The file counts uses: a track retained twice is in use until it is released twice.
+
+They serve two purposes.
+
+1. **Closing the file.** No one object knows when the file is no longer needed, so the file counts
+   its uses and closes itself when the last one ends.
+2. **Sharing work.** Tracks of a file are stored together, so what is read from the file for one track
+   often serves others. Knowing which tracks are in use lets the reader prepare for the calls that will
+   come (`read`, `levelMeans` and `prefetch` with that track number) and combine work across them.
+
+- **`retain(track)`** marks one more use of the track. It returns at once and does not fail. It may
+  start reading the file in the background; an error there is not reported until a later call needs
+  the same bytes.
+- **`release(track)`** ends one use of the track. If no use of any track of the file remains, it
+  closes the file exactly as `close()` does, and fails as `close()` may; otherwise it does nothing
+  else and does not fail.
+- Every `retain(track)` must be followed, in time, by exactly one `release(track)` with the same track
+  number. A `release` without a `retain` before it has undefined behaviour.
+- A file on which `retain` has never been called is closed only by `close()`.
+- Using a track without retaining it is allowed and returns the same values. Whether a track is in
+  use never changes a result, only how much work the reader does and when.
+- A track in use may be used from any number of threads, and by callers that did not retain it.
 
 ### File metadata
 
@@ -199,6 +225,6 @@ several calls covering parts of it. It changes no result. The reader decides whe
 - **Caching.** What the reader keeps in memory, and for how long, may change. No method here clears it.
 - **Other public members.** `FigWigFile` has further public members that IGV's tests use
   (`chromId(String)`, `readDense(...)`) or that report on the reader (`chunkBytesRead()`,
-  `chunkReads()`, `clearCache()`, `retain()`, `release()`, `MAGIC`). IGV's own code must not
+  `chunkReads()`, `clearCache()`, `retain()` and `release()` without a track, `MAGIC`). IGV's own code must not
   depend on them.
 - **Everything else in the package** (`FigWigChunks`, `FigWigPool`, `FigWigSummaryIndex`) is internal.
