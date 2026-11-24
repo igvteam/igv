@@ -67,7 +67,8 @@ though the codon is not known.
 
 Regression tests: `ExonTest.testSplitCodonNoPrevExonPos` and `ExonTest.testSplitCodonNoNextExonNeg`. Each compares
 an exon with a split leading codon and no neighbour against an exon with frame 0 that starts just past the split
-codon; both must give the same amino acids at the same position.
+codon; both must give the same amino acids at the same position. `testSplitCodonNonCodingPrevExonPos` and
+`testSplitCodonNonCodingNextExonNeg` do the same with a non-coding neighbour in place of the missing one.
 
 ### Not fixed
 
