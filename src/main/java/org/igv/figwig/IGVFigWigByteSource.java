@@ -6,6 +6,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.util.FileUtils;
 import org.igv.util.stream.IGVSeekableStreamFactory;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 
@@ -51,13 +52,10 @@ public class IGVFigWigByteSource implements FigWigByteSource {
 
     private void fill(SeekableStream s, long offset, byte[] out) throws IOException {
         s.seek(offset);
-        int done = 0;
-        while (done < out.length) {
-            int r = s.read(out, done, out.length - done);
-            if (r < 0) {
-                throw new IOException("figwig: " + path + " ended at " + (offset + done) + ", expected " + (offset + out.length));
-            }
-            done += r;
+        try {
+            s.readFully(out);
+        } catch (EOFException e) {
+            throw new IOException("figwig: " + path + " ended before " + (offset + out.length));
         }
     }
 

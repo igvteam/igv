@@ -35,13 +35,24 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
 
     private final FigWigFile file;
     private final int track;
-    private final Map<String, Integer> chromIds = new HashMap<>();
+    private final Map<String, Integer> chromIds;
 
     public FigWigDataSource(FigWigFile file, int track, Genome genome) {
+        this(file, track, genome, chromIds(file, genome));
+    }
+
+    /** With the map of {@link #chromIds}, which the tracks of a file share. */
+    public FigWigDataSource(FigWigFile file, int track, Genome genome, Map<String, Integer> chromIds) {
         super(genome);
         this.file = file;
         this.track = track;
+        this.chromIds = chromIds;
         file.retain(track);
+    }
+
+    /** The file's chromosomes by their names in the file and in the genome. */
+    public static Map<String, Integer> chromIds(FigWigFile file, Genome genome) {
+        Map<String, Integer> chromIds = new HashMap<>();
         for (int c = 0; c < file.nChroms(); c++) {
             String name = file.chromName(c);
             chromIds.put(name, c);
@@ -49,6 +60,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                 chromIds.putIfAbsent(genome.getCanonicalChrName(name), c);
             }
         }
+        return chromIds;
     }
 
     public FigWigFile getFile() {
@@ -108,12 +120,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
             // The finest level (tile sums) is coarser than a bin, or the group keeps none: raw data.
             return null;
         }
-        int level = -1;
-        for (int k = 0; k < file.levels(); k++) {
-            if (file.levelBases(k) <= scale) {
-                level = k;
-            }
-        }
+        int level = levelFor(scale);
         if (level < 0) {
             return null;
         }
@@ -127,6 +134,17 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
             scores.add(new BasicScore(runs.starts[i], runs.ends[i], (float) runs.values[i]));
         }
         return scores;
+    }
+
+    /** The last level whose bins are no larger than {@code scale} bases, or -1 when none is. */
+    private int levelFor(double scale) {
+        int level = -1;
+        for (int k = 0; k < file.levels(); k++) {
+            if (file.levelBases(k) <= scale) {
+                level = k;
+            }
+        }
+        return level;
     }
 
     private final Map<WindowFunction, List<LocusScore>> wholeGenome = new HashMap<>();
@@ -146,12 +164,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                 return scores;
             }
             double scale = genome.getWGLength() / 1000.0;
-            int level = -1;
-            for (int k = 0; k < file.levels(); k++) {
-                if (file.levelBases(k) <= scale) {
-                    level = k;
-                }
-            }
+            int level = levelFor(scale);
             if (level < 0) {
                 return null;
             }
@@ -184,6 +197,10 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
     // arithmetic, score classes and representative values included; other window functions use them.
 
     private final LRUCache<String, List<LocusScore>> tileCache = new LRUCache<>(10);
+
+    private String tileKey(String chr, int z, int t) {
+        return chr + "_" + z + "_" + t + getWindowFunction();
+    }
 
     @Override
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
@@ -238,7 +255,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         if (c != null) {
             int missFirst = -1, missLast = -1;
             for (int t = startTile; t <= endTile; t++) {
-                if (tileCache.get(chr + "_" + z + "_" + t + getWindowFunction()) == null) {
+                if (tileCache.get(tileKey(chr, z, t)) == null) {
                     if (missFirst < 0) missFirst = t;
                     missLast = t;
                 }
@@ -268,7 +285,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         for (int t = startTile; t <= endTile; t++) {
             int tileStart = (int) (t * tileWidth);
             int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
-            String key = chr + "_" + z + "_" + t + getWindowFunction();
+            String key = tileKey(chr, z, t);
             List<LocusScore> tile = tileCache.get(key);
             if (tile == null) {
                 tile = summarize(chr, tileStart, tileEnd, 700);
@@ -288,7 +305,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
         List<FutureTask<List<LocusScore>>> tasks = new ArrayList<>();
         List<Integer> missing = new ArrayList<>();
         for (int t = startTile; t <= endTile; t++) {
-            got[t - startTile] = tileCache.get(chr + "_" + z + "_" + t + getWindowFunction());
+            got[t - startTile] = tileCache.get(tileKey(chr, z, t));
             if (got[t - startTile] == null) {
                 final int tileStart = (int) (t * tileWidth);
                 final int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
@@ -320,7 +337,7 @@ public class FigWigDataSource extends AbstractDataSource implements DataSource {
                 }
                 got[t - startTile] = done;
                 synchronized (tileCache) {
-                    tileCache.put(chr + "_" + z + "_" + t + getWindowFunction(), done);
+                    tileCache.put(tileKey(chr, z, t), done);
                 }
             }
         }

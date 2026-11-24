@@ -882,19 +882,19 @@ public class TrackLoader {
 
     public void loadFigWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        FigWigFile reader = IGVFigWigByteSource.open(locator.getPath());
         String path = locator.getPath();
+        FigWigFile reader = IGVFigWigByteSource.open(path);
         List<Track> loaded = new ArrayList<>();
         try {
             Set<String> chosen = locator.getTrackNames();
+            Map<String, Integer> chromIds = FigWigDataSource.chromIds(reader, genome);
             for (int t = 0; t < reader.nTracks(); t++) {
                 String name = reader.trackName(t);
                 if (chosen != null && !chosen.contains(name)) {
                     continue;
                 }
                 DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
-                        new FigWigDataSource(reader, t, genome));
-                track.setName(name);
+                        new FigWigDataSource(reader, t, genome, chromIds));
                 for (Map.Entry<String, String> entry : reader.trackAttributes(t).entrySet()) {
                     track.setAttributeValue(entry.getKey(), entry.getValue());
                 }
