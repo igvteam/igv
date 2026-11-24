@@ -48,17 +48,18 @@ public class LoadingGlassPane extends JComponent {
         try {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 16f));
+            g2.setFont(UIManager.getFont("Label.font").deriveFont(Font.PLAIN, 14f));
             FontMetrics fm = g2.getFontMetrics();
 
             // A box around the message, in the look and feel's own colors
-            int w = Math.min(getWidth() - 20, fm.stringWidth(message) + 60);
-            int h = fm.getHeight() + 40;
+            int w = Math.min(getWidth() - 20, fm.stringWidth(message) + 30);
+            int h = fm.getHeight() + 20;
             int x = (getWidth() - w) / 2;
             int y = (getHeight() - h) / 2;
             g2.setColor(UIManager.getColor("Panel.background"));
             g2.fillRoundRect(x, y, w, h, 12, 12);
-            g2.setColor(UIManager.getColor("Label.foreground"));
+            Color textColor = UIManager.getColor("TitlePane.embeddedForeground");
+            g2.setColor(textColor != null ? textColor : UIManager.getColor("Label.foreground"));
             g2.drawRoundRect(x, y, w, h, 12, 12);
 
             g2.clipRect(x, y, w, h);

@@ -171,11 +171,11 @@ public class TrackSelectionDialog extends JDialog {
             JPanel notePanel = new JPanel();
             ((FlowLayout) notePanel.getLayout()).setAlignment(FlowLayout.LEFT);
             notePanel.setBorder(BorderFactory.createEmptyBorder(2, 6, 0, 0));
-            String types = unsupportedTrackTypes.isEmpty() ? "" :
-                    "  Unsupported types: " + String.join(", ", unsupportedTrackTypes);
+            String types = unsupportedTrackTypes.isEmpty() ? "." :
+                    ": " + String.join(", ", unsupportedTrackTypes) + ".";
             notePanel.add(new JLabel((unsupportedTrackCount == 1 ?
-                    "1 track unsupported by IGV has been filtered." :
-                    unsupportedTrackCount + " tracks unsupported by IGV have been filtered.") + types));
+                    "1 track is not shown because IGV does not support its type" :
+                    unsupportedTrackCount + " tracks are not shown because IGV does not support their types") + types));
             topPanel.add(notePanel);
         }
 
