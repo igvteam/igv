@@ -799,6 +799,25 @@ public class FigWigFile {
         return statMax[trackIndex];
     }
 
+    /** The reference genome the file names, or null. */
+    public String genome() {
+        return genome;
+    }
+
+    /** The type the track's values were written as, as the file's metadata names it (uint8 or float32, say). */
+    public String trackDtype(int trackIndex) {
+        return trackDtypes[trackIndex];
+    }
+
+    /** The sum of the track's values and its count of nonzero bases, from the file's statistics. */
+    public double trackSum(int trackIndex) {
+        return statSum[trackIndex];
+    }
+
+    public long trackNonzero(int trackIndex) {
+        return statNonzero[trackIndex];
+    }
+
     /**
      * Bases per bin of the finest summary, {@code levelBases(0)}, known without reading a level.  A view
      * with finer bins than this is drawn from the values themselves.
@@ -1555,28 +1574,11 @@ public class FigWigFile {
      * summary.
      */
     public Runs levelMeans(int trackIndex, int level, int chrom, int start, int end) {
-        Group group;
-        Level data;
-        try {
-            zoomGrid();
-            group = group(trackGroup[trackIndex]);
-            if (group.summaryBytes <= 0) {
-                return null;
-            }
-            check(Arrays.equals(zooms(group), zoomFactors), "groups have different zoom levels");
-            data = group.levelData.get(level);
-            if (data == null && HTTP) {
-                prefetchLevel(group.index, level, chrom, start, end);
-            }
-            if (data == null) {
-                data = levelWindows(group, level, chrom, start, end);
-            }
-            if (data == null) {
-                data = level(group, level);
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        Level data = levelData(trackIndex, level, chrom, start, end);
+        if (data == null) {
+            return null;
         }
+        Group group = groups.get(trackGroup[trackIndex]);
         int slot = trackSlot[trackIndex];
         long binBases = levelBases(level);
         long first = chromBinStart[level][chrom] + start / binBases;
@@ -1590,6 +1592,51 @@ public class FigWigFile {
             runs.add((int) binStart, (int) binEnd, sum / (binEnd - binStart));
         }
         return runs;
+    }
+
+    /**
+     * The track's sum over every bin of a level of a chromosome, as the file stores it: one value per
+     * bin, 0 for a bin that holds none; null when the track's group keeps no summary.
+     */
+    public double[] levelSums(int trackIndex, int level, int chrom) {
+        Level data = levelData(trackIndex, level, chrom, 0, (int) Math.min(Integer.MAX_VALUE, chromLengths[chrom]));
+        if (data == null) {
+            return null;
+        }
+        Group group = groups.get(trackGroup[trackIndex]);
+        int slot = trackSlot[trackIndex];
+        long first = chromBinStart[level][chrom], end = chromBinStart[level][chrom + 1];
+        double[] sums = new double[(int) (end - first)];
+        int[] bins = data.bins;
+        for (int i = lowerBound(bins, first); i < bins.length && bins[i] < end; i++) {
+            sums[(int) (bins[i] - first)] = data.sum(i * group.nTracks + slot);
+        }
+        return sums;
+    }
+
+    /** A level of the track's group holding the bins over [start, end), or null when the group keeps no summary. */
+    private Level levelData(int trackIndex, int level, int chrom, int start, int end) {
+        try {
+            zoomGrid();
+            Group group = group(trackGroup[trackIndex]);
+            if (group.summaryBytes <= 0) {
+                return null;
+            }
+            check(Arrays.equals(zooms(group), zoomFactors), "groups have different zoom levels");
+            Level data = group.levelData.get(level);
+            if (data == null && HTTP) {
+                prefetchLevel(group.index, level, chrom, start, end);
+            }
+            if (data == null) {
+                data = levelWindows(group, level, chrom, start, end);
+            }
+            if (data == null) {
+                data = level(group, level);
+            }
+            return data;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     // ------------------------------------------------------------------------------------------
