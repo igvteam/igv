@@ -79,9 +79,10 @@ position	signal	random
 
 ### Things to know
 
-- **Errors** print a Java stack trace and the command exits with a nonzero status. The first line
-  names the problem: an unknown chromosome or track name, a start below 0, a file that does not
-  exist, or a file that is not a figwig file.
+- **Errors** print one line saying what is wrong and the command exits with status 1: an unknown
+  chromosome or track name, a start below 0, a file that does not exist, or a file that is not a
+  figwig file. For example, `figwig: k562.fw has no chromosome 1`. Wrong arguments print the usage
+  and exit with status 2.
 - **Chromosome names** must be spelled as the file spells them (`chr1` is not `1`). `info` gives the
   number of chromosomes but not their names; from Java, `chromSizes()` lists them.
 - **Memory.** A window is held in memory before it is printed: 8 bytes per base per track. The reader

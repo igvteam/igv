@@ -244,7 +244,19 @@ public class FigWigReader implements Closeable {
             named (every track when none is)."""
             ;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        try {
+            run(args);
+        } catch (java.nio.file.NoSuchFileException e) {
+            System.err.println("figwig: no such file: " + e.getMessage());
+            System.exit(1);
+        } catch (IOException | java.io.UncheckedIOException | IllegalArgumentException | IllegalStateException e) {
+            System.err.println(e instanceof NumberFormatException ? "figwig: START and WIDTH must be whole numbers" : e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    private static void run(String[] args) throws IOException {
         if (args.length == 2 && args[0].equals("info")) {
             try (FigWigReader fw = new FigWigReader(args[1])) {
                 System.out.println("genome\t" + fw.genome());
