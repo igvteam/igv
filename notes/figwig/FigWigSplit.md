@@ -62,6 +62,58 @@ Also decided: the copy of `AbstractDataSource`'s summarisation in `FigWigDataSou
 does not store explicit zeros, so a figwig made from a bigWig cannot be expected to display
 identically, which was the reason to unify them.
 
+## Reviews and what came of them
+
+PR #1909 had two code reviews and one cleanup pass. What was changed as a result, on
+`figwig-external-jar`:
+
+- **Reader closed when a load fails.** `TrackLoader.loadFigWigFile` collects its tracks first; if
+  anything throws, or no track is loaded, it unloads them and closes the file.
+- **Chooser dialog disposed** after the selection is read.
+- **Range clamped before `levelMeans`.** The library takes no start below 0 and no empty range there;
+  only `read` clamps.
+- **One chromosome map per file.** `FigWigDataSource.chromIds(file, genome)` is built once by the
+  loader, when the first track is made, and shared read-only by the file's tracks. It used to be
+  built per track, with a genome alias lookup per chromosome.
+- **Small tidying in `FigWigDataSource`:** one `levelFor(scale)` and one `tileKey` helper in place of
+  repeated code, and the unused public `levelFor(chr, zoom)` deleted.
+- **`IGVFigWigByteSource`** reads with htsjdk's `SeekableStream.readFully`, as other IGV readers do.
+
+The IGV side is now three classes, 636 lines (`FigWigDataSource` 466, `FigWigTrackChooser` 94,
+`IGVFigWigByteSource` 76), plus small additions to `TrackLoader`, `FileFormatUtils`, `IGV`,
+`ResourceLocator`, `JSONSessionReader` and `build.gradle`. PR #1909 is 17 files.
+
+## Known limits, left as they are
+
+Raised in review and not fixed, given the format is experimental. Each is a place to look first if
+figwig stays.
+
+- **Tracks are identified by name.** The chooser's selection and each track's id (`path_name`) use
+  the track name, and the library does not require names to be unique. Two tracks of one name in a
+  file would both load when one is chosen, and share an id. The track index would be a unique key.
+- **Restoring part of a file can claim the wrong track.** A session matches by name, then id, then
+  type. A user who renames a loaded track to the name of another track in the file gets that other
+  track on restore.
+- **A restore builds every track of the file**, then unloads those the session does not name. Each
+  track calls `retain`, which makes the library read its group's index in the background. Costly for
+  files of thousands of tracks.
+- **The unload of unclaimed tracks in `JSONSessionReader` applies to every format**, not only figwig.
+  No case was found where it breaks a track that stays, but it is a change to shared session code.
+- **The file is opened twice on an interactive load**, by the chooser and then the loader, including
+  files small enough that no dialog is shown.
+- **A figwig file without a `.fw` extension skips the chooser** and loads every track.
+- **Window-function race in the parallel summary path.** The tile cache key is taken after the tiles
+  are computed, so switching a track between mean and none during a wide load can cache tiles under
+  the wrong function until they are evicted. It is in the copied summarisation code.
+- **Level selection assumes bin sizes grow with level number.** The library does not promise that;
+  files from the current writer do.
+- **Zero bases.** Zoomed-in means skip zero bases; the file's summaries divide by every base, so
+  sparse signals step down in value where the view crosses from one to the other.
+- **No checksum on the jar.** IGV takes it from a release URL; a replaced release asset would change
+  what IGV ships with no change in this repository.
+- **The track-hub chooser** (`TrackSelectionDialog`) has the same missing `dispose()` that was fixed
+  for figwig. It is outside this PR.
+
 The sections below describe the in-tree simulation on `figwig-split-simulation` that preceded this,
 where the reader was a top-level `figwig` package inside IGV.
 
