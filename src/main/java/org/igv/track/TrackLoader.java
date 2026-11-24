@@ -27,7 +27,7 @@ import org.igv.feature.mut.MutationFeatureSource;
 import org.igv.feature.sprite.ClusterParser;
 import org.igv.feature.sprite.ClusterTrack;
 import org.igv.feature.tribble.*;
-import figwig.FigWigFile;
+import org.figwig.FigWigFile;
 import org.igv.figwig.FigWigDataSource;
 import org.igv.figwig.FigWigTrackChooser;
 import org.igv.figwig.IGVFigWigByteSource;

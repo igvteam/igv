@@ -1,6 +1,6 @@
 package org.igv.figwig;
 
-import figwig.FigWigFile;
+import org.figwig.FigWigFile;
 import org.igv.Globals;
 import org.igv.data.AbstractDataSource;
 import org.igv.data.BasicScore;

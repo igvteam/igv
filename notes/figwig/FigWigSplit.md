@@ -4,8 +4,33 @@ Notes on PR [#1900](https://github.com/igvteam/igv/pull/1900), "Read figwig (.fw
 files" (branch `jmschrei-figwig-phase0`). The question: can the figwig reader and its tests move to a
 separate repository that builds a jar IGV depends on?
 
-Status, 2026-11-24: the split has been simulated in-tree on the local branch `figwig-split-simulation`
-(commit `da2aebdce`, not pushed). Nothing has been proposed on the PR yet.
+Status, 2026-11-24: done. The reader is its own project, https://github.com/igvteam/figwig (package
+`org.figwig`, MIT), and release v0.1.0 has `figwig-0.1.0.jar` attached. The IGV branch
+`figwig-external-jar` (local) depends on that jar and no longer holds the reader. Nothing has been
+proposed on the PR yet.
+
+## The library and how IGV gets it
+
+- **Repository:** `igvteam/figwig`, intended to move to the lab that owns the format. It holds the
+  reader, `FigWigByteSource`, `FigWigReader` (a command-line reader after the Python API), their
+  tests and test data, `docs/API.md` (the contract for what IGV uses) and a README.
+- **Build:** a minimal Gradle build whose only dependency is `org.json`. `./gradlew build` makes the
+  jar; `./gradlew installDist` adds a `figwig` launcher.
+- **Releasing:** publishing a GitHub release tagged `v1.2.3` runs a workflow that tests, builds
+  `figwig-1.2.3.jar` and attaches it. The version comes from the tag; no file is edited.
+- **IGV's build:** an `ivy` repository in `build.gradle` that maps `igvteam:figwig:0.1.0` to the
+  release's download URL. No credentials or third-party service. It carries no dependency metadata,
+  which does not matter while the library needs only `org.json`.
+- **Not chosen:** GitHub Packages (needs a token even to download public packages), JitPack (a
+  third-party service in IGV's build), Maven Central (not ours to do for the lab; the swap later is
+  one repository block and one dependency line).
+- **Result:** on `figwig-external-jar` the full suite passes with 689 tests (the 15 reader tests now
+  run in the library's own repository), and `createDist` puts `figwig-0.1.0.jar` in `lib/`.
+- **Test data:** the `.fw` files stay in IGV's `test/data/figwig` for its 13 tests; the expected
+  tables moved with the library.
+
+The sections below describe the in-tree simulation on `figwig-split-simulation` that preceded this,
+where the reader was a top-level `figwig` package inside IGV.
 
 ## Summary
 

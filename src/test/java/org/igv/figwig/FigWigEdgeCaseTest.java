@@ -1,6 +1,6 @@
 package org.igv.figwig;
 
-import figwig.FigWigFile;
+import org.figwig.FigWigFile;
 import org.igv.AbstractHeadlessTest;
 import org.igv.feature.LocusScore;
 import org.igv.track.Track;

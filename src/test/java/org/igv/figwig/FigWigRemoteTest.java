@@ -1,6 +1,6 @@
 package org.igv.figwig;
 
-import figwig.FigWigFile;
+import org.figwig.FigWigFile;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.igv.AbstractHeadlessTest;

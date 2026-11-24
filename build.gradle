@@ -19,6 +19,13 @@ repositories {
         url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         mavenContent { snapshotsOnly() }
     }
+    // The figwig reader, a jar attached to each release of https://github.com/igvteam/figwig
+    ivy {
+        url = uri("https://github.com/")
+        patternLayout { artifact '[organisation]/[module]/releases/download/v[revision]/[module]-[revision].jar' }
+        metadataSources { artifact() }
+        content { includeGroup 'igvteam' }
+    }
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -113,6 +120,7 @@ dependencies {
             [group: 'org.netbeans.external', name: 'AbsoluteLayout', version: 'RELEASE110'],
             [group: 'com.formdev', name: 'flatlaf', version: '3.5.4', classifier: 'no-natives'],
             [group: 'org.json', name: 'json', version: '20250517'],
+            [group: 'igvteam', name: 'figwig', version: '0.1.0'],
 
             // Amazon deps
             [group: 'software.amazon.awssdk', name: 'cognitoidentity', version: amazonVersion],

@@ -1,7 +1,7 @@
 package org.igv.figwig;
 
-import figwig.FigWigFile;
-import figwig.FigWigByteSource;
+import org.figwig.FigWigFile;
+import org.figwig.FigWigByteSource;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.igv.util.FileUtils;
 import org.igv.util.stream.IGVSeekableStreamFactory;
