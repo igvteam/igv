@@ -27,6 +27,9 @@ import org.igv.feature.mut.MutationFeatureSource;
 import org.igv.feature.sprite.ClusterParser;
 import org.igv.feature.sprite.ClusterTrack;
 import org.igv.feature.tribble.*;
+import org.figwig.FigWigFile;
+import org.igv.figwig.FigWigDataSource;
+import org.igv.figwig.IGVFigWigByteSource;
 import org.igv.gwas.GWASData;
 import org.igv.gwas.GWASParser;
 import org.igv.gwas.GWASTrack;
@@ -77,6 +80,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.igv.prefs.Constants.SAM_SHOW_ALIGNMENT_TRACK;
@@ -204,6 +208,8 @@ public class TrackLoader {
                 loadBBFile(locator, newTracks, genome);
             } else if (format.equals("ibf") || format.equals("tdf")) {
                 loadTDFFile(locator, newTracks, genome);
+            } else if (format.equals("fw") || format.equals("figwig")) {
+                loadFigWigFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (format.equals("maf.dict")) {
@@ -872,6 +878,45 @@ public class TrackLoader {
         }
 
 
+    }
+
+    public void loadFigWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        String path = locator.getPath();
+        FigWigFile reader = IGVFigWigByteSource.open(path);
+        List<Track> loaded = new ArrayList<>();
+        try {
+            Set<String> chosen = locator.getTrackNames();
+            Map<String, Integer> chromIds = null;   // shared by the file's tracks, made for the first one
+            for (int t = 0; t < reader.nTracks(); t++) {
+                String name = reader.trackName(t);
+                if (chosen != null && !chosen.contains(name)) {
+                    continue;
+                }
+                if (chromIds == null) {
+                    chromIds = FigWigDataSource.chromIds(reader, genome);
+                }
+                DataSourceTrack track = new DataSourceTrack(locator, path + "_" + name, name,
+                        new FigWigDataSource(reader, t, genome, chromIds));
+                for (Map.Entry<String, String> entry : reader.trackAttributes(t).entrySet()) {
+                    track.setAttributeValue(entry.getKey(), entry.getValue());
+                }
+                loaded.add(track);
+            }
+        } catch (RuntimeException e) {
+            // The tracks made so far are never shown, so nothing else would release the file.
+            for (Track track : loaded) {
+                track.unload();
+            }
+            if (!reader.isClosed()) {
+                reader.close();
+            }
+            throw e;
+        }
+        newTracks.addAll(loaded);
+        if (loaded.isEmpty()) {
+            reader.close();   // nothing was chosen, so no track will release the file
+        }
     }
 
     public void loadBBFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

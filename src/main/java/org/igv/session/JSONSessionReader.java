@@ -256,6 +256,9 @@ public class JSONSessionReader implements SessionReader {
             // Identity set to track which Track objects have already been claimed by a descriptor
             Set<Track> claimedTracks = Collections.newSetFromMap(new IdentityHashMap<>());
 
+            // Identity set of the loaded tracks that became children of a merged track
+            Set<Track> mergedChildTracks = Collections.newSetFromMap(new IdentityHashMap<>());
+
             // Track combined descriptors for second pass (combined tracks depend on other tracks being loaded first)
             List<TrackDescriptor> combinedDescriptors = new ArrayList<>();
 
@@ -302,6 +305,7 @@ public class JSONSessionReader implements SessionReader {
                                 if (track instanceof DataTrack) {
                                     track.unmarshalJSON(childJson);
                                     childTracks.add((DataTrack) track);
+                                    mergedChildTracks.add(track);
                                 } else {
                                     log.warn("Expected DataTrack but got: " + track.getClass().getName());
                                 }
@@ -412,6 +416,16 @@ public class JSONSessionReader implements SessionReader {
                     }
                 } catch (Exception e) {
                     log.error("Error creating combined track", e);
+                }
+            }
+
+            // Unload tracks that were loaded from a file but are not in the session, for example the tracks of a
+            // multi-track file that were not selected, so that the resources they hold are released.
+            for (CompletableFuture<List<Track>> future : allTrackFutures) {
+                for (Track track : future.getNow(Collections.emptyList())) {
+                    if (!claimedTracks.contains(track) && !mergedChildTracks.contains(track)) {
+                        track.unload();
+                    }
                 }
             }
 
