@@ -65,6 +65,11 @@ public class ResourceLocator {
     String sampleId;
 
     /**
+     * The tracks of a multi-track file to load, by name; null for all of them.
+     */
+    private Set<String> trackNames;
+
+    /**
      * Track metadata.  Primarily for generating description and popup text.
      */
     private Map<String, String> metadata;
@@ -475,6 +480,14 @@ public class ResourceLocator {
 
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
+    }
+
+    public Set<String> getTrackNames() {
+        return trackNames;
+    }
+
+    public void setTrackNames(Set<String> trackNames) {
+        this.trackNames = trackNames;
     }
 
     public String getIndexPath() {

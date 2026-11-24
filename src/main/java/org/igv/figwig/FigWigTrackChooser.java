@@ -6,45 +6,52 @@ import org.igv.encode.FileRecord;
 import org.igv.encode.TrackChooser;
 import org.igv.ui.IGV;
 import org.igv.ui.util.UIUtilities;
+import org.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Which tracks of a figwig file to load.  A file of many tracks (the cells of a single-cell
  * experiment, every experiment of a cell type) opens IGV's track chooser, the table the ENCODE
- * browser uses, with a row per track and a column per attribute.  Smaller files, headless and batch
- * runs, and session restores, which name their own tracks, load every track.
+ * browser uses, with a row per track and a column per attribute.  It is asked for by the user
+ * interface before a file is loaded (IGV.loadTracks), and the choice goes to the loader on the
+ * ResourceLocator.  Smaller files and batch runs load every track; so do session restores, which do
+ * not come this way.
  */
 public class FigWigTrackChooser {
 
     /** Files with more tracks than this open the chooser. */
     public static final int CHOOSER_MIN_TRACKS = 50;
 
-    /** For tests: replaces the dialog, and is used whatever the file's size or the mode. */
-    public static Function<FigWigFile, Set<String>> override = null;
-
     /**
-     * The names of the tracks to load, or null for every track.  An empty set means the user
-     * cancelled.
+     * Ask which tracks of a figwig file with many tracks to load, and set them on the locator.  Does
+     * nothing for other files.  False when the user cancels, and the file is then not to be loaded.
      */
-    public static Set<String> choose(FigWigFile file, String title) {
-        if (override != null) {
-            return override.apply(file);
+    public static boolean choose(ResourceLocator locator) throws IOException {
+        String format = locator.getFormat();
+        if (!("fw".equals(format) || "figwig".equals(format)) || Globals.isBatch()) {
+            return true;
         }
-        if (file.nTracks() <= CHOOSER_MIN_TRACKS || Globals.isHeadless() || Globals.isBatch() || !IGV.hasInstance()
-                || IGV.getInstance().isRestoringSession()) {
-            return null;
+        List<String> headings;
+        List<FileRecord> records;
+        FigWigFile file = IGVFigWigByteSource.open(locator.getPath());
+        try {
+            if (file.nTracks() <= CHOOSER_MIN_TRACKS) {
+                return true;
+            }
+            headings = headings(file);
+            records = records(file);
+        } finally {
+            file.close();
         }
-        List<String> headings = headings(file);
-        List<FileRecord> records = records(file);
         Set<String> chosen = new LinkedHashSet<>();
         UIUtilities.invokeAndWaitOnEventThread(() -> {
             Frame owner = IGV.getInstance().getMainFrame();
-            TrackChooser chooser = new TrackChooser(owner, headings, records, title);
+            TrackChooser chooser = new TrackChooser(owner, headings, records, locator.getTrackName());
             JLabel header = new JLabel("Select Tracks to Display");
             header.setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 12));
             chooser.getContentPane().add(header, BorderLayout.NORTH);
@@ -58,7 +65,8 @@ public class FigWigTrackChooser {
                 }
             }
         });
-        return chosen;
+        locator.setTrackNames(chosen);
+        return !chosen.isEmpty();
     }
 
     /** The chooser's columns: the track's name, then its attributes in order of first appearance, at most 15. */

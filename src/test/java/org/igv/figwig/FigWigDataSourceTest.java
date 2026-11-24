@@ -176,38 +176,20 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
     }
 
     @Test
-    public void testChooserLoadsOnlyTheChosenTracks() throws Exception {
-        try {
-            FigWigTrackChooser.override = f -> new HashSet<>(Arrays.asList("signal", "ones", "cell17"));
-            List<Track> tracks = new TrackLoader().load(new ResourceLocator(FILE), genome);
-            Set<String> names = new HashSet<>();
-            for (Track t : tracks) names.add(t.getName());
-            assertEquals(new HashSet<>(Arrays.asList("signal", "ones", "cell17")), names);
-            FigWigFile fw = source(tracks.get(0)).getFile();
-            for (Track t : tracks) t.unload();
-            assertTrue("removing the chosen tracks closes the file", fw.isClosed());
+    public void testLoadsOnlyTheTracksNamedOnTheLocator() throws Exception {
+        ResourceLocator locator = new ResourceLocator(FILE);
+        locator.setTrackNames(new HashSet<>(Arrays.asList("signal", "ones", "cell17")));
+        List<Track> tracks = new TrackLoader().load(locator, genome);
+        Set<String> names = new HashSet<>();
+        for (Track t : tracks) names.add(t.getName());
+        assertEquals(new HashSet<>(Arrays.asList("signal", "ones", "cell17")), names);
+        FigWigFile fw = source(tracks.get(0)).getFile();
+        for (Track t : tracks) t.unload();
+        assertTrue("removing the chosen tracks closes the file", fw.isClosed());
 
-            FigWigFile[] opened = new FigWigFile[1];
-            FigWigTrackChooser.override = f -> {   // cancelled
-                opened[0] = f;
-                return new HashSet<>();
-            };
-            assertEquals(0, new TrackLoader().load(new ResourceLocator(FILE), genome).size());
-            assertTrue("a file with nothing chosen is closed", opened[0].isClosed());
-
-            FigWigTrackChooser.override = f -> {
-                opened[0] = f;
-                throw new IllegalStateException("the load fails");
-            };
-            try {
-                new TrackLoader().load(new ResourceLocator(FILE), genome);
-                fail("the load did not fail");
-            } catch (RuntimeException expected) {
-                assertTrue("a file whose load fails is closed", opened[0].isClosed());
-            }
-        } finally {
-            FigWigTrackChooser.override = null;
-        }
+        locator = new ResourceLocator(FILE);
+        locator.setTrackNames(new HashSet<>(Arrays.asList("not a track of the file")));
+        assertEquals(0, new TrackLoader().load(locator, genome).size());
     }
 
     @Test
@@ -222,9 +204,6 @@ public class FigWigDataSourceTest extends AbstractHeadlessTest {
             for (int t = 0; t < fw.nTracks(); t++) {
                 assertEquals(fw.trackName(t), records.get(t).getAttributeValue("name"));
             }
-            assertTrue("small files load without asking: " + fw.nTracks(),
-                    fw.nTracks() > FigWigTrackChooser.CHOOSER_MIN_TRACKS);
-            assertNull("headless runs load every track", FigWigTrackChooser.choose(fw, "test"));
         } finally {
             fw.close();
         }

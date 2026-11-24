@@ -21,6 +21,7 @@ import org.igv.feature.RegionOfInterest;
 import org.igv.feature.Strand;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.figwig.FigWigTrackChooser;
 import org.igv.lists.GeneList;
 import org.igv.logging.Level;
 import org.igv.logging.LogManager;
@@ -370,6 +371,9 @@ public class IGV implements IGVEventObserver {
                         }
 
                         try {
+                            if (!FigWigTrackChooser.choose(locator)) {
+                                continue;
+                            }
                             List<Track> tracks = load(locator);
                             addTracks(tracks);
                             loadedTracks.addAll(tracks);
@@ -881,25 +885,10 @@ public class IGV implements IGVEventObserver {
             sessionReader = new XMLSessionReader(this);
         }
 
-        restoringSession = true;
-        try {
-            sessionReader.loadSession(inputStream, session, sessionPath);
-        } finally {
-            restoringSession = false;
-        }
+        sessionReader.loadSession(inputStream, session, sessionPath);
 
         revalidateTrackPanels();
         return true;
-    }
-
-    private volatile boolean restoringSession = false;
-
-    /**
-     * True while a session is being loaded; loaders that would ask the user which tracks to load
-     * leave that to the session.
-     */
-    public boolean isRestoringSession() {
-        return restoringSession;
     }
 
 

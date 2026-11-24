@@ -29,7 +29,6 @@ import org.igv.feature.sprite.ClusterTrack;
 import org.igv.feature.tribble.*;
 import org.figwig.FigWigFile;
 import org.igv.figwig.FigWigDataSource;
-import org.igv.figwig.FigWigTrackChooser;
 import org.igv.figwig.IGVFigWigByteSource;
 import org.igv.gwas.GWASData;
 import org.igv.gwas.GWASParser;
@@ -887,7 +886,7 @@ public class TrackLoader {
         String path = locator.getPath();
         List<Track> loaded = new ArrayList<>();
         try {
-            Set<String> chosen = FigWigTrackChooser.choose(reader, locator.getTrackName());
+            Set<String> chosen = locator.getTrackNames();
             for (int t = 0; t < reader.nTracks(); t++) {
                 String name = reader.trackName(t);
                 if (chosen != null && !chosen.contains(name)) {
