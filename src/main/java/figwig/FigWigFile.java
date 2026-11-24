@@ -764,7 +764,7 @@ public class FigWigFile {
         return trackNames[track];
     }
 
-    /** The track's attributes from the file's metadata, in the file's order. */
+    /** The track's attributes from the file's metadata; read-only, in no particular order. */
     public Map<String, String> trackAttributes(int track) {
         return Collections.unmodifiableMap(trackAttributes.get(track));
     }
