@@ -48,7 +48,7 @@ codons separately.
 All four cases check the neighbour for null, so desktop does not have the igv.js crash. The case in the igv.js
 report (the minus-strand ADAM17 "Disintegrin" feature in
 `https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDomain.bb` at `chr2:9637312-9637362`, frame 0 with two
-leftover bases and no exon to the left) is handled: the leftover is drawn as an untranslated box.
+leftover bases and no exon to the left) is handled: the leftover is left untranslated.
 
 ### Out-of-frame translation (fixed)
 
@@ -58,7 +58,12 @@ so every amino acid in the exon was out of frame.
 
 The fix, in `Exon.computeAminoAcidSequence`, drops the `3 - readingFrame` bases of the split codon when there is no
 exon to complete it (from the start of the string on the plus strand, from the end on the minus strand) and moves
-`readStart` or `readEnd` to match. The split codon is left untranslated, as in igv.js.
+`readStart` or `readEnd` to match. The split codon is left untranslated, as in igv.js. A non-coding (UTR) preceding
+exon is treated the same as a missing one, since its bases are not part of the codon.
+
+`IGVFeatureRenderer.labelAminoAcids` fills the bases of an untranslated split codon, at either edge of the exon and
+on either strand, with the alternating amino acid background and no letter. The codon boundaries stay visible even
+though the codon is not known.
 
 Regression tests: `ExonTest.testSplitCodonNoPrevExonPos` and `ExonTest.testSplitCodonNoNextExonNeg`. Each compares
 an exon with a split leading codon and no neighbour against an exon with frame 0 that starts just past the split
@@ -70,9 +75,9 @@ codon; both must give the same amino acids at the same position.
   returned something for the neighbour's bases; only the plus-strand next-exon case has `if (d != null)`. A null
   there would throw a `NullPointerException`. It is unlikely in practice, since the exon's own sequence has just
   loaded from the same genome.
-- **Non-coding neighbours.** Only the plus-strand next-exon case checks `!nextExon.isNonCoding()`. The other three
-  would borrow bases from a UTR exon. igv.js requires the neighbour to have a reading frame. Whether real data
-  reaches this was not worked out.
+- **Non-coding neighbour for a trailing codon, minus strand.** The minus-strand previous-exon case does not check
+  `isNonCoding()` and would borrow bases from a UTR exon to complete the last codon. The other three cases do
+  check. igv.js requires the neighbour to have a reading frame. Whether real data reaches this was not worked out.
 
 ### Data caveat: UniProt exonFrames
 

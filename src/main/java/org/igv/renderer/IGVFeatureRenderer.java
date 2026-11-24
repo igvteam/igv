@@ -633,6 +633,15 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int aaSeqStartPosition = aaSequence.getStart();
             boolean odd = exon.getAminoAcidNumber(exon.getCdStart()) % 2 == 1;
 
+            int cdStart = Math.max(exon.getCdStart(), exon.getStart());
+            if (aaSeqStartPosition > cdStart) {
+
+                // The first codon is not complete and there is no exon to complete it, mark the codon boundary
+                aaRect.x = getPixelFromChromosomeLocation(exon.getChr(), cdStart, theOrigin, locationScale);
+                aaRect.width = getPixelFromChromosomeLocation(exon.getChr(), aaSeqStartPosition, theOrigin, locationScale) - aaRect.x;
+                context.getGraphic2DForColor(odd ? AA_COLOR_2 : AA_COLOR_1).fill(aaRect);
+            }
+
             for (CodonAA acid : aaSequence.getSequence()) {
                 if (acid != null) {
 

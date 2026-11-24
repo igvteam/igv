@@ -116,6 +116,43 @@ public class ExonTest extends AbstractHeadlessTest {
         assertSameAminoAcids(expected.getAminoAcidSequence(genome, null, null), exon.getAminoAcidSequence(genome, null, null));
     }
 
+    /**
+     * A non-coding (UTR) neighbor cannot complete a split codon, it is treated the same as no neighbor.
+     */
+    @Test
+    public void testSplitCodonNonCodingPrevExonPos() throws Exception {
+        Exon cdsExon = ((BasicFeature) genome.getFeatureDB().getFeature("EGFR")).getExons().get(1);
+        String chr = cdsExon.getChr();
+        int start = cdsExon.getStart();
+        int end = start + 30;
+
+        Exon utr = new Exon(chr, start - 100, start - 50, Strand.POSITIVE);
+        utr.setNonCoding(true);
+        Exon exon = new Exon(chr, start, end, Strand.POSITIVE);
+        exon.setReadingFrame(2);
+        Exon expected = new Exon(chr, start + 1, end, Strand.POSITIVE);
+        expected.setReadingFrame(0);
+
+        assertSameAminoAcids(expected.getAminoAcidSequence(genome, null, null), exon.getAminoAcidSequence(genome, utr, null));
+    }
+
+    @Test
+    public void testSplitCodonNonCodingNextExonNeg() throws Exception {
+        Exon cdsExon = ((BasicFeature) genome.getFeatureDB().getFeature("KRAS")).getExons().get(1);
+        String chr = cdsExon.getChr();
+        int start = cdsExon.getStart();
+        int end = start + 30;
+
+        Exon utr = new Exon(chr, end + 50, end + 100, Strand.NEGATIVE);
+        utr.setNonCoding(true);
+        Exon exon = new Exon(chr, start, end, Strand.NEGATIVE);
+        exon.setReadingFrame(1);
+        Exon expected = new Exon(chr, start, end - 2, Strand.NEGATIVE);
+        expected.setReadingFrame(0);
+
+        assertSameAminoAcids(expected.getAminoAcidSequence(genome, null, null), exon.getAminoAcidSequence(genome, null, utr));
+    }
+
     private void assertSameAminoAcids(AminoAcidSequence expected, AminoAcidSequence actual) {
         assertEquals(expected.getStart(), actual.getStart());
         assertEquals(expected.getSequenceString(), actual.getSequenceString());
