@@ -440,15 +440,15 @@ public class TrackSelectionDialog extends JDialog {
                         // A new map for the search table; the track config itself is not modified
                         final Map<String, String> trackConfigAttributes = trackConfig.attributes;
                         Map<String, String> attributes = new LinkedHashMap<>();
-                        attributes.put("Group", panel.containerLabel());
-                        attributes.put("Name", trackConfig.name);
-                        attributes.put("Description", trackConfig.description);
-                        //attributes.put("Format", trackConfig.format);
-
                         if (trackConfigAttributes != null) {
                             attributes.putAll(trackConfigAttributes);
                             attributeNames.addAll(trackConfigAttributes.keySet());
                         }
+                        // Set last so these take precedence over hub metadata of the same name
+                        attributes.put("Group", panel.containerLabel());
+                        attributes.put("Name", trackConfig.name);
+                        attributes.put("Description", trackConfig.description);
+                        //attributes.put("Format", trackConfig.format);
 
                         final FileRecord record = new FileRecord(trackConfig.url, attributes);
                         record.setSelected(selectionBox.isSelected());
