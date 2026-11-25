@@ -1,19 +1,24 @@
 package org.igv.feature.genome.load;
 
+import org.igv.DirectoryManager;
 import org.igv.Globals;
 import org.igv.feature.genome.Genome;
 import org.igv.feature.genome.GenomeDownloadUtils;
 import org.igv.feature.genome.GenomeManager;
+import org.igv.feature.genome.HostedGenomes;
 import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MessageUtils;
 import org.igv.util.FileUtils;
 import org.igv.util.ParsingUtils;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
 
 public class JsonGenomeLoader extends GenomeLoader {
@@ -43,8 +48,45 @@ public class JsonGenomeLoader extends GenomeLoader {
             // The name is known as soon as the definition is read, before the genome's sequence and hubs load
             IGV.getInstance().setLoadingMessage("Loading genome " + genomeConfig.getName() + "...");
         }
+        updateAmbiguityURL(genomeConfig);
         Genome genome = new Genome(genomeConfig);
         return genome;
+    }
+
+    /**
+     * Hack, not to be repeated: genome definitions for hg38 and hg19 saved before the table of ambiguity codes was
+     * introduced do not reference it, and without it CRAM files fail to decode at the affected loci.  Take the
+     * reference from a fresh copy of the hosted definition, if it has one, and record it in a local definition in
+     * the genome cache directory so this is done once.  Any failure is logged and the genome loads as it is.
+     */
+    private void updateAmbiguityURL(GenomeConfig config) {
+        if (config.twoBitAmbiguityURL != null || config.twoBitURL == null ||
+                !("hg38".equals(config.id) || "hg19".equals(config.id))) {
+            return;
+        }
+        try {
+            if (!HostedGenomes.isIGVHosted(config.id)) {
+                return;
+            }
+            String hostedPath = HostedGenomes.getGenomeListItem(config.id).getPath();
+            if (hostedPath.equals(genomePath)) {
+                return;
+            }
+            String ambiguityURL = new JsonGenomeLoader(hostedPath).loadGenomeConfig().twoBitAmbiguityURL;
+            if (ambiguityURL == null) {
+                return;
+            }
+            config.twoBitAmbiguityURL = ambiguityURL;
+
+            File file = new File(genomePath);
+            if (file.isFile() && DirectoryManager.getGenomeCacheDirectory().equals(file.getAbsoluteFile().getParentFile())) {
+                JSONObject json = new JSONObject(Files.readString(file.toPath()));
+                json.put("twoBitAmbiguityURL", ambiguityURL);
+                Files.writeString(file.toPath(), json.toString(4));
+            }
+        } catch (Exception e) {
+            log.error("Error updating ambiguity table reference for " + config.id, e);
+        }
     }
 
     /**
