@@ -148,7 +148,7 @@ public class TwoBitSequence implements Sequence {
     }
 
     /**
-     * Read the sequence requested.  Returns null if seqName is unknown
+     * Read the sequence requested.  Throws SequenceNotFoundException if seqName is unknown
      *
      * @param seqName
      * @param regionStart
