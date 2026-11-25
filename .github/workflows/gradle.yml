@@ -36,6 +36,13 @@ jobs:
     - name: Test with Gradle Wrapper
       run: ./gradlew test
 
+    - name: Upload test report
+      if: failure()
+      uses: actions/upload-artifact@v6
+      with:
+        name: test-report
+        path: build/reports/tests/test
+        if-no-files-found: ignore
 
   dependency-submission:
 

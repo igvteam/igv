@@ -29,6 +29,8 @@ public class UCSCBackupHostTest extends AbstractHeadlessTest {
     @After
     public void resetBackupHost() {
         HttpUtils.getInstance().resetUCSCBackupHost();
+        // Restore the default timeout, so a failed test does not leave the 1 ms timeout in place for the next
+        PreferencesManager.getPreferences().remove("UCSC_CONNECT_TIMEOUT");
     }
 
     /**
