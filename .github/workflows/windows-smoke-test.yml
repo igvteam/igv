@@ -99,7 +99,8 @@ jobs:
       run: |
         $out = "$env:GITHUB_WORKSPACE\smoke-output"
         Get-ChildItem "$out\igv" -Filter *.log -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_.FullName }
-        if (-not (Select-String -Path "$out\launcher.txt" -SimpleMatch "Using bundled JDK." -Quiet)) {
+        # Anchored, as the launcher runs with echo on and its source also appears in the output.
+        if (-not (Select-String -Path "$out\launcher.txt" -Pattern '^"Using bundled JDK\."' -Quiet)) {
           throw "The launcher did not use the bundled Java runtime"
         }
         $snapshot = Get-Item "$out\smoke.png" -ErrorAction SilentlyContinue
