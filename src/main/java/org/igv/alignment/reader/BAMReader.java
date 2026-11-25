@@ -124,9 +124,7 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
                         log.error("Error closing reader", ex);
                     }
                 }
-                // A CRAM reference MD5 failure is specific to the region queried, so it is reported every time
-                boolean md5Failure = e.getMessage() != null && e.getMessage().contains("MD5");
-                if (errorCount == 0 || md5Failure) {
+                if (errorCount == 0) {
                     MessageUtils.showMessage("Error querying alignments for: " + filename + "<br/>Error message: " + e.getMessage());
                 }
                 errorCount++;
