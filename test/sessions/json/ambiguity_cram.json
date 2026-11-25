@@ -1,0 +1,69 @@
+{
+  "genome": "hg38",
+  "locus": "chr3:16902863-16902902",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ncbiRefSeq.txt.gz",
+      "order": 1,
+      "rowHeight": 35
+    },
+    {
+      "flipAxis": false,
+      "drawBaseline": true,
+      "max": 10,
+      "format": "cram",
+      "indexURL": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai",
+      "mid": 0,
+      "type": "coverage",
+      "autoscale": "true",
+      "url": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+      "logScale": false,
+      "min": 0,
+      "name": "NA12878.final.cram Coverage",
+      "id": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram_coverage",
+      "alleleFreqThreshold": 0.2,
+      "order": 2
+    },
+    {
+      "visible": "false",
+      "format": "cram",
+      "name": "NA12878.final.cram Junctions",
+      "indexURL": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai",
+      "id": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram_junctions",
+      "type": "junction",
+      "maxdepth": 50,
+      "url": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+      "order": 3,
+      "height": 60,
+      "rowHeight": 35,
+      "autoScale": "true"
+    },
+    {
+      "color": "185,185,185",
+      "format": "cram",
+      "indexURL": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai",
+      "type": "alignment",
+      "url": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+      "displayMode": "EXPANDED",
+      "experimentType": "OTHER",
+      "duplicatesOption": "FILTER",
+      "name": "NA12878.final.cram",
+      "id": "https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+      "order": 4,
+      "height": 300,
+      "rowHeight": 14
+    }
+  ]
+}
