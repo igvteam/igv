@@ -1,0 +1,5 @@
+# IUPAC ambiguity codes in the GRCh37 reference sequence, which the 2bit format cannot represent
+# sequence	1-based position	code
+chr3	60830534	M
+chr3	60830763	R
+chr3	60830764	R

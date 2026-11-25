@@ -45,6 +45,26 @@ public class TwoBitSequenceTest {
         assertEquals("NNACTCT", new String(reader.readSequence("chr1", 45, 52)));
     }
 
+    /**
+     * Tables bundled with IGV restore the ambiguity codes of hg38 and hg19.  Other genomes have no table.
+     */
+    @Test
+    public void readSequenceWithBundledAmbiguityTable() throws IOException {
+
+        TwoBitSequence reader = new TwoBitSequence("https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit", null, null);
+        assertEquals("tgtgNGCGCA", new String(reader.readSequence("chr3", 16902878, 16902888)));
+        reader.loadBundledAmbiguityTable("hg38");
+        assertEquals("tgtgBGCGCA", new String(reader.readSequence("chr3", 16902878, 16902888)));
+
+        reader = new TwoBitSequence("https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit", null, null);
+        reader.loadBundledAmbiguityTable("hg19");
+        assertEquals("CTCCRRGCTT", new String(reader.readSequence("chr3", 60830758, 60830768)));
+
+        reader = new TwoBitSequence(TestUtils.DATA_DIR + "twobit/foo.2bit", null, null);
+        reader.loadBundledAmbiguityTable("foo");
+        assertEquals("NNNNNNNNNN", new String(reader.readSequence("chr1", 5, 15)));
+    }
+
     @Test
     public void readSequenceRemote() throws IOException {
 

@@ -11,6 +11,8 @@ import org.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -38,6 +42,7 @@ public class TwoBitSequence implements Sequence {
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
     BPIndex index;
+    private static final int AMBIGUITY_TABLE_TIMEOUT_SECONDS = 5;
     // IUPAC ambiguity codes keyed by sequence name and 0-based position.  The 2bit format cannot represent these.
     private HashMap<String, TreeMap<Integer, Byte>> ambiguityCodes;
 
@@ -55,16 +60,39 @@ public class TwoBitSequence implements Sequence {
                 new TwoBitIndex(path, this.byteOrder, this.seqCount);
         if (ambiguityTablePath != null) {
             try {
-                loadAmbiguityTable(ambiguityTablePath);
+                // The table is optional, an unresponsive server should not hold up loading of the genome
+                this.ambiguityCodes = ForkJoinPool.commonPool().submit(() -> loadAmbiguityTable(ambiguityTablePath))
+                        .get(AMBIGUITY_TABLE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (Exception e) {
                 log.error("Error loading ambiguity table " + ambiguityTablePath, e);
             }
         }
     }
 
-    private void loadAmbiguityTable(String ambiguityTablePath) throws IOException {
+    /**
+     * Use the table of ambiguity codes bundled with IGV for the genome, if there is one.  These tables never change,
+     * so a genome that does not reference a table does not depend on fetching one.
+     *
+     * @param genomeId the genome id, tables are bundled for hg38 and hg19
+     */
+    public void loadBundledAmbiguityTable(String genomeId) {
+        InputStream is = TwoBitSequence.class.getResourceAsStream(genomeId + ".ambiguity.tsv");
+        if (is != null) {
+            try {
+                this.ambiguityCodes = parseAmbiguityTable(new BufferedReader(new InputStreamReader(is)));
+            } catch (Exception e) {
+                log.error("Error loading ambiguity table for " + genomeId, e);
+            }
+        }
+    }
+
+    private HashMap<String, TreeMap<Integer, Byte>> loadAmbiguityTable(String ambiguityTablePath) throws IOException {
+        return parseAmbiguityTable(ParsingUtils.openBufferedReader(ambiguityTablePath));
+    }
+
+    private HashMap<String, TreeMap<Integer, Byte>> parseAmbiguityTable(BufferedReader reader) throws IOException {
         HashMap<String, TreeMap<Integer, Byte>> table = new HashMap<>();
-        try (BufferedReader br = ParsingUtils.openBufferedReader(ambiguityTablePath)) {
+        try (BufferedReader br = reader) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("#") || line.isBlank()) continue;
@@ -73,7 +101,7 @@ public class TwoBitSequence implements Sequence {
                 table.computeIfAbsent(tokens[0], k -> new TreeMap<>()).put(position, (byte) tokens[2].trim().charAt(0));
             }
         }
-        this.ambiguityCodes = table;
+        return table;
     }
 
     UnsignedByteBufferImpl loadBinaryBuffer(long start, int size) throws IOException {
