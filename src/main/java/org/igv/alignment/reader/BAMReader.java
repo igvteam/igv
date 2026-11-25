@@ -115,7 +115,9 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
                 SamReader samReader = getSamReader();
                 return new PicardIterator(samReader, sequence, start + 1, end, contained);
             } catch (Exception e) {
-                if (errorCount == 0) {
+                // A CRAM reference MD5 failure is specific to the region queried, so it is reported every time
+                boolean md5Failure = e.getMessage() != null && e.getMessage().contains("MD5");
+                if (errorCount == 0 || md5Failure) {
                     MessageUtils.showMessage("Error querying alignments for: " + filename + "<br/>Error message: " + e.getMessage());
                 }
                 errorCount++;
