@@ -127,13 +127,6 @@ public class HttpUtils {
     }
 
     /**
-     * Clear any cached backup-host substitution, restoring use of the primary UCSC host.  Used by tests.
-     */
-    void resetUCSCBackupHost() {
-        ucscBackupExpiration = 0;
-    }
-
-    /**
      * Substitute the UCSC backup host for the primary host if a recent attempt to connect to the primary host
      * failed.  The substitution is in effect for {@link #UCSC_BACKUP_DURATION} following the failure.
      */
