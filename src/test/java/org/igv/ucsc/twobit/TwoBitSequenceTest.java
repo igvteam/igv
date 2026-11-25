@@ -63,6 +63,17 @@ public class TwoBitSequenceTest {
         reader = new TwoBitSequence(TestUtils.DATA_DIR + "twobit/foo.2bit", null, null);
         reader.loadBundledAmbiguityTable("foo");
         assertEquals("NNNNNNNNNN", new String(reader.readSequence("chr1", 5, 15)));
+
+        // A table that failed to load falls back to the bundled table, one that loaded is kept
+        reader = new TwoBitSequence("https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit", null,
+                TestUtils.DATA_DIR + "twobit/missing.ambiguity.tsv");
+        reader.loadBundledAmbiguityTable("hg38");
+        assertEquals("tgtgBGCGCA", new String(reader.readSequence("chr3", 16902878, 16902888)));
+
+        reader = new TwoBitSequence("https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit", null,
+                TestUtils.DATA_DIR + "twobit/foo.ambiguity.tsv");
+        reader.loadBundledAmbiguityTable("hg38");
+        assertEquals("tgtgNGCGCA", new String(reader.readSequence("chr3", 16902878, 16902888)));
     }
 
     @Test

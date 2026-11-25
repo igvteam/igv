@@ -70,12 +70,16 @@ public class TwoBitSequence implements Sequence {
     }
 
     /**
-     * Use the table of ambiguity codes bundled with IGV for the genome, if there is one.  These tables never change,
-     * so a genome that does not reference a table does not depend on fetching one.
+     * Use the table of ambiguity codes bundled with IGV for the genome, if there is one, unless a table has been
+     * loaded already.  These tables never change, so a genome that does not reference a table, or whose table
+     * failed to load, does not depend on fetching one.
      *
      * @param genomeId the genome id, tables are bundled for hg38 and hg19
      */
     public void loadBundledAmbiguityTable(String genomeId) {
+        if (ambiguityCodes != null) {
+            return;
+        }
         InputStream is = TwoBitSequence.class.getResourceAsStream(genomeId + ".ambiguity.tsv");
         if (is != null) {
             try {

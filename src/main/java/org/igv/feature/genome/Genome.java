@@ -119,9 +119,7 @@ public class Genome {
             uncachedSequence = config.getSequence();
         } else if (config.twoBitURL != null) {
             TwoBitSequence twoBitSequence = new TwoBitSequence(config.twoBitURL, config.twoBitBptURL, config.twoBitAmbiguityURL);
-            if (config.twoBitAmbiguityURL == null) {
-                twoBitSequence.loadBundledAmbiguityTable(id);
-            }
+            twoBitSequence.loadBundledAmbiguityTable(id);
             uncachedSequence = twoBitSequence;
         } else if (config.fastaURL != null) {
             String fastaPath = config.fastaURL;
