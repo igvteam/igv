@@ -118,9 +118,9 @@ public class Genome {
             // Genbank sequences are read directly into memory and referenced by the "sequence" object
             uncachedSequence = config.getSequence();
         } else if (config.twoBitURL != null) {
-            uncachedSequence = (config.twoBitBptURL != null) ?
-                    new TwoBitSequence(config.twoBitURL, config.twoBitBptURL) :
-                    new TwoBitSequence(config.twoBitURL);
+            TwoBitSequence twoBitSequence = new TwoBitSequence(config.twoBitURL, config.twoBitBptURL, config.twoBitAmbiguityURL);
+            twoBitSequence.loadBundledAmbiguityTable(id);
+            uncachedSequence = twoBitSequence;
         } else if (config.fastaURL != null) {
             String fastaPath = config.fastaURL;
             String indexPath = config.indexURL;

@@ -7,13 +7,21 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.ucsc.BPIndex;
 import org.igv.ucsc.BPTree;
+import org.igv.util.ParsingUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.TreeMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -34,16 +42,70 @@ public class TwoBitSequence implements Sequence {
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
     BPIndex index;
+    private static final int AMBIGUITY_TABLE_TIMEOUT_SECONDS = 5;
+    // IUPAC ambiguity codes keyed by sequence name and 0-based position.  The 2bit format cannot represent these.
+    private HashMap<String, TreeMap<Integer, Byte>> ambiguityCodes;
 
 
-    public TwoBitSequence(String path) throws IOException {
+    /**
+     * @param path               path to the .2bit file
+     * @param indexPath          optional path to an external BP tree index, may be null
+     * @param ambiguityTablePath optional path to a table of IUPAC ambiguity codes, may be null.  The table is tab
+     *                           delimited with columns sequence name, 1-based position, and code.
+     */
+    public TwoBitSequence(String path, String indexPath, String ambiguityTablePath) throws IOException {
         init(path);
-        index = new TwoBitIndex(path, this.byteOrder, this.seqCount);
+        index = indexPath != null ?
+                BPTree.loadBPTree(indexPath, 0) :
+                new TwoBitIndex(path, this.byteOrder, this.seqCount);
+        if (ambiguityTablePath != null) {
+            try {
+                // The table is optional, an unresponsive server should not hold up loading of the genome
+                this.ambiguityCodes = ForkJoinPool.commonPool().submit(() -> loadAmbiguityTable(ambiguityTablePath))
+                        .get(AMBIGUITY_TABLE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.error("Error loading ambiguity table " + ambiguityTablePath, e);
+            }
+        }
     }
 
-    public TwoBitSequence(String path, String indexPath) throws IOException {
-        init(path);
-        index = BPTree.loadBPTree(indexPath, 0);
+    /**
+     * Use the table of ambiguity codes bundled with IGV for the genome, if there is one, unless a table has been
+     * loaded already.  These tables never change, so a genome that does not reference a table, or whose table
+     * failed to load, does not depend on fetching one.
+     *
+     * @param genomeId the genome id, tables are bundled for hg38 and hg19
+     */
+    public void loadBundledAmbiguityTable(String genomeId) {
+        if (ambiguityCodes != null) {
+            return;
+        }
+        InputStream is = TwoBitSequence.class.getResourceAsStream(genomeId + ".ambiguity.tsv");
+        if (is != null) {
+            try {
+                this.ambiguityCodes = parseAmbiguityTable(new BufferedReader(new InputStreamReader(is)));
+            } catch (Exception e) {
+                log.error("Error loading ambiguity table for " + genomeId, e);
+            }
+        }
+    }
+
+    private HashMap<String, TreeMap<Integer, Byte>> loadAmbiguityTable(String ambiguityTablePath) throws IOException {
+        return parseAmbiguityTable(ParsingUtils.openBufferedReader(ambiguityTablePath));
+    }
+
+    private HashMap<String, TreeMap<Integer, Byte>> parseAmbiguityTable(BufferedReader reader) throws IOException {
+        HashMap<String, TreeMap<Integer, Byte>> table = new HashMap<>();
+        try (BufferedReader br = reader) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#") || line.isBlank()) continue;
+                String[] tokens = line.split("\t");
+                int position = Integer.parseInt(tokens[1].trim()) - 1;
+                table.computeIfAbsent(tokens[0], k -> new TreeMap<>()).put(position, (byte) tokens[2].trim().charAt(0));
+            }
+        }
+        return table;
     }
 
     UnsignedByteBufferImpl loadBinaryBuffer(long start, int size) throws IOException {
@@ -118,7 +180,7 @@ public class TwoBitSequence implements Sequence {
     }
 
     /**
-     * Read the sequence requested.  Returns null if seqName is unknown
+     * Read the sequence requested.  Throws SequenceNotFoundException if seqName is unknown
      *
      * @param seqName
      * @param regionStart
@@ -185,6 +247,19 @@ public class TwoBitSequence implements Sequence {
                     int s = Byte.toUnsignedInt(baseBytes[bytePosition]);
                     int idx = genomicPosition - regionStart;
                     sequenceBases[idx] = baseIsMaked ? maskedByteTo4Bases[s][subPosition] : byteTo4Bases[s][subPosition];
+                }
+            }
+
+            if (ambiguityCodes != null) {
+                TreeMap<Integer, Byte> codes = ambiguityCodes.get(seqName);
+                if (codes != null) {
+                    // Only an "N" is replaced, so a table for another assembly cannot overwrite known bases
+                    for (Map.Entry<Integer, Byte> entry : codes.subMap(regionStart, regionEnd).entrySet()) {
+                        int idx = entry.getKey() - regionStart;
+                        if (sequenceBases[idx] == 'N') {
+                            sequenceBases[idx] = entry.getValue();
+                        }
+                    }
                 }
             }
             return sequenceBases;
@@ -284,7 +359,7 @@ public class TwoBitSequence implements Sequence {
         for (Block block : blocks) {
             if (block.start > end) {
                 break;
-            } else if (block.end < start) {
+            } else if (block.end <= start) {
                 continue;
             } else {
                 overlappingBlocks.add(block);

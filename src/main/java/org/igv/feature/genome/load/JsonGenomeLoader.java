@@ -106,6 +106,9 @@ public class JsonGenomeLoader extends GenomeLoader {
         if (config.twoBitBptURL != null) {
             config.twoBitBptURL = FileUtils.getAbsolutePath(config.twoBitBptURL, genomePath);
         }
+        if (config.twoBitAmbiguityURL != null) {
+            config.twoBitAmbiguityURL = FileUtils.getAbsolutePath(config.twoBitAmbiguityURL, genomePath);
+        }
         if (config.cytobandBbURL != null) {
             config.cytobandBbURL = FileUtils.getAbsolutePath(config.cytobandBbURL, genomePath);
         }

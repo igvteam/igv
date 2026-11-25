@@ -34,6 +34,7 @@ public class GenomeConfig implements Cloneable {
     public String compressedIndexURL;   // Used by reflection from GSON.  Do not remove even though IDE indicates no usages
     public String twoBitURL;
     public String twoBitBptURL;
+    public String twoBitAmbiguityURL;
     public String nameSet;
     public String defaultPos;
     public String description;
@@ -89,6 +90,7 @@ public class GenomeConfig implements Cloneable {
         config.compressedIndexURL = jsonObj.optString("compressedIndexURL", null);
         config.twoBitURL = jsonObj.optString("twoBitURL", null);
         config.twoBitBptURL = jsonObj.optString("twoBitBptURL", null);
+        config.twoBitAmbiguityURL = jsonObj.optString("twoBitAmbiguityURL", null);
         config.nameSet = jsonObj.optString("nameSet", null);
         config.defaultPos = jsonObj.optString("defaultPos", null);
         config.description = jsonObj.optString("description", null);
@@ -150,6 +152,7 @@ public class GenomeConfig implements Cloneable {
         if (compressedIndexURL != null) jsonObj.put("compressedIndexURL", compressedIndexURL);
         if (twoBitURL != null) jsonObj.put("twoBitURL", twoBitURL);
         if (twoBitBptURL != null) jsonObj.put("twoBitBptURL", twoBitBptURL);
+        if (twoBitAmbiguityURL != null) jsonObj.put("twoBitAmbiguityURL", twoBitAmbiguityURL);
         if (nameSet != null) jsonObj.put("nameSet", nameSet);
         if (defaultPos != null) jsonObj.put("defaultPos", defaultPos);
         if (description != null) jsonObj.put("description", description);
