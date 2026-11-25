@@ -17,7 +17,6 @@ Instructions:
 igv-launcher.bat  (for Windows)
 igv.bat           (for Windows batch jobs)
 igv.sh            (for Linux and macOS)
-igv_hidpi.sh      (for Linux with HiDPI displays)
 igv.command       (for macOS, double-click to start)
 
 Some of these may not be present depending on the distribution you downloaded.  You might have to
@@ -49,20 +48,12 @@ for more information on the Java 11 command line, and
    https://docs.oracle.com/en/java/javase/11/tools/java.html#GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
 in particular for specifics of the "java_arguments" file format.
 
-The igv_hidpi.sh script is set up for 2x scaling.  To modify it to do 4x scaling, for 
-example, change the value
+HiDPI displays are supported natively by Java on Mac and Windows.  On Linux, if IGV is not scaled
+correctly, add a scaling factor to the java_arguments file.  For example, for 2x scaling add
 
    -Dsun.java2d.uiScale=2
 
-to
-
-   -Dsun.java2d.uiScale=4
-
-
-Fractional values are *NOT* supported at this time.  Note that here again, you can add
-this specification to the java_arguments file instead of editing the launcher scripts.
-Doing so will allow the standard 'igv.sh' to work properly on HiDPI screens without
-the need for the 'igv_hidpi.sh' script.
+Fractional values are *NOT* supported at this time.
 
 Java command-line usage
 
@@ -73,22 +64,22 @@ is for advanced users only.
 If it's really necessary to use the Java command directly for some reason, here is the appropriate 
 command-line.  To use the default Java, independently installed (java 11 required)
 
-     java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.igv.ui.Main
+     java -Xmx4g @igv.args -cp "lib/*" org.igv.ui.Main
      
 To use the java included with our packaged bundles substitute "./jdk-21/bin/java" for "java", as follows.
 
-    ./jdk-21/bin/java --module-path=lib -Xmx4g @igv.args --module=org.igv/org.igv.ui.Main
+    ./jdk-21/bin/java -Xmx4g @igv.args -cp "lib/*" org.igv.ui.Main
 
 The above commands assume that you are launching IGV from the directory where it was unpacked.
 
 Note that this lists the memory specification directly, and that the java_arguments file will be skipped.
 If you wish to use the java_arguments file (assuming one exists), modify the above to (substituting ./jdk-21/bin/java for java as required):
 
-     java --module-path=lib @igv.args @"$HOME/.igv/java_arguments" --module=org.igv/org.igv.ui.Main
+     java @igv.args @"$HOME/.igv/java_arguments" -cp "lib/*" org.igv.ui.Main
 
 on Linux & Mac.  On Windows, use:
 
-java --module-path=lib @igv.args @"%USERPROFILE%/.igv/java_arguments" --module=org.igv/org.igv.ui.Main
+java @igv.args @"%USERPROFILE%/.igv/java_arguments" -cp "lib/*" org.igv.ui.Main
 
 In this case you can list the memory spec, HiDPI uiScaling, log4j config, etc either directly on the 
 command-line  or in the java_arguments file, as you prefer.

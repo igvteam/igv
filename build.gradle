@@ -269,7 +269,6 @@ tasks.register('createMacDistZip', Zip) {
     archiveFileName = "IGV_MacApp_${version}.zip"
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
-        exclude "*_hidpi*"
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
@@ -283,7 +282,6 @@ tasks.register('createMacWithJavaDistZip', Zip) {
     with copySpec { from jdkBundleMac into "jdk-21" }
     from("${buildDir}/IGV-dist") {
         exclude "*.bat"
-        exclude "*_hidpi*"
         exclude "igvtools*"
         exclude 'lib/genomes'
     }
@@ -382,7 +380,6 @@ tasks.register('createWinDist', Copy) {
             exclude "*.command"
             exclude "igvtools*"
             exclude "igvtools_gui"
-            exclude "igvtools_gui_hidpi"
             exclude 'lib/genomes'
         }
         from("resources") { include "IGV_64.ico" }
