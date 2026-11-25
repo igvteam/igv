@@ -56,7 +56,7 @@ public class TwoBitSequence implements Sequence {
         if (ambiguityTablePath != null) {
             try {
                 loadAmbiguityTable(ambiguityTablePath);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Error loading ambiguity table " + ambiguityTablePath, e);
             }
         }
