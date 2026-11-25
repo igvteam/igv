@@ -28,7 +28,8 @@ public class TwoBitSequenceTest {
     }
 
     /**
-     * The table places an "R" at chr1:11 (1-based) and a "Y" at chr1:50, replacing an "N" and a "T" respectively.
+     * The table places an "R" at chr1:11 (1-based), replacing an "N", and a "Y" at chr1:50, which is a "T" and is
+     * not replaced.
      */
     @Test
     public void readSequenceWithAmbiguityTable() throws IOException {
@@ -41,7 +42,7 @@ public class TwoBitSequenceTest {
         assertEquals("R", new String(reader.readSequence("chr1", 10, 11)));
         assertEquals("NNNNN", new String(reader.readSequence("chr1", 5, 10)));   // end is exclusive
         assertEquals("NNNNN", new String(reader.readSequence("chr1", 11, 16)));
-        assertEquals("NNACYCT", new String(reader.readSequence("chr1", 45, 52)));
+        assertEquals("NNACTCT", new String(reader.readSequence("chr1", 45, 52)));
     }
 
     @Test

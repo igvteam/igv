@@ -221,8 +221,12 @@ public class TwoBitSequence implements Sequence {
             if (ambiguityCodes != null) {
                 TreeMap<Integer, Byte> codes = ambiguityCodes.get(seqName);
                 if (codes != null) {
+                    // Only an "N" is replaced, so a table for another assembly cannot overwrite known bases
                     for (Map.Entry<Integer, Byte> entry : codes.subMap(regionStart, regionEnd).entrySet()) {
-                        sequenceBases[entry.getKey() - regionStart] = entry.getValue();
+                        int idx = entry.getKey() - regionStart;
+                        if (sequenceBases[idx] == 'N') {
+                            sequenceBases[idx] = entry.getValue();
+                        }
                     }
                 }
             }
