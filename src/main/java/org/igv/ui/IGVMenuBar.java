@@ -221,6 +221,12 @@ public class IGVMenuBar extends JMenuBar {
 
         fileMenu.removeAll();
 
+        // This is called for every genome change.  The recent sessions listener of the menu just cleared would
+        // otherwise stay, and insert its items at the top -- its separator is no longer in the menu.
+        for (MenuListener listener : fileMenu.getMenuListeners()) {
+            fileMenu.removeMenuListener(listener);
+        }
+
         MenuAction menuAction;
 
         // Session items
