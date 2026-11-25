@@ -111,10 +111,19 @@ public class BAMReader implements AlignmentReader<SAMAlignment> {
         if (sequenceDictionary != null && !sequenceDictionary.containsKey(sequence)) {
             return EMPTY_ITERATOR;
         } else {
+            SamReader samReader = null;
             try {
-                SamReader samReader = getSamReader();
+                samReader = getSamReader();
                 return new PicardIterator(samReader, sequence, start + 1, end, contained);
             } catch (Exception e) {
+                // The reader of a failed query is in an unknown state, close it rather than return it to the pool
+                if (samReader != null) {
+                    try {
+                        samReader.close();
+                    } catch (IOException ex) {
+                        log.error("Error closing reader", ex);
+                    }
+                }
                 // A CRAM reference MD5 failure is specific to the region queried, so it is reported every time
                 boolean md5Failure = e.getMessage() != null && e.getMessage().contains("MD5");
                 if (errorCount == 0 || md5Failure) {
