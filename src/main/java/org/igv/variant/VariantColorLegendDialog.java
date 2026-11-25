@@ -50,6 +50,9 @@ public class VariantColorLegendDialog extends JDialog {
 
     private final VariantTrack track;
     private final String infoKey;
+    // The attribute as the user knows it -- the key of a FORMAT field is marked as one
+    private final String name;
+    private final boolean formatField;
     private final JPanel valuePanel = new JPanel();
     private final JLabel description = new JLabel();
     private final JButton editScaleButton = new JButton("Edit Scale...");
@@ -65,9 +68,12 @@ public class VariantColorLegendDialog extends JDialog {
 
     public VariantColorLegendDialog(Frame owner, VariantTrack track, String infoKey) {
 
-        super(owner, "INFO Field " + infoKey + " Colors", true);
+        super(owner, (VariantTrack.isFormatKey(infoKey) ? "FORMAT Field " : "INFO Field ")
+                + VariantTrack.attributeName(infoKey) + " Colors", true);
         this.track = track;
         this.infoKey = infoKey;
+        this.name = VariantTrack.attributeName(infoKey);
+        this.formatField = VariantTrack.isFormatKey(infoKey);
 
         JPanel content = new JPanel(new BorderLayout(0, 8));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -87,7 +93,8 @@ public class VariantColorLegendDialog extends JDialog {
 
         // Checked when there is no preference for the attribute yet, so the first colors chosen become the default.
         // An existing preference is not replaced unless asked.
-        updatePreferencesBox.setSelected(VariantColorSchemes.getScheme(infoKey) == null);
+        // There are no preferences for FORMAT fields -- their colors are kept by the track and the session only
+        updatePreferencesBox.setSelected(!formatField && VariantColorSchemes.getScheme(infoKey) == null);
         updatePreferencesBox.setToolTipText("Also save these colors so they apply to every VCF with this attribute");
 
         JButton okButton = new JButton("OK");
@@ -128,14 +135,14 @@ public class VariantColorLegendDialog extends JDialog {
 
         AbstractColorScale scale = pendingScale != null ? pendingScale : track.getAttributeScale(infoKey);
 
-        description.setText("<html>Values of <b>" + infoKey + "</b> among the loaded features.  "
+        description.setText("<html>Values of <b>" + name + "</b> among the loaded features.  "
                 + (scale == null ? "Click a color to change it." : "Colored by a scale."));
 
         editScaleButton.setVisible(scale instanceof ContinuousColorScale || scale instanceof ColorStopScale);
         // A numeric attribute colored by a scale can instead be said to hold categories
         categoriesButton.setVisible(scale instanceof ContinuousColorScale && track.isNumericAttribute(infoKey));
         // Allele frequency colors are edited, and saved, in their own dialog
-        updatePreferencesBox.setVisible(!(scale instanceof ColorStopScale));
+        updatePreferencesBox.setVisible(!(scale instanceof ColorStopScale) && !formatField);
 
         if (scale != null) {
             valuePanel.add(createScaleRow(scale));
@@ -148,7 +155,7 @@ public class VariantColorLegendDialog extends JDialog {
         Set<String> values = valuesToShow();
 
         if (values.isEmpty()) {
-            JLabel empty = new JLabel("No loaded features have a value for " + infoKey + ".");
+            JLabel empty = new JLabel("No loaded features have a value for " + name + ".");
             empty.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             valuePanel.add(empty);
         } else {
@@ -268,7 +275,7 @@ public class VariantColorLegendDialog extends JDialog {
         }
 
         ContinuousColorScale edited =
-                HeatmapLegendEditor.edit(this, "Color scale for " + infoKey, (ContinuousColorScale) scale);
+                HeatmapLegendEditor.edit(this, "Color scale for " + name, (ContinuousColorScale) scale);
         if (edited != null) {
             pendingScale = edited;
             populate();
@@ -285,11 +292,11 @@ public class VariantColorLegendDialog extends JDialog {
         List<String> values = new ArrayList<>(track.getAttributeValues(infoKey));
         if (values.size() > VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES) {
             MessageUtils.showMessage("Color by is not available for attributes with more than "
-                    + VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES + " distinct values.  " + infoKey + " has "
+                    + VariantTrackMenuHelper.MAX_CATEGORICAL_VALUES + " distinct values.  " + name + " has "
                     + values.size() + " among the loaded features.");
             return;
         }
-        if (JOptionPane.showConfirmDialog(this, "Color each value of " + infoKey + " separately, instead of by a scale?",
+        if (JOptionPane.showConfirmDialog(this, "Color each value of " + name + " separately, instead of by a scale?",
                 "Values Are Categories", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
             return;
         }

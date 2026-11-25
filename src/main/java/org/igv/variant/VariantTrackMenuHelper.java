@@ -7,6 +7,7 @@ import org.igv.prefs.PreferencesManager;
 import org.igv.sample.SampleMenuUtils;
 import org.igv.sample.SampleSort;
 import org.igv.track.AttributeManager;
+import org.igv.track.DataType;
 import org.igv.track.Track;
 import org.igv.track.TrackClickEvent;
 import org.igv.track.TrackMenuUtils;
@@ -14,6 +15,7 @@ import org.igv.renderer.ContinuousColorScale;
 import org.igv.ui.IGV;
 import org.igv.ui.util.MessageUtils;
 
+import htsjdk.variant.vcf.VCFFormatHeaderLine;
 import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
 import javax.swing.*;
@@ -76,12 +78,18 @@ public class VariantTrackMenuHelper {
         }
         items.add(getEditColorItem(variantTrack));
 
-        // Methylation color options
-        if (variantTrack.isEnableMethylationRateSupport()) {
+        // Genotype color options
+        if (variantTrack.isEnableMethylationRateSupport() || variantTrack.sampleCount() > 0) {
             items.add(new JPopupMenu.Separator());
             items.add(new JLabel("<html>&nbsp;&nbsp;<b>Color Samples By", JLabel.LEFT));
             items.add(getColorByGenotype(variantTrack));
-            items.add(getColorByMethylationRate(variantTrack));
+            if (variantTrack.isEnableMethylationRateSupport()) {
+                items.add(getColorByMethylationRate(variantTrack));
+            }
+            items.add(getColorByFormatFieldMenu(variantTrack));
+            if (variantTrack.getColorGenotypesBy() != null) {
+                items.add(getEditFormatColorItem(variantTrack));
+            }
         }
 
         // Show genotypes
@@ -198,19 +206,26 @@ public class VariantTrackMenuHelper {
             fieldItems.add(getColorByInfoFieldItem(track, infoField));
         }
 
+        addFieldItems(menu, fieldItems);
+
+        return menu;
+    }
+
+    /**
+     * Add the items for a file's INFO or FORMAT fields to a menu -- directly, or if there are too many for a
+     * single menu, in alphabetical groups named for the first and last field of each.
+     */
+    private static void addFieldItems(JMenu menu, List<JMenuItem> fieldItems) {
         if (fieldItems.size() <= MAX_FLAT_INFO_FIELDS) {
             fieldItems.forEach(menu::add);
         } else {
-            // Too many fields for a single menu -- break them into alphabetical groups
             for (int i = 0; i < fieldItems.size(); i += INFO_FIELD_GROUP_SIZE) {
                 int end = Math.min(i + INFO_FIELD_GROUP_SIZE, fieldItems.size());
-                JMenu group = new JMenu(infoFields.get(i).getID() + " - " + infoFields.get(end - 1).getID());
+                JMenu group = new JMenu(fieldItems.get(i).getText() + " - " + fieldItems.get(end - 1).getText());
                 fieldItems.subList(i, end).forEach(group::add);
                 menu.add(group);
             }
         }
-
-        return menu;
     }
 
     /**
@@ -260,6 +275,12 @@ public class VariantTrackMenuHelper {
             return true;
         }
 
+        // Copy number has a scale of its own, whatever values happen to be loaded
+        if (VariantTrack.formatKey("CN").equals(infoKey)) {
+            track.setColorScale(infoKey, copyNumberScale());
+            return true;
+        }
+
         double[] range = track.getAttributeRange(infoKey);
 
         if (range == null) {
@@ -267,8 +288,11 @@ public class VariantTrackMenuHelper {
             // A scale over a made-up range would color everything alike, and coloring by value anyway would quietly
             // treat a quantity as a category, so the same click would behave differently after navigating.  Leave
             // the selection alone and say why.
-            MessageUtils.showMessage("No loaded features have a numeric value for " + infoKey + ".  Move to a region where "
-                    + infoKey + " has values and choose it again, or import a color scheme for " + infoKey + ".");
+            String name = VariantTrack.attributeName(infoKey);
+            MessageUtils.showMessage("No loaded features have a numeric value for " + name + ".  Move to a region where "
+                    + name + " has values and choose it again"
+                    // Color schemes are for INFO attributes
+                    + (VariantTrack.isFormatKey(infoKey) ? "." : ", or import a color scheme for " + name + "."));
             return false;
         }
 
@@ -277,6 +301,17 @@ public class VariantTrackMenuHelper {
 
         track.setColorScale(infoKey, scale);
         return true;
+    }
+
+    /**
+     * The default scale for the FORMAT field CN, the copy number genotype: the colors of the scale segmented copy
+     * number tracks use.  Those hold log2(copy number / 2) -- neutral at 0 and saturated at +/- 1.5 -- which for a
+     * copy number is neutral at 2 and saturated at 0 and at 6 (2 * 2^1.5 is 5.7).
+     */
+    // Package private for testing
+    static ContinuousColorScale copyNumberScale() {
+        ContinuousColorScale segScale = PreferencesManager.getPreferences().getColorScale(DataType.COPY_NUMBER);
+        return new ContinuousColorScale(2, 0, 2, 6, segScale.getMinColor(), segScale.getMidColor(), segScale.getMaxColor());
     }
 
     /**
@@ -299,7 +334,7 @@ public class VariantTrackMenuHelper {
         }
 
         MessageUtils.showMessage("Color by is not available for attributes with more than " + MAX_CATEGORICAL_VALUES
-                + " distinct values.  " + infoKey + " has " + count + " among the loaded features.");
+                + " distinct values.  " + VariantTrack.attributeName(infoKey) + " has " + count + " among the loaded features.");
         return false;
     }
 
@@ -318,6 +353,67 @@ public class VariantTrackMenuHelper {
             IGV.getInstance().revalidateTrackPanels();
             IGV.getInstance().getContentPane().repaint();
         });
+        return item;
+    }
+
+    /**
+     * Menu for coloring genotypes by a VCF FORMAT field.  A field with no values among the loaded features is
+     * disabled, as there is nothing to color by -- and so is the menu if that is all of them.
+     */
+    private static JMenu getColorByFormatFieldMenu(VariantTrack track) {
+
+        List<VCFFormatHeaderLine> formatFields = track.getColorableFormatFields();
+
+        boolean selected = track.getColorGenotypesBy() != null;
+        JMenu menu = new CheckedMenu("FORMAT Field", selected);
+
+        Set<String> withValues = track.getFormatFieldsWithValues(
+                formatFields.stream().map(VCFFormatHeaderLine::getID).toList());
+        menu.setEnabled(selected || !withValues.isEmpty());
+        if (!menu.isEnabled()) {
+            menu.setToolTipText("No loaded features have values for a FORMAT field other than GT");
+        }
+
+        List<JMenuItem> fieldItems = new ArrayList<>(formatFields.size());
+        for (VCFFormatHeaderLine formatField : formatFields) {
+            JMenuItem item = getColorByFormatFieldItem(track, formatField);
+            if (!withValues.contains(formatField.getID()) && !item.isSelected()) {
+                item.setEnabled(false);
+                item.setToolTipText("No loaded features have a value for " + formatField.getID());
+            }
+            fieldItems.add(item);
+        }
+
+        addFieldItems(menu, fieldItems);
+
+        return menu;
+    }
+
+    private static JMenuItem getColorByFormatFieldItem(VariantTrack track, VCFFormatHeaderLine formatField) {
+        final String id = formatField.getID();
+        final JMenuItem item = new JCheckBoxMenuItem(id, id.equals(track.getColorGenotypesBy()));
+        String description = formatField.getDescription();
+        if (description != null && description.length() > 0) {
+            item.setToolTipText(description);
+        }
+        item.addActionListener(evt -> {
+            String key = VariantTrack.formatKey(id);
+            if (defineScaleIfNeeded(track, key) && isWithinCategoryLimit(track, key)) {
+                track.setColorGenotypesBy(id);
+                IGV.getInstance().getContentPane().repaint();
+            }
+        });
+        return item;
+    }
+
+    /**
+     * Opens the color dialog for the FORMAT field the track's genotypes are colored by.
+     */
+    private static JMenuItem getEditFormatColorItem(VariantTrack track) {
+        final String id = track.getColorGenotypesBy();
+        JMenuItem item = new JMenuItem("FORMAT Field " + id + " Colors...");
+        item.addActionListener(evt ->
+                new VariantColorLegendDialog(IGV.getInstance().getMainFrame(), track, VariantTrack.formatKey(id)).setVisible(true));
         return item;
     }
 

@@ -277,6 +277,19 @@ public class VariantRenderer {
                     }
                     break;
 
+                case FORMAT_ATTRIBUTE:
+
+                    // A genotype with no value for the field is drawn as a no-call
+                    b1Color = track.getGenotypeAttributeColor(genotype);
+                    if (b1Color == null) {
+                        b1Color = colorNoCall;
+                    }
+                    if (isFiltered) {
+                        b1Color = ColorUtilities.getCompositeColor(b1Color, alphaValue);
+                    }
+                    b2Color = b1Color;
+                    break;
+
                 default:
                     b1Color = colorNoCall;
                     b2Color = b1Color;
@@ -287,7 +300,7 @@ public class VariantRenderer {
             int y0 = pY + gap;
             int h = Math.max(1, dY - 2 * gap);
 
-            if (coloring == VariantTrack.ColorMode.GENOTYPE) {
+            if (coloring == VariantTrack.ColorMode.GENOTYPE || coloring == VariantTrack.ColorMode.FORMAT_ATTRIBUTE) {
 
                 g.setColor(b1Color);
                 g.fillRect(pX0, y0, dX, h);

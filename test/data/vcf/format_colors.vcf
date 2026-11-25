@@ -1,0 +1,11 @@
+##fileformat=VCFv4.2
+##contig=<ID=chr1,length=248956422>
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total depth">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype quality">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">
+##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number, declared but not in any record">
+##FORMAT=<ID=CL,Number=1,Type=String,Description="Call class">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	S1	S2	S3	S4
+chr1	100	.	A	G	50	PASS	DP=62	GT:GQ:AD:CL	0/1:10:5,7:low	1/1:50:0,20:high	0/0:99:30,0:high	./.:.:.:.
+chr1	200	.	C	G,T	50	PASS	DP=40	GT:GQ:AD:CL	1/2:60:3,4,9:high	0/1:20:10,2,0:low	0/0:99:15,0,0:high	0/2:30:6,0,5:low

@@ -4,6 +4,8 @@ package org.igv.variant;
 
 import htsjdk.tribble.Feature;
 import htsjdk.tribble.TribbleException;
+import htsjdk.variant.vcf.VCFCompoundHeaderLine;
+import htsjdk.variant.vcf.VCFFormatHeaderLine;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLineCount;
 import htsjdk.variant.vcf.VCFHeaderLineType;
@@ -109,7 +111,13 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public static final String WILDCARD_VALUE = "*";
 
     /**
-     * INFO attribute types that can be colored by.
+     * Marks the key of a FORMAT (genotype) field in the color tables and scales, which INFO attributes also use --
+     * the same ID can be both, DP for one.  "/" is not legal in an INFO ID, so the keys cannot collide.
+     */
+    public static final String FORMAT_KEY_PREFIX = "FORMAT/";
+
+    /**
+     * INFO attribute types that can be colored by.  FORMAT fields use the same types.
      */
     private static final Set<VCFHeaderLineType> COLORABLE_INFO_TYPES = EnumSet.of(
             VCFHeaderLineType.String,
@@ -166,6 +174,17 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * The VCF INFO attribute the variant band is colored by.  Only used when siteColorMode == ATTRIBUTE.
      */
     private String colorByAttribute;
+
+    /**
+     * The VCF FORMAT field genotypes are colored by.  Only used when genotypeColorMode == FORMAT_ATTRIBUTE.
+     */
+    private String colorGenotypesBy;
+
+    /**
+     * The key of colorGenotypesBy in the color tables and scales.  Kept, rather than built when needed, as it is
+     * looked up for every genotype on every paint.
+     */
+    private String colorGenotypesKey;
 
     /**
      * Whether allele frequency and fraction are drawn as a bar whose height is the frequency, rather than colored by
@@ -914,6 +933,86 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
+     * @return the key of a FORMAT field in the color tables and scales
+     */
+    public static String formatKey(String id) {
+        return FORMAT_KEY_PREFIX + id;
+    }
+
+    public static boolean isFormatKey(String key) {
+        return key != null && key.startsWith(FORMAT_KEY_PREFIX);
+    }
+
+    /**
+     * @return the ID of an INFO attribute or FORMAT field as the user knows it, without the FORMAT marker
+     */
+    public static String attributeName(String key) {
+        return isFormatKey(key) ? key.substring(FORMAT_KEY_PREFIX.length()) : key;
+    }
+
+    /**
+     * @return the VCF FORMAT field genotypes are colored by, or null if not coloring by FORMAT field.
+     */
+    public String getColorGenotypesBy() {
+        return genotypeColorMode == ColorMode.FORMAT_ATTRIBUTE ? colorGenotypesBy : null;
+    }
+
+    /**
+     * Color genotypes by the values of a VCF FORMAT field.  Passing null reverts to coloring by genotype.
+     *
+     * @param id a FORMAT field ID, or null
+     */
+    public void setColorGenotypesBy(String id) {
+        this.colorGenotypesBy = id;
+        this.colorGenotypesKey = id == null ? null : formatKey(id);
+        if (id == null) {
+            if (genotypeColorMode == ColorMode.FORMAT_ATTRIBUTE) {
+                this.genotypeColorMode = ColorMode.GENOTYPE;
+            }
+        } else {
+            this.genotypeColorMode = ColorMode.FORMAT_ATTRIBUTE;
+            assignColorsForLoadedFeatures(colorGenotypesKey);
+        }
+    }
+
+    /**
+     * Return the color for a genotype when coloring by a FORMAT field, or null if the genotype has no value for
+     * it.  Colors are those chosen on this track -- a scale, or colors -- else assigned from the palette.
+     */
+    public Color getGenotypeAttributeColor(Genotype genotype) {
+
+        String key = colorGenotypesKey;
+        Object rawValue = key == null || genotype == null ? null : genotype.getAttributes().get(colorGenotypesBy);
+        if (rawValue == null) {
+            return null;
+        }
+
+        AbstractColorScale scale = getColorScale(key);
+
+        // This runs for every genotype on every paint.  A number needs no normalizing, or parsing back
+        if (rawValue instanceof Number && scale != null) {
+            return scale.getColor(((Number) rawValue).floatValue());
+        }
+
+        String value = normalizeAttributeValue(rawValue.toString());
+        if (value == null) {
+            return null;
+        }
+        if (scale != null) {
+            Double number = numericValue(key, value);
+            return number == null ? null : scale.getColor(number.floatValue());
+        }
+        // There are no schemes for FORMAT fields, so no need to look for one
+        Color color = getTableColor(key, value);
+        return color != null ? color : assignPaletteColor(key, value);
+    }
+
+    private static String genotypeAttributeValue(Genotype genotype, String id) {
+        Object value = genotype == null ? null : genotype.getAttributes().get(id);
+        return value == null ? null : normalizeAttributeValue(value.toString());
+    }
+
+    /**
      * Return the color for a variant when coloring by an INFO attribute.  Variants with no value for the
      * attribute are drawn gray, following igv.js.
      */
@@ -1069,12 +1168,22 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * @return true if the attribute is a quantity rather than a category, and so needs a color scale.
      */
     public boolean isNumericAttribute(String key) {
+        VCFCompoundHeaderLine line = getAttributeHeaderLine(key);
+        return line != null && NUMERIC_INFO_TYPES.contains(line.getType());
+    }
+
+    /**
+     * @return the header line of an INFO attribute, or of a FORMAT field for a key marked as one.  Null if it is
+     * not declared, or the header is not a VCF header.
+     */
+    private VCFCompoundHeaderLine getAttributeHeaderLine(String key) {
         Object header = getHeader();
         if (!(header instanceof VCFHeader)) {
-            return false;
+            return null;
         }
-        VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
-        return line != null && NUMERIC_INFO_TYPES.contains(line.getType());
+        return isFormatKey(key) ?
+                ((VCFHeader) header).getFormatHeaderLine(attributeName(key)) :
+                ((VCFHeader) header).getInfoHeaderLine(key);
     }
 
     /**
@@ -1098,7 +1207,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     /**
-     * Return the distinct values of an INFO attribute among the currently loaded features, sorted.  This is what
+     * Return the distinct values of an INFO attribute, or FORMAT field, among the currently loaded features, sorted.  This is what
      * the color legend shows, and what the scale editor's range and palette color seeding are taken from.
      * <p>
      * "Loaded" means the features packed for display in each current frame: for a track with a visibility window,
@@ -1108,10 +1217,26 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     public SortedSet<String> getAttributeValues(String key) {
 
         SortedSet<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        String formatId = isFormatKey(key) ? attributeName(key) : null;
+        Set<Object> seen = new HashSet<>();
         synchronized (packedFeaturesMap) {
             for (PackedFeatures<PackedFeature> packedFeatures : packedFeaturesMap.values()) {
                 for (PackedFeature feature : packedFeatures.getFeatures()) {
-                    if (feature instanceof Variant) {
+                    if (feature instanceof Variant && formatId != null) {
+                        // A FORMAT field has a value per sample -- far more genotypes than distinct values, so
+                        // each value is normalized once
+                        Variant variant = (Variant) feature;
+                        for (String sample : variant.getSampleNames()) {
+                            Genotype genotype = variant.getGenotype(sample);
+                            Object rawValue = genotype == null ? null : genotype.getAttributes().get(formatId);
+                            if (rawValue != null && seen.add(rawValue)) {
+                                String value = normalizeAttributeValue(rawValue.toString());
+                                if (value != null) {
+                                    values.add(value);
+                                }
+                            }
+                        }
+                    } else if (feature instanceof Variant) {
                         String value = normalizeAttributeValue(((Variant) feature).getAttributeAsString(key));
                         if (value != null) {
                             values.add(value);
@@ -1121,6 +1246,38 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             }
         }
         return values;
+    }
+
+    /**
+     * Return which of the given FORMAT fields have a value in some genotype of the currently loaded features.  A
+     * header can declare fields the records do not carry -- a "vcf.list" track takes its header from one file --
+     * and coloring by one of those would show nothing.
+     */
+    public Set<String> getFormatFieldsWithValues(Collection<String> ids) {
+
+        Set<String> found = new HashSet<>();
+        List<String> remaining = new ArrayList<>(ids);
+        synchronized (packedFeaturesMap) {
+            for (PackedFeatures<PackedFeature> packedFeatures : packedFeaturesMap.values()) {
+                for (PackedFeature feature : packedFeatures.getFeatures()) {
+                    if (feature instanceof Variant) {
+                        Variant variant = (Variant) feature;
+                        for (String sample : variant.getSampleNames()) {
+                            Genotype genotype = variant.getGenotype(sample);
+                            for (int i = remaining.size() - 1; i >= 0; i--) {
+                                if (genotypeAttributeValue(genotype, remaining.get(i)) != null) {
+                                    found.add(remaining.remove(i));
+                                }
+                            }
+                            if (remaining.isEmpty()) {
+                                return found;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     /**
@@ -1154,6 +1311,19 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
 
         if (value == null) {
             return null;
+        }
+
+        if (value.indexOf(',') < 0) {
+            // A single value, the common case, and this is on the paint path.  For Number=R it is the reference
+            // allele's, which is skipped -- see below.
+            if (getCountType(key) == VCFHeaderLineCount.R) {
+                return null;
+            }
+            try {
+                return Double.parseDouble(value.trim());
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         String[] parts = value.split(",");
@@ -1220,7 +1390,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (!(header instanceof VCFHeader)) {
             return VCFHeaderLineCount.UNBOUNDED;    // not cached -- the header may simply not be loaded yet
         }
-        VCFInfoHeaderLine line = ((VCFHeader) header).getInfoHeaderLine(key);
+        VCFCompoundHeaderLine line = getAttributeHeaderLine(key);
         VCFHeaderLineCount count = line == null ? VCFHeaderLineCount.UNBOUNDED : line.getCountType();
         countTypes.put(key, count);
         return count;
@@ -1259,6 +1429,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
      * as a list ("[a, b]"), which is reduced to "a,b" here so the key matches what the user sees.  Returns null
      * for a value that means "missing", which is drawn in the no-value color.
      */
+    private static final java.util.regex.Pattern COMMA_WITH_SPACE = java.util.regex.Pattern.compile("\\s*,\\s*");
+
     static String normalizeAttributeValue(String value) {
         if (value == null) {
             return null;
@@ -1267,7 +1439,10 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (v.startsWith("[") && v.endsWith("]")) {
             v = v.substring(1, v.length() - 1);
         }
-        v = v.replaceAll("\\s*,\\s*", ",").trim();
+        if (v.indexOf(',') >= 0) {      // skipped for a single value, the common case -- this is on the paint path
+            v = COMMA_WITH_SPACE.matcher(v).replaceAll(",");
+        }
+        v = v.trim();
         // "." is the VCF missing value marker.  htsjdk passes it through for a string attribute, and treated as
         // a value it would take a color of its own and appear in the legend as if it meant something.  The
         // text "null" is not special: an absent attribute arrives as a Java null, so a literal "null" is a
@@ -1291,6 +1466,21 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 .filter(line -> COLORABLE_INFO_TYPES.contains(line.getType())
                         || schemeKeys.contains(line.getID().toUpperCase()))
                 .sorted(Comparator.comparing(VCFInfoHeaderLine::getID, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Return the FORMAT header lines that make sense to color genotypes by, sorted by ID.  GT is left out, as
+     * coloring by genotype is its own option.
+     */
+    public List<VCFFormatHeaderLine> getColorableFormatFields() {
+        Object header = getHeader();
+        if (!(header instanceof VCFHeader)) {
+            return Collections.emptyList();
+        }
+        return ((VCFHeader) header).getFormatHeaderLines().stream()
+                .filter(line -> COLORABLE_INFO_TYPES.contains(line.getType()) && !"GT".equals(line.getID()))
+                .sorted(Comparator.comparing(VCFFormatHeaderLine::getID, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
     }
 
@@ -1627,7 +1817,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
     }
 
     public enum ColorMode {
-        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION, ATTRIBUTE
+        GENOTYPE, METHYLATION_RATE, ALLELE_FREQUENCY, NONE, ALLELE_FRACTION, ATTRIBUTE, FORMAT_ATTRIBUTE
     }
 
     public static enum BackgroundType {
@@ -1927,7 +2117,8 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (showGenotypes != defaultShowGenotypes()) {
             json.put("showGenotypes", showGenotypes);
         }
-        if (genotypeColorMode != ColorMode.GENOTYPE) {
+        // Coloring by FORMAT field is written as "genotypeColorBy", which implies the mode
+        if (genotypeColorMode != ColorMode.GENOTYPE && genotypeColorMode != ColorMode.FORMAT_ATTRIBUTE) {
             json.put("genotypeColorMode", genotypeColorMode.toString());
         }
         // Colors and scales are written for the current color-by option only, and only if chosen on this track --
@@ -1950,14 +2141,42 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
             // The whole table, colors assigned from the palette included -- they depend on the order values are
             // encountered, so they are persisted to be reproducible
-            Map<String, Color> table = getAllAttributeColors(colorByAttribute);
-            if (!table.isEmpty()) {
-                org.json.JSONObject colorTable = new org.json.JSONObject();
-                for (Map.Entry<String, Color> entry : table.entrySet()) {
-                    colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
-                }
-                json.put("colorTable", colorTable);
+            putColorTable(json, "colorTable", colorByAttribute);
+        }
+        // Coloring genotypes by FORMAT field is not in igv.js -- these properties are desktop only
+        if (getColorGenotypesBy() != null) {
+            json.put("genotypeColorBy", colorGenotypesBy);
+            String key = colorGenotypesKey;
+            AbstractColorScale scale = getColorScale(key);
+            if (scale != null) {
+                json.put("genotypeColorByScale", scale.asString());
             }
+            putColorTable(json, "genotypeColorTable", key);
+        }
+    }
+
+    /**
+     * Write the colors the track shows for an INFO attribute, or FORMAT field, as a JSON property -- value to
+     * color.  Nothing is written if there are none.
+     */
+    private void putColorTable(org.json.JSONObject json, String property, String key) {
+        Map<String, Color> table = getAllAttributeColors(key);
+        if (!table.isEmpty()) {
+            org.json.JSONObject colorTable = new org.json.JSONObject();
+            for (Map.Entry<String, Color> entry : table.entrySet()) {
+                colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
+            }
+            json.put(property, colorTable);
+        }
+    }
+
+    /**
+     * Read a color table written by {@link #putColorTable}, as colors chosen on this track.
+     */
+    private void readColorTable(org.json.JSONObject json, String property, String key) {
+        org.json.JSONObject colorTable = json.getJSONObject(property);
+        for (String value : colorTable.keySet()) {
+            setAttributeColor(key, value, ColorUtilities.stringToColor(colorTable.getString(value)));
         }
     }
 
@@ -1999,10 +2218,24 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         // igv.js applies a table without "colorBy" to any attribute -- here, the one the track is colored by
         if (json.has("colorTable") && siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
-            org.json.JSONObject colorTable = json.getJSONObject("colorTable");
-            for (String value : colorTable.keySet()) {
-                setAttributeColor(colorByAttribute, value, ColorUtilities.stringToColor(colorTable.getString(value)));
+            readColorTable(json, "colorTable", colorByAttribute);
+        }
+        if (json.has("genotypeColorBy")) {
+            setColorGenotypesBy(json.getString("genotypeColorBy"));
+            String key = colorGenotypesKey;
+            if (json.has("genotypeColorByScale")) {
+                try {
+                    setColorScale(key, (AbstractColorScale) ColorScaleFactory.getScaleFromString(json.getString("genotypeColorByScale")));
+                } catch (Exception e) {
+                    log.error("Unrecognized genotypeColorByScale: " + json.getString("genotypeColorByScale"));
+                }
             }
+            if (json.has("genotypeColorTable")) {
+                readColorTable(json, "genotypeColorTable", key);
+            }
+        } else if (genotypeColorMode == ColorMode.FORMAT_ATTRIBUTE) {
+            // The mode without a field to color by -- there is nothing to draw
+            this.genotypeColorMode = ColorMode.GENOTYPE;
         }
         if (json.has("refColor")) {
             this.refColor = ColorUtilities.stringToColor(json.getString("refColor"));

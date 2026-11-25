@@ -1,0 +1,51 @@
+{
+  "genome": "hg19",
+  "sampleinfo": [{
+    "format": "sampleInfo",
+    "url": "https://igv.org/genomes/data/hg19/igsr_samples.tsv"
+  }],
+  "locus": "chrY:2887476-2905615",
+  "tracks": [
+    {
+      "sequenceTranslationStrandValue": "+",
+      "name": "Reference sequence",
+      "shouldShowTranslation": false,
+      "id": "Reference sequence",
+      "type": "sequence",
+      "order": -9007199254740991
+    },
+    {
+      "format": "refgene",
+      "name": "Refseq All",
+      "id": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "type": "annotation",
+      "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/ncbiRefSeq.txt.gz",
+      "order": 1,
+      "rowHeight": 35
+    },
+    {
+      "colorBy": "AF",
+      "visibilityWindow": "50000",
+      "format": "vcf.list",
+      "groupBy": "Population name",
+      "type": "variant",
+      "genotypeColorBy": "PL",
+      "url": "https://igv.org/genomes/data/hg19/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list",
+      "displayMode": "EXPANDED",
+      "sampleFilter": {
+        "elements": [{
+          "item": "Population name",
+          "value": "AFRICAN",
+          "operator": "contains"
+        }],
+        "match": "all"
+      },
+      "genotypeColorByScale": "ContinuousColorScale;0.0;1910.0;255,255,204;202,0,32",
+      "name": "Phase 3 genotypes",
+      "id": "https://igv.org/genomes/data/hg19/ALL.phase3_shapeit2_mvncall_integrated_v1b.20130502.genotypes.vcf.list",
+      "order": 2,
+      "height": 500,
+      "rowHeight": 15
+    }
+  ]
+}
