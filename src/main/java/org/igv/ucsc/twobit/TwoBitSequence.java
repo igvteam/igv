@@ -7,13 +7,17 @@ import org.igv.logging.LogManager;
 import org.igv.logging.Logger;
 import org.igv.ucsc.BPIndex;
 import org.igv.ucsc.BPTree;
+import org.igv.util.ParsingUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.TreeMap;
 
 
 /**
@@ -34,16 +38,42 @@ public class TwoBitSequence implements Sequence {
     ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;  // Until proven otherwise
     private int seqCount;
     BPIndex index;
+    // IUPAC ambiguity codes keyed by sequence name and 0-based position.  The 2bit format cannot represent these.
+    private HashMap<String, TreeMap<Integer, Byte>> ambiguityCodes;
 
 
-    public TwoBitSequence(String path) throws IOException {
+    /**
+     * @param path               path to the .2bit file
+     * @param indexPath          optional path to an external BP tree index, may be null
+     * @param ambiguityTablePath optional path to a table of IUPAC ambiguity codes, may be null.  The table is tab
+     *                           delimited with columns sequence name, 1-based position, and code.
+     */
+    public TwoBitSequence(String path, String indexPath, String ambiguityTablePath) throws IOException {
         init(path);
-        index = new TwoBitIndex(path, this.byteOrder, this.seqCount);
+        index = indexPath != null ?
+                BPTree.loadBPTree(indexPath, 0) :
+                new TwoBitIndex(path, this.byteOrder, this.seqCount);
+        if (ambiguityTablePath != null) {
+            try {
+                loadAmbiguityTable(ambiguityTablePath);
+            } catch (IOException e) {
+                log.error("Error loading ambiguity table " + ambiguityTablePath, e);
+            }
+        }
     }
 
-    public TwoBitSequence(String path, String indexPath) throws IOException {
-        init(path);
-        index = BPTree.loadBPTree(indexPath, 0);
+    private void loadAmbiguityTable(String ambiguityTablePath) throws IOException {
+        HashMap<String, TreeMap<Integer, Byte>> table = new HashMap<>();
+        try (BufferedReader br = ParsingUtils.openBufferedReader(ambiguityTablePath)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#") || line.isBlank()) continue;
+                String[] tokens = line.split("\t");
+                int position = Integer.parseInt(tokens[1].trim()) - 1;
+                table.computeIfAbsent(tokens[0], k -> new TreeMap<>()).put(position, (byte) tokens[2].trim().charAt(0));
+            }
+        }
+        this.ambiguityCodes = table;
     }
 
     UnsignedByteBufferImpl loadBinaryBuffer(long start, int size) throws IOException {
@@ -185,6 +215,15 @@ public class TwoBitSequence implements Sequence {
                     int s = Byte.toUnsignedInt(baseBytes[bytePosition]);
                     int idx = genomicPosition - regionStart;
                     sequenceBases[idx] = baseIsMaked ? maskedByteTo4Bases[s][subPosition] : byteTo4Bases[s][subPosition];
+                }
+            }
+
+            if (ambiguityCodes != null) {
+                TreeMap<Integer, Byte> codes = ambiguityCodes.get(seqName);
+                if (codes != null) {
+                    for (Map.Entry<Integer, Byte> entry : codes.subMap(regionStart, regionEnd).entrySet()) {
+                        sequenceBases[entry.getKey() - regionStart] = entry.getValue();
+                    }
                 }
             }
             return sequenceBases;

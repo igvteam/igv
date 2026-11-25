@@ -90,6 +90,7 @@ public class GenomeDownloadUtils {
                 config.gziIndexURL = (null);
                 config.twoBitBptURL = (null);  // Not needed for local .2bit files
             }
+            downloadAndUpdateConfig(downloadSequence, new String[]{"twoBitAmbiguityURL"}, config, dataDirectory, relativeDataDirectory, true);
         } else if (config.fastaURL != null) {
 
             String[] fastaFields = {"fastaURL", "indexURL", "gziIndexURL", "compressedIndexURL"};

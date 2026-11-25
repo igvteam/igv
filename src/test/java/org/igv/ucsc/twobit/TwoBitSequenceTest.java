@@ -19,7 +19,7 @@ public class TwoBitSequenceTest {
                 "NNcccNNCCNCgN";
 
         String testFile = TestUtils.DATA_DIR + "twobit/foo.2bit";
-        TwoBitSequence reader = new TwoBitSequence(testFile);
+        TwoBitSequence reader = new TwoBitSequence(testFile, null, null);
 
         int start = 5;
         int end = 100;
@@ -27,11 +27,28 @@ public class TwoBitSequenceTest {
         assertEquals(expectedSequence.substring(start, end), seqString);
     }
 
+    /**
+     * The table places an "R" at chr1:11 (1-based) and a "Y" at chr1:50, replacing an "N" and a "T" respectively.
+     */
+    @Test
+    public void readSequenceWithAmbiguityTable() throws IOException {
+
+        String testFile = TestUtils.DATA_DIR + "twobit/foo.2bit";
+        String tableFile = TestUtils.DATA_DIR + "twobit/foo.ambiguity.tsv";
+        TwoBitSequence reader = new TwoBitSequence(testFile, null, tableFile);
+
+        assertEquals("NNNNNRNNNN", new String(reader.readSequence("chr1", 5, 15)));
+        assertEquals("R", new String(reader.readSequence("chr1", 10, 11)));
+        assertEquals("NNNNN", new String(reader.readSequence("chr1", 5, 10)));   // end is exclusive
+        assertEquals("NNNNN", new String(reader.readSequence("chr1", 11, 16)));
+        assertEquals("NNACYCT", new String(reader.readSequence("chr1", 45, 52)));
+    }
+
     @Test
     public void readSequenceRemote() throws IOException {
 
         String url = "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit";
-        TwoBitSequence reader = new TwoBitSequence(url);
+        TwoBitSequence reader = new TwoBitSequence(url, null, null);
 
         // Non-masked no "N" region  chr1:11,830-11,869
         String expectedSeq = "GATTGCCAGCACCGGGTATCATTCACCATTTTTCTTTTCG";
@@ -83,14 +100,14 @@ public class TwoBitSequenceTest {
         String indexPath = TestUtils.DATA_DIR + "twobit/GCF_000002655.1.2bit.bpt";
 
         // No index
-        TwoBitSequence reader = new TwoBitSequence(url);
+        TwoBitSequence reader = new TwoBitSequence(url, null, null);
         String expectedSequence = "GCAGGTATCCAAAGCCAGAGGCCTGGTGCTACACGACTGG";
         byte[] seqbytes = reader.readSequence("NC_007194.1", 1644639, 1644679);
         String seq = new String(seqbytes);
         assertEquals(expectedSequence, seq);
 
         //With index
-        reader = new TwoBitSequence(url, indexPath);
+        reader = new TwoBitSequence(url, indexPath, null);
         seqbytes = reader.readSequence("NC_007194.1", 1644639, 1644679);
         seq = new String(seqbytes);
         assertEquals(expectedSequence, seq);
