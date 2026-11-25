@@ -87,8 +87,7 @@ public class VariantTrackMenuHelper {
                 items.add(getColorByMethylationRate(variantTrack));
             }
             items.add(getColorByFormatFieldMenu(variantTrack));
-            if (variantTrack.getGenotypeColorMode() == VariantTrack.ColorMode.FORMAT_ATTRIBUTE
-                    && variantTrack.getColorGenotypesBy() != null) {
+            if (variantTrack.getColorGenotypesBy() != null) {
                 items.add(getEditFormatColorItem(variantTrack));
             }
         }
@@ -282,10 +281,10 @@ public class VariantTrackMenuHelper {
             // A scale over a made-up range would color everything alike, and coloring by value anyway would quietly
             // treat a quantity as a category, so the same click would behave differently after navigating.  Leave
             // the selection alone and say why.
-            // Color schemes are for INFO attributes
             String name = VariantTrack.attributeName(infoKey);
             MessageUtils.showMessage("No loaded features have a numeric value for " + name + ".  Move to a region where "
                     + name + " has values and choose it again"
+                    // Color schemes are for INFO attributes
                     + (VariantTrack.isFormatKey(infoKey) ? "." : ", or import a color scheme for " + name + "."));
             return false;
         }
@@ -358,7 +357,7 @@ public class VariantTrackMenuHelper {
 
         List<VCFFormatHeaderLine> formatFields = track.getColorableFormatFields();
 
-        boolean selected = track.getGenotypeColorMode() == VariantTrack.ColorMode.FORMAT_ATTRIBUTE && track.getColorGenotypesBy() != null;
+        boolean selected = track.getColorGenotypesBy() != null;
         JMenu menu = new CheckedMenu("FORMAT Field", selected);
 
         Set<String> withValues = track.getFormatFieldsWithValues(
@@ -395,8 +394,7 @@ public class VariantTrackMenuHelper {
 
     private static JMenuItem getColorByFormatFieldItem(VariantTrack track, VCFFormatHeaderLine formatField) {
         final String id = formatField.getID();
-        final JMenuItem item = new JCheckBoxMenuItem(id,
-                track.getGenotypeColorMode() == VariantTrack.ColorMode.FORMAT_ATTRIBUTE && id.equals(track.getColorGenotypesBy()));
+        final JMenuItem item = new JCheckBoxMenuItem(id, id.equals(track.getColorGenotypesBy()));
         String description = formatField.getDescription();
         if (description != null && description.length() > 0) {
             item.setToolTipText(description);
