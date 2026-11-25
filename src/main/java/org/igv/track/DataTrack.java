@@ -251,12 +251,10 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
      * @param zoom
      * @param type
      * @param frameName
-     * @param tracks    Mutation scores require other tracks to calculate the score. If provided,
-     *                  use these tracks. If null and not headless we use the currently loaded tracks.
      * @return
      */
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName,
-                                List<Track> tracks) {
+    @Override
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
 
         if (end <= start) {
             return 0;
@@ -297,16 +295,8 @@ public abstract class DataTrack extends AbstractTrack implements ScalableTrack {
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                float count = 0;
-                String tSamp = this.getSample();
-                if (tracks != null && tSamp != null) {
-                    for (Track t : tracks) {
-                        if (t.getDataType() == DataType.MUTATION && tSamp.equals(t.getSample())) {
-                            count += t.getRegionScore(chr, start, end, zoom, type, frameName);
-                        }
-                    }
-                }
-                return count;
+                // Mutation overlay tracks are no longer supported
+                return 0;
             } else {
                 float regionScore = 0;
                 int intervalSum = 0;

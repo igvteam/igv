@@ -153,6 +153,8 @@ public class SpliceJunctionTrack extends FeatureTrack implements ScalableTrack {
         return false;
     }
 
+    // Override FeatureTrack, junctions are not scored
+    @Override
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, String frameName) {
         return 0;
     }
