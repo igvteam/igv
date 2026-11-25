@@ -24,17 +24,11 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
     java -showversion --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Dsun.java2d.uiScale=2 \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.igv.ui.Main "$@"
 else
     java -showversion --module-path="${prefix}/lib" -Xmx8g \
         @"${prefix}/igv.args" \
         -Dsun.java2d.uiScale=2 \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         --module=org.igv/org.igv.ui.Main "$@"
 fi

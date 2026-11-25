@@ -15,12 +15,10 @@ fi
 if [ -e "$HOME/.igv/java_arguments" ]; then
     java -showversion --module-path="${prefix}/lib" -Xmx1500m \
         @"${prefix}/igv.args" \
-        -Dapple.laf.useScreenMenuBar=true \
         @"$HOME/.igv/java_arguments" \
         --module=org.igv/org.igv.tools.IgvTools gui
 else
     java -showversion --module-path="${prefix}/lib" -Xmx1500m \
         @"${prefix}/igv.args" \
-        -Dapple.laf.useScreenMenuBar=true \
         --module=org.igv/org.igv.tools.IgvTools gui
 fi

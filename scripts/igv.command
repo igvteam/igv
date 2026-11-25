@@ -32,9 +32,6 @@ if [ -e "$HOME/.igv/java_arguments" ]; then
          @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         -cp "$CP" \
         org.igv.ui.Main "$@"
 else
@@ -42,9 +39,6 @@ else
         @"${prefix}/igv.args" \
         -Xdock:name="IGV" \
         -Xdock:icon="${prefix}/IGV_64.png" \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         -cp "$CP" \
         org.igv.ui.Main "$@"
 fi

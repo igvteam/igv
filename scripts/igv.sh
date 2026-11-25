@@ -28,20 +28,12 @@ CP="${prefix}/lib/*"
 if [ -e "$HOME/.igv/java_arguments" ]; then
     java -Xmx8g \
         @"${prefix}/igv.args" \
-        -Dsamjdk.snappy.disable=true \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         @"$HOME/.igv/java_arguments" \
         -cp "$CP" \
         org.igv.ui.Main "$@"
 else
     java -Xmx8g \
         @"${prefix}/igv.args" \
-        -Dsamjdk.snappy.disable=true \
-        -Dapple.laf.useScreenMenuBar=true \
-        -Djava.net.preferIPv4Stack=true \
-        -Djava.net.useSystemProxies=true \
         -cp "$CP" \
         org.igv.ui.Main "$@"
 fi
