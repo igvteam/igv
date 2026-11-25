@@ -28,6 +28,18 @@ public class TwoBitSequenceTest {
     }
 
     /**
+     * A read starting where a block of "N"s ends, the later blocks of "N"s must still be recognized.
+     */
+    @Test
+    public void readSequenceFromEndOfNBlock() throws IOException {
+
+        String expectedSequence = "ACTCTATCTATCTATCTATCTATCTTTTTCCCCCCGGGGGGagagagagactctagcatcctcctacctcacNNacCNctTGGACNCcCaGGGatttcNNNcccNNCCNCgN";
+
+        TwoBitSequence reader = new TwoBitSequence(TestUtils.DATA_DIR + "twobit/foo.2bit", null, null);
+        assertEquals(expectedSequence, new String(reader.readSequence("chr1", 47, 159)));
+    }
+
+    /**
      * The table places an "R" at chr1:11 (1-based), replacing an "N", and a "Y" at chr1:50, which is a "T" and is
      * not replaced.
      */

@@ -359,7 +359,7 @@ public class TwoBitSequence implements Sequence {
         for (Block block : blocks) {
             if (block.start > end) {
                 break;
-            } else if (block.end < start) {
+            } else if (block.end <= start) {
                 continue;
             } else {
                 overlappingBlocks.add(block);
