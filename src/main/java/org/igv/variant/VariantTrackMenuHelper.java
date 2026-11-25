@@ -206,19 +206,26 @@ public class VariantTrackMenuHelper {
             fieldItems.add(getColorByInfoFieldItem(track, infoField));
         }
 
+        addFieldItems(menu, fieldItems);
+
+        return menu;
+    }
+
+    /**
+     * Add the items for a file's INFO or FORMAT fields to a menu -- directly, or if there are too many for a
+     * single menu, in alphabetical groups named for the first and last field of each.
+     */
+    private static void addFieldItems(JMenu menu, List<JMenuItem> fieldItems) {
         if (fieldItems.size() <= MAX_FLAT_INFO_FIELDS) {
             fieldItems.forEach(menu::add);
         } else {
-            // Too many fields for a single menu -- break them into alphabetical groups
             for (int i = 0; i < fieldItems.size(); i += INFO_FIELD_GROUP_SIZE) {
                 int end = Math.min(i + INFO_FIELD_GROUP_SIZE, fieldItems.size());
-                JMenu group = new JMenu(infoFields.get(i).getID() + " - " + infoFields.get(end - 1).getID());
+                JMenu group = new JMenu(fieldItems.get(i).getText() + " - " + fieldItems.get(end - 1).getText());
                 fieldItems.subList(i, end).forEach(group::add);
                 menu.add(group);
             }
         }
-
-        return menu;
     }
 
     /**
@@ -377,17 +384,7 @@ public class VariantTrackMenuHelper {
             fieldItems.add(item);
         }
 
-        if (fieldItems.size() <= MAX_FLAT_INFO_FIELDS) {
-            fieldItems.forEach(menu::add);
-        } else {
-            // Too many fields for a single menu -- break them into alphabetical groups
-            for (int i = 0; i < fieldItems.size(); i += INFO_FIELD_GROUP_SIZE) {
-                int end = Math.min(i + INFO_FIELD_GROUP_SIZE, fieldItems.size());
-                JMenu group = new JMenu(formatFields.get(i).getID() + " - " + formatFields.get(end - 1).getID());
-                fieldItems.subList(i, end).forEach(group::add);
-                menu.add(group);
-            }
-        }
+        addFieldItems(menu, fieldItems);
 
         return menu;
     }

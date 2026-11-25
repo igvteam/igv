@@ -2141,14 +2141,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         if (siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
             // The whole table, colors assigned from the palette included -- they depend on the order values are
             // encountered, so they are persisted to be reproducible
-            Map<String, Color> table = getAllAttributeColors(colorByAttribute);
-            if (!table.isEmpty()) {
-                org.json.JSONObject colorTable = new org.json.JSONObject();
-                for (Map.Entry<String, Color> entry : table.entrySet()) {
-                    colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
-                }
-                json.put("colorTable", colorTable);
-            }
+            putColorTable(json, "colorTable", colorByAttribute);
         }
         // Coloring genotypes by FORMAT field is not in igv.js -- these properties are desktop only
         if (getColorGenotypesBy() != null) {
@@ -2158,14 +2151,32 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
             if (scale != null) {
                 json.put("genotypeColorByScale", scale.asString());
             }
-            Map<String, Color> table = getAllAttributeColors(key);
-            if (!table.isEmpty()) {
-                org.json.JSONObject colorTable = new org.json.JSONObject();
-                for (Map.Entry<String, Color> entry : table.entrySet()) {
-                    colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
-                }
-                json.put("genotypeColorTable", colorTable);
+            putColorTable(json, "genotypeColorTable", key);
+        }
+    }
+
+    /**
+     * Write the colors the track shows for an INFO attribute, or FORMAT field, as a JSON property -- value to
+     * color.  Nothing is written if there are none.
+     */
+    private void putColorTable(org.json.JSONObject json, String property, String key) {
+        Map<String, Color> table = getAllAttributeColors(key);
+        if (!table.isEmpty()) {
+            org.json.JSONObject colorTable = new org.json.JSONObject();
+            for (Map.Entry<String, Color> entry : table.entrySet()) {
+                colorTable.put(entry.getKey(), toCssColor(entry.getValue()));
             }
+            json.put(property, colorTable);
+        }
+    }
+
+    /**
+     * Read a color table written by {@link #putColorTable}, as colors chosen on this track.
+     */
+    private void readColorTable(org.json.JSONObject json, String property, String key) {
+        org.json.JSONObject colorTable = json.getJSONObject(property);
+        for (String value : colorTable.keySet()) {
+            setAttributeColor(key, value, ColorUtilities.stringToColor(colorTable.getString(value)));
         }
     }
 
@@ -2207,10 +2218,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
         }
         // igv.js applies a table without "colorBy" to any attribute -- here, the one the track is colored by
         if (json.has("colorTable") && siteColorMode == ColorMode.ATTRIBUTE && colorByAttribute != null) {
-            org.json.JSONObject colorTable = json.getJSONObject("colorTable");
-            for (String value : colorTable.keySet()) {
-                setAttributeColor(colorByAttribute, value, ColorUtilities.stringToColor(colorTable.getString(value)));
-            }
+            readColorTable(json, "colorTable", colorByAttribute);
         }
         if (json.has("genotypeColorBy")) {
             setColorGenotypesBy(json.getString("genotypeColorBy"));
@@ -2223,10 +2231,7 @@ public class VariantTrack extends FeatureTrack implements IGVEventObserver {
                 }
             }
             if (json.has("genotypeColorTable")) {
-                org.json.JSONObject colorTable = json.getJSONObject("genotypeColorTable");
-                for (String value : colorTable.keySet()) {
-                    setAttributeColor(key, value, ColorUtilities.stringToColor(colorTable.getString(value)));
-                }
+                readColorTable(json, "genotypeColorTable", key);
             }
         } else if (genotypeColorMode == ColorMode.FORMAT_ATTRIBUTE) {
             // The mode without a field to color by -- there is nothing to draw
