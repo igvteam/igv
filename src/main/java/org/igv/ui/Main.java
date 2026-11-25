@@ -83,7 +83,6 @@ public class Main {
                 UIManager.put("FileChooser.useSystemExtensionHiding", false);
             }
 
-            DesktopIntegration.verifyJavaPlatform();
             initApplication(igvArgs);
 
             JFrame frame = new JFrame();

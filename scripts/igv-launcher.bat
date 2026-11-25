@@ -1,12 +1,13 @@
 setlocal
-::Get the current batch file's short path
-for %%x in (%0) do set BatchPath=%%~dpsx
-for %%x in (%BatchPath%) do set BatchPath=%%~dpsx
 
-if exist %BatchPath%\jdk-21 (
+::%~dp0 is the directory containing this file.  It is quoted rather than converted to a Windows 8.3 "short name"
+::as igv.bat does, as the short name may not exist for all path components, particularly on drives other than C:,
+::which lets spaces into the path (e.g. "Program Files").
+
+if exist "%~dp0jdk-21" (
   echo "Using bundled JDK."
-  set JAVA_HOME=%BatchPath%\jdk-21
-  set JAVA_CMD=%BatchPath%\jdk-21\bin\javaw
+  set "JAVA_HOME=%~dp0jdk-21"
+  set JAVA_CMD="%~dp0jdk-21\bin\javaw"
 ) else (
   echo "Using system JDK."
   set JAVA_CMD=java
@@ -16,22 +17,8 @@ if exist %BatchPath%\jdk-21 (
 ::To adjust this (or other Java options), edit the "%USERPROFILE%\.igv\java_arguments"
 ::file.  For more info, see the README at
 ::https://raw.githubusercontent.com/igvteam/igv/master/scripts/readme.txt
-
-set CP=%BatchPath%lib\*
-
 if exist "%USERPROFILE%\.igv\java_arguments" (
-    %JAVA_CMD% -Xmx8g ^
-        @%BatchPath%igv.args ^
-        -Dsamjdk.snappy.disable=true ^
-        -Djava.net.preferIPv4Stack=true ^
-        -Djava.net.useSystemProxies=true ^
-        @"%USERPROFILE%\.igv\java_arguments" ^
-        -cp "%CP%" org.igv.ui.Main %*
+  start "" %JAVA_CMD% -showversion -Xmx8g @"%~dp0igv.args" @"%USERPROFILE%\.igv\java_arguments" -cp "%~dp0lib\*" org.igv.ui.Main %*
 ) else (
-    %JAVA_CMD% -Xmx8g ^
-        @%BatchPath%igv.args ^
-        -Dsamjdk.snappy.disable=true ^
-        -Djava.net.preferIPv4Stack=true ^
-        -Djava.net.useSystemProxies=true ^
-        -cp "%CP%" org.igv.ui.Main %*
+  start "" %JAVA_CMD% -showversion -Xmx8g @"%~dp0igv.args" -cp "%~dp0lib\*" org.igv.ui.Main %*
 )

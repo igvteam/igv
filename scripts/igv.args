@@ -1,2 +1,12 @@
 # Disable a JAXB optimization that causes illegal access exceptions on Java 11
 -Dcom.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize
+
+# Do not use the snappy native library
+-Dsamjdk.snappy.disable=true
+
+# Network settings
+-Djava.net.preferIPv4Stack=true
+-Djava.net.useSystemProxies=true
+
+# Put the menu bar at the top of the screen on macOS.  Ignored on other platforms.
+-Dapple.laf.useScreenMenuBar=true

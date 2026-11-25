@@ -14,7 +14,6 @@ The utilities are invoked from one of the following scripts:
 
    igvtools (command line version for Linux and  macOS 10.x)
    igvtools_gui (gui version for Linux and  macOS 10.x)
-   igvtools_gui_hidpi (HiDPI gui version for Linux)
    igvtools_gui.command (alternative double-clickable gui version for macOS 10.x)
 
    igvtools.bat (command line version for Windows)
@@ -37,11 +36,11 @@ allows more control over java parameters, such as the maximum memory to
 allocate.  In the example below igvtools is started with 1500 MB of memory
 allocated and launched in the location where you have unpacked IGVTools.
 
-   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.igv.tools.IgvTools [command] [options][arguments]
+   java -Xmx1500m @igv.args -cp "lib/*" org.igv.tools.IgvTools [command] [options][arguments]
 
 To start with a gui the command is
 
-   java -Xmx1500m --module-path=lib @igv.args --module=org.igv/org.igv.tools.IgvTools gui
+   java -Xmx1500m @igv.args -cp "lib/*" org.igv.tools.IgvTools gui
 
 Note that the command line has become more complex with Java 11 compared to
 Java 8.  We recommend the shell scripts above for most users.
@@ -88,19 +87,12 @@ HiDPI settings
 HiDPI is supported natively by Java on Mac and Windows.  Users on these
 platforms can ignore this section. 
 
-For Linux users, the igvtools_gui_hidpi script is set up for 2x scaling.  
-To modify it to do 4x scaling, for example, change the value
+For Linux users, if the igvtools gui is not scaled correctly, add a scaling
+factor to the java_arguments file.  For example, for 2x scaling add
 
    -Dsun.java2d.uiScale=2
 
-to
-
-   -Dsun.java2d.uiScale=4
-
-Fractional values are *NOT* supported at this time.  Note that here again, you can add
-this specification to the java_arguments file instead of editing the launcher scripts.
-Doing so will allow the standard 'igvtools_gui' to work properly on HiDPI screens without
-the need for the 'igvtools_gui_hidpi' script.
+Fractional values are *NOT* supported at this time.
 
 ---------------------------------------------------------------------------
 Genome
